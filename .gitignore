@@ -1,0 +1,42 @@
+# ── Dependencies ─────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Build output ─────────────────────────────────────────────
+.next/
+out/
+dist/
+build/
+
+# ── Environment / secrets ─────────────────────────────────────
+.env
+.env.local
+.env.*.local
+# (keep .env.local.example — it's the template, no real secrets)
+
+# ── TypeScript ────────────────────────────────────────────────
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# ── Uploads (local dev only) ──────────────────────────────────
+public/uploads/*
+!public/uploads/.gitkeep
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── OS / editor ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ── Claude Code session files ─────────────────────────────────
+.claude/projects/
+.claude/*.jsonl
+
+# ── Misc ─────────────────────────────────────────────────────
+*.zip
+{app/

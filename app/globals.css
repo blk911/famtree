@@ -1,0 +1,60 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { border-color: rgb(231 229 228); }
+  body {
+    background-color: rgb(250 250 249);
+    color: rgb(28 25 23);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+@layer components {
+  /* ── Cards ── */
+  .auth-card {
+    @apply bg-white rounded-2xl border border-stone-200 p-8 shadow-sm;
+  }
+  .profile-card {
+    @apply bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden;
+  }
+  .post-card {
+    @apply bg-white rounded-2xl border border-stone-200 p-4 shadow-sm flex flex-col gap-3;
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2
+           bg-stone-900 text-white text-sm font-semibold
+           hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed
+           transition-colors cursor-pointer border-0;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2
+           bg-stone-100 text-stone-700 text-sm font-semibold
+           hover:bg-stone-200 disabled:opacity-50 disabled:cursor-not-allowed
+           transition-colors cursor-pointer border border-stone-200;
+  }
+
+  /* ── Form fields ── */
+  .field-label {
+    @apply block text-sm font-semibold text-stone-600 mb-1.5;
+  }
+  .field-input {
+    @apply w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5
+           text-sm text-stone-900 placeholder:text-stone-400
+           focus:outline-none focus:ring-2 focus:ring-stone-300 focus:border-stone-400
+           disabled:opacity-50 transition-shadow;
+  }
+
+  /* ── Alerts ── */
+  .alert-error {
+    @apply rounded-xl border border-red-200 bg-red-50 px-4 py-3
+           text-sm font-medium text-red-700;
+  }
+  .alert-success {
+    @apply rounded-xl border border-green-200 bg-green-50 px-4 py-3
+           text-sm font-medium text-green-700;
+  }
+}

@@ -1,0 +1,319 @@
+// famtree/prisma/schema.prisma
+// Run: npx prisma db push && npx prisma generate
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// USERS
+// ─────────────────────────────────────────────
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  dateOfBirth   DateTime?
+  photoUrl      String?   // stored in /public/uploads or S3
+  role          String    @default("member") // "founder" | "member"
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Profile (1-to-1)
+  profile       Profile?
+
+  // Invites this user has SENT
+  sentInvites   Invite[]  @relation("SentInvites")
+
+  // Sessions
+  sessions      Session[]
+
+  // Social activity
+  likes           Like[]
+  comments        Comment[]
+  postVisibility  PostVisibility[]
+
+  // Trust graph
+  createdTrustUnitRequests TrustUnitRequest[]       @relation("TrustUnitRequestCreator")
+  trustUnitRequestMembers  TrustUnitRequestMember[]
+  trustUnitApprovals       TrustUnitApproval[]
+  trustUnitMembers         TrustUnitMember[]
+  sentConnectionRequests   ConnectionRequest[]      @relation("ConnectionRequester")
+  receivedConnectionRequests ConnectionRequest[]    @relation("ConnectionTarget")
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// PROFILES  (social media page per member)
+// ─────────────────────────────────────────────
+model Profile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bio         String?
+  familyRole  String?  // "parent" | "grandparent" | "sibling" | "cousin" | "child" | "other"
+  location    String?
+  coverUrl    String?
+
+  // Privacy
+  isPublicInTree Boolean @default(true)  // visible to all tree members
+  showDob        Boolean @default(false)
+
+  // Dashboard onboarding prompt state
+  dashboardProfilePromptDismissedAt DateTime?
+  dashboardProfilePromptSeenCount   Int       @default(0)
+
+  // Timeline posts
+  posts       Post[]
+
+  // Photos
+  photos      Photo[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+// ─────────────────────────────────────────────
+// POSTS  (timeline entries on a profile)
+// ─────────────────────────────────────────────
+model Post {
+  id        String   @id @default(uuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  title     String?
+  body      String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  likes      Like[]
+  comments   Comment[]
+  visibility PostVisibility[]
+
+  @@map("posts")
+}
+
+// Per-post visibility — empty = visible to all members
+model PostVisibility {
+  id     String @id @default(cuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_visibility")
+}
+
+// Likes on posts
+model Like {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@map("likes")
+}
+
+// Comments on posts
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+
+  @@map("comments")
+}
+
+// ─────────────────────────────────────────────
+// PHOTOS  (photo gallery on a profile)
+// ─────────────────────────────────────────────
+model Photo {
+  id        String   @id @default(uuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  url       String
+  caption   String?
+  takenAt   DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("photos")
+}
+
+// ─────────────────────────────────────────────
+// INVITES  (the identity-gate invite system)
+// ─────────────────────────────────────────────
+model Invite {
+  id             String       @id @default(uuid())
+  token          String       @unique @default(uuid())
+
+  // Who sent it
+  senderId       String
+  sender         User         @relation("SentInvites", fields: [senderId], references: [id])
+
+  // Who it was sent to
+  recipientEmail String
+
+  // Status
+  status         InviteStatus @default(PENDING)
+  attempts       Int          @default(0)
+  maxAttempts    Int          @default(3)
+
+  // Timestamps
+  expiresAt      DateTime     // 7 days from creation
+  acceptedAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@map("invites")
+}
+
+enum InviteStatus {
+  PENDING    // sent, not yet attempted
+  ACCEPTED   // identity verified, account created
+  EXPIRED    // time or attempts exhausted
+  CANCELLED  // sender revoked
+}
+
+// ─────────────────────────────────────────────
+// TRUST UNITS  (3-person trusted relationship groups)
+// ─────────────────────────────────────────────
+model TrustUnit {
+  id        String            @id @default(cuid())
+  status    TrustUnitStatus   @default(ACTIVE)
+  createdAt DateTime          @default(now())
+  members   TrustUnitMember[]
+
+  @@map("trust_units")
+}
+
+model TrustUnitMember {
+  id          String    @id @default(cuid())
+  trustUnitId String
+  trustUnit   TrustUnit @relation(fields: [trustUnitId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([trustUnitId, userId])
+  @@map("trust_unit_members")
+}
+
+model TrustUnitRequest {
+  id          String                   @id @default(cuid())
+  createdById String
+  createdBy   User                     @relation("TrustUnitRequestCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  status      TrustUnitRequestStatus   @default(PENDING)
+  createdAt   DateTime                 @default(now())
+  members     TrustUnitRequestMember[]
+  approvals   TrustUnitApproval[]
+
+  @@map("trust_unit_requests")
+}
+
+model TrustUnitRequestMember {
+  id        String           @id @default(cuid())
+  requestId String
+  request   TrustUnitRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, userId])
+  @@map("trust_unit_request_members")
+}
+
+model TrustUnitApproval {
+  id        String              @id @default(cuid())
+  requestId String
+  request   TrustUnitRequest    @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    TrustApprovalStatus @default(PENDING)
+  updatedAt DateTime            @updatedAt
+
+  @@unique([requestId, userId])
+  @@map("trust_unit_approvals")
+}
+
+model ConnectionRequest {
+  id          String                  @id @default(cuid())
+  requesterId String
+  requester   User                    @relation("ConnectionRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  targetId    String
+  target      User                    @relation("ConnectionTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  status      ConnectionRequestStatus @default(PENDING)
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  @@unique([requesterId, targetId])
+  @@map("connection_requests")
+}
+
+enum TrustUnitStatus {
+  ACTIVE
+}
+
+enum TrustUnitRequestStatus {
+  PENDING
+  ACTIVE
+  DECLINED
+}
+
+enum TrustApprovalStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+enum ConnectionRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+// ─────────────────────────────────────────────
+// WAITLIST  (users who requested an invite — no account yet)
+// ─────────────────────────────────────────────
+// Users who requested an invite — no account yet
+model Waitlist {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+  createdAt DateTime @default(now())
+
+  @@map("waitlist")
+}
+
+// ─────────────────────────────────────────────
+// SESSIONS  (simple JWT refresh tracking)
+// ─────────────────────────────────────────────
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("sessions")
+}
