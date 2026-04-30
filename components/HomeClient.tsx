@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, MouseEvent } from "react";
@@ -13,7 +13,7 @@ type InviteStep   = "email" | "challenge" | "register" | "welcome";
 const CARDS = [
   { id:"sign-in",    icon:LogIn, label:"Sign In",          sub:"Already a member? Welcome back to your family.",           bg:"rgba(255,255,255,0.14)", border:"rgba(255,255,255,0.35)",   hoverBg:"rgba(255,255,255,0.22)" },
   { id:"invite",     icon:Mail,  label:"I Have an Invite", sub:"Got an invite from family? Start here.",                   bg:"rgba(255,255,255,0.10)", border:"rgba(255,220,180,0.5)",    hoverBg:"rgba(255,220,180,0.18)" },
-  { id:"waitlist",   icon:Users, label:"Need an Invite?",  sub:"Not in the network yet? Get on the list — we'll reach out.", bg:"rgba(255,255,255,0.08)", border:"rgba(255,180,210,0.45)", hoverBg:"rgba(255,180,210,0.18)" },
+  { id:"waitlist",   icon:Users, label:"Need an Invite?",  sub:"Not in the network yet? Get on the list â€” we'll reach out.", bg:"rgba(255,255,255,0.08)", border:"rgba(255,180,210,0.45)", hoverBg:"rgba(255,180,210,0.18)" },
   { id:"send-invite",icon:Send,  label:"Send an Invite",   sub:"Already a member? Invite someone into your family tree.",   bg:"rgba(255,255,255,0.11)", border:"rgba(180,230,255,0.45)", hoverBg:"rgba(180,230,255,0.2)" },
 ];
 
@@ -51,21 +51,21 @@ function HomeModalShell({
 }
 
 export function HomeClient() {
-  // ── modal/step state ──
+  // â”€â”€ modal/step state â”€â”€
   const [modal,       setModal]      = useState<Modal>(null);
   const [joinStep,    setJoinStep]   = useState<JoinStep>("invite");
   const [inviteStep,  setInviteStep] = useState<InviteStep>("email");
   const [faqOpen,     setFaqOpen]    = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
 
-  // ── sign-in ──
+  // â”€â”€ sign-in â”€â”€
   const [siEmail,  setSiEmail]  = useState("");
   const [siPw,     setSiPw]     = useState("");
   const [showPw,   setShowPw]   = useState(false);
   const [siLoading,setSiLoad]   = useState(false);
   const [siError,  setSiErr]    = useState("");
 
-  // ── waitlist ──
+  // â”€â”€ waitlist â”€â”€
   const [wFirst, setWFirst] = useState("");
   const [wLast,  setWLast]  = useState("");
   const [wEmail, setWEmail] = useState("");
@@ -73,12 +73,12 @@ export function HomeClient() {
   const [wLoad,  setWLoad]  = useState(false);
   const [wErr,   setWErr]   = useState("");
 
-  // ── invite flow: step 1 — email lookup ──
+  // â”€â”€ invite flow: step 1 â€” email lookup â”€â”€
   const [ifEmail,   setIfEmail]   = useState("");
   const [ifLookup,  setIfLookup]  = useState(false);
   const [ifLookErr, setIfLookErr] = useState("");
 
-  // ── invite flow: step 2 — identity challenge ──
+  // â”€â”€ invite flow: step 2 â€” identity challenge â”€â”€
   const [ifToken,  setIfToken]  = useState("");
   const [ifPhoto,  setIfPhoto]  = useState<string | null>(null);
   const [ifFirst,  setIfFirst]  = useState("");
@@ -86,7 +86,7 @@ export function HomeClient() {
   const [ifChallLoad, setIfChallLoad] = useState(false);
   const [ifChallErr,  setIfChallErr]  = useState("");
 
-  // ── invite flow: step 3 — quick register ──
+  // â”€â”€ invite flow: step 3 â€” quick register â”€â”€
   const [regFirst,  setRegFirst]  = useState("");
   const [regLast,   setRegLast]   = useState("");
   const [regPw,     setRegPw]     = useState("");
@@ -97,10 +97,10 @@ export function HomeClient() {
   const [regErr,    setRegErr]    = useState("");
   const regPhotoRef = useRef<HTMLInputElement>(null);
 
-  // ── invite flow: step 4 — welcome ──
+  // â”€â”€ invite flow: step 4 â€” welcome â”€â”€
   const [welcomeName, setWelcomeName] = useState("");
 
-  // ── helpers ──
+  // â”€â”€ helpers â”€â”€
   const openSignIn = () => { setSiErr(""); setModal("sign-in"); };
   const openJoin   = (step: JoinStep = "invite") => { setWErr(""); setJoinStep(step); setModal("join"); };
   const openInvite = () => { setIfEmail(""); setIfLookErr(""); setInviteStep("email"); setModal("invite-flow"); };
@@ -127,7 +127,7 @@ export function HomeClient() {
     width:"100%", boxSizing:"border-box",
   };
 
-  // ── handlers ──
+  // â”€â”€ handlers â”€â”€
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault(); setSiLoad(true); setSiErr("");
     try {
@@ -150,7 +150,7 @@ export function HomeClient() {
     finally { setWLoad(false); }
   };
 
-  // Step 1 — look up invite by email
+  // Step 1 â€” look up invite by email
   const handleLookup = async (e: FormEvent) => {
     e.preventDefault(); setIfLookup(true); setIfLookErr("");
     try {
@@ -173,7 +173,7 @@ export function HomeClient() {
     finally { setIfLookup(false); }
   };
 
-  // Step 2 — identity challenge
+  // Step 2 â€” identity challenge
   const handleChallenge = async (e: FormEvent) => {
     e.preventDefault();
     if (!ifFirst.trim()) { setIfChallErr("First name is required."); return; }
@@ -199,7 +199,7 @@ export function HomeClient() {
     finally { setIfChallLoad(false); }
   };
 
-  // Step 3 — quick registration
+  // Step 3 â€” quick registration
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault(); setRegLoad(true); setRegErr("");
     try {
@@ -229,7 +229,7 @@ export function HomeClient() {
     setRegPreview(URL.createObjectURL(file));
   };
 
-  // ── render ──
+  // â”€â”€ render â”€â”€
   return (
     <main style={{ minHeight:"100vh", background:"#fdf8ff" }}>
       <style>{`
@@ -241,8 +241,8 @@ export function HomeClient() {
         @media(max-width:640px){ .modal-card{position:fixed !important;inset:0 !important;border-radius:0 !important;padding:28px !important;overflow-y:auto !important} .join-grid,.wl-grid{grid-template-columns:1fr !important} }
       `}</style>
 
-      {/* ── HERO ── */}
-      <section style={{ position:"relative", minHeight:"100vh", overflow:"hidden", display:"flex", flexDirection:"column", padding:"22px 28px 80px", color:"white", backgroundImage:"url('/uploads/index-bg3.webp')", backgroundSize:"cover", backgroundPosition:"center center" }}>
+      {/* â”€â”€ HERO â”€â”€ */}
+      <section style={{ position:"relative", minHeight:"100vh", overflow:"hidden", display:"flex", flexDirection:"column", padding:"22px 28px 80px", color:"white", backgroundImage:"url('/images/index-bg3.webp')", backgroundSize:"cover", backgroundPosition:"center center" }}>
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(160deg,rgba(4,6,28,0.48) 0%,rgba(10,8,40,0.28) 50%,rgba(4,6,28,0.55) 100%)", zIndex:1, pointerEvents:"none" }} />
         <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"280px", background:"linear-gradient(to top,rgba(4,6,28,0.92) 0%,rgba(4,6,28,0.5) 55%,transparent 100%)", zIndex:1, pointerEvents:"none" }} />
 
@@ -261,8 +261,8 @@ export function HomeClient() {
 
         <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", position:"relative", zIndex:3, paddingTop:"32px" }}>
           <div className="exclusivity-pill" style={{ display:"inline-flex", flexDirection:"column", alignItems:"center", gap:"5px", padding:"15px 30px", borderRadius:"999px", background:"rgba(255,255,255,0.16)", border:"1px solid rgba(255,255,255,0.38)", fontSize:"20px", fontWeight:900, letterSpacing:"0.04em", marginBottom:"24px", backdropFilter:"blur(8px)", boxShadow:"0 10px 34px rgba(0,0,0,0.22)", textTransform:"uppercase" }}>
-            <span>🔒 Invite-only · Relationship-first · Completely private</span>
-            <span style={{ fontSize:"13px", letterSpacing:"0.12em", color:"rgba(255,255,255,0.78)" }}>No ads · No bots · No data mining · Ever.</span>
+            <span>ðŸ”’ Invite-only Â· Relationship-first Â· Completely private</span>
+            <span style={{ fontSize:"13px", letterSpacing:"0.12em", color:"rgba(255,255,255,0.78)" }}>No ads Â· No bots Â· No data mining Â· Ever.</span>
           </div>
           <h1 className="hero-h" style={{ fontSize:"62px", fontWeight:900, lineHeight:1.03, letterSpacing:"-2.5px", margin:"0 0 18px", maxWidth:"720px", textShadow:"0 2px 24px rgba(0,0,0,0.2)" }}>
             Your Private<br />Family{" "}
@@ -290,7 +290,7 @@ export function HomeClient() {
                   </div>
                   <div style={{ fontSize:"16px", fontWeight:800, marginBottom:"7px", letterSpacing:"-0.2px" }}>{card.label}</div>
                   <div style={{ fontSize:"13px", lineHeight:1.55, color:"rgba(255,255,255,0.68)" }}>{card.sub}</div>
-                  <div style={{ marginTop:"16px", fontSize:"14px", color:"rgba(255,255,255,0.45)", fontWeight:700 }}>→</div>
+                  <div style={{ marginTop:"16px", fontSize:"14px", color:"rgba(255,255,255,0.45)", fontWeight:700 }}>â†’</div>
                 </button>
               );
             })}
@@ -301,16 +301,16 @@ export function HomeClient() {
       <FaqModal open={faqOpen} onClose={() => setFaqOpen(false)} />
       <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
 
-      {/* ── WHY LGENX.NET ── */}
+      {/* â”€â”€ WHY LGENX.NET â”€â”€ */}
       <section style={{ background:"#fdf8ff", padding:"96px 24px" }}>
         <div style={{ maxWidth:"940px", margin:"0 auto", textAlign:"center" }}>
           <div style={{ fontSize:"11px", fontWeight:800, letterSpacing:"0.18em", color:"#c026d3", marginBottom:"12px" }}>WHY LGENX.NET</div>
           <h2 style={{ fontSize:"36px", fontWeight:800, color:"#1e1b4b", letterSpacing:"-1px", margin:"0 0 48px" }}>Finally! The social network built on trust.<br />Designed for family.</h2>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"24px", textAlign:"left" }}>
             {[
-              { title:"Your family. Your rules.", body:"You decide who gets in — and who doesn't. Every member is invited, verified, and personally connected. No random followers. No unknowns. Ever.", accent:"#7c3aed", bg:"#faf5ff", border:"#e9d5ff" },
-              { title:"No ads. No tracking. No selling your data.", body:"We don't monetize your family. Period. No ad feeds. No behavioral tracking. No third-party sharing. This is your space — not a product.", accent:"#db2777", bg:"#fff1f7", border:"#fbcfe8" },
-              { title:"A real network for real families.", body:"Posts, photos, timelines, and your family tree — all in one place. Private by default. Built for connection, not attention. Connections form trusted family units — not just followers.", accent:"#ea580c", bg:"#fff7ed", border:"#fed7aa" },
+              { title:"Your family. Your rules.", body:"You decide who gets in â€” and who doesn't. Every member is invited, verified, and personally connected. No random followers. No unknowns. Ever.", accent:"#7c3aed", bg:"#faf5ff", border:"#e9d5ff" },
+              { title:"No ads. No tracking. No selling your data.", body:"We don't monetize your family. Period. No ad feeds. No behavioral tracking. No third-party sharing. This is your space â€” not a product.", accent:"#db2777", bg:"#fff1f7", border:"#fbcfe8" },
+              { title:"A real network for real families.", body:"Posts, photos, timelines, and your family tree â€” all in one place. Private by default. Built for connection, not attention. Connections form trusted family units â€” not just followers.", accent:"#ea580c", bg:"#fff7ed", border:"#fed7aa" },
             ].map(({ title, body, accent, bg, border }) => (
               <div key={title} className="feat-card" style={{ background:bg, border:`1px solid ${border}`, borderRadius:"18px", padding:"28px", boxShadow:"0 4px 20px rgba(124,58,237,0.06)" }}>
                 <div style={{ width:10, height:10, borderRadius:"50%", background:accent, marginBottom:"18px", boxShadow:`0 0 12px ${accent}80` }} />
@@ -322,16 +322,16 @@ export function HomeClient() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
+      {/* â”€â”€ HOW IT WORKS â”€â”€ */}
       <section style={{ background:"linear-gradient(135deg,#fdf4ff,#fce7f3,#fff7ed)", padding:"96px 24px 72px" }}>
         <div style={{ maxWidth:"860px", margin:"0 auto", textAlign:"center" }}>
           <div style={{ fontSize:"11px", fontWeight:800, letterSpacing:"0.18em", color:"#c026d3", marginBottom:"12px" }}>HOW IT WORKS</div>
           <h2 style={{ fontSize:"36px", fontWeight:800, color:"#1e1b4b", letterSpacing:"-1px", margin:"0 0 52px" }}>Three steps to bring your family together.</h2>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"36px" }}>
             {[
-              { n:1, title:"Get invited",        body:"A family member sends you a personal invite. No invite? Join the waitlist — we'll reach out the moment someone adds you.", color:"#7c3aed" },
+              { n:1, title:"Get invited",        body:"A family member sends you a personal invite. No invite? Join the waitlist â€” we'll reach out the moment someone adds you.", color:"#7c3aed" },
               { n:2, title:"Verify you're family",body:"Confirm who invited you from a photo. Our identity gate means only real connections get in. Always.", color:"#db2777" },
-              { n:3, title:"Connect & share",    body:"Your profile, family tree, posts and photos — private to your family. No strangers ever.", color:"#ea580c" },
+              { n:3, title:"Connect & share",    body:"Your profile, family tree, posts and photos â€” private to your family. No strangers ever.", color:"#ea580c" },
             ].map(({ n, title, body, color }) => (
               <div key={n}>
                 <div style={{ width:52, height:52, borderRadius:"50%", background:`linear-gradient(135deg,${color}ee,${color}99)`, color:"white", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"22px", fontWeight:900, margin:"0 auto 20px", boxShadow:`0 8px 24px ${color}40` }}>{n}</div>
@@ -345,16 +345,16 @@ export function HomeClient() {
             <p style={{ fontSize:"16px", color:"rgba(255,255,255,0.72)", margin:"0 0 28px" }}>It starts with one invite.</p>
             <div style={{ display:"flex", gap:"12px", justifyContent:"center", flexWrap:"wrap" }}>
               <button onClick={openSignIn} style={{ padding:"13px 26px", border:"1px solid rgba(255,255,255,0.4)", borderRadius:"999px", background:"rgba(255,255,255,0.14)", color:"white", fontSize:"15px", fontWeight:700, cursor:"pointer", backdropFilter:"blur(6px)" }}>Sign In</button>
-              <button onClick={() => openJoin("waitlist")} style={{ padding:"13px 26px", border:"none", borderRadius:"999px", background:"white", color:"#7c3aed", fontSize:"15px", fontWeight:800, cursor:"pointer", boxShadow:"0 4px 20px rgba(0,0,0,0.15)" }}>Need an Invite? →</button>
+              <button onClick={() => openJoin("waitlist")} style={{ padding:"13px 26px", border:"none", borderRadius:"999px", background:"white", color:"#7c3aed", fontSize:"15px", fontWeight:800, cursor:"pointer", boxShadow:"0 4px 20px rgba(0,0,0,0.15)" }}>Need an Invite? â†’</button>
             </div>
           </div>
         </div>
         <footer style={{ textAlign:"center", fontSize:"12px", color:"#9ca3af", marginTop:"64px" }}>
-          © 2025 FamTree · Private family network · No ads · No data sold · Ever.
+          Â© 2025 FamTree Â· Private family network Â· No ads Â· No data sold Â· Ever.
         </footer>
       </section>
 
-      {/* ══ MODAL: Sign In ══ */}
+      {/* â•â• MODAL: Sign In â•â• */}
       {modal === "sign-in" && (
         <HomeModalShell onBackdrop={overlay}>
             <div style={{ textAlign:"center", marginBottom:"28px" }}>
@@ -380,7 +380,7 @@ export function HomeClient() {
                 </div>
               </label>
               <button type="submit" disabled={siLoading} style={{ height:"48px", border:"none", borderRadius:"12px", background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"15px", fontWeight:800, cursor:"pointer", opacity:siLoading?0.75:1, boxShadow:"0 8px 24px rgba(124,58,237,0.35)" }}>
-                {siLoading ? "Signing in…" : "Sign In →"}
+                {siLoading ? "Signing inâ€¦" : "Sign In â†’"}
               </button>
             </form>
             <p style={{ textAlign:"center", fontSize:"14px", color:"#6b7280", margin:"20px 0 0" }}>
@@ -390,26 +390,26 @@ export function HomeClient() {
         </HomeModalShell>
       )}
 
-      {/* ══ MODAL: Join / Waitlist ══ */}
+      {/* â•â• MODAL: Join / Waitlist â•â• */}
       {modal === "join" && (
         <HomeModalShell maxWidth="540px" onBackdrop={overlay}>
             {joinStep === "invite" && (
               <>
                 <div style={{ textAlign:"center", marginBottom:"26px" }}>
                   <h2 style={{ fontSize:"26px", fontWeight:900, color:"#1e1b4b", margin:"0 0 8px" }}>Do you have an invite?</h2>
-                  <p style={{ fontSize:"14px", color:"#6b7280", lineHeight:1.6, margin:0 }}>FamTree is invite-only — every member is personally vouched for.</p>
+                  <p style={{ fontSize:"14px", color:"#6b7280", lineHeight:1.6, margin:0 }}>FamTree is invite-only â€” every member is personally vouched for.</p>
                 </div>
                 <div className="join-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"14px" }}>
                   <button onClick={openInvite} style={{ textAlign:"left", background:"#faf5ff", border:"2px solid #e9d5ff", borderRadius:"16px", padding:"22px", cursor:"pointer" }}>
                     <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#c026d3)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:"12px" }}>
                       <Check style={{ width:18, height:18, color:"white" }} />
                     </div>
-                    <h3 style={{ fontSize:"15px", fontWeight:800, color:"#1e1b4b", margin:"0 0 6px" }}>Yes — use my invite</h3>
+                    <h3 style={{ fontSize:"15px", fontWeight:800, color:"#1e1b4b", margin:"0 0 6px" }}>Yes â€” use my invite</h3>
                     <p style={{ fontSize:"13px", lineHeight:1.5, color:"#6b7280", margin:0 }}>Verify your identity and create your account.</p>
                   </button>
                   <button onClick={()=>setJoinStep("waitlist")} style={{ textAlign:"left", background:"#fff1f7", border:"2px solid #fbcfe8", borderRadius:"16px", padding:"22px", cursor:"pointer" }}>
                     <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#db2777,#e11d48)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:"12px", fontWeight:800, color:"white", fontSize:"20px" }}>?</div>
-                    <h3 style={{ fontSize:"15px", fontWeight:800, color:"#1e1b4b", margin:"0 0 6px" }}>Not yet — need one</h3>
+                    <h3 style={{ fontSize:"15px", fontWeight:800, color:"#1e1b4b", margin:"0 0 6px" }}>Not yet â€” need one</h3>
                     <p style={{ fontSize:"13px", lineHeight:1.5, color:"#6b7280", margin:0 }}>Join the waitlist and we'll reach out when your family adds you.</p>
                   </button>
                 </div>
@@ -418,7 +418,7 @@ export function HomeClient() {
 
             {joinStep === "waitlist" && (
               <>
-                <button onClick={()=>setJoinStep("invite")} style={{ border:"none", background:"transparent", color:"#6b7280", fontSize:"14px", fontWeight:700, cursor:"pointer", padding:0, marginBottom:"18px" }}>← Back</button>
+                <button onClick={()=>setJoinStep("invite")} style={{ border:"none", background:"transparent", color:"#6b7280", fontSize:"14px", fontWeight:700, cursor:"pointer", padding:0, marginBottom:"18px" }}>â† Back</button>
                 <div style={{ textAlign:"center", marginBottom:"22px" }}>
                   <h2 style={{ fontSize:"26px", fontWeight:900, color:"#1e1b4b", margin:"0 0 8px" }}>Request an Invite</h2>
                   <p style={{ fontSize:"14px", color:"#6b7280", lineHeight:1.6, margin:0 }}>The moment someone in your family adds you, we'll reach out immediately.</p>
@@ -432,7 +432,7 @@ export function HomeClient() {
                   <input type="email" value={wEmail} onChange={e=>setWEmail(e.target.value)} required placeholder="Email address" style={inputStyle} />
                   <input type="tel"   value={wPhone} onChange={e=>setWPhone(e.target.value)} placeholder="Phone (optional)" style={inputStyle} />
                   <button type="submit" disabled={wLoad} style={{ height:"48px", border:"none", borderRadius:"12px", background:"linear-gradient(135deg,#db2777,#e11d48)", color:"white", fontSize:"15px", fontWeight:800, cursor:"pointer", opacity:wLoad?0.75:1, boxShadow:"0 8px 24px rgba(219,39,119,0.3)" }}>
-                    {wLoad ? "Saving…" : "Save My Spot →"}
+                    {wLoad ? "Savingâ€¦" : "Save My Spot â†’"}
                   </button>
                 </form>
               </>
@@ -443,7 +443,7 @@ export function HomeClient() {
                 <div style={{ width:68, height:68, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#c026d3)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 18px" }}>
                   <Check style={{ width:32, height:32, color:"white" }} />
                 </div>
-                <h2 style={{ fontSize:"26px", fontWeight:900, color:"#1e1b4b", margin:"0 0 8px" }}>You're on the list! 🎉</h2>
+                <h2 style={{ fontSize:"26px", fontWeight:900, color:"#1e1b4b", margin:"0 0 8px" }}>You're on the list! ðŸŽ‰</h2>
                 <p style={{ fontSize:"15px", color:"#6b7280", lineHeight:1.6, margin:"0 0 24px" }}>We'll contact you the moment your invite is ready. Watch your inbox.</p>
                 <button onClick={close} style={{ height:"46px", padding:"0 28px", border:"none", borderRadius:"12px", background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"15px", fontWeight:800, cursor:"pointer" }}>Done</button>
               </div>
@@ -451,7 +451,7 @@ export function HomeClient() {
         </HomeModalShell>
       )}
 
-      {/* ══ MODAL: Send invite (member path → sign in) ══ */}
+      {/* â•â• MODAL: Send invite (member path â†’ sign in) â•â• */}
       {modal === "send-invite" && (
         <HomeModalShell maxWidth="540px" onBackdrop={overlay}>
           <div style={{ textAlign:"center", marginBottom:"26px" }}>
@@ -460,7 +460,7 @@ export function HomeClient() {
             </div>
             <h2 style={{ fontSize:"26px", fontWeight:900, color:"#1e1b4b", margin:"0 0 8px" }}>Send an invite</h2>
             <p style={{ fontSize:"14px", color:"#6b7280", lineHeight:1.65, margin:0 }}>
-              Invite someone by email with a photo-based identity check — they prove who invited them before they join.
+              Invite someone by email with a photo-based identity check â€” they prove who invited them before they join.
               Sign in to compose and send invites from your dashboard.
             </p>
           </div>
@@ -469,7 +469,7 @@ export function HomeClient() {
             onClick={() => { setSiErr(""); setModal("sign-in"); }}
             style={{ width:"100%", height:"48px", border:"none", borderRadius:"12px", background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"15px", fontWeight:800, cursor:"pointer", boxShadow:"0 8px 24px rgba(124,58,237,0.35)", marginBottom:"12px" }}
           >
-            Sign in to send invites →
+            Sign in to send invites â†’
           </button>
           <p style={{ textAlign:"center", fontSize:"14px", color:"#6b7280", margin:"0 0 14px" }}>
             Not a member yet?{" "}
@@ -482,7 +482,7 @@ export function HomeClient() {
         </HomeModalShell>
       )}
 
-      {/* ══ MODAL: Invite Flow ══ */}
+      {/* â•â• MODAL: Invite Flow â•â• */}
       {modal === "invite-flow" && (
         <HomeModalShell
           onBackdrop={overlay}
@@ -503,7 +503,7 @@ export function HomeClient() {
               </div>
             )}
 
-            {/* ── Step 1: Email ── */}
+            {/* â”€â”€ Step 1: Email â”€â”€ */}
             {inviteStep === "email" && (
               <>
                 <div style={{ textAlign:"center", marginBottom:"26px" }}>
@@ -517,7 +517,7 @@ export function HomeClient() {
                 <form onSubmit={handleLookup} style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
                   <input type="email" value={ifEmail} onChange={e=>{ setIfEmail(e.target.value); setIfLookErr(""); }} required autoFocus placeholder="jane@example.com" style={inputStyle} />
                   <button type="submit" disabled={ifLookup} style={{ height:"48px", border:"none", borderRadius:"12px", background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"15px", fontWeight:800, cursor:"pointer", opacity:ifLookup?0.75:1, boxShadow:"0 8px 24px rgba(124,58,237,0.3)" }}>
-                    {ifLookup ? "Checking…" : "Find My Invite →"}
+                    {ifLookup ? "Checkingâ€¦" : "Find My Invite â†’"}
                   </button>
                 </form>
                 <p style={{ textAlign:"center", fontSize:"13px", color:"#9ca3af", marginTop:"16px" }}>
@@ -527,7 +527,7 @@ export function HomeClient() {
               </>
             )}
 
-            {/* ── Step 2: Identity Challenge ── */}
+            {/* â”€â”€ Step 2: Identity Challenge â”€â”€ */}
             {inviteStep === "challenge" && (
               <>
                 <div style={{ textAlign:"center", marginBottom:"22px" }}>
@@ -573,16 +573,16 @@ export function HomeClient() {
                     </div>
                   </div>
                   <div style={{ background:"#fff7ed", border:"1px solid #fed7aa", borderRadius:"10px", padding:"10px 12px", fontSize:"13px", color:"#92400e" }}>
-                    ⚠️ Three attempts total — if they run out, this invite expires.
+                    âš ï¸ Three attempts total â€” if they run out, this invite expires.
                   </div>
                   <button type="submit" disabled={ifChallLoad} style={{ height:"48px", border:"none", borderRadius:"12px", background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"15px", fontWeight:800, cursor:"pointer", opacity:ifChallLoad?0.75:1, boxShadow:"0 8px 24px rgba(124,58,237,0.3)" }}>
-                    {ifChallLoad ? "Verifying…" : "Confirm Identity →"}
+                    {ifChallLoad ? "Verifyingâ€¦" : "Confirm Identity â†’"}
                   </button>
                 </form>
               </>
             )}
 
-            {/* ── Step 3: Quick Register ── */}
+            {/* â”€â”€ Step 3: Quick Register â”€â”€ */}
             {inviteStep === "register" && (
               <>
                 <div style={{ textAlign:"center", marginBottom:"22px" }}>
@@ -627,27 +627,27 @@ export function HomeClient() {
                     </button>
                   </div>
                   <button type="submit" disabled={regLoad} style={{ height:"48px", border:"none", borderRadius:"12px", background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"15px", fontWeight:800, cursor:"pointer", opacity:regLoad?0.75:1, boxShadow:"0 8px 24px rgba(124,58,237,0.3)" }}>
-                    {regLoad ? "Creating account…" : "Join the Family Tree →"}
+                    {regLoad ? "Creating accountâ€¦" : "Join the Family Tree â†’"}
                   </button>
                 </form>
               </>
             )}
 
-            {/* ── Step 4: Welcome ── */}
+            {/* â”€â”€ Step 4: Welcome â”€â”€ */}
             {inviteStep === "welcome" && (
               <div style={{ textAlign:"center" }}>
-                <div style={{ fontSize:"56px", marginBottom:"12px" }}>🎉</div>
+                <div style={{ fontSize:"56px", marginBottom:"12px" }}>ðŸŽ‰</div>
                 <h2 style={{ fontSize:"28px", fontWeight:900, color:"#1e1b4b", margin:"0 0 10px" }}>
                   Welcome, {welcomeName}!
                 </h2>
                 <p style={{ fontSize:"15px", color:"#6b7280", lineHeight:1.6, margin:"0 0 28px" }}>
-                  You're officially part of the family tree. Your profile is ready — start exploring and connecting.
+                  You're officially part of the family tree. Your profile is ready â€” start exploring and connecting.
                 </p>
                 <button
                   onClick={() => { window.location.href = "/dashboard"; }}
                   style={{ height:"50px", padding:"0 32px", border:"none", borderRadius:"12px", background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"16px", fontWeight:800, cursor:"pointer", boxShadow:"0 8px 24px rgba(124,58,237,0.35)" }}
                 >
-                  Go to My Profile →
+                  Go to My Profile â†’
                 </button>
               </div>
             )}
@@ -656,3 +656,4 @@ export function HomeClient() {
     </main>
   );
 }
+
