@@ -1,4 +1,4 @@
-﻿// lib/auth/index.ts
+// lib/auth/index.ts
 // JWT creation/verification, password hashing, session helpers
 
 import { SignJWT, jwtVerify } from "jose";
@@ -10,7 +10,7 @@ import type { User } from "@prisma/client";
 const SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET ?? "dev-secret-change-in-production"
 );
-const COOKIE_NAME = "AmiHuman_session";
+const COOKIE_NAME = "AMIHUMAN.NET_session";
 const EXPIRES_IN = 60 * 60 * 24 * 7; // 7 days in seconds
 
 // ─── Password ────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 // app/(app)/settings/page.tsx
 
 import { useState, useEffect, useRef } from "react";
@@ -196,7 +196,7 @@ export default function SettingsPage() {
           <div>
             <p className="text-sm font-medium text-stone-900">Delete account</p>
             <p className="text-xs text-stone-400 mt-0.5">
-              Permanently remove your profile and data from AmiHuman. This cannot be undone.
+              Permanently remove your profile and data from AMIHUMAN.NET. This cannot be undone.
             </p>
           </div>
           <button

@@ -1,4 +1,4 @@
-﻿// app/api/invite/route.ts
+// app/api/invite/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const alreadyMember = await prisma.user.findUnique({ where: { email: recipientEmail } });
     if (alreadyMember) {
       return NextResponse.json(
-        { error: "This person already has a AmiHuman account" },
+        { error: "This person already has a AMIHUMAN.NET account" },
         { status: 409 }
       );
     }

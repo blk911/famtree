@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -11,7 +11,7 @@ type HeroUser = {
 };
 
 const HERO_COPY: Array<{ match: (path: string) => boolean; title: string; subtitle: string }> = [
-  { match: (path) => path === "/admin", title: "Admin", subtitle: "AmiHuman control center" },
+  { match: (path) => path === "/admin", title: "Admin", subtitle: "AMIHUMAN.NET control center" },
   { match: (path) => path === "/dashboard", title: "Dashboard", subtitle: "Your family activity at a glance" },
   { match: (path) => path === "/family-vault/posts", title: "Open Feed", subtitle: "Posts from you and your family network" },
   { match: (path) => path === "/family-vault/private", title: "Private Feed", subtitle: "Trust Unit conversations restricted to each TU" },
@@ -29,7 +29,7 @@ function initials(user: HeroUser) {
 export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: string | null }) {
   const pathname = usePathname();
   const copy = HERO_COPY.find((item) => item.match(pathname)) ?? {
-    title: "AmiHuman",
+    title: "AMIHUMAN.NET",
     subtitle: "Private family network",
   };
 
@@ -59,7 +59,7 @@ export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: stri
       <div style={{position:"relative",zIndex:1,padding:"28px 30px",display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:"20px",minHeight:"150px"}}>
         <div>
           <p style={{fontSize:"11px",fontWeight:900,letterSpacing:"0.16em",textTransform:"uppercase",color:"rgba(255,255,255,0.72)",marginBottom:"8px"}}>
-            AmiHuman
+            AMIHUMAN.NET
           </p>
           <h1 style={{fontSize:"32px",fontWeight:900,letterSpacing:"-0.7px",color:"white",margin:0,textShadow:"0 2px 18px rgba(0,0,0,0.22)"}}>
             {copy.title}

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   Instagram,
@@ -30,7 +30,7 @@ export function ContactModal({ open, onClose }: ContactModalProps) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="AmiHuman-contact-title"
+      aria-labelledby="AMIHUMAN.NET-contact-title"
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -42,10 +42,10 @@ export function ContactModal({ open, onClose }: ContactModalProps) {
               Contact LGENX.NET
             </p>
             <h2
-              id="AmiHuman-contact-title"
+              id="AMIHUMAN.NET-contact-title"
               className="mt-1 text-2xl font-black text-slate-950"
             >
-              Reach the AmiHuman team.
+              Reach the AMIHUMAN.NET team.
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               Questions, invite help, account issues, or launch updates — start here.
@@ -100,7 +100,7 @@ export function ContactModal({ open, onClose }: ContactModalProps) {
 
           <div className="mt-5 rounded-2xl border border-orange-200 bg-orange-50 px-5 py-4">
             <p className="text-sm font-semibold text-orange-950">
-              AmiHuman is invite-only and private by design. We do not list a
+              AMIHUMAN.NET is invite-only and private by design. We do not list a
               public office address yet.
             </p>
           </div>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 // app/(app)/invite/InviteClient.tsx
 
 import { useState, useEffect } from "react";
@@ -82,7 +82,7 @@ function ConfirmModal({
           <div style={{ background:"#f8f7ff", borderRadius:"12px", padding:"14px 16px", marginBottom:"20px", border:"1px solid #ede9fe" }}>
             {[
               ["To",      recipientName ? `${recipientName} <${recipientEmail}>` : recipientEmail],
-              ["From",    `${sender.firstName} ${sender.lastName} <noreply@AmiHuman.app>`],
+              ["From",    `${sender.firstName} ${sender.lastName} <noreply@AMIHUMAN.NET.app>`],
               ["Subject", `You've been invited to join the ${sender.lastName} Family`],
             ].map(([lbl, val], i, arr) => (
               <div key={lbl} style={{ fontSize:"13px", marginBottom: i < arr.length - 1 ? "7px" : 0 }}>
@@ -339,7 +339,7 @@ export default function InviteClient({ me }: { me: Me }) {
           <div style={{ background:"white", borderRadius:"22px", width:"100%", maxWidth:"420px", boxShadow:"0 24px 64px rgba(0,0,0,0.35)", padding:"24px" }}>
             <h2 style={{ fontSize:"18px", fontWeight:800, color:"#1c1917", margin:0 }}>Member already exists</h2>
             <p style={{ fontSize:"14px", color:"#78716c", lineHeight:1.6, margin:"10px 0 18px" }}>
-              {targetUser.firstName} is already on AmiHuman. Send a connection request instead?
+              {targetUser.firstName} is already on AMIHUMAN.NET. Send a connection request instead?
             </p>
             <div style={{ display:"flex", alignItems:"center", gap:"12px", padding:"12px", background:"#faf5ff", border:"1px solid #ede9fe", borderRadius:"14px", marginBottom:"18px" }}>
               <div style={{ width:"44px", height:"44px", borderRadius:"50%", overflow:"hidden", background:"linear-gradient(135deg,#7c3aed,#c026d3)", display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontWeight:800 }}>
@@ -410,8 +410,8 @@ export default function InviteClient({ me }: { me: Me }) {
                   <div style={{ width:26, height:26, borderRadius:"7px", background:"linear-gradient(135deg,#7c3aed,#c026d3)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                     <span style={{ fontSize:"12px" }}>🌳</span>
                   </div>
-                  <span style={{ fontSize:"14px", fontWeight:800, color:"#1e1b4b" }}>AmiHuman</span>
-                  <span style={{ fontSize:"12px", color:"#9ca3af", marginLeft:"4px" }}>&lt;noreply@AmiHuman.app&gt;</span>
+                  <span style={{ fontSize:"14px", fontWeight:800, color:"#1e1b4b" }}>AMIHUMAN.NET</span>
+                  <span style={{ fontSize:"12px", color:"#9ca3af", marginLeft:"4px" }}>&lt;noreply@AMIHUMAN.NET.app&gt;</span>
                 </div>
 
                 <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid #ede9fe", margin:"10px 0 0", padding:"10px 18px" }}>

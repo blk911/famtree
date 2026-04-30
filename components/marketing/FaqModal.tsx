@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { X } from "lucide-react";
 import { LGENX_NET_FAQS } from "@/lib/content/faq";
@@ -16,7 +16,7 @@ export function FaqModal({ open, onClose }: FaqModalProps) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="AmiHuman-faq-title"
+      aria-labelledby="AMIHUMAN.NET-faq-title"
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -28,7 +28,7 @@ export function FaqModal({ open, onClose }: FaqModalProps) {
               LGENX.NET FAQ
             </p>
             <h2
-              id="AmiHuman-faq-title"
+              id="AMIHUMAN.NET-faq-title"
               className="mt-1 text-2xl font-black text-slate-950"
             >
               Private family networking, explained.
@@ -72,7 +72,7 @@ export function FaqModal({ open, onClose }: FaqModalProps) {
 
           <div className="mt-6 rounded-2xl border border-purple-200 bg-purple-50 px-5 py-4">
             <p className="text-sm font-semibold text-purple-950">
-              AmiHuman isn't about growing a following. It's about protecting and
+              AMIHUMAN.NET isn't about growing a following. It's about protecting and
               strengthening the relationships you already have.
             </p>
           </div>

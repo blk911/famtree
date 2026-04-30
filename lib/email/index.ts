@@ -1,4 +1,4 @@
-﻿// lib/email/index.ts
+// lib/email/index.ts
 // Sends transactional emails via Resend
 
 import { Resend } from "resend";
@@ -11,7 +11,7 @@ function getResend() {
   return new Resend(key);
 }
 
-const FROM = process.env.EMAIL_FROM ?? "AmiHuman <noreply@AmiHuman.app>";
+const FROM = process.env.EMAIL_FROM ?? "AMIHUMAN.NET <noreply@AMIHUMAN.NET.app>";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 // ─── Invite email ────────────────────────────────────────────
@@ -35,7 +35,7 @@ export async function sendInviteEmail(
 
         <!-- Header -->
         <tr><td style="background:#1a1a1a;padding:28px 40px;text-align:center;">
-          <span style="color:#ffffff;font-size:22px;font-weight:600;letter-spacing:-0.5px;">🌳 AmiHuman</span>
+          <span style="color:#ffffff;font-size:22px;font-weight:600;letter-spacing:-0.5px;">🌳 AMIHUMAN.NET</span>
         </td></tr>
 
         <!-- Body -->
@@ -84,7 +84,7 @@ export async function sendInviteEmail(
         <!-- Footer -->
         <tr><td style="padding:20px 40px;border-top:1px solid #f0f0f0;text-align:center;">
           <p style="margin:0;font-size:12px;color:#bbb;">
-            AmiHuman &middot; Invite-only family network
+            AMIHUMAN.NET &middot; Invite-only family network
           </p>
         </td></tr>
 
@@ -113,14 +113,14 @@ export async function sendWelcomeEmail(user: User): Promise<void> {
   await resend.emails.send({
     from: FROM,
     to: user.email,
-    subject: `Welcome to AmiHuman, ${user.firstName}!`,
+    subject: `Welcome to AMIHUMAN.NET, ${user.firstName}!`,
     html: `
 <!DOCTYPE html>
 <html>
 <body style="font-family:-apple-system,sans-serif;background:#f5f4f0;margin:0;padding:40px 0;">
   <table width="480" cellpadding="0" cellspacing="0" style="margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e4e0;">
     <tr><td style="background:#1a1a1a;padding:28px 40px;text-align:center;">
-      <span style="color:#fff;font-size:22px;font-weight:600;">🌳 AmiHuman</span>
+      <span style="color:#fff;font-size:22px;font-weight:600;">🌳 AMIHUMAN.NET</span>
     </td></tr>
     <tr><td style="padding:40px;">
       <h1 style="margin:0 0 16px;font-size:20px;color:#1a1a1a;">
