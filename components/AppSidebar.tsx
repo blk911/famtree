@@ -4,16 +4,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  TreePine, LayoutDashboard, User, Mail,
-  LogOut, Settings, ShieldCheck, ChevronDown,
+  LayoutDashboard, User, Mail,
+  LogOut, Settings, ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
 import type { User as PrismaUser } from "@prisma/client";
 
 interface Props { user: PrismaUser; }
 
-const ADMIN_NAV = { href: "/admin",     label: "Admin",     icon: ShieldCheck };
-const DASHBOARD  = { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard };
 const INVITE     = { href: "/invite",    label: "Invite",    icon: Mail };
 const SETTINGS   = { href: "/settings",  label: "Settings",  icon: Settings };
 
@@ -62,9 +60,9 @@ export function AppSidebar({ user }: Props) {
     textDecoration:"none", transition:"all 0.12s",
   });
 
-  const plainLinks = user.role === "founder" || user.role === "admin"
-    ? [ADMIN_NAV, DASHBOARD, INVITE, SETTINGS]
-    : [DASHBOARD, INVITE, SETTINGS];
+  const isAdmin = user.role === "founder" || user.role === "admin";
+  const DASHBOARD = { href: isAdmin ? "/admin" : "/dashboard", label: "Dashboard", icon: LayoutDashboard };
+  const plainLinks = [DASHBOARD, INVITE, SETTINGS];
 
   return (
     <aside style={{
@@ -87,7 +85,7 @@ export function AppSidebar({ user }: Props) {
       <nav style={{flex:1,padding:"14px 10px",overflowY:"auto"}}>
 
         {/* Flat links above Vault */}
-        {plainLinks.slice(0, user.role === "founder" || user.role === "admin" ? 2 : 1).map(({ href, label, icon: Icon }) => {
+        {plainLinks.slice(0, 1).map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link key={href} href={href} style={linkStyle(active)}>
@@ -144,7 +142,7 @@ export function AppSidebar({ user }: Props) {
         )}
 
         {/* Flat links below Vault */}
-        {plainLinks.slice(user.role === "founder" || user.role === "admin" ? 2 : 1).map(({ href, label, icon: Icon }) => {
+        {plainLinks.slice(1).map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link key={href} href={href} style={linkStyle(active)}>
