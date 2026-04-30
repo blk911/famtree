@@ -4,7 +4,13 @@
 import { Resend } from "resend";
 import type { User, Invite } from "@prisma/client";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy — never instantiated at build/import time, only when actually sending
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key || key === "re_skip") return null;
+  return new Resend(key);
+}
+
 const FROM = process.env.EMAIL_FROM ?? "FamTree <noreply@famtree.app>";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -88,6 +94,8 @@ export async function sendInviteEmail(
 </body>
 </html>`;
 
+  const resend = getResend();
+  if (!resend) { console.log(`[email:skip] invite → ${invite.recipientEmail}`); return; }
   await resend.emails.send({
     from: FROM,
     to: invite.recipientEmail,
@@ -100,6 +108,8 @@ export async function sendInviteEmail(
 export async function sendWelcomeEmail(user: User): Promise<void> {
   const loginUrl = `${APP_URL}/login`;
 
+  const resend = getResend();
+  if (!resend) { console.log(`[email:skip] welcome → ${user.email}`); return; }
   await resend.emails.send({
     from: FROM,
     to: user.email,
