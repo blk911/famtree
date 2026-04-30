@@ -1,4 +1,4 @@
-export type ContactItem = {
+﻿export type ContactItem = {
   id: string;
   label: string;
   value: string;
@@ -11,7 +11,7 @@ export const LGENX_NET_CONTACT_ITEMS: ContactItem[] = [
     id: "admin",
     label: "Admin",
     value: "Ray Donovan",
-    note: "FamTree support contact",
+    note: "AmiHuman support contact",
   },
   {
     id: "whatsapp",
@@ -34,3 +34,4 @@ export const LGENX_NET_CONTACT_ITEMS: ContactItem[] = [
     note: "Private family network headquarters",
   },
 ];
+

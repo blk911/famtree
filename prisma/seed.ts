@@ -1,4 +1,4 @@
-// prisma/seed.ts
+﻿// prisma/seed.ts
 // Run: npm run db:seed
 
 import { PrismaClient } from "@prisma/client";
@@ -13,10 +13,10 @@ async function main() {
   const passwordHash = await bcrypt.hash("password123", 12);
 
   const founder = await prisma.user.upsert({
-    where: { email: "founder@famtree.test" },
+    where: { email: "founder@AmiHuman.test" },
     update: {},
     create: {
-      email: "founder@famtree.test",
+      email: "founder@AmiHuman.test",
       passwordHash,
       firstName: "Jane",
       lastName: "Smith",
@@ -40,3 +40,4 @@ async function main() {
 main()
   .catch((e) => { console.error(e); process.exit(1); })
   .finally(() => prisma.$disconnect());
+

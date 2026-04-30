@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, MouseEvent } from "react";
@@ -248,10 +248,10 @@ export function HomeClient() {
 
         <nav style={{ position:"relative", zIndex:3, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"11px" }}>
-            <div style={{ width:40, height:40, borderRadius:"12px", background:"rgba(255,255,255,0.18)", border:"1px solid rgba(255,255,255,0.35)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <TreePine style={{ width:22, height:22, color:"white" }} />
+            <div style={{ width:40, height:40, borderRadius:"12px", overflow:"hidden", border:"1px solid rgba(255,255,255,0.35)" }}>
+              <img src="/images/amihuman-logo.png" alt="AmiHuman" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
             </div>
-            <span style={{ fontSize:"20px", fontWeight:900, letterSpacing:"-0.5px" }}>FamTree</span>
+            <span style={{ fontSize:"20px", fontWeight:900, letterSpacing:"-0.5px" }}>AmiHuman</span>
           </div>
           <div style={{ display:"flex", gap:"10px" }}>
             <button onClick={() => setFaqOpen(true)} style={{ border:"1px solid rgba(255,255,255,0.4)", borderRadius:"999px", background:"rgba(255,255,255,0.12)", backdropFilter:"blur(6px)", color:"white", fontSize:"14px", fontWeight:700, padding:"9px 22px", cursor:"pointer" }}>FAQ</button>
@@ -350,7 +350,7 @@ export function HomeClient() {
           </div>
         </div>
         <footer style={{ textAlign:"center", fontSize:"12px", color:"#9ca3af", marginTop:"64px" }}>
-          Â© 2025 FamTree Â· Private family network Â· No ads Â· No data sold Â· Ever.
+          Â© 2025 AmiHuman Â· Private family network Â· No ads Â· No data sold Â· Ever.
         </footer>
       </section>
 
@@ -397,7 +397,7 @@ export function HomeClient() {
               <>
                 <div style={{ textAlign:"center", marginBottom:"26px" }}>
                   <h2 style={{ fontSize:"26px", fontWeight:900, color:"#1e1b4b", margin:"0 0 8px" }}>Do you have an invite?</h2>
-                  <p style={{ fontSize:"14px", color:"#6b7280", lineHeight:1.6, margin:0 }}>FamTree is invite-only â€” every member is personally vouched for.</p>
+                  <p style={{ fontSize:"14px", color:"#6b7280", lineHeight:1.6, margin:0 }}>AmiHuman is invite-only â€” every member is personally vouched for.</p>
                 </div>
                 <div className="join-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"14px" }}>
                   <button onClick={openInvite} style={{ textAlign:"left", background:"#faf5ff", border:"2px solid #e9d5ff", borderRadius:"16px", padding:"22px", cursor:"pointer" }}>
@@ -656,5 +656,6 @@ export function HomeClient() {
     </main>
   );
 }
+
 
 

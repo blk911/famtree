@@ -1,4 +1,4 @@
-// app/(auth)/layout.tsx
+﻿// app/(auth)/layout.tsx
 
 import Link from "next/link";
 import { TreePine } from "lucide-react";
@@ -23,7 +23,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div style={{ width:34, height:34, borderRadius:"10px", background:"rgba(255,255,255,0.15)", border:"1px solid rgba(255,255,255,0.3)", backdropFilter:"blur(6px)", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <TreePine style={{ width:18, height:18, color:"white" }} />
           </div>
-          <span style={{ fontSize:"17px", fontWeight:800, color:"white", letterSpacing:"-0.3px" }}>FamTree</span>
+          <span style={{ fontSize:"17px", fontWeight:800, color:"white", letterSpacing:"-0.3px" }}>AmiHuman</span>
         </Link>
       </nav>
 
@@ -36,3 +36,4 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     </div>
   );
 }
+

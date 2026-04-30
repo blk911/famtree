@@ -76,11 +76,11 @@ export function AppSidebar({ user }: Props) {
 
       {/* Brand */}
       <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"24px 20px 20px",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
-        <div style={{width:"38px",height:"38px",borderRadius:"11px",background:"linear-gradient(135deg,#e96c50,#f4a261)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          <TreePine style={{width:"21px",height:"21px",color:"white"}} />
+        <div style={{width:"38px",height:"38px",borderRadius:"11px",overflow:"hidden",flexShrink:0}}>
+          <img src="/images/amihuman-logo.png" alt="AmiHuman" style={{width:"100%",height:"100%",objectFit:"cover"}} />
         </div>
         <div>
-          <div style={{fontSize:"18px",fontWeight:700,color:"white",letterSpacing:"-0.3px"}}>FamTree</div>
+          <div style={{fontSize:"18px",fontWeight:700,color:"white",letterSpacing:"-0.3px"}}>AmiHuman</div>
           <div style={{fontSize:"11px",color:"rgba(255,255,255,0.38)",marginTop:"1px"}}>Private family network</div>
         </div>
       </div>
@@ -188,3 +188,4 @@ export function AppSidebar({ user }: Props) {
     </aside>
   );
 }
+

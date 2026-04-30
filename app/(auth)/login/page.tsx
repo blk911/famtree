@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // app/(auth)/login/page.tsx
 
 import { useState } from "react";
@@ -48,8 +48,8 @@ export default function LoginPage() {
       display:"flex",alignItems:"center",justifyContent:"center",padding:"32px",position:"relative",
     }}>
       <style>{`
-        .famtree-login-input:focus { border-color: #f59e0b !important; box-shadow: 0 0 0 3px rgba(245,158,11,0.14); }
-        .famtree-login-submit:hover { opacity: 0.9; }
+        .AmiHuman-login-input:focus { border-color: #f59e0b !important; box-shadow: 0 0 0 3px rgba(245,158,11,0.14); }
+        .AmiHuman-login-submit:hover { opacity: 0.9; }
       `}</style>
       <Link href="/" style={{position:"absolute",top:"24px",left:"24px",color:"rgba(255,255,255,0.82)",fontSize:"14px",fontWeight:600,textDecoration:"none"}}>
         ← Back to home
@@ -64,7 +64,7 @@ export default function LoginPage() {
             <div style={{width:"54px",height:"54px",borderRadius:"16px",background:"linear-gradient(135deg,#f59e0b,#f43f5e)",display:"flex",alignItems:"center",justifyContent:"center"}}>
               <TreePine style={{width:"29px",height:"29px",color:"white"}} />
             </div>
-            <div style={{fontSize:"22px",fontWeight:800,color:"#0f1729",letterSpacing:"-0.4px"}}>FamTree</div>
+            <div style={{fontSize:"22px",fontWeight:800,color:"#0f1729",letterSpacing:"-0.4px"}}>AmiHuman</div>
           </div>
           <h1 className="tracking-tight" style={{fontSize:"28px",fontWeight:800,color:"#0f1729",margin:"0 0 6px"}}>Welcome back</h1>
           <p className="text-sm" style={{color:"#78716c",margin:0}}>Sign in to your family tree</p>
@@ -76,7 +76,7 @@ export default function LoginPage() {
           <div>
             <label className="field-label">Email</label>
             <input
-              className="field-input famtree-login-input"
+              className="field-input AmiHuman-login-input"
               type="email"
               placeholder="jane@example.com"
               value={email}
@@ -94,7 +94,7 @@ export default function LoginPage() {
             </div>
             <div className="relative">
               <input
-                className="field-input pr-10 famtree-login-input"
+                className="field-input pr-10 AmiHuman-login-input"
                 type={showPassword ? "text" : "password"}
                 placeholder="Your password"
                 value={password}
@@ -113,7 +113,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button type="submit" className="btn-primary w-full famtree-login-submit" disabled={loading} style={{
+          <button type="submit" className="btn-primary w-full AmiHuman-login-submit" disabled={loading} style={{
             height:"48px",background:"linear-gradient(135deg,#f59e0b,#f43f5e)",color:"white",
             fontWeight:700,borderRadius:"10px",fontSize:"15px",border:"none",
           }}>
@@ -131,3 +131,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-export type FaqItem = {
+﻿export type FaqItem = {
   id: string;
   question: string;
   answer: string[];
@@ -6,10 +6,10 @@ export type FaqItem = {
 
 export const LGENX_NET_FAQS: FaqItem[] = [
   {
-    id: "what-is-famtree",
-    question: "What is FamTree?",
+    id: "what-is-AmiHuman",
+    question: "What is AmiHuman?",
     answer: [
-      "FamTree is a private, invite-only family network.",
+      "AmiHuman is a private, invite-only family network.",
       "It's built for real relationships — not followers, not content, not algorithms.",
     ],
   },
@@ -18,7 +18,7 @@ export const LGENX_NET_FAQS: FaqItem[] = [
     question: "How is this different from Facebook or Instagram?",
     answer: [
       "Facebook and Instagram are public platforms driven by ads and algorithms.",
-      "FamTree is private by design — no ads, no algorithmic feeds, and no strangers.",
+      "AmiHuman is private by design — no ads, no algorithmic feeds, and no strangers.",
       "You only see the people you actually know and trust.",
     ],
   },
@@ -44,7 +44,7 @@ export const LGENX_NET_FAQS: FaqItem[] = [
     answer: [
       "A Trust Unit is formed when three people are mutually connected.",
       "It's not just a connection — it's a verified relationship triangle.",
-      "This is how FamTree builds a network based on real trust, not loose follows.",
+      "This is how AmiHuman builds a network based on real trust, not loose follows.",
     ],
   },
   {
@@ -52,7 +52,7 @@ export const LGENX_NET_FAQS: FaqItem[] = [
     question: "Why do Trust Units matter?",
     answer: [
       "They create accountability and authenticity.",
-      "On most platforms, anyone can follow anyone. On FamTree, relationships are confirmed, not assumed.",
+      "On most platforms, anyone can follow anyone. On AmiHuman, relationships are confirmed, not assumed.",
     ],
   },
   {
@@ -60,12 +60,12 @@ export const LGENX_NET_FAQS: FaqItem[] = [
     question: "Will I see ads?",
     answer: [
       "No.",
-      "FamTree does not run ads, track your behavior, or sell your data. Ever.",
+      "AmiHuman does not run ads, track your behavior, or sell your data. Ever.",
     ],
   },
   {
     id: "how-make-money",
-    question: "How does FamTree make money?",
+    question: "How does AmiHuman make money?",
     answer: [
       "Through subscriptions — not your data.",
       "You're the customer, not the product.",
@@ -119,7 +119,7 @@ export const LGENX_NET_FAQS: FaqItem[] = [
     answer: [
       "Not entirely — but it replaces what Facebook, Instagram, and TikTok don't do well:",
       "Private, trusted, family-level connection.",
-      "FamTree is for your inner circle — not the internet.",
+      "AmiHuman is for your inner circle — not the internet.",
     ],
   },
   {
@@ -128,7 +128,8 @@ export const LGENX_NET_FAQS: FaqItem[] = [
     answer: [
       "You do.",
       "Your photos, your connections, and your network are not mined, sold, or used to target you.",
-      "FamTree exists to serve your network, not extract from it.",
+      "AmiHuman exists to serve your network, not extract from it.",
     ],
   },
 ];
+
