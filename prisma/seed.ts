@@ -10,21 +10,21 @@ async function main() {
   console.log("🌱 Seeding database…");
 
   // Create founder
-  const passwordHash = await bcrypt.hash("password123", 12);
+  const passwordHash = await bcrypt.hash("whisper", 12);
 
   const founder = await prisma.user.upsert({
-    where: { email: "founder@AMIHUMAN.NET.test" },
+    where: { email: "admin@amihuman.net" },
     update: {},
     create: {
-      email: "founder@AMIHUMAN.NET.test",
+      email: "admin@amihuman.net",
       passwordHash,
-      firstName: "Jane",
-      lastName: "Smith",
+      firstName: "Admin",
+      lastName: "AMIHUMAN",
       role: "founder",
       emailVerified: true,
       profile: {
         create: {
-          bio: "Founder of this family tree. Welcome, everyone!",
+          bio: "Founder of AMIHUMAN.NET. Welcome, everyone!",
           familyRole: "parent",
           location: "Denver, CO",
           isPublicInTree: true,
@@ -33,7 +33,7 @@ async function main() {
     },
   });
 
-  console.log(`✅ Founder created: ${founder.email} / password123`);
+  console.log(`✅ Founder created: ${founder.email} / whisper`);
   console.log("🌳 Seed complete.");
 }
 
