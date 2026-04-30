@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
   const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
   const isAuthRoute = AUTH_ROUTES.some((p) => pathname.startsWith(p));
 
-  const token = request.cookies.get("famtree_session")?.value;
+  const token = request.cookies.get("AMIHUMAN.NET_session")?.value;
 
   let isAuthenticated = false;
   if (token) {
