@@ -11,10 +11,6 @@ const card = {
   boxShadow:"0 1px 4px rgba(0,0,0,0.05)",
 };
 
-const statCard = (color: string) => ({
-  ...card,
-  padding:"22px", borderTop:`4px solid ${color}`,
-});
 
 const isAdmin = (role: string) => role === "founder" || role === "admin";
 
@@ -65,12 +61,14 @@ export default async function AdminPage() {
         </Link>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"16px"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"12px"}}>
         {stats.map((stat) => (
-          <div key={stat.label} style={statCard(stat.color)}>
-            <div style={{fontSize:"32px",fontWeight:800,color:"#1c1917",lineHeight:1}}>{stat.value}</div>
-            <div style={{fontSize:"15px",fontWeight:700,color:"#1c1917",marginTop:"10px"}}>{stat.label}</div>
-            <div style={{fontSize:"13px",color:"#78716c",marginTop:"4px"}}>{stat.hint}</div>
+          <div key={stat.label} style={{...card, padding:"12px 16px", borderLeft:`4px solid ${stat.color}`}}>
+            <div style={{display:"flex",alignItems:"baseline",gap:"8px"}}>
+              <span style={{fontSize:"22px",fontWeight:800,color:"#1c1917",lineHeight:1}}>{stat.value}</span>
+              <span style={{fontSize:"13px",fontWeight:700,color:"#1c1917"}}>{stat.label}</span>
+            </div>
+            <div style={{fontSize:"12px",color:"#78716c",marginTop:"3px"}}>{stat.hint}</div>
           </div>
         ))}
       </div>
