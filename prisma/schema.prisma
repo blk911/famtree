@@ -23,6 +23,7 @@ model User {
   photoUrl      String?   // stored in /public/uploads or S3
   role          String    @default("member") // "founder" | "member"
   emailVerified Boolean   @default(false)
+  lastLoginAt   DateTime?                  // set on each login; prev session = "last seen" baseline
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Pencil } from "lucide-react";
 
 type HeroUser = {
   firstName: string;
@@ -68,13 +70,26 @@ export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: stri
         </div>
 
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"8px",flexShrink:0}}>
-          <div style={{width:"70px",height:"70px",borderRadius:"50%",overflow:"hidden",background:"rgba(255,255,255,0.24)",border:"3px solid rgba(255,255,255,0.78)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 10px 26px rgba(0,0,0,0.20)"}}>
-            {user.photoUrl ? (
-              <img src={user.photoUrl} alt={`${user.firstName} ${user.lastName}`} style={{width:"100%",height:"100%",objectFit:"cover"}} />
-            ) : (
-              <span style={{color:"white",fontWeight:900,fontSize:"20px"}}>{initials(user)}</span>
-            )}
+          {/* Avatar */}
+          <div style={{position:"relative"}}>
+            <div style={{width:"70px",height:"70px",borderRadius:"50%",overflow:"hidden",background:"rgba(255,255,255,0.24)",border:"3px solid rgba(255,255,255,0.78)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 10px 26px rgba(0,0,0,0.20)"}}>
+              {user.photoUrl ? (
+                <img src={user.photoUrl} alt={`${user.firstName} ${user.lastName}`} style={{width:"100%",height:"100%",objectFit:"cover"}} />
+              ) : (
+                <span style={{color:"white",fontWeight:900,fontSize:"20px"}}>{initials(user)}</span>
+              )}
+            </div>
+            {/* Edit icon */}
+            <Link href="/settings" title="Edit profile" style={{
+              position:"absolute", bottom:0, right:0,
+              width:"22px", height:"22px", borderRadius:"50%",
+              background:"white", display:"flex", alignItems:"center", justifyContent:"center",
+              boxShadow:"0 2px 8px rgba(0,0,0,0.25)", textDecoration:"none",
+            }}>
+              <Pencil style={{width:"11px",height:"11px",color:"#1c1917"}} />
+            </Link>
           </div>
+          {/* Name */}
           <span style={{fontSize:"12px",fontWeight:800,color:"white",textShadow:"0 1px 10px rgba(0,0,0,0.28)"}}>
             {user.firstName} {user.lastName}
           </span>

@@ -27,8 +27,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           position:"sticky", top:0, zIndex:30,
           boxShadow:"0 1px 8px rgba(0,0,0,0.04)",
         }}>
-          <div style={{ flex:1 }} />
-          {/* // Top bar — client component handles logout */}
+          {/* Top bar — name/pic left, logout right */}
           <TopBarUser user={user} />
         </div>
 

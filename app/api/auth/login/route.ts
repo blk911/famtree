@@ -34,7 +34,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    await setSessionCookie(user.id);
+    // Capture previous login time before overwriting it
+    const prevLoginAt = user.lastLoginAt;
+
+    await Promise.all([
+      setSessionCookie(user.id),
+      prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }),
+    ]);
 
     return NextResponse.json({
       success: true,
@@ -45,6 +51,7 @@ export async function POST(req: NextRequest) {
         lastName: user.lastName,
         role: user.role,
         photoUrl: user.photoUrl,
+        prevLoginAt: prevLoginAt?.toISOString() ?? null,
       },
     });
   } catch (err) {

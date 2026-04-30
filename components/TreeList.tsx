@@ -133,11 +133,13 @@ function LevelDivider({ depth, indent }: { depth: number; indent: number }) {
       marginLeft: indent, marginBottom: "10px", marginTop: isFounder ? 0 : "20px",
     }}>
       <span style={{
-        fontSize: "11px", fontWeight: 700, letterSpacing: "0.8px",
-        color: isFounder ? "#92400e" : depth === 1 ? "#15803d" : depth === 2 ? "#92400e" : "#78716c",
-        textTransform: "uppercase",
+        fontSize: isFounder ? "18px" : "11px",
+        fontWeight: isFounder ? 600 : 700,
+        letterSpacing: isFounder ? "-0.2px" : "0.8px",
+        color: isFounder ? "#1c1917" : depth === 1 ? "#15803d" : depth === 2 ? "#92400e" : "#78716c",
+        textTransform: isFounder ? "none" : "uppercase",
       }}>
-        {isFounder ? "Founder" : `Level ${depth}`}
+        {isFounder ? "My Family" : `Level ${depth}`}
       </span>
       <div style={{ flex: 1, height: 1, background: "#f0ede8" }} />
     </div>
