@@ -261,8 +261,8 @@ export function HomeClient() {
 
         <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", position:"relative", zIndex:3, paddingTop:"32px" }}>
           <div className="exclusivity-pill" style={{ display:"inline-flex", flexDirection:"column", alignItems:"center", gap:"5px", padding:"15px 30px", borderRadius:"999px", background:"rgba(255,255,255,0.16)", border:"1px solid rgba(255,255,255,0.38)", fontSize:"20px", fontWeight:900, letterSpacing:"0.04em", marginBottom:"24px", backdropFilter:"blur(8px)", boxShadow:"0 10px 34px rgba(0,0,0,0.22)", textTransform:"uppercase" }}>
-            <span>ðŸ”’ Invite-only Â· Relationship-first Â· Completely private</span>
-            <span style={{ fontSize:"13px", letterSpacing:"0.12em", color:"rgba(255,255,255,0.78)" }}>No ads Â· No bots Â· No data mining Â· Ever.</span>
+            <span>INVITATION ONLY &nbsp;|&nbsp; RELATIONSHIP-FIRST &nbsp;|&nbsp; COMPLETELY PRIVATE</span>
+            <span style={{ fontSize:"13px", letterSpacing:"0.12em", color:"rgba(255,255,255,0.78)" }}>NO ADS &nbsp;|&nbsp; NO BOTS &nbsp;|&nbsp; NO DATA MINING &nbsp;|&nbsp; EVER.</span>
           </div>
           <h1 className="hero-h" style={{ fontSize:"62px", fontWeight:900, lineHeight:1.03, letterSpacing:"-2.5px", margin:"0 0 18px", maxWidth:"720px", textShadow:"0 2px 24px rgba(0,0,0,0.2)" }}>
             Your Private<br />Family{" "}
@@ -656,4 +656,5 @@ export function HomeClient() {
     </main>
   );
 }
+
 
