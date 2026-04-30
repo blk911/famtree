@@ -76,8 +76,8 @@ export function AppSidebar({ user }: Props) {
 
       {/* Brand */}
       <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"24px 20px 20px",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
-        <div style={{width:"38px",height:"38px",borderRadius:"11px",overflow:"hidden",flexShrink:0}}>
-          <img src="/images/AMIHUMAN.NET-logo.png" alt="AMIHUMAN.NET" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+        <div style={{height:"75px",flexShrink:0}}>
+          <img src="/images/AMIHUMAN.NET-logo.png" alt="AMIHUMAN.NET" style={{height:"75px",width:"auto",display:"block"}} />
         </div>
         <div>
           <div style={{fontSize:"18px",fontWeight:700,color:"white",letterSpacing:"-0.3px"}}>AMIHUMAN.NET</div>
