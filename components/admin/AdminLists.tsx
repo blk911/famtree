@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Ban } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -143,11 +144,13 @@ function InfoRow({ label, children }: { label: string; children: React.ReactNode
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function AdminLists({ members: initialMembers, invites, waitlist }: Props) {
+export function AdminLists({ members: initialMembers, invites: initialInvites, waitlist }: Props) {
   const [members, setMembers] = useState<Member[]>(initialMembers);
+  const [invites, setInvites] = useState<Invite[]>(initialInvites);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [selectedWaitlist, setSelectedWaitlist] = useState<WaitlistPerson | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null); // memberId
+  const [inviteActioning, setInviteActioning] = useState<string | null>(null); // inviteId
 
   // close modals on Escape
   useEffect(() => {
@@ -158,6 +161,22 @@ export function AdminLists({ members: initialMembers, invites, waitlist }: Props
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedMember, selectedWaitlist]);
+
+  // ─── Handle invite cancel ────────────────────────────────────────────────────
+
+  const handleInviteCancel = async (inviteId: string) => {
+    setInviteActioning(inviteId);
+    try {
+      const res = await fetch(`/api/invite/manage/${inviteId}`, { method: "PATCH" });
+      if (res.ok) {
+        setInvites((prev) =>
+          prev.map((inv) => inv.id === inviteId ? { ...inv, status: "CANCELLED" } : inv)
+        );
+      }
+    } finally {
+      setInviteActioning(null);
+    }
+  };
 
   // ─── Handle member status action ────────────────────────────────────────────
 
@@ -297,6 +316,8 @@ export function AdminLists({ members: initialMembers, invites, waitlist }: Props
           ) : invites.map((invite, index) => {
             const statusColors = INVITE_STATUS_COLORS[invite.status] ?? INVITE_STATUS_COLORS.PENDING;
             const isLast = index === invites.length - 1;
+            const isPending = invite.status === "PENDING";
+            const loading = inviteActioning === invite.id;
             return (
               <div
                 key={invite.id}
@@ -304,10 +325,12 @@ export function AdminLists({ members: initialMembers, invites, waitlist }: Props
                   display:"flex", alignItems:"center", gap:"12px",
                   padding:"10px 20px",
                   borderBottom: isLast ? "none" : "1px solid #f5f4f0",
+                  opacity: loading ? 0.6 : 1,
+                  transition:"opacity 0.15s",
                 }}
               >
                 {/* Recipient email */}
-                <div style={{...emailStyle, minWidth:"180px", flex:"none", fontWeight:600, color:"#1c1917"}}>
+                <div style={{...emailStyle, minWidth:"170px", flex:"none", fontWeight:600, color:"#1c1917"}}>
                   {invite.recipientEmail}
                 </div>
 
@@ -321,6 +344,24 @@ export function AdminLists({ members: initialMembers, invites, waitlist }: Props
 
                 {/* Status badge */}
                 <StatusBadge label={invite.status} colors={statusColors} />
+
+                {/* Cancel button — pending only */}
+                {isPending && (
+                  <button
+                    disabled={loading}
+                    onClick={() => handleInviteCancel(invite.id)}
+                    style={{
+                      display:"flex", alignItems:"center", gap:"4px",
+                      background:"#fef2f2", color:"#dc2626",
+                      border:"1px solid #fecaca", borderRadius:"6px",
+                      fontSize:"11px", fontWeight:700,
+                      padding:"3px 8px", cursor:"pointer", flexShrink:0,
+                    }}
+                  >
+                    <Ban style={{width:"11px",height:"11px"}} />
+                    {loading ? "…" : "Cancel"}
+                  </button>
+                )}
               </div>
             );
           })}

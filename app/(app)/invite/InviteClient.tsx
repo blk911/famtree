@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Mail, Send, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, X, PauseCircle, Trash2 } from "lucide-react";
+import { Mail, Send, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, X, Ban, Trash2 } from "lucide-react";
 import TrustUnitModal from "@/components/invite/TrustUnitModal";
 
 interface Invite {
@@ -568,15 +568,15 @@ export default function InviteClient({ me }: { me: Me }) {
 
                     {/* Actions */}
                     <div style={{ display:"flex", gap:"6px", flexShrink:0 }}>
-                      {/* Suspend — pending only */}
+                      {/* Cancel — pending only */}
                       {isPending && (
                         <button
                           onClick={() => handleCancel(invite.id)}
                           disabled={isActioning}
-                          style={{ display:"flex", alignItems:"center", gap:"5px", padding:"5px 10px", border:"1px solid #fde68a", borderRadius:"8px", background:"#fffbeb", color:"#b45309", fontSize:"12px", fontWeight:700, cursor:"pointer" }}
+                          style={{ display:"flex", alignItems:"center", gap:"5px", padding:"5px 10px", border:"1px solid #fecaca", borderRadius:"8px", background:"#fef2f2", color:"#dc2626", fontSize:"12px", fontWeight:700, cursor:"pointer" }}
                         >
-                          <PauseCircle style={{ width:13, height:13 }} />
-                          {isActioning ? "…" : "Suspend"}
+                          <Ban style={{ width:13, height:13 }} />
+                          {isActioning ? "…" : "Cancel"}
                         </button>
                       )}
 
