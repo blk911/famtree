@@ -27,6 +27,7 @@ export function AppShell({ user, coverUrl, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [annState, setAnnState] = useState<AnnState>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalShowVoice, setModalShowVoice] = useState(false);
   const [bannerVisible, setBannerVisible] = useState(false);
   const pathname = usePathname();
 
@@ -55,6 +56,9 @@ export function AppShell({ user, coverUrl, children }: Props) {
         const sessionKey = `ann_shown_${data.announcement.id}`;
         if (!sessionStorage.getItem(sessionKey)) {
           sessionStorage.setItem(sessionKey, "1");
+          // Capture BEFORE incrementing — this is what the modal needs to know
+          const isFirstEverView = viewCount === 0;
+          setModalShowVoice(isFirstEverView);
           // Log the view in background
           fetch(`/api/announcement/${data.announcement.id}/view`, {
             method: "POST",
@@ -111,6 +115,7 @@ export function AppShell({ user, coverUrl, children }: Props) {
         <SiteAnnouncementModal
           announcement={annState.announcement}
           viewCount={annState.viewCount}
+          showVoice={modalShowVoice}
           onClose={handleModalClose}
           onDismissForever={handleDismissForever}
         />

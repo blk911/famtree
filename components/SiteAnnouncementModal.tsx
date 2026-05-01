@@ -5,16 +5,18 @@ import { Megaphone, X, Play, Pause, Volume2 } from "lucide-react";
 
 type Announcement = { id: string; title: string; body: string };
 
-const VOICE_SRC = "/uploads/AIH%20voice%20intro%201.mp3";
+const VOICE_SRC = "/audio/aih-voice-intro.mp3";
 
 export function SiteAnnouncementModal({
   announcement,
   viewCount,
+  showVoice = false,
   onClose,
   onDismissForever,
 }: {
   announcement: Announcement;
   viewCount: number;
+  showVoice?: boolean;
   onClose: () => void;
   onDismissForever: () => void;
 }) {
@@ -24,15 +26,13 @@ export function SiteAnnouncementModal({
   const [duration, setDuration] = useState(0);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
 
-  const isFirstView = viewCount === 0;
-
-  // Attempt autoplay on first view
+  // Attempt autoplay when voice player is shown
   useEffect(() => {
-    if (!isFirstView || !audioRef.current) return;
+    if (!showVoice || !audioRef.current) return;
     audioRef.current.play()
       .then(() => setPlaying(true))
       .catch(() => setAutoplayBlocked(true)); // browser blocked it — user must tap play
-  }, [isFirstView]);
+  }, [showVoice]);
 
   // Stop audio when modal unmounts
   useEffect(() => {
@@ -125,7 +125,7 @@ export function SiteAnnouncementModal({
         </div>
 
         {/* ── Voice player (first view only) ────────────────────────────────── */}
-        {isFirstView && (
+        {showVoice && (
           <div style={{
             background: "linear-gradient(180deg, #0f1f3d 0%, #1a1a2e 100%)",
             padding: "18px 20px",
