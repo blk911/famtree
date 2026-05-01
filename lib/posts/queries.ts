@@ -50,9 +50,22 @@ export async function getProfilePosts(profileUserId: string) {
 }
 
 export async function getPrivateFeedPosts(viewerId: string) {
-  return prisma.post.findMany({
-    where: { visibility: { some: { userId: viewerId } } },
-    include: postInclude,
-    orderBy: { createdAt: "desc" },
-  });
+  // Posts where viewer is in the visibility list (received)
+  // PLUS the viewer's own posts that have any visibility restriction (sent)
+  const [received, sent] = await Promise.all([
+    prisma.post.findMany({
+      where: { visibility: { some: { userId: viewerId } } },
+      include: postInclude,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.post.findMany({
+      where: {
+        profile: { userId: viewerId },
+        visibility: { some: {} },          // has at least one visibility record
+      },
+      include: postInclude,
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+  return dedupePosts([...received, ...sent]);
 }
