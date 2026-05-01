@@ -169,9 +169,8 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
     try {
       const res = await fetch(`/api/invite/manage/${inviteId}`, { method: "PATCH" });
       if (res.ok) {
-        setInvites((prev) =>
-          prev.map((inv) => inv.id === inviteId ? { ...inv, status: "CANCELLED" } : inv)
-        );
+        // Hard delete — remove from view entirely
+        setInvites((prev) => prev.filter((inv) => inv.id !== inviteId));
       }
     } finally {
       setInviteActioning(null);

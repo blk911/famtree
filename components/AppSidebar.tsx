@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, User, Mail,
-  LogOut, Settings, ChevronDown,
+  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText,
 } from "lucide-react";
 import { useState } from "react";
 import type { User as PrismaUser } from "@prisma/client";
@@ -23,12 +23,21 @@ const VAULT_ITEMS = [
   { href: "/tree",    label: "Family Tree" },
 ];
 
+// Admin sub-items
+const ADMIN_ITEMS = [
+  { href: "/admin",          label: "Dashboard" },
+  { href: "/admin/activity", label: "Activity Log" },
+];
+
 export function AppSidebar({ user }: Props) {
   const pathname = usePathname();
   const router   = useRouter();
 
   const vaultActive = pathname.startsWith("/family-vault") || pathname === "/profile" || pathname.startsWith("/profile/") || pathname === "/tree";
   const [vaultOpen, setVaultOpen] = useState(vaultActive);
+
+  const adminActive = pathname === "/admin" || pathname.startsWith("/admin/");
+  const [adminOpen, setAdminOpen] = useState(adminActive);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -61,8 +70,9 @@ export function AppSidebar({ user }: Props) {
   });
 
   const isAdmin = user.role === "founder" || user.role === "admin";
-  const DASHBOARD = { href: isAdmin ? "/admin" : "/dashboard", label: "Dashboard", icon: LayoutDashboard };
-  const plainLinks = [DASHBOARD, INVITE, SETTINGS];
+  const DASHBOARD = { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard };
+  // Admins get the Admin accordion instead of a plain Dashboard link
+  const plainLinks = isAdmin ? [INVITE, SETTINGS] : [DASHBOARD, INVITE, SETTINGS];
 
   return (
     <aside style={{
@@ -84,16 +94,64 @@ export function AppSidebar({ user }: Props) {
       {/* Navigation */}
       <nav style={{flex:1,padding:"14px 10px",overflowY:"auto"}}>
 
-        {/* Flat links above Vault */}
-        {plainLinks.slice(0, 1).map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
-          return (
-            <Link key={href} href={href} style={linkStyle(active)}>
-              <Icon style={{width:"18px",height:"18px",flexShrink:0}} />
-              {label}
-            </Link>
-          );
-        })}
+        {/* Non-admin Dashboard link (admins get the accordion above) */}
+        {!isAdmin && (
+          <Link href="/dashboard" style={linkStyle(pathname === "/dashboard")}>
+            <LayoutDashboard style={{width:"18px",height:"18px",flexShrink:0}} />
+            Dashboard
+          </Link>
+        )}
+
+        {/* Admin accordion — admins/founders only */}
+        {isAdmin && (
+          <>
+            <button
+              onClick={() => {
+                if (!adminActive) {
+                  router.push("/admin");
+                  setAdminOpen(true);
+                  return;
+                }
+                setAdminOpen((v) => !v);
+              }}
+              style={{
+                ...linkStyle(adminActive),
+                width:"100%",
+                background: adminActive
+                  ? "linear-gradient(135deg,rgba(233,108,80,0.75),rgba(244,162,97,0.55))"
+                  : "transparent",
+                border: adminActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
+                cursor:"pointer",
+              }}
+            >
+              <ShieldCheck style={{width:"18px",height:"18px",flexShrink:0}} />
+              <span style={{flex:1,textAlign:"left"}}>Admin</span>
+              <ChevronDown style={{
+                width:"15px",height:"15px",flexShrink:0,
+                transform: adminOpen ? "rotate(180deg)" : "rotate(0deg)",
+                transition:"transform 0.2s",
+              }} />
+            </button>
+
+            {adminOpen && (
+              <div style={{marginBottom:"3px"}}>
+                {ADMIN_ITEMS.map(({ href, label }) => {
+                  const active = pathname === href;
+                  return (
+                    <Link key={href} href={href} style={subLinkStyle(active)}>
+                      <span style={{
+                        width:"5px",height:"5px",borderRadius:"50%",flexShrink:0,
+                        background: active ? "white" : "rgba(255,255,255,0.3)",
+                      }} />
+                      {label === "Activity Log" && <ScrollText style={{width:"12px",height:"12px",flexShrink:0,opacity:0.7}} />}
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
 
         {/* Family Vault accordion */}
         <button
@@ -141,8 +199,8 @@ export function AppSidebar({ user }: Props) {
           </div>
         )}
 
-        {/* Flat links below Vault */}
-        {plainLinks.slice(1).map(({ href, label, icon: Icon }) => {
+        {/* Flat links below Vault — Invite + Settings for everyone */}
+        {[INVITE, SETTINGS].map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link key={href} href={href} style={linkStyle(active)}>

@@ -307,6 +307,20 @@ model Waitlist {
 }
 
 // ─────────────────────────────────────────────
+// ACTIVITY LOG  (admin audit trail)
+// ─────────────────────────────────────────────
+model ActivityLog {
+  id          String   @id @default(cuid())
+  actorId     String                          // who performed the action
+  actorName   String                          // snapshot — survives actor deletion
+  action      String                          // e.g. "invite.cancel" | "member.suspend"
+  detail      String                          // human-readable one-liner
+  createdAt   DateTime @default(now())
+
+  @@map("activity_logs")
+}
+
+// ─────────────────────────────────────────────
 // SESSIONS  (simple JWT refresh tracking)
 // ─────────────────────────────────────────────
 model Session {

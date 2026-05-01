@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { logActivity } from "@/lib/activity/log";
 
 const ALLOWED_STATUSES = ["active", "suspended", "archived", "blocked"] as const;
 type AllowedStatus = typeof ALLOWED_STATUSES[number];
@@ -27,7 +28,10 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Founders cannot be suspended/blocked/archived by anyone
-    const target = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    const target = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, firstName: true, lastName: true, email: true },
+    });
     if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
     if (target.role === "founder" && status !== "active") {
       return NextResponse.json({ error: "Cannot change founder status" }, { status: 403 });
@@ -37,6 +41,13 @@ export async function PATCH(req: NextRequest) {
       where: { id: userId },
       data: { status },
       select: { id: true, status: true },
+    });
+
+    await logActivity({
+      actorId:   caller.id,
+      actorName: `${caller.firstName} ${caller.lastName}`,
+      action:    `member.${status}`,
+      detail:    `Set ${target.firstName} ${target.lastName} (${target.email}) to ${status}`,
     });
 
     return NextResponse.json({ success: true, user: updated });

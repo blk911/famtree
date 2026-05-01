@@ -171,8 +171,11 @@ export default function InviteClient({ me }: { me: Me }) {
 
   const handleCancel = async (id: string) => {
     setActioning(id);
-    await fetch(`/api/invite/manage/${id}`, { method: "PATCH" });
-    await loadInvites();
+    const res = await fetch(`/api/invite/manage/${id}`, { method: "PATCH" });
+    if (res.ok) {
+      // Hard delete — remove from list immediately
+      setInvites((prev) => prev.filter((inv) => inv.id !== id));
+    }
     setActioning(null);
   };
 
