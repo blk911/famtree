@@ -104,6 +104,54 @@ export async function sendInviteEmail(
   });
 }
 
+// ─── Password reset email ─────────────────────────────────────
+export async function sendPasswordResetEmail(
+  email: string,
+  firstName: string,
+  token: string,
+): Promise<void> {
+  const resetUrl = `${APP_URL}/reset-password?token=${token}`;
+
+  const resend = getResend();
+  if (!resend) { console.log(`[email:skip] password-reset → ${email}`); return; }
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: `Reset your AMIHUMAN.NET password`,
+    html: `
+<!DOCTYPE html>
+<html>
+<body style="font-family:-apple-system,sans-serif;background:#f5f4f0;margin:0;padding:40px 0;">
+  <table width="480" cellpadding="0" cellspacing="0" style="margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e4e0;">
+    <tr><td style="background:#1a1a1a;padding:28px 40px;text-align:center;">
+      <span style="color:#fff;font-size:22px;font-weight:600;">🌳 AMIHUMAN.NET</span>
+    </td></tr>
+    <tr><td style="padding:40px;">
+      <h1 style="margin:0 0 12px;font-size:20px;color:#1a1a1a;">Reset your password</h1>
+      <p style="color:#666;font-size:15px;line-height:1.6;margin:0 0 28px;">
+        Hi ${firstName}, we received a request to reset your password. Click the button below — this link expires in <strong>1 hour</strong>.
+      </p>
+      <div style="text-align:center;margin:0 0 28px;">
+        <a href="${resetUrl}" style="display:inline-block;background:#f59e0b;color:#fff;
+           font-size:15px;font-weight:700;padding:14px 36px;border-radius:10px;text-decoration:none;">
+          Reset my password →
+        </a>
+      </div>
+      <div style="background:#f9f8f5;border-radius:8px;padding:14px 16px;">
+        <p style="margin:0;font-size:13px;color:#888;line-height:1.5;">
+          🔒 If you didn't request this, you can safely ignore this email. Your password won't change.
+        </p>
+      </div>
+    </td></tr>
+    <tr><td style="padding:20px 40px;border-top:1px solid #f0f0f0;text-align:center;">
+      <p style="margin:0;font-size:12px;color:#bbb;">AMIHUMAN.NET &middot; Private family network</p>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  });
+}
+
 // ─── Welcome email (after identity verified) ─────────────────
 export async function sendWelcomeEmail(user: User): Promise<void> {
   const loginUrl = `${APP_URL}/login`;

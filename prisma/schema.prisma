@@ -307,6 +307,20 @@ model Waitlist {
 }
 
 // ─────────────────────────────────────────────
+// PASSWORD RESET TOKENS
+// ─────────────────────────────────────────────
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique @default(uuid())
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("password_reset_tokens")
+}
+
+// ─────────────────────────────────────────────
 // ACTIVITY LOG  (admin audit trail)
 // ─────────────────────────────────────────────
 model ActivityLog {
