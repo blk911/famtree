@@ -75,7 +75,7 @@ export function AppShell({ user, coverUrl, children }: Props) {
         </div>
 
         {/* Page content */}
-        <div className="app-content-pad" style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <div className="app-content-pad" style={{ maxWidth: "900px", margin: "0 auto" }}>
           <AppPageHero
             user={{
               firstName: user.firstName,
