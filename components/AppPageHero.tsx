@@ -56,15 +56,15 @@ export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: stri
         }}
       />
 
-      <div style={{position:"relative",zIndex:1,padding:"28px 30px",display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:"20px",minHeight:"150px"}}>
+      <div className="app-hero-inner" style={{position:"relative",zIndex:1,padding:"28px 30px",display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:"20px",minHeight:"150px"}}>
         <div>
           <p style={{fontSize:"11px",fontWeight:900,letterSpacing:"0.16em",textTransform:"uppercase",color:"rgba(255,255,255,0.72)",marginBottom:"8px"}}>
             AMIHUMAN.NET
           </p>
-          <h1 style={{fontSize:"32px",fontWeight:900,letterSpacing:"-0.7px",color:"white",margin:0,textShadow:"0 2px 18px rgba(0,0,0,0.22)"}}>
+          <h1 className="app-hero-title" style={{fontSize:"32px",fontWeight:900,letterSpacing:"-0.7px",color:"white",margin:0,textShadow:"0 2px 18px rgba(0,0,0,0.22)"}}>
             {copy.title}
           </h1>
-          <p style={{fontSize:"14px",color:"rgba(255,255,255,0.82)",marginTop:"6px",maxWidth:"520px"}}>
+          <p className="app-hero-subtitle" style={{fontSize:"14px",color:"rgba(255,255,255,0.82)",marginTop:"6px",maxWidth:"520px"}}>
             {copy.subtitle}
           </p>
         </div>
@@ -72,7 +72,7 @@ export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: stri
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"8px",flexShrink:0}}>
           {/* Avatar */}
           <div style={{position:"relative"}}>
-            <div style={{width:"70px",height:"70px",borderRadius:"50%",overflow:"hidden",background:"rgba(255,255,255,0.24)",border:"3px solid rgba(255,255,255,0.78)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 10px 26px rgba(0,0,0,0.20)"}}>
+            <div className="app-hero-avatar-wrap" style={{width:"70px",height:"70px",borderRadius:"50%",overflow:"hidden",background:"rgba(255,255,255,0.24)",border:"3px solid rgba(255,255,255,0.78)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 10px 26px rgba(0,0,0,0.20)"}}>
               {user.photoUrl ? (
                 <img src={user.photoUrl} alt={`${user.firstName} ${user.lastName}`} style={{width:"100%",height:"100%",objectFit:"cover"}} />
               ) : (
@@ -90,7 +90,7 @@ export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: stri
             </Link>
           </div>
           {/* Name */}
-          <span style={{fontSize:"12px",fontWeight:800,color:"white",textShadow:"0 1px 10px rgba(0,0,0,0.28)"}}>
+          <span className="app-hero-name" style={{fontSize:"12px",fontWeight:800,color:"white",textShadow:"0 1px 10px rgba(0,0,0,0.28)"}}>
             {user.firstName} {user.lastName}
           </span>
         </div>

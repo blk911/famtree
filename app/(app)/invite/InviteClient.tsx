@@ -386,8 +386,8 @@ export default function InviteClient({ me }: { me: Me }) {
 
       <div style={{ display:"flex", flexDirection:"column", gap:"32px" }}>
 
-        {/* Two-column grid */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"28px", alignItems:"start" }}>
+        {/* Two-column grid — stacks to 1-col on mobile */}
+        <div className="invite-two-col">
 
           {/* LEFT: compose-as-preview */}
           <div>

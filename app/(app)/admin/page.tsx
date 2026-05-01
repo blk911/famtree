@@ -68,7 +68,7 @@ export default async function AdminPage() {
         </Link>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"12px"}}>
+      <div className="admin-stats-grid">
         {stats.map((stat) => (
           <div key={stat.label} style={{...card, padding:"12px 16px", borderLeft:`4px solid ${stat.color}`}}>
             <div style={{display:"flex",alignItems:"baseline",gap:"8px"}}>

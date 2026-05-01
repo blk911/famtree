@@ -149,7 +149,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
 
   return (
     <div className="space-y-5">
-      <div className="flex items-end gap-3 border-b border-stone-200">
+      <div className="feed-tabs-bar flex items-end gap-3 border-b border-stone-200">
         <button
           type="button"
           onClick={() => setComposerOpen((value) => !value)}

@@ -10,7 +10,7 @@ import {
 import { useState } from "react";
 import type { User as PrismaUser } from "@prisma/client";
 
-interface Props { user: PrismaUser; }
+interface Props { user: PrismaUser; open?: boolean; }
 
 const INVITE = { href: "/invite", label: "Invite", icon: Mail };
 
@@ -28,7 +28,7 @@ const SETTINGS_ADMIN_ITEMS = [
   { href: "/admin/activity",  label: "Activity Log",  icon: ScrollText },
 ];
 
-export function AppSidebar({ user }: Props) {
+export function AppSidebar({ user, open = false }: Props) {
   const pathname = usePathname();
   const router   = useRouter();
 
@@ -71,12 +71,15 @@ export function AppSidebar({ user }: Props) {
   });
 
   return (
-    <aside style={{
-      position:"fixed", left:0, top:0, height:"100%", width:"260px",
-      background:"linear-gradient(180deg,#1a1a2e 0%,#16213e 55%,#0f3460 100%)",
-      display:"flex", flexDirection:"column", zIndex:40,
-      boxShadow:"4px 0 24px rgba(0,0,0,0.18)",
-    }}>
+    <aside
+      className={`app-sidebar${open ? " sidebar-open" : ""}`}
+      style={{
+        position:"fixed", left:0, top:0, height:"100%", width:"260px",
+        background:"linear-gradient(180deg,#1a1a2e 0%,#16213e 55%,#0f3460 100%)",
+        display:"flex", flexDirection:"column", zIndex:40,
+        boxShadow:"4px 0 24px rgba(0,0,0,0.18)",
+      }}
+    >
 
       {/* Brand */}
       <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>

@@ -257,11 +257,11 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                 {/* Name */}
                 <div style={nameStyle}>{member.firstName} {member.lastName}</div>
 
-                {/* Email */}
-                <div style={emailStyle}>{member.email}</div>
+                {/* Email — hidden on mobile */}
+                <div className="al-col-secondary" style={emailStyle}>{member.email}</div>
 
-                {/* Role · Date */}
-                <div style={metaStyle}>{member.role} · {shortDate(member.createdAt)}</div>
+                {/* Role · Date — hidden on mobile */}
+                <div className="al-col-secondary" style={metaStyle}>{member.role} · {shortDate(member.createdAt)}</div>
 
                 {/* Status badge */}
                 <StatusBadge label={member.status} colors={statusColors} />
@@ -333,13 +333,13 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                   {invite.recipientEmail}
                 </div>
 
-                {/* Sent by */}
-                <div style={{...emailStyle, fontSize:"12px"}}>
+                {/* Sent by — hidden on mobile */}
+                <div className="al-col-secondary" style={{...emailStyle, fontSize:"12px"}}>
                   sent by {invite.sender.firstName} {invite.sender.lastName}
                 </div>
 
-                {/* Date */}
-                <div style={metaStyle}>{shortDate(invite.createdAt)}</div>
+                {/* Date — hidden on mobile */}
+                <div className="al-col-secondary" style={metaStyle}>{shortDate(invite.createdAt)}</div>
 
                 {/* Status badge */}
                 <StatusBadge label={invite.status} colors={statusColors} />
@@ -388,8 +388,8 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
               }}
             >
               <div style={nameStyle}>{person.firstName} {person.lastName}</div>
-              <div style={emailStyle}>{person.email}</div>
-              <div style={metaStyle}>{person.phone ?? "—"} · {shortDate(person.createdAt)}</div>
+              <div className="al-col-secondary" style={emailStyle}>{person.email}</div>
+              <div className="al-col-secondary" style={metaStyle}>{person.phone ?? "—"} · {shortDate(person.createdAt)}</div>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
