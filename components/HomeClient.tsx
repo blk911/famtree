@@ -593,17 +593,13 @@ export function HomeClient() {
                   <p style={{ fontSize:"14px", color:"#6b7280", margin:0 }}>Create your account to join the family tree.</p>
                 </div>
                 {regErr && <div style={{ background:"#fef2f2", borderLeft:"4px solid #dc2626", color:"#dc2626", padding:"11px 14px", borderRadius:"10px", fontSize:"14px", marginBottom:"16px" }}>{regErr}</div>}
-                <form onSubmit={handleRegister} style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
-                  <div style={{display:"flex",alignItems:"center",gap:"14px",padding:"12px",background:"#faf5ff",border:"1px solid #e9d5ff",borderRadius:"14px"}}>
-                    <div style={{width:"54px",height:"54px",borderRadius:"50%",overflow:"hidden",background:"#ede9fe",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                      {regPreview
-                        ? <img src={regPreview} alt="Profile preview" style={{width:"100%",height:"100%",objectFit:"cover"}} />
-                        : <UserCheck style={{width:"24px",height:"24px",color:"#7c3aed"}} />}
-                    </div>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:"13px",fontWeight:800,color:"#1e1b4b"}}>Profile photo</div>
-                      <div style={{fontSize:"12px",color:"#6b7280",marginTop:"2px"}}>Optional, but helpful for future invites.</div>
-                    </div>
+                <form onSubmit={(e) => {
+                  if (!regPhoto) { e.preventDefault(); setRegErr("A photo is required — please add a selfie so your family can recognise you."); return; }
+                  handleRegister(e);
+                }} style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+
+                  {/* Photo — first, required */}
+                  <div style={{textAlign:"center",marginBottom:"4px"}}>
                     <input
                       ref={regPhotoRef}
                       type="file"
@@ -611,10 +607,29 @@ export function HomeClient() {
                       style={{display:"none"}}
                       onChange={e=>e.target.files?.[0] && handleRegPhoto(e.target.files[0])}
                     />
-                    <button type="button" onClick={()=>regPhotoRef.current?.click()} style={{border:"1px solid #d8b4fe",background:"white",color:"#7c3aed",borderRadius:"10px",padding:"8px 12px",fontSize:"12px",fontWeight:800,cursor:"pointer"}}>
-                      Upload
-                    </button>
+                    <div
+                      onClick={()=>regPhotoRef.current?.click()}
+                      style={{
+                        width:"96px", height:"96px", borderRadius:"50%", margin:"0 auto 10px",
+                        overflow:"hidden", cursor:"pointer", flexShrink:0,
+                        border: regPhoto ? "3px solid #7c3aed" : "3px dashed #c4b5fd",
+                        background: regPhoto ? "transparent" : "#faf5ff",
+                        display:"flex", alignItems:"center", justifyContent:"center",
+                      }}
+                    >
+                      {regPreview
+                        ? <img src={regPreview} alt="Your photo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                        : <div style={{textAlign:"center",padding:"8px"}}>
+                            <div style={{fontSize:"26px",marginBottom:"4px"}}>📸</div>
+                            <div style={{fontSize:"10px",fontWeight:800,color:"#7c3aed",lineHeight:1.2}}>TAP TO<br/>ADD SELFIE</div>
+                          </div>
+                      }
+                    </div>
+                    <div style={{fontSize:"12px",fontWeight:700,color: regPhoto ? "#16a34a" : "#dc2626"}}>
+                      {regPhoto ? "✓ Photo added" : "* Required — add your selfie"}
+                    </div>
                   </div>
+
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"10px" }}>
                     <input type="text" value={regFirst} onChange={e=>setRegFirst(e.target.value)} required placeholder="First name" style={inputStyle} autoFocus />
                     <input type="text" value={regLast}  onChange={e=>setRegLast(e.target.value)}  required placeholder="Last name"  style={inputStyle} />
@@ -626,7 +641,7 @@ export function HomeClient() {
                       {showRegPw ? <EyeOff style={{width:18,height:18}}/> : <Eye style={{width:18,height:18}}/>}
                     </button>
                   </div>
-                  <button type="submit" disabled={regLoad} style={{ height:"48px", border:"none", borderRadius:"12px", background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"15px", fontWeight:800, cursor:"pointer", opacity:regLoad?0.75:1, boxShadow:"0 8px 24px rgba(124,58,237,0.3)" }}>
+                  <button type="submit" disabled={regLoad} style={{ height:"48px", border:"none", borderRadius:"12px", background: regPhoto ? "linear-gradient(135deg,#7c3aed,#c026d3)" : "#d1d5db", color:"white", fontSize:"15px", fontWeight:800, cursor: regPhoto ? "pointer" : "not-allowed", opacity:regLoad?0.75:1, boxShadow: regPhoto ? "0 8px 24px rgba(124,58,237,0.3)" : "none" }}>
                     {regLoad ? "Creating account…" : "Join the Family Tree →"}
                   </button>
                 </form>
