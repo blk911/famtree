@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Ban } from "lucide-react";
+import { Ban, Mail, Send, CheckCircle } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -152,15 +152,57 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
   const [actionLoading, setActionLoading] = useState<string | null>(null); // memberId
   const [inviteActioning, setInviteActioning] = useState<string | null>(null); // inviteId
 
+  // Message compose state
+  const [messagingMember, setMessagingMember] = useState<Member | null>(null);
+  const [messageBody, setMessageBody] = useState("");
+  const [messageSending, setMessageSending] = useState(false);
+  const [messageSent, setMessageSent] = useState(false);
+
   // close modals on Escape
   useEffect(() => {
-    if (!selectedMember && !selectedWaitlist) return;
+    if (!selectedMember && !selectedWaitlist && !messagingMember) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setSelectedMember(null); setSelectedWaitlist(null); }
+      if (e.key === "Escape") {
+        setSelectedMember(null);
+        setSelectedWaitlist(null);
+        setMessagingMember(null);
+        setMessageBody("");
+        setMessageSent(false);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selectedMember, selectedWaitlist]);
+  }, [selectedMember, selectedWaitlist, messagingMember]);
+
+  const openMessageModal = (member: Member, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedMember(null);
+    setMessageBody("");
+    setMessageSent(false);
+    setMessagingMember(member);
+  };
+
+  const handleSendMessage = async () => {
+    if (!messagingMember || !messageBody.trim() || messageSending) return;
+    setMessageSending(true);
+    try {
+      const res = await fetch("/api/admin/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipientId: messagingMember.id, body: messageBody.trim() }),
+      });
+      if (res.ok) {
+        setMessageSent(true);
+        setMessageBody("");
+        setTimeout(() => {
+          setMessagingMember(null);
+          setMessageSent(false);
+        }, 2200);
+      }
+    } finally {
+      setMessageSending(false);
+    }
+  };
 
   // ─── Handle invite cancel ────────────────────────────────────────────────────
 
@@ -268,6 +310,20 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
 
                 {/* Action buttons */}
                 <div style={{display:"flex",gap:"4px",flexShrink:0}} onClick={(e) => e.stopPropagation()}>
+                  {/* Mail icon */}
+                  <button
+                    title={`Message ${member.firstName}`}
+                    onClick={(e) => openMessageModal(member, e)}
+                    style={{
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      width:"26px", height:"26px", borderRadius:"6px",
+                      background:"#eff6ff", color:"#1d4ed8",
+                      border:"none", cursor:"pointer", flexShrink:0,
+                      transition:"filter 0.1s",
+                    }}
+                  >
+                    <Mail style={{width:"12px",height:"12px"}} />
+                  </button>
                   {actions.map((action) => {
                     const btn = ACTION_BTN[action];
                     return (
@@ -447,10 +503,26 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
               <InfoRow label="Email">{selectedMember.email}</InfoRow>
             </div>
 
-            {/* Action buttons in modal */}
+            {/* Message button */}
+            <div style={{height:"1px",background:"#f5f4f0",margin:"20px 0"}} />
+            <button
+              onClick={(e) => openMessageModal(selectedMember, e)}
+              style={{
+                width:"100%", height:"40px",
+                display:"flex", alignItems:"center", justifyContent:"center", gap:"8px",
+                background:"#eff6ff", color:"#1d4ed8",
+                border:"1px solid #bfdbfe", borderRadius:"10px",
+                fontSize:"13px", fontWeight:700, cursor:"pointer",
+              }}
+            >
+              <Mail style={{width:"14px",height:"14px"}} />
+              Send private message
+            </button>
+
+            {/* Status action buttons in modal */}
             {actionForStatus(selectedMember.status).length > 0 && (
               <>
-                <div style={{height:"1px",background:"#f5f4f0",margin:"20px 0"}} />
+                <div style={{height:"1px",background:"#f5f4f0",margin:"16px 0"}} />
                 <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
                   {actionForStatus(selectedMember.status).map((action) => {
                     const btn = ACTION_BTN[action];
@@ -476,6 +548,81 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal — admin compose message ─────────────────────────────────────── */}
+      {messagingMember && (
+        <div
+          onClick={(e) => e.target === e.currentTarget && (setMessagingMember(null), setMessageBody(""), setMessageSent(false))}
+          style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:50,display:"flex",alignItems:"center",justifyContent:"center"}}
+        >
+          <div style={{position:"relative",background:"white",maxWidth:"440px",width:"90vw",borderRadius:"18px",overflow:"hidden",boxShadow:"0 24px 64px rgba(0,0,0,0.18)"}}>
+            {/* Header */}
+            <div style={{background:"#1a1a2e",padding:"18px 24px",display:"flex",alignItems:"center",gap:"10px"}}>
+              <Mail style={{width:15,height:15,color:"#93c5fd"}} />
+              <span style={{fontSize:"13px",fontWeight:700,color:"white"}}>
+                Private message to {messagingMember.firstName} {messagingMember.lastName}
+              </span>
+              <button
+                onClick={() => { setMessagingMember(null); setMessageBody(""); setMessageSent(false); }}
+                style={{marginLeft:"auto",background:"rgba(255,255,255,0.12)",border:"none",borderRadius:"6px",padding:"4px 6px",cursor:"pointer",color:"white",fontSize:"16px",lineHeight:1}}
+              >×</button>
+            </div>
+
+            <div style={{padding:"24px"}}>
+              {messageSent ? (
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"10px",padding:"12px 0"}}>
+                  <CheckCircle style={{width:36,height:36,color:"#16a34a"}} />
+                  <p style={{fontWeight:700,color:"#1c1917",fontSize:"15px",margin:0}}>Message sent!</p>
+                  <p style={{fontSize:"13px",color:"#78716c",margin:0,textAlign:"center"}}>
+                    Delivered to {messagingMember.firstName}&apos;s Private Feed and inbox.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p style={{fontSize:"13px",color:"#78716c",margin:"0 0 14px"}}>
+                    This will appear in their <strong>Private Feed</strong> as a DM and trigger an <strong>email notification</strong>.
+                  </p>
+                  <textarea
+                    value={messageBody}
+                    onChange={(e) => setMessageBody(e.target.value)}
+                    placeholder={`Write your message to ${messagingMember.firstName}…`}
+                    rows={5}
+                    maxLength={1000}
+                    autoFocus
+                    style={{
+                      width:"100%", padding:"10px 12px", borderRadius:"10px",
+                      border:"1px solid #e7e5e4", fontSize:"14px",
+                      resize:"vertical", outline:"none", boxSizing:"border-box",
+                      lineHeight:1.6,
+                    }}
+                  />
+                  <div style={{marginTop:"14px",display:"flex",justifyContent:"flex-end",gap:"10px"}}>
+                    <button
+                      onClick={() => { setMessagingMember(null); setMessageBody(""); }}
+                      style={{padding:"9px 18px",borderRadius:"10px",background:"#f5f4f0",color:"#78716c",border:"none",fontSize:"13px",fontWeight:600,cursor:"pointer"}}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={messageSending || !messageBody.trim()}
+                      style={{
+                        padding:"9px 20px",borderRadius:"10px",background:"#1a1a2e",color:"white",
+                        border:"none",fontSize:"13px",fontWeight:700,cursor:"pointer",
+                        display:"flex",alignItems:"center",gap:"7px",
+                        opacity: messageSending || !messageBody.trim() ? 0.5 : 1,
+                      }}
+                    >
+                      <Send style={{width:13,height:13}} />
+                      {messageSending ? "Sending…" : "Send message"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

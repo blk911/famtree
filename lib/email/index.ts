@@ -153,6 +153,55 @@ export async function sendPasswordResetEmail(
   });
 }
 
+// ─── Admin → member private message notification ─────────────
+export async function sendAdminMessageEmail(
+  recipient: { email: string; firstName: string },
+  sender: { firstName: string; lastName: string },
+): Promise<void> {
+  const inboxUrl = `${APP_URL}/family-vault/private`;
+
+  const resend = getResend();
+  if (!resend) { console.log(`[email:skip] admin-msg → ${recipient.email}`); return; }
+  await resend.emails.send({
+    from: FROM,
+    to: recipient.email,
+    subject: `Private message from ${sender.firstName} ${sender.lastName} — AMIHUMAN.NET`,
+    html: `
+<!DOCTYPE html>
+<html>
+<body style="font-family:-apple-system,sans-serif;background:#f5f4f0;margin:0;padding:40px 0;">
+  <table width="480" cellpadding="0" cellspacing="0" style="margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e4e0;">
+    <tr><td style="background:#1a1a2e;padding:28px 40px;text-align:center;">
+      <span style="color:#fff;font-size:22px;font-weight:600;">🌳 AMIHUMAN.NET</span>
+    </td></tr>
+    <tr><td style="padding:40px;">
+      <h1 style="margin:0 0 12px;font-size:20px;color:#1a1a1a;">
+        You have a private message
+      </h1>
+      <p style="color:#666;font-size:15px;line-height:1.6;margin:0 0 28px;">
+        Hi ${recipient.firstName}, <strong>${sender.firstName} ${sender.lastName}</strong> sent you a private message on AMIHUMAN.NET. Log in to read it in your Private Feed.
+      </p>
+      <div style="text-align:center;margin:0 0 28px;">
+        <a href="${inboxUrl}" style="display:inline-block;background:#1a1a2e;color:#fff;
+           font-size:15px;font-weight:700;padding:14px 36px;border-radius:10px;text-decoration:none;">
+          Read message →
+        </a>
+      </div>
+      <div style="background:#f9f8f5;border-radius:8px;padding:14px 16px;">
+        <p style="margin:0;font-size:13px;color:#888;line-height:1.5;">
+          🔒 This message is private and visible only to you.
+        </p>
+      </div>
+    </td></tr>
+    <tr><td style="padding:20px 40px;border-top:1px solid #f0f0f0;text-align:center;">
+      <p style="margin:0;font-size:12px;color:#bbb;">AMIHUMAN.NET &middot; Private family network</p>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  });
+}
+
 // ─── Welcome email (after identity verified) ─────────────────
 export async function sendWelcomeEmail(user: User): Promise<void> {
   const loginUrl = `${APP_URL}/login`;
