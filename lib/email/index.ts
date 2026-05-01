@@ -20,8 +20,9 @@ export async function sendInviteEmail(
   sender: User
 ): Promise<void> {
   const inviteUrl = `${APP_URL}/invite/${invite.token}`;
+  // photoUrl is either a full Blob URL (https://...) or a legacy relative path
   const senderPhotoUrl = sender.photoUrl
-    ? `${APP_URL}${sender.photoUrl}`
+    ? (sender.photoUrl.startsWith("http") ? sender.photoUrl : `${APP_URL}${sender.photoUrl}`)
     : `${APP_URL}/default-avatar.png`;
 
   const html = `
