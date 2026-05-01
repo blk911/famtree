@@ -5,8 +5,7 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
 import { randomUUID } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { uploadFile, validateImage } from "@/lib/storage";
 
 const createPostSchema = z.object({
   body: z.string().min(1).max(2000),
@@ -15,25 +14,10 @@ const createPostSchema = z.object({
   visibleTo: z.array(z.string()).optional(),
 });
 
-const MAX_SIZE_BYTES = 5 * 1024 * 1024;
-
-function extensionFor(file: File) {
-  return file.type.split("/")[1]?.replace("jpeg", "jpg") || "jpg";
-}
-
-async function savePostImage(file: File) {
-  if (!file.type.startsWith("image/")) {
-    throw new Error("INVALID_IMAGE");
-  }
-  if (file.size > MAX_SIZE_BYTES) {
-    throw new Error("IMAGE_TOO_LARGE");
-  }
-
-  const filename = `${randomUUID()}.${extensionFor(file)}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(path.join(uploadDir, filename), Buffer.from(await file.arrayBuffer()));
-  return `/uploads/${filename}`;
+async function savePostImage(file: File): Promise<string> {
+  const err = validateImage(file);
+  if (err) throw new Error("INVALID_IMAGE");
+  return uploadFile(file, "post", randomUUID());
 }
 
 const postInclude = {
