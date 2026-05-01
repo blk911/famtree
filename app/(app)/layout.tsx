@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   });
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f8f7f4" }}>
+    <div style={{ minHeight: "100vh", background: "#f8f7f4" }}>
       <AppShell user={user} coverUrl={profile?.coverUrl ?? null}>
         {children}
       </AppShell>
