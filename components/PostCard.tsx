@@ -173,12 +173,25 @@ export function PostCard({ post, currentUserId, canDelete, onDelete }: Props) {
     <div className="post-card group" style={{background:archived ? "rgba(245,158,11,0.04)" : undefined}}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full overflow-hidden bg-stone-200 flex-shrink-0 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-stone-200 flex-shrink-0 flex items-center justify-center relative">
             {author.photoUrl ? (
-              <img src={author.photoUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-xs font-bold text-stone-500">{authorInitials}</span>
-            )}
+              <img
+                src={author.photoUrl}
+                alt=""
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  const fallback = e.currentTarget.nextSibling as HTMLElement;
+                  if (fallback) fallback.style.display = "flex";
+                }}
+              />
+            ) : null}
+            <span
+              className="text-xs font-bold text-stone-500 absolute inset-0 flex items-center justify-center"
+              style={{ display: author.photoUrl ? "none" : "flex" }}
+            >
+              {authorInitials}
+            </span>
           </div>
           <div>
             <p className="text-sm font-semibold text-stone-900">
@@ -254,12 +267,25 @@ export function PostCard({ post, currentUserId, canDelete, onDelete }: Props) {
                 const commentInitials = initials(comment.user.firstName, comment.user.lastName);
                 return (
                   <div key={comment.id} className="flex gap-2.5">
-                    <div className="w-6 h-6 rounded-full overflow-hidden bg-stone-200 flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 rounded-full overflow-hidden bg-stone-200 flex items-center justify-center flex-shrink-0 relative">
                       {comment.user.photoUrl ? (
-                        <img src={comment.user.photoUrl} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-[10px] font-bold text-stone-500">{commentInitials}</span>
-                      )}
+                        <img
+                          src={comment.user.photoUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                            const fallback = e.currentTarget.nextSibling as HTMLElement;
+                            if (fallback) fallback.style.display = "flex";
+                          }}
+                        />
+                      ) : null}
+                      <span
+                        className="text-[10px] font-bold text-stone-500 absolute inset-0 flex items-center justify-center"
+                        style={{ display: comment.user.photoUrl ? "none" : "flex" }}
+                      >
+                        {commentInitials}
+                      </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="rounded-xl bg-stone-50 px-3 py-2">

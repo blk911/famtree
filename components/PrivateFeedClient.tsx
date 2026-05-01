@@ -123,6 +123,91 @@ function buildThreads(
   return [...tuThreads, ...otherThreads];
 }
 
+// ── Participant avatars (stacked circles) ─────────────────────────────────────
+
+function ThreadAvatars({
+  memberIds,
+  memberMap,
+  unit,
+  currentUserId,
+  type,
+}: {
+  memberIds: string[];
+  memberMap: Map<string, Member>;
+  unit?: TrustUnit;
+  currentUserId: string;
+  type: ThreadType;
+}) {
+  // For DM show the OTHER person. For TU/Group show up to 3 participants.
+  const showIds =
+    type === "direct"
+      ? memberIds.filter((id) => id !== currentUserId).slice(0, 1)
+      : memberIds.slice(0, 3);
+
+  const people = showIds.map((id) => {
+    if (unit) {
+      const m = unit.members.find((m) => m.user.id === id);
+      if (m) return m.user;
+    }
+    return memberMap.get(id) ?? null;
+  }).filter(Boolean) as Member[];
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+      {people.map((p, i) => {
+        const ini = `${p.firstName[0] ?? ""}${p.lastName[0] ?? ""}`.toUpperCase();
+        return (
+          <div
+            key={p.id}
+            title={`${p.firstName} ${p.lastName}`}
+            style={{
+              width: 32, height: 32, borderRadius: "50%",
+              overflow: "hidden", border: "2px solid white",
+              background: "#e7e5e4", flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "11px", fontWeight: 700, color: "#78716c",
+              marginLeft: i > 0 ? -8 : 0,
+              position: "relative",
+            }}
+          >
+            {p.photoUrl ? (
+              <img
+                src={p.photoUrl}
+                alt=""
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  const fb = e.currentTarget.nextSibling as HTMLElement;
+                  if (fb) fb.style.display = "flex";
+                }}
+              />
+            ) : null}
+            <span
+              style={{
+                position: "absolute", inset: 0,
+                display: p.photoUrl ? "none" : "flex",
+                alignItems: "center", justifyContent: "center",
+              }}
+            >
+              {ini}
+            </span>
+          </div>
+        );
+      })}
+      {type !== "direct" && memberIds.length > 3 && (
+        <div style={{
+          width: 32, height: 32, borderRadius: "50%", border: "2px solid white",
+          background: "#d6d3d1", display: "flex", alignItems: "center",
+          justifyContent: "center", fontSize: "10px", fontWeight: 700,
+          color: "#78716c", marginLeft: -8, flexShrink: 0,
+        }}>
+          +{memberIds.length - 3}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Badge ─────────────────────────────────────────────────────────────────────
 
 const BADGE: Record<ThreadType, { label: string; bg: string; color: string }> = {
@@ -419,12 +504,21 @@ export function PrivateFeedClient({
               onClick={() => setOpenKey(open ? "" : thread.key)}
               className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left hover:bg-stone-50 transition-colors"
             >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <TypeBadge type={thread.type} />
+              <div className="flex items-center gap-3 min-w-0">
+                <ThreadAvatars
+                  memberIds={thread.memberIds}
+                  memberMap={memberMap}
+                  unit={thread.unit}
+                  currentUserId={currentUserId}
+                  type={thread.type}
+                />
                 <div className="min-w-0">
-                  <p style={{ fontSize: "14px", fontWeight: 700, color: "#1c1917" }} className="truncate">
-                    {thread.label}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <TypeBadge type={thread.type} />
+                    <p style={{ fontSize: "14px", fontWeight: 700, color: "#1c1917" }} className="truncate">
+                      {thread.label}
+                    </p>
+                  </div>
                   {preview && (
                     <p className="text-xs text-stone-400 mt-0.5 truncate">{preview}</p>
                   )}
