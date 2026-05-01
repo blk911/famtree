@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, Megaphone, X } from "lucide-react";
+import { Menu, Megaphone, X, Volume2 } from "lucide-react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { TopBarUser } from "@/components/TopBarUser";
 import { AppPageHero } from "@/components/AppPageHero";
@@ -108,6 +108,11 @@ export function AppShell({ user, coverUrl, children }: Props) {
 
   const handleBannerExpand = () => setModalOpen(true);
 
+  const handleBannerPlayVoice = () => {
+    setModalShowVoice(true);
+    setModalOpen(true);
+  };
+
   return (
     <>
       {/* Site announcement modal */}
@@ -203,6 +208,18 @@ export function AppShell({ user, coverUrl, children }: Props) {
                     : annState.announcement.body}
                 </span>
                 <span style={{ fontSize: "13px", color: "#b45309", flexShrink: 0 }}>→</span>
+              </button>
+
+              {/* Play voice */}
+              <button
+                onClick={handleBannerPlayVoice}
+                title="Play voice message"
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  lineHeight: 0, padding: "2px", flexShrink: 0, color: "#d97706",
+                }}
+              >
+                <Volume2 style={{ width: 14, height: 14 }} />
               </button>
 
               {/* Dismiss X */}
