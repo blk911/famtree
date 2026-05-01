@@ -242,6 +242,7 @@ export default function InviteClient({ me }: { me: Me }) {
 
   // ── derived values — computed BEFORE any handler that references them ──
   const hasEmail      = recipientEmail.includes("@");
+  const canSend       = hasEmail && !!relationship;
   const senderInitials = `${me.firstName[0]}${me.lastName[0]}`.toUpperCase();
   const subject       = `You've been invited to join the ${me.lastName} Family`;
   const pendingCount  = invites.filter((i) => i.status === "PENDING").length;
@@ -279,6 +280,10 @@ export default function InviteClient({ me }: { me: Me }) {
   const handleReviewClick = async () => {
     if (!hasEmail) {
       setEmailError("Please enter a valid email address first.");
+      return;
+    }
+    if (!relationship) {
+      setEmailError("Please select a relationship before sending.");
       return;
     }
     setEmailError("");
@@ -334,7 +339,7 @@ export default function InviteClient({ me }: { me: Me }) {
       const res  = await fetch("/api/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientEmail, ...(relationship ? { relationship } : {}) }),
+        body: JSON.stringify({ recipientEmail, relationship }),
       });
       const data = await res.json();
       setShowModal(false);
@@ -574,10 +579,10 @@ export default function InviteClient({ me }: { me: Me }) {
                   style={{
                     width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px",
                     height:"50px", border:"none", borderRadius:"12px", cursor:"pointer",
-                    background: hasEmail ? "linear-gradient(135deg,#7c3aed,#c026d3)" : "#e5e7eb",
-                    color: hasEmail ? "white" : "#9ca3af",
+                    background: canSend ? "linear-gradient(135deg,#7c3aed,#c026d3)" : "#e5e7eb",
+                    color: canSend ? "white" : "#9ca3af",
                     fontSize:"15px", fontWeight:700,
-                    boxShadow: hasEmail ? "0 8px 24px rgba(124,58,237,0.3)" : "none",
+                    boxShadow: canSend ? "0 8px 24px rgba(124,58,237,0.3)" : "none",
                     transition:"all 0.2s",
                   }}
                 >

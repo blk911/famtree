@@ -11,7 +11,7 @@ const VALID_RELATIONSHIPS = ["parent","child","sibling","spouse","so","bf","gf",
 
 const sendSchema = z.object({
   recipientEmail: z.string().email("Please enter a valid email address"),
-  relationship: z.enum(VALID_RELATIONSHIPS).optional(),
+  relationship: z.enum(VALID_RELATIONSHIPS),
 });
 
 // POST /api/invite — send a new invite
