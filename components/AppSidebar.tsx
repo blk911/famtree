@@ -12,32 +12,33 @@ import type { User as PrismaUser } from "@prisma/client";
 
 interface Props { user: PrismaUser; }
 
-const INVITE     = { href: "/invite",    label: "Invite",    icon: Mail };
-const SETTINGS   = { href: "/settings",  label: "Settings",  icon: Settings };
+const INVITE = { href: "/invite", label: "Invite", icon: Mail };
 
 // Vault sub-items
 const VAULT_ITEMS = [
-  { href: "/family-vault/posts", label: "Open Feed" },
-  { href: "/family-vault/private", label: "Private Feed" },
-  { href: "/profile", label: "My Posts" },
-  { href: "/tree",    label: "Family Tree" },
+  { href: "/family-vault/posts",    label: "Open Feed" },
+  { href: "/family-vault/private",  label: "Private Feed" },
+  { href: "/profile",               label: "My Posts" },
+  { href: "/tree",                  label: "Family Tree" },
 ];
 
-// Admin sub-items
-const ADMIN_ITEMS = [
-  { href: "/admin",          label: "Dashboard" },
-  { href: "/admin/activity", label: "Activity Log" },
+// Settings sub-items (admin only — shown beneath the Settings accordion)
+const SETTINGS_ADMIN_ITEMS = [
+  { href: "/settings",        label: "Settings",      icon: null },
+  { href: "/admin/activity",  label: "Activity Log",  icon: ScrollText },
 ];
 
 export function AppSidebar({ user }: Props) {
   const pathname = usePathname();
   const router   = useRouter();
 
-  const vaultActive = pathname.startsWith("/family-vault") || pathname === "/profile" || pathname.startsWith("/profile/") || pathname === "/tree";
-  const [vaultOpen, setVaultOpen] = useState(vaultActive);
+  const isAdmin = user.role === "founder" || user.role === "admin";
 
-  const adminActive = pathname === "/admin" || pathname.startsWith("/admin/");
-  const [adminOpen, setAdminOpen] = useState(adminActive);
+  const vaultActive    = pathname.startsWith("/family-vault") || pathname === "/profile" || pathname.startsWith("/profile/") || pathname === "/tree";
+  const settingsActive = pathname === "/settings" || pathname.startsWith("/settings/") || pathname === "/admin/activity";
+
+  const [vaultOpen,    setVaultOpen]    = useState(vaultActive);
+  const [settingsOpen, setSettingsOpen] = useState(settingsActive);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -69,11 +70,6 @@ export function AppSidebar({ user }: Props) {
     textDecoration:"none", transition:"all 0.12s",
   });
 
-  const isAdmin = user.role === "founder" || user.role === "admin";
-  const DASHBOARD = { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard };
-  // Admins get the Admin accordion instead of a plain Dashboard link
-  const plainLinks = isAdmin ? [INVITE, SETTINGS] : [DASHBOARD, INVITE, SETTINGS];
-
   return (
     <aside style={{
       position:"fixed", left:0, top:0, height:"100%", width:"260px",
@@ -94,64 +90,17 @@ export function AppSidebar({ user }: Props) {
       {/* Navigation */}
       <nav style={{flex:1,padding:"14px 10px",overflowY:"auto"}}>
 
-        {/* Non-admin Dashboard link (admins get the accordion above) */}
-        {!isAdmin && (
-          <Link href="/dashboard" style={linkStyle(pathname === "/dashboard")}>
-            <LayoutDashboard style={{width:"18px",height:"18px",flexShrink:0}} />
-            Dashboard
-          </Link>
-        )}
-
-        {/* Admin accordion — admins/founders only */}
-        {isAdmin && (
-          <>
-            <button
-              onClick={() => {
-                if (!adminActive) {
-                  router.push("/admin");
-                  setAdminOpen(true);
-                  return;
-                }
-                setAdminOpen((v) => !v);
-              }}
-              style={{
-                ...linkStyle(adminActive),
-                width:"100%",
-                background: adminActive
-                  ? "linear-gradient(135deg,rgba(233,108,80,0.75),rgba(244,162,97,0.55))"
-                  : "transparent",
-                border: adminActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
-                cursor:"pointer",
-              }}
-            >
-              <ShieldCheck style={{width:"18px",height:"18px",flexShrink:0}} />
-              <span style={{flex:1,textAlign:"left"}}>Admin</span>
-              <ChevronDown style={{
-                width:"15px",height:"15px",flexShrink:0,
-                transform: adminOpen ? "rotate(180deg)" : "rotate(0deg)",
-                transition:"transform 0.2s",
-              }} />
-            </button>
-
-            {adminOpen && (
-              <div style={{marginBottom:"3px"}}>
-                {ADMIN_ITEMS.map(({ href, label }) => {
-                  const active = pathname === href;
-                  return (
-                    <Link key={href} href={href} style={subLinkStyle(active)}>
-                      <span style={{
-                        width:"5px",height:"5px",borderRadius:"50%",flexShrink:0,
-                        background: active ? "white" : "rgba(255,255,255,0.3)",
-                      }} />
-                      {label === "Activity Log" && <ScrollText style={{width:"12px",height:"12px",flexShrink:0,opacity:0.7}} />}
-                      {label}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
+        {/* Dashboard — plain link for everyone; admins go to /admin */}
+        <Link
+          href={isAdmin ? "/admin" : "/dashboard"}
+          style={linkStyle(isAdmin ? (pathname === "/admin") : pathname === "/dashboard")}
+        >
+          {isAdmin
+            ? <ShieldCheck style={{width:"18px",height:"18px",flexShrink:0}} />
+            : <LayoutDashboard style={{width:"18px",height:"18px",flexShrink:0}} />
+          }
+          {isAdmin ? "Admin" : "Dashboard"}
+        </Link>
 
         {/* Family Vault accordion */}
         <button
@@ -164,8 +113,9 @@ export function AppSidebar({ user }: Props) {
             setVaultOpen((v) => !v);
           }}
           style={{
-            ...linkStyle(vaultActive && !vaultOpen),
-            width:"100%", background: vaultActive
+            ...linkStyle(vaultActive),
+            width:"100%",
+            background: vaultActive
               ? "linear-gradient(135deg,rgba(233,108,80,0.75),rgba(244,162,97,0.55))"
               : "transparent",
             border: vaultActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
@@ -181,7 +131,6 @@ export function AppSidebar({ user }: Props) {
           }} />
         </button>
 
-        {/* Sub-items */}
         {vaultOpen && (
           <div style={{marginBottom:"3px"}}>
             {VAULT_ITEMS.map(({ href, label }) => {
@@ -199,16 +148,68 @@ export function AppSidebar({ user }: Props) {
           </div>
         )}
 
-        {/* Flat links below Vault — Invite + Settings for everyone */}
-        {[INVITE, SETTINGS].map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
-          return (
-            <Link key={href} href={href} style={linkStyle(active)}>
-              <Icon style={{width:"18px",height:"18px",flexShrink:0}} />
-              {label}
-            </Link>
-          );
-        })}
+        {/* Invite — plain link */}
+        <Link href={INVITE.href} style={linkStyle(pathname === INVITE.href)}>
+          <Mail style={{width:"18px",height:"18px",flexShrink:0}} />
+          {INVITE.label}
+        </Link>
+
+        {/* Settings — accordion for admins, plain link for members */}
+        {isAdmin ? (
+          <>
+            <button
+              onClick={() => {
+                if (!settingsActive) {
+                  router.push("/settings");
+                  setSettingsOpen(true);
+                  return;
+                }
+                setSettingsOpen((v) => !v);
+              }}
+              style={{
+                ...linkStyle(settingsActive),
+                width:"100%",
+                background: settingsActive
+                  ? "linear-gradient(135deg,rgba(233,108,80,0.75),rgba(244,162,97,0.55))"
+                  : "transparent",
+                border: settingsActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
+                cursor:"pointer",
+              }}
+            >
+              <Settings style={{width:"18px",height:"18px",flexShrink:0}} />
+              <span style={{flex:1,textAlign:"left"}}>Settings</span>
+              <ChevronDown style={{
+                width:"15px",height:"15px",flexShrink:0,
+                transform: settingsOpen ? "rotate(180deg)" : "rotate(0deg)",
+                transition:"transform 0.2s",
+              }} />
+            </button>
+
+            {settingsOpen && (
+              <div style={{marginBottom:"3px"}}>
+                {SETTINGS_ADMIN_ITEMS.map(({ href, label, icon: Icon }) => {
+                  const active = pathname === href;
+                  return (
+                    <Link key={href} href={href} style={subLinkStyle(active)}>
+                      <span style={{
+                        width:"5px",height:"5px",borderRadius:"50%",flexShrink:0,
+                        background: active ? "white" : "rgba(255,255,255,0.3)",
+                      }} />
+                      {Icon && <Icon style={{width:"12px",height:"12px",flexShrink:0,opacity:0.7}} />}
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        ) : (
+          <Link href="/settings" style={linkStyle(pathname === "/settings" || pathname.startsWith("/settings/"))}>
+            <Settings style={{width:"18px",height:"18px",flexShrink:0}} />
+            Settings
+          </Link>
+        )}
+
       </nav>
 
       {/* Logout + user footer */}
@@ -242,4 +243,3 @@ export function AppSidebar({ user }: Props) {
     </aside>
   );
 }
-
