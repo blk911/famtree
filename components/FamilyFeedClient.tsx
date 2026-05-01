@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import { Image as ImageIcon, Plus, X } from "lucide-react";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { Image as ImageIcon, Plus, X, Globe, Lock } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
+
+type Member = { id: string; firstName: string; lastName: string; photoUrl: string | null };
 
 type FeedPost = {
   id: string;
@@ -41,7 +43,20 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [visibleTo, setVisibleTo] = useState<string[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/members")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data.members)) {
+          setMembers(data.members.filter((m: Member) => m.id !== currentUserId));
+        }
+      })
+      .catch(() => {});
+  }, [currentUserId]);
 
   const visiblePosts = useMemo(() => {
     if (activeTab === "mine") {
@@ -77,6 +92,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
     setTitle("");
     setBody("");
     setImageUrl("");
+    setVisibleTo([]);
     clearImage();
   };
 
@@ -95,6 +111,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
         formData.append("body", body.trim());
         formData.append("image", imageFile);
         if (imageUrl.trim()) formData.append("imageUrl", imageUrl.trim());
+        if (visibleTo.length > 0) formData.append("visibleTo", JSON.stringify(visibleTo));
         res = await fetch("/api/profile/posts", { method: "POST", body: formData });
       } else {
         res = await fetch("/api/profile/posts", {
@@ -104,6 +121,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
             title: title.trim() || undefined,
             body: body.trim(),
             imageUrl: imageUrl.trim() || undefined,
+            visibleTo: visibleTo.length > 0 ? visibleTo : undefined,
           }),
         });
       }
@@ -117,7 +135,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
       setItems((current) => [{
         ...data.post,
         createdAt: new Date(data.post.createdAt).toISOString(),
-        visibility: [],
+        visibility: visibleTo.map((userId) => ({ userId })),
       }, ...current]);
       setActiveTab("all");
       resetComposer();
@@ -181,6 +199,49 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
               placeholder="Share something with your family..."
               className="w-full resize-none rounded-xl border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
             />
+            {/* Visibility selector */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 shrink-0">
+                {visibleTo.length === 0
+                  ? <><Globe className="h-3.5 w-3.5" /> Visible to:</>
+                  : <><Lock className="h-3.5 w-3.5" /> Visible to:</>
+                }
+              </div>
+              <div className="flex flex-wrap gap-1.5 flex-1">
+                <button
+                  type="button"
+                  onClick={() => setVisibleTo([])}
+                  className={`rounded-full px-3 py-0.5 text-xs font-semibold border transition-colors ${
+                    visibleTo.length === 0
+                      ? "bg-stone-900 text-white border-stone-900"
+                      : "bg-white text-stone-600 border-stone-200 hover:border-stone-400"
+                  }`}
+                >
+                  Everyone
+                </button>
+                {members.map((member) => {
+                  const selected = visibleTo.includes(member.id);
+                  return (
+                    <button
+                      key={member.id}
+                      type="button"
+                      onClick={() =>
+                        setVisibleTo((prev) =>
+                          selected ? prev.filter((id) => id !== member.id) : [...prev, member.id]
+                        )
+                      }
+                      className={`rounded-full px-3 py-0.5 text-xs font-semibold border transition-colors ${
+                        selected
+                          ? "bg-stone-900 text-white border-stone-900"
+                          : "bg-white text-stone-600 border-stone-200 hover:border-stone-400"
+                      }`}
+                    >
+                      {member.firstName}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <input
               value={imageUrl}
               onChange={(event) => setImageUrl(event.target.value)}
