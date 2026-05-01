@@ -1,7 +1,7 @@
 "use client";
 // app/(app)/invite/InviteClient.tsx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Mail, Send, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, X, Ban, Trash2 } from "lucide-react";
 import TrustUnitModal from "@/components/invite/TrustUnitModal";
@@ -9,6 +9,7 @@ import TrustUnitModal from "@/components/invite/TrustUnitModal";
 interface Invite {
   id: string;
   recipientEmail: string;
+  relationship: string | null;
   status: "PENDING" | "ACCEPTED" | "EXPIRED" | "CANCELLED";
   attempts: number;
   expiresAt: string;
@@ -32,6 +33,91 @@ type ExistingUser = {
   photoUrl: string | null;
 };
 
+// ── Relationship options ──────────────────────────────────────────────────────
+
+export const RELATIONSHIPS = [
+  { value: "parent",  label: "Parent",  color: "#7c3aed" },
+  { value: "child",   label: "Child",   color: "#7c3aed" },
+  { value: "sibling", label: "Sibling", color: "#0891b2" },
+  { value: "spouse",  label: "Spouse",  color: "#be185d" },
+  { value: "so",      label: "S.O.",    color: "#be185d" },
+  { value: "bf",      label: "BF",      color: "#be185d" },
+  { value: "gf",      label: "GF",      color: "#be185d" },
+  { value: "other",   label: "Other",   color: "#78716c" },
+] as const;
+
+function RelationshipPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const selected = RELATIONSHIPS.find((r) => r.value === value);
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          display: "flex", alignItems: "center", gap: "5px",
+          padding: "3px 10px", borderRadius: "999px",
+          border: selected ? `1px solid ${selected.color}55` : "1px dashed #c4b5fd",
+          background: selected ? `${selected.color}12` : "transparent",
+          color: selected ? selected.color : "#a78bfa",
+          fontSize: "12px", fontWeight: 700, cursor: "pointer",
+          transition: "all 0.12s",
+        }}
+      >
+        {selected ? selected.label : "＋ tag"}
+        {selected && (
+          <span
+            onClick={(e) => { e.stopPropagation(); onChange(""); }}
+            style={{ fontSize: "11px", opacity: 0.65, marginLeft: "1px", lineHeight: 1 }}
+          >×</span>
+        )}
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 200,
+          background: "white", borderRadius: "12px",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.16)",
+          border: "1px solid #ede9fe",
+          padding: "10px",
+          display: "flex", flexWrap: "wrap", gap: "6px",
+          width: "210px",
+        }}>
+          {RELATIONSHIPS.map((r) => (
+            <button
+              key={r.value}
+              type="button"
+              onClick={() => { onChange(r.value); setOpen(false); }}
+              style={{
+                padding: "4px 11px", borderRadius: "999px",
+                border: `1px solid ${r.color}44`,
+                background: value === r.value ? r.color : `${r.color}12`,
+                color: value === r.value ? "white" : r.color,
+                fontSize: "12px", fontWeight: 700, cursor: "pointer",
+                transition: "all 0.12s",
+              }}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const STATUS_CONFIG = {
   PENDING:   { label:"Pending",   icon:Clock,        color:"#f59e0b", bg:"#fffbeb", border:"#fde68a" },
   ACCEPTED:  { label:"Joined",    icon:CheckCircle,  color:"#16a34a", bg:"#f0fdf4", border:"#bbf7d0" },
@@ -42,10 +128,11 @@ const STATUS_CONFIG = {
 // ── Confirm modal (portalled to document.body) ────────────────────────────────
 
 function ConfirmModal({
-  recipientName, recipientEmail, sender, onConfirm, onCancel, sending,
+  recipientName, recipientEmail, relationship, sender, onConfirm, onCancel, sending,
 }: {
   recipientName: string;
   recipientEmail: string;
+  relationship: string;
   sender: Me;
   onConfirm: () => void;
   onCancel: () => void;
@@ -78,13 +165,14 @@ function ConfirmModal({
         {/* Body */}
         <div style={{ padding:"24px" }}>
 
-          {/* To / From / Subject */}
+          {/* To / From / Subject / Relationship */}
           <div style={{ background:"#f8f7ff", borderRadius:"12px", padding:"14px 16px", marginBottom:"20px", border:"1px solid #ede9fe" }}>
-            {[
+            {([
               ["To",      recipientName ? `${recipientName} <${recipientEmail}>` : recipientEmail],
               ["From",    `${sender.firstName} ${sender.lastName} <noreply@AMIHUMAN.NET.app>`],
               ["Subject", `You've been invited to join the ${sender.lastName} Family`],
-            ].map(([lbl, val], i, arr) => (
+              ...(relationship ? [["Relation", RELATIONSHIPS.find((r) => r.value === relationship)?.label ?? relationship]] : []),
+            ] as [string, string][]).map(([lbl, val], i, arr) => (
               <div key={lbl} style={{ fontSize:"13px", marginBottom: i < arr.length - 1 ? "7px" : 0 }}>
                 <span style={{ fontWeight:700, color:"#374151", display:"inline-block", minWidth:52 }}>{lbl}:</span>
                 <span style={{ color:"#1e1b4b" }}>{val}</span>
@@ -138,6 +226,7 @@ export default function InviteClient({ me }: { me: Me }) {
   // ── state ──
   const [recipientName,    setRecipientName]    = useState("");
   const [recipientEmail,   setRecipientEmail]   = useState("");
+  const [relationship,     setRelationship]     = useState("");
   const [emailError,       setEmailError]       = useState("");
   const [showModal,        setShowModal]        = useState(false);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
@@ -245,7 +334,7 @@ export default function InviteClient({ me }: { me: Me }) {
       const res  = await fetch("/api/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientEmail }),
+        body: JSON.stringify({ recipientEmail, ...(relationship ? { relationship } : {}) }),
       });
       const data = await res.json();
       setShowModal(false);
@@ -254,6 +343,7 @@ export default function InviteClient({ me }: { me: Me }) {
         setSendResult({ type:"success", msg:"Invite sent", inviteeName });
         setRecipientName("");
         setRecipientEmail("");
+        setRelationship("");
         setEmailError("");
         loadInvites();
       } else {
@@ -327,6 +417,7 @@ export default function InviteClient({ me }: { me: Me }) {
         <ConfirmModal
           recipientName={recipientName}
           recipientEmail={recipientEmail}
+          relationship={relationship}
           sender={me}
           onConfirm={handleConfirmSend}
           onCancel={() => setShowModal(false)}
@@ -443,6 +534,11 @@ export default function InviteClient({ me }: { me: Me }) {
                   <span style={{ fontSize:"13px", fontWeight:700, color:"#374151", minWidth:58, flexShrink:0 }}>Subject:</span>
                   <span style={{ fontSize:"13px", color:"#374151" }}>{subject}</span>
                 </div>
+
+                <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid #ede9fe", padding:"8px 18px", gap:"8px" }}>
+                  <span style={{ fontSize:"13px", fontWeight:700, color:"#374151", minWidth:58, flexShrink:0 }}>Relation:</span>
+                  <RelationshipPicker value={relationship} onChange={setRelationship} />
+                </div>
               </div>
 
               {/* Email body */}
@@ -554,7 +650,17 @@ export default function InviteClient({ me }: { me: Me }) {
                   <div key={invite.id} style={{ display:"flex", alignItems:"center", gap:"12px", padding:"14px 20px", background:"white", borderRadius:"14px", border:"1px solid #e7e5e4", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", opacity: isActioning ? 0.6 : 1, transition:"opacity 0.2s" }}>
                     {/* Info */}
                     <div style={{ flex:1, minWidth:0 }}>
-                      <p style={{ fontSize:"15px", fontWeight:600, color:"#1c1917", margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{invite.recipientEmail}</p>
+                      <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"2px" }}>
+                        <p style={{ fontSize:"15px", fontWeight:600, color:"#1c1917", margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{invite.recipientEmail}</p>
+                        {invite.relationship && (() => {
+                          const rel = RELATIONSHIPS.find((r) => r.value === invite.relationship);
+                          return rel ? (
+                            <span style={{ fontSize:"11px", fontWeight:700, padding:"1px 8px", borderRadius:"999px", background:`${rel.color}12`, color:rel.color, border:`1px solid ${rel.color}33`, flexShrink:0 }}>
+                              {rel.label}
+                            </span>
+                          ) : null;
+                        })()}
+                      </div>
                       <p style={{ fontSize:"13px", color:"#a8a29e", margin:"3px 0 0" }}>
                         Sent {sentAt}
                         {isPending && ` · expires ${expiresAt}`}

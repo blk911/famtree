@@ -23,6 +23,7 @@ model User {
   photoUrl      String?   // stored in /public/uploads or S3
   role          String    @default("member") // "founder" | "admin" | "member"
   status        String    @default("active") // "active" | "suspended" | "archived" | "blocked"
+  relationship  String?   // relationship to founder, set at invite time: "parent"|"child"|"sibling"|"spouse"|"so"|"bf"|"gf"|"other"
   emailVerified Boolean   @default(false)
   lastLoginAt   DateTime?                  // set on each login; prev session = "last seen" baseline
   createdAt     DateTime  @default(now())
@@ -179,6 +180,9 @@ model Invite {
   status         InviteStatus @default(PENDING)
   attempts       Int          @default(0)
   maxAttempts    Int          @default(3)
+
+  // Relationship sender has to recipient (e.g. "parent", "child", "spouse", "so", "bf", "gf", "sibling", "other")
+  relationship   String?
 
   // Timestamps
   expiresAt      DateTime     // 7 days from creation

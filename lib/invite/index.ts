@@ -12,7 +12,8 @@ const MAX_ATTEMPTS = 3;
 // ─── Create an invite ────────────────────────────────────────
 export async function createInvite(
   sender: User,
-  recipientEmail: string
+  recipientEmail: string,
+  relationship?: string,
 ): Promise<Invite> {
   // Prevent duplicate pending invites to the same address from same sender
   const existing = await prisma.invite.findFirst({
@@ -28,6 +29,7 @@ export async function createInvite(
     data: {
       senderId: sender.id,
       recipientEmail,
+      relationship: relationship || null,
       token: uuidv4(),
       expiresAt: new Date(Date.now() + INVITE_EXPIRES_DAYS * 86_400_000),
     },

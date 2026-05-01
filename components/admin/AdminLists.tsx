@@ -12,8 +12,38 @@ type Member = {
   email: string;
   role: string;
   status: string;
+  relationship: string | null;
   createdAt: Date | string;
 };
+
+const RELATIONSHIP_META: Record<string, { label: string; bg: string; color: string }> = {
+  parent:  { label:"Parent",  bg:"#f5f3ff", color:"#7c3aed" },
+  child:   { label:"Child",   bg:"#f5f3ff", color:"#7c3aed" },
+  sibling: { label:"Sibling", bg:"#ecfeff", color:"#0891b2" },
+  spouse:  { label:"Spouse",  bg:"#fdf2f8", color:"#be185d" },
+  so:      { label:"S.O.",    bg:"#fdf2f8", color:"#be185d" },
+  bf:      { label:"BF",      bg:"#fdf2f8", color:"#be185d" },
+  gf:      { label:"GF",      bg:"#fdf2f8", color:"#be185d" },
+  other:   { label:"Other",   bg:"#f5f4f0", color:"#78716c" },
+};
+
+function RelBadge({ value }: { value: string | null }) {
+  if (!value) return null;
+  const meta = RELATIONSHIP_META[value];
+  if (!meta) return null;
+  return (
+    <span style={{
+      background:meta.bg, color:meta.color,
+      fontSize:"10px", fontWeight:700,
+      padding:"2px 7px", borderRadius:"999px",
+      border:`1px solid ${meta.color}33`,
+      whiteSpace:"nowrap" as const,
+      letterSpacing:"0.02em",
+    }}>
+      {meta.label}
+    </span>
+  );
+}
 
 type Invite = {
   id: string;
@@ -296,8 +326,11 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                   {initials(member.firstName, member.lastName)}
                 </div>
 
-                {/* Name */}
-                <div style={nameStyle}>{member.firstName} {member.lastName}</div>
+                {/* Name + relationship */}
+                <div style={{ display:"flex", alignItems:"center", gap:"6px", minWidth:"130px" }}>
+                  <span style={nameStyle}>{member.firstName} {member.lastName}</span>
+                  <RelBadge value={member.relationship} />
+                </div>
 
                 {/* Email — hidden on mobile */}
                 <div className="al-col-secondary" style={emailStyle}>{member.email}</div>
@@ -499,6 +532,11 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                   colors={MEMBER_STATUS_COLORS[selectedMember.status] ?? MEMBER_STATUS_COLORS.active}
                 />
               </InfoRow>
+              {selectedMember.relationship && (
+                <InfoRow label="Relationship">
+                  <RelBadge value={selectedMember.relationship} />
+                </InfoRow>
+              )}
               <InfoRow label="Member since">{fullDate(selectedMember.createdAt)}</InfoRow>
               <InfoRow label="Email">{selectedMember.email}</InfoRow>
             </div>

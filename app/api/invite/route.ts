@@ -7,8 +7,11 @@ import { sendInviteEmail } from "@/lib/email";
 import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
 
+const VALID_RELATIONSHIPS = ["parent","child","sibling","spouse","so","bf","gf","other"] as const;
+
 const sendSchema = z.object({
   recipientEmail: z.string().email("Please enter a valid email address"),
+  relationship: z.enum(VALID_RELATIONSHIPS).optional(),
 });
 
 // POST /api/invite — send a new invite
@@ -25,7 +28,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { recipientEmail } = parsed.data;
+    const { recipientEmail, relationship } = parsed.data;
 
     // Can't invite yourself
     if (recipientEmail === user.email) {
@@ -41,7 +44,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const invite = await createInvite(user, recipientEmail);
+    const invite = await createInvite(user, recipientEmail, relationship);
     await sendInviteEmail(invite, user);
 
     return NextResponse.json({
@@ -68,6 +71,7 @@ export async function GET() {
       select: {
         id: true,
         recipientEmail: true,
+        relationship: true,
         status: true,
         attempts: true,
         expiresAt: true,
