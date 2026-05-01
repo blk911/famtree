@@ -80,6 +80,13 @@
   }
 }
 
+/* ── Feed / profile / settings: keep single-column content readable ─────── */
+/* These pages wrap their own content in this class to stay narrow           */
+.content-col {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
 /* ── Feed tabs: horizontally scrollable on mobile ────────────────────────── */
 .feed-tabs-bar {
   overflow-x: auto;

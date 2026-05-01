@@ -24,7 +24,7 @@ export default async function FamilyFeedPage() {
   const posts = await getFeedPosts(user.id);
 
   return (
-    <div className="space-y-6">
+    <div className="content-col space-y-6">
       <FamilyFeedClient currentUserId={user.id} posts={posts.map(serializePost)} />
     </div>
   );

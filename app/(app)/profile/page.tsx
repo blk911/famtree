@@ -215,7 +215,7 @@ export default function ProfilePage() {
   const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
 
   return (
-    <div className="space-y-6">
+    <div className="content-col space-y-6">
       {/* Tabs */}
       <div className="flex border-b border-stone-200">
         {(["timeline", "photos"] as const).map((tab) => (

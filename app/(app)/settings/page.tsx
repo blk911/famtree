@@ -86,7 +86,7 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="content-col space-y-8">
       {/* Account info */}
       <div className="profile-card p-6 space-y-4">
         <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
