@@ -21,7 +21,8 @@ model User {
   lastName      String
   dateOfBirth   DateTime?
   photoUrl      String?   // stored in /public/uploads or S3
-  role          String    @default("member") // "founder" | "member"
+  role          String    @default("member") // "founder" | "admin" | "member"
+  status        String    @default("active") // "active" | "suspended" | "archived" | "blocked"
   emailVerified Boolean   @default(false)
   lastLoginAt   DateTime?                  // set on each login; prev session = "last seen" baseline
   createdAt     DateTime  @default(now())

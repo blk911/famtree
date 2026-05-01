@@ -11,7 +11,6 @@ const card = {
   boxShadow:"0 1px 4px rgba(0,0,0,0.05)",
 };
 
-
 const isAdmin = (role: string) => role === "founder" || role === "admin";
 
 export default async function AdminPage() {
@@ -19,19 +18,27 @@ export default async function AdminPage() {
   if (!user) redirect("/login");
   if (!isAdmin(user.role)) redirect("/dashboard");
 
-  const [totalMembers, totalInvites, pendingInvites, waitlistCount, recentMembers, recentWaitlist] = await Promise.all([
+  const [totalMembers, totalInvites, pendingInvites, waitlistCount, recentMembers, recentInvites, recentWaitlist] = await Promise.all([
     prisma.user.count(),
     prisma.invite.count(),
     prisma.invite.count({ where:{ status:"PENDING" } }),
     prisma.waitlist.count(),
     prisma.user.findMany({
       orderBy:{ createdAt:"desc" },
-      take:5,
-      select:{ id:true, firstName:true, lastName:true, email:true, role:true, createdAt:true },
+      take: 20,
+      select:{ id:true, firstName:true, lastName:true, email:true, role:true, status:true, createdAt:true },
+    }),
+    prisma.invite.findMany({
+      orderBy:{ createdAt:"desc" },
+      take: 20,
+      select:{
+        id:true, recipientEmail:true, status:true, createdAt:true, expiresAt:true, acceptedAt:true,
+        sender:{ select:{ id:true, firstName:true, lastName:true } },
+      },
     }),
     prisma.waitlist.findMany({
       orderBy:{ createdAt:"desc" },
-      take:5,
+      take: 10,
       select:{ id:true, firstName:true, lastName:true, email:true, phone:true, createdAt:true },
     }),
   ]);
@@ -73,7 +80,7 @@ export default async function AdminPage() {
         ))}
       </div>
 
-      <AdminLists members={recentMembers} waitlist={recentWaitlist} />
+      <AdminLists members={recentMembers} invites={recentInvites} waitlist={recentWaitlist} />
     </div>
   );
 }
