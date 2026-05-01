@@ -335,6 +335,37 @@ model ActivityLog {
 }
 
 // ─────────────────────────────────────────────
+// SITE ANNOUNCEMENTS  (admin broadcast messages)
+// ─────────────────────────────────────────────
+model SiteAnnouncement {
+  id          String             @id @default(cuid())
+  title       String
+  body        String
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  createdById String
+  views       AnnouncementView[]
+
+  @@map("site_announcements")
+}
+
+model AnnouncementView {
+  id             String           @id @default(cuid())
+  userId         String
+  announcementId String
+  viewCount      Int              @default(1)
+  dismissedAt    DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  announcement SiteAnnouncement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, announcementId])
+  @@map("announcement_views")
+}
+
+// ─────────────────────────────────────────────
 // SESSIONS  (simple JWT refresh tracking)
 // ─────────────────────────────────────────────
 model Session {

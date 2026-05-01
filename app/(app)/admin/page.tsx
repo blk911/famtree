@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { AdminLists } from "@/components/admin/AdminLists";
+import { AnnouncementComposer } from "@/components/admin/AnnouncementComposer";
 
 const card = {
   background:"white", borderRadius:"16px",
@@ -80,6 +81,7 @@ export default async function AdminPage() {
         ))}
       </div>
 
+      <AnnouncementComposer />
       <AdminLists members={recentMembers} invites={recentInvites} waitlist={recentWaitlist} />
     </div>
   );
