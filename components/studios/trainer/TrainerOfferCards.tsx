@@ -13,9 +13,16 @@ type Props = {
   providerName: string;
   offers: StudioOffer[];
   previewMode?: boolean;
+  /** Wide 4-column grid on large screens (studio apply preview). */
+  gridColumns?: "auto" | "four";
 };
 
-export function TrainerOfferCards({ providerName, offers, previewMode = false }: Props) {
+export function TrainerOfferCards({
+  providerName,
+  offers,
+  previewMode = false,
+  gridColumns = "auto",
+}: Props) {
   const resolvedProviderName = useApplyStudioLiveName(providerName);
   const [selected, setSelected] = useState<StudioOffer | null>(null);
   const [open, setOpen] = useState(false);
@@ -40,7 +47,18 @@ export function TrainerOfferCards({ providerName, offers, previewMode = false }:
 
   return (
     <>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "18px" }}>
+      <div
+        style={
+          gridColumns === "four"
+            ? undefined
+            : { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "18px" }
+        }
+        className={
+          gridColumns === "four"
+            ? "grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-4"
+            : undefined
+        }
+      >
         {offers.map((offer) => (
           <button
             key={offer.id}

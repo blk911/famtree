@@ -1,6 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
-import { MapPin, Play, Sparkles } from "lucide-react";
+import { MapPin, Play } from "lucide-react";
 import type { Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
@@ -37,48 +36,82 @@ const TRAINING_HERO_IMG =
 const TRAINING_FOLD_IMG =
   "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=1400&q=75";
 
-function StudioStartBuildCard() {
-  return (
-    <aside
-      aria-label="Studio builder"
-      className="relative top-0 md:sticky md:top-24"
-      style={{ alignSelf: "start" }}
+/** OpenStreetMap embed (Denver area) — placeholder until studio address geocoding is wired. */
+const STUDIO_PREVIEW_MAP_EMBED =
+  "https://www.openstreetmap.org/export/embed.html?bbox=-105.15%2C39.68%2C-104.92%2C39.82&layer=mapnik";
+
+function LocationContactSection({
+  provider,
+  description,
+  showMap,
+}: {
+  provider: Provider;
+  description: string;
+  showMap?: boolean;
+}) {
+  const infoCard = (
+    <div
+      style={{
+        padding: "22px",
+        borderRadius: "20px",
+        background: "#fff",
+        border: `1px solid ${STUDIOS_LINE}`,
+        boxShadow: STUDIOS_CARD_SHADOW,
+        display: "flex",
+        gap: "12px",
+        alignItems: "flex-start",
+        height: showMap ? "100%" : undefined,
+      }}
     >
       <div
-        className="overflow-hidden rounded-[22px] border bg-white"
+        style={{
+          width: "40px",
+          height: "40px",
+          borderRadius: "12px",
+          background: "rgba(201, 166, 107, 0.15)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <MapPin style={{ width: "18px", height: "18px", color: "#b8956c" }} />
+      </div>
+      <div>
+        <p style={{ margin: 0, fontWeight: 600, color: STUDIOS_INK }}>{provider.locationLabel ?? "Denver metro"}</p>
+        {(provider.city || provider.state) && (
+          <p style={{ margin: "6px 0 0", fontSize: "14px", color: STUDIOS_MUTED }}>
+            {[provider.city, provider.state].filter(Boolean).join(", ")}
+          </p>
+        )}
+        <p style={{ margin: "12px 0 0", fontSize: "14px", lineHeight: 1.5, color: STUDIOS_MUTED }}>{description}</p>
+      </div>
+    </div>
+  );
+
+  if (!showMap) {
+    return infoCard;
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-stretch lg:gap-6">
+      {infoCard}
+      <div
+        className="flex min-h-[260px] flex-col overflow-hidden rounded-[20px] border bg-white lg:min-h-[300px]"
         style={{ borderColor: STUDIOS_LINE, boxShadow: STUDIOS_CARD_SHADOW }}
       >
-        <div className="relative h-[120px] w-full overflow-hidden">
-          <Image
-            src={TRAINING_FOLD_IMG}
-            alt=""
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 280px"
-            priority={false}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(180deg, rgba(38,38,38,0.05) 0%, rgba(38,38,38,0.45) 100%)",
-            }}
-          />
-          <div className="absolute bottom-3 left-4 right-4 flex items-center gap-2 text-white">
-            <Sparkles className="h-4 w-4 shrink-0 opacity-90" strokeWidth={2} />
-            <span className="text-xs font-bold uppercase tracking-[0.1em]">Coming next</span>
-          </div>
-        </div>
-        <div className="p-5">
-          <h3 className="text-base font-bold tracking-tight" style={{ color: STUDIOS_INK, margin: "0 0 8px" }}>
-            Your studio blocks
-          </h3>
-          <p className="m-0 text-sm leading-relaxed" style={{ color: STUDIOS_MUTED }}>
-            Testimonials, programs, schedules, and more will land here as we expand the builder. Use this space as your
-            anchor while we ship the next pieces.
-          </p>
-        </div>
+        <iframe
+          title="Studio location map preview"
+          src={STUDIO_PREVIEW_MAP_EMBED}
+          className="h-[240px] w-full shrink-0 border-0 lg:h-auto lg:min-h-0 lg:flex-1"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+        <p className="m-0 border-t border-black/[0.06] bg-stone-50/80 px-3 py-2 text-center text-[11px] leading-snug text-stone-500">
+          Preview map — your published address will center here.
+        </p>
       </div>
-    </aside>
+    </div>
   );
 }
 
@@ -102,8 +135,7 @@ function StudioPageMainColumns({
             "linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(250,247,241,0.92) 35%, rgba(243,238,228,0.55) 100%)",
         }}
       >
-        <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-8 px-6 pb-[72px] pt-10 md:grid-cols-[minmax(0,280px)_minmax(0,1fr)] md:items-start md:gap-10 md:pt-12">
-          <StudioStartBuildCard />
+        <div className="mx-auto max-w-[1200px] px-6 pb-[72px] pt-10 md:pt-12">
           <div style={{ minWidth: 0 }}>
             <section id="services" style={{ marginBottom: "48px" }}>
               <h2
@@ -120,7 +152,7 @@ function StudioPageMainColumns({
               <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
                 These sample cards match what clients will see. Open one to try the request flow — nothing is sent yet.
               </p>
-              <TrainerOfferCards providerName={provider.displayName} offers={offers} previewMode />
+              <TrainerOfferCards providerName={provider.displayName} offers={offers} previewMode gridColumns="four" />
             </section>
             <section id="contact">
               <h2
@@ -134,44 +166,11 @@ function StudioPageMainColumns({
               >
                 Location & contact
               </h2>
-              <div
-                style={{
-                  padding: "22px",
-                  borderRadius: "20px",
-                  background: "#fff",
-                  border: `1px solid ${STUDIOS_LINE}`,
-                  boxShadow: STUDIOS_CARD_SHADOW,
-                  display: "flex",
-                  gap: "12px",
-                  alignItems: "flex-start",
-                }}
-              >
-                <div
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "12px",
-                    background: "rgba(201, 166, 107, 0.15)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <MapPin style={{ width: "18px", height: "18px", color: "#b8956c" }} />
-                </div>
-                <div>
-                  <p style={{ margin: 0, fontWeight: 600, color: STUDIOS_INK }}>{provider.locationLabel ?? "Denver metro"}</p>
-                  {(provider.city || provider.state) && (
-                    <p style={{ margin: "6px 0 0", fontSize: "14px", color: STUDIOS_MUTED }}>
-                      {[provider.city, provider.state].filter(Boolean).join(", ")}
-                    </p>
-                  )}
-                  <p style={{ margin: "12px 0 0", fontSize: "14px", lineHeight: 1.5, color: STUDIOS_MUTED }}>
-                    Your real service area and contact options appear here after your studio is approved and published.
-                  </p>
-                </div>
-              </div>
+              <LocationContactSection
+                provider={provider}
+                description="Your real service area and contact options appear here after your studio is approved and published."
+                showMap
+              />
             </section>
           </div>
         </div>
@@ -229,44 +228,11 @@ function StudioPageMainColumns({
           >
             Location & contact
           </h2>
-          <div
-            style={{
-              padding: "22px",
-              borderRadius: "20px",
-              background: "#fff",
-              border: `1px solid ${STUDIOS_LINE}`,
-              boxShadow: STUDIOS_CARD_SHADOW,
-              display: "flex",
-              gap: "12px",
-              alignItems: "flex-start",
-            }}
-          >
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "12px",
-                background: "rgba(201, 166, 107, 0.15)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <MapPin style={{ width: "18px", height: "18px", color: "#b8956c" }} />
-            </div>
-            <div>
-              <p style={{ margin: 0, fontWeight: 600, color: STUDIOS_INK }}>{provider.locationLabel ?? "Denver metro"}</p>
-              {(provider.city || provider.state) && (
-                <p style={{ margin: "6px 0 0", fontSize: "14px", color: STUDIOS_MUTED }}>
-                  {[provider.city, provider.state].filter(Boolean).join(", ")}
-                </p>
-              )}
-              <p style={{ margin: "12px 0 0", fontSize: "14px", lineHeight: 1.5, color: STUDIOS_MUTED }}>
-                Prefer to start through a service? Use a card above — requests go to this provider when backend routing is live.
-              </p>
-            </div>
-          </div>
+          <LocationContactSection
+            provider={provider}
+            description="Prefer to start through a service? Use a card above — requests go to this provider when backend routing is live."
+            showMap
+          />
         </section>
       </div>
     </div>
