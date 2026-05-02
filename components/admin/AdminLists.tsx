@@ -13,6 +13,7 @@ type Member = {
   role: string;
   status: string;
   relationship: string | null;
+  invitedById: string | null;
   createdAt: Date | string;
 };
 
@@ -188,6 +189,11 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
   const [messageSending, setMessageSending] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
 
+  // Link-parent state
+  const [linkingMember, setLinkingMember] = useState<Member | null>(null);
+  const [linkParentId, setLinkParentId] = useState("");
+  const [linkSaving, setLinkSaving] = useState(false);
+
   // close modals on Escape
   useEffect(() => {
     if (!selectedMember && !selectedWaitlist && !messagingMember) return;
@@ -231,6 +237,29 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
       }
     } finally {
       setMessageSending(false);
+    }
+  };
+
+  // ─── Handle link-parent ──────────────────────────────────────────────────────
+
+  const handleLinkParent = async () => {
+    if (!linkingMember || !linkParentId || linkSaving) return;
+    setLinkSaving(true);
+    try {
+      const res = await fetch("/api/admin/link-parent", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: linkingMember.id, parentId: linkParentId }),
+      });
+      if (res.ok) {
+        setMembers((prev) =>
+          prev.map((m) => m.id === linkingMember.id ? { ...m, invitedById: linkParentId } : m)
+        );
+        setLinkingMember(null);
+        setLinkParentId("");
+      }
+    } finally {
+      setLinkSaving(false);
     }
   };
 
@@ -363,6 +392,21 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                     }}
                   >
                     <Mail style={{width:"12px",height:"12px"}} />
+                  </button>
+                  {/* Link-parent icon — repair orphan tree placement */}
+                  <button
+                    title={member.invitedById ? "Re-link tree parent" : "Link to tree parent"}
+                    onClick={(e) => { e.stopPropagation(); setLinkingMember(member); setLinkParentId(member.invitedById ?? ""); }}
+                    style={{
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      width:"26px", height:"26px", borderRadius:"6px",
+                      background: member.invitedById ? "#f0fdf4" : "#fff7ed",
+                      color: member.invitedById ? "#16a34a" : "#c2410c",
+                      border:"none", cursor:"pointer", flexShrink:0,
+                      transition:"filter 0.1s",
+                    }}
+                  >
+                    <Send style={{width:"11px",height:"11px"}} />
                   </button>
                   {actions.map((action) => {
                     const btn = ACTION_BTN[action];
@@ -608,6 +652,55 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal — link tree parent ─────────────────────────────────────────── */}
+      {linkingMember && (
+        <div
+          onClick={(e) => e.target === e.currentTarget && (setLinkingMember(null), setLinkParentId(""))}
+          style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:50,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}
+        >
+          <div style={{background:"white",borderRadius:"16px",padding:"24px",width:"100%",maxWidth:"400px",display:"flex",flexDirection:"column",gap:"16px"}}>
+            <div>
+              <h3 style={{fontSize:"15px",fontWeight:800,color:"#1c1917",margin:0}}>Link tree parent</h3>
+              <p style={{fontSize:"13px",color:"#78716c",margin:"4px 0 0"}}>
+                Set who invited <strong>{linkingMember.firstName} {linkingMember.lastName}</strong> into the tree.
+              </p>
+            </div>
+            <div>
+              <label style={{fontSize:"12px",fontWeight:700,color:"#78716c",display:"block",marginBottom:"6px"}}>INVITED BY</label>
+              <select
+                value={linkParentId}
+                onChange={(e) => setLinkParentId(e.target.value)}
+                style={{width:"100%",padding:"9px 12px",borderRadius:"8px",border:"1px solid #e7e5e4",fontSize:"14px",background:"white",color:"#1c1917"}}
+              >
+                <option value="">— select a member —</option>
+                {members
+                  .filter((m) => m.id !== linkingMember.id)
+                  .map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.firstName} {m.lastName} ({m.email})
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div style={{display:"flex",gap:"8px",justifyContent:"flex-end"}}>
+              <button
+                onClick={() => { setLinkingMember(null); setLinkParentId(""); }}
+                style={{padding:"8px 16px",borderRadius:"8px",border:"1px solid #e7e5e4",background:"white",fontSize:"13px",fontWeight:700,cursor:"pointer",color:"#78716c"}}
+              >
+                Cancel
+              </button>
+              <button
+                disabled={!linkParentId || linkSaving}
+                onClick={handleLinkParent}
+                style={{padding:"8px 16px",borderRadius:"8px",border:"none",background:"#0f1729",color:"white",fontSize:"13px",fontWeight:700,cursor:linkParentId ? "pointer" : "not-allowed",opacity:linkParentId ? 1 : 0.5}}
+              >
+                {linkSaving ? "Saving…" : "Save link"}
+              </button>
+            </div>
           </div>
         </div>
       )}
