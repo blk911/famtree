@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, User, Mail,
-  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText,
+  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2,
 } from "lucide-react";
 import { useState } from "react";
 import type { User as PrismaUser } from "@prisma/client";
@@ -25,6 +25,7 @@ const VAULT_ITEMS = [
 // Settings sub-items (admin only — shown beneath the Settings accordion)
 const SETTINGS_ADMIN_ITEMS = [
   { href: "/settings",        label: "Settings",      icon: null },
+  { href: "/admin/studios",   label: "AIH Studios",   icon: Building2 },
   { href: "/admin/activity",  label: "Activity Log",  icon: ScrollText },
 ];
 
@@ -35,7 +36,7 @@ export function AppSidebar({ user, open = false }: Props) {
   const isAdmin = user.role === "founder" || user.role === "admin";
 
   const vaultActive    = pathname.startsWith("/family-vault") || pathname === "/profile" || pathname.startsWith("/profile/") || pathname === "/tree";
-  const settingsActive = pathname === "/settings" || pathname.startsWith("/settings/") || pathname === "/admin/activity";
+  const settingsActive = pathname === "/settings" || pathname.startsWith("/settings/") || pathname === "/admin/activity" || pathname === "/admin/studios" || pathname.startsWith("/admin/studios/");
 
   const [vaultOpen,    setVaultOpen]    = useState(vaultActive);
   const [settingsOpen, setSettingsOpen] = useState(settingsActive);
@@ -155,6 +156,11 @@ export function AppSidebar({ user, open = false }: Props) {
         <Link href={INVITE.href} style={linkStyle(pathname === INVITE.href)}>
           <Mail style={{width:"18px",height:"18px",flexShrink:0}} />
           {INVITE.label}
+        </Link>
+
+        <Link href="/studios" style={linkStyle(pathname === "/studios" || pathname.startsWith("/studios/"))}>
+          <Building2 style={{width:"18px",height:"18px",flexShrink:0}} />
+          AIH Studios
         </Link>
 
         {/* Settings — accordion for admins, plain link for members */}

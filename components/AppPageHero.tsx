@@ -11,6 +11,7 @@ type HeroUser = {
 };
 
 const HERO_COPY: Array<{ match: (path: string) => boolean; title: string; subtitle: string }> = [
+  { match: (path) => path === "/admin/studios" || path.startsWith("/admin/studios/"), title: "AIH Studios", subtitle: "Studio management and directory" },
   { match: (path) => path === "/admin", title: "Admin", subtitle: "AMIHUMAN.NET control center" },
   { match: (path) => path === "/dashboard", title: "Dashboard", subtitle: "Your family activity at a glance" },
   { match: (path) => path === "/family-vault/posts", title: "Open Feed", subtitle: "Posts from you and your family network" },
