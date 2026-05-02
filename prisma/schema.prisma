@@ -32,6 +32,11 @@ model User {
   // Profile (1-to-1)
   profile       Profile?
 
+  // Tree placement — who invited this user (durable, survives invite record deletion)
+  invitedById   String?
+  invitedBy     User?     @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
+  invitedUsers  User[]    @relation("InvitedBy")
+
   // Invites this user has SENT
   sentInvites   Invite[]  @relation("SentInvites")
 
