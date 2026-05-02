@@ -27,17 +27,17 @@ export const APPLY_INTRO_PLACEHOLDER: ApplyStudioIntro = {
   ],
 };
 
-/** Hero contact strip: pulls from account where possible; placeholders for studio-specific fields. */
+/** Prefill from AMIHUMAN.NET account / profile where available; otherwise empty (placeholder hints in the UI). */
 export function buildApplyHeroFields(
   user: { firstName: string; lastName: string; email: string; photoUrl: string | null } | null,
   profile: { location: string | null } | null,
 ): ApplyStudioHeroFields {
   return {
-    fullName: user ? `${user.firstName} ${user.lastName}` : "Your full name",
-    businessName: "Your business / studio name",
-    email: user?.email ?? "you@example.com",
-    phone: "(555) 000-0000",
-    physicalAddress: profile?.location?.trim() || "Street, city, state — add when you publish",
+    fullName: user ? `${user.firstName} ${user.lastName}`.trim() : "",
+    businessName: "",
+    email: user?.email?.trim() ?? "",
+    phone: "",
+    physicalAddress: profile?.location?.trim() ?? "",
   };
 }
 

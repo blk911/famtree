@@ -12,8 +12,10 @@ build/
 # ── Environment / secrets ─────────────────────────────────────
 .env
 .env.local
+.env.production
+.env.development
 .env.*.local
-# (keep .env.local.example — it's the template, no real secrets)
+# (keep *.example — templates only, no real secrets)
 
 # ── TypeScript ────────────────────────────────────────────────
 tsconfig.tsbuildinfo

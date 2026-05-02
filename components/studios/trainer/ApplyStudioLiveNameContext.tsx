@@ -7,5 +7,7 @@ export const ApplyStudioLiveNameContext = createContext<string | undefined>(unde
 
 export function useApplyStudioLiveName(fallback: string): string {
   const v = useContext(ApplyStudioLiveNameContext);
-  return v ?? fallback;
+  if (v === undefined || v === null) return fallback;
+  const trimmed = v.trim();
+  return trimmed === "" ? fallback : v;
 }
