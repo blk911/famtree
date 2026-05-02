@@ -27,7 +27,7 @@ export default async function AdminPage() {
     prisma.user.findMany({
       orderBy:{ createdAt:"desc" },
       take: 20,
-      select:{ id:true, firstName:true, lastName:true, email:true, role:true, status:true, relationship:true, createdAt:true },
+      select:{ id:true, firstName:true, lastName:true, email:true, role:true, status:true, relationship:true, invitedById:true, createdAt:true },
     }),
     prisma.invite.findMany({
       orderBy:{ createdAt:"desc" },

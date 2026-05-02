@@ -17,6 +17,7 @@ type Member = {
   photoUrl: string | null;
   role: string;
   createdAt: Date;
+  invitedById: string | null;
   profile: { bio: string | null; familyRole: string | null; location: string | null } | null;
 };
 
@@ -37,9 +38,14 @@ function buildTree(
   const parentOf      = new Map<string, string>();
   const invitedAtOf   = new Map<string, Date>();
 
+  // Primary: use the durable invitedById field on each user
+  for (const m of members) {
+    if (m.invitedById) parentOf.set(m.id, m.invitedById);
+  }
+  // Fallback: derive from invite records (covers pre-migration rows)
   for (const inv of invites) {
     const child = emailToMember.get(inv.recipientEmail.toLowerCase());
-    if (child) {
+    if (child && !parentOf.has(child.id)) {
       parentOf.set(child.id, inv.senderId);
       invitedAtOf.set(child.id, inv.createdAt);
     }
@@ -110,7 +116,11 @@ export default async function TreePage() {
 
   const [members, invites, trustUnits] = await Promise.all([
     prisma.user.findMany({
-      include: { profile: { select: { bio: true, familyRole: true, location: true } } },
+      select: {
+        id:true, firstName:true, lastName:true, email:true,
+        photoUrl:true, role:true, createdAt:true, invitedById:true,
+        profile: { select: { bio:true, familyRole:true, location:true } },
+      },
       orderBy: { createdAt: "asc" },
     }),
     prisma.invite.findMany({

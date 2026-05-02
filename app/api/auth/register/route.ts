@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
 
     // If invite token provided — verify it was already accepted (identity challenge passed)
     let inviteRelationship: string | null = null;
+    let invitedById: string | null = null;
     if (inviteToken) {
       const invite = await prisma.invite.findUnique({ where: { token: inviteToken } });
       if (!invite || invite.status !== "ACCEPTED") {
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
         );
       }
       inviteRelationship = invite.relationship ?? null;
+      invitedById = invite.senderId;
     }
 
     // Determine role
@@ -71,11 +73,10 @@ export async function POST(req: NextRequest) {
         dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
         role,
         relationship: inviteRelationship,
+        invitedById: invitedById ?? undefined,
         emailVerified: true, // email confirmed via invite challenge
         profile: {
-          create: {
-            // Create blank profile automatically
-          },
+          create: {},
         },
       },
     });
