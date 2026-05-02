@@ -20,7 +20,7 @@ export const MOCK_PROVIDERS: Provider[] = [
     locationLabel: "Lone Tree, CO",
     city: "Lone Tree",
     state: "CO",
-    imageUrl: "/studios/placeholders/provider-1.jpg",
+    imageUrl: undefined,
     introVideoUrl: undefined,
     bio: "High-performance strength and conditioning for athletes and weekend warriors.",
     claimed: true,
@@ -37,7 +37,7 @@ export const MOCK_PROVIDERS: Provider[] = [
     locationLabel: "Park Meadows, CO",
     city: "Lone Tree",
     state: "CO",
-    imageUrl: "/studios/placeholders/provider-2.jpg",
+    imageUrl: undefined,
     bio: "Modern recovery methods for high performers.",
     claimed: true,
     active: true,
@@ -53,7 +53,7 @@ export const MOCK_PROVIDERS: Provider[] = [
     locationLabel: "Denver, CO",
     city: "Denver",
     state: "CO",
-    imageUrl: "/studios/placeholders/provider-3.jpg",
+    imageUrl: undefined,
     bio: "PT-led movement screens and rehab plans.",
     claimed: false,
     active: true,
@@ -68,7 +68,7 @@ export const MOCK_PROVIDERS: Provider[] = [
     locationLabel: "Denver, CO",
     city: "Denver",
     state: "CO",
-    imageUrl: "/studios/placeholders/provider-4.jpg",
+    imageUrl: undefined,
     bio: "Mobile and in-studio IV hydration.",
     claimed: false,
     active: true,
@@ -109,6 +109,50 @@ export const MOCK_OFFERS: StudioOffer[] = [
     priceCents: 12500,
     durationMinutes: 90,
     packageType: "single",
+    active: true,
+  },
+  {
+    id: "offer_004",
+    studioId: "studio_003",
+    providerId: "prov_003",
+    title: "Movement Screen & Plan",
+    description: "Full assessment, home program, and one follow-up touchpoint.",
+    priceCents: 18900,
+    durationMinutes: 75,
+    packageType: "intro",
+    active: true,
+  },
+  {
+    id: "offer_005",
+    studioId: "studio_003",
+    providerId: "prov_003",
+    title: "4-Visit Rehab Track",
+    description: "Structured progression for return-to-sport or daily life goals.",
+    priceCents: 52000,
+    durationMinutes: 60,
+    packageType: "three_session",
+    active: true,
+  },
+  {
+    id: "offer_006",
+    studioId: "studio_004",
+    providerId: "prov_004",
+    title: "Vitality Drip",
+    description: "Hydration + B12 — great before or after a big training weekend.",
+    priceCents: 14900,
+    durationMinutes: 45,
+    packageType: "single",
+    active: true,
+  },
+  {
+    id: "offer_007",
+    studioId: "studio_004",
+    providerId: "prov_004",
+    title: "Athlete Recovery Pack (3)",
+    description: "Three visits, curated for endurance and strength athletes.",
+    priceCents: 38000,
+    durationMinutes: 50,
+    packageType: "three_session",
     active: true,
   },
 ];
@@ -170,6 +214,18 @@ export const MOCK_TESTIMONIALS: StudioTestimonial[] = [
     role: "Recovery Provider",
   },
 ];
+
+export function getProviderBySlug(slug: string): Provider | undefined {
+  return MOCK_PROVIDERS.find((p) => p.slug === slug && p.active);
+}
+
+export function getActiveOffersForProvider(providerId: string): StudioOffer[] {
+  return MOCK_OFFERS.filter((o) => o.providerId === providerId && o.active);
+}
+
+export function formatOfferPriceUsd(cents: number): string {
+  return (cents / 100).toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+}
 
 // ─── Aggregate stats helpers (for admin overview) ──────────────
 export function getStudiosOverview() {

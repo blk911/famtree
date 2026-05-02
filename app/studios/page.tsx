@@ -3,13 +3,16 @@
 // Light, warm editorial aesthetic (cream / soft accent — broad appeal).
 
 import Link from "next/link";
-import { ArrowRight, Sparkles, Mic, Users, Building2, Heart } from "lucide-react";
-import { MOCK_TESTIMONIALS } from "@/lib/studios/mockStudios";
+import { ArrowRight, Sparkles, Mic, Users, Building2, Heart, ChevronRight } from "lucide-react";
+import { MOCK_TESTIMONIALS, MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
+import { StudiosFooter } from "@/components/studios/StudiosFooter";
+import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
+import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 
-const ink = "#262626";
-const muted = "#737373";
-const line = "rgba(0, 0, 0, 0.07)";
-const cardShadow = "0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06)";
+const ink = STUDIOS_INK;
+const muted = STUDIOS_MUTED;
+const line = STUDIOS_LINE;
+const cardShadow = STUDIOS_CARD_SHADOW;
 
 export default function StudiosLandingPage() {
   return (
@@ -124,6 +127,83 @@ export default function StudiosLandingPage() {
             >
               Explore Studios
             </Link>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: "0 24px 56px" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+          <h2
+            style={{
+              fontSize: "clamp(24px, 3.5vw, 30px)",
+              fontWeight: 700,
+              textAlign: "center",
+              marginBottom: "10px",
+              letterSpacing: "-0.4px",
+              color: ink,
+            }}
+          >
+            Meet providers
+          </h2>
+          <p
+            style={{
+              fontSize: "15px",
+              color: muted,
+              textAlign: "center",
+              marginBottom: "32px",
+              maxWidth: "520px",
+              marginInline: "auto",
+            }}
+          >
+            Explore live studio pages — same look you&apos;ll get for your practice.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "16px" }}>
+            {MOCK_PROVIDERS.filter((p) => p.active).map((p) => (
+              <Link
+                key={p.id}
+                href={`/studios/${p.slug}`}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                  padding: "22px",
+                  borderRadius: "20px",
+                  background: "#fff",
+                  border: `1px solid ${line}`,
+                  boxShadow: cardShadow,
+                  textDecoration: "none",
+                  color: ink,
+                  transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                }}
+                className="hover:-translate-y-0.5"
+              >
+                <span
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: muted,
+                  }}
+                >
+                  {PROVIDER_CATEGORY_LABELS[p.category]}
+                </span>
+                <span style={{ fontSize: "18px", fontWeight: 700, letterSpacing: "-0.02em" }}>{p.displayName}</span>
+                {p.locationLabel && <span style={{ fontSize: "13px", color: muted }}>{p.locationLabel}</span>}
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    marginTop: "6px",
+                  }}
+                >
+                  View studio <ChevronRight style={{ width: "16px", height: "16px" }} />
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -259,65 +339,7 @@ export default function StudiosLandingPage() {
         </div>
       </section>
 
-      <footer
-        style={{
-          padding: "72px 24px 40px",
-          background: "#fff",
-          borderTop: `1px solid ${line}`,
-        }}
-      >
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-              gap: "36px",
-              marginBottom: "52px",
-            }}
-          >
-            {FOOTER_COLUMNS.map((col) => (
-              <div key={col.title}>
-                <h4
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: ink,
-                    marginBottom: "16px",
-                  }}
-                >
-                  {col.title}
-                </h4>
-                <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
-                  {col.items.map((item) => (
-                    <li key={item}>
-                      <span style={{ fontSize: "14px", color: muted }}>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div
-            style={{
-              paddingTop: "28px",
-              borderTop: `1px solid ${line}`,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "14px",
-            }}
-          >
-            <div style={{ fontSize: "13px", color: muted }}>
-              © {new Date().getFullYear()} AIH Studios — A surface of AmIHuman.NET
-            </div>
-            <div style={{ fontSize: "13px", color: muted }}>Made in Denver, Colorado</div>
-          </div>
-        </div>
-      </footer>
+      <StudiosFooter />
     </>
   );
 }
@@ -519,11 +541,3 @@ const BENEFITS_COLUMNS = [
     ],
   },
 ] as const;
-
-const FOOTER_COLUMNS = [
-  { title: "Studios", items: ["Browse", "Start Your Studio", "Pricing", "Apply"] },
-  { title: "Company", items: ["About AIH", "Blog", "Press", "Careers"] },
-  { title: "Resources", items: ["FAQ", "Help Center", "Privacy", "Terms"] },
-  { title: "Locations", items: ["Denver, CO", "Lone Tree / Park Meadows", "Coming Soon"] },
-  { title: "Contact", items: ["Support email", "Instagram", "Press inquiries"] },
-];

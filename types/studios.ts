@@ -37,6 +37,13 @@ export type OfferPackageType =
   | "three_session"
   | "custom";
 
+export const OFFER_PACKAGE_LABELS: Record<OfferPackageType, string> = {
+  intro: "Intro",
+  single: "Single visit",
+  three_session: "Multi-session",
+  custom: "Custom",
+};
+
 // ─── Display labels for categories ─────────────────────────────
 export const PROVIDER_CATEGORY_LABELS: Record<ProviderCategory, string> = {
   trainer:           "Personal Trainer",
