@@ -199,7 +199,8 @@ model Invite {
 
 enum InviteStatus {
   PENDING    // sent, not yet attempted
-  ACCEPTED   // identity verified, account created
+  ACCEPTED   // identity verified, awaiting registration
+  REGISTERED // account successfully created — terminal state
   EXPIRED    // time or attempts exhausted
   CANCELLED  // sender revoked
 }
