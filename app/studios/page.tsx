@@ -1,159 +1,194 @@
 // app/studios/page.tsx
 // AIH Studios — public marketing landing page
-// Premium dark/glassmorphism aesthetic, mobile responsive.
+// Light, warm editorial aesthetic (cream / soft accent — broad appeal).
 
 import Link from "next/link";
 import { ArrowRight, Sparkles, Mic, Users, Building2, Heart } from "lucide-react";
 import { MOCK_TESTIMONIALS } from "@/lib/studios/mockStudios";
 
+const ink = "#262626";
+const muted = "#737373";
+const line = "rgba(0, 0, 0, 0.07)";
+const cardShadow = "0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06)";
+
 export default function StudiosLandingPage() {
   return (
     <>
-      {/* ─── HERO ───────────────────────────────────────────── */}
-      <section style={{
-        position: "relative",
-        padding: "100px 24px 120px",
-        overflow: "hidden",
-      }}>
-        {/* Glow accents */}
-        <div style={{
-          position: "absolute",
-          top: "-200px",
-          left: "20%",
-          width: "500px",
-          height: "500px",
-          background: "radial-gradient(circle, rgba(233,108,80,0.25) 0%, transparent 60%)",
-          filter: "blur(40px)",
-          pointerEvents: "none",
-        }} />
-        <div style={{
-          position: "absolute",
-          bottom: "-100px",
-          right: "10%",
-          width: "400px",
-          height: "400px",
-          background: "radial-gradient(circle, rgba(99,102,241,0.20) 0%, transparent 60%)",
-          filter: "blur(40px)",
-          pointerEvents: "none",
-        }} />
+      <section
+        style={{
+          position: "relative",
+          padding: "88px 24px 100px",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: "-80px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "min(720px, 90vw)",
+            height: "280px",
+            background: "radial-gradient(circle, rgba(255, 218, 230, 0.5) 0%, transparent 70%)",
+            filter: "blur(20px)",
+            pointerEvents: "none",
+          }}
+        />
 
         <div style={{ maxWidth: "1100px", margin: "0 auto", textAlign: "center", position: "relative", zIndex: 1 }}>
-          <div style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "6px 16px",
-            borderRadius: "999px",
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.12)",
-            backdropFilter: "blur(12px)",
-            fontSize: "12px",
-            fontWeight: 500,
-            color: "rgba(255,255,255,0.85)",
-            marginBottom: "32px",
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
-          }}>
-            <Sparkles style={{ width: "13px", height: "13px", color: "#f4a261" }} />
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "8px 18px",
+              borderRadius: "999px",
+              background: "#fff",
+              border: `1px solid ${line}`,
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)",
+              fontSize: "11px",
+              fontWeight: 600,
+              color: muted,
+              marginBottom: "28px",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
+            <Sparkles style={{ width: "13px", height: "13px", color: "#d4a574" }} />
             AIH Studios — Beta
           </div>
 
-          <h1 style={{
-            fontSize: "clamp(40px, 6vw, 68px)",
-            fontWeight: 700,
-            letterSpacing: "-1.5px",
-            lineHeight: 1.05,
-            marginBottom: "24px",
-            background: "linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.7) 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}>
-            Run Your Training Business<br />
-            <span style={{ color: "#f4a261", WebkitTextFillColor: "#f4a261" }}>Like a Network</span>
+          <h1
+            style={{
+              fontSize: "clamp(36px, 5.5vw, 60px)",
+              fontWeight: 700,
+              letterSpacing: "-1.8px",
+              lineHeight: 1.06,
+              marginBottom: "22px",
+              color: ink,
+            }}
+          >
+            Run Your Training Business
+            <br />
+            <span style={{ color: "#b8956c" }}>Like a Network</span>
           </h1>
 
-          <p style={{
-            fontSize: "19px",
-            lineHeight: 1.6,
-            color: "rgba(255,255,255,0.7)",
-            maxWidth: "680px",
-            margin: "0 auto 48px",
-          }}>
+          <p
+            style={{
+              fontSize: "18px",
+              lineHeight: 1.65,
+              color: muted,
+              maxWidth: "620px",
+              margin: "0 auto 44px",
+            }}
+          >
             Studios gives trainers, recovery pros, and wellness providers a private way to connect with clients,
             manage access, and grow through trusted relationships.
           </p>
 
-          <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/studios/apply" style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "14px 32px",
-              borderRadius: "10px",
-              background: "linear-gradient(135deg, #e96c50, #f4a261)",
-              color: "white",
-              fontSize: "15px",
-              fontWeight: 600,
-              textDecoration: "none",
-              boxShadow: "0 8px 24px rgba(233,108,80,0.35)",
-            }}>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+            <Link
+              href="/studios/apply"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "14px 28px",
+                borderRadius: "999px",
+                background: ink,
+                color: "#fff",
+                fontSize: "15px",
+                fontWeight: 600,
+                textDecoration: "none",
+                boxShadow: "0 4px 14px rgba(38, 38, 38, 0.22)",
+              }}
+            >
               Start Your Studio <ArrowRight style={{ width: "16px", height: "16px" }} />
             </Link>
-            <Link href="#explore" style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "14px 32px",
-              borderRadius: "10px",
-              background: "rgba(255,255,255,0.06)",
-              color: "white",
-              fontSize: "15px",
-              fontWeight: 600,
-              textDecoration: "none",
-              border: "1px solid rgba(255,255,255,0.15)",
-              backdropFilter: "blur(8px)",
-            }}>
+            <Link
+              href="#explore"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "14px 28px",
+                borderRadius: "999px",
+                background: "#fff",
+                color: ink,
+                fontSize: "15px",
+                fontWeight: 600,
+                textDecoration: "none",
+                border: `1px solid ${line}`,
+                boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)",
+              }}
+            >
               Explore Studios
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ─── FLOATING STORY CARDS ──────────────────────────── */}
-      <section id="explore" style={{ padding: "60px 24px 100px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "32px" }}>
+      <section id="explore" style={{ padding: "48px 24px 88px" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "40px" }}>
           {STORY_CARDS.map((card, i) => (
             <FloatingCard key={card.title} card={card} reverse={i % 2 === 1} />
           ))}
         </div>
       </section>
 
-      {/* ─── TESTIMONIALS ──────────────────────────────────── */}
-      <section style={{ padding: "80px 24px", background: "rgba(255,255,255,0.02)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+      <section
+        style={{
+          padding: "76px 24px",
+          background: "rgba(255, 255, 255, 0.55)",
+          borderTop: `1px solid ${line}`,
+          borderBottom: `1px solid ${line}`,
+        }}
+      >
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "32px", fontWeight: 700, textAlign: "center", marginBottom: "12px", letterSpacing: "-0.5px" }}>
+          <h2
+            style={{
+              fontSize: "clamp(26px, 4vw, 34px)",
+              fontWeight: 700,
+              textAlign: "center",
+              marginBottom: "10px",
+              letterSpacing: "-0.4px",
+              color: ink,
+            }}
+          >
             Trusted by performance providers
           </h2>
-          <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.6)", textAlign: "center", marginBottom: "48px" }}>
+          <p style={{ fontSize: "16px", color: muted, textAlign: "center", marginBottom: "44px", maxWidth: "480px", marginInline: "auto" }}>
             Real operators running real businesses on Studios.
           </p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
-            {MOCK_TESTIMONIALS.map(t => (
-              <div key={t.id} style={{
-                padding: "28px",
-                borderRadius: "16px",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                backdropFilter: "blur(12px)",
-              }}>
-                <p style={{ fontSize: "15px", lineHeight: 1.65, color: "rgba(255,255,255,0.85)", marginBottom: "20px", fontStyle: "italic" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "18px" }}>
+            {MOCK_TESTIMONIALS.map((t) => (
+              <div
+                key={t.id}
+                style={{
+                  padding: "26px",
+                  borderRadius: "20px",
+                  background: "#fff",
+                  border: `1px solid ${line}`,
+                  boxShadow: cardShadow,
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "15px",
+                    lineHeight: 1.65,
+                    color: "#404040",
+                    marginBottom: "18px",
+                    fontStyle: "italic",
+                  }}
+                >
                   &ldquo;{t.quote}&rdquo;
                 </p>
                 <div>
-                  <div style={{ fontSize: "14px", fontWeight: 600 }}>{t.attribution}</div>
-                  {t.role && <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", marginTop: "2px" }}>{t.role}</div>}
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: ink }}>{t.attribution}</div>
+                  {t.role && (
+                    <div style={{ fontSize: "12px", color: muted, marginTop: "4px" }}>{t.role}</div>
+                  )}
                 </div>
               </div>
             ))}
@@ -161,41 +196,59 @@ export default function StudiosLandingPage() {
         </div>
       </section>
 
-      {/* ─── BENEFITS ──────────────────────────────────────── */}
-      <section style={{ padding: "100px 24px" }}>
+      <section style={{ padding: "88px 24px" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "32px", fontWeight: 700, textAlign: "center", marginBottom: "12px", letterSpacing: "-0.5px" }}>
+          <h2
+            style={{
+              fontSize: "clamp(26px, 4vw, 34px)",
+              fontWeight: 700,
+              textAlign: "center",
+              marginBottom: "10px",
+              letterSpacing: "-0.4px",
+              color: ink,
+            }}
+          >
             Built for everyone in the room
           </h2>
-          <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.6)", textAlign: "center", marginBottom: "56px" }}>
+          <p style={{ fontSize: "16px", color: muted, textAlign: "center", marginBottom: "48px" }}>
             One network, three perspectives.
           </p>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
-            {BENEFITS_COLUMNS.map(col => (
-              <div key={col.title} style={{
-                padding: "32px",
-                borderRadius: "20px",
-                background: `linear-gradient(180deg, ${col.accent}22 0%, rgba(255,255,255,0.03) 100%)`,
-                border: `1px solid ${col.accent}33`,
-                backdropFilter: "blur(12px)",
-              }}>
-                <div style={{
-                  width: "44px", height: "44px",
-                  borderRadius: "12px",
-                  background: col.accent,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  marginBottom: "20px",
-                }}>
-                  <col.Icon style={{ width: "22px", height: "22px", color: "white" }} />
+            {BENEFITS_COLUMNS.map((col) => (
+              <div
+                key={col.title}
+                style={{
+                  padding: "30px",
+                  borderRadius: "22px",
+                  background: "#fff",
+                  border: `1px solid ${line}`,
+                  boxShadow: cardShadow,
+                  borderTop: `3px solid ${col.accent}`,
+                }}
+              >
+                <div
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "14px",
+                    background: `${col.accent}18`,
+                    color: col.accent,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: "18px",
+                  }}
+                >
+                  <col.Icon style={{ width: "22px", height: "22px" }} />
                 </div>
-                <h3 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "16px", letterSpacing: "-0.3px" }}>
+                <h3 style={{ fontSize: "19px", fontWeight: 700, marginBottom: "14px", letterSpacing: "-0.2px", color: ink }}>
                   {col.title}
                 </h3>
                 <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
-                  {col.bullets.map(b => (
-                    <li key={b} style={{ fontSize: "14px", color: "rgba(255,255,255,0.75)", lineHeight: 1.5, display: "flex", gap: "8px" }}>
-                      <span style={{ color: col.accent, marginTop: "2px" }}>—</span>
+                  {col.bullets.map((b) => (
+                    <li key={b} style={{ fontSize: "14px", color: "#525252", lineHeight: 1.55, display: "flex", gap: "10px" }}>
+                      <span style={{ color: col.accent, marginTop: "2px", fontWeight: 600 }}>·</span>
                       <span>{b}</span>
                     </li>
                   ))}
@@ -206,23 +259,40 @@ export default function StudiosLandingPage() {
         </div>
       </section>
 
-      {/* ─── TALL FOOTER ───────────────────────────────────── */}
-      <footer style={{
-        padding: "80px 24px 40px",
-        background: "rgba(0,0,0,0.4)",
-        borderTop: "1px solid rgba(255,255,255,0.08)",
-      }}>
+      <footer
+        style={{
+          padding: "72px 24px 40px",
+          background: "#fff",
+          borderTop: `1px solid ${line}`,
+        }}
+      >
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "40px", marginBottom: "60px" }}>
-            {FOOTER_COLUMNS.map(col => (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+              gap: "36px",
+              marginBottom: "52px",
+            }}
+          >
+            {FOOTER_COLUMNS.map((col) => (
               <div key={col.title}>
-                <h4 style={{ fontSize: "13px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(255,255,255,0.95)", marginBottom: "18px" }}>
+                <h4
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: ink,
+                    marginBottom: "16px",
+                  }}
+                >
                   {col.title}
                 </h4>
-                <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "11px" }}>
-                  {col.items.map(item => (
+                <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {col.items.map((item) => (
                     <li key={item}>
-                      <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)" }}>{item}</span>
+                      <span style={{ fontSize: "14px", color: muted }}>{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -230,18 +300,21 @@ export default function StudiosLandingPage() {
             ))}
           </div>
 
-          <div style={{
-            paddingTop: "30px",
-            borderTop: "1px solid rgba(255,255,255,0.08)",
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-            flexWrap: "wrap", gap: "16px",
-          }}>
-            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)" }}>
+          <div
+            style={{
+              paddingTop: "28px",
+              borderTop: `1px solid ${line}`,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "14px",
+            }}
+          >
+            <div style={{ fontSize: "13px", color: muted }}>
               © {new Date().getFullYear()} AIH Studios — A surface of AmIHuman.NET
             </div>
-            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)" }}>
-              Made in Denver, Colorado
-            </div>
+            <div style={{ fontSize: "13px", color: muted }}>Made in Denver, Colorado</div>
           </div>
         </div>
       </footer>
@@ -249,59 +322,85 @@ export default function StudiosLandingPage() {
   );
 }
 
-// ─── FLOATING CARD COMPONENT ──────────────────────────────────
-function FloatingCard({ card, reverse }: { card: typeof STORY_CARDS[number]; reverse: boolean }) {
+function FloatingCard({ card, reverse }: { card: (typeof STORY_CARDS)[number]; reverse: boolean }) {
   return (
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: "40px",
-      alignItems: "center",
-      direction: reverse ? "rtl" : "ltr",
-    }}>
-      {/* Card */}
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
+        gap: "32px",
+        alignItems: "center",
+        direction: reverse ? "rtl" : "ltr",
+      }}
+    >
       <div style={{ direction: "ltr" }}>
-        <div style={{
-          padding: "36px",
-          borderRadius: "24px",
-          background: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-          transition: "transform 0.3s ease, border-color 0.3s ease",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-            <div style={{
-              width: "10px", height: "10px", borderRadius: "50%",
-              background: card.accent,
-              boxShadow: `0 0 12px ${card.accent}`,
-            }} />
-            <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}>
+        <div
+          style={{
+            padding: "32px",
+            borderRadius: "22px",
+            background: "#fff",
+            border: `1px solid ${line}`,
+            boxShadow: cardShadow,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "18px" }}>
+            <div
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: card.accent,
+              }}
+            />
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: muted,
+              }}
+            >
               {card.eyebrow}
             </span>
             {/* TODO(studios:audio): wire intro voice clip per card */}
-            <button title="Voice intro coming soon" disabled style={{
-              marginLeft: "auto",
-              width: "32px", height: "32px",
-              borderRadius: "50%",
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "not-allowed",
-              opacity: 0.5,
-            }}>
-              <Mic style={{ width: "13px", height: "13px", color: "rgba(255,255,255,0.6)" }} />
+            <button
+              title="Voice intro coming soon"
+              disabled
+              style={{
+                marginLeft: "auto",
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                background: "rgba(0, 0, 0, 0.04)",
+                border: `1px solid ${line}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "not-allowed",
+                opacity: 0.45,
+              }}
+            >
+              <Mic style={{ width: "14px", height: "14px", color: muted }} />
             </button>
           </div>
 
-          <h3 style={{ fontSize: "26px", fontWeight: 700, marginBottom: "20px", letterSpacing: "-0.4px", lineHeight: 1.2 }}>
+          <h3
+            style={{
+              fontSize: "clamp(22px, 3.5vw, 28px)",
+              fontWeight: 700,
+              marginBottom: "18px",
+              letterSpacing: "-0.4px",
+              lineHeight: 1.2,
+              color: ink,
+            }}
+          >
             {card.title}
           </h3>
 
           <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
-            {card.bullets.map(b => (
-              <li key={b} style={{ display: "flex", gap: "10px", fontSize: "15px", color: "rgba(255,255,255,0.78)", lineHeight: 1.5 }}>
+            {card.bullets.map((b) => (
+              <li key={b} style={{ display: "flex", gap: "10px", fontSize: "15px", color: "#404040", lineHeight: 1.5 }}>
                 <span style={{ color: card.accent, fontWeight: 700 }}>·</span>
                 <span>{b}</span>
               </li>
@@ -310,35 +409,33 @@ function FloatingCard({ card, reverse }: { card: typeof STORY_CARDS[number]; rev
         </div>
       </div>
 
-      {/* Visual placeholder */}
       <div style={{ direction: "ltr" }}>
-        <div style={{
-          aspectRatio: "4/3",
-          borderRadius: "24px",
-          background: `linear-gradient(135deg, ${card.accent}33, rgba(255,255,255,0.02))`,
-          border: "1px solid rgba(255,255,255,0.08)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          backdropFilter: "blur(8px)",
-        }}>
-          <div style={{
-            fontSize: "72px",
-            filter: "grayscale(0.3)",
-            opacity: 0.7,
-          }}>
-            {card.emoji}
-          </div>
+        <div
+          style={{
+            aspectRatio: "4/3",
+            borderRadius: "22px",
+            background: `linear-gradient(145deg, ${card.soft} 0%, #fff 48%, ${card.soft2} 100%)`,
+            border: `1px solid ${line}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: cardShadow,
+          }}
+        >
+          <div style={{ fontSize: "64px", lineHeight: 1 }}>{card.emoji}</div>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── DATA ──────────────────────────────────────────────────────
 const STORY_CARDS = [
   {
     eyebrow: "Step 1 — Ownership",
     title: "Your Studio, Your Network",
-    accent: "#f4a261",
+    accent: "#c9a66b",
+    soft: "#fdf6eb",
+    soft2: "#fceee4",
     emoji: "🏛️",
     bullets: [
       "Create a public-facing Studio page",
@@ -349,7 +446,9 @@ const STORY_CARDS = [
   {
     eyebrow: "Step 2 — Trust",
     title: "Clients Earn Access",
-    accent: "#e96c50",
+    accent: "#d4897a",
+    soft: "#fdf4f2",
+    soft2: "#fce8e4",
     emoji: "🤝",
     bullets: [
       "Prospects start with a short intro video",
@@ -360,7 +459,9 @@ const STORY_CARDS = [
   {
     eyebrow: "Step 3 — Growth",
     title: "Grow Through Referrals",
-    accent: "#6366f1",
+    accent: "#8b9dc3",
+    soft: "#f3f6fc",
+    soft2: "#e8eef8",
     emoji: "🌱",
     bullets: [
       "Members can invite the right people",
@@ -371,7 +472,9 @@ const STORY_CARDS = [
   {
     eyebrow: "Step 4 — Network",
     title: "Built for Local Performance Networks",
-    accent: "#10b981",
+    accent: "#7aab9a",
+    soft: "#f2f8f5",
+    soft2: "#e5f0eb",
     emoji: "🌐",
     bullets: [
       "Trainers and strength coaches",
@@ -384,7 +487,7 @@ const STORY_CARDS = [
 const BENEFITS_COLUMNS = [
   {
     title: "For Trainers",
-    accent: "#f4a261",
+    accent: "#c9a66b",
     Icon: Building2,
     bullets: [
       "Own your client list, not a marketplace's",
@@ -395,7 +498,7 @@ const BENEFITS_COLUMNS = [
   },
   {
     title: "For Clients",
-    accent: "#e96c50",
+    accent: "#d4897a",
     Icon: Heart,
     bullets: [
       "Discover vetted providers in your city",
@@ -406,7 +509,7 @@ const BENEFITS_COLUMNS = [
   },
   {
     title: "For Providers",
-    accent: "#6366f1",
+    accent: "#8b9dc3",
     Icon: Users,
     bullets: [
       "Recovery, nutrition, hydration, PT — all welcome",
@@ -418,24 +521,9 @@ const BENEFITS_COLUMNS = [
 ] as const;
 
 const FOOTER_COLUMNS = [
-  {
-    title: "Studios",
-    items: ["Browse", "Start Your Studio", "Pricing", "Apply"],
-  },
-  {
-    title: "Company",
-    items: ["About AIH", "Blog", "Press", "Careers"],
-  },
-  {
-    title: "Resources",
-    items: ["FAQ", "Help Center", "Privacy", "Terms"],
-  },
-  {
-    title: "Locations",
-    items: ["Denver, CO", "Lone Tree / Park Meadows", "Coming Soon"],
-  },
-  {
-    title: "Contact",
-    items: ["Support email", "Instagram", "Press inquiries"],
-  },
+  { title: "Studios", items: ["Browse", "Start Your Studio", "Pricing", "Apply"] },
+  { title: "Company", items: ["About AIH", "Blog", "Press", "Careers"] },
+  { title: "Resources", items: ["FAQ", "Help Center", "Privacy", "Terms"] },
+  { title: "Locations", items: ["Denver, CO", "Lone Tree / Park Meadows", "Coming Soon"] },
+  { title: "Contact", items: ["Support email", "Instagram", "Press inquiries"] },
 ];

@@ -13,14 +13,19 @@ export const metadata: Metadata = {
 
 export default function StudiosLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(180deg, #0a0a14 0%, #0f1024 40%, #1a0e2e 100%)",
-      color: "white",
-    }}>
-      {/* Conditional breadcrumb — only renders for logged-in AIH members */}
+    <div
+      style={{
+        minHeight: "100vh",
+        background: `
+          radial-gradient(ellipse 120% 80% at 50% -20%, rgba(252, 228, 236, 0.45) 0%, transparent 55%),
+          radial-gradient(ellipse 80% 50% at 100% 50%, rgba(230, 240, 255, 0.35) 0%, transparent 45%),
+          radial-gradient(ellipse 60% 40% at 0% 80%, rgba(255, 245, 230, 0.5) 0%, transparent 50%),
+          linear-gradient(180deg, #fdfcfa 0%, #f7f5f1 45%, #faf8f4 100%)
+        `,
+        color: "#262626",
+      }}
+    >
       <MemberBreadcrumb />
-
       {children}
     </div>
   );
