@@ -3,7 +3,7 @@ import { TrainerStudioShell } from "@/components/studios/trainer/TrainerStudioSh
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
-import { buildApplyPreviewProvider, getApplyPreviewOffers } from "@/lib/studios/applyPreview";
+import { APPLY_INTRO_PLACEHOLDER, buildApplyHeroFields, buildApplyPreviewProvider, getApplyPreviewOffers } from "@/lib/studios/applyPreview";
 
 export const metadata: Metadata = {
   title: "Start your studio — AIH Studios",
@@ -16,7 +16,7 @@ export default async function StartYourStudioPage() {
   const profile = user
     ? await prisma.profile.findUnique({
         where: { userId: user.id },
-        select: { bio: true },
+        select: { bio: true, location: true },
       })
     : null;
 
@@ -26,9 +26,19 @@ export default async function StartYourStudioPage() {
   );
   const offers = getApplyPreviewOffers();
 
+  const hero = buildApplyHeroFields(
+    user ? { firstName: user.firstName, lastName: user.lastName, email: user.email, photoUrl: user.photoUrl } : null,
+    profile ? { location: profile.location } : null,
+  );
+
   return (
     <>
-      <TrainerStudioShell provider={provider} offers={offers} variant="start" />
+      <TrainerStudioShell
+        provider={provider}
+        offers={offers}
+        variant="start"
+        applyTemplate={{ hero, intro: APPLY_INTRO_PLACEHOLDER }}
+      />
       <StudiosFooter />
     </>
   );

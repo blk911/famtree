@@ -4,7 +4,44 @@ import type { Provider, StudioOffer } from "@/types/studios";
 
 export const APPLY_PREVIEW_PROVIDER_ID = "apply_preview";
 
-/** Build a Provider-shaped object for the apply / preview experience. */
+export type ApplyStudioHeroFields = {
+  fullName: string;
+  businessName: string;
+  email: string;
+  phone: string;
+  physicalAddress: string;
+};
+
+export type ApplyStudioIntro = {
+  title: string;
+  bullets: readonly string[];
+};
+
+export const APPLY_INTRO_PLACEHOLDER: ApplyStudioIntro = {
+  title: "Why train with us",
+  bullets: [
+    "Placeholder — what makes your coaching or care different.",
+    "Placeholder — how sessions flow (assessment, progression, check-ins).",
+    "Placeholder — who you help best (sport, season of life, goals).",
+    "Placeholder — where you train (studio address, mobile, hybrid).",
+  ],
+};
+
+/** Hero contact strip: pulls from account where possible; placeholders for studio-specific fields. */
+export function buildApplyHeroFields(
+  user: { firstName: string; lastName: string; email: string; photoUrl: string | null } | null,
+  profile: { location: string | null } | null,
+): ApplyStudioHeroFields {
+  return {
+    fullName: user ? `${user.firstName} ${user.lastName}` : "Your full name",
+    businessName: "Your business / studio name",
+    email: user?.email ?? "you@example.com",
+    phone: "(555) 000-0000",
+    physicalAddress: profile?.location?.trim() || "Street, city, state — add when you publish",
+  };
+}
+
+/** Build a Provider-shaped object for the apply / preview experience (offers + modals still use displayName). */
 export function buildApplyPreviewProvider(
   user: { firstName: string; lastName: string; photoUrl: string | null } | null,
   profileBio: string | null,
