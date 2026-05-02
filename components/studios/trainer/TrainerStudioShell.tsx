@@ -1,12 +1,12 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
-import { MapPin, User, Building2, Mail, Phone, Play } from "lucide-react";
+import { MapPin, Play } from "lucide-react";
 import type { Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { TrainerOfferCards } from "./TrainerOfferCards";
+import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
 
 const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
   trainer: "#c9a66b",
@@ -36,66 +36,110 @@ const NAV_START = [
 
 type ShellVariant = "live" | "start";
 
-function HeroContactRow({
-  label,
-  value,
-  icon,
-  showBorder,
+function StudioPageMainColumns({
+  nav,
+  variant,
+  provider,
+  offers,
 }: {
-  label: string;
-  value: string;
-  icon: ReactNode;
-  showBorder: boolean;
+  nav: readonly { readonly href: string; readonly label: string }[];
+  variant: ShellVariant;
+  provider: Provider;
+  offers: StudioOffer[];
 }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: "14px",
-        alignItems: "flex-start",
-        padding: "14px 0",
-        borderBottom: showBorder ? `1px solid ${STUDIOS_LINE}` : "none",
-      }}
-    >
-      <div
-        style={{
-          width: "40px",
-          height: "40px",
-          borderRadius: "12px",
-          background: "rgba(201, 166, 107, 0.12)",
-          color: "#b8956c",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
+    <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-8 px-6 pb-[72px] md:grid-cols-[minmax(0,200px)_minmax(0,1fr)] md:items-start md:gap-8">
+      <nav
+        aria-label="Page sections"
+        className="relative top-0 flex flex-row flex-wrap gap-1 rounded-[18px] border bg-white p-4 md:sticky md:top-5 md:flex-col md:gap-1.5"
+        style={{ borderColor: STUDIOS_LINE, boxShadow: STUDIOS_CARD_SHADOW }}
       >
-        {icon}
-      </div>
+        {nav.map(({ href, label }) => (
+          <a
+            key={href}
+            href={href}
+            className="rounded-xl px-3.5 py-2.5 text-sm font-semibold text-[#262626] transition hover:bg-black/[0.04]"
+            style={{ color: STUDIOS_INK }}
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+
       <div style={{ minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: "11px",
-            fontWeight: 700,
-            letterSpacing: "0.07em",
-            textTransform: "uppercase",
-            color: STUDIOS_MUTED,
-          }}
-        >
-          {label}
-        </div>
-        <div
-          style={{
-            fontSize: "17px",
-            fontWeight: 600,
-            color: STUDIOS_INK,
-            marginTop: "5px",
-            lineHeight: 1.35,
-            wordBreak: "break-word",
-          }}
-        >
-          {value}
-        </div>
+        <section id="services" style={{ marginBottom: "48px" }}>
+          <h2
+            style={{
+              fontSize: "clamp(22px, 3vw, 28px)",
+              fontWeight: 700,
+              color: STUDIOS_INK,
+              margin: "0 0 8px",
+              letterSpacing: "-0.3px",
+            }}
+          >
+            {variant === "start" ? "Services & offers (preview)" : "Services & offers"}
+          </h2>
+          <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
+            {variant === "start"
+              ? "These sample cards match what clients will see. Open one to try the request flow — nothing is sent yet."
+              : "Tap a card to request — you'll share your email and a short note. No payment on this step."}
+          </p>
+          <TrainerOfferCards providerName={provider.displayName} offers={offers} previewMode={variant === "start"} />
+        </section>
+
+        <section id="contact">
+          <h2
+            style={{
+              fontSize: "clamp(22px, 3vw, 28px)",
+              fontWeight: 700,
+              color: STUDIOS_INK,
+              margin: "0 0 16px",
+              letterSpacing: "-0.3px",
+            }}
+          >
+            Location & contact
+          </h2>
+          <div
+            style={{
+              padding: "22px",
+              borderRadius: "20px",
+              background: "#fff",
+              border: `1px solid ${STUDIOS_LINE}`,
+              boxShadow: STUDIOS_CARD_SHADOW,
+              display: "flex",
+              gap: "12px",
+              alignItems: "flex-start",
+            }}
+          >
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                background: "rgba(201, 166, 107, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <MapPin style={{ width: "18px", height: "18px", color: "#b8956c" }} />
+            </div>
+            <div>
+              <p style={{ margin: 0, fontWeight: 600, color: STUDIOS_INK }}>{provider.locationLabel ?? "Denver metro"}</p>
+              {(provider.city || provider.state) && (
+                <p style={{ margin: "6px 0 0", fontSize: "14px", color: STUDIOS_MUTED }}>
+                  {[provider.city, provider.state].filter(Boolean).join(", ")}
+                </p>
+              )}
+              <p style={{ margin: "12px 0 0", fontSize: "14px", lineHeight: 1.5, color: STUDIOS_MUTED }}>
+                {variant === "start"
+                  ? "Your real service area and contact options appear here after your studio is approved and published."
+                  : "Prefer to start through a service? Use a card above — requests go to this provider when backend routing is live."}
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -125,132 +169,11 @@ export function TrainerStudioShell({
   return (
     <>
       {applyHero && applyIntro ? (
-        <>
-          <section
-            style={{
-              position: "relative",
-              padding: "36px 24px 44px",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                top: "-40px",
-                right: "15%",
-                width: "min(400px, 70vw)",
-                height: "240px",
-                background: "radial-gradient(circle, rgba(255, 218, 230, 0.5) 0%, transparent 65%)",
-                filter: "blur(20px)",
-                pointerEvents: "none",
-              }}
-            />
-            <div style={{ position: "relative", zIndex: 1, maxWidth: "1100px", margin: "0 auto" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "14px",
-                  marginBottom: "28px",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: STUDIOS_MUTED,
-                  }}
-                >
-                  Studio page · preview
-                </span>
-                <span
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: STUDIOS_INK,
-                    background: "rgba(201, 166, 107, 0.18)",
-                    padding: "6px 14px",
-                    borderRadius: "999px",
-                  }}
-                >
-                  Not published
-                </span>
-                <Link
-                  href="/studios"
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    color: STUDIOS_INK,
-                    textDecoration: "none",
-                    borderBottom: `1px solid ${STUDIOS_LINE}`,
-                    paddingBottom: "2px",
-                  }}
-                >
-                  ← Back
-                </Link>
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
-                  gap: "clamp(28px, 4vw, 48px)",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  style={{
-                    background: "#fff",
-                    borderRadius: "22px",
-                    border: `1px solid ${STUDIOS_LINE}`,
-                    boxShadow: STUDIOS_CARD_SHADOW,
-                    padding: "8px 24px 6px",
-                  }}
-                >
-                  <HeroContactRow
-                    label="Name"
-                    value={applyHero.fullName}
-                    icon={<User style={{ width: "18px", height: "18px" }} />}
-                    showBorder
-                  />
-                  <HeroContactRow
-                    label="Business"
-                    value={applyHero.businessName}
-                    icon={<Building2 style={{ width: "18px", height: "18px" }} />}
-                    showBorder
-                  />
-                  <HeroContactRow
-                    label="Email"
-                    value={applyHero.email}
-                    icon={<Mail style={{ width: "18px", height: "18px" }} />}
-                    showBorder
-                  />
-                  <HeroContactRow
-                    label="Phone"
-                    value={applyHero.phone}
-                    icon={<Phone style={{ width: "18px", height: "18px" }} />}
-                    showBorder
-                  />
-                  <HeroContactRow
-                    label="Address"
-                    value={applyHero.physicalAddress}
-                    icon={<MapPin style={{ width: "18px", height: "18px" }} />}
-                    showBorder={false}
-                  />
-                </div>
-
-                <div style={{ justifySelf: "center", width: "100%", maxWidth: "400px" }}>
-                  <TrainerPhoto displayName={provider.displayName} imageUrl={provider.imageUrl} accent={accent} />
-                </div>
-              </div>
-            </div>
-          </section>
-
+        <ApplyStudiosStartFrame
+          initialHero={applyHero}
+          provider={{ displayName: provider.displayName, imageUrl: provider.imageUrl }}
+          accent={accent}
+        >
           <section
             id="intro"
             style={{
@@ -325,7 +248,8 @@ export function TrainerStudioShell({
               </div>
             </div>
           </section>
-        </>
+          <StudioPageMainColumns nav={nav} variant="start" provider={provider} offers={offers} />
+        </ApplyStudiosStartFrame>
       ) : (
         <>
           <section
@@ -433,103 +357,10 @@ export function TrainerStudioShell({
               </div>
             </div>
           </section>
+
+          <StudioPageMainColumns nav={nav} variant="live" provider={provider} offers={offers} />
         </>
       )}
-
-      <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-8 px-6 pb-[72px] md:grid-cols-[minmax(0,200px)_minmax(0,1fr)] md:items-start md:gap-8">
-        <nav
-          aria-label="Page sections"
-          className="relative top-0 flex flex-row flex-wrap gap-1 rounded-[18px] border bg-white p-4 md:sticky md:top-5 md:flex-col md:gap-1.5"
-          style={{ borderColor: STUDIOS_LINE, boxShadow: STUDIOS_CARD_SHADOW }}
-        >
-          {nav.map(({ href, label }) => (
-            <a
-              key={href}
-              href={href}
-              className="rounded-xl px-3.5 py-2.5 text-sm font-semibold text-[#262626] transition hover:bg-black/[0.04]"
-              style={{ color: STUDIOS_INK }}
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-
-        <div style={{ minWidth: 0 }}>
-          <section id="services" style={{ marginBottom: "48px" }}>
-            <h2
-              style={{
-                fontSize: "clamp(22px, 3vw, 28px)",
-                fontWeight: 700,
-                color: STUDIOS_INK,
-                margin: "0 0 8px",
-                letterSpacing: "-0.3px",
-              }}
-            >
-              {variant === "start" ? "Services & offers (preview)" : "Services & offers"}
-            </h2>
-            <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
-              {variant === "start"
-                ? "These sample cards match what clients will see. Open one to try the request flow — nothing is sent yet."
-                : "Tap a card to request — you'll share your email and a short note. No payment on this step."}
-            </p>
-            <TrainerOfferCards providerName={provider.displayName} offers={offers} previewMode={variant === "start"} />
-          </section>
-
-          <section id="contact">
-            <h2
-              style={{
-                fontSize: "clamp(22px, 3vw, 28px)",
-                fontWeight: 700,
-                color: STUDIOS_INK,
-                margin: "0 0 16px",
-                letterSpacing: "-0.3px",
-              }}
-            >
-              Location & contact
-            </h2>
-            <div
-              style={{
-                padding: "22px",
-                borderRadius: "20px",
-                background: "#fff",
-                border: `1px solid ${STUDIOS_LINE}`,
-                boxShadow: STUDIOS_CARD_SHADOW,
-                display: "flex",
-                gap: "12px",
-                alignItems: "flex-start",
-              }}
-            >
-              <div
-                style={{
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "12px",
-                  background: "rgba(201, 166, 107, 0.15)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <MapPin style={{ width: "18px", height: "18px", color: "#b8956c" }} />
-              </div>
-              <div>
-                <p style={{ margin: 0, fontWeight: 600, color: STUDIOS_INK }}>{provider.locationLabel ?? "Denver metro"}</p>
-                {(provider.city || provider.state) && (
-                  <p style={{ margin: "6px 0 0", fontSize: "14px", color: STUDIOS_MUTED }}>
-                    {[provider.city, provider.state].filter(Boolean).join(", ")}
-                  </p>
-                )}
-                <p style={{ margin: "12px 0 0", fontSize: "14px", lineHeight: 1.5, color: STUDIOS_MUTED }}>
-                  {variant === "start"
-                    ? "Your real service area and contact options appear here after your studio is approved and published."
-                    : "Prefer to start through a service? Use a card above — requests go to this provider when backend routing is live."}
-                </p>
-              </div>
-            </div>
-          </section>
-        </div>
-      </div>
     </>
   );
 }

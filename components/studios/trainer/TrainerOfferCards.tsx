@@ -7,6 +7,7 @@ import { OFFER_PACKAGE_LABELS } from "@/types/studios";
 import { formatOfferPriceUsd } from "@/lib/studios/mockStudios";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 import { OfferRequestModal } from "./OfferRequestModal";
+import { useApplyStudioLiveName } from "./ApplyStudioLiveNameContext";
 
 type Props = {
   providerName: string;
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export function TrainerOfferCards({ providerName, offers, previewMode = false }: Props) {
+  const resolvedProviderName = useApplyStudioLiveName(providerName);
   const [selected, setSelected] = useState<StudioOffer | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -115,7 +117,7 @@ export function TrainerOfferCards({ providerName, offers, previewMode = false }:
           setSelected(null);
         }}
         offer={selected}
-        providerName={providerName}
+        providerName={resolvedProviderName}
         previewMode={previewMode}
       />
     </>
