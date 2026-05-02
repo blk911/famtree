@@ -53,12 +53,33 @@ export async function MemberBreadcrumb() {
           Return to AIH
         </Link>
 
-        <span style={{ fontSize: "12px", color: "#737373", fontWeight: 500 }}>
-          Logged in as{" "}
-          <span style={{ color: "#262626" }}>
-            {user.firstName} {user.lastName}
+        <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <span style={{ fontSize: "12px", color: "#737373", fontWeight: 500 }}>
+            Logged in as{" "}
+            <span style={{ color: "#262626" }}>
+              {user.firstName} {user.lastName}
+            </span>
           </span>
-        </span>
+          <Link
+            href="/settings"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "7px 14px",
+              borderRadius: "999px",
+              background: "rgba(201, 166, 107, 0.12)",
+              border: "1px solid rgba(201, 166, 107, 0.35)",
+              color: "#5c4a2e",
+              fontSize: "10px",
+              fontWeight: 800,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              textDecoration: "none",
+            }}
+          >
+            Edit profile
+          </Link>
+        </div>
       </div>
     </div>
   );
