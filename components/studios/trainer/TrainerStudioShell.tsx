@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { MapPin, Play } from "lucide-react";
+import Image from "next/image";
+import { MapPin, Play, Sparkles } from "lucide-react";
 import type { Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
@@ -28,13 +29,58 @@ const NAV_LIVE = [
   { href: "#contact", label: "Contact" },
 ] as const;
 
-const NAV_START = [
-  { href: "#intro", label: "Intro" },
-  { href: "#services", label: "Services" },
-  { href: "#contact", label: "Contact" },
-] as const;
-
 type ShellVariant = "live" | "start";
+
+/** Ambient training photography — decorative backgrounds only (Unsplash). */
+const TRAINING_HERO_IMG =
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1600&q=75";
+const TRAINING_FOLD_IMG =
+  "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=1400&q=75";
+
+function StudioStartBuildCard() {
+  return (
+    <aside
+      aria-label="Studio builder"
+      className="relative top-0 md:sticky md:top-24"
+      style={{ alignSelf: "start" }}
+    >
+      <div
+        className="overflow-hidden rounded-[22px] border bg-white"
+        style={{ borderColor: STUDIOS_LINE, boxShadow: STUDIOS_CARD_SHADOW }}
+      >
+        <div className="relative h-[120px] w-full overflow-hidden">
+          <Image
+            src={TRAINING_FOLD_IMG}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 280px"
+            priority={false}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(180deg, rgba(38,38,38,0.05) 0%, rgba(38,38,38,0.45) 100%)",
+            }}
+          />
+          <div className="absolute bottom-3 left-4 right-4 flex items-center gap-2 text-white">
+            <Sparkles className="h-4 w-4 shrink-0 opacity-90" strokeWidth={2} />
+            <span className="text-xs font-bold uppercase tracking-[0.1em]">Coming next</span>
+          </div>
+        </div>
+        <div className="p-5">
+          <h3 className="text-base font-bold tracking-tight" style={{ color: STUDIOS_INK, margin: "0 0 8px" }}>
+            Your studio blocks
+          </h3>
+          <p className="m-0 text-sm leading-relaxed" style={{ color: STUDIOS_MUTED }}>
+            Testimonials, programs, schedules, and more will land here as we expand the builder. Use this space as your
+            anchor while we ship the next pieces.
+          </p>
+        </div>
+      </div>
+    </aside>
+  );
+}
 
 function StudioPageMainColumns({
   nav,
@@ -42,11 +88,97 @@ function StudioPageMainColumns({
   provider,
   offers,
 }: {
-  nav: readonly { readonly href: string; readonly label: string }[];
+  nav?: readonly { readonly href: string; readonly label: string }[];
   variant: ShellVariant;
   provider: Provider;
   offers: StudioOffer[];
 }) {
+  if (variant === "start") {
+    return (
+      <div
+        style={{
+          borderTop: "1px solid rgba(0,0,0,0.06)",
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(250,247,241,0.92) 35%, rgba(243,238,228,0.55) 100%)",
+        }}
+      >
+        <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-8 px-6 pb-[72px] pt-10 md:grid-cols-[minmax(0,280px)_minmax(0,1fr)] md:items-start md:gap-10 md:pt-12">
+          <StudioStartBuildCard />
+          <div style={{ minWidth: 0 }}>
+            <section id="services" style={{ marginBottom: "48px" }}>
+              <h2
+                style={{
+                  fontSize: "clamp(22px, 3vw, 28px)",
+                  fontWeight: 700,
+                  color: STUDIOS_INK,
+                  margin: "0 0 8px",
+                  letterSpacing: "-0.3px",
+                }}
+              >
+                Services & offers (preview)
+              </h2>
+              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
+                These sample cards match what clients will see. Open one to try the request flow — nothing is sent yet.
+              </p>
+              <TrainerOfferCards providerName={provider.displayName} offers={offers} previewMode />
+            </section>
+            <section id="contact">
+              <h2
+                style={{
+                  fontSize: "clamp(22px, 3vw, 28px)",
+                  fontWeight: 700,
+                  color: STUDIOS_INK,
+                  margin: "0 0 16px",
+                  letterSpacing: "-0.3px",
+                }}
+              >
+                Location & contact
+              </h2>
+              <div
+                style={{
+                  padding: "22px",
+                  borderRadius: "20px",
+                  background: "#fff",
+                  border: `1px solid ${STUDIOS_LINE}`,
+                  boxShadow: STUDIOS_CARD_SHADOW,
+                  display: "flex",
+                  gap: "12px",
+                  alignItems: "flex-start",
+                }}
+              >
+                <div
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "12px",
+                    background: "rgba(201, 166, 107, 0.15)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <MapPin style={{ width: "18px", height: "18px", color: "#b8956c" }} />
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontWeight: 600, color: STUDIOS_INK }}>{provider.locationLabel ?? "Denver metro"}</p>
+                  {(provider.city || provider.state) && (
+                    <p style={{ margin: "6px 0 0", fontSize: "14px", color: STUDIOS_MUTED }}>
+                      {[provider.city, provider.state].filter(Boolean).join(", ")}
+                    </p>
+                  )}
+                  <p style={{ margin: "12px 0 0", fontSize: "14px", lineHeight: 1.5, color: STUDIOS_MUTED }}>
+                    Your real service area and contact options appear here after your studio is approved and published.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-8 px-6 pb-[72px] md:grid-cols-[minmax(0,200px)_minmax(0,1fr)] md:items-start md:gap-8">
       <nav
@@ -54,7 +186,7 @@ function StudioPageMainColumns({
         className="relative top-0 flex flex-row flex-wrap gap-1 rounded-[18px] border bg-white p-4 md:sticky md:top-5 md:flex-col md:gap-1.5"
         style={{ borderColor: STUDIOS_LINE, boxShadow: STUDIOS_CARD_SHADOW }}
       >
-        {nav.map(({ href, label }) => (
+        {(nav ?? NAV_LIVE).map(({ href, label }) => (
           <a
             key={href}
             href={href}
@@ -77,14 +209,12 @@ function StudioPageMainColumns({
               letterSpacing: "-0.3px",
             }}
           >
-            {variant === "start" ? "Services & offers (preview)" : "Services & offers"}
+            Services & offers
           </h2>
           <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
-            {variant === "start"
-              ? "These sample cards match what clients will see. Open one to try the request flow — nothing is sent yet."
-              : "Tap a card to request — you'll share your email and a short note. No payment on this step."}
+            Tap a card to request — you'll share your email and a short note. No payment on this step.
           </p>
-          <TrainerOfferCards providerName={provider.displayName} offers={offers} previewMode={variant === "start"} />
+          <TrainerOfferCards providerName={provider.displayName} offers={offers} previewMode={false} />
         </section>
 
         <section id="contact">
@@ -133,9 +263,7 @@ function StudioPageMainColumns({
                 </p>
               )}
               <p style={{ margin: "12px 0 0", fontSize: "14px", lineHeight: 1.5, color: STUDIOS_MUTED }}>
-                {variant === "start"
-                  ? "Your real service area and contact options appear here after your studio is approved and published."
-                  : "Prefer to start through a service? Use a card above — requests go to this provider when backend routing is live."}
+                Prefer to start through a service? Use a card above — requests go to this provider when backend routing is live.
               </p>
             </div>
           </div>
@@ -161,7 +289,6 @@ export function TrainerStudioShell({
   const categoryLabel = PROVIDER_CATEGORY_LABELS[provider.category];
   const subtitle = [provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · ");
   const eyebrow = variant === "start" ? "Start your studio" : "AIH Studios provider";
-  const nav = variant === "start" ? NAV_START : NAV_LIVE;
 
   const applyHero = variant === "start" && applyTemplate ? applyTemplate.hero : null;
   const applyIntro = variant === "start" && applyTemplate ? applyTemplate.intro : null;
@@ -177,78 +304,129 @@ export function TrainerStudioShell({
           <section
             id="intro"
             style={{
-              padding: "0 24px 48px",
-              maxWidth: "1100px",
+              position: "relative",
               margin: "0 auto",
+              maxWidth: "1100px",
+              padding: "48px 24px 56px",
+              borderBottom: "1px solid rgba(0,0,0,0.06)",
+              overflow: "hidden",
+              background: "linear-gradient(120deg, rgba(255,255,255,0.96) 0%, rgba(247,245,238,0.94) 45%, rgba(235,243,252,0.55) 100%)",
             }}
           >
             <div
+              aria-hidden
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
-                gap: "40px",
-                alignItems: "center",
+                position: "absolute",
+                inset: 0,
+                backgroundImage: `url(${TRAINING_HERO_IMG})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                opacity: 0.13,
+                pointerEvents: "none",
               }}
-            >
+            />
+            <div style={{ position: "relative", zIndex: 1 }}>
               <div
                 style={{
-                  borderRadius: "22px",
-                  overflow: "hidden",
-                  border: `1px solid ${STUDIOS_LINE}`,
-                  boxShadow: STUDIOS_CARD_SHADOW,
-                  background: "linear-gradient(160deg, #faf8f5 0%, #fff 45%, #f3f0eb 100%)",
-                  aspectRatio: "16 / 9",
-                  display: "flex",
-                  flexDirection: "column",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+                  gap: "40px",
                   alignItems: "center",
-                  justifyContent: "center",
-                  gap: "10px",
-                  position: "relative",
                 }}
               >
                 <div
                   style={{
-                    width: "64px",
-                    height: "64px",
-                    borderRadius: "50%",
-                    background: "rgba(38, 38, 38, 0.88)",
-                    color: "#fff",
+                    borderRadius: "22px",
+                    overflow: "hidden",
+                    border: `1px solid ${STUDIOS_LINE}`,
+                    boxShadow: STUDIOS_CARD_SHADOW,
+                    background: "linear-gradient(160deg, rgba(250,248,245,0.95) 0%, #fff 45%, #f3f0eb 100%)",
+                    aspectRatio: "16 / 9",
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
+                    gap: "10px",
+                    position: "relative",
                   }}
                 >
-                  <Play style={{ width: "26px", height: "26px", marginLeft: "4px" }} fill="currentColor" />
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      backgroundImage: `url(${TRAINING_FOLD_IMG})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      opacity: 0.18,
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: "64px",
+                      height: "64px",
+                      borderRadius: "50%",
+                      background: "rgba(38, 38, 38, 0.88)",
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      position: "relative",
+                      zIndex: 1,
+                    }}
+                  >
+                    <Play style={{ width: "26px", height: "26px", marginLeft: "4px" }} fill="currentColor" />
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      color: STUDIOS_MUTED,
+                      position: "relative",
+                      zIndex: 1,
+                    }}
+                  >
+                    Intro video
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      color: STUDIOS_MUTED,
+                      opacity: 0.85,
+                      position: "relative",
+                      zIndex: 1,
+                    }}
+                  >
+                    Placeholder — upload after approval
+                  </span>
+                  {/* TODO(studios:video): embed or signed URL */}
                 </div>
-                <span style={{ fontSize: "14px", fontWeight: 600, color: STUDIOS_MUTED }}>Intro video</span>
-                <span style={{ fontSize: "12px", color: STUDIOS_MUTED, opacity: 0.85 }}>Placeholder — upload after approval</span>
-                {/* TODO(studios:video): embed or signed URL */}
-              </div>
 
-              <div>
-                <h2
-                  style={{
-                    fontSize: "clamp(22px, 3vw, 28px)",
-                    fontWeight: 700,
-                    color: STUDIOS_INK,
-                    margin: "0 0 20px",
-                    letterSpacing: "-0.3px",
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {applyIntro.title}
-                </h2>
-                <ul style={{ margin: 0, paddingLeft: "22px", display: "flex", flexDirection: "column", gap: "14px" }}>
-                  {applyIntro.bullets.map((line) => (
-                    <li key={line} style={{ fontSize: "16px", lineHeight: 1.55, color: "#404040" }}>
-                      {line}
-                    </li>
-                  ))}
-                </ul>
+                <div>
+                  <h2
+                    style={{
+                      fontSize: "clamp(22px, 3vw, 28px)",
+                      fontWeight: 700,
+                      color: STUDIOS_INK,
+                      margin: "0 0 20px",
+                      letterSpacing: "-0.3px",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {applyIntro.title}
+                  </h2>
+                  <ul style={{ margin: 0, paddingLeft: "22px", display: "flex", flexDirection: "column", gap: "14px" }}>
+                    {applyIntro.bullets.map((line) => (
+                      <li key={line} style={{ fontSize: "16px", lineHeight: 1.55, color: "#404040" }}>
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </section>
-          <StudioPageMainColumns nav={nav} variant="start" provider={provider} offers={offers} />
+          <StudioPageMainColumns variant="start" provider={provider} offers={offers} />
         </ApplyStudiosStartFrame>
       ) : (
         <>
@@ -358,7 +536,7 @@ export function TrainerStudioShell({
             </div>
           </section>
 
-          <StudioPageMainColumns nav={nav} variant="live" provider={provider} offers={offers} />
+          <StudioPageMainColumns nav={NAV_LIVE} variant="live" provider={provider} offers={offers} />
         </>
       )}
     </>

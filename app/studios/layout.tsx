@@ -16,12 +16,15 @@ export default function StudiosLayout({ children }: { children: React.ReactNode 
     <div
       style={{
         minHeight: "100vh",
-        background: `
-          radial-gradient(ellipse 120% 80% at 50% -20%, rgba(252, 228, 236, 0.45) 0%, transparent 55%),
-          radial-gradient(ellipse 80% 50% at 100% 50%, rgba(230, 240, 255, 0.35) 0%, transparent 45%),
-          radial-gradient(ellipse 60% 40% at 0% 80%, rgba(255, 245, 230, 0.5) 0%, transparent 50%),
-          linear-gradient(180deg, #fdfcfa 0%, #f7f5f1 45%, #faf8f4 100%)
+        backgroundColor: "#f3f1ec",
+        backgroundImage: `
+          radial-gradient(ellipse 100% 70% at 50% -15%, rgba(252, 228, 236, 0.55) 0%, transparent 52%),
+          radial-gradient(ellipse 70% 45% at 100% 20%, rgba(214, 232, 255, 0.45) 0%, transparent 42%),
+          radial-gradient(ellipse 55% 40% at 0% 75%, rgba(255, 236, 210, 0.42) 0%, transparent 48%),
+          radial-gradient(ellipse 80% 50% at 50% 100%, rgba(224, 244, 236, 0.28) 0%, transparent 50%),
+          linear-gradient(165deg, #faf9f6 0%, #f5f2eb 38%, #efe9df 72%, #f7f4ee 100%)
         `,
+        backgroundAttachment: "fixed",
         color: "#262626",
       }}
     >
