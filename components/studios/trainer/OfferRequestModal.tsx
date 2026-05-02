@@ -11,9 +11,10 @@ type Props = {
   onClose: () => void;
   offer: StudioOffer | null;
   providerName: string;
+  previewMode?: boolean;
 };
 
-export function OfferRequestModal({ open, onClose, offer, providerName }: Props) {
+export function OfferRequestModal({ open, onClose, offer, providerName, previewMode = false }: Props) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -57,7 +58,7 @@ export function OfferRequestModal({ open, onClose, offer, providerName }: Props)
         >
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: STUDIOS_MUTED }}>
-              Request a service
+              {previewMode ? "Preview — client request" : "Request a service"}
             </p>
             <h2 id="offer-request-title" className="mt-1 text-xl font-bold tracking-tight" style={{ color: STUDIOS_INK }}>
               {offer.title}
@@ -80,11 +81,20 @@ export function OfferRequestModal({ open, onClose, offer, providerName }: Props)
         {sent ? (
           <div className="px-6 py-8 text-center">
             <p className="text-lg font-semibold" style={{ color: STUDIOS_INK }}>
-              Thanks — you&apos;re all set.
+              {previewMode ? "Nice — that's the client experience." : "Thanks — you're all set."}
             </p>
             <p className="mt-2 text-sm leading-relaxed" style={{ color: STUDIOS_MUTED }}>
-              {providerName} will review your request for <strong style={{ color: STUDIOS_INK }}>{offer.title}</strong>.
-              We&apos;ll follow up by email when this flow is wired to the server.
+              {previewMode ? (
+                <>
+                  In preview mode, nothing is delivered. When your studio is live, {providerName} would receive this request for{" "}
+                  <strong style={{ color: STUDIOS_INK }}>{offer.title}</strong>.
+                </>
+              ) : (
+                <>
+                  {providerName} will review your request for <strong style={{ color: STUDIOS_INK }}>{offer.title}</strong>.
+                  We&apos;ll follow up by email when this flow is wired to the server.
+                </>
+              )}
             </p>
             <button
               type="button"
@@ -98,7 +108,9 @@ export function OfferRequestModal({ open, onClose, offer, providerName }: Props)
         ) : (
           <form onSubmit={handleSubmit} className="px-6 py-5">
             <p className="mb-4 text-sm leading-relaxed" style={{ color: STUDIOS_MUTED }}>
-              Tell us a bit about you. No payment today — this is a request to connect.
+              {previewMode
+                ? "Try the form — on the live site, this goes to the provider. Here it’s a demo only."
+                : "Tell us a bit about you. No payment today — this is a request to connect."}
             </p>
             <label className="block">
               <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: STUDIOS_MUTED }}>
@@ -145,7 +157,7 @@ export function OfferRequestModal({ open, onClose, offer, providerName }: Props)
               className="mt-6 w-full rounded-full py-3 text-sm font-semibold text-white transition hover:opacity-95"
               style={{ background: STUDIOS_INK }}
             >
-              Send request
+              {previewMode ? "Send preview (demo)" : "Send request"}
             </button>
           </form>
         )}

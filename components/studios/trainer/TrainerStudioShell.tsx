@@ -26,10 +26,25 @@ const NAV = [
   { href: "#contact", label: "Contact" },
 ] as const;
 
-export function TrainerStudioShell({ provider, offers }: { provider: Provider; offers: StudioOffer[] }) {
+type ShellVariant = "live" | "start";
+
+export function TrainerStudioShell({
+  provider,
+  offers,
+  variant = "live",
+}: {
+  provider: Provider;
+  offers: StudioOffer[];
+  variant?: ShellVariant;
+}) {
   const accent = ACCENT_BY_CATEGORY[provider.category] ?? "#c9a66b";
   const categoryLabel = PROVIDER_CATEGORY_LABELS[provider.category];
-  const subtitle = [provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · ");
+  const subtitle =
+    variant === "start"
+      ? `Preview layout · ${[provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · ")}`
+      : [provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · ");
+
+  const eyebrow = variant === "start" ? "Start your studio" : "AIH Studios provider";
 
   return (
     <>
@@ -65,8 +80,24 @@ export function TrainerStudioShell({ provider, offers }: { provider: Provider; o
               marginBottom: "12px",
             }}
           >
-            AIH Studios provider
+            {eyebrow}
           </p>
+          {variant === "start" && (
+            <p
+              style={{
+                display: "inline-block",
+                fontSize: "12px",
+                fontWeight: 600,
+                color: STUDIOS_INK,
+                background: "rgba(201, 166, 107, 0.18)",
+                padding: "6px 14px",
+                borderRadius: "999px",
+                marginBottom: "16px",
+              }}
+            >
+              Preview — not published
+            </p>
+          )}
           <h1
             style={{
               fontSize: "clamp(32px, 5vw, 48px)",
@@ -96,8 +127,26 @@ export function TrainerStudioShell({ provider, offers }: { provider: Provider; o
                 border: `1px solid ${STUDIOS_LINE}`,
               }}
             >
-              ← All studios
+              ← {variant === "start" ? "AIH Studios" : "All studios"}
             </Link>
+            {variant === "start" && (
+              <Link
+                href="/studios#explore"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  padding: "12px 22px",
+                  borderRadius: "999px",
+                  background: STUDIOS_INK,
+                  color: "#fff",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                How Studios works
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -121,7 +170,7 @@ export function TrainerStudioShell({ provider, offers }: { provider: Provider; o
           <TrainerPhoto displayName={provider.displayName} imageUrl={provider.imageUrl} accent={accent} />
           <div>
             <h2 style={{ fontSize: "13px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: STUDIOS_MUTED, margin: "0 0 10px" }}>
-              Profile
+              {variant === "start" ? "Your profile" : "Profile"}
             </h2>
             <p style={{ fontSize: "clamp(18px, 2.5vw, 22px)", lineHeight: 1.55, color: "#404040", margin: 0 }}>
               {provider.bio ?? `${provider.displayName} offers ${categoryLabel.toLowerCase()} services through AIH Studios.`}
@@ -153,12 +202,14 @@ export function TrainerStudioShell({ provider, offers }: { provider: Provider; o
         <div style={{ minWidth: 0 }}>
           <section id="services" style={{ marginBottom: "48px" }}>
             <h2 style={{ fontSize: "clamp(22px, 3vw, 28px)", fontWeight: 700, color: STUDIOS_INK, margin: "0 0 8px", letterSpacing: "-0.3px" }}>
-              Services & offers
+              {variant === "start" ? "Services & offers (preview)" : "Services & offers"}
             </h2>
             <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
-              Tap a card to request — you&apos;ll share your email and a short note. No payment on this step.
+              {variant === "start"
+                ? "These sample cards match what clients will see. Open one to try the request flow — nothing is sent yet."
+                : "Tap a card to request — you'll share your email and a short note. No payment on this step."}
             </p>
-            <TrainerOfferCards providerName={provider.displayName} offers={offers} />
+            <TrainerOfferCards providerName={provider.displayName} offers={offers} previewMode={variant === "start"} />
           </section>
 
           <section id="contact">
@@ -199,7 +250,9 @@ export function TrainerStudioShell({ provider, offers }: { provider: Provider; o
                   </p>
                 )}
                 <p style={{ margin: "12px 0 0", fontSize: "14px", lineHeight: 1.5, color: STUDIOS_MUTED }}>
-                  Prefer to start through a service? Use a card above — requests go to this provider when backend routing is live.
+                  {variant === "start"
+                    ? "Your real service area and contact options appear here after your studio is approved and published."
+                    : "Prefer to start through a service? Use a card above — requests go to this provider when backend routing is live."}
                 </p>
               </div>
             </div>

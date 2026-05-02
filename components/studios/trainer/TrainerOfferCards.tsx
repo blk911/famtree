@@ -11,9 +11,10 @@ import { OfferRequestModal } from "./OfferRequestModal";
 type Props = {
   providerName: string;
   offers: StudioOffer[];
+  previewMode?: boolean;
 };
 
-export function TrainerOfferCards({ providerName, offers }: Props) {
+export function TrainerOfferCards({ providerName, offers, previewMode = false }: Props) {
   const [selected, setSelected] = useState<StudioOffer | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -100,7 +101,8 @@ export function TrainerOfferCards({ providerName, offers }: Props) {
                 marginTop: "4px",
               }}
             >
-              Request service <ArrowRight style={{ width: "15px", height: "15px" }} className="transition group-hover:translate-x-0.5" />
+              {previewMode ? "Preview request flow" : "Request service"}{" "}
+              <ArrowRight style={{ width: "15px", height: "15px" }} className="transition group-hover:translate-x-0.5" />
             </span>
           </button>
         ))}
@@ -114,6 +116,7 @@ export function TrainerOfferCards({ providerName, offers }: Props) {
         }}
         offer={selected}
         providerName={providerName}
+        previewMode={previewMode}
       />
     </>
   );
