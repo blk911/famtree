@@ -10,13 +10,18 @@ const SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET ?? "dev-secret-change-in-production"
 );
 
-const PROTECTED = ["/dashboard", "/profile", "/invite", "/tree", "/settings"];
+// /invite/[token] is the public challenge page — only the bare /invite sending
+// page needs auth. We protect /invite exactly, not as a prefix.
+const PROTECTED = ["/dashboard", "/profile", "/tree", "/settings"];
 const AUTH_ROUTES = ["/login", "/register"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
+  // /invite (send page) is protected; /invite/[token] (challenge page) is public
+  const isProtected =
+    PROTECTED.some((p) => pathname.startsWith(p)) ||
+    pathname === "/invite";
   const isAuthRoute = AUTH_ROUTES.some((p) => pathname.startsWith(p));
 
   const token = request.cookies.get("AMIHUMAN.NET_session")?.value;

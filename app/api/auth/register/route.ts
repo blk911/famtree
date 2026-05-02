@@ -74,12 +74,20 @@ export async function POST(req: NextRequest) {
         role,
         relationship: inviteRelationship,
         invitedById: invitedById ?? undefined,
-        emailVerified: true, // email confirmed via invite challenge
+        emailVerified: true,
         profile: {
           create: {},
         },
       },
     });
+
+    // Mark invite as fully consumed — terminal state, closes reuse window
+    if (inviteToken) {
+      await prisma.invite.update({
+        where: { token: inviteToken },
+        data: { status: "REGISTERED" },
+      });
+    }
 
     await setSessionCookie(user.id);
     await sendWelcomeEmail(user).catch(console.error); // non-blocking
