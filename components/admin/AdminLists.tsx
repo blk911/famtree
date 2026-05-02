@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Ban, Mail, Send, CheckCircle } from "lucide-react";
+import { Ban, Mail, Send, CheckCircle, Trash2 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -234,16 +234,23 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
     }
   };
 
-  // ─── Handle invite cancel ────────────────────────────────────────────────────
+  // ─── Handle invite cancel (pending) / delete (any status) ──────────────────
 
   const handleInviteCancel = async (inviteId: string) => {
     setInviteActioning(inviteId);
     try {
       const res = await fetch(`/api/invite/manage/${inviteId}`, { method: "PATCH" });
-      if (res.ok) {
-        // Hard delete — remove from view entirely
-        setInvites((prev) => prev.filter((inv) => inv.id !== inviteId));
-      }
+      if (res.ok) setInvites((prev) => prev.filter((inv) => inv.id !== inviteId));
+    } finally {
+      setInviteActioning(null);
+    }
+  };
+
+  const handleInviteDelete = async (inviteId: string) => {
+    setInviteActioning(inviteId);
+    try {
+      const res = await fetch(`/api/invite/manage/${inviteId}`, { method: "DELETE" });
+      if (res.ok) setInvites((prev) => prev.filter((inv) => inv.id !== inviteId));
     } finally {
       setInviteActioning(null);
     }
@@ -433,8 +440,8 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                 {/* Status badge */}
                 <StatusBadge label={invite.status} colors={statusColors} />
 
-                {/* Cancel button — pending only */}
-                {isPending && (
+                {/* Cancel (pending) or Delete (accepted/expired) */}
+                {isPending ? (
                   <button
                     disabled={loading}
                     onClick={() => handleInviteCancel(invite.id)}
@@ -448,6 +455,21 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                   >
                     <Ban style={{width:"11px",height:"11px"}} />
                     {loading ? "…" : "Cancel"}
+                  </button>
+                ) : (
+                  <button
+                    disabled={loading}
+                    onClick={() => handleInviteDelete(invite.id)}
+                    style={{
+                      display:"flex", alignItems:"center", gap:"4px",
+                      background:"#f5f5f4", color:"#78716c",
+                      border:"1px solid #e7e5e4", borderRadius:"6px",
+                      fontSize:"11px", fontWeight:700,
+                      padding:"3px 8px", cursor:"pointer", flexShrink:0,
+                    }}
+                  >
+                    <Trash2 style={{width:"11px",height:"11px"}} />
+                    {loading ? "…" : "Delete"}
                   </button>
                 )}
               </div>
