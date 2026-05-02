@@ -36,8 +36,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Redirect authenticated users away from login/register
-  if (isAuthRoute && isAuthenticated) {
+  // Redirect authenticated users away from login/register.
+  // Exception: /register with an invite token must always be reachable so that
+  // an invited user can create their own account even if another session exists
+  // in this browser (e.g. the person who sent the invite is still logged in).
+  const isRegisterWithInvite =
+    pathname === "/register" && request.nextUrl.searchParams.has("token");
+
+  if (isAuthRoute && isAuthenticated && !isRegisterWithInvite) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
