@@ -13,7 +13,7 @@ import { TreeList, type FlatNode } from "@/components/TreeList";
 // ── Tree helpers (mirror of /tree page) ────────────────────────────────────────
 type Member = {
   id: string; firstName: string; lastName: string; email: string;
-  photoUrl: string | null; role: string; createdAt: Date; invitedById: string | null;
+  photoUrl: string | null; role: string; status: string; createdAt: Date; invitedById: string | null;
   profile: { bio: string | null; familyRole: string | null; location: string | null } | null;
 };
 type TreeNode = { member: Member; children: TreeNode[] };
@@ -100,6 +100,7 @@ export default async function DashboardPage() {
     invites,
     newPosts,
     newComments,
+    treeViewPrefs,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.invite.findMany({ where:{ senderId:user.id }, orderBy:{ createdAt:"desc" }, take:6 }),
@@ -116,7 +117,7 @@ export default async function DashboardPage() {
     prisma.user.findMany({
       select: {
         id:true, firstName:true, lastName:true, email:true,
-        photoUrl:true, role:true, createdAt:true, invitedById:true,
+        photoUrl:true, role:true, status:true, createdAt:true, invitedById:true,
         profile: { select: { bio:true, familyRole:true, location:true } },
       },
       orderBy: { createdAt:"asc" },
@@ -139,9 +140,13 @@ export default async function DashboardPage() {
       orderBy: { createdAt:"desc" },
       take: 10,
     }),
+    prisma.treeViewPreference.findMany({
+      where: { viewerId: user.id },
+      select: { targetId: true, muted: true, hidden: true },
+    }),
   ]);
 
-  const acceptedInvites  = myInvites.filter(i => i.status === "ACCEPTED").length;
+  const joinedViaYou = myInvites.filter((i) => i.status === "REGISTERED").length;
   const vaultNewCount    = newPosts.length + newComments.length;
 
   const serializedTrustRequests = trustRequests.map((r: any) => ({
@@ -167,6 +172,9 @@ export default async function DashboardPage() {
   // Build tree for dashboard panel
   const roots = buildTree(members, invites, user.id);
   const flat  = flattenTree(roots);
+  const treePrefsInitial = Object.fromEntries(
+    treeViewPrefs.map((p) => [p.targetId, { muted: p.muted, hidden: p.hidden }]),
+  );
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:"20px" }}>
@@ -178,7 +186,7 @@ export default async function DashboardPage() {
         {[
           { label:"TREE MEMBERS",   value:totalMembers,      color:"#6366f1", href:"/tree"   },
           { label:"INVITES SENT",   value:myInvites.length,   color:"#f59e0b", href:"/invite" },
-          { label:"JOINED VIA YOU", value:acceptedInvites,    color:"#10b981", href:"/invite" },
+          { label:"JOINED VIA YOU", value:joinedViaYou,    color:"#10b981", href:"/invite" },
         ].map(({ label, value, color, href }) => (
           <Link key={label} href={href} style={{
             ...card, padding:"10px 16px", borderLeft:`3px solid ${color}`,
@@ -261,7 +269,7 @@ export default async function DashboardPage() {
         rightLabel={<Link href="/tree" style={{ color:"#6366f1", fontSize:"13px", textDecoration:"none", fontWeight:500 }}>View full →</Link>}
       >
         {flat.length > 0
-          ? <TreeList items={flat.slice(0, 8)} currentUserId={user.id} />
+          ? <TreeList items={flat.slice(0, 8)} currentUserId={user.id} initialPrefs={treePrefsInitial} />
           : <p style={{ fontSize:"14px", color:"#a8a29e", textAlign:"center", padding:"16px 0" }}>No members yet — invite your family!</p>
         }
         {flat.length > 8 && (

@@ -16,6 +16,7 @@ export default async function InvitePage() {
         email:     user.email,
         id:        user.id,
       }}
+      isAdmin={user.role === "founder" || user.role === "admin"}
     />
   );
 }

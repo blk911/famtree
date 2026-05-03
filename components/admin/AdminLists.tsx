@@ -138,11 +138,11 @@ function StatusBadge({ label, colors }: { label: string; colors: { bg: string; c
 
 // ─── Admin action buttons ─────────────────────────────────────────────────────
 
-const ACTION_BTN: Record<string, { label: string; bg: string; color: string }> = {
-  suspend:  { label:"Suspend",  bg:"#fef9c3", color:"#854d0e" },
-  archive:  { label:"Archive",  bg:"#f1f5f9", color:"#475569" },
-  block:    { label:"Block",    bg:"#fee2e2", color:"#991b1b" },
-  activate: { label:"Activate", bg:"#dcfce7", color:"#166534" },
+const ACTION_BTN: Record<string, { label: string; bg: string; color: string; title?: string }> = {
+  suspend:  { label:"Suspend",  bg:"#fef9c3", color:"#854d0e", title:"Site-wide: blocks sign-in and ends sessions" },
+  archive:  { label:"Archive (legal hold)",  bg:"#f1f5f9", color:"#475569", title:"Site-wide: retains audit data; user cannot sign in" },
+  block:    { label:"Block",    bg:"#fee2e2", color:"#991b1b", title:"Site-wide: deny access" },
+  activate: { label:"Activate", bg:"#dcfce7", color:"#166534", title:"Restore account to active" },
 };
 
 type ActionKey = keyof typeof ACTION_BTN;
@@ -415,6 +415,7 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                         key={action}
                         className="al-action-btn"
                         disabled={loading}
+                        title={btn.title}
                         onClick={(e) => handleAction(member, action, e)}
                         style={{
                           background:btn.bg, color:btn.color,
@@ -636,6 +637,7 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                         key={action}
                         className="al-action-btn"
                         disabled={loading}
+                        title={btn.title}
                         onClick={(e) => handleAction(selectedMember, action, e)}
                         style={{
                           flex:1, height:"38px",

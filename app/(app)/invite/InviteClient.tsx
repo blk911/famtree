@@ -1,6 +1,7 @@
 "use client";
 // app/(app)/invite/InviteClient.tsx
 
+import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Mail, Send, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, X, Ban, Trash2 } from "lucide-react";
@@ -15,6 +16,13 @@ interface Invite {
   expiresAt: string;
   acceptedAt: string | null;
   createdAt: string;
+  recipientAccount?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    status: string;
+  } | null;
 }
 
 export interface Me {
@@ -223,7 +231,7 @@ function ConfirmModal({
 
 // ── Main client component ─────────────────────────────────────────────────────
 
-export default function InviteClient({ me }: { me: Me }) {
+export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?: boolean }) {
   // ── state ──
   const [recipientName,    setRecipientName]    = useState("");
   const [recipientEmail,   setRecipientEmail]   = useState("");
@@ -247,7 +255,7 @@ export default function InviteClient({ me }: { me: Me }) {
   const senderInitials = `${me.firstName[0]}${me.lastName[0]}`.toUpperCase();
   const subject       = `You've been invited to join the ${me.lastName} Family`;
   const pendingCount  = invites.filter((i) => i.status === "PENDING").length;
-  const acceptedCount = invites.filter((i) => i.status === "ACCEPTED").length;
+  const joinedCount = invites.filter((i) => i.status === "REGISTERED").length;
 
   // ── handlers ──
   const loadInvites = () => {
@@ -626,7 +634,7 @@ export default function InviteClient({ me }: { me: Me }) {
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"16px" }}>
             <div>
               <h2 style={{ fontSize:"18px", fontWeight:700, color:"#1c1917", margin:0 }}>Sent invites</h2>
-              <p style={{ fontSize:"13px", color:"#78716c", marginTop:"3px" }}>{pendingCount} pending · {acceptedCount} joined</p>
+              <p style={{ fontSize:"13px", color:"#78716c", marginTop:"3px" }}>{pendingCount} pending · {joinedCount} joined</p>
             </div>
             <button onClick={loadInvites} disabled={loadingInvites} style={{ display:"flex", alignItems:"center", gap:"6px", padding:"8px 14px", border:"1px solid #e7e5e4", borderRadius:"10px", background:"white", cursor:"pointer", fontSize:"13px", fontWeight:600, color:"#78716c" }}>
               <RefreshCw style={{ width:13, height:13 }} className={loadingInvites ? "animate-spin" : ""} />
@@ -680,6 +688,41 @@ export default function InviteClient({ me }: { me: Me }) {
                       <Icon style={{ width:12, height:12 }} />
                       {cfg.label}
                     </span>
+
+                    {invite.status === "REGISTERED" && invite.recipientAccount && (
+                      <span
+                        title="Their AMIH account (site-wide)"
+                        style={{
+                          display:"flex", alignItems:"center", gap:"4px",
+                          fontSize:"11px", fontWeight:700, padding:"4px 9px", borderRadius:"999px",
+                          background:
+                            invite.recipientAccount.status === "active" ? "#dcfce7"
+                            : invite.recipientAccount.status === "suspended" ? "#fef9c3"
+                            : "#e2e8f0",
+                          color:
+                            invite.recipientAccount.status === "active" ? "#166534"
+                            : invite.recipientAccount.status === "suspended" ? "#854d0e"
+                            : "#475569",
+                          border:"1px solid rgba(0,0,0,0.06)",
+                          flexShrink:0,
+                          textTransform:"capitalize",
+                        }}
+                      >
+                        Account · {invite.recipientAccount.status}
+                      </span>
+                    )}
+
+                    {isAdmin && invite.status === "REGISTERED" && (
+                      <Link
+                        href="/admin"
+                        style={{
+                          fontSize:"11px", fontWeight:700, color:"#1d4ed8", textDecoration:"none",
+                          padding:"4px 8px", borderRadius:"8px", background:"#eff6ff", flexShrink:0,
+                        }}
+                      >
+                        Admin actions →
+                      </Link>
+                    )}
 
                     {/* Actions */}
                     <div style={{ display:"flex", gap:"6px", flexShrink:0 }}>

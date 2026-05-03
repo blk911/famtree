@@ -16,6 +16,7 @@ type Member = {
   email: string;
   photoUrl: string | null;
   role: string;
+  status: string;
   createdAt: Date;
   invitedById: string | null;
   profile: { bio: string | null; familyRole: string | null; location: string | null } | null;
@@ -114,12 +115,19 @@ function flattenTreeByParentThread(roots: TreeNode[]): FlatNode[] {
 export default async function TreePage() {
   const currentUser = await getCurrentUser();
 
-  const [members, invites, trustUnits] = await Promise.all([
+  const [members, invites, trustUnits, treeViewPrefs] = await Promise.all([
     prisma.user.findMany({
       select: {
-        id:true, firstName:true, lastName:true, email:true,
-        photoUrl:true, role:true, createdAt:true, invitedById:true,
-        profile: { select: { bio:true, familyRole:true, location:true } },
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        photoUrl: true,
+        role: true,
+        status: true,
+        createdAt: true,
+        invitedById: true,
+        profile: { select: { bio: true, familyRole: true, location: true } },
       },
       orderBy: { createdAt: "asc" },
     }),
@@ -128,10 +136,19 @@ export default async function TreePage() {
       select: { senderId: true, recipientEmail: true, createdAt: true },
     }),
     currentUser ? getTrustUnits(currentUser.id) : Promise.resolve([]),
+    currentUser
+      ? prisma.treeViewPreference.findMany({
+          where: { viewerId: currentUser.id },
+          select: { targetId: true, muted: true, hidden: true },
+        })
+      : Promise.resolve([]),
   ]);
 
   const roots = buildTree(members, invites, currentUser?.id);
-  const flat  = flattenTreeByParentThread(roots);
+  const flat = flattenTreeByParentThread(roots);
+  const treePrefsInitial = Object.fromEntries(
+    treeViewPrefs.map((p) => [p.targetId, { muted: p.muted, hidden: p.hidden }]),
+  );
 
   if (flat.length === 0) {
     return (
@@ -151,10 +168,7 @@ export default async function TreePage() {
 
   return (
     <div className="space-y-6">
-      <TreeList
-        items={flat}
-        currentUserId={currentUser?.id}
-      />
+      <TreeList items={flat} currentUserId={currentUser?.id} initialPrefs={treePrefsInitial} />
       {trustUnits.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Trust Units</h2>

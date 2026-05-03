@@ -26,12 +26,12 @@ export default async function AdminPage() {
     prisma.waitlist.count(),
     prisma.user.findMany({
       orderBy:{ createdAt:"desc" },
-      take: 20,
+      take: 50,
       select:{ id:true, firstName:true, lastName:true, email:true, role:true, status:true, relationship:true, invitedById:true, createdAt:true },
     }),
     prisma.invite.findMany({
       orderBy:{ createdAt:"desc" },
-      take: 20,
+      take: 50,
       select:{
         id:true, recipientEmail:true, status:true, createdAt:true, expiresAt:true, acceptedAt:true,
         sender:{ select:{ id:true, firstName:true, lastName:true } },

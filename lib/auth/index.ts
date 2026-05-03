@@ -82,7 +82,16 @@ export async function getCurrentUser(): Promise<User | null> {
   });
   if (!session) return null;
 
-  return prisma.user.findUnique({ where: { id: payload.sub } });
+  const user = await prisma.user.findUnique({ where: { id: payload.sub } });
+  if (!user) return null;
+
+  if (user.status !== "active") {
+    await prisma.session.deleteMany({ where: { userId: user.id } });
+    cookies().delete(COOKIE_NAME);
+    return null;
+  }
+
+  return user;
 }
 
 // ─── Require auth (for server components / route handlers) ───

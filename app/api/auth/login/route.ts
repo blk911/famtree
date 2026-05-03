@@ -34,6 +34,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    if (user.status === "suspended") {
+      return NextResponse.json(
+        { error: "Your account is suspended. Please contact support." },
+        { status: 403 },
+      );
+    }
+    if (user.status === "archived" || user.status === "blocked") {
+      return NextResponse.json({ error: "This account is no longer active." }, { status: 403 });
+    }
+
     // Capture previous login time before overwriting it
     const prevLoginAt = user.lastLoginAt;
 

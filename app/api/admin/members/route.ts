@@ -43,11 +43,20 @@ export async function PATCH(req: NextRequest) {
       select: { id: true, status: true },
     });
 
+    if (status !== "active") {
+      await prisma.session.deleteMany({ where: { userId } });
+    }
+
     await logActivity({
       actorId:   caller.id,
       actorName: `${caller.firstName} ${caller.lastName}`,
       action:    `member.${status}`,
-      detail:    `Set ${target.firstName} ${target.lastName} (${target.email}) to ${status}`,
+      detail:
+        status === "active"
+          ? `Reactivated ${target.firstName} ${target.lastName} (${target.email})`
+          : status === "archived"
+            ? `Archived (legal hold): ${target.firstName} ${target.lastName} (${target.email}) — sessions revoked`
+            : `Set ${target.firstName} ${target.lastName} (${target.email}) to ${status} — sessions revoked`,
     });
 
     return NextResponse.json({ success: true, user: updated });
