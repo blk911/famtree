@@ -2,9 +2,10 @@
 
 import { prisma } from "@/lib/db/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { loadTreeViewPrefsSafe, loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { TreePine } from "lucide-react";
 import { TreeList, type FlatNode } from "@/components/TreeList";
-import { getTrustUnits } from "@/lib/trust";
 import { TrustUnitCard } from "@/components/tree/TrustUnitCard";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -114,6 +115,7 @@ function flattenTreeByParentThread(roots: TreeNode[]): FlatNode[] {
 
 export default async function TreePage() {
   const currentUser = await getCurrentUser();
+  if (!currentUser) redirect("/login");
 
   const [members, invites, trustUnits, treeViewPrefs] = await Promise.all([
     prisma.user.findMany({
@@ -135,16 +137,11 @@ export default async function TreePage() {
       where: { status: { in: ["ACCEPTED", "PENDING"] } },
       select: { senderId: true, recipientEmail: true, createdAt: true },
     }),
-    currentUser ? getTrustUnits(currentUser.id) : Promise.resolve([]),
-    currentUser
-      ? prisma.treeViewPreference.findMany({
-          where: { viewerId: currentUser.id },
-          select: { targetId: true, muted: true, hidden: true },
-        })
-      : Promise.resolve([]),
+    loadTrustUnitsSafe(currentUser.id),
+    loadTreeViewPrefsSafe(currentUser.id),
   ]);
 
-  const roots = buildTree(members, invites, currentUser?.id);
+  const roots = buildTree(members, invites, currentUser.id);
   const flat = flattenTreeByParentThread(roots);
   const treePrefsInitial = Object.fromEntries(
     treeViewPrefs.map((p) => [p.targetId, { muted: p.muted, hidden: p.hidden }]),
@@ -168,7 +165,7 @@ export default async function TreePage() {
 
   return (
     <div className="space-y-6">
-      <TreeList items={flat} currentUserId={currentUser?.id} initialPrefs={treePrefsInitial} />
+      <TreeList items={flat} currentUserId={currentUser.id} initialPrefs={treePrefsInitial} />
       {trustUnits.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Trust Units</h2>

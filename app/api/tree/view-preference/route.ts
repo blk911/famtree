@@ -34,7 +34,10 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Cannot change preferences for yourself" }, { status: 400 });
     }
 
-    const target = await prisma.user.findUnique({ where: { id: targetId } });
+    const target = await prisma.user.findUnique({
+      where: { id: targetId },
+      select: { id: true },
+    });
     if (!target) {
       return NextResponse.json({ error: "Member not found" }, { status: 404 });
     }

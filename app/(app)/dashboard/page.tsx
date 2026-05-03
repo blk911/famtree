@@ -4,7 +4,8 @@ import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MessageSquare, MessageCircle } from "lucide-react";
-import { getPendingTrustRequests, getTrustUnits } from "@/lib/trust";
+import { getPendingTrustRequests } from "@/lib/trust";
+import { loadTreeViewPrefsSafe, loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { TrustRequestsPanel } from "@/components/dashboard/TrustRequestsPanel";
 import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletionPrompt";
 import { IncomingIdentityAcks } from "@/components/dashboard/IncomingIdentityAcks";
@@ -106,7 +107,7 @@ export default async function DashboardPage() {
     prisma.user.count(),
     prisma.invite.findMany({ where:{ senderId:user.id }, orderBy:{ createdAt:"desc" }, take:6 }),
     getPendingTrustRequests(user.id),
-    getTrustUnits(user.id),
+    loadTrustUnitsSafe(user.id),
     prisma.$queryRaw<Array<{
       dashboardProfilePromptDismissedAt: Date | null;
       dashboardProfilePromptSeenCount: number;
@@ -141,10 +142,7 @@ export default async function DashboardPage() {
       orderBy: { createdAt:"desc" },
       take: 10,
     }),
-    prisma.treeViewPreference.findMany({
-      where: { viewerId: user.id },
-      select: { targetId: true, muted: true, hidden: true },
-    }),
+    loadTreeViewPrefsSafe(user.id),
   ]);
 
   const joinedViaYou = myInvites.filter((i) => i.status === "REGISTERED").length;
