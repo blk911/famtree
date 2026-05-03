@@ -136,6 +136,15 @@ export async function getPendingTrustRequests(userId: string) {
   }));
 }
 
+export async function getPendingTrustRequestsSafe(userId: string) {
+  try {
+    return await getPendingTrustRequests(userId);
+  } catch (err) {
+    console.error("[trust] getPendingTrustRequests failed", err);
+    return [];
+  }
+}
+
 export async function getTrustUnits(userId: string) {
   const units = await prisma.$queryRaw<Array<{ id: string; createdAt: Date }>>`
     SELECT tu.id, tu."createdAt"

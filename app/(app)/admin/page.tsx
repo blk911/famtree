@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { loadRecentMembersForAdmin, loadWaitlistSafe } from "@/lib/admin/safe-data";
 import { AdminLists } from "@/components/admin/AdminLists";
 import { AnnouncementComposer } from "@/components/admin/AnnouncementComposer";
 import { AdminIdentityQueue } from "@/components/admin/AdminIdentityQueue";
@@ -25,12 +26,8 @@ export default async function AdminPage() {
     prisma.user.count(),
     prisma.invite.count(),
     prisma.invite.count({ where:{ status:"PENDING" } }),
-    prisma.waitlist.count(),
-    prisma.user.findMany({
-      orderBy:{ createdAt:"desc" },
-      take: 50,
-      select:{ id:true, firstName:true, lastName:true, email:true, role:true, status:true, relationship:true, invitedById:true, createdAt:true, selfServiceIdentityChangesRemaining:true },
-    }),
+    prisma.waitlist.count().catch(() => 0),
+    loadRecentMembersForAdmin(),
     prisma.invite.findMany({
       orderBy:{ createdAt:"desc" },
       take: 50,
@@ -39,11 +36,7 @@ export default async function AdminPage() {
         sender:{ select:{ id:true, firstName:true, lastName:true } },
       },
     }),
-    prisma.waitlist.findMany({
-      orderBy:{ createdAt:"desc" },
-      take: 10,
-      select:{ id:true, firstName:true, lastName:true, email:true, phone:true, createdAt:true },
-    }),
+    loadWaitlistSafe(),
   ]);
 
   const stats = [

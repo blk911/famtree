@@ -4,8 +4,9 @@ import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MessageSquare, MessageCircle } from "lucide-react";
-import { getPendingTrustRequests } from "@/lib/trust";
+import { getPendingTrustRequestsSafe } from "@/lib/trust";
 import { loadTreeViewPrefsSafe, loadTrustUnitsSafe } from "@/lib/tree/safe-data";
+import { queryDashboardProfilePrompt, incrementDashboardProfilePromptSeen } from "@/lib/dashboard/safe-data";
 import { TrustRequestsPanel } from "@/components/dashboard/TrustRequestsPanel";
 import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletionPrompt";
 import { IncomingIdentityAcks } from "@/components/dashboard/IncomingIdentityAcks";
@@ -106,15 +107,9 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     prisma.user.count(),
     prisma.invite.findMany({ where:{ senderId:user.id }, orderBy:{ createdAt:"desc" }, take:6 }),
-    getPendingTrustRequests(user.id),
+    getPendingTrustRequestsSafe(user.id),
     loadTrustUnitsSafe(user.id),
-    prisma.$queryRaw<Array<{
-      dashboardProfilePromptDismissedAt: Date | null;
-      dashboardProfilePromptSeenCount: number;
-    }>>`
-      SELECT "dashboardProfilePromptDismissedAt", "dashboardProfilePromptSeenCount"
-      FROM "profiles" WHERE "userId" = ${user.id} LIMIT 1
-    `,
+    queryDashboardProfilePrompt(user.id),
     // tree data
     prisma.user.findMany({
       select: {
@@ -160,12 +155,7 @@ export default async function DashboardPage() {
     && (promptState?.dashboardProfilePromptSeenCount ?? 0) < 3;
 
   if (showProfilePrompt) {
-    await prisma.$executeRaw`
-      UPDATE "profiles"
-      SET "dashboardProfilePromptSeenCount" = "dashboardProfilePromptSeenCount" + 1,
-          "updatedAt" = now()
-      WHERE "userId" = ${user.id}
-    `;
+    await incrementDashboardProfilePromptSeen(user.id);
   }
 
   // Build tree for dashboard panel
