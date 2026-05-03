@@ -20,6 +20,8 @@ export async function GET() {
             select: {
               id: true, email: true, firstName: true, lastName: true,
               photoUrl: true, dateOfBirth: true, role: true, createdAt: true,
+              emailVerified: true,
+              selfServiceIdentityChangesRemaining: true,
             },
           },
           photos: { orderBy: { createdAt: "desc" } },
@@ -47,9 +49,6 @@ const updateSchema = z.object({
   location:      z.string().max(120).optional(),
   isPublicInTree: z.boolean().optional(),
   showDob:       z.boolean().optional(),
-  // User fields
-  firstName:     z.string().min(1).max(80).optional(),
-  lastName:      z.string().min(1).max(80).optional(),
 });
 
 export async function PATCH(req: NextRequest) {
@@ -62,18 +61,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Please check your profile fields and try again" }, { status: 400 });
     }
 
-    const { firstName, lastName, ...profileFields } = parsed.data;
-
-    // Update user name if provided
-    if (firstName || lastName) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          ...(firstName && { firstName }),
-          ...(lastName && { lastName }),
-        },
-      });
-    }
+    const profileFields = parsed.data;
 
     const profile = await prisma.profile.update({
       where: { userId: user.id },

@@ -15,6 +15,7 @@ type Member = {
   relationship: string | null;
   invitedById: string | null;
   createdAt: Date | string;
+  selfServiceIdentityChangesRemaining: number;
 };
 
 const RELATIONSHIP_META: Record<string, { label: string; bg: string; color: string }> = {
@@ -194,6 +195,8 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
   const [linkParentId, setLinkParentId] = useState("");
   const [linkSaving, setLinkSaving] = useState(false);
 
+  const [identityUnlocking, setIdentityUnlocking] = useState<string | null>(null);
+
   // close modals on Escape
   useEffect(() => {
     if (!selectedMember && !selectedWaitlist && !messagingMember) return;
@@ -286,6 +289,37 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
   };
 
   // ─── Handle member status action ────────────────────────────────────────────
+
+  const handleUnlockIdentity = async (member: Member) => {
+    if (member.role === "founder") return;
+    if (
+      !window.confirm(
+        `Grant ${member.firstName} ${member.lastName} another self-service identity change? Use for legitimate cases (legal name, divorce, recovery, etc.).`,
+      )
+    ) {
+      return;
+    }
+    setIdentityUnlocking(member.id);
+    try {
+      const res = await fetch("/api/admin/identity-change/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: member.id }),
+      });
+      if (res.ok) {
+        setMembers((prev) =>
+          prev.map((m) =>
+            m.id === member.id ? { ...m, selfServiceIdentityChangesRemaining: 1 } : m,
+          ),
+        );
+        setSelectedMember((prev) =>
+          prev?.id === member.id ? { ...prev, selfServiceIdentityChangesRemaining: 1 } : prev,
+        );
+      }
+    } finally {
+      setIdentityUnlocking(null);
+    }
+  };
 
   const handleAction = async (member: Member, action: ActionKey, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -607,7 +641,45 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
               )}
               <InfoRow label="Member since">{fullDate(selectedMember.createdAt)}</InfoRow>
               <InfoRow label="Email">{selectedMember.email}</InfoRow>
+              <InfoRow label="Identity self-service">
+                <span style={{ fontWeight: 700 }}>
+                  {selectedMember.selfServiceIdentityChangesRemaining ?? 1} left
+                </span>
+              </InfoRow>
             </div>
+
+            {selectedMember.role !== "founder" &&
+              (selectedMember.selfServiceIdentityChangesRemaining ?? 0) <= 0 && (
+                <>
+                  <div style={{ height: "1px", background: "#f5f4f0", margin: "16px 0" }} />
+                  <button
+                    type="button"
+                    disabled={identityUnlocking === selectedMember.id}
+                    onClick={() => handleUnlockIdentity(selectedMember)}
+                    style={{
+                      width: "100%",
+                      height: "40px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      background: "#faf5ff",
+                      color: "#6d28d9",
+                      border: "1px solid #ddd6fe",
+                      borderRadius: "10px",
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      cursor: identityUnlocking === selectedMember.id ? "wait" : "pointer",
+                      opacity: identityUnlocking === selectedMember.id ? 0.75 : 1,
+                    }}
+                  >
+                    {identityUnlocking === selectedMember.id ? "Unlocking…" : "Unlock identity self-service"}
+                  </button>
+                  <p style={{ fontSize: "11px", color: "#78716c", margin: "8px 0 0", textAlign: "center" }}>
+                    Restores one governed name / email / mobile update for this member.
+                  </p>
+                </>
+              )}
 
             {/* Message button */}
             <div style={{height:"1px",background:"#f5f4f0",margin:"20px 0"}} />

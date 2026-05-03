@@ -7,6 +7,7 @@ import { MessageSquare, MessageCircle } from "lucide-react";
 import { getPendingTrustRequests, getTrustUnits } from "@/lib/trust";
 import { TrustRequestsPanel } from "@/components/dashboard/TrustRequestsPanel";
 import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletionPrompt";
+import { IncomingIdentityAcks } from "@/components/dashboard/IncomingIdentityAcks";
 import { CollapsibleSection } from "@/components/dashboard/CollapsibleSection";
 import { TreeList, type FlatNode } from "@/components/TreeList";
 
@@ -180,6 +181,8 @@ export default async function DashboardPage() {
     <div style={{ display:"flex", flexDirection:"column", gap:"20px" }}>
       {/* Profile completion banner */}
       {showProfilePrompt && <ProfileCompletionPrompt />}
+
+      <IncomingIdentityAcks />
 
       {/* ── Stats ── */}
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"10px" }}>

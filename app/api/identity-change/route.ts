@@ -1,0 +1,226 @@
+// GET /api/identity-change — eligibility + open request (requester view)
+// POST /api/identity-change — submit a new request
+
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth";
+import { prisma } from "@/lib/db/prisma";
+import { z } from "zod";
+import {
+  IC_STATUS,
+  getActiveInviteeIds,
+  refreshAckPhase,
+} from "@/lib/identity-change/service";
+
+const submitSchema = z
+  .object({
+    proposedFirstName: z.string().min(1).max(80).optional(),
+    proposedLastName: z.string().min(1).max(80).optional(),
+    proposedEmail: z.string().email().optional(),
+    proposedPhone: z.string().max(40).optional().nullable(),
+    requesterNote: z.string().min(10).max(4000),
+  })
+  .strict();
+
+export async function GET() {
+  try {
+    const user = await requireAuth();
+    const profile = await prisma.profile.findUnique({
+      where: { userId: user.id },
+      select: { phone: true },
+    });
+
+    const openRequest = await prisma.identityChangeRequest.findFirst({
+      where: {
+        requesterId: user.id,
+        status: { in: [IC_STATUS.PENDING_ACKS, IC_STATUS.PENDING_ADMIN] },
+      },
+      include: {
+        acknowledgments: {
+          select: {
+            id: true,
+            inviteeId: true,
+            response: true,
+            respondedAt: true,
+            invitee: { select: { firstName: true, lastName: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (openRequest?.status === IC_STATUS.PENDING_ACKS) {
+      await refreshAckPhase(openRequest.id);
+    }
+
+    const fresh =
+      openRequest &&
+      (await prisma.identityChangeRequest.findFirst({
+        where: {
+          requesterId: user.id,
+          status: { in: [IC_STATUS.PENDING_ACKS, IC_STATUS.PENDING_ADMIN] },
+        },
+        include: {
+          acknowledgments: {
+            select: {
+              id: true,
+              inviteeId: true,
+              response: true,
+              respondedAt: true,
+              invitee: { select: { firstName: true, lastName: true } },
+            },
+          },
+        },
+      }));
+
+    const inviteePreviewCount = await prisma.user.count({
+      where: { invitedById: user.id, status: "active" },
+    });
+
+    return NextResponse.json({
+      selfServiceRemaining: user.selfServiceIdentityChangesRemaining,
+      current: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: profile?.phone ?? "",
+      },
+      inviteePreviewCount,
+      openRequest: fresh
+        ? {
+            id: fresh.id,
+            status: fresh.status,
+            expiresAt: fresh.expiresAt,
+            hasConflict: fresh.hasConflict,
+            changeName: fresh.changeName,
+            changeEmail: fresh.changeEmail,
+            changePhone: fresh.changePhone,
+            proposedFirstName: fresh.proposedFirstName,
+            proposedLastName: fresh.proposedLastName,
+            proposedEmail: fresh.proposedEmail,
+            proposedPhone: fresh.proposedPhone,
+            requesterNote: fresh.requesterNote,
+            acknowledgments: fresh.acknowledgments,
+          }
+        : null,
+    });
+  } catch (err: any) {
+    if (err.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+    console.error("[identity-change GET]", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const user = await requireAuth();
+    if (user.selfServiceIdentityChangesRemaining <= 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Self-service identity updates are exhausted for your account. Contact an admin to unlock another change (e.g. divorce, legal name, recovery).",
+        },
+        { status: 403 },
+      );
+    }
+
+    const existingOpen = await prisma.identityChangeRequest.findFirst({
+      where: {
+        requesterId: user.id,
+        status: { in: [IC_STATUS.PENDING_ACKS, IC_STATUS.PENDING_ADMIN] },
+      },
+    });
+    if (existingOpen) {
+      return NextResponse.json(
+        { error: "You already have an identity change in progress. Withdraw it first or wait for admin." },
+        { status: 409 },
+      );
+    }
+
+    const raw = await req.json();
+    const parsed = submitSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { userId: user.id },
+      select: { phone: true },
+    });
+
+    const prevPhone = profile?.phone ?? null;
+    let { proposedFirstName, proposedLastName, proposedEmail, proposedPhone, requesterNote } = parsed.data;
+
+    const namePart = !!(proposedFirstName?.trim() || proposedLastName?.trim());
+    const bothNames = !!(proposedFirstName?.trim() && proposedLastName?.trim());
+    if (namePart && !bothNames) {
+      return NextResponse.json(
+        { error: "Provide both first and last name when changing your legal name." },
+        { status: 400 },
+      );
+    }
+
+    proposedPhone =
+      proposedPhone === undefined || proposedPhone === null
+        ? undefined
+        : proposedPhone.trim() === ""
+          ? ""
+          : proposedPhone.trim();
+
+    const normEmail = proposedEmail?.trim().toLowerCase();
+
+    const changeName =
+      !!(proposedFirstName && proposedLastName) &&
+      (proposedFirstName.trim() !== user.firstName || proposedLastName.trim() !== user.lastName);
+
+    const changeEmail = !!normEmail && normEmail !== user.email.toLowerCase();
+
+    const changePhone = proposedPhone !== undefined && proposedPhone !== (prevPhone ?? "");
+
+    if (!changeName && !changeEmail && !changePhone) {
+      return NextResponse.json(
+        { error: "Change at least one of name, email, or mobile number." },
+        { status: 400 },
+      );
+    }
+
+    const inviteeIds = await getActiveInviteeIds(user.id);
+    const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+
+    const status = inviteeIds.length === 0 ? IC_STATUS.PENDING_ADMIN : IC_STATUS.PENDING_ACKS;
+
+    const created = await prisma.identityChangeRequest.create({
+      data: {
+        requesterId: user.id,
+        status,
+        prevFirstName: user.firstName,
+        prevLastName: user.lastName,
+        prevEmail: user.email,
+        prevPhone,
+        proposedFirstName: changeName ? proposedFirstName!.trim() : null,
+        proposedLastName: changeName ? proposedLastName!.trim() : null,
+        proposedEmail: changeEmail ? normEmail! : null,
+        proposedPhone: changePhone ? (proposedPhone === "" ? null : proposedPhone) : null,
+        changeName,
+        changeEmail,
+        changePhone,
+        requesterNote: requesterNote.trim(),
+        expiresAt,
+        ...(inviteeIds.length > 0 && {
+          acknowledgments: {
+            create: inviteeIds.map((inviteeId) => ({ inviteeId })),
+          },
+        }),
+      },
+    });
+
+    return NextResponse.json({ success: true, request: { id: created.id, status: created.status } });
+  } catch (err: any) {
+    if (err.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+    console.error("[identity-change POST]", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

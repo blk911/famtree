@@ -5,6 +5,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { AdminLists } from "@/components/admin/AdminLists";
 import { AnnouncementComposer } from "@/components/admin/AnnouncementComposer";
+import { AdminIdentityQueue } from "@/components/admin/AdminIdentityQueue";
+import { IncomingIdentityAcks } from "@/components/dashboard/IncomingIdentityAcks";
 
 const card = {
   background:"white", borderRadius:"16px",
@@ -27,7 +29,7 @@ export default async function AdminPage() {
     prisma.user.findMany({
       orderBy:{ createdAt:"desc" },
       take: 50,
-      select:{ id:true, firstName:true, lastName:true, email:true, role:true, status:true, relationship:true, invitedById:true, createdAt:true },
+      select:{ id:true, firstName:true, lastName:true, email:true, role:true, status:true, relationship:true, invitedById:true, createdAt:true, selfServiceIdentityChangesRemaining:true },
     }),
     prisma.invite.findMany({
       orderBy:{ createdAt:"desc" },
@@ -80,6 +82,10 @@ export default async function AdminPage() {
           </div>
         ))}
       </div>
+
+      <IncomingIdentityAcks />
+
+      <AdminIdentityQueue />
 
       <AnnouncementComposer />
       <AdminLists members={recentMembers} invites={recentInvites} waitlist={recentWaitlist} />

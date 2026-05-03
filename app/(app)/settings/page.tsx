@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Camera, Shield, User, Trash2 } from "lucide-react";
+import { IdentityChangePanel } from "@/components/settings/IdentityChangePanel";
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<any>(null);
@@ -139,6 +140,10 @@ export default function SettingsPage() {
                 <span className="text-stone-900 break-all">{profile.user.email}</span>
               </div>
               <div className="grid grid-cols-[100px_1fr] items-start gap-2">
+                <span className="text-stone-500 pt-0.5">Mobile</span>
+                <span className="text-stone-900 break-words">{profile.phone?.trim() ? profile.phone : "—"}</span>
+              </div>
+              <div className="grid grid-cols-[100px_1fr] items-start gap-2">
                 <span className="text-stone-500 pt-0.5">Role</span>
                 <span className="badge badge-stone capitalize w-fit">{profile.user.role}</span>
               </div>
@@ -155,6 +160,8 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      <IdentityChangePanel />
 
       {/* Privacy */}
       <div className="profile-card p-6 space-y-1">

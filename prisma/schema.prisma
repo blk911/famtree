@@ -59,6 +59,13 @@ model User {
   treePrefsAsViewer TreeViewPreference[] @relation("TreePrefsViewer")
   treePrefsAsTarget TreeViewPreference[] @relation("TreePrefsTarget")
 
+  // Identity change workflow — first approved change consumes self-service; admin unlock restores one slot.
+  selfServiceIdentityChangesRemaining Int @default(1)
+
+  identityChangeRequests          IdentityChangeRequest[]       @relation("ICRRequester")
+  identityChangesAdministered     IdentityChangeRequest[]       @relation("ICRAdmin")
+  identityChangeAcknowledgments   IdentityChangeAcknowledgment[] @relation("ICAckInvitee")
+
   @@map("users")
 }
 
@@ -74,6 +81,7 @@ model Profile {
   familyRole  String?  // "parent" | "grandparent" | "sibling" | "cousin" | "child" | "other"
   location    String?
   coverUrl    String?
+  phone       String?
 
   // Privacy
   isPublicInTree Boolean @default(true)  // visible to all tree members
@@ -335,6 +343,65 @@ model Waitlist {
   createdAt DateTime @default(now())
 
   @@map("waitlist")
+}
+
+// ─────────────────────────────────────────────
+// IDENTITY CHANGE REQUESTS  (name / email / cell — invitee ack + admin)
+// ─────────────────────────────────────────────
+model IdentityChangeRequest {
+  id          String   @id @default(cuid())
+  requesterId String
+  requester   User     @relation("ICRRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+
+  status      String   // PENDING_ACKS | PENDING_ADMIN | APPROVED | REJECTED | WITHDRAWN | EXPIRED
+
+  prevFirstName String
+  prevLastName  String
+  prevEmail     String
+  prevPhone     String?
+
+  proposedFirstName String?
+  proposedLastName  String?
+  proposedEmail     String?
+  proposedPhone     String?
+
+  changeName  Boolean @default(false)
+  changeEmail Boolean @default(false)
+  changePhone Boolean @default(false)
+
+  requesterNote String @db.Text
+
+  hasConflict Boolean @default(false)
+
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resolvedAt DateTime?
+  adminId    String?
+  admin      User?    @relation("ICRAdmin", fields: [adminId], references: [id], onDelete: SetNull)
+  adminNote  String?  @db.Text
+
+  acknowledgments IdentityChangeAcknowledgment[]
+
+  @@index([requesterId])
+  @@index([status])
+  @@map("identity_change_requests")
+}
+
+model IdentityChangeAcknowledgment {
+  id        String   @id @default(cuid())
+  requestId String
+  request   IdentityChangeRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  inviteeId String
+  invitee   User     @relation("ICAckInvitee", fields: [inviteeId], references: [id], onDelete: Cascade)
+
+  response    String?   // YES | NO
+  respondedAt DateTime?
+
+  @@unique([requestId, inviteeId])
+  @@map("identity_change_acknowledgments")
 }
 
 // ─────────────────────────────────────────────
