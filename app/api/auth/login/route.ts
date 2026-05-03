@@ -10,6 +10,19 @@ const loginSchema = z.object({
   password: z.string().min(0),
 });
 
+/** Only columns login needs — avoids 500 if production DB lags schema (new columns not migrated yet). */
+const LOGIN_USER_SELECT = {
+  id: true,
+  email: true,
+  passwordHash: true,
+  firstName: true,
+  lastName: true,
+  role: true,
+  photoUrl: true,
+  status: true,
+  lastLoginAt: true,
+} as const;
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -25,6 +38,7 @@ export async function POST(req: NextRequest) {
     // Case-insensitive match — stored email may differ only by casing (Postgres unique is case-sensitive).
     const user = await prisma.user.findFirst({
       where: { email: { equals: emailInput, mode: "insensitive" } },
+      select: LOGIN_USER_SELECT,
     });
     if (!user) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
