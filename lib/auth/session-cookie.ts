@@ -1,2 +1,2 @@
-/** Session cookie name — shared by middleware, auth, and app layouts. */
-export const SESSION_COOKIE_NAME = "AMIHUMAN.NET_session";
+/** Session cookie — host-only, avoid `.` in name (some proxies / parsers behave poorly). */
+export const SESSION_COOKIE_NAME = "amihuman_session";

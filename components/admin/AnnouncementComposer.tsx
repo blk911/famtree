@@ -86,10 +86,10 @@ export function AnnouncementComposer() {
                   ● Live now
                 </p>
                 <p style={{ fontWeight: 700, color: "#1c1917", fontSize: "14px", marginBottom: "4px" }}>
-                  {current.title}
+                  {current.title ?? ""}
                 </p>
                 <p style={{ color: "#57534e", fontSize: "13px", lineHeight: 1.5 }}>
-                  {current.body}
+                  {current.body ?? ""}
                 </p>
               </div>
               <button

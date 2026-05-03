@@ -141,6 +141,7 @@ function StatusBadge({ label, colors }: { label: string; colors: { bg: string; c
 const ACTION_BTN: Record<string, { label: string; bg: string; color: string; title?: string }> = {
   suspend:  { label:"Suspend",  bg:"#fef9c3", color:"#854d0e", title:"SITE-WIDE (admin only): blocks sign-in for this account everywhere" },
   archive:  { label:"Archive (legal hold)",  bg:"#f1f5f9", color:"#475569", title:"SITE-WIDE (admin only): retains audit data; user cannot sign in anywhere" },
+  block:    { label:"Block",    bg:"#fee2e2", color:"#991b1b", title:"SITE-WIDE (admin only): hard block — sign-in denied until activated" },
   activate: { label:"Activate", bg:"#dcfce7", color:"#166534", title:"SITE-WIDE (admin): restore this account to active" },
 };
 
@@ -409,6 +410,7 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                   </button>
                   {actions.map((action) => {
                     const btn = ACTION_BTN[action];
+                    if (!btn) return null;
                     return (
                       <button
                         key={action}
@@ -630,6 +632,7 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                 <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
                   {actionForStatus(selectedMember.status).map((action) => {
                     const btn = ACTION_BTN[action];
+                    if (!btn) return null;
                     const loading = actionLoading === selectedMember.id;
                     return (
                       <button

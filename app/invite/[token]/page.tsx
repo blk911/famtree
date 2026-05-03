@@ -109,7 +109,7 @@ export default function InviteChallengePage() {
             Ask the person who invited you to send a new invite.
           </p>
           <Link href="/" className="btn-secondary w-full">
-            Go to FamTree
+            Go to AMIHUMAN.NET
           </Link>
         </div>
       </div>
@@ -141,7 +141,7 @@ export default function InviteChallengePage() {
       <nav className="flex items-center justify-center px-6 py-5 border-b border-stone-200 bg-white">
         <div className="flex items-center gap-2 text-stone-900">
           <TreePine className="w-5 h-5" />
-          <span className="font-semibold tracking-tight">FamTree</span>
+          <span className="font-semibold tracking-tight">AMIHUMAN.NET</span>
         </div>
       </nav>
 

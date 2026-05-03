@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { LGENX_NET_FAQS } from "@/lib/content/faq";
+import { AMIHUMAN_NET_FAQS } from "@/lib/content/faq";
 
 type FaqModalProps = {
   open: boolean;
@@ -25,7 +25,7 @@ export function FaqModal({ open, onClose }: FaqModalProps) {
         <div className="sticky top-0 z-10 flex items-start justify-between border-b border-slate-200 bg-white px-6 py-5">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-purple-600">
-              LGENX.NET FAQ
+              AMIHUMAN.NET FAQ
             </p>
             <h2
               id="AMIHUMAN.NET-faq-title"
@@ -46,7 +46,7 @@ export function FaqModal({ open, onClose }: FaqModalProps) {
 
         <div className="max-h-[calc(86vh-96px)] overflow-y-auto px-6 py-5">
           <div className="space-y-3">
-            {LGENX_NET_FAQS.map((item, index) => (
+            {AMIHUMAN_NET_FAQS.map((item, index) => (
               <details
                 key={item.id}
                 className="group rounded-2xl border border-slate-200 bg-slate-50/70 px-5 py-4"

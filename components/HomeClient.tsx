@@ -350,7 +350,7 @@ export function HomeClient() {
           </div>
         </div>
         <footer style={{ textAlign:"center", fontSize:"12px", color:"#9ca3af", marginTop:"64px" }}>
-          &copy; 2025 AMIHUMAN.NET &middot; Private family network &middot; No ads &middot; No data sold &middot; Ever.
+          &copy; 2026 AMIHUMAN.NET &middot; Private family network &middot; No ads &middot; No data sold &middot; Ever.
         </footer>
       </section>
 

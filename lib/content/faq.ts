@@ -4,7 +4,7 @@ export type FaqItem = {
   answer: string[];
 };
 
-export const LGENX_NET_FAQS: FaqItem[] = [
+export const AMIHUMAN_NET_FAQS: FaqItem[] = [
   {
     id: "what-is-AMIHUMAN.NET",
     question: "What is AMIHUMAN.NET?",

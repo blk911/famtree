@@ -8,7 +8,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { LGENX_NET_CONTACT_ITEMS } from "@/lib/content/contact";
+import { AMIHUMAN_NET_CONTACT_ITEMS } from "@/lib/content/contact";
 
 type ContactModalProps = {
   open: boolean;
@@ -39,7 +39,7 @@ export function ContactModal({ open, onClose }: ContactModalProps) {
         <div className="flex items-start justify-between border-b border-slate-200 bg-gradient-to-r from-purple-50 to-orange-50 px-6 py-5">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-purple-600">
-              Contact LGENX.NET
+              Contact AMIHUMAN.NET
             </p>
             <h2
               id="AMIHUMAN.NET-contact-title"
@@ -63,7 +63,7 @@ export function ContactModal({ open, onClose }: ContactModalProps) {
 
         <div className="px-6 py-6">
           <div className="grid gap-4 sm:grid-cols-2">
-            {LGENX_NET_CONTACT_ITEMS.map((item) => {
+            {AMIHUMAN_NET_CONTACT_ITEMS.map((item) => {
               const Icon = iconMap[item.id as keyof typeof iconMap] ?? ShieldCheck;
               const content = (
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 transition hover:border-purple-200 hover:bg-purple-50/40">

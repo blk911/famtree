@@ -5,11 +5,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { getJwtSecretKey } from "@/lib/auth/jwt-secret";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/session-cookie";
-
-const SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? "dev-secret-change-in-production"
-);
 
 // /invite/[token] is the public challenge page — only the bare /invite sending
 // page needs auth. We protect /invite exactly, not as a prefix.
@@ -17,43 +14,42 @@ const PROTECTED = ["/dashboard", "/profile", "/tree", "/settings"];
 const AUTH_ROUTES = ["/login", "/register"];
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  try {
+    const { pathname } = request.nextUrl;
 
-  // /invite (send page) is protected; /invite/[token] (challenge page) is public
-  const isProtected =
-    PROTECTED.some((p) => pathname.startsWith(p)) ||
-    pathname === "/invite";
-  const isAuthRoute = AUTH_ROUTES.some((p) => pathname.startsWith(p));
+    const isProtected =
+      PROTECTED.some((p) => pathname.startsWith(p)) ||
+      pathname === "/invite";
+    const isAuthRoute = AUTH_ROUTES.some((p) => pathname.startsWith(p));
 
-  const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+    const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
-  let isAuthenticated = false;
-  if (token) {
-    try {
-      await jwtVerify(token, SECRET);
-      isAuthenticated = true;
-    } catch {
-      isAuthenticated = false;
+    let isAuthenticated = false;
+    if (token) {
+      try {
+        await jwtVerify(token, getJwtSecretKey());
+        isAuthenticated = true;
+      } catch {
+        isAuthenticated = false;
+      }
     }
+
+    if (isProtected && !isAuthenticated) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    const isRegisterWithInvite =
+      pathname === "/register" && request.nextUrl.searchParams.has("token");
+
+    if (isAuthRoute && isAuthenticated && !isRegisterWithInvite) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    return NextResponse.next();
+  } catch (err) {
+    console.error("[middleware]", err);
+    return NextResponse.next();
   }
-
-  // Redirect unauthenticated users away from protected routes
-  if (isProtected && !isAuthenticated) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // Redirect authenticated users away from login/register.
-  // Exception: /register with an invite token must always be reachable so that
-  // an invited user can create their own account even if another session exists
-  // in this browser (e.g. the person who sent the invite is still logged in).
-  const isRegisterWithInvite =
-    pathname === "/register" && request.nextUrl.searchParams.has("token");
-
-  if (isAuthRoute && isAuthenticated && !isRegisterWithInvite) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  return NextResponse.next();
 }
 
 export const config = {

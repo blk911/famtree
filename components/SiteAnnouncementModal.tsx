@@ -196,10 +196,10 @@ export function SiteAnnouncementModal({
         {/* ── Body ──────────────────────────────────────────────────────────── */}
         <div style={{ padding: "24px 24px 16px" }}>
           <h2 style={{ fontSize: "20px", fontWeight: 800, color: "#1c1917", marginBottom: "12px", lineHeight: 1.3 }}>
-            {announcement.title}
+            {announcement.title ?? ""}
           </h2>
           <p style={{ fontSize: "14px", color: "#44403c", lineHeight: 1.75, whiteSpace: "pre-wrap" }}>
-            {announcement.body}
+            {announcement.body ?? ""}
           </p>
         </div>
 

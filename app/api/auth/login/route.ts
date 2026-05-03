@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     const prevLoginAt = user.lastLoginAt;
 
     await Promise.all([
-      setSessionCookie(user.id),
+      setSessionCookie(user.id, req),
       prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }),
     ]);
 

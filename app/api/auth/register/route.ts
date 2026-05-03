@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    await setSessionCookie(user.id);
+    await setSessionCookie(user.id, req);
     await sendWelcomeEmail(user).catch(console.error); // non-blocking
 
     return NextResponse.json({

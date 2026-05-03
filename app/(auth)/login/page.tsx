@@ -70,20 +70,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{
-      minHeight:"100vh",
-      background:"radial-gradient(circle at 12% 82%, rgba(245,158,11,0.32), transparent 34%), radial-gradient(circle at 88% 14%, rgba(244,63,94,0.28), transparent 30%), #0f1729",
-      display:"flex",alignItems:"center",justifyContent:"center",padding:"32px",position:"relative",
-    }}>
-      <style>{`
-        .aih-input:focus { border-color:#f59e0b !important; box-shadow:0 0 0 3px rgba(245,158,11,0.14); outline:none; }
-      `}</style>
-
-      <Link href="/" style={{position:"absolute",top:"24px",left:"24px",color:"rgba(255,255,255,0.82)",fontSize:"14px",fontWeight:600,textDecoration:"none"}}>
-        ← Back to home
-      </Link>
-
-      <div style={{width:"100%",maxWidth:"480px",background:"white",padding:"40px",borderRadius:"20px",boxShadow:"0 24px 64px rgba(0,0,0,0.3)"}}>
+    <div style={{ padding:"36px 40px" }}>
+        <Link href="/" style={{ display:"inline-flex", alignItems:"center", gap:"6px", color:"#78716c", fontSize:"14px", fontWeight:600, textDecoration:"none", marginBottom:"18px" }}>
+          Back to home
+        </Link>
 
         {/* Brand */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"10px",marginBottom:"22px"}}>
@@ -233,6 +223,5 @@ export default function LoginPage() {
           </div>
         )}
       </div>
-    </div>
   );
 }

@@ -4,15 +4,21 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
+import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import type { User } from "@prisma/client";
+import { getJwtSecretKey } from "./jwt-secret";
 import { SESSION_COOKIE_NAME } from "./session-cookie";
 
-const SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? "dev-secret-change-in-production"
-);
 const COOKIE_NAME = SESSION_COOKIE_NAME;
 const EXPIRES_IN = 60 * 60 * 24 * 7; // 7 days in seconds
+
+function cookieSecure(reqHeaders?: Headers): boolean {
+  if (process.env.NODE_ENV !== "production") return false;
+  if (process.env.VERCEL === "1") return true;
+  const proto = reqHeaders?.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  return proto === "https";
+}
 
 // ─── Password ────────────────────────────────────────────────
 export async function hashPassword(plain: string): Promise<string> {
@@ -29,12 +35,12 @@ export async function createJWT(userId: string): Promise<string> {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${EXPIRES_IN}s`)
-    .sign(SECRET);
+    .sign(getJwtSecretKey());
 }
 
 export async function verifyJWT(token: string): Promise<{ sub: string } | null> {
   try {
-    const { payload } = await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, getJwtSecretKey());
     return payload as { sub: string };
   } catch {
     return null;
@@ -42,18 +48,17 @@ export async function verifyJWT(token: string): Promise<{ sub: string } | null> 
 }
 
 // ─── Session cookie ──────────────────────────────────────────
-export async function setSessionCookie(userId: string): Promise<void> {
+export async function setSessionCookie(userId: string, req?: Pick<NextRequest, "headers">): Promise<void> {
   const token = await createJWT(userId);
   const expiresAt = new Date(Date.now() + EXPIRES_IN * 1000);
 
-  // Store in DB for revocation support
   await prisma.session.create({
     data: { userId, token, expiresAt },
   });
 
   cookies().set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: cookieSecure(req?.headers),
     sameSite: "lax",
     expires: expiresAt,
     path: "/",
@@ -61,41 +66,45 @@ export async function setSessionCookie(userId: string): Promise<void> {
 }
 
 export async function clearSessionCookie(): Promise<void> {
-  const token = cookies().get(COOKIE_NAME)?.value;
-  if (token) {
-    // Invalidate in DB
-    await prisma.session.deleteMany({ where: { token } }).catch(() => null);
+  try {
+    const token = cookies().get(COOKIE_NAME)?.value;
+    if (token) {
+      await prisma.session.deleteMany({ where: { token } }).catch(() => null);
+    }
+    cookies().delete(COOKIE_NAME);
+  } catch (err) {
+    console.error("[clearSessionCookie]", err);
   }
-  cookies().delete(COOKIE_NAME);
 }
 
 // Session + status: "active" is required to be treated as logged in.
 // This is the account's real status (set by admin / system) — not per-viewer tree prefs.
 export async function getCurrentUser(): Promise<User | null> {
-  const token = cookies().get(COOKIE_NAME)?.value;
-  if (!token) return null;
+  try {
+    const token = cookies().get(COOKIE_NAME)?.value;
+    if (!token) return null;
 
-  const payload = await verifyJWT(token);
-  if (!payload?.sub) return null;
+    const payload = await verifyJWT(token);
+    if (!payload?.sub) return null;
 
-  // Check session still valid in DB
-  const session = await prisma.session.findFirst({
-    where: { token, expiresAt: { gt: new Date() } },
-  });
-  if (!session) return null;
+    const session = await prisma.session.findFirst({
+      where: { token, expiresAt: { gt: new Date() } },
+    });
+    if (!session) return null;
 
-  const user = await prisma.user.findUnique({ where: { id: payload.sub } });
-  if (!user) return null;
+    const user = await prisma.user.findUnique({ where: { id: payload.sub } });
+    if (!user) return null;
 
-  if (user.status !== "active") {
-    // Revoke server-side sessions. Do NOT call cookies().delete() here — Next.js App Router
-    // forbids mutating cookies during Server Component render and throws (users see a digest error).
-    // app/(app)/layout clears a stale cookie via GET /api/auth/clear-stale-session when !user.
-    await prisma.session.deleteMany({ where: { userId: user.id } });
+    if (user.status !== "active") {
+      await prisma.session.deleteMany({ where: { userId: user.id } }).catch(() => null);
+      return null;
+    }
+
+    return user;
+  } catch (err) {
+    console.error("[getCurrentUser]", err);
     return null;
   }
-
-  return user;
 }
 
 // ─── Require auth (for server components / route handlers) ───

@@ -41,9 +41,15 @@ export function AppShell({ user, coverUrl, children }: Props) {
     fetch("/api/announcement/current")
       .then((r) => r.json())
       .then((data) => {
-        if (!data.announcement) return;
+        const raw = data?.announcement;
+        if (!raw?.id) return;
+        const announcement: Announcement = {
+          id: String(raw.id),
+          title: typeof raw.title === "string" ? raw.title : "",
+          body: typeof raw.body === "string" ? raw.body : "",
+        };
         const state: AnnState = {
-          announcement: data.announcement,
+          announcement,
           viewCount: data.viewCount ?? 0,
           dismissedAt: data.dismissedAt ?? null,
         };
@@ -53,14 +59,14 @@ export function AppShell({ user, coverUrl, children }: Props) {
         if (dismissedAt || viewCount >= 2) return;
 
         // Login modal — fires once per browser session per announcement
-        const sessionKey = `ann_shown_${data.announcement.id}`;
+        const sessionKey = `ann_shown_${announcement.id}`;
         if (!sessionStorage.getItem(sessionKey)) {
           sessionStorage.setItem(sessionKey, "1");
           // Capture BEFORE incrementing — this is what the modal needs to know
           const isFirstEverView = viewCount === 0;
           setModalShowVoice(isFirstEverView);
           // Log the view in background
-          fetch(`/api/announcement/${data.announcement.id}/view`, {
+          fetch(`/api/announcement/${announcement.id}/view`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({}),
@@ -196,16 +202,17 @@ export function AppShell({ user, coverUrl, children }: Props) {
                   fontSize: "13px", fontWeight: 700, color: "#92400e",
                   whiteSpace: "nowrap", flexShrink: 0,
                 }}>
-                  {annState.announcement.title}
+                  {annState.announcement.title || "Announcement"}
                 </span>
                 <span style={{ fontSize: "13px", color: "#d97706", flexShrink: 0 }}>—</span>
                 <span style={{
                   fontSize: "13px", color: "#78716c",
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 }}>
-                  {annState.announcement.body.length > 90
-                    ? annState.announcement.body.slice(0, 90) + "…"
-                    : annState.announcement.body}
+                  {(() => {
+                    const body = annState.announcement.body ?? "";
+                    return body.length > 90 ? `${body.slice(0, 90)}…` : body;
+                  })()}
                 </span>
                 <span style={{ fontSize: "13px", color: "#b45309", flexShrink: 0 }}>→</span>
               </button>

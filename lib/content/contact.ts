@@ -6,7 +6,7 @@ export type ContactItem = {
   note?: string;
 };
 
-export const LGENX_NET_CONTACT_ITEMS: ContactItem[] = [
+export const AMIHUMAN_NET_CONTACT_ITEMS: ContactItem[] = [
   {
     id: "admin",
     label: "Admin",

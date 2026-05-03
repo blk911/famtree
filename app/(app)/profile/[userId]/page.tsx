@@ -77,7 +77,7 @@ export default function MemberProfilePage() {
       if (!cancelled) {
         setCurrentUser(me);
         setProfileUser(data.user);
-        document.title = `${data.user.firstName} ${data.user.lastName} · FamTree`;
+        document.title = `${data.user.firstName} ${data.user.lastName} · AMIHUMAN.NET`;
         setLoading(false);
       }
     }

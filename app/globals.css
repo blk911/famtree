@@ -175,3 +175,10 @@
            text-sm font-medium text-green-700;
   }
 }
+
+/* Auth /login — focus ring (global; inline <style> in Client Components is unreliable in RSC HTML) */
+.aih-input:focus {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.14);
+  outline: none;
+}
