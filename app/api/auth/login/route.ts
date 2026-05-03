@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db/prisma";
 import { verifyPassword, setSessionCookie } from "@/lib/auth";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const loginSchema = z.object({
   email:    z.string().email(),
   password: z.string().min(0),
@@ -65,9 +67,14 @@ export async function POST(req: NextRequest) {
     // Capture previous login time before overwriting it
     const prevLoginAt = user.lastLoginAt;
 
+    // Limit RETURNING columns — an unscoped update asks Postgres for every User column and fails if DB lags schema.
     await Promise.all([
       setSessionCookie(user.id, req),
-      prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }),
+      prisma.user.update({
+        where: { id: user.id },
+        data: { lastLoginAt: new Date() },
+        select: { id: true },
+      }),
     ]);
 
     return NextResponse.json({

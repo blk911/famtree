@@ -13,6 +13,37 @@ import { SESSION_COOKIE_NAME } from "./session-cookie";
 const COOKIE_NAME = SESSION_COOKIE_NAME;
 const EXPIRES_IN = 60 * 60 * 24 * 7; // 7 days in seconds
 
+/** Core columns present before identity-change migration; avoids findUnique * when `selfServiceIdentityChangesRemaining` is missing in DB. */
+const SESSION_USER_CORE_SELECT = {
+  id: true,
+  email: true,
+  passwordHash: true,
+  firstName: true,
+  lastName: true,
+  dateOfBirth: true,
+  photoUrl: true,
+  role: true,
+  status: true,
+  relationship: true,
+  emailVerified: true,
+  lastLoginAt: true,
+  createdAt: true,
+  updatedAt: true,
+  invitedById: true,
+} as const;
+
+async function fetchSelfServiceRemainingSafe(userId: string): Promise<number> {
+  try {
+    const row = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { selfServiceIdentityChangesRemaining: true },
+    });
+    return row?.selfServiceIdentityChangesRemaining ?? 1;
+  } catch {
+    return 1;
+  }
+}
+
 function cookieSecure(reqHeaders?: Headers): boolean {
   if (process.env.NODE_ENV !== "production") return false;
   if (process.env.VERCEL === "1") return true;
@@ -26,7 +57,12 @@ export async function hashPassword(plain: string): Promise<string> {
 }
 
 export async function verifyPassword(plain: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(plain, hash);
+  if (!hash || hash.length < 20) return false;
+  try {
+    return await bcrypt.compare(plain, hash);
+  } catch {
+    return false;
+  }
 }
 
 // ─── JWT ─────────────────────────────────────────────────────
@@ -92,15 +128,20 @@ export async function getCurrentUser(): Promise<User | null> {
     });
     if (!session) return null;
 
-    const user = await prisma.user.findUnique({ where: { id: payload.sub } });
-    if (!user) return null;
+    const core = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: SESSION_USER_CORE_SELECT,
+    });
+    if (!core) return null;
 
-    if (user.status !== "active") {
-      await prisma.session.deleteMany({ where: { userId: user.id } }).catch(() => null);
+    if (core.status !== "active") {
+      await prisma.session.deleteMany({ where: { userId: core.id } }).catch(() => null);
       return null;
     }
 
-    return user;
+    const selfServiceIdentityChangesRemaining = await fetchSelfServiceRemainingSafe(core.id);
+
+    return { ...core, selfServiceIdentityChangesRemaining } as User;
   } catch (err) {
     console.error("[getCurrentUser]", err);
     return null;
