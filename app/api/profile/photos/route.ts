@@ -11,7 +11,10 @@ import { randomUUID } from "crypto";
 export async function POST(req: NextRequest) {
   try {
     const user    = await requireAuth();
-    const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
+    const profile = await prisma.profile.findUnique({
+      where: { userId: user.id },
+      select: { id: true },
+    });
     if (!profile) return NextResponse.json({ error: "Profile not found" }, { status: 404 });
 
     const formData = await req.formData();
@@ -47,7 +50,10 @@ export async function DELETE(req: NextRequest) {
     const photoId = new URL(req.url).searchParams.get("photoId");
     if (!photoId) return NextResponse.json({ error: "photoId required" }, { status: 400 });
 
-    const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
+    const profile = await prisma.profile.findUnique({
+      where: { userId: user.id },
+      select: { id: true },
+    });
     const photo   = await prisma.photo.findUnique({ where: { id: photoId } });
 
     if (!profile || !photo || photo.profileId !== profile.id)

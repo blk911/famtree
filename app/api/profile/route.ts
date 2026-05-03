@@ -6,35 +6,38 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { getProfilePosts } from "@/lib/posts/queries";
+import { PROFILE_PAGE_SELECT, PROFILE_SCALAR_SELECT } from "@/lib/profile/prisma-select";
+import { getProfilePhoneSafe } from "@/lib/profile/phone";
 import { z } from "zod";
 
 export async function GET() {
   try {
     const user = await requireAuth();
 
-    const [profile, posts] = await Promise.all([
+    const [profile, posts, phone] = await Promise.all([
       prisma.profile.findUnique({
         where: { userId: user.id },
-        include: {
-          user: {
-            select: {
-              id: true, email: true, firstName: true, lastName: true,
-              photoUrl: true, dateOfBirth: true, role: true, createdAt: true,
-              emailVerified: true,
-              selfServiceIdentityChangesRemaining: true,
-            },
-          },
-          photos: { orderBy: { createdAt: "desc" } },
-        },
+        select: PROFILE_PAGE_SELECT,
       }),
       getProfilePosts(user.id),
+      getProfilePhoneSafe(user.id),
     ]);
 
     if (!profile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ profile: { ...profile, posts } });
+    return NextResponse.json({
+      profile: {
+        ...profile,
+        phone: phone ?? "",
+        user: {
+          ...profile.user,
+          selfServiceIdentityChangesRemaining: user.selfServiceIdentityChangesRemaining,
+        },
+        posts,
+      },
+    });
   } catch (err: any) {
     if (err.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -66,6 +69,7 @@ export async function PATCH(req: NextRequest) {
     const profile = await prisma.profile.update({
       where: { userId: user.id },
       data: profileFields,
+      select: PROFILE_SCALAR_SELECT,
     });
 
     return NextResponse.json({ success: true, profile });

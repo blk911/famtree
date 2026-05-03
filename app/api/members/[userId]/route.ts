@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { PROFILE_SCALAR_SELECT } from "@/lib/profile/prisma-select";
 import { getProfilePosts } from "@/lib/posts/queries";
 
 type Context = { params: { userId: string } };
@@ -22,7 +23,8 @@ export async function GET(_req: NextRequest, { params }: Context) {
           role: true,
           createdAt: true,
           profile: {
-            include: {
+            select: {
+              ...PROFILE_SCALAR_SELECT,
               photos: { orderBy: { createdAt: "desc" } },
             },
           },

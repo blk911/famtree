@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { PROFILE_FEED_SELECT } from "@/lib/profile/prisma-select";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { uploadFile, validateImage } from "@/lib/storage";
@@ -22,11 +23,7 @@ async function savePostImage(file: File): Promise<string> {
 
 const postInclude = {
   profile: {
-    include: {
-      user: {
-        select: { id: true, firstName: true, lastName: true, photoUrl: true },
-      },
-    },
+    select: PROFILE_FEED_SELECT,
   },
 };
 
@@ -71,7 +68,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Post must include text between 1 and 2000 characters" }, { status: 400 });
     }
 
-    const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
+    const profile = await prisma.profile.findUnique({
+      where: { userId: user.id },
+      select: { id: true },
+    });
     if (!profile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
@@ -123,7 +123,10 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "postId required" }, { status: 400 });
     }
 
-    const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
+    const profile = await prisma.profile.findUnique({
+      where: { userId: user.id },
+      select: { id: true },
+    });
     const post = await prisma.post.findUnique({ where: { id: postId } });
 
     if (!post || post.profileId !== profile?.id) {

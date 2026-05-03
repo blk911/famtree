@@ -10,6 +10,7 @@ import {
   getActiveInviteeIds,
   refreshAckPhase,
 } from "@/lib/identity-change/service";
+import { getProfilePhoneSafe } from "@/lib/profile/phone";
 
 const submitSchema = z
   .object({
@@ -24,10 +25,7 @@ const submitSchema = z
 export async function GET() {
   try {
     const user = await requireAuth();
-    const profile = await prisma.profile.findUnique({
-      where: { userId: user.id },
-      select: { phone: true },
-    });
+    const prevPhoneVal = await getProfilePhoneSafe(user.id);
 
     const openRequest = await prisma.identityChangeRequest.findFirst({
       where: {
@@ -82,7 +80,7 @@ export async function GET() {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        phone: profile?.phone ?? "",
+        phone: prevPhoneVal ?? "",
       },
       inviteePreviewCount,
       openRequest: fresh
@@ -144,12 +142,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    const profile = await prisma.profile.findUnique({
-      where: { userId: user.id },
-      select: { phone: true },
-    });
-
-    const prevPhone = profile?.phone ?? null;
+    const prevPhone = await getProfilePhoneSafe(user.id);
     let { proposedFirstName, proposedLastName, proposedEmail, proposedPhone, requesterNote } = parsed.data;
 
     const namePart = !!(proposedFirstName?.trim() || proposedLastName?.trim());

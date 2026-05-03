@@ -1,15 +1,12 @@
 import { prisma } from "@/lib/db/prisma";
+import { PROFILE_FEED_SELECT } from "@/lib/profile/prisma-select";
 import { dedupePosts } from "@/lib/posts/utils";
 
 const postInclude = {
   _count: { select: { likes: true, comments: true } },
   visibility: { select: { userId: true } },
   profile: {
-    include: {
-      user: {
-        select: { id: true, firstName: true, lastName: true, photoUrl: true },
-      },
-    },
+    select: PROFILE_FEED_SELECT,
   },
 } as const;
 

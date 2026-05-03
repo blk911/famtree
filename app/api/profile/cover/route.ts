@@ -20,7 +20,11 @@ export async function POST(req: NextRequest) {
 
     const coverUrl = await uploadFile(file, "cover", randomUUID());
 
-    await prisma.profile.update({ where: { userId: user.id }, data: { coverUrl } });
+    await prisma.profile.update({
+      where: { userId: user.id },
+      data: { coverUrl },
+      select: { id: true },
+    });
 
     return NextResponse.json({ coverUrl });
   } catch (err: any) {
