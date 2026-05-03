@@ -20,8 +20,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { email, password } = parsed.data;
+    const emailInput = email.trim();
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    // Case-insensitive match — stored email may differ only by casing (Postgres unique is case-sensitive).
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: emailInput, mode: "insensitive" } },
+    });
     if (!user) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
