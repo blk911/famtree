@@ -6,11 +6,12 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db/prisma";
 import type { User } from "@prisma/client";
+import { SESSION_COOKIE_NAME } from "./session-cookie";
 
 const SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET ?? "dev-secret-change-in-production"
 );
-const COOKIE_NAME = "AMIHUMAN.NET_session";
+const COOKIE_NAME = SESSION_COOKIE_NAME;
 const EXPIRES_IN = 60 * 60 * 24 * 7; // 7 days in seconds
 
 // ─── Password ────────────────────────────────────────────────
@@ -87,8 +88,10 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!user) return null;
 
   if (user.status !== "active") {
+    // Revoke server-side sessions. Do NOT call cookies().delete() here — Next.js App Router
+    // forbids mutating cookies during Server Component render and throws (users see a digest error).
+    // app/(app)/layout clears a stale cookie via GET /api/auth/clear-stale-session when !user.
     await prisma.session.deleteMany({ where: { userId: user.id } });
-    cookies().delete(COOKIE_NAME);
     return null;
   }
 

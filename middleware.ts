@@ -5,6 +5,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/session-cookie";
 
 const SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET ?? "dev-secret-change-in-production"
@@ -24,7 +25,7 @@ export async function middleware(request: NextRequest) {
     pathname === "/invite";
   const isAuthRoute = AUTH_ROUTES.some((p) => pathname.startsWith(p));
 
-  const token = request.cookies.get("AMIHUMAN.NET_session")?.value;
+  const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
   let isAuthenticated = false;
   if (token) {

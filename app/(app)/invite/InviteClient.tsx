@@ -654,7 +654,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
           ) : (
             <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
               {invites.map((invite) => {
-                const cfg = STATUS_CONFIG[invite.status];
+                const cfg = STATUS_CONFIG[invite.status] ?? STATUS_CONFIG.PENDING;
                 const Icon = cfg.icon;
                 const sentAt    = new Date(invite.createdAt).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
                 const expiresAt = new Date(invite.expiresAt).toLocaleDateString("en-US", { month:"short", day:"numeric" });
