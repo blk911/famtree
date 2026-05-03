@@ -10,7 +10,7 @@ interface Invite {
   id: string;
   recipientEmail: string;
   relationship: string | null;
-  status: "PENDING" | "ACCEPTED" | "EXPIRED" | "CANCELLED";
+  status: "PENDING" | "ACCEPTED" | "REGISTERED" | "EXPIRED" | "CANCELLED";
   attempts: number;
   expiresAt: string;
   acceptedAt: string | null;
@@ -119,10 +119,11 @@ function RelationshipPicker({ value, onChange }: { value: string; onChange: (v: 
 }
 
 const STATUS_CONFIG = {
-  PENDING:   { label:"Pending",   icon:Clock,        color:"#f59e0b", bg:"#fffbeb", border:"#fde68a" },
-  ACCEPTED:  { label:"Joined",    icon:CheckCircle,  color:"#16a34a", bg:"#f0fdf4", border:"#bbf7d0" },
-  EXPIRED:   { label:"Expired",   icon:XCircle,      color:"#dc2626", bg:"#fef2f2", border:"#fecaca" },
-  CANCELLED: { label:"Cancelled", icon:AlertCircle,  color:"#78716c", bg:"#fafaf9", border:"#e7e5e4" },
+  PENDING:    { label:"Pending",    icon:Clock,        color:"#f59e0b", bg:"#fffbeb", border:"#fde68a" },
+  ACCEPTED:   { label:"Verifying", icon:CheckCircle,  color:"#0891b2", bg:"#f0f9ff", border:"#bae6fd" },
+  REGISTERED: { label:"Joined",    icon:CheckCircle,  color:"#16a34a", bg:"#f0fdf4", border:"#bbf7d0" },
+  EXPIRED:    { label:"Expired",   icon:XCircle,      color:"#dc2626", bg:"#fef2f2", border:"#fecaca" },
+  CANCELLED:  { label:"Cancelled", icon:AlertCircle,  color:"#78716c", bg:"#fafaf9", border:"#e7e5e4" },
 };
 
 // ── Confirm modal (portalled to document.body) ────────────────────────────────
@@ -694,8 +695,8 @@ export default function InviteClient({ me }: { me: Me }) {
                         </button>
                       )}
 
-                      {/* Delete — not on accepted */}
-                      {invite.status !== "ACCEPTED" && (
+                      {/* Delete — not on accepted/registered */}
+                      {invite.status !== "ACCEPTED" && invite.status !== "REGISTERED" && (
                         confirmDelete === invite.id ? (
                           <div style={{ display:"flex", gap:"4px" }}>
                             <button
