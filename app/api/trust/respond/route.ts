@@ -1,11 +1,14 @@
 // POST /api/trust/respond — accept or decline a pending Trust Unit request
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { randomUUID } from "crypto";
 
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/trust/respond", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     const { requestId, userId, action } = await req.json();
@@ -100,4 +103,5 @@ export async function POST(req: NextRequest) {
     console.error("[trust/respond]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

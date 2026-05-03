@@ -1,5 +1,6 @@
 // app/api/invite/manage/[id]/route.ts
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -8,7 +9,10 @@ import { logActivity } from "@/lib/activity/log";
 const isAdmin = (role: string) => role === "founder" || role === "admin";
 
 // PATCH — cancel a pending invite: hard-deletes it and logs the action
-export async function PATCH(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(_req: NextRequest, routeCtx: { params: { id: string } }) {
+  return withApiTrace(_req, "/api/invite/manage/[id]", async (_req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   try {
     const user = await requireAuth();
     const invite = await prisma.invite.findUnique({ where: { id: params.id } });
@@ -37,10 +41,14 @@ export async function PATCH(_req: NextRequest, { params }: { params: { id: strin
     console.error("[invite/manage PATCH]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  }, routeCtx);
 }
 
 // DELETE — permanently remove any invite (admin or sender)
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, routeCtx: { params: { id: string } }) {
+  return withApiTrace(_req, "/api/invite/manage/[id]", async (_req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   try {
     const user = await requireAuth();
     const invite = await prisma.invite.findUnique({ where: { id: params.id } });
@@ -65,4 +73,5 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     console.error("[invite/manage DELETE]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  }, routeCtx);
 }

@@ -1,8 +1,12 @@
+import { withApiTrace } from "@/lib/trace";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 
-export async function POST() {
+export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/dashboard/profile-prompt/dismiss", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
 
@@ -20,4 +24,5 @@ export async function POST() {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

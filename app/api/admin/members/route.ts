@@ -3,6 +3,7 @@
 // Updates User.status and revokes target sessions — affects login / access for that
 // account everywhere. This is NOT the same as /api/tree/view-preference (per-viewer mute/hide).
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -22,6 +23,8 @@ function isAdmin(role: string) {
 
 // PATCH /api/admin/members  { userId, status }
 export async function PATCH(req: NextRequest) {
+  return withApiTrace(req, "/api/admin/members", async (req: NextRequest) => {
+
   try {
     const caller = await requireAuth();
     if (!isAdmin(caller.role)) {
@@ -75,4 +78,5 @@ export async function PATCH(req: NextRequest) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

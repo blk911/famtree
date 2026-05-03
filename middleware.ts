@@ -17,6 +17,14 @@ export async function middleware(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl;
 
+    if (pathname.startsWith("/api") || pathname === "/openapi.yaml") {
+      const incoming = request.headers.get("x-request-id");
+      const id = incoming && incoming.length > 0 ? incoming : crypto.randomUUID();
+      const headers = new Headers(request.headers);
+      headers.set("x-request-id", id);
+      return NextResponse.next({ request: { headers } });
+    }
+
     const isProtected =
       PROTECTED.some((p) => pathname.startsWith(p)) ||
       pathname === "/invite";
@@ -54,6 +62,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|uploads|favicon.ico).*)",
+    "/((?!_next/static|_next/image|uploads|favicon.ico).*)",
   ],
 };

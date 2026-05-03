@@ -1,0 +1,56 @@
+name: API fuzz (Schemathesis)
+
+on:
+  push:
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fuzz
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fuzz?schema=public
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python tooling
+        run: pip install -r requirements-fuzz.txt
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Generate OpenAPI stubs from routes
+        run: npm run openapi:generate
+
+      - name: Prisma generate & push
+        run: npm run db:generate && npx prisma db push --skip-generate
+
+      - name: Start Next dev server
+        run: |
+          npm run dev &
+          sleep 18
+
+      - name: Run Schemathesis
+        run: npm run fuzz

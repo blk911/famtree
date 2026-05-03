@@ -2,10 +2,13 @@
 // Public endpoint — no auth required (invitee doesn't have an account yet)
 // Returns invite token + sender photo for the homepage challenge flow
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 
 export async function GET(req: NextRequest) {
+  return withApiTrace(req, "/api/invite/lookup", async (req: NextRequest) => {
+
   const email = req.nextUrl.searchParams.get("email")?.toLowerCase().trim();
   if (!email) return NextResponse.json({ found: false });
 
@@ -32,5 +35,6 @@ export async function GET(req: NextRequest) {
     token: invite.token,
     status: invite.status,
     senderPhotoUrl: invite.sender.photoUrl,
+  });
   });
 }

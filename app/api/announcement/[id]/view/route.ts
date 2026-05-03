@@ -1,10 +1,14 @@
 // app/api/announcement/[id]/view/route.ts
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 
 // POST — log a view or dismiss permanently
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, routeCtx: { params: { id: string } }) {
+  return withApiTrace(req, "/api/announcement/[id]/view", async (req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   try {
     const user = await requireAuth();
     const { dismiss } = await req.json().catch(() => ({}));
@@ -37,4 +41,5 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   } catch {
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
+  }, routeCtx);
 }

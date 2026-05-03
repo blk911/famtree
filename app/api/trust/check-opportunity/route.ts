@@ -1,10 +1,13 @@
 // POST /api/trust/check-opportunity — detect shared connectors for a possible Trust Unit
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { findSharedConnections, getTrustMembers } from "@/lib/trust";
 
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/trust/check-opportunity", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     const { currentUserId, targetUserId } = await req.json();
@@ -36,4 +39,5 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

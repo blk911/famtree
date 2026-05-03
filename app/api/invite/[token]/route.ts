@@ -1,14 +1,15 @@
 // app/api/invite/[token]/route.ts
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { getInviteByToken, verifyIdentityChallenge } from "@/lib/invite";
 import { z } from "zod";
 
 // GET /api/invite/[token] — get invite info (shows sender photo, no name)
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { token: string } }
-) {
+export async function GET(_req: NextRequest, routeCtx: { params: { token: string } }) {
+  return withApiTrace(_req, "/api/invite/[token]", async (_req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   const invite = await getInviteByToken(params.token);
 
   if (!invite) {
@@ -23,6 +24,7 @@ export async function GET(
     expiresAt: invite.expiresAt,
     attemptsLeft: invite.maxAttempts - invite.attempts,
   });
+  }, routeCtx);
 }
 
 const verifySchema = z.object({
@@ -30,10 +32,10 @@ const verifySchema = z.object({
 });
 
 // POST /api/invite/[token] — submit name guess
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { token: string } }
-) {
+export async function POST(req: NextRequest, routeCtx: { params: { token: string } }) {
+  return withApiTrace(req, "/api/invite/[token]", async (req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   try {
     const body = await req.json();
     const parsed = verifySchema.safeParse(body);
@@ -70,4 +72,5 @@ export async function POST(
     console.error("[invite/verify]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  }, routeCtx);
 }

@@ -3,6 +3,7 @@
 //   1. Creates a private post (visibleTo = [recipientId])
 //   2. Fires an email notification via Resend
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -11,6 +12,8 @@ import { sendAdminMessageEmail } from "@/lib/email";
 const isAdmin = (role: string) => role === "founder" || role === "admin";
 
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/admin/message", async (req: NextRequest) => {
+
   try {
     const admin = await requireAuth();
     if (!isAdmin(admin.role)) {
@@ -66,4 +69,5 @@ export async function POST(req: NextRequest) {
     console.error("[admin-message]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

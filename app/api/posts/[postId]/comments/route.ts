@@ -1,5 +1,6 @@
 // GET/POST — list and add comments for a post
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -17,7 +18,10 @@ const includeUser = {
   },
 };
 
-export async function GET(_req: NextRequest, { params }: Context) {
+export async function GET(_req: NextRequest, routeCtx: Context) {
+  return withApiTrace(_req, "/api/posts/[postId]/comments", async (_req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   try {
     await requireAuth();
     const comments = await prisma.comment.findMany({
@@ -34,9 +38,13 @@ export async function GET(_req: NextRequest, { params }: Context) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  }, routeCtx);
 }
 
-export async function POST(req: NextRequest, { params }: Context) {
+export async function POST(req: NextRequest, routeCtx: Context) {
+  return withApiTrace(req, "/api/posts/[postId]/comments", async (req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   try {
     const user = await requireAuth();
     const parsed = commentSchema.safeParse(await req.json());
@@ -57,4 +65,5 @@ export async function POST(req: NextRequest, { params }: Context) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  }, routeCtx);
 }

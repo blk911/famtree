@@ -1,12 +1,16 @@
 // GET/POST — read or toggle the current user's like on a post
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 
 type Context = { params: { postId: string } };
 
-export async function GET(_req: NextRequest, { params }: Context) {
+export async function GET(_req: NextRequest, routeCtx: Context) {
+  return withApiTrace(_req, "/api/posts/[postId]/likes", async (_req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   try {
     const user = await requireAuth();
     const [like, count] = await Promise.all([
@@ -21,9 +25,13 @@ export async function GET(_req: NextRequest, { params }: Context) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  }, routeCtx);
 }
 
-export async function POST(_req: NextRequest, { params }: Context) {
+export async function POST(_req: NextRequest, routeCtx: Context) {
+  return withApiTrace(_req, "/api/posts/[postId]/likes", async (_req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   try {
     const user = await requireAuth();
     const existing = await prisma.like.findUnique({
@@ -45,4 +53,5 @@ export async function POST(_req: NextRequest, { params }: Context) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  }, routeCtx);
 }

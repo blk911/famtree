@@ -7,6 +7,7 @@
 // • For site-wide suspend/archive/block, use PATCH /api/admin/members (admin only).
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -21,6 +22,8 @@ const bodySchema = z
   .strict();
 
 export async function PATCH(req: NextRequest) {
+  return withApiTrace(req, "/api/tree/view-preference", async (req: NextRequest) => {
+
   try {
     const viewer = await requireAuth();
     const raw = await req.json();
@@ -73,4 +76,5 @@ export async function PATCH(req: NextRequest) {
     console.error("[tree/view-preference]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

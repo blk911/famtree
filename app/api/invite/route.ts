@@ -1,5 +1,6 @@
 // app/api/invite/route.ts
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { createInvite } from "@/lib/invite";
@@ -16,6 +17,8 @@ const sendSchema = z.object({
 
 // POST /api/invite — send a new invite
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/invite", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     const body = await req.json();
@@ -58,10 +61,13 @@ export async function POST(req: NextRequest) {
     console.error("[invite/send]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }
 
 // GET /api/invite — list invites sent by current user
-export async function GET() {
+export async function GET(req: NextRequest) {
+  return withApiTrace(req, "/api/invite", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
 
@@ -114,5 +120,6 @@ export async function GET() {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }
 

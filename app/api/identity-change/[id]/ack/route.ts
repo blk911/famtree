@@ -1,5 +1,6 @@
 // POST /api/identity-change/[id]/ack — invitee yes/no
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -8,7 +9,10 @@ import { IC_STATUS, refreshAckPhase } from "@/lib/identity-change/service";
 
 const bodySchema = z.object({ accept: z.boolean() }).strict();
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, routeCtx: { params: { id: string } }) {
+  return withApiTrace(req, "/api/identity-change/[id]/ack", async (req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   try {
     const user = await requireAuth();
     const requestId = params.id;
@@ -54,4 +58,5 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     console.error("[identity-change ack]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  }, routeCtx);
 }

@@ -1,11 +1,14 @@
 // POST /api/connections/create-request — request a direct connection with an existing member
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { randomUUID } from "crypto";
 
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/connections/create-request", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     const { targetUserId } = await req.json();
@@ -37,4 +40,5 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

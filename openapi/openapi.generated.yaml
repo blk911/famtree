@@ -1,0 +1,534 @@
+openapi: 3.0.0
+info:
+  title: Generated routes
+  version: 1.0.0
+paths:
+  "/api/admin/activity":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/admin/announcement":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+    patch:
+          summary: Generated stub (PATCH)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/admin/identity-change/unlock":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/admin/identity-changes":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/admin/identity-changes/{id}":
+    patch:
+          summary: Generated stub (PATCH)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/admin/link-parent":
+    patch:
+          summary: Generated stub (PATCH)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/admin/members":
+    patch:
+          summary: Generated stub (PATCH)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/admin/message":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/announcement/current":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/announcement/{id}/view":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/auth/clear-stale-session":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/auth/forgot-password":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/auth/login":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/auth/logout":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/auth/me":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/auth/register":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/auth/reset-password":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/connections/create-request":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/dashboard/profile-prompt/dismiss":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/identity-change":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/identity-change/incoming":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/identity-change/{id}/ack":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/identity-change/{id}/withdraw":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/invite":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/invite/lookup":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/invite/manage/{id}":
+    delete:
+          summary: Generated stub (DELETE)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+    patch:
+          summary: Generated stub (PATCH)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/invite/{token}":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/members":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/members/{userId}":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/openapi":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/posts/{postId}/comments":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/posts/{postId}/likes":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/profile":
+    get:
+          summary: Generated stub (GET)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+    patch:
+          summary: Generated stub (PATCH)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/profile/cover":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/profile/photo":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/profile/photos":
+    delete:
+          summary: Generated stub (DELETE)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/profile/posts":
+    delete:
+          summary: Generated stub (DELETE)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/tree/view-preference":
+    patch:
+          summary: Generated stub (PATCH)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/trust/check-opportunity":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/trust/create-request":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/trust/respond":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/users/lookup-by-email":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error
+  "/api/waitlist":
+    post:
+          summary: Generated stub (POST)
+          responses:
+            "200":
+              description: OK
+            "4XX":
+              description: Client error
+            "5XX":
+              description: Server error

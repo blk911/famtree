@@ -1,5 +1,6 @@
 // PATCH /api/admin/identity-changes/[id] — approve | reject
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -18,7 +19,10 @@ const patchSchema = z
   })
   .strict();
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, routeCtx: { params: { id: string } }) {
+  return withApiTrace(req, "/api/admin/identity-changes/[id]", async (req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   try {
     const admin = await requireAuth();
     if (!isAdmin(admin.role)) {
@@ -90,4 +94,5 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     console.error("[admin identity-changes PATCH]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  }, routeCtx);
 }

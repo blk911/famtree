@@ -1,11 +1,14 @@
 // POST /api/trust/create-request — create a pending Trust Unit request and auto-approve creator
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { randomUUID } from "crypto";
 
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/trust/create-request", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     const { memberIds, createdBy } = await req.json();
@@ -52,4 +55,5 @@ export async function POST(req: NextRequest) {
     console.error("[trust/create-request]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

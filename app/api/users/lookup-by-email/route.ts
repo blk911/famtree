@@ -1,10 +1,13 @@
 // POST /api/users/lookup-by-email — detect whether an entered invite email belongs to an existing member
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/users/lookup-by-email", async (req: NextRequest) => {
+
   try {
     await requireAuth();
     const { email } = await req.json();
@@ -26,4 +29,5 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

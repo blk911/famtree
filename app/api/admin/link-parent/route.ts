@@ -1,6 +1,7 @@
 // app/api/admin/link-parent/route.ts
 // Admin-only: set invitedById on a user to repair broken tree placement
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { getCurrentUser } from "@/lib/auth";
@@ -14,6 +15,8 @@ const schema = z.object({
 });
 
 export async function PATCH(req: NextRequest) {
+  return withApiTrace(req, "/api/admin/link-parent", async (req: NextRequest) => {
+
   const actor = await getCurrentUser();
   if (!actor || !isAdmin(actor.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -46,4 +49,5 @@ export async function PATCH(req: NextRequest) {
   });
 
   return NextResponse.json({ success: true, child, parent });
+  });
 }

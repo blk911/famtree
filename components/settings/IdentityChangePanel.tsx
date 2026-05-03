@@ -32,6 +32,8 @@ type IdentityPayload = {
   current: { firstName: string; lastName: string; email: string; phone: string };
   inviteePreviewCount: number;
   openRequest: OpenRequest | null;
+  /** Server DB missing identity-change migration — panel shows notice instead of form */
+  identityUnavailable?: boolean;
 };
 
 function fmtShort(iso: string) {
@@ -60,10 +62,12 @@ export function IdentityChangePanel() {
     }
     const p = json as IdentityPayload;
     setData(p);
-    setFirstName(p.current.firstName);
-    setLastName(p.current.lastName);
-    setEmail(p.current.email);
-    setPhone(p.current.phone ?? "");
+    if (!p.identityUnavailable) {
+      setFirstName(p.current.firstName);
+      setLastName(p.current.lastName);
+      setEmail(p.current.email);
+      setPhone(p.current.phone ?? "");
+    }
   }, []);
 
   useEffect(() => {
@@ -161,6 +165,23 @@ export function IdentityChangePanel() {
   }
 
   const open = data.openRequest;
+
+  if (data.identityUnavailable) {
+    return (
+      <div className="profile-card p-6 space-y-3">
+        <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
+          <PenLine className="w-4 h-4 text-stone-600" />
+          <h2 className="font-semibold text-stone-900 text-sm">Legal name, email &amp; mobile</h2>
+        </div>
+        <p className="text-sm text-amber-900 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 leading-relaxed">
+          Self-service identity updates are not active on this deployment yet (database migration pending). Your account
+          details above are unchanged. After deployment runs{" "}
+          <code className="text-xs bg-amber-100/80 px-1 rounded">prisma migrate deploy</code>, this section will load the
+          request workflow.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-card p-6 space-y-4">

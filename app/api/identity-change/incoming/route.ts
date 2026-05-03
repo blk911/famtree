@@ -1,11 +1,15 @@
 // GET /api/identity-change/incoming — acknowledgments awaiting current user
 
+import { withApiTrace } from "@/lib/trace";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { IC_STATUS, refreshAckPhase } from "@/lib/identity-change/service";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  return withApiTrace(req, "/api/identity-change/incoming", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
 
@@ -75,4 +79,5 @@ export async function GET() {
     console.error("[identity-change/incoming]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

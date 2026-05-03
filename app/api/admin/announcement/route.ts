@@ -1,4 +1,5 @@
 // app/api/admin/announcement/route.ts
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -6,7 +7,9 @@ import { prisma } from "@/lib/db/prisma";
 const isAdmin = (role: string) => role === "founder" || role === "admin";
 
 // GET — current active announcement
-export async function GET() {
+export async function GET(req: NextRequest) {
+  return withApiTrace(req, "/api/admin/announcement", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     if (!isAdmin(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -20,10 +23,13 @@ export async function GET() {
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  });
 }
 
 // POST — publish new announcement (deactivates existing)
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/admin/announcement", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     if (!isAdmin(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -44,10 +50,13 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  });
 }
 
 // PATCH — toggle isActive
 export async function PATCH(req: NextRequest) {
+  return withApiTrace(req, "/api/admin/announcement", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     if (!isAdmin(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -62,4 +71,5 @@ export async function PATCH(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  });
 }

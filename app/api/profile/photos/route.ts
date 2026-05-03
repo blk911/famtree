@@ -2,6 +2,7 @@
 // POST — upload a photo to the current user's gallery
 // DELETE — remove a gallery photo
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -9,6 +10,8 @@ import { uploadFile, deleteFile, validateImage } from "@/lib/storage";
 import { randomUUID } from "crypto";
 
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/profile/photos", async (req: NextRequest) => {
+
   try {
     const user    = await requireAuth();
     const profile = await prisma.profile.findUnique({
@@ -42,9 +45,12 @@ export async function POST(req: NextRequest) {
     console.error("[profile/photos POST]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }
 
 export async function DELETE(req: NextRequest) {
+  return withApiTrace(req, "/api/profile/photos", async (req: NextRequest) => {
+
   try {
     const user    = await requireAuth();
     const photoId = new URL(req.url).searchParams.get("photoId");
@@ -67,4 +73,5 @@ export async function DELETE(req: NextRequest) {
     if (err.message === "UNAUTHORIZED") return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

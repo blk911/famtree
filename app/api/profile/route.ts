@@ -2,6 +2,7 @@
 // GET /api/profile — current user's profile
 // PATCH /api/profile — update current user's profile
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -10,7 +11,9 @@ import { PROFILE_PAGE_SELECT, PROFILE_SCALAR_SELECT } from "@/lib/profile/prisma
 import { getProfilePhoneSafe } from "@/lib/profile/phone";
 import { z } from "zod";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  return withApiTrace(req, "/api/profile", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
 
@@ -44,6 +47,7 @@ export async function GET() {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }
 
 const updateSchema = z.object({
@@ -55,6 +59,8 @@ const updateSchema = z.object({
 });
 
 export async function PATCH(req: NextRequest) {
+  return withApiTrace(req, "/api/profile", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     const body = await req.json();
@@ -79,4 +85,5 @@ export async function PATCH(req: NextRequest) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

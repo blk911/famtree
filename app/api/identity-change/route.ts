@@ -2,6 +2,7 @@
 // POST /api/identity-change — submit a new request
 
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
@@ -22,12 +23,21 @@ const submitSchema = z
   })
   .strict();
 
+function identitySchemaUnsupported(err: unknown): boolean {
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    return err.code === "P2021" || err.code === "P2022";
+  }
+  return false;
+}
+
 export async function GET() {
   try {
     const user = await requireAuth();
-    const prevPhoneVal = await getProfilePhoneSafe(user.id);
 
-    const openRequest = await prisma.identityChangeRequest.findFirst({
+    try {
+      const prevPhoneVal = await getProfilePhoneSafe(user.id);
+
+      const openRequest = await prisma.identityChangeRequest.findFirst({
       where: {
         requesterId: user.id,
         status: { in: [IC_STATUS.PENDING_ACKS, IC_STATUS.PENDING_ADMIN] },
@@ -70,37 +80,62 @@ export async function GET() {
         },
       }));
 
-    const inviteePreviewCount = await prisma.user.count({
-      where: { invitedById: user.id, status: "active" },
-    });
+      const inviteePreviewCount = await prisma.user.count({
+        where: { invitedById: user.id, status: "active" },
+      });
 
-    return NextResponse.json({
-      selfServiceRemaining: user.selfServiceIdentityChangesRemaining,
-      current: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: prevPhoneVal ?? "",
-      },
-      inviteePreviewCount,
-      openRequest: fresh
-        ? {
-            id: fresh.id,
-            status: fresh.status,
-            expiresAt: fresh.expiresAt,
-            hasConflict: fresh.hasConflict,
-            changeName: fresh.changeName,
-            changeEmail: fresh.changeEmail,
-            changePhone: fresh.changePhone,
-            proposedFirstName: fresh.proposedFirstName,
-            proposedLastName: fresh.proposedLastName,
-            proposedEmail: fresh.proposedEmail,
-            proposedPhone: fresh.proposedPhone,
-            requesterNote: fresh.requesterNote,
-            acknowledgments: fresh.acknowledgments,
-          }
-        : null,
-    });
+      return NextResponse.json({
+        selfServiceRemaining: user.selfServiceIdentityChangesRemaining,
+        current: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phone: prevPhoneVal ?? "",
+        },
+        inviteePreviewCount,
+        openRequest: fresh
+          ? {
+              id: fresh.id,
+              status: fresh.status,
+              expiresAt: fresh.expiresAt,
+              hasConflict: fresh.hasConflict,
+              changeName: fresh.changeName,
+              changeEmail: fresh.changeEmail,
+              changePhone: fresh.changePhone,
+              proposedFirstName: fresh.proposedFirstName,
+              proposedLastName: fresh.proposedLastName,
+              proposedEmail: fresh.proposedEmail,
+              proposedPhone: fresh.proposedPhone,
+              requesterNote: fresh.requesterNote,
+              acknowledgments: fresh.acknowledgments,
+            }
+          : null,
+      });
+    } catch (inner: unknown) {
+      if (!identitySchemaUnsupported(inner)) throw inner;
+      console.error("[identity-change GET] identity tables/columns missing — returning degraded payload", inner);
+      const prevPhoneVal = await getProfilePhoneSafe(user.id);
+      let inviteePreviewCount = 0;
+      try {
+        inviteePreviewCount = await prisma.user.count({
+          where: { invitedById: user.id, status: "active" },
+        });
+      } catch {
+        inviteePreviewCount = 0;
+      }
+      return NextResponse.json({
+        selfServiceRemaining: user.selfServiceIdentityChangesRemaining,
+        current: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phone: prevPhoneVal ?? "",
+        },
+        inviteePreviewCount,
+        openRequest: null,
+        identityUnavailable: true,
+      });
+    }
   } catch (err: any) {
     if (err.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

@@ -1,11 +1,14 @@
 // POST /api/auth/reset-password
 // Validates the token and sets a new password.
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/auth/reset-password", async (req: NextRequest) => {
+
   try {
     const { token, password } = await req.json();
 
@@ -45,4 +48,5 @@ export async function POST(req: NextRequest) {
     console.error("[reset-password]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

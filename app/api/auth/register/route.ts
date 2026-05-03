@@ -1,5 +1,6 @@
 // app/api/auth/register/route.ts
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { hashPassword, setSessionCookie } from "@/lib/auth";
@@ -16,6 +17,8 @@ const registerSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/auth/register", async (req: NextRequest) => {
+
   try {
     const body = await req.json();
     const parsed = registerSchema.safeParse(body);
@@ -106,4 +109,5 @@ export async function POST(req: NextRequest) {
     console.error("[register]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

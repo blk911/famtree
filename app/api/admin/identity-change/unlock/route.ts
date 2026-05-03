@@ -1,5 +1,6 @@
 // POST /api/admin/identity-change/unlock — restore one self-service slot for a member
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -13,6 +14,8 @@ function isAdmin(role: string) {
 const schema = z.object({ userId: z.string().uuid() }).strict();
 
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/admin/identity-change/unlock", async (req: NextRequest) => {
+
   try {
     const admin = await requireAuth();
     if (!isAdmin(admin.role)) {
@@ -55,4 +58,5 @@ export async function POST(req: NextRequest) {
     console.error("[identity-change unlock]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

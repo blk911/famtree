@@ -1,11 +1,15 @@
 // GET — list all members in the family network
 
+import { withApiTrace } from "@/lib/trace";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { getTrustUnits } from "@/lib/trust";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  return withApiTrace(req, "/api/members", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     const [members, trustUnits] = await Promise.all([
@@ -33,4 +37,5 @@ export async function GET() {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

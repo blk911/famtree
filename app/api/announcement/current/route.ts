@@ -1,9 +1,13 @@
 // app/api/announcement/current/route.ts
+import { withApiTrace } from "@/lib/trace";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  return withApiTrace(req, "/api/announcement/current", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
 
@@ -26,4 +30,5 @@ export async function GET() {
   } catch {
     return NextResponse.json({ announcement: null });
   }
+  });
 }

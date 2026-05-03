@@ -1,6 +1,7 @@
 // app/api/profile/photo/route.ts
 // POST — upload profile photo (multipart/form-data)
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -8,6 +9,8 @@ import { uploadFile, validateImage } from "@/lib/storage";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/profile/photo", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
 
@@ -29,4 +32,5 @@ export async function POST(req: NextRequest) {
     console.error("[photo/upload]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

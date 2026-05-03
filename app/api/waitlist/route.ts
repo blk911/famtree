@@ -1,8 +1,11 @@
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 
 // POST /api/waitlist — saves interested users who don't have an invite yet
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/waitlist", async (req: NextRequest) => {
+
   try {
     const body = await req.json();
     const { firstName, lastName, email, phone } = body;
@@ -25,4 +28,5 @@ export async function POST(req: NextRequest) {
     console.error("[waitlist]", err);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
+  });
 }

@@ -1,5 +1,6 @@
 // GET — get a single authenticated member's public profile
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -8,7 +9,10 @@ import { getProfilePosts } from "@/lib/posts/queries";
 
 type Context = { params: { userId: string } };
 
-export async function GET(_req: NextRequest, { params }: Context) {
+export async function GET(_req: NextRequest, routeCtx: Context) {
+  return withApiTrace(_req, "/api/members/[userId]", async (_req: NextRequest, routeCtx) => {
+const { params } = routeCtx;
+
   try {
     await requireAuth();
     const [user, posts] = await Promise.all([
@@ -44,4 +48,5 @@ export async function GET(_req: NextRequest, { params }: Context) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  }, routeCtx);
 }

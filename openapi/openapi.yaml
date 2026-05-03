@@ -1,0 +1,10 @@
+openapi: 3.0.0
+info:
+  title: App API
+  version: 1.0.0
+  description: >
+    Base OpenAPI document. Paths are merged from openapi.generated.yaml (npm run openapi:generate)
+    and from swagger-jsdoc annotations in app/api.
+servers:
+  - url: http://localhost:3000
+paths: {}

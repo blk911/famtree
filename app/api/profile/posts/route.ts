@@ -1,5 +1,6 @@
 // app/api/profile/posts/route.ts
 
+import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -29,6 +30,8 @@ const postInclude = {
 
 // POST — create a timeline post
 export async function POST(req: NextRequest) {
+  return withApiTrace(req, "/api/profile/posts", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     const contentType = req.headers.get("content-type") ?? "";
@@ -110,10 +113,13 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }
 
 // DELETE /api/profile/posts?postId=xxx
 export async function DELETE(req: NextRequest) {
+  return withApiTrace(req, "/api/profile/posts", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     const { searchParams } = new URL(req.url);
@@ -141,4 +147,5 @@ export async function DELETE(req: NextRequest) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }

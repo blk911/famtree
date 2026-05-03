@@ -1,5 +1,7 @@
 // GET /api/admin/identity-changes — queue for founder/admin
 
+import { withApiTrace } from "@/lib/trace";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -9,7 +11,9 @@ function isAdmin(role: string) {
   return role === "founder" || role === "admin";
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  return withApiTrace(req, "/api/admin/identity-changes", async (req: NextRequest) => {
+
   try {
     const user = await requireAuth();
     if (!isAdmin(user.role)) {
@@ -44,4 +48,5 @@ export async function GET() {
     console.error("[admin identity-changes GET]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
 }
