@@ -370,21 +370,22 @@ export default function ProfilePage() {
                   </button>
                 </div>
               )}
-              <input
-                ref={postImageInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => e.target.files?.[0] && handlePostImageSelect(e.target.files[0])}
-              />
-              <button
-                type="button"
-                onClick={() => postImageInputRef.current?.click()}
+              <label
+                htmlFor="post-image-input"
                 className="btn-secondary text-xs px-3 py-2 mr-2 gap-1.5"
+                style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
               >
                 <ImageIcon className="w-3.5 h-3.5" />
                 Image
-              </button>
+              </label>
+              <input
+                id="post-image-input"
+                ref={postImageInputRef}
+                type="file"
+                accept="image/*"
+                style={{ position: "absolute", left: "-9999px", opacity: 0, width: "1px", height: "1px" }}
+                onChange={(e) => e.target.files?.[0] && handlePostImageSelect(e.target.files[0])}
+              />
               <button
                 type="submit"
                 className="btn-primary text-xs px-4 py-2"
@@ -432,21 +433,25 @@ export default function ProfilePage() {
         <div className="space-y-4">
           <div className="flex justify-end">
             <input
+              id="gallery-photo-input"
               ref={photoInputRef}
               type="file"
               accept="image/*"
-              className="hidden"
+              style={{ position: "absolute", left: "-9999px", opacity: 0, width: "1px", height: "1px" }}
               onChange={(e) => e.target.files?.[0] && handleGalleryPhotoUpload(e.target.files[0])}
             />
-            <button
-              type="button"
-              onClick={() => photoInputRef.current?.click()}
-              disabled={uploadingPhoto}
+            <label
+              htmlFor={uploadingPhoto ? undefined : "gallery-photo-input"}
               className="btn-primary text-xs px-4 py-2 gap-1.5"
+              style={{
+                cursor: uploadingPhoto ? "default" : "pointer",
+                opacity: uploadingPhoto ? 0.6 : 1,
+                display: "inline-flex", alignItems: "center",
+              }}
             >
               <Plus className="w-3.5 h-3.5" />
               {uploadingPhoto ? "Uploading…" : "Add Photo"}
-            </button>
+            </label>
           </div>
 
           {profile.photos.length === 0 ? (

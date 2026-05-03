@@ -18,8 +18,8 @@ function RegisterForm() {
     lastName: "",
     email: prefillEmail,
     password: "",
-    dateOfBirth: "",
   });
+  const [dob, setDob] = useState({ month: "", day: "", year: "" });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -40,10 +40,15 @@ function RegisterForm() {
 
     try {
       // 1. Register account
+      const dobString =
+        dob.year.length === 4 && dob.month && dob.day
+          ? `${dob.year}-${dob.month.padStart(2, "0")}-${dob.day.padStart(2, "0")}`
+          : undefined;
+
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, inviteToken }),
+        body: JSON.stringify({ ...form, dateOfBirth: dobString, inviteToken }),
       });
       const data = await res.json();
 
@@ -206,13 +211,38 @@ function RegisterForm() {
         {/* Date of birth */}
         <div>
           <label className="field-label">Date of birth <span className="text-stone-400 font-normal">(optional)</span></label>
-          <input
-            className="field-input"
-            type="date"
-            value={form.dateOfBirth}
-            onChange={set("dateOfBirth")}
-            autoComplete="bday"
-          />
+          <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 2fr", gap:"8px" }}>
+            <input
+              className="field-input"
+              type="text"
+              inputMode="numeric"
+              placeholder="Month (1–12)"
+              maxLength={2}
+              value={dob.month}
+              onChange={(e) => setDob((d) => ({ ...d, month: e.target.value.replace(/\D/g, "") }))}
+              autoComplete="bday-month"
+            />
+            <input
+              className="field-input"
+              type="text"
+              inputMode="numeric"
+              placeholder="Day"
+              maxLength={2}
+              value={dob.day}
+              onChange={(e) => setDob((d) => ({ ...d, day: e.target.value.replace(/\D/g, "") }))}
+              autoComplete="bday-day"
+            />
+            <input
+              className="field-input"
+              type="text"
+              inputMode="numeric"
+              placeholder="Year (e.g. 1955)"
+              maxLength={4}
+              value={dob.year}
+              onChange={(e) => setDob((d) => ({ ...d, year: e.target.value.replace(/\D/g, "") }))}
+              autoComplete="bday-year"
+            />
+          </div>
         </div>
 
         <button type="submit" className="btn-primary w-full mt-2" disabled={loading}>
