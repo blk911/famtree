@@ -31,12 +31,21 @@ function RegisterForm() {
     if (!file) return;
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
+    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    if (!photoFile) {
+      setLoading(false);
+      setError(
+        "A current selfie is required — add a photo now to complete registration. Invites and your profile use this picture so people know it’s you.",
+      );
+      return;
+    }
 
     try {
       // 1. Register account
@@ -107,7 +116,11 @@ function RegisterForm() {
         {/* Photo upload */}
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
-            <div className="w-20 h-20 rounded-full overflow-hidden bg-stone-100 border-2 border-stone-200 flex items-center justify-center">
+            <div
+              className={`w-20 h-20 rounded-full overflow-hidden bg-stone-100 flex items-center justify-center ring-2 ${
+                photoFile ? "ring-stone-200 border-0" : "ring-red-500 ring-offset-2 ring-offset-white"
+              }`}
+            >
               {photoPreview ? (
                 <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
               ) : (
@@ -129,10 +142,20 @@ function RegisterForm() {
               className="hidden"
             />
           </div>
-          <p className="text-xs text-stone-400">
+          {photoFile ? (
+            <p className="text-xs font-semibold text-center text-emerald-700 max-w-xs">
+              Photo added — you can finish creating your account.
+            </p>
+          ) : (
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-red-600 text-center max-w-xs leading-snug">
+              Required — submit a current selfie to complete registration. Use a clear, recent photo of your face (this
+              is how your family will recognize you).
+            </p>
+          )}
+          <p className="text-xs text-stone-500 text-center">
             {inviteToken
-              ? "Your photo will be used when you invite others"
-              : "Add your photo — it's sent when you invite family"}
+              ? "This same photo is used when you send invites."
+              : "You’ll use this photo when you invite family to join."}
           </p>
         </div>
 
