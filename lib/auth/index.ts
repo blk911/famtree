@@ -68,7 +68,8 @@ export async function clearSessionCookie(): Promise<void> {
   cookies().delete(COOKIE_NAME);
 }
 
-// ─── Current user ────────────────────────────────────────────
+// Session + status: "active" is required to be treated as logged in.
+// This is the account's real status (set by admin / system) — not per-viewer tree prefs.
 export async function getCurrentUser(): Promise<User | null> {
   const token = cookies().get(COOKIE_NAME)?.value;
   if (!token) return null;

@@ -269,7 +269,7 @@ export default async function DashboardPage() {
         rightLabel={<Link href="/tree" style={{ color:"#6366f1", fontSize:"13px", textDecoration:"none", fontWeight:500 }}>View full →</Link>}
       >
         {flat.length > 0
-          ? <TreeList items={flat.slice(0, 8)} currentUserId={user.id} initialPrefs={treePrefsInitial} />
+          ? <TreeList items={flat.slice(0, 8)} currentUserId={user.id} initialPrefs={treePrefsInitial} privacyNote="short" />
           : <p style={{ fontSize:"14px", color:"#a8a29e", textAlign:"center", padding:"16px 0" }}>No members yet — invite your family!</p>
         }
         {flat.length > 8 && (

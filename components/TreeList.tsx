@@ -231,10 +231,15 @@ function MemberCard({
               flexShrink: 0,
             }}
             onClick={(e) => e.preventDefault()}
+            title="These controls are yours only: they do not change this person’s account or what other members see."
           >
             <button
               type="button"
-              title={pref.muted ? "Unmute in your tree" : "Mute in your tree (your view only)"}
+              title={
+                pref.muted
+                  ? "Unmute on your tree (still your-view-only; not site-wide)"
+                  : "Mute on your tree — your view only; does not affect their account or other invitees’ trees"
+              }
               onClick={(e) => {
                 e.preventDefault();
                 onPatchPref(member.id, { muted: !pref.muted });
@@ -256,7 +261,11 @@ function MemberCard({
             </button>
             <button
               type="button"
-              title={pref.hidden ? "Show again on your tree" : "Hide on your tree (dimmed / de-emphasized for you)"}
+              title={
+                pref.hidden
+                  ? "Show on your tree again (your-view-only)"
+                  : "Hide / dim on your tree — your view only; not an admin block and does not affect others"
+              }
               onClick={(e) => {
                 e.preventDefault();
                 onPatchPref(member.id, { hidden: !pref.hidden });
@@ -320,10 +329,13 @@ export function TreeList({
   items,
   currentUserId,
   initialPrefs = {},
+  privacyNote = "full",
 }: {
   items: FlatNode[];
   currentUserId: string | undefined;
   initialPrefs?: TreePrefsMap;
+  /** Explains mute/hide are per-viewer, not admin site-wide actions */
+  privacyNote?: "full" | "short" | "none";
 }) {
   const [shown, setShown] = useState(PAGE);
   const [prefs, setPrefs] = useState<TreePrefsMap>(initialPrefs);
@@ -332,6 +344,7 @@ export function TreeList({
   const remaining = items.length - shown;
 
   const patchPref = async (targetId: string, patch: Partial<{ muted: boolean; hidden: boolean }>) => {
+    // Viewer is always the logged-in user; body is only targetId + flags (strict schema rejects viewerId).
     const res = await fetch("/api/tree/view-preference", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -352,6 +365,19 @@ export function TreeList({
 
   return (
     <div>
+      {privacyNote === "full" && (
+        <p style={{ fontSize: "12px", color: "#78716c", marginBottom: "14px", lineHeight: 1.55 }}>
+          <strong>Your view only:</strong> Mute and hide change how <em>you</em> see people on this tree. They do{" "}
+          <strong>not</strong> change anyone&apos;s account, passwords, or invitations, and each member has their own
+          settings for their tree. <strong>Site-wide</strong> suspend / archive / block is only in{" "}
+          <strong>Admin</strong>.
+        </p>
+      )}
+      {privacyNote === "short" && (
+        <p style={{ fontSize: "11px", color: "#a8a29e", marginBottom: "10px", lineHeight: 1.45 }}>
+          Mute/hide: <strong>your</strong> tree only — not site-wide. Admin controls account-wide access.
+        </p>
+      )}
       {visible.map((node) => {
         const showHeader = !renderedLevels.has(node.depth);
         if (showHeader) renderedLevels.add(node.depth);

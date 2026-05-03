@@ -1,13 +1,20 @@
 // app/api/admin/members/route.ts
-// Admin-only: update member status (suspend / archive / block / activate)
+// SITE-WIDE admin actions only (founder | admin role).
+// Updates User.status and revokes target sessions — affects login / access for that
+// account everywhere. This is NOT the same as /api/tree/view-preference (per-viewer mute/hide).
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { logActivity } from "@/lib/activity/log";
+import { z } from "zod";
 
-const ALLOWED_STATUSES = ["active", "suspended", "archived", "blocked"] as const;
-type AllowedStatus = typeof ALLOWED_STATUSES[number];
+const patchSchema = z
+  .object({
+    userId: z.string().uuid(),
+    status: z.enum(["active", "suspended", "archived", "blocked"]),
+  })
+  .strict();
 
 function isAdmin(role: string) {
   return role === "founder" || role === "admin";
@@ -21,11 +28,13 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { userId, status } = await req.json() as { userId: string; status: string };
-
-    if (!userId || !ALLOWED_STATUSES.includes(status as AllowedStatus)) {
+    const raw = await req.json();
+    const parsed = patchSchema.safeParse(raw);
+    if (!parsed.success) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
+
+    const { userId, status } = parsed.data;
 
     // Founders cannot be suspended/blocked/archived by anyone
     const target = await prisma.user.findUnique({

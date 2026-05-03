@@ -139,10 +139,9 @@ function StatusBadge({ label, colors }: { label: string; colors: { bg: string; c
 // ─── Admin action buttons ─────────────────────────────────────────────────────
 
 const ACTION_BTN: Record<string, { label: string; bg: string; color: string; title?: string }> = {
-  suspend:  { label:"Suspend",  bg:"#fef9c3", color:"#854d0e", title:"Site-wide: blocks sign-in and ends sessions" },
-  archive:  { label:"Archive (legal hold)",  bg:"#f1f5f9", color:"#475569", title:"Site-wide: retains audit data; user cannot sign in" },
-  block:    { label:"Block",    bg:"#fee2e2", color:"#991b1b", title:"Site-wide: deny access" },
-  activate: { label:"Activate", bg:"#dcfce7", color:"#166534", title:"Restore account to active" },
+  suspend:  { label:"Suspend",  bg:"#fef9c3", color:"#854d0e", title:"SITE-WIDE (admin only): blocks sign-in for this account everywhere" },
+  archive:  { label:"Archive (legal hold)",  bg:"#f1f5f9", color:"#475569", title:"SITE-WIDE (admin only): retains audit data; user cannot sign in anywhere" },
+  activate: { label:"Activate", bg:"#dcfce7", color:"#166534", title:"SITE-WIDE (admin): restore this account to active" },
 };
 
 type ActionKey = keyof typeof ACTION_BTN;

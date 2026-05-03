@@ -208,7 +208,8 @@ enum InviteStatus {
   CANCELLED  // sender revoked
 }
 
-// How you see someone on *your* tree: personal mute/hide (not admin account state).
+// Per-viewer display only: how `viewerId` sees `targetId` on their tree.
+// Never changes User.status and is not visible to other viewers. Each member has their own rows.
 model TreeViewPreference {
   id        String   @id @default(cuid())
   viewerId  String

@@ -1,20 +1,30 @@
-// PATCH — current user’s mute/hide preference for another member on their tree
+// ─────────────────────────────────────────────────────────────────────────────
+// PERSONAL TREE PREFS ONLY — NOT SITE-WIDE
+//
+// • viewerId is ALWAYS the authenticated user (never read from the request body).
+// • Writes only affect the (viewerId, targetId) row in tree_view_preferences.
+// • Does NOT change User.status, sessions, or what other people see.
+// • For site-wide suspend/archive/block, use PATCH /api/admin/members (admin only).
+// ─────────────────────────────────────────────────────────────────────────────
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
 
-const bodySchema = z.object({
-  targetId: z.string().uuid(),
-  muted: z.boolean().optional(),
-  hidden: z.boolean().optional(),
-});
+const bodySchema = z
+  .object({
+    targetId: z.string().uuid(),
+    muted: z.boolean().optional(),
+    hidden: z.boolean().optional(),
+  })
+  .strict();
 
 export async function PATCH(req: NextRequest) {
   try {
     const viewer = await requireAuth();
-    const parsed = bodySchema.safeParse(await req.json());
+    const raw = await req.json();
+    const parsed = bodySchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
