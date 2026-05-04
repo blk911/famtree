@@ -107,7 +107,7 @@ export default function AdminStudiosPage() {
                   <div style={{ fontWeight: 500, color: "#1c1917" }}>{p.displayName}</div>
                   {p.serviceType && <div style={{ fontSize: "12px", color: "#a8a29e" }}>{p.serviceType}</div>}
                 </td>
-                <td style={td}>{PROVIDER_CATEGORY_LABELS[p.category]}</td>
+                <td style={td}>{PROVIDER_CATEGORY_LABELS[p.category] ?? p.category}</td>
                 <td style={td}>{p.locationLabel ?? "—"}</td>
                 <td style={td}>
                   {p.claimed
@@ -154,7 +154,9 @@ export default function AdminStudiosPage() {
           <tbody>
             {MOCK_REQUESTS.map((r, i) => {
               const provider = MOCK_PROVIDERS.find(p => p.id === r.providerId);
-              const status = REQUEST_STATUS_STYLE[r.status];
+              const status =
+                REQUEST_STATUS_STYLE[r.status] ??
+                { bg: "#f3f4f6", color: "#374151", label: r.status };
               return (
                 <tr key={r.id} style={{ borderTop: i === 0 ? "none" : "1px solid #f5f4f0" }}>
                   <td style={td}>

@@ -1,5 +1,5 @@
 // middleware.ts
-// Protects /dashboard, /profile, /invite, /tree, /settings
+// Protects /dashboard, /profile, /tree, /settings, /admin, /family-vault, and /invite (exact)
 // Redirects unauthenticated requests to /login
 
 import { NextResponse } from "next/server";
@@ -10,7 +10,10 @@ import { SESSION_COOKIE_NAME } from "@/lib/auth/session-cookie";
 
 // /invite/[token] is the public challenge page — only the bare /invite sending
 // page needs auth. We protect /invite exactly, not as a prefix.
-const PROTECTED = ["/dashboard", "/profile", "/tree", "/settings"];
+// /admin/* and /family-vault/* live under the authenticated app shell and must
+// require login at the edge (same as /dashboard); otherwise anon hits layout-only
+// auth and can surface confusing 500s depending on runtime.
+const PROTECTED = ["/dashboard", "/profile", "/tree", "/settings", "/admin", "/family-vault"];
 const AUTH_ROUTES = ["/login", "/register"];
 
 export async function middleware(request: NextRequest) {

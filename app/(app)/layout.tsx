@@ -9,7 +9,13 @@ import { prisma } from "@/lib/db/prisma";
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   if (!user) {
-    if (cookies().get(SESSION_COOKIE_NAME)?.value) {
+    let staleSessionCookie = false;
+    try {
+      staleSessionCookie = Boolean(cookies().get(SESSION_COOKIE_NAME)?.value);
+    } catch {
+      /* cookies() unavailable in this runtime phase — fall through to /login */
+    }
+    if (staleSessionCookie) {
       redirect("/api/auth/clear-stale-session");
     }
     redirect("/login");
