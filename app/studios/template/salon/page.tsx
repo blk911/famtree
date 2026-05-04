@@ -3,12 +3,12 @@ import { StudiosFooter } from "@/components/studios/StudiosFooter";
 import { SalonStudioStartContent } from "@/components/studios/salon/SalonStudioStartContent";
 
 export const metadata: Metadata = {
-  title: "Start your studio — Salon template | AIH Studios",
+  title: "Salon studio template | AIH Studios",
   description:
-    "Preview your salon studio page — services, profile shell, and client requests. Name placeholder [NAME]; AMIHUMAN profile fills starting copy when you’re signed in.",
+    "Canonical salon studio layout duplicate — same shell as published studios; customize next.",
 };
 
-export default async function StudiosStartPage() {
+export default async function SalonStudioTemplatePage() {
   return (
     <>
       <SalonStudioStartContent />

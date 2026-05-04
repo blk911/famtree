@@ -20,6 +20,7 @@ const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
   hydration_iv: "#8b9dc3",
   nutrition: "#c9a66b",
   performance_coach: "#c9a66b",
+  beauty_salon: "#d4897a",
 };
 
 const NAV_LIVE = [

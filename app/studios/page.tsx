@@ -91,7 +91,7 @@ export default function StudiosLandingPage() {
 
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
             <Link
-              href="/studios/apply"
+              href="/studios/start"
               style={{
                 display: "inline-flex",
                 alignItems: "center",

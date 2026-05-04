@@ -32,7 +32,12 @@ export function isStudiosPrimaryNavActive(pathname: string, href: string): boole
   if (href.startsWith("/studios/") && href !== "/studios/start" && pathname.startsWith(`${href}/`)) return true;
   if (
     href === "/studios/start" &&
-    (pathname === "/studios/apply" || pathname.startsWith("/studios/apply/"))
+    (pathname === "/studios/start" ||
+      pathname.startsWith("/studios/start/") ||
+      pathname === "/studios/template/salon" ||
+      pathname.startsWith("/studios/template/salon/") ||
+      pathname === "/studios/apply" ||
+      pathname.startsWith("/studios/apply/"))
   ) {
     return true;
   }
