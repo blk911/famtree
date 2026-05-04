@@ -208,7 +208,6 @@ export function StudioBuilder({
           storyIntro={previewPayload.storyIntro}
           accentHex={previewPayload.accentHex}
           navItems={previewPayload.navItems}
-          viewerRole="public"
           showEditControls={false}
           studioSlug={previewSlug}
         />

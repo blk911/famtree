@@ -4,7 +4,6 @@ import { StudioPublicPage } from "@/components/studios/StudioPublicPage";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
 import { getCurrentUser } from "@/lib/auth";
 import { liveStoryFromProvider, STUDIO_PUBLIC_DEFAULT_NAV } from "@/lib/studio/studioDraft";
-import type { StudioViewerRole } from "@/lib/studio/studioMode";
 import { MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
 import { resolveStudioPage } from "@/lib/studios/resolveStudioPage";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
@@ -63,7 +62,6 @@ export default async function TrainerStudioPage({ params }: Props) {
   const isOwner = Boolean(user && ownerUserId && user.id === ownerUserId);
   const isAdmin = Boolean(user && isElevatedRole(user.role));
   const canEdit = isOwner || isAdmin;
-  const viewerRole: StudioViewerRole = canEdit ? "owner" : "public";
 
   return (
     <>
@@ -73,7 +71,6 @@ export default async function TrainerStudioPage({ params }: Props) {
         storyIntro={liveStoryFromProvider(provider)}
         accentHex={undefined}
         navItems={STUDIO_PUBLIC_DEFAULT_NAV}
-        viewerRole={viewerRole}
         showEditControls={canEdit}
         studioSlug={params.slug}
       />
