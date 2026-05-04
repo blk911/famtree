@@ -1,9 +1,32 @@
-// Salon studio template — mirrors Deb live shell shape (TrainerStudioShell variant "live").
-// Used by /studios/start and /studios/template/salon before bespoke salon UI lands.
+// Salon studio template — same TrainerStudioShell variant "start" as /studios/apply
+// (hero form + intro video row + services/map columns). Deb-parity tiers; beauty_salon category.
 
+import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
+import { buildApplyHeroFields } from "@/lib/studios/applyPreview";
 import type { OfferPackageType, Provider, StudioOffer } from "@/types/studios";
 
 export const SALON_TEMPLATE_STUDIO_NAME_PLACEHOLDER = "[NAME]";
+
+export const SALON_APPLY_INTRO_PLACEHOLDER: ApplyStudioIntro = {
+  title: "Why book with us",
+  bullets: [
+    "Placeholder — what makes your chair or suite different (cuts, color, extensions).",
+    "Placeholder — how visits flow (consultation, timing, add-ons, checkout).",
+    "Placeholder — who you love serving (events, maintenance color, first-time guests).",
+    "Placeholder — studio location, parking, hours, or mobile options.",
+  ],
+};
+
+export function buildSalonApplyHeroFields(
+  user: { firstName: string; lastName: string; email: string; photoUrl: string | null } | null,
+  profile: { location: string | null } | null,
+): ApplyStudioHeroFields {
+  const base = buildApplyHeroFields(user, profile);
+  return {
+    ...base,
+    businessName: SALON_TEMPLATE_STUDIO_NAME_PLACEHOLDER,
+  };
+}
 
 const STUDIO_ID = "studio_salon_template";
 const PROVIDER_ID = "salon_template_preview";
@@ -43,7 +66,7 @@ export function buildSalonTemplateProvider(opts: {
     imageUrl: user?.photoUrl ?? undefined,
     introVideoUrl: undefined,
     bio,
-    claimed: true,
+    claimed: false,
     active: true,
     studioId: STUDIO_ID,
     createdAt: new Date(),

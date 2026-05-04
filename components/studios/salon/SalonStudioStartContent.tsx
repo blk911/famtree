@@ -1,9 +1,17 @@
 import { TrainerStudioShell } from "@/components/studios/trainer/TrainerStudioShell";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
-import { buildSalonTemplateOffers, buildSalonTemplateProvider } from "@/lib/studios/salonStudioTemplate";
+import {
+  buildSalonApplyHeroFields,
+  buildSalonTemplateOffers,
+  buildSalonTemplateProvider,
+  SALON_APPLY_INTRO_PLACEHOLDER,
+} from "@/lib/studios/salonStudioTemplate";
 
-/** Salon studio template — live shell duplicate used for “Start your studio” onboarding. */
+/**
+ * Salon “Start your studio” base — matches `/studios/apply` shell (`variant="start"`):
+ * ApplyStudioHero inputs, intro row, then profile + services + map columns.
+ */
 export async function SalonStudioStartContent() {
   const user = await getCurrentUser();
   const profile = user
@@ -21,5 +29,17 @@ export async function SalonStudioStartContent() {
   });
   const offers = buildSalonTemplateOffers();
 
-  return <TrainerStudioShell variant="live" provider={provider} offers={offers} />;
+  const hero = buildSalonApplyHeroFields(
+    user ? { firstName: user.firstName, lastName: user.lastName, email: user.email, photoUrl: user.photoUrl } : null,
+    profile ? { location: profile.location } : null,
+  );
+
+  return (
+    <TrainerStudioShell
+      variant="start"
+      provider={provider}
+      offers={offers}
+      applyTemplate={{ hero, intro: SALON_APPLY_INTRO_PLACEHOLDER }}
+    />
+  );
 }
