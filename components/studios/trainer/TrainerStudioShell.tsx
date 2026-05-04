@@ -21,6 +21,7 @@ const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
   nutrition: "#c9a66b",
   performance_coach: "#c9a66b",
   beauty_salon: "#d4897a",
+  nail_salon: "#d4897a",
 };
 
 const NAV_LIVE = [
@@ -247,6 +248,9 @@ export function TrainerStudioShell({
   variant = "live",
   applyTemplate,
   editorPreviewSlug = null,
+  accentHex,
+  draftStorageKey,
+  editorNavItems,
 }: {
   provider: Provider;
   offers: StudioOffer[];
@@ -255,9 +259,19 @@ export function TrainerStudioShell({
   applyTemplate?: { hero: ApplyStudioHeroFields; intro: ApplyStudioIntro };
   /** Enables Preview → `/studios/{slug}` in the start-variant editor when set. */
   editorPreviewSlug?: string | null;
+  /** Optional hex override from canonical templates (does not hit DB). */
+  accentHex?: string | null;
+  /** Isolated localStorage namespace for start-variant drafts (template vs apply flows). */
+  draftStorageKey?: string;
+  /** Start-variant editor top nav — anchored to page sections. */
+  editorNavItems?: readonly { readonly href: string; readonly label: string }[];
 }) {
   const safeOffers = Array.isArray(offers) ? offers : [];
-  const accent = ACCENT_BY_CATEGORY[provider.category] ?? "#c9a66b";
+  const trimmedAccent = accentHex?.trim();
+  const accent =
+    trimmedAccent && trimmedAccent.length > 0
+      ? trimmedAccent
+      : ACCENT_BY_CATEGORY[provider.category] ?? "#c9a66b";
   const categoryLabel =
     PROVIDER_CATEGORY_LABELS[provider.category] ?? String(provider.category ?? "Studio");
   const subtitle = [provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · ");
@@ -274,6 +288,8 @@ export function TrainerStudioShell({
           provider={{ displayName: provider.displayName ?? "Studio", imageUrl: provider.imageUrl }}
           accent={accent}
           editorPreviewSlug={editorPreviewSlug}
+          draftStorageKey={draftStorageKey}
+          editorNavItems={editorNavItems}
         >
           <section
             id="team"

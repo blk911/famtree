@@ -11,6 +11,8 @@ export function ApplyStudiosStartFrame({
   provider,
   accent,
   editorPreviewSlug = null,
+  draftStorageKey,
+  editorNavItems,
   children,
 }: {
   initialHero: ApplyStudioHeroFields;
@@ -18,6 +20,8 @@ export function ApplyStudiosStartFrame({
   accent: string;
   /** When set, Preview navigates to `/studios/{slug}`. */
   editorPreviewSlug?: string | null;
+  draftStorageKey?: string;
+  editorNavItems?: readonly { readonly href: string; readonly label: string }[];
   children: ReactNode;
 }) {
   const [liveName, setLiveName] = useState(initialHero.fullName);
@@ -34,6 +38,8 @@ export function ApplyStudiosStartFrame({
         imageUrl={provider.imageUrl}
         accent={accent}
         previewSlug={editorPreviewSlug}
+        draftStorageKey={draftStorageKey}
+        editorNavItems={editorNavItems}
         onHeroCommit={handleHeroCommit}
       />
       {children}

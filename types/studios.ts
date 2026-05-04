@@ -30,7 +30,8 @@ export type ProviderCategory =
   | "hydration_iv"
   | "nutrition"
   | "performance_coach"
-  | "beauty_salon";
+  | "beauty_salon"
+  | "nail_salon";
 
 export type OfferPackageType =
   | "intro"
@@ -59,6 +60,7 @@ export const PROVIDER_CATEGORY_LABELS: Record<ProviderCategory, string> = {
   nutrition:         "Nutrition",
   performance_coach: "Performance Coach",
   beauty_salon:      "Beauty Salon",
+  nail_salon:        "Nail Studio",
 };
 
 // ─── Core entities ─────────────────────────────────────────────

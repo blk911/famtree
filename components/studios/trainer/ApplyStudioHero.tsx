@@ -8,10 +8,10 @@ import type { ApplyStudioHeroFields } from "@/lib/studios/applyPreview";
 import { sanitizeApplyStudioHeroFields } from "@/lib/studios/applyPreview";
 import { STUDIOS_INK, STUDIOS_LINE } from "@/lib/studios/visual";
 import { StudioEditorTopNav } from "@/components/studios/StudioEditorTopNav";
+import type { StudioEditorNavItem } from "@/components/studios/StudioEditorTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
 
-const STORAGE_KEY = "amih_studios_apply_hero_v1";
-const PUBLISH_INTENT_KEY = "amih_studios_apply_publish_intent_v1";
+const DEFAULT_DRAFT_STORAGE_KEY = "amih_studios_apply_hero_v1";
 
 type FieldKey = keyof ApplyStudioHeroFields;
 
@@ -82,6 +82,8 @@ export function ApplyStudioHero({
   accent,
   previewSlug = null,
   onHeroCommit,
+  draftStorageKey = DEFAULT_DRAFT_STORAGE_KEY,
+  editorNavItems,
 }: {
   initialHero: ApplyStudioHeroFields;
   displayName: string;
@@ -90,8 +92,15 @@ export function ApplyStudioHero({
   /** Studio slug for Preview navigation; when missing, Preview is disabled */
   previewSlug?: string | null;
   onHeroCommit?: (next: ApplyStudioHeroFields) => void;
+  /** Isolated localStorage namespace — canonical template uses its own key so drafts never collide with `/studios/apply`. */
+  draftStorageKey?: string;
+  /** Template-driven nav; defaults to standard studio anchors. */
+  editorNavItems?: readonly StudioEditorNavItem[];
 }) {
   const router = useRouter();
+  const heroStorageKey = draftStorageKey;
+  /** Separate publish intent per draft scope — never touches live studios or template source files. */
+  const publishIntentKey = `${draftStorageKey}_publish_intent`;
   const [hero, setHero] = useState<ApplyStudioHeroFields>(() => sanitizeApplyStudioHeroFields(initialHero));
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [publishNotice, setPublishNotice] = useState<string | null>(null);
@@ -103,7 +112,7 @@ export function ApplyStudioHero({
 
   useEffect(() => {
     try {
-      const raw = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+      const raw = typeof window !== "undefined" ? window.localStorage.getItem(heroStorageKey) : null;
       const parsed = raw ? (JSON.parse(raw) as Partial<ApplyStudioHeroFields>) : null;
       const merged = sanitizeApplyStudioHeroFields(
         parsed ? { ...initialHero, ...parsed } : initialHero,
@@ -112,10 +121,10 @@ export function ApplyStudioHero({
 
       let intentFlag = false;
       try {
-        const pi = window.localStorage.getItem(PUBLISH_INTENT_KEY);
+        const pi = window.localStorage.getItem(publishIntentKey);
         const complete = (Object.keys(FIELD_ROW) as FieldKey[]).every((k) => fieldFilled(merged[k]));
         if (complete && pi) intentFlag = true;
-        if (!complete && pi) window.localStorage.removeItem(PUBLISH_INTENT_KEY);
+        if (!complete && pi) window.localStorage.removeItem(publishIntentKey);
       } catch {
         /* ignore */
       }
@@ -138,7 +147,7 @@ export function ApplyStudioHero({
   useEffect(() => {
     if (!heroReady || allComplete) return;
     try {
-      window.localStorage.removeItem(PUBLISH_INTENT_KEY);
+      window.localStorage.removeItem(publishIntentKey);
     } catch {
       /* ignore */
     }
@@ -150,7 +159,7 @@ export function ApplyStudioHero({
     (next: ApplyStudioHeroFields) => {
       onHeroCommit?.(next);
       try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        window.localStorage.setItem(heroStorageKey, JSON.stringify(next));
       } catch {
         /* ignore */
       }
@@ -160,6 +169,8 @@ export function ApplyStudioHero({
   );
 
   const saveDraft = useCallback(() => {
+    // Writes browser localStorage only (namespaced by `draftStorageKey`).
+    // Does not mutate `DEB_DAZZLE_STUDIO_TEMPLATE`, Prisma studios, or the live deb-dazzle row.
     const trimmed = normalizeHeroForSave(hero);
     setHero(trimmed);
     writeThrough(trimmed);
@@ -167,8 +178,9 @@ export function ApplyStudioHero({
 
   const requestPublish = useCallback(() => {
     if (!allComplete) return;
+    // Client-only intent flag for UX — no server publish yet; never touches template files or DB studios.
     try {
-      window.localStorage.setItem(PUBLISH_INTENT_KEY, new Date().toISOString());
+      window.localStorage.setItem(publishIntentKey, new Date().toISOString());
     } catch {
       /* ignore */
     }
@@ -205,7 +217,7 @@ export function ApplyStudioHero({
       />
 
       <div className="relative z-10 mx-auto max-w-5xl">
-        <StudioEditorTopNav />
+        <StudioEditorTopNav items={editorNavItems} />
 
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-black/[0.06] pb-3">
           <div className="flex flex-wrap items-center gap-3">

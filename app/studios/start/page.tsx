@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
-import { SalonStudioStartContent } from "@/components/studios/salon/SalonStudioStartContent";
+import { StudioEditor } from "@/components/studios/StudioEditor";
+import { DEB_DAZZLE_STUDIO_TEMPLATE } from "@/lib/studio/templates/deb-dazzle-template";
+import { normalizeStudioTemplate } from "@/lib/studio/templates/normalizeStudioTemplate";
 
 export const metadata: Metadata = {
   title: "Start your studio — Salon template | AIH Studios",
   description:
-    "Preview your salon studio page — services, profile shell, and client requests. Name placeholder [NAME]; AMIHUMAN profile fills starting copy when you’re signed in.",
+    "Build from the canonical Deb Dazzle nail studio template — services, hero, and preview flow. Live profile appears only in the header; editable content comes from the golden template.",
 };
 
 export default async function StudiosStartPage() {
-  console.log("[studios/start] page render");
+  console.log("[studios/start] page render — canonical Deb template (no DB / user studio base)");
   try {
-    const body = await SalonStudioStartContent();
+    const initialStudio = normalizeStudioTemplate(DEB_DAZZLE_STUDIO_TEMPLATE);
     return (
       <>
-        {body}
+        <StudioEditor initialStudio={initialStudio} mode="template-start" />
         <StudiosFooter />
       </>
     );
