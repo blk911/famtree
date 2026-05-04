@@ -30,13 +30,14 @@ export const APPLY_INTRO_PLACEHOLDER: ApplyStudioIntro = {
 /** Prefill from AMIHUMAN.NET account / profile where available; otherwise empty (placeholder hints in the UI). */
 export function buildApplyHeroFields(
   user: { firstName: string; lastName: string; email: string; photoUrl: string | null } | null,
-  profile: { location: string | null } | null,
+  profile: { location: string | null; phone?: string | null } | null,
 ): ApplyStudioHeroFields {
   return {
     fullName: user ? `${user.firstName} ${user.lastName}`.trim() : "",
     businessName: "",
     email: user?.email?.trim() ?? "",
-    phone: "",
+    /** Raw profile value — no +1 / E.164 normalization in UI */
+    phone: profile?.phone ?? "",
     physicalAddress: profile?.location?.trim() ?? "",
   };
 }

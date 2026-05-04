@@ -139,6 +139,7 @@ function StudioPageMainColumns({
         <div className="mx-auto max-w-[1200px] px-6 pb-[72px] pt-10 md:pt-12">
           <div style={{ minWidth: 0 }}>
             <section id="services" style={{ marginBottom: "48px" }}>
+              <div id="book" className="scroll-mt-24" />
               <h2
                 style={{
                   fontSize: "clamp(22px, 3vw, 28px)",
@@ -245,12 +246,15 @@ export function TrainerStudioShell({
   offers,
   variant = "live",
   applyTemplate,
+  editorPreviewSlug = null,
 }: {
   provider: Provider;
   offers: StudioOffer[];
   variant?: ShellVariant;
   /** When variant is "start", pass hero + intro copy (studio member template). */
   applyTemplate?: { hero: ApplyStudioHeroFields; intro: ApplyStudioIntro };
+  /** Enables Preview → `/studios/{slug}` in the start-variant editor when set. */
+  editorPreviewSlug?: string | null;
 }) {
   const accent = ACCENT_BY_CATEGORY[provider.category] ?? "#c9a66b";
   const categoryLabel = PROVIDER_CATEGORY_LABELS[provider.category];
@@ -267,9 +271,10 @@ export function TrainerStudioShell({
           initialHero={applyHero}
           provider={{ displayName: provider.displayName, imageUrl: provider.imageUrl }}
           accent={accent}
+          editorPreviewSlug={editorPreviewSlug}
         >
           <section
-            id="intro"
+            id="team"
             style={{
               position: "relative",
               margin: "0 auto",
@@ -302,6 +307,7 @@ export function TrainerStudioShell({
                 }}
               >
                 <div
+                  id="portfolio"
                   style={{
                     borderRadius: "22px",
                     overflow: "hidden",

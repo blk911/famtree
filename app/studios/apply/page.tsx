@@ -4,6 +4,7 @@ import { StudiosFooter } from "@/components/studios/StudiosFooter";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { APPLY_INTRO_PLACEHOLDER, buildApplyHeroFields, buildApplyPreviewProvider, getApplyPreviewOffers } from "@/lib/studios/applyPreview";
+import { getEditorPreviewSlug } from "@/lib/studios/editorPreviewSlug";
 
 export const metadata: Metadata = {
   title: "Start your studio — AIH Studios",
@@ -16,7 +17,7 @@ export default async function StartYourStudioPage() {
   const profile = user
     ? await prisma.profile.findUnique({
         where: { userId: user.id },
-        select: { bio: true, location: true },
+        select: { bio: true, location: true, phone: true },
       })
     : null;
 
@@ -28,7 +29,7 @@ export default async function StartYourStudioPage() {
 
   const hero = buildApplyHeroFields(
     user ? { firstName: user.firstName, lastName: user.lastName, email: user.email, photoUrl: user.photoUrl } : null,
-    profile ? { location: profile.location } : null,
+    profile ? { location: profile.location, phone: profile.phone } : null,
   );
 
   return (
@@ -38,6 +39,7 @@ export default async function StartYourStudioPage() {
         offers={offers}
         variant="start"
         applyTemplate={{ hero, intro: APPLY_INTRO_PLACEHOLDER }}
+        editorPreviewSlug={getEditorPreviewSlug(user)}
       />
       <StudiosFooter />
     </>

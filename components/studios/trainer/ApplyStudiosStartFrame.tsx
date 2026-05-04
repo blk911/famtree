@@ -10,11 +10,14 @@ export function ApplyStudiosStartFrame({
   initialHero,
   provider,
   accent,
+  editorPreviewSlug = null,
   children,
 }: {
   initialHero: ApplyStudioHeroFields;
   provider: Pick<Provider, "displayName" | "imageUrl">;
   accent: string;
+  /** When set, Preview navigates to `/studios/{slug}`. */
+  editorPreviewSlug?: string | null;
   children: ReactNode;
 }) {
   const [liveName, setLiveName] = useState(initialHero.fullName);
@@ -30,6 +33,7 @@ export function ApplyStudiosStartFrame({
         displayName={provider.displayName}
         imageUrl={provider.imageUrl}
         accent={accent}
+        previewSlug={editorPreviewSlug}
         onHeroCommit={handleHeroCommit}
       />
       {children}

@@ -1,6 +1,7 @@
 import { TrainerStudioShell } from "@/components/studios/trainer/TrainerStudioShell";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { getEditorPreviewSlug } from "@/lib/studios/editorPreviewSlug";
 import {
   buildSalonApplyHeroFields,
   buildSalonTemplateOffers,
@@ -17,7 +18,7 @@ export async function SalonStudioStartContent() {
   const profile = user
     ? await prisma.profile.findUnique({
         where: { userId: user.id },
-        select: { bio: true, location: true },
+        select: { bio: true, location: true, phone: true },
       })
     : null;
 
@@ -31,7 +32,7 @@ export async function SalonStudioStartContent() {
 
   const hero = buildSalonApplyHeroFields(
     user ? { firstName: user.firstName, lastName: user.lastName, email: user.email, photoUrl: user.photoUrl } : null,
-    profile ? { location: profile.location } : null,
+    profile ? { location: profile.location, phone: profile.phone } : null,
   );
 
   return (
@@ -40,6 +41,7 @@ export async function SalonStudioStartContent() {
       provider={provider}
       offers={offers}
       applyTemplate={{ hero, intro: SALON_APPLY_INTRO_PLACEHOLDER }}
+      editorPreviewSlug={getEditorPreviewSlug(user)}
     />
   );
 }
