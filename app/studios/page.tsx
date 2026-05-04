@@ -186,7 +186,7 @@ export default function StudiosLandingPage() {
                     color: muted,
                   }}
                 >
-                  {PROVIDER_CATEGORY_LABELS[p.category]}
+                  {PROVIDER_CATEGORY_LABELS[p.category] ?? p.category}
                 </span>
                 <span style={{ fontSize: "18px", fontWeight: 700, letterSpacing: "-0.02em" }}>{p.displayName}</span>
                 {p.locationLabel && <span style={{ fontSize: "13px", color: muted }}>{p.locationLabel}</span>}

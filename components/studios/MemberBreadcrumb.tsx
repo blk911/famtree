@@ -8,7 +8,13 @@ import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 
 export async function MemberBreadcrumb() {
-  const user = await getCurrentUser();
+  let user: Awaited<ReturnType<typeof getCurrentUser>>;
+  try {
+    user = await getCurrentUser();
+  } catch (err) {
+    console.error("[studios/layout] MemberBreadcrumb getCurrentUser failed", err);
+    return null;
+  }
   if (!user) return null;
 
   return (
@@ -57,7 +63,7 @@ export async function MemberBreadcrumb() {
           <span style={{ fontSize: "12px", color: "#737373", fontWeight: 500 }}>
             Logged in as{" "}
             <span style={{ color: "#262626" }}>
-              {user.firstName} {user.lastName}
+              {user.firstName ?? ""} {user.lastName ?? ""}
             </span>
           </span>
           <Link

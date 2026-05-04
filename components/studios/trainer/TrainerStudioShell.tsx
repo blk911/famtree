@@ -154,7 +154,7 @@ function StudioPageMainColumns({
               <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
                 These sample cards match what clients will see. Open one to try the request flow — nothing is sent yet.
               </p>
-              <TrainerOfferCards providerName={provider.displayName} offers={offers} previewMode gridColumns="four" />
+              <TrainerOfferCards providerName={provider.displayName ?? ""} offers={offers} previewMode gridColumns="four" />
             </section>
             <section id="contact">
               <h2
@@ -215,7 +215,7 @@ function StudioPageMainColumns({
           <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
             Tap a card to request — you'll share your email and a short note. No payment on this step.
           </p>
-          <TrainerOfferCards providerName={provider.displayName} offers={offers} previewMode={false} />
+          <TrainerOfferCards providerName={provider.displayName ?? ""} offers={offers} previewMode={false} />
         </section>
 
         <section id="contact">
@@ -256,8 +256,10 @@ export function TrainerStudioShell({
   /** Enables Preview → `/studios/{slug}` in the start-variant editor when set. */
   editorPreviewSlug?: string | null;
 }) {
+  const safeOffers = Array.isArray(offers) ? offers : [];
   const accent = ACCENT_BY_CATEGORY[provider.category] ?? "#c9a66b";
-  const categoryLabel = PROVIDER_CATEGORY_LABELS[provider.category];
+  const categoryLabel =
+    PROVIDER_CATEGORY_LABELS[provider.category] ?? String(provider.category ?? "Studio");
   const subtitle = [provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · ");
   const eyebrow = variant === "start" ? "Start your studio" : "AIH Studios provider";
 
@@ -269,7 +271,7 @@ export function TrainerStudioShell({
       {applyHero && applyIntro ? (
         <ApplyStudiosStartFrame
           initialHero={applyHero}
-          provider={{ displayName: provider.displayName, imageUrl: provider.imageUrl }}
+          provider={{ displayName: provider.displayName ?? "Studio", imageUrl: provider.imageUrl }}
           accent={accent}
           editorPreviewSlug={editorPreviewSlug}
         >
@@ -389,7 +391,7 @@ export function TrainerStudioShell({
                     {applyIntro.title}
                   </h2>
                   <ul style={{ margin: 0, paddingLeft: "22px", display: "flex", flexDirection: "column", gap: "14px" }}>
-                    {applyIntro.bullets.map((line) => (
+                    {(Array.isArray(applyIntro.bullets) ? applyIntro.bullets : []).map((line) => (
                       <li key={line} style={{ fontSize: "16px", lineHeight: 1.55, color: "#404040" }}>
                         {line}
                       </li>
@@ -399,7 +401,7 @@ export function TrainerStudioShell({
               </div>
             </div>
           </section>
-          <StudioPageMainColumns variant="start" provider={provider} offers={offers} />
+          <StudioPageMainColumns variant="start" provider={provider} offers={safeOffers} />
         </ApplyStudiosStartFrame>
       ) : (
         <>
@@ -447,7 +449,7 @@ export function TrainerStudioShell({
                   color: STUDIOS_INK,
                 }}
               >
-                {provider.displayName}
+                {provider.displayName ?? "Studio"}
               </h1>
               <p style={{ fontSize: "17px", lineHeight: 1.55, color: STUDIOS_MUTED, margin: 0 }}>{subtitle}</p>
               <div style={{ marginTop: "28px", display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
@@ -488,7 +490,7 @@ export function TrainerStudioShell({
                 alignItems: "center",
               }}
             >
-              <TrainerPhoto displayName={provider.displayName} imageUrl={provider.imageUrl} accent={accent} />
+              <TrainerPhoto displayName={provider.displayName ?? "Studio"} imageUrl={provider.imageUrl} accent={accent} />
               <div>
                 <h2
                   style={{
@@ -503,13 +505,14 @@ export function TrainerStudioShell({
                   Profile
                 </h2>
                 <p style={{ fontSize: "clamp(18px, 2.5vw, 22px)", lineHeight: 1.55, color: "#404040", margin: 0 }}>
-                  {provider.bio ?? `${provider.displayName} offers ${categoryLabel.toLowerCase()} services through AIH Studios.`}
+                  {provider.bio ??
+                    `${provider.displayName ?? "This studio"} offers ${categoryLabel.toLowerCase()} services through AIH Studios.`}
                 </p>
               </div>
             </div>
           </section>
 
-          <StudioPageMainColumns nav={NAV_LIVE} variant="live" provider={provider} offers={offers} />
+          <StudioPageMainColumns nav={NAV_LIVE} variant="live" provider={provider} offers={safeOffers} />
         </>
       )}
     </>

@@ -18,7 +18,7 @@ export const SALON_APPLY_INTRO_PLACEHOLDER: ApplyStudioIntro = {
 };
 
 export function buildSalonApplyHeroFields(
-  user: { firstName: string; lastName: string; email: string; photoUrl: string | null } | null,
+  user: { firstName: string; lastName: string; email: string; photoUrl: string | null; phone?: string | null } | null,
   profile: { location: string | null; phone?: string | null } | null,
 ): ApplyStudioHeroFields {
   const base = buildApplyHeroFields(user, profile);

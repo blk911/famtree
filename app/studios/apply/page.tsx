@@ -12,25 +12,63 @@ export const metadata: Metadata = {
     "Preview your AIH Studios page — profile, services, and how clients request sessions. Apply when you’re ready to publish.",
 };
 
+const ROUTE = "[studios/apply]";
+
 export default async function StartYourStudioPage() {
-  const user = await getCurrentUser();
-  const profile = user
-    ? await prisma.profile.findUnique({
+  let user: Awaited<ReturnType<typeof getCurrentUser>> = null;
+  let editorPreviewSlug: string | null = null;
+  try {
+    user = await getCurrentUser();
+    editorPreviewSlug = getEditorPreviewSlug(user);
+    console.log(`${ROUTE} user loaded`, {
+      hasUser: Boolean(user),
+      role: user?.role,
+      tenantId: user?.tenantId ?? null,
+      editorPreviewSlug,
+      hasEmail: Boolean(user?.email),
+    });
+  } catch (error) {
+    console.error(`${ROUTE} failed loading user`, error);
+    throw error;
+  }
+
+  let profile: { bio: string | null; location: string | null; phone: string | null } | null = null;
+  if (user) {
+    try {
+      profile = await prisma.profile.findUnique({
         where: { userId: user.id },
         select: { bio: true, location: true, phone: true },
-      })
-    : null;
+      });
+      console.log(`${ROUTE} profile loaded`, {
+        hasProfile: Boolean(profile),
+        hasBio: Boolean(profile?.bio?.trim()),
+        hasLocation: Boolean(profile?.location?.trim()),
+        hasPhone: Boolean(profile?.phone),
+      });
+    } catch (error) {
+      console.error(`${ROUTE} failed loading profile`, error);
+      throw error;
+    }
+  }
 
-  const provider = buildApplyPreviewProvider(
-    user ? { firstName: user.firstName, lastName: user.lastName, photoUrl: user.photoUrl } : null,
-    profile?.bio ?? null,
-  );
-  const offers = getApplyPreviewOffers();
-
-  const hero = buildApplyHeroFields(
-    user ? { firstName: user.firstName, lastName: user.lastName, email: user.email, photoUrl: user.photoUrl } : null,
-    profile ? { location: profile.location, phone: profile.phone } : null,
-  );
+  let provider: ReturnType<typeof buildApplyPreviewProvider>;
+  let offers: ReturnType<typeof getApplyPreviewOffers>;
+  let hero: ReturnType<typeof buildApplyHeroFields>;
+  try {
+    provider = buildApplyPreviewProvider(
+      user ? { firstName: user.firstName, lastName: user.lastName, photoUrl: user.photoUrl } : null,
+      profile?.bio ?? null,
+    );
+    offers = getApplyPreviewOffers();
+    hero = buildApplyHeroFields(
+      user ? { firstName: user.firstName, lastName: user.lastName, email: user.email, photoUrl: user.photoUrl } : null,
+      profile ? { location: profile.location, phone: profile.phone } : null,
+    );
+    console.log(`${ROUTE} preview built`, { providerSlug: provider.slug, offersCount: offers.length });
+  } catch (error) {
+    console.error(`${ROUTE} failed building apply preview`, error);
+    throw error;
+  }
 
   return (
     <>
@@ -39,7 +77,7 @@ export default async function StartYourStudioPage() {
         offers={offers}
         variant="start"
         applyTemplate={{ hero, intro: APPLY_INTRO_PLACEHOLDER }}
-        editorPreviewSlug={getEditorPreviewSlug(user)}
+        editorPreviewSlug={editorPreviewSlug}
       />
       <StudiosFooter />
     </>

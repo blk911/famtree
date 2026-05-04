@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function StudiosStartPage() {
+  console.log("[studios/start] page render");
   return (
     <>
       <SalonStudioStartContent />

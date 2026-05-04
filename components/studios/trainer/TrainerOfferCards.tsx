@@ -27,7 +27,9 @@ export function TrainerOfferCards({
   const [selected, setSelected] = useState<StudioOffer | null>(null);
   const [open, setOpen] = useState(false);
 
-  if (offers.length === 0) {
+  const offerList = Array.isArray(offers) ? offers : [];
+
+  if (offerList.length === 0) {
     return (
       <div
         style={{
@@ -59,7 +61,7 @@ export function TrainerOfferCards({
             : undefined
         }
       >
-        {offers.map((offer) => (
+        {offerList.map((offer) => (
           <button
             key={offer.id}
             type="button"
@@ -95,7 +97,7 @@ export function TrainerOfferCards({
                 borderRadius: "999px",
               }}
             >
-              {OFFER_PACKAGE_LABELS[offer.packageType]}
+              {OFFER_PACKAGE_LABELS[offer.packageType] ?? offer.packageType}
             </span>
             <h3 style={{ fontSize: "18px", fontWeight: 700, color: STUDIOS_INK, margin: 0, letterSpacing: "-0.02em" }}>
               {offer.title}

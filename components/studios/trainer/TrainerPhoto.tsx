@@ -4,11 +4,13 @@ import { useState } from "react";
 import { STUDIOS_LINE } from "@/lib/studios/visual";
 
 function initialsFromDisplay(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const trimmed = name.trim();
+  if (!trimmed) return "?";
+  const parts = trimmed.split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
     return `${parts[0][0] ?? ""}${parts[parts.length - 1][0] ?? ""}`.toUpperCase();
   }
-  return name.slice(0, 2).toUpperCase();
+  return trimmed.slice(0, 2).toUpperCase();
 }
 
 type Props = {
@@ -18,9 +20,11 @@ type Props = {
 };
 
 export function TrainerPhoto({ displayName, imageUrl, accent }: Props) {
-  const [showImg, setShowImg] = useState(!!imageUrl);
+  const src =
+    typeof imageUrl === "string" && imageUrl.trim().length > 0 ? imageUrl.trim() : null;
+  const [showImg, setShowImg] = useState(Boolean(src));
 
-  if (!showImg || !imageUrl) {
+  if (!showImg || !src) {
     return (
       <div
         style={{
@@ -55,7 +59,7 @@ export function TrainerPhoto({ displayName, imageUrl, accent }: Props) {
   return (
     // eslint-disable-next-line @next/next/no-img-element -- intentional fallback flow
     <img
-      src={imageUrl}
+      src={src}
       alt={displayName}
       onError={() => setShowImg(false)}
       style={{

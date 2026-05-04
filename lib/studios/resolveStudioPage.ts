@@ -10,5 +10,11 @@ export const resolveStudioPage = cache(async (slug: string) => {
       offers: getActiveOffersForProvider(mock.id),
     };
   }
-  return loadStudioPageFromDb(slug);
+  try {
+    const fromDb = await loadStudioPageFromDb(slug);
+    return fromDb;
+  } catch (err) {
+    console.error("[studios/resolve] loadStudioPageFromDb failed", { slug, err });
+    throw err;
+  }
 });

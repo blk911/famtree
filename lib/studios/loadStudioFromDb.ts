@@ -18,6 +18,12 @@ export async function loadStudioPageFromDb(
   if (!studio) return null;
 
   const owner = studio.owner;
+  if (!owner) {
+    console.error("[studios/db] studio row missing owner relation", { slug });
+    return null;
+  }
+
+  const tiers = Array.isArray(studio.tiers) ? studio.tiers : [];
   const providerId = `db_${studio.id}`;
 
   const provider: Provider = {
@@ -38,7 +44,7 @@ export async function loadStudioPageFromDb(
     createdAt: studio.createdAt,
   };
 
-  const offers: StudioOffer[] = studio.tiers.map((tier) => {
+  const offers: StudioOffer[] = tiers.map((tier) => {
     const hasPrice = tier.price != null;
     const priceNum = hasPrice ? Number(tier.price) : null;
     const packageType: OfferPackageType = !hasPrice ? "custom" : "single";
