@@ -24,6 +24,8 @@ tsconfig.tsbuildinfo
 # ── Uploads (local dev only) ──────────────────────────────────
 public/uploads/*
 !public/uploads/.gitkeep
+# Bundled Studios marketing background (referenced by app/studios/layout.tsx)
+!public/uploads/STUDIO BKGRND.jpg
 
 # ── Logs ─────────────────────────────────────────────────────
 *.log

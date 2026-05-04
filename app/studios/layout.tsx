@@ -5,6 +5,9 @@
 import type { Metadata } from "next";
 import { MemberBreadcrumb } from "@/components/studios/MemberBreadcrumb";
 
+/** Standard Studios surface background — `public/uploads/STUDIO BKGRND.jpg` only under `/studios/*`. */
+const STUDIOS_PAGE_BG_URL = "/uploads/STUDIO%20BKGRND.jpg";
+
 export const metadata: Metadata = {
   title: "AIH Studios — Run Your Training Business Like a Network",
   description:
@@ -18,12 +21,13 @@ export default function StudiosLayout({ children }: { children: React.ReactNode 
         minHeight: "100vh",
         backgroundColor: "#f3f1ec",
         backgroundImage: `
-          radial-gradient(ellipse 100% 70% at 50% -15%, rgba(252, 228, 236, 0.55) 0%, transparent 52%),
-          radial-gradient(ellipse 70% 45% at 100% 20%, rgba(214, 232, 255, 0.45) 0%, transparent 42%),
-          radial-gradient(ellipse 55% 40% at 0% 75%, rgba(255, 236, 210, 0.42) 0%, transparent 48%),
-          radial-gradient(ellipse 80% 50% at 50% 100%, rgba(224, 244, 236, 0.28) 0%, transparent 50%),
-          linear-gradient(165deg, #faf9f6 0%, #f5f2eb 38%, #efe9df 72%, #f7f4ee 100%)
+          radial-gradient(ellipse 120% 80% at 50% 0%, rgba(250, 249, 246, 0.72), rgba(245, 242, 235, 0.55)),
+          linear-gradient(165deg, rgba(250, 249, 246, 0.45) 0%, rgba(239, 233, 223, 0.38) 100%),
+          url(${STUDIOS_PAGE_BG_URL})
         `,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
         color: "#262626",
       }}
