@@ -131,7 +131,12 @@ export function HomeClient() {
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault(); setSiLoad(true); setSiErr("");
     try {
-      const res  = await fetch("/api/auth/login", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ email:siEmail, password:siPw }) });
+      const res  = await fetch("/api/auth/login", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        credentials:"include",
+        body:JSON.stringify({ email:siEmail, password:siPw }),
+      });
       const data = await res.json();
       if (!res.ok) { setSiErr(data.error ?? "Login failed"); return; }
       window.location.href = data.user?.role === "founder" || data.user?.role === "admin" ? "/admin" : "/dashboard";

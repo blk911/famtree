@@ -30,13 +30,41 @@ const SESSION_USER_CORE_SELECT = {
   createdAt: true,
   updatedAt: true,
   invitedById: true,
-  tenantId: true,
-  studiosOwned: {
-    select: { slug: true },
-    orderBy: { createdAt: "asc" },
-    take: 1,
-  },
 } as const;
+
+/**
+ * Tenant + owned-studio slug for sidebar routing — queried separately so a DB without
+ * `tenant_id` or `studios` tables cannot break every authenticated page / login redirect.
+ */
+async function fetchUserStudioNavFieldsSafe(userId: string): Promise<{
+  tenantId: string | null;
+  studiosOwnedSlugs: { slug: string }[];
+}> {
+  let tenantId: string | null = null;
+  try {
+    const row = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { tenantId: true },
+    });
+    tenantId = row?.tenantId ?? null;
+  } catch {
+    /* column or drift — ignore */
+  }
+
+  let studiosOwnedSlugs: { slug: string }[] = [];
+  try {
+    studiosOwnedSlugs = await prisma.studio.findMany({
+      where: { ownerId: userId },
+      select: { slug: true },
+      orderBy: { createdAt: "asc" },
+      take: 1,
+    });
+  } catch {
+    /* studios table missing / drift — ignore */
+  }
+
+  return { tenantId, studiosOwnedSlugs };
+}
 
 async function fetchSelfServiceRemainingSafe(userId: string): Promise<number> {
   try {
@@ -146,8 +174,14 @@ export async function getCurrentUser(): Promise<User | null> {
     }
 
     const selfServiceIdentityChangesRemaining = await fetchSelfServiceRemainingSafe(core.id);
+    const { tenantId, studiosOwnedSlugs } = await fetchUserStudioNavFieldsSafe(core.id);
 
-    return { ...core, selfServiceIdentityChangesRemaining } as User;
+    return {
+      ...core,
+      tenantId,
+      ...(studiosOwnedSlugs.length > 0 ? { studiosOwned: studiosOwnedSlugs } : {}),
+      selfServiceIdentityChangesRemaining,
+    } as User;
   } catch (err) {
     console.error("[getCurrentUser]", err);
     return null;
