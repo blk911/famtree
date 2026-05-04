@@ -3,8 +3,6 @@ import type { ApplyStudioIntro } from "@/lib/studios/applyPreview";
 
 /** Browser-only overrides for `/studios/[slug]` quick edits (no API yet). */
 export type StudioInlineDraft = {
-  displayName?: string;
-  subtitleOverride?: string;
   storyTitle?: string;
   storyBulletsText?: string;
   bio?: string;
@@ -31,10 +29,6 @@ export function parseStudioInlineDraft(raw: string | null): StudioInlineDraft {
 export function mergeProviderWithDraft(provider: Provider, draft: StudioInlineDraft): Provider {
   return {
     ...provider,
-    displayName:
-      draft.displayName !== undefined && draft.displayName.trim().length > 0
-        ? draft.displayName.trim()
-        : provider.displayName,
     locationLabel:
       draft.locationLabel !== undefined && draft.locationLabel.trim().length > 0
         ? draft.locationLabel.trim()
@@ -70,8 +64,4 @@ export function mergeStoryWithDraft(
   }
 
   return { title, bullets };
-}
-
-export function defaultSubtitleLine(provider: Provider, categoryLabel: string): string {
-  return [provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · ");
 }

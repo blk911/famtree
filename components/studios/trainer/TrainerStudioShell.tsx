@@ -14,7 +14,6 @@ import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
 import { StudioLiteStepRail } from "@/components/studios/StudioLiteStepRail";
 import type { StudioInlineDraft } from "@/lib/studios/studioInlineDraft";
 import {
-  defaultSubtitleLine,
   mergeProviderWithDraft,
   mergeStoryWithDraft,
   parseStudioInlineDraft,
@@ -46,7 +45,7 @@ const NAV_LIVE = [
 ] as const;
 
 type ShellVariant = "live" | "start";
-type EditingSection = null | "about" | "story" | "portfolio" | "services" | "contact";
+type EditingSection = null | "story" | "portfolio" | "services" | "contact";
 
 /** Ambient training photography — decorative backgrounds only (Unsplash). */
 const TRAINING_HERO_IMG =
@@ -337,8 +336,6 @@ export function TrainerStudioShell({
   const [draft, setDraft] = useState<StudioInlineDraft>({});
   const [editingSection, setEditingSection] = useState<EditingSection>(null);
 
-  const [heroName, setHeroName] = useState("");
-  const [heroSub, setHeroSub] = useState("");
   const [storyTitle, setStoryTitle] = useState("");
   const [storyBullets, setStoryBullets] = useState("");
   const [profBio, setProfBio] = useState("");
@@ -380,14 +377,6 @@ export function TrainerStudioShell({
 
   useEffect(() => {
     if (!draftActive) return;
-    if (editingSection === "about") {
-      setHeroName(mergedProvider.displayName);
-      setHeroSub(
-        draft.subtitleOverride?.trim()
-          ? draft.subtitleOverride.trim()
-          : defaultSubtitleLine(mergedProvider, mergedCategoryLabel),
-      );
-    }
     if (editingSection === "story") {
       const st = mergeStoryWithDraft(liveStoryIntro, draft);
       setStoryTitle(st.title);
@@ -414,15 +403,10 @@ export function TrainerStudioShell({
 
   const categoryLabel =
     PROVIDER_CATEGORY_LABELS[provider.category] ?? String(provider.category ?? "Studio");
-  const subtitle = useMemo(() => {
-    if (variant !== "live") {
-      return [provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · ");
-    }
-    if (draftActive && draft.subtitleOverride !== undefined && draft.subtitleOverride.trim().length > 0) {
-      return draft.subtitleOverride.trim();
-    }
-    return defaultSubtitleLine(mergedProvider, mergedCategoryLabel);
-  }, [variant, provider, categoryLabel, draftActive, draft.subtitleOverride, mergedProvider, mergedCategoryLabel]);
+  const heroSubtitleLive = useMemo(
+    () => [provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · "),
+    [provider.serviceType, categoryLabel, provider.locationLabel],
+  );
 
   const contactDescription =
     draftActive && draft.contactNote !== undefined && draft.contactNote.trim().length > 0
@@ -443,7 +427,6 @@ export function TrainerStudioShell({
   const steps = useMemo(() => {
     if (!draftActive) return [];
     const ms = mergedStory ?? mergeStoryWithDraft(liveStoryIntro, draft);
-    const introOk = mergedProvider.displayName.trim().length > 0;
     const storyOk =
       ms.title.trim().length > 0 &&
       Array.isArray(ms.bullets) &&
@@ -452,7 +435,6 @@ export function TrainerStudioShell({
     const servOk = safeOffers.length > 0;
     const contactOk = (mergedProvider.locationLabel?.trim().length ?? 0) > 0;
     return [
-      { id: "intro", label: "Intro", href: "#about", complete: introOk },
       { id: "story", label: "Story", href: "#team", complete: storyOk },
       { id: "profile", label: "Profile", href: "#portfolio", complete: profileOk },
       { id: "services", label: "Services", href: "#services", complete: servOk },
@@ -732,16 +714,6 @@ export function TrainerStudioShell({
               textAlign: "center",
             }}
           >
-            {draftActive && editingSection !== "about" ? (
-              <button
-                type="button"
-                aria-label="Edit intro section"
-                className="absolute right-4 top-6 z-10 rounded-full border border-stone-200 bg-white p-2.5 shadow-sm hover:bg-stone-50 md:right-8"
-                onClick={() => setEditingSection("about")}
-              >
-                <Pencil className="h-4 w-4 text-stone-600" aria-hidden />
-              </button>
-            ) : null}
             <div
               style={{
                 position: "absolute",
@@ -755,99 +727,52 @@ export function TrainerStudioShell({
                 pointerEvents: "none",
               }}
             />
-            {draftActive && editingSection === "about" ? (
-              <div style={{ position: "relative", zIndex: 1, maxWidth: "560px", margin: "0 auto", textAlign: "left" }}>
-                <div className="rounded-2xl border border-teal-200/90 bg-white p-5 shadow-sm">
-                  <p className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Edit intro</p>
-                  <label className="mb-3 block text-[11px] font-bold uppercase text-stone-500">
-                    Studio name
-                    <input
-                      className="mt-1 w-full rounded-lg border border-stone-200 px-3 py-2 text-base font-semibold text-stone-900"
-                      value={heroName}
-                      onChange={(e) => setHeroName(e.target.value)}
-                    />
-                  </label>
-                  <label className="mb-4 block text-[11px] font-bold uppercase text-stone-500">
-                    Subtitle line
-                    <input
-                      className="mt-1 w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-800"
-                      value={heroSub}
-                      onChange={(e) => setHeroSub(e.target.value)}
-                    />
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      className="rounded-full bg-stone-900 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-stone-800"
-                      onClick={() => {
-                        persistDraft({
-                          ...draft,
-                          displayName: heroName,
-                          subtitleOverride: heroSub,
-                        });
-                        setEditingSection(null);
-                      }}
-                    >
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-stone-800 hover:bg-stone-50"
-                      onClick={() => setEditingSection(null)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", margin: "0 auto" }}>
-                <p
+            <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", margin: "0 auto" }}>
+              <p
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: STUDIOS_MUTED,
+                  marginBottom: "12px",
+                }}
+              >
+                {eyebrow}
+              </p>
+              <h1
+                style={{
+                  fontSize: "clamp(32px, 5vw, 48px)",
+                  fontWeight: 700,
+                  letterSpacing: "-1.2px",
+                  lineHeight: 1.08,
+                  margin: "0 0 16px",
+                  color: STUDIOS_INK,
+                }}
+              >
+                {provider.displayName ?? "Studio"}
+              </h1>
+              <p style={{ fontSize: "17px", lineHeight: 1.55, color: STUDIOS_MUTED, margin: 0 }}>{heroSubtitleLive}</p>
+              <div style={{ marginTop: "28px", display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
+                <Link
+                  href="/studios"
                   style={{
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: STUDIOS_MUTED,
-                    marginBottom: "12px",
-                  }}
-                >
-                  {eyebrow}
-                </p>
-                <h1
-                  style={{
-                    fontSize: "clamp(32px, 5vw, 48px)",
-                    fontWeight: 700,
-                    letterSpacing: "-1.2px",
-                    lineHeight: 1.08,
-                    margin: "0 0 16px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    padding: "12px 22px",
+                    borderRadius: "999px",
+                    background: "#fff",
                     color: STUDIOS_INK,
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    border: `1px solid ${STUDIOS_LINE}`,
                   }}
                 >
-                  {mergedProvider.displayName ?? "Studio"}
-                </h1>
-                <p style={{ fontSize: "17px", lineHeight: 1.55, color: STUDIOS_MUTED, margin: 0 }}>{subtitle}</p>
-                <div style={{ marginTop: "28px", display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
-                  <Link
-                    href="/studios"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      padding: "12px 22px",
-                      borderRadius: "999px",
-                      background: "#fff",
-                      color: STUDIOS_INK,
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      textDecoration: "none",
-                      border: `1px solid ${STUDIOS_LINE}`,
-                    }}
-                  >
-                    ← All studios
-                  </Link>
-                </div>
+                  ← All studios
+                </Link>
               </div>
-            )}
+            </div>
           </section>
 
           {showStory && mergedStory ? (
