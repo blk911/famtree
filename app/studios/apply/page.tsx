@@ -24,6 +24,7 @@ export default async function StartYourStudioPage() {
       hasUser: Boolean(user),
       role: user?.role,
       tenantId: user?.tenantId ?? null,
+      studioSlug: editorPreviewSlug,
       editorPreviewSlug,
       hasEmail: Boolean(user?.email),
     });

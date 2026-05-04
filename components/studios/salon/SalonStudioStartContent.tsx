@@ -25,6 +25,7 @@ export async function SalonStudioStartContent() {
       hasUser: Boolean(user),
       role: user?.role,
       tenantId: user?.tenantId ?? null,
+      studioSlug: editorPreviewSlug,
       editorPreviewSlug,
       hasEmail: Boolean(user?.email),
     });
