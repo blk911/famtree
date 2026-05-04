@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Clock, ArrowRight } from "lucide-react";
 import type { StudioOffer } from "@/types/studios";
 import { OFFER_PACKAGE_LABELS } from "@/types/studios";
-import { formatOfferPriceUsd } from "@/lib/studios/mockStudios";
+import { formatStudioOfferPrice } from "@/lib/studios/mockStudios";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 import { OfferRequestModal } from "./OfferRequestModal";
 import { useApplyStudioLiveName } from "./ApplyStudioLiveNameContext";
@@ -104,7 +104,7 @@ export function TrainerOfferCards({
               {offer.description}
             </p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
-              <span style={{ fontSize: "20px", fontWeight: 700, color: STUDIOS_INK }}>{formatOfferPriceUsd(offer.priceCents)}</span>
+              <span style={{ fontSize: "20px", fontWeight: 700, color: STUDIOS_INK }}>{formatStudioOfferPrice(offer)}</span>
               <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "13px", color: STUDIOS_MUTED }}>
                 <Clock style={{ width: "14px", height: "14px" }} />
                 {offer.durationMinutes} min

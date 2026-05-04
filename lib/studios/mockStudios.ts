@@ -227,6 +227,12 @@ export function formatOfferPriceUsd(cents: number): string {
   return (cents / 100).toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 }
 
+/** Handles DB-backed tiers with custom / null price without showing $0. */
+export function formatStudioOfferPrice(offer: Pick<StudioOffer, "priceCents">): string {
+  if (offer.priceCents === undefined || offer.priceCents === null) return "Custom pricing";
+  return formatOfferPriceUsd(offer.priceCents);
+}
+
 // ─── Aggregate stats helpers (for admin overview) ──────────────
 export function getStudiosOverview() {
   return {

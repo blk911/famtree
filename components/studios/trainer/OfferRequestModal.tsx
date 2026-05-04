@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import type { StudioOffer } from "@/types/studios";
-import { formatOfferPriceUsd } from "@/lib/studios/mockStudios";
+import { formatStudioOfferPrice } from "@/lib/studios/mockStudios";
 import { STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 
 type Props = {
@@ -64,7 +64,7 @@ export function OfferRequestModal({ open, onClose, offer, providerName, previewM
               {offer.title}
             </h2>
             <p className="mt-1 text-sm" style={{ color: STUDIOS_MUTED }}>
-              with {providerName} · {formatOfferPriceUsd(offer.priceCents)}
+              with {providerName} · {formatStudioOfferPrice(offer)}
             </p>
           </div>
           <button

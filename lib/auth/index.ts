@@ -30,6 +30,12 @@ const SESSION_USER_CORE_SELECT = {
   createdAt: true,
   updatedAt: true,
   invitedById: true,
+  tenantId: true,
+  studiosOwned: {
+    select: { slug: true },
+    orderBy: { createdAt: "asc" },
+    take: 1,
+  },
 } as const;
 
 async function fetchSelfServiceRemainingSafe(userId: string): Promise<number> {

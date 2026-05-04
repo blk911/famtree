@@ -100,7 +100,8 @@ export interface StudioOffer {
   providerId: string;
   title: string;
   description: string;
-  priceCents: number;
+  /** Omitted or null when pricing is custom / not listed (e.g. “My Style”). */
+  priceCents?: number | null;
   durationMinutes: number;
   packageType: OfferPackageType;
   active: boolean;

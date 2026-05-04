@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { User as PrismaUser } from "@prisma/client";
+import { getCurrentUserStudioHref, isStudiosPrimaryNavActive } from "@/lib/studios/getCurrentUserStudioHref";
 
 interface Props { user: PrismaUser; open?: boolean; }
 
@@ -48,6 +49,8 @@ export function AppSidebar({ user, open = false }: Props) {
   };
 
   const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+
+  const studiosHref = getCurrentUserStudioHref(user);
 
   const linkStyle = (active: boolean) => ({
     display:"flex", alignItems:"center", gap:"13px",
@@ -158,7 +161,7 @@ export function AppSidebar({ user, open = false }: Props) {
           {INVITE.label}
         </Link>
 
-        <Link href="/studios" style={linkStyle(pathname === "/studios" || pathname.startsWith("/studios/"))}>
+        <Link href={studiosHref} style={linkStyle(isStudiosPrimaryNavActive(pathname, studiosHref))}>
           <Building2 style={{width:"18px",height:"18px",flexShrink:0}} />
           AIH Studios
         </Link>
