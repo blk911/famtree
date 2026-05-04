@@ -66,7 +66,42 @@ model User {
   identityChangesAdministered     IdentityChangeRequest[]       @relation("ICRAdmin")
   identityChangeAcknowledgments   IdentityChangeAcknowledgment[] @relation("ICAckInvitee")
 
+  /// Optional tenant slug for studio / white-label owners (e.g. deb-dazzle)
+  tenantId String? @map("tenant_id")
+
+  studiosOwned Studio[]
+
   @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// STUDIOS & SERVICE TIERS (e.g. Deb Dazzle)
+// ─────────────────────────────────────────────
+model Studio {
+  id        String   @id
+  name      String
+  slug      String   @unique
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tagline   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tiers StudioServiceTier[]
+
+  @@map("studios")
+}
+
+model StudioServiceTier {
+  id        String   @id @default(cuid())
+  studioId  String
+  studio    Studio   @relation(fields: [studioId], references: [id], onDelete: Cascade)
+  name      String
+  price     Decimal? @db.Decimal(10, 2)
+  sortOrder Int      @default(0)
+
+  @@unique([studioId, name])
+  @@map("studio_service_tiers")
 }
 
 // ─────────────────────────────────────────────
