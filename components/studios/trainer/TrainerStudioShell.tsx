@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Play } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
@@ -10,6 +10,7 @@ import { StudioEditorTopNav } from "@/components/studios/StudioEditorTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { TrainerOfferCards } from "./TrainerOfferCards";
 import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
+import { StudioStartStorySection } from "./StudioStartStorySection";
 
 const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
   trainer: "#c9a66b",
@@ -294,132 +295,12 @@ export function TrainerStudioShell({
           draftStorageKey={draftStorageKey}
           editorNavItems={editorNavItems}
         >
-          <section
-            id="team"
-            style={{
-              position: "relative",
-              margin: "0 auto",
-              maxWidth: "1100px",
-              padding: "48px 24px 56px",
-              borderBottom: "1px solid rgba(0,0,0,0.06)",
-              overflow: "hidden",
-              background: "linear-gradient(120deg, rgba(255,255,255,0.96) 0%, rgba(247,245,238,0.94) 45%, rgba(235,243,252,0.55) 100%)",
-            }}
-          >
-            <div
-              aria-hidden
-              style={{
-                position: "absolute",
-                inset: 0,
-                backgroundImage: `url(${TRAINING_HERO_IMG})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                opacity: 0.13,
-                pointerEvents: "none",
-              }}
-            />
-            <div style={{ position: "relative", zIndex: 1 }}>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
-                  gap: "40px",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  id="portfolio"
-                  style={{
-                    borderRadius: "22px",
-                    overflow: "hidden",
-                    border: `1px solid ${STUDIOS_LINE}`,
-                    boxShadow: STUDIOS_CARD_SHADOW,
-                    background: "linear-gradient(160deg, rgba(250,248,245,0.95) 0%, #fff 45%, #f3f0eb 100%)",
-                    aspectRatio: "16 / 9",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "10px",
-                    position: "relative",
-                  }}
-                >
-                  <div
-                    aria-hidden
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      backgroundImage: `url(${TRAINING_FOLD_IMG})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      opacity: 0.18,
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: "64px",
-                      height: "64px",
-                      borderRadius: "50%",
-                      background: "rgba(38, 38, 38, 0.88)",
-                      color: "#fff",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      position: "relative",
-                      zIndex: 1,
-                    }}
-                  >
-                    <Play style={{ width: "26px", height: "26px", marginLeft: "4px" }} fill="currentColor" />
-                  </div>
-                  <span
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      color: STUDIOS_MUTED,
-                      position: "relative",
-                      zIndex: 1,
-                    }}
-                  >
-                    Intro video
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      color: STUDIOS_MUTED,
-                      opacity: 0.85,
-                      position: "relative",
-                      zIndex: 1,
-                    }}
-                  >
-                    Placeholder — upload after approval
-                  </span>
-                  {/* TODO(studios:video): embed or signed URL */}
-                </div>
-
-                <div>
-                  <h2
-                    style={{
-                      fontSize: "clamp(22px, 3vw, 28px)",
-                      fontWeight: 700,
-                      color: STUDIOS_INK,
-                      margin: "0 0 20px",
-                      letterSpacing: "-0.3px",
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {applyIntro.title}
-                  </h2>
-                  <ul style={{ margin: 0, paddingLeft: "22px", display: "flex", flexDirection: "column", gap: "14px" }}>
-                    {(Array.isArray(applyIntro.bullets) ? applyIntro.bullets : []).map((line) => (
-                      <li key={line} style={{ fontSize: "16px", lineHeight: 1.55, color: "#404040" }}>
-                        {line}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </section>
+          <StudioStartStorySection
+            initialIntro={applyIntro}
+            draftStorageKey={draftStorageKey ?? "amih_studios_start_intro_fallback"}
+            heroBgImageUrl={TRAINING_HERO_IMG}
+            foldImageUrl={TRAINING_FOLD_IMG}
+          />
           <StudioPageMainColumns variant="start" provider={provider} offers={safeOffers} />
         </ApplyStudiosStartFrame>
       ) : (
