@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { MapPin, Play } from "lucide-react";
 import type { Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
+import { StudioEditorTopNav } from "@/components/studios/StudioEditorTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { TrainerOfferCards } from "./TrainerOfferCards";
 import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
@@ -25,7 +28,9 @@ const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
 };
 
 const NAV_LIVE = [
-  { href: "#profile", label: "About" },
+  { href: "#about", label: "About" },
+  { href: "#team", label: "Story" },
+  { href: "#portfolio", label: "Profile" },
   { href: "#services", label: "Services" },
   { href: "#contact", label: "Contact" },
 ] as const;
@@ -251,6 +256,10 @@ export function TrainerStudioShell({
   accentHex,
   draftStorageKey,
   editorNavItems,
+  /** Rich story block under hero (live public pages). */
+  liveStoryIntro,
+  /** Full-width dark nav — used on canonical public studio layout. */
+  publicNav,
 }: {
   provider: Provider;
   offers: StudioOffer[];
@@ -265,6 +274,8 @@ export function TrainerStudioShell({
   draftStorageKey?: string;
   /** Start-variant editor top nav — anchored to page sections. */
   editorNavItems?: readonly { readonly href: string; readonly label: string }[];
+  liveStoryIntro?: ApplyStudioIntro | null;
+  publicNav?: readonly { readonly href: string; readonly label: string }[] | null;
 }) {
   const safeOffers = Array.isArray(offers) ? offers : [];
   const trimmedAccent = accentHex?.trim();
@@ -421,7 +432,19 @@ export function TrainerStudioShell({
         </ApplyStudiosStartFrame>
       ) : (
         <>
+          {publicNav && publicNav.length > 0 ? (
+            <div
+              className="sticky top-0 z-40 border-b border-black/[0.06] bg-[#fafaf8]/95 backdrop-blur-md"
+              style={{ marginBottom: 0 }}
+            >
+              <div className="mx-auto max-w-[1100px] px-4 pt-3 pb-2">
+                <StudioEditorTopNav items={[...publicNav]} />
+              </div>
+            </div>
+          ) : null}
           <section
+            id="about"
+            className="scroll-mt-28"
             style={{
               position: "relative",
               padding: "56px 24px 48px",
@@ -490,8 +513,44 @@ export function TrainerStudioShell({
             </div>
           </section>
 
+          {liveStoryIntro &&
+          (liveStoryIntro.title.trim().length > 0 ||
+            (Array.isArray(liveStoryIntro.bullets) && liveStoryIntro.bullets.length > 0)) ? (
+            <section
+              id="team"
+              className="scroll-mt-28"
+              style={{
+                padding: "48px 24px 36px",
+                borderBottom: "1px solid rgba(0,0,0,0.06)",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(250,247,241,0.9) 100%)",
+              }}
+            >
+              <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+                <h2
+                  style={{
+                    fontSize: "clamp(22px, 3vw, 28px)",
+                    fontWeight: 700,
+                    color: STUDIOS_INK,
+                    margin: "0 0 18px",
+                    letterSpacing: "-0.3px",
+                  }}
+                >
+                  {liveStoryIntro.title}
+                </h2>
+                <ul style={{ margin: 0, paddingLeft: "22px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {(Array.isArray(liveStoryIntro.bullets) ? liveStoryIntro.bullets : []).map((line) => (
+                    <li key={line} style={{ fontSize: "16px", lineHeight: 1.55, color: "#404040" }}>
+                      {line}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          ) : null}
+
           <section
-            id="profile"
+            id="portfolio"
+            className="scroll-mt-28"
             style={{
               padding: "0 24px 40px",
               maxWidth: "1100px",
@@ -528,7 +587,19 @@ export function TrainerStudioShell({
             </div>
           </section>
 
-          <StudioPageMainColumns nav={NAV_LIVE} variant="live" provider={provider} offers={safeOffers} />
+          <StudioPageMainColumns
+            nav={publicNav && publicNav.length > 0 ? publicNav : NAV_LIVE}
+            variant="live"
+            provider={provider}
+            offers={safeOffers}
+          />
+          {publicNav && publicNav.length > 0 ? (
+            <div id="vmb-salons" className="scroll-mt-28 mx-auto max-w-[1100px] px-6 pb-10 pt-4">
+              <p style={{ fontSize: "14px", color: STUDIOS_MUTED, margin: 0 }}>
+                VMB Salons — network placement and partner links will appear here when enabled.
+              </p>
+            </div>
+          ) : null}
         </>
       )}
     </>

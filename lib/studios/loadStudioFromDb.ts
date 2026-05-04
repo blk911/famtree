@@ -2,11 +2,11 @@
 // Maps Prisma Studio + tiers → marketing Provider / StudioOffer shapes.
 
 import { prisma } from "@/lib/db/prisma";
-import type { OfferPackageType, Provider, StudioOffer } from "@/types/studios";
+import type { OfferPackageType, Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 
 export async function loadStudioPageFromDb(
   slug: string,
-): Promise<{ provider: Provider; offers: StudioOffer[] } | null> {
+): Promise<{ provider: Provider; offers: StudioOffer[]; ownerUserId: string } | null> {
   const studio = await prisma.studio.findUnique({
     where: { slug },
     include: {
@@ -25,12 +25,13 @@ export async function loadStudioPageFromDb(
 
   const tiers = Array.isArray(studio.tiers) ? studio.tiers : [];
   const providerId = `db_${studio.id}`;
+  const category: ProviderCategory = slug === "deb-dazzle" ? "nail_salon" : "trainer";
 
   const provider: Provider = {
     id: providerId,
     displayName: studio.name,
     slug: studio.slug,
-    category: "trainer",
+    category,
     serviceType: undefined,
     locationLabel: undefined,
     city: undefined,
@@ -68,5 +69,5 @@ export async function loadStudioPageFromDb(
     };
   });
 
-  return { provider, offers };
+  return { provider, offers, ownerUserId: studio.ownerId };
 }
