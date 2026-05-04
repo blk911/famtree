@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Building2, CheckCircle2, Eye, Mail, MapPin, Pencil, Phone, User } from "lucide-react";
 import type { ApplyStudioHeroFields } from "@/lib/studios/applyPreview";
+import { sanitizeApplyStudioHeroFields } from "@/lib/studios/applyPreview";
 import { STUDIOS_INK, STUDIOS_LINE } from "@/lib/studios/visual";
 import { StudioEditorTopNav } from "@/components/studios/StudioEditorTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
@@ -54,8 +55,8 @@ const FIELD_ROW: Record<
   },
 };
 
-function fieldFilled(value: string) {
-  return value.trim().length > 0;
+function fieldFilled(value: string | null | undefined) {
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 function formatSavedAt(d: Date) {
@@ -67,8 +68,9 @@ function formatSavedAt(d: Date) {
 }
 
 function normalizeHeroForSave(hero: ApplyStudioHeroFields): ApplyStudioHeroFields {
+  const base = sanitizeApplyStudioHeroFields(hero);
   return (Object.keys(FIELD_ROW) as FieldKey[]).reduce((acc, k) => {
-    acc[k] = k === "phone" ? hero[k] : hero[k].trim();
+    acc[k] = k === "phone" ? base[k] : base[k].trim();
     return acc;
   }, {} as ApplyStudioHeroFields);
 }
@@ -90,7 +92,7 @@ export function ApplyStudioHero({
   onHeroCommit?: (next: ApplyStudioHeroFields) => void;
 }) {
   const router = useRouter();
-  const [hero, setHero] = useState<ApplyStudioHeroFields>(initialHero);
+  const [hero, setHero] = useState<ApplyStudioHeroFields>(() => sanitizeApplyStudioHeroFields(initialHero));
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [publishNotice, setPublishNotice] = useState<string | null>(null);
   const [hasPublishIntent, setHasPublishIntent] = useState(false);
@@ -103,7 +105,9 @@ export function ApplyStudioHero({
     try {
       const raw = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
       const parsed = raw ? (JSON.parse(raw) as Partial<ApplyStudioHeroFields>) : null;
-      const merged: ApplyStudioHeroFields = parsed ? { ...initialHero, ...parsed } : initialHero;
+      const merged = sanitizeApplyStudioHeroFields(
+        parsed ? { ...initialHero, ...parsed } : initialHero,
+      );
       setHero(merged);
 
       let intentFlag = false;
@@ -298,7 +302,7 @@ export function ApplyStudioHero({
                         inputMode={meta.inputMode}
                         name={key}
                         aria-label={meta.placeholder}
-                        value={hero[key]}
+                        value={hero[key] ?? ""}
                         placeholder={meta.placeholder}
                         autoComplete={meta.autoComplete}
                         onChange={(e) => setHero((h) => ({ ...h, [key]: e.target.value }))}

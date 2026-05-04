@@ -3,6 +3,9 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { getEditorPreviewSlug } from "@/lib/studios/editorPreviewSlug";
 import {
+  EMPTY_APPLY_STUDIO_HERO_FIELDS,
+} from "@/lib/studios/applyPreview";
+import {
   buildSalonApplyHeroFields,
   buildSalonTemplateOffers,
   buildSalonTemplateProvider,
@@ -48,8 +51,8 @@ export async function SalonStudioStartContent() {
         hasPhone: Boolean(profile?.phone),
       });
     } catch (error) {
-      console.error(`${ROUTE} failed loading profile`, error);
-      throw error;
+      console.error(`${ROUTE} profile fetch failed; continuing without profile`, error);
+      profile = null;
     }
   }
 
@@ -80,8 +83,10 @@ export async function SalonStudioStartContent() {
       offersCount: offers.length,
     });
   } catch (error) {
-    console.error(`${ROUTE} failed building salon template`, error);
-    throw error;
+    console.error(`${ROUTE} failed building salon template — using empty draft hero`, error);
+    provider = buildSalonTemplateProvider({ user: null, profile: null });
+    offers = buildSalonTemplateOffers();
+    hero = EMPTY_APPLY_STUDIO_HERO_FIELDS;
   }
 
   return (

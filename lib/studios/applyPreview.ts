@@ -12,6 +12,33 @@ export type ApplyStudioHeroFields = {
   physicalAddress: string;
 };
 
+/** Canonical empty hero — safe baseline when merging drafts / localStorage. */
+export const EMPTY_APPLY_STUDIO_HERO_FIELDS: ApplyStudioHeroFields = {
+  fullName: "",
+  businessName: "",
+  email: "",
+  phone: "",
+  physicalAddress: "",
+};
+
+/**
+ * Ensures every field is a string so `.trim()` / controlled inputs never throw
+ * (e.g. legacy JSON drafts with null or unexpected types).
+ */
+export function sanitizeApplyStudioHeroFields(
+  partial: Partial<ApplyStudioHeroFields> | null | undefined,
+): ApplyStudioHeroFields {
+  const src = partial ?? {};
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  return {
+    fullName: str(src.fullName),
+    businessName: str(src.businessName),
+    email: str(src.email),
+    phone: str(src.phone),
+    physicalAddress: str(src.physicalAddress),
+  };
+}
+
 export type ApplyStudioIntro = {
   title: string;
   bullets: readonly string[];

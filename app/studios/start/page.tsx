@@ -10,10 +10,19 @@ export const metadata: Metadata = {
 
 export default async function StudiosStartPage() {
   console.log("[studios/start] page render");
-  return (
-    <>
-      <SalonStudioStartContent />
-      <StudiosFooter />
-    </>
-  );
+  try {
+    const body = await SalonStudioStartContent();
+    return (
+      <>
+        {body}
+        <StudiosFooter />
+      </>
+    );
+  } catch (error) {
+    console.error("[studios/start] render failed", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    throw error;
+  }
 }
