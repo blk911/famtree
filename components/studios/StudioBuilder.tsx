@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { StudioDraftData } from "@/lib/studio/studioDraft";
 import { draftToPublicPayload } from "@/lib/studio/studioDraft";
 import { StudioLaunchRail, type LaunchStepId, type LaunchStepStatus } from "@/components/studios/StudioLaunchRail";
-import { StudioPublicPage } from "@/components/studios/StudioPublicPage";
+import { TrainerStudioShell } from "@/components/studios/trainer/TrainerStudioShell";
 
 export type StudioBuilderUser = {
   id: string;
@@ -112,7 +112,6 @@ export function StudioBuilder({
   const stepStatus = useMemo(() => computeStepStatus(draft, activeStep), [draft, activeStep]);
 
   const previewPayload = useMemo(() => draftToPublicPayload(draft), [draft]);
-  const previewSlug = previewPayload.provider.slug || "preview";
 
   const scrollToStep = useCallback((id: LaunchStepId) => {
     setActiveStep(id);
@@ -202,14 +201,13 @@ export function StudioBuilder({
             {barButtons}
           </div>
         </div>
-        <StudioPublicPage
+        <TrainerStudioShell
+          variant="live"
           provider={previewPayload.provider}
           offers={previewPayload.offers}
-          storyIntro={previewPayload.storyIntro}
           accentHex={previewPayload.accentHex}
-          navItems={previewPayload.navItems}
-          showEditControls={false}
-          studioSlug={previewSlug}
+          liveStoryIntro={previewPayload.storyIntro}
+          publicNav={previewPayload.navItems.length > 0 ? previewPayload.navItems : null}
         />
       </div>
     );

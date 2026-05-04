@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { StudioPublicPage } from "@/components/studios/StudioPublicPage";
+import { TrainerStudioShell } from "@/components/studios/trainer/TrainerStudioShell";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
-import { getCurrentUser } from "@/lib/auth";
 import { liveStoryFromProvider, STUDIO_PUBLIC_DEFAULT_NAV } from "@/lib/studio/studioDraft";
 import { MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
 import { resolveStudioPage } from "@/lib/studios/resolveStudioPage";
@@ -11,8 +10,6 @@ import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 type Props = { params: { slug: string } };
 
 const ROUTE = "[studios/slug]";
-
-const isElevatedRole = (role: string) => role === "founder" || role === "admin";
 
 export function generateStaticParams() {
   return MOCK_PROVIDERS.filter((p) => p.active).map((p) => ({ slug: p.slug }));
@@ -56,23 +53,16 @@ export default async function TrainerStudioPage({ params }: Props) {
 
   if (!resolved) notFound();
 
-  const { provider, offers, ownerUserId } = resolved;
-
-  const user = await getCurrentUser();
-  const isOwner = Boolean(user && ownerUserId && user.id === ownerUserId);
-  const isAdmin = Boolean(user && isElevatedRole(user.role));
-  const canEdit = isOwner || isAdmin;
+  const { provider, offers } = resolved;
 
   return (
     <>
-      <StudioPublicPage
+      <TrainerStudioShell
+        variant="live"
         provider={provider}
         offers={offers}
-        storyIntro={liveStoryFromProvider(provider)}
-        accentHex={undefined}
-        navItems={STUDIO_PUBLIC_DEFAULT_NAV}
-        showEditControls={canEdit}
-        studioSlug={params.slug}
+        liveStoryIntro={liveStoryFromProvider(provider)}
+        publicNav={STUDIO_PUBLIC_DEFAULT_NAV}
       />
       <StudiosFooter />
     </>

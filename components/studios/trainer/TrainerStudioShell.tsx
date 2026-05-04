@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { MapPin, Pencil, Play } from "lucide-react";
+import { MapPin, Play } from "lucide-react";
 import type { Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
@@ -11,14 +10,6 @@ import { StudioEditorTopNav } from "@/components/studios/StudioEditorTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { TrainerOfferCards } from "./TrainerOfferCards";
 import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
-import { StudioLiteStepRail } from "@/components/studios/StudioLiteStepRail";
-import type { StudioInlineDraft } from "@/lib/studios/studioInlineDraft";
-import {
-  mergeProviderWithDraft,
-  mergeStoryWithDraft,
-  parseStudioInlineDraft,
-  studioInlineStorageKey,
-} from "@/lib/studios/studioInlineDraft";
 
 const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
   trainer: "#c9a66b",
@@ -45,7 +36,6 @@ const NAV_LIVE = [
 ] as const;
 
 type ShellVariant = "live" | "start";
-type EditingSection = null | "story" | "portfolio" | "services" | "contact";
 
 /** Ambient training photography — decorative backgrounds only (Unsplash). */
 const TRAINING_HERO_IMG =
@@ -64,13 +54,10 @@ function LocationContactSection({
   provider,
   description,
   showMap,
-  phoneRaw,
 }: {
   provider: Provider;
   description: string;
   showMap?: boolean;
-  /** Shown exactly as typed — no normalization. */
-  phoneRaw?: string | null;
 }) {
   const infoCard = (
     <div
@@ -108,11 +95,6 @@ function LocationContactSection({
           </p>
         )}
         <p style={{ margin: "12px 0 0", fontSize: "14px", lineHeight: 1.5, color: STUDIOS_MUTED }}>{description}</p>
-        {phoneRaw != null && phoneRaw.trim().length > 0 ? (
-          <p style={{ margin: "10px 0 0", fontSize: "15px", fontWeight: 600, color: STUDIOS_INK, whiteSpace: "pre-wrap" }}>
-            {phoneRaw}
-          </p>
-        ) : null}
       </div>
     </div>
   );
@@ -148,21 +130,11 @@ function StudioPageMainColumns({
   variant,
   provider,
   offers,
-  liveInlineEdit,
 }: {
   nav?: readonly { readonly href: string; readonly label: string }[];
   variant: ShellVariant;
   provider: Provider;
   offers: StudioOffer[];
-  liveInlineEdit?: {
-    editing: null | "services" | "contact";
-    onEditServices: () => void;
-    onEditContact: () => void;
-    servicesPanel: ReactNode;
-    contactPanel: ReactNode;
-    contactDescription: string;
-    phoneRaw?: string;
-  };
 }) {
   if (variant === "start") {
     return (
@@ -237,17 +209,7 @@ function StudioPageMainColumns({
       </nav>
 
       <div style={{ minWidth: 0 }}>
-        <section id="services" style={{ marginBottom: "48px", position: "relative" }}>
-          {liveInlineEdit ? (
-            <button
-              type="button"
-              aria-label="Edit services section"
-              className="absolute right-0 top-0 z-10 rounded-full border border-stone-200 bg-white p-2 shadow-sm hover:bg-stone-50 md:right-1"
-              onClick={liveInlineEdit.onEditServices}
-            >
-              <Pencil className="h-4 w-4 text-stone-600" aria-hidden />
-            </button>
-          ) : null}
+        <section id="services" style={{ marginBottom: "48px" }}>
           <h2
             style={{
               fontSize: "clamp(22px, 3vw, 28px)",
@@ -262,21 +224,10 @@ function StudioPageMainColumns({
           <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
             Tap a card to request — you'll share your email and a short note. No payment on this step.
           </p>
-          {liveInlineEdit?.editing === "services" ? liveInlineEdit.servicesPanel : null}
           <TrainerOfferCards providerName={provider.displayName ?? ""} offers={offers} previewMode={false} />
         </section>
 
-        <section id="contact" style={{ position: "relative" }}>
-          {liveInlineEdit ? (
-            <button
-              type="button"
-              aria-label="Edit contact section"
-              className="absolute right-0 top-0 z-10 rounded-full border border-stone-200 bg-white p-2 shadow-sm hover:bg-stone-50 md:right-1"
-              onClick={liveInlineEdit.onEditContact}
-            >
-              <Pencil className="h-4 w-4 text-stone-600" aria-hidden />
-            </button>
-          ) : null}
+        <section id="contact">
           <h2
             style={{
               fontSize: "clamp(22px, 3vw, 28px)",
@@ -288,13 +239,7 @@ function StudioPageMainColumns({
           >
             Location & contact
           </h2>
-          {liveInlineEdit?.editing === "contact" ? liveInlineEdit.contactPanel : null}
-          <LocationContactSection
-            provider={provider}
-            description={liveInlineEdit?.contactDescription ?? DEFAULT_LIVE_CONTACT_COPY}
-            showMap
-            phoneRaw={liveInlineEdit?.phoneRaw}
-          />
+          <LocationContactSection provider={provider} description={DEFAULT_LIVE_CONTACT_COPY} showMap />
         </section>
       </div>
     </div>
@@ -312,8 +257,6 @@ export function TrainerStudioShell({
   editorNavItems,
   liveStoryIntro,
   publicNav,
-  inlineEdit = false,
-  studioSlug = null,
 }: {
   provider: Provider;
   offers: StudioOffer[];
@@ -325,218 +268,20 @@ export function TrainerStudioShell({
   editorNavItems?: readonly { readonly href: string; readonly label: string }[];
   liveStoryIntro?: ApplyStudioIntro | null;
   publicNav?: readonly { readonly href: string; readonly label: string }[] | null;
-  /** Owner/admin — section pencils + lite step bar (browser-local draft). */
-  inlineEdit?: boolean;
-  studioSlug?: string | null;
 }) {
   const safeOffers = Array.isArray(offers) ? offers : [];
-  const slugKey = studioSlug?.trim() ?? "";
-  const draftActive = variant === "live" && Boolean(inlineEdit && slugKey.length > 0);
-
-  const [draft, setDraft] = useState<StudioInlineDraft>({});
-  const [editingSection, setEditingSection] = useState<EditingSection>(null);
-
-  const [storyTitle, setStoryTitle] = useState("");
-  const [storyBullets, setStoryBullets] = useState("");
-  const [profBio, setProfBio] = useState("");
-  const [profImg, setProfImg] = useState("");
-  const [contactLoc, setContactLoc] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
-  const [contactNote, setContactNote] = useState("");
-
-  useEffect(() => {
-    if (!draftActive || !slugKey) return;
-    setDraft(parseStudioInlineDraft(localStorage.getItem(studioInlineStorageKey(slugKey))));
-  }, [draftActive, slugKey]);
-
-  const persistDraft = useCallback(
-    (next: StudioInlineDraft) => {
-      setDraft(next);
-      if (!slugKey || !draftActive) return;
-      try {
-        localStorage.setItem(studioInlineStorageKey(slugKey), JSON.stringify(next));
-      } catch {
-        /* ignore quota */
-      }
-    },
-    [draftActive, slugKey],
-  );
-
-  const mergedProvider = useMemo(() => {
-    if (!draftActive) return provider;
-    return mergeProviderWithDraft(provider, draft);
-  }, [draftActive, provider, draft]);
-
-  const mergedStory = useMemo(() => {
-    if (!draftActive) return liveStoryIntro;
-    return mergeStoryWithDraft(liveStoryIntro, draft);
-  }, [draftActive, liveStoryIntro, draft]);
-
-  const mergedCategoryLabel =
-    PROVIDER_CATEGORY_LABELS[mergedProvider.category] ?? String(mergedProvider.category ?? "Studio");
-
-  useEffect(() => {
-    if (!draftActive) return;
-    if (editingSection === "story") {
-      const st = mergeStoryWithDraft(liveStoryIntro, draft);
-      setStoryTitle(st.title);
-      setStoryBullets(st.bullets.join("\n"));
-    }
-    if (editingSection === "portfolio") {
-      setProfBio(mergedProvider.bio ?? "");
-      setProfImg(mergedProvider.imageUrl ?? "");
-    }
-    if (editingSection === "contact") {
-      setContactLoc(mergedProvider.locationLabel ?? "");
-      setContactPhone(draft.phoneRaw ?? "");
-      setContactNote(draft.contactNote ?? "");
-    }
-  }, [editingSection, draftActive, mergedProvider, mergedCategoryLabel, draft, liveStoryIntro]);
-
   const trimmedAccent = accentHex?.trim();
-  const accent = useMemo(() => {
-    const catSource = variant === "live" ? mergedProvider : provider;
-    return trimmedAccent && trimmedAccent.length > 0
+  const accent =
+    trimmedAccent && trimmedAccent.length > 0
       ? trimmedAccent
-      : ACCENT_BY_CATEGORY[catSource.category] ?? "#c9a66b";
-  }, [variant, mergedProvider, provider, trimmedAccent]);
-
+      : ACCENT_BY_CATEGORY[provider.category] ?? "#c9a66b";
   const categoryLabel =
     PROVIDER_CATEGORY_LABELS[provider.category] ?? String(provider.category ?? "Studio");
-  const heroSubtitleLive = useMemo(
-    () => [provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · "),
-    [provider.serviceType, categoryLabel, provider.locationLabel],
-  );
-
-  const contactDescription =
-    draftActive && draft.contactNote !== undefined && draft.contactNote.trim().length > 0
-      ? draft.contactNote.trim()
-      : DEFAULT_LIVE_CONTACT_COPY;
-
-  const phoneLine =
-    draftActive && draft.phoneRaw != null && draft.phoneRaw.trim().length > 0 ? draft.phoneRaw : undefined;
-
-  const scrollToHash = useCallback((href: string) => {
-    setEditingSection(null);
-    const id = href.startsWith("#") ? href.slice(1) : href;
-    requestAnimationFrame(() =>
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }),
-    );
-  }, []);
-
-  const steps = useMemo(() => {
-    if (!draftActive) return [];
-    const ms = mergedStory ?? mergeStoryWithDraft(liveStoryIntro, draft);
-    const storyOk =
-      ms.title.trim().length > 0 &&
-      Array.isArray(ms.bullets) &&
-      ms.bullets.some((b) => b.trim().length > 0);
-    const profileOk = (mergedProvider.bio?.trim().length ?? 0) >= 8;
-    const servOk = safeOffers.length > 0;
-    const contactOk = (mergedProvider.locationLabel?.trim().length ?? 0) > 0;
-    return [
-      { id: "story", label: "Story", href: "#team", complete: storyOk },
-      { id: "profile", label: "Profile", href: "#portfolio", complete: profileOk },
-      { id: "services", label: "Services", href: "#services", complete: servOk },
-      { id: "contact", label: "Contact", href: "#contact", complete: contactOk },
-    ];
-  }, [draftActive, mergedProvider, mergedStory, liveStoryIntro, draft, safeOffers]);
-
-  const servicesPanel = draftActive ? (
-    <div className="mb-4 rounded-xl border border-teal-200/90 bg-teal-50/80 p-4">
-      <p className="text-sm leading-relaxed text-stone-700">
-        Offer cards mirror your published tiers. Changing titles or prices will hook into studio settings next.
-      </p>
-      <button
-        type="button"
-        className="mt-3 rounded-full bg-stone-900 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-stone-800"
-        onClick={() => setEditingSection(null)}
-      >
-        Done
-      </button>
-    </div>
-  ) : null;
-
-  const contactPanel = draftActive ? (
-    <div className="mb-4 space-y-3 rounded-xl border border-teal-200/90 bg-teal-50/80 p-4">
-      <label className="block text-[11px] font-bold uppercase tracking-wide text-stone-500">
-        Location label
-        <input
-          className="mt-1 w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
-          value={contactLoc}
-          onChange={(e) => setContactLoc(e.target.value)}
-        />
-      </label>
-      <label className="block text-[11px] font-bold uppercase tracking-wide text-stone-500">
-        Phone (exactly as shown)
-        <input
-          className="mt-1 w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
-          value={contactPhone}
-          onChange={(e) => setContactPhone(e.target.value)}
-          inputMode="tel"
-        />
-      </label>
-      <label className="block text-[11px] font-bold uppercase tracking-wide text-stone-500">
-        Contact blurb
-        <textarea
-          className="mt-1 min-h-[72px] w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
-          value={contactNote}
-          onChange={(e) => setContactNote(e.target.value)}
-        />
-      </label>
-      <div className="flex flex-wrap gap-2 pt-1">
-        <button
-          type="button"
-          className="rounded-full bg-stone-900 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-stone-800"
-          onClick={() => {
-            persistDraft({
-              ...draft,
-              locationLabel: contactLoc,
-              phoneRaw: contactPhone,
-              contactNote,
-            });
-            setEditingSection(null);
-          }}
-        >
-          Save
-        </button>
-        <button
-          type="button"
-          className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-stone-800 hover:bg-stone-50"
-          onClick={() => setEditingSection(null)}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  ) : null;
-
-  const liveInlineEdit =
-    draftActive
-      ? {
-          editing:
-            editingSection === "services" ? ("services" as const) : editingSection === "contact" ? ("contact" as const) : null,
-          onEditServices: () => setEditingSection("services"),
-          onEditContact: () => setEditingSection("contact"),
-          servicesPanel,
-          contactPanel,
-          contactDescription,
-          phoneRaw: phoneLine,
-        }
-      : undefined;
-
+  const subtitle = [provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · ");
   const eyebrow = variant === "start" ? "Start your studio" : "AIH Studios provider";
 
   const applyHero = variant === "start" && applyTemplate ? applyTemplate.hero : null;
   const applyIntro = variant === "start" && applyTemplate ? applyTemplate.intro : null;
-
-  const showStory =
-    draftActive ||
-    Boolean(
-      mergedStory &&
-        (mergedStory.title.trim().length > 0 ||
-          (Array.isArray(mergedStory.bullets) && mergedStory.bullets.some((b) => b.trim().length > 0))),
-    );
 
   return (
     <>
@@ -687,21 +432,6 @@ export function TrainerStudioShell({
               <div className="mx-auto max-w-[1100px] px-4 pt-3 pb-2">
                 <StudioEditorTopNav items={[...publicNav]} />
               </div>
-              {draftActive ? (
-                <>
-                  <StudioLiteStepRail steps={steps} onStepClick={scrollToHash} />
-                  <p className="mx-auto max-w-[1100px] px-4 pb-2 text-center text-[10px] text-stone-500">
-                    Quick edits save in this browser only — visitors never see pencils or this bar.
-                  </p>
-                </>
-              ) : null}
-            </div>
-          ) : draftActive ? (
-            <div className="sticky top-0 z-40 border-b border-black/[0.06] bg-[#fafaf8]/95 backdrop-blur-md">
-              <StudioLiteStepRail steps={steps} onStepClick={scrollToHash} />
-              <p className="mx-auto max-w-[1100px] px-4 pb-2 text-center text-[10px] text-stone-500">
-                Quick edits save in this browser only — visitors never see pencils or this bar.
-              </p>
             </div>
           ) : null}
           <section
@@ -752,7 +482,7 @@ export function TrainerStudioShell({
               >
                 {provider.displayName ?? "Studio"}
               </h1>
-              <p style={{ fontSize: "17px", lineHeight: 1.55, color: STUDIOS_MUTED, margin: 0 }}>{heroSubtitleLive}</p>
+              <p style={{ fontSize: "17px", lineHeight: 1.55, color: STUDIOS_MUTED, margin: 0 }}>{subtitle}</p>
               <div style={{ marginTop: "28px", display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
                 <Link
                   href="/studios"
@@ -775,93 +505,37 @@ export function TrainerStudioShell({
             </div>
           </section>
 
-          {showStory && mergedStory ? (
+          {liveStoryIntro &&
+          (liveStoryIntro.title.trim().length > 0 ||
+            (Array.isArray(liveStoryIntro.bullets) && liveStoryIntro.bullets.length > 0)) ? (
             <section
               id="team"
               className="scroll-mt-28"
               style={{
-                position: "relative",
                 padding: "48px 24px 36px",
                 borderBottom: "1px solid rgba(0,0,0,0.06)",
                 background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(250,247,241,0.9) 100%)",
               }}
             >
-              {draftActive && editingSection !== "story" ? (
-                <button
-                  type="button"
-                  aria-label="Edit story section"
-                  className="absolute right-4 top-8 z-10 rounded-full border border-stone-200 bg-white p-2.5 shadow-sm hover:bg-stone-50 md:right-10"
-                  onClick={() => setEditingSection("story")}
-                >
-                  <Pencil className="h-4 w-4 text-stone-600" aria-hidden />
-                </button>
-              ) : null}
               <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-                {draftActive && editingSection === "story" ? (
-                  <div className="rounded-2xl border border-teal-200/90 bg-white p-5 shadow-sm">
-                    <p className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Edit story</p>
-                    <label className="mb-3 block text-[11px] font-bold uppercase text-stone-500">
-                      Headline
-                      <input
-                        className="mt-1 w-full rounded-lg border border-stone-200 px-3 py-2 text-lg font-semibold text-stone-900"
-                        value={storyTitle}
-                        onChange={(e) => setStoryTitle(e.target.value)}
-                      />
-                    </label>
-                    <label className="mb-4 block text-[11px] font-bold uppercase text-stone-500">
-                      Bullets (one per line)
-                      <textarea
-                        className="mt-1 min-h-[120px] w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-800"
-                        value={storyBullets}
-                        onChange={(e) => setStoryBullets(e.target.value)}
-                      />
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        className="rounded-full bg-stone-900 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-stone-800"
-                        onClick={() => {
-                          persistDraft({
-                            ...draft,
-                            storyTitle,
-                            storyBulletsText: storyBullets,
-                          });
-                          setEditingSection(null);
-                        }}
-                      >
-                        Save
-                      </button>
-                      <button
-                        type="button"
-                        className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-stone-800 hover:bg-stone-50"
-                        onClick={() => setEditingSection(null)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <h2
-                      style={{
-                        fontSize: "clamp(22px, 3vw, 28px)",
-                        fontWeight: 700,
-                        color: STUDIOS_INK,
-                        margin: "0 0 18px",
-                        letterSpacing: "-0.3px",
-                      }}
-                    >
-                      {mergedStory.title}
-                    </h2>
-                    <ul style={{ margin: 0, paddingLeft: "22px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                      {(Array.isArray(mergedStory.bullets) ? mergedStory.bullets : []).map((line) => (
-                        <li key={line} style={{ fontSize: "16px", lineHeight: 1.55, color: "#404040" }}>
-                          {line}
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
+                <h2
+                  style={{
+                    fontSize: "clamp(22px, 3vw, 28px)",
+                    fontWeight: 700,
+                    color: STUDIOS_INK,
+                    margin: "0 0 18px",
+                    letterSpacing: "-0.3px",
+                  }}
+                >
+                  {liveStoryIntro.title}
+                </h2>
+                <ul style={{ margin: 0, paddingLeft: "22px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {(Array.isArray(liveStoryIntro.bullets) ? liveStoryIntro.bullets : []).map((line) => (
+                    <li key={line} style={{ fontSize: "16px", lineHeight: 1.55, color: "#404040" }}>
+                      {line}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </section>
           ) : null}
@@ -870,111 +544,47 @@ export function TrainerStudioShell({
             id="portfolio"
             className="scroll-mt-28"
             style={{
-              position: "relative",
               padding: "0 24px 40px",
               maxWidth: "1100px",
               margin: "0 auto",
             }}
           >
-            {draftActive && editingSection !== "portfolio" ? (
-              <button
-                type="button"
-                aria-label="Edit profile section"
-                className="absolute right-4 top-2 z-10 rounded-full border border-stone-200 bg-white p-2.5 shadow-sm hover:bg-stone-50 md:right-8"
-                onClick={() => setEditingSection("portfolio")}
-              >
-                <Pencil className="h-4 w-4 text-stone-600" aria-hidden />
-              </button>
-            ) : null}
-            {draftActive && editingSection === "portfolio" ? (
-              <div className="mx-auto max-w-[640px] rounded-2xl border border-teal-200/90 bg-white p-5 shadow-sm">
-                <p className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Edit profile</p>
-                <label className="mb-3 block text-[11px] font-bold uppercase text-stone-500">
-                  Bio
-                  <textarea
-                    className="mt-1 min-h-[100px] w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-800"
-                    value={profBio}
-                    onChange={(e) => setProfBio(e.target.value)}
-                  />
-                </label>
-                <label className="mb-4 block text-[11px] font-bold uppercase text-stone-500">
-                  Profile image URL
-                  <input
-                    className="mt-1 w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-800"
-                    value={profImg}
-                    onChange={(e) => setProfImg(e.target.value)}
-                  />
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    className="rounded-full bg-stone-900 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-stone-800"
-                    onClick={() => {
-                      persistDraft({
-                        ...draft,
-                        bio: profBio,
-                        profileImageUrl: profImg,
-                      });
-                      setEditingSection(null);
-                    }}
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-stone-800 hover:bg-stone-50"
-                    onClick={() => setEditingSection(null)}
-                  >
-                    Cancel
-                  </button>
-                </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+                gap: "40px",
+                alignItems: "center",
+              }}
+            >
+              <TrainerPhoto displayName={provider.displayName ?? "Studio"} imageUrl={provider.imageUrl} accent={accent} />
+              <div>
+                <h2
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: STUDIOS_MUTED,
+                    margin: "0 0 10px",
+                  }}
+                >
+                  Profile
+                </h2>
+                <p style={{ fontSize: "clamp(18px, 2.5vw, 22px)", lineHeight: 1.55, color: "#404040", margin: 0 }}>
+                  {provider.bio ??
+                    `${provider.displayName ?? "This studio"} offers ${categoryLabel.toLowerCase()} services through AIH Studios.`}
+                </p>
               </div>
-            ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
-                  gap: "40px",
-                  alignItems: "center",
-                }}
-              >
-                <TrainerPhoto displayName={mergedProvider.displayName ?? "Studio"} imageUrl={mergedProvider.imageUrl} accent={accent} />
-                <div>
-                  <h2
-                    style={{
-                      fontSize: "13px",
-                      fontWeight: 700,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      color: STUDIOS_MUTED,
-                      margin: "0 0 10px",
-                    }}
-                  >
-                    Profile
-                  </h2>
-                  <p style={{ fontSize: "clamp(18px, 2.5vw, 22px)", lineHeight: 1.55, color: "#404040", margin: 0 }}>
-                    {mergedProvider.bio ??
-                      `${mergedProvider.displayName ?? "This studio"} offers ${mergedCategoryLabel.toLowerCase()} services through AIH Studios.`}
-                  </p>
-                </div>
-              </div>
-            )}
+            </div>
           </section>
 
           <StudioPageMainColumns
             nav={publicNav && publicNav.length > 0 ? publicNav : NAV_LIVE}
             variant="live"
-            provider={mergedProvider}
+            provider={provider}
             offers={safeOffers}
-            liveInlineEdit={liveInlineEdit}
           />
-          {publicNav && publicNav.length > 0 ? (
-            <div id="vmb-salons" className="scroll-mt-28 mx-auto max-w-[1100px] px-6 pb-10 pt-4">
-              <p style={{ fontSize: "14px", color: STUDIOS_MUTED, margin: 0 }}>
-                VMB Salons — network placement and partner links will appear here when enabled.
-              </p>
-            </div>
-          ) : null}
         </>
       )}
     </>

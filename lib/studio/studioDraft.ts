@@ -5,11 +5,10 @@ import type { DebDazzleStudioTemplate } from "@/lib/studio/templates/deb-dazzle-
 export const STUDIO_PUBLIC_DEFAULT_NAV: { href: string; label: string }[] = [
   { href: "#about", label: "ABOUT" },
   { href: "#team", label: "TEAM" },
-  { href: "#services", label: "SERVICES" },
   { href: "#portfolio", label: "PORTFOLIO" },
+  { href: "#services", label: "SERVICES" },
   { href: "#book", label: "BOOK" },
   { href: "#contact", label: "CONTACT" },
-  { href: "#vmb-salons", label: "VMB SALONS" },
 ];
 
 /** Mutable builder state — cloned from template or loaded from draft APIs later. */
@@ -130,11 +129,10 @@ export function studioDraftFromDebTemplate(cloned: DebDazzleStudioTemplate): Stu
           : [
               { href: "#about", label: "ABOUT" },
               { href: "#team", label: "TEAM" },
-              { href: "#services", label: "SERVICES" },
               { href: "#portfolio", label: "PORTFOLIO" },
+              { href: "#services", label: "SERVICES" },
               { href: "#book", label: "BOOK" },
               { href: "#contact", label: "CONTACT" },
-              { href: "#vmb-salons", label: "VMB SALONS" },
             ],
     },
   };
