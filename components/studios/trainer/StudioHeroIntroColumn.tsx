@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ChevronRight, Pencil, X } from "lucide-react";
 import type { ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import { STUDIO_INTRO_VIDEO_SRC, STUDIO_INTRO_VIDEO_THUMB_SRC } from "@/lib/studios/studioIntroVideo";
@@ -31,14 +31,21 @@ export function StudioHeroIntroColumn({
   const [introVideoModalOpen, setIntroVideoModalOpen] = useState(false);
   const [titleDraft, setTitleDraft] = useState(initialIntro.title);
   const [bodyDraft, setBodyDraft] = useState(initialIntro.bullets.join("\n"));
+  const [cinemaNonce, setCinemaNonce] = useState(0);
+  const [cinemaMediaError, setCinemaMediaError] = useState(false);
   const cinemaVideoRef = useRef<HTMLVideoElement>(null);
+  const cinemaAutoPlayDoneRef = useRef(false);
 
   const closeIntroVideoModal = useCallback(() => {
     cinemaVideoRef.current?.pause();
     setIntroVideoModalOpen(false);
+    setCinemaMediaError(false);
   }, []);
 
   const openIntroVideoModal = useCallback(() => {
+    cinemaAutoPlayDoneRef.current = false;
+    setCinemaMediaError(false);
+    setCinemaNonce((n) => n + 1);
     setIntroVideoModalOpen(true);
   }, []);
 
@@ -100,28 +107,32 @@ export function StudioHeroIntroColumn({
     setEditStoryModalOpen(false);
   }, [bodyDraft, intro.bullets, intro.title, storageKey, titleDraft]);
 
-  useEffect(() => {
-    if (!introVideoModalOpen) return;
-    let cancelled = false;
-    const id = requestAnimationFrame(() => {
-      if (cancelled) return;
-      const v = cinemaVideoRef.current;
-      if (!v) return;
+  const tryPlayCinema = useCallback(() => {
+    const v = cinemaVideoRef.current;
+    if (!v || cinemaAutoPlayDoneRef.current) return;
+    /** HAVE_CURRENT_DATA ≈ enough buffered to play without immediate stall */
+    if (v.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+    cinemaAutoPlayDoneRef.current = true;
+    try {
       v.currentTime = 0;
-      /** Modal opened from tap — try audible playback first; fall back to muted. */
-      v.muted = false;
-      void v.play().catch(() => {
-        v.muted = true;
-        void v.play().catch(() => {
-          /* user can use controls */
-        });
-      });
+    } catch {
+      /* ignore */
+    }
+    /**
+     * Deferred rAF broke the tap gesture chain on mobile — autoplay stays muted here so
+     * `play()` resolves reliably; viewer unmutes with native controls (still counts as same UX fix).
+     */
+    v.muted = true;
+    void v.play().catch(() => {
+      cinemaAutoPlayDoneRef.current = false;
     });
-    return () => {
-      cancelled = true;
-      cancelAnimationFrame(id);
-    };
-  }, [introVideoModalOpen]);
+  }, []);
+
+  /** Same tick as DOM commit — keeps `play()` closest to the opening tap gesture. */
+  useLayoutEffect(() => {
+    if (!introVideoModalOpen) return;
+    tryPlayCinema();
+  }, [introVideoModalOpen, cinemaNonce, tryPlayCinema]);
 
   const wordsUsed = countWords(bodyDraft);
   const bullets = Array.isArray(intro.bullets) ? intro.bullets : [];
@@ -240,16 +251,37 @@ export function StudioHeroIntroColumn({
               </button>
             </div>
             <div className="relative bg-black">
-              <video
-                ref={cinemaVideoRef}
-                src={STUDIO_INTRO_VIDEO_SRC}
-                controls
-                playsInline
-                className="max-h-[min(72vh,calc(100vw-48px))] w-full object-contain sm:max-h-[min(78vh,720px)]"
-                aria-label="Studio intro video playback"
-              />
+              {cinemaMediaError ? (
+                <div className="flex min-h-[180px] flex-col items-center justify-center gap-2 px-6 py-12 text-center">
+                  <p className="text-sm font-semibold text-white">Intro video didn&apos;t load</p>
+                  <p className="max-w-md text-xs leading-relaxed text-stone-400">
+                    Expected file{" "}
+                    <code className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-[11px] text-stone-200">
+                      public/uploads/STUDIO Intro Vid 1.mp4
+                    </code>{" "}
+                    — check the path, filename, and that the MP4 is committed or present on the server.
+                  </p>
+                </div>
+              ) : (
+                <video
+                  key={cinemaNonce}
+                  ref={cinemaVideoRef}
+                  src={STUDIO_INTRO_VIDEO_SRC}
+                  controls
+                  playsInline
+                  preload="auto"
+                  className="max-h-[min(72vh,calc(100vw-48px))] w-full object-contain sm:max-h-[min(78vh,720px)]"
+                  aria-label="Studio intro video playback"
+                  onLoadedMetadata={tryPlayCinema}
+                  onCanPlay={tryPlayCinema}
+                  onError={() => {
+                    setCinemaMediaError(true);
+                    cinemaAutoPlayDoneRef.current = false;
+                  }}
+                />
+              )}
               <p className="border-t border-white/10 bg-stone-950/95 px-4 py-2 text-center text-[10px] leading-snug text-stone-400">
-                Use controls for volume · replay anytime from the hero thumbnail.
+                Starts muted for autoplay — unmute in controls · replay from the hero thumbnail anytime.
               </p>
             </div>
           </div>
