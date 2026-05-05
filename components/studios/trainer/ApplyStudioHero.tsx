@@ -409,7 +409,7 @@ export function ApplyStudioHero({
                   </div>
                 </div>
 
-                <div className="min-w-0 border-t border-black/[0.06] bg-stone-50/80 px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
+                <div className="min-w-0 border-t border-black/[0.06] px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
                   <StudioHeroIntroColumn
                     initialIntro={initialIntro}
                     draftStorageKey={draftStorageKey ?? DEFAULT_DRAFT_STORAGE_KEY}
@@ -600,7 +600,7 @@ export function ApplyStudioHero({
               </div>
             </div>
 
-            <div className="min-w-0 border-t border-black/[0.06] bg-stone-50/80 px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
+            <div className="min-w-0 border-t border-black/[0.06] px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
               <StudioHeroIntroColumn
                 initialIntro={initialIntro}
                 draftStorageKey={draftStorageKey ?? DEFAULT_DRAFT_STORAGE_KEY}

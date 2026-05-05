@@ -98,7 +98,7 @@ export function StudioHeroIntroColumn({
         ) : null}
 
         <div
-          className="relative w-full max-w-[280px] overflow-hidden rounded-3xl border bg-gradient-to-br from-[#fafaf8] via-white to-[#f3f0eb]"
+          className="relative w-full max-w-[280px] overflow-hidden rounded-3xl border bg-white"
           style={{
             aspectRatio: "16 / 15",
             borderColor: STUDIOS_LINE,
