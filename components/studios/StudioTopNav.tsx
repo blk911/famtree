@@ -21,11 +21,13 @@ const BUSINESS_NAV: readonly { href: string; label: string }[] = [
   { href: "#about", label: "ABOUT" },
   { href: "#services", label: "SERVICES" },
   { href: "#lessons", label: "PERFORMANCE" },
-  { href: "#network", label: "NETWORK" },
-  { href: "#pvt-clients", label: "PVT CLIENTS" },
+  { href: "#svc-inquiry", label: "SVC INQUIRY" },
   { href: "#location", label: "LOCATION" },
   { href: "#contact", label: "CONTACT" },
 ];
+
+/** Placeholder route until private-network login flow is wired. */
+export const STUDIOS_PVT_NET_LOGIN_HREF = "/studios/pvt-net-login";
 
 export function StudioTopNav({
   mode,
@@ -67,11 +69,18 @@ export function StudioTopNav({
           </li>
         ))}
         {mode !== "edit" ? (
-          <li key="logout">
-            <button type="button" onClick={() => void handleLogout()} className={`${LINK_CLASS} cursor-pointer border-0 bg-transparent`}>
-              LOG OUT
-            </button>
-          </li>
+          <>
+            <li key="logout">
+              <button type="button" onClick={() => void handleLogout()} className={`${LINK_CLASS} cursor-pointer border-0 bg-transparent`}>
+                LOG OUT
+              </button>
+            </li>
+            <li key="pvt-net-login">
+              <Link href={STUDIOS_PVT_NET_LOGIN_HREF} className={`${LINK_CLASS} whitespace-nowrap`}>
+                PVT NET LOG IN
+              </Link>
+            </li>
+          </>
         ) : null}
       </ul>
     </nav>
