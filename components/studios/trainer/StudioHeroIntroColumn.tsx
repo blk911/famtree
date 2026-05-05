@@ -110,8 +110,8 @@ export function StudioHeroIntroColumn({
   const tryPlayCinema = useCallback(() => {
     const v = cinemaVideoRef.current;
     if (!v || cinemaAutoPlayDoneRef.current) return;
-    /** HAVE_CURRENT_DATA ≈ enough buffered to play without immediate stall */
-    if (v.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+    /** Chrome often stays at HAVE_METADATA on `loadedmetadata`; requiring HAVE_CURRENT_DATA skipped play(). */
+    if (v.readyState < HTMLMediaElement.HAVE_METADATA) return;
     cinemaAutoPlayDoneRef.current = true;
     try {
       v.currentTime = 0;
@@ -273,6 +273,7 @@ export function StudioHeroIntroColumn({
                   className="max-h-[min(72vh,calc(100vw-48px))] w-full object-contain sm:max-h-[min(78vh,720px)]"
                   aria-label="Studio intro video playback"
                   onLoadedMetadata={tryPlayCinema}
+                  onLoadedData={tryPlayCinema}
                   onCanPlay={tryPlayCinema}
                   onError={() => {
                     setCinemaMediaError(true);
