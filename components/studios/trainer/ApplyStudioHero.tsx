@@ -370,7 +370,9 @@ export function ApplyStudioHero({
                   return (
                     <li
                       key={key}
-                      className="flex items-start gap-3 rounded-xl py-3 pl-2 pr-1 sm:py-3.5"
+                      className={`flex items-start gap-3 rounded-xl py-3 pl-2 pr-1 transition-colors sm:py-3.5 ${
+                        isConfirmed ? "bg-green-50/50 ring-1 ring-green-100/80" : ""
+                      }`}
                     >
                       <div
                         className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-[#b8956c]"
@@ -385,61 +387,48 @@ export function ApplyStudioHero({
                           {display}
                         </p>
                       </div>
-                      <div className="mt-0.5 flex shrink-0 flex-wrap items-center justify-end gap-0.5 sm:gap-1">
-                        <button
-                          type="button"
-                          aria-label={
-                            empty
-                              ? `${meta.placeholder}: add a value before confirming`
-                              : isConfirmed
-                                ? `${meta.placeholder}: confirmed`
-                                : `${meta.placeholder}: tap to confirm`
-                          }
-                          aria-pressed={isConfirmed}
-                          disabled={empty}
-                          title={empty ? "Fill this row (profile or pencil), then tap the green check." : undefined}
-                          onClick={() =>
-                            commitDraft({
-                              hero,
-                              confirmed: { ...confirmedFields, [key]: true },
-                              heroContactHiddenOnPublish,
-                            })
-                          }
-                          className={`flex h-11 min-w-[2.75rem] items-center justify-center rounded-lg text-2xl leading-none transition ${
-                            empty
-                              ? "cursor-not-allowed text-stone-300 opacity-45"
-                              : isConfirmed
-                                ? "text-green-700 hover:bg-green-50"
-                                : "text-green-600 hover:bg-stone-100"
-                          }`}
-                        >
-                          <span aria-hidden>✅</span>
-                        </button>
-                        <button
-                          type="button"
-                          aria-label={`${meta.placeholder}: not confirmed`}
-                          aria-pressed={!isConfirmed}
-                          onClick={() =>
-                            commitDraft({
-                              hero,
-                              confirmed: { ...confirmedFields, [key]: false },
-                              heroContactHiddenOnPublish,
-                            })
-                          }
-                          className={`flex h-11 min-w-[2.75rem] items-center justify-center rounded-lg text-2xl leading-none transition ${
-                            !isConfirmed ? "text-red-600 hover:bg-red-50/80" : "text-stone-300 hover:bg-stone-100"
-                          }`}
-                        >
-                          <span aria-hidden>❎</span>
-                        </button>
+                      <div className="mt-0.5 flex shrink-0 items-center justify-end gap-2">
                         <button
                           type="button"
                           aria-label={`Edit ${meta.placeholder}`}
+                          title={empty ? "Add a value for this row." : undefined}
                           onClick={() => openModal(key)}
-                          className="flex h-10 w-10 items-center justify-center rounded-xl border border-black/[0.08] bg-white text-stone-700 shadow-sm ring-1 ring-black/[0.04] transition hover:bg-stone-50"
+                          className={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] shadow-sm transition ${
+                            empty
+                              ? "bg-orange-500 text-white hover:bg-orange-600"
+                              : "border border-black/[0.1] bg-white text-stone-800 hover:bg-stone-50"
+                          }`}
                         >
-                          <Pencil className="h-[18px] w-[18px]" strokeWidth={2} />
+                          EDIT
                         </button>
+                        {hasValue ? (
+                          <button
+                            type="button"
+                            aria-label={
+                              isConfirmed ? `${meta.placeholder}: confirmed` : `${meta.placeholder}: tap to confirm`
+                            }
+                            aria-pressed={isConfirmed}
+                            onClick={() =>
+                              commitDraft({
+                                hero,
+                                confirmed: { ...confirmedFields, [key]: true },
+                                heroContactHiddenOnPublish,
+                              })
+                            }
+                            className={`flex min-h-[2.75rem] min-w-[2.75rem] items-center justify-center rounded-lg text-[1.65rem] leading-none transition ${
+                              isConfirmed
+                                ? "text-green-700 hover:bg-green-50/90"
+                                : "text-green-600 hover:bg-green-50/70"
+                            }`}
+                          >
+                            <span aria-hidden>✅</span>
+                          </button>
+                        ) : (
+                          <span
+                            className="inline-block min-h-[2.75rem] min-w-[2.75rem] shrink-0"
+                            aria-hidden
+                          />
+                        )}
                       </div>
                     </li>
                   );
