@@ -14,9 +14,7 @@ const LINK_CLASS =
 const BUILDER_NAV: readonly { href: string; label: string }[] = [
   { href: "#contact-info", label: "CONTACT INFO" },
   { href: "#marketing", label: "MARKETING" },
-  { href: "#services", label: "SERVICES" },
   { href: "#portfolio", label: "PORTFOLIO" },
-  { href: "#launch", label: "LAUNCH" },
 ];
 
 const BUSINESS_NAV: readonly { href: string; label: string }[] = [

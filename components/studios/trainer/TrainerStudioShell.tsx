@@ -175,29 +175,12 @@ function StudioPageMainColumns({
                   letterSpacing: "-0.3px",
                 }}
               >
-                Proof & praise
+                Private Client Feedback
               </h2>
               <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 16px", lineHeight: 1.5 }}>
-                Notes from people training here — swipe or scroll to browse.
+                Notes from people training inside this studio — swipe to browse.
               </p>
               <StudioTestimonialScroller />
-            </section>
-
-            <section id="launch" className="scroll-mt-24" style={{ marginBottom: "48px" }}>
-              <h2
-                style={{
-                  fontSize: "clamp(22px, 3vw, 28px)",
-                  fontWeight: 700,
-                  color: STUDIOS_INK,
-                  margin: "0 0 8px",
-                  letterSpacing: "-0.3px",
-                }}
-              >
-                Launch
-              </h2>
-              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: 0, lineHeight: 1.5 }}>
-                When contact info, story, and services are confirmed, you&apos;ll be ready to go live.
-              </p>
             </section>
 
             <section id="location" className="scroll-mt-24" style={{ marginBottom: "32px" }}>

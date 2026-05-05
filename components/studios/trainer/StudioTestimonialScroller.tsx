@@ -55,7 +55,7 @@ export function StudioTestimonialScroller() {
     <div
       className="relative min-h-[156px] w-full overflow-hidden py-1"
       role="region"
-      aria-label="Client testimonials"
+      aria-label="Private client feedback"
     >
       <div className="flex w-max animate-testimonial-marquee hover:[animation-play-state:paused] motion-reduce:animate-none">
         <div className="flex shrink-0 gap-4 pr-4">
