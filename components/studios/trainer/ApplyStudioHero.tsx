@@ -347,44 +347,43 @@ export function ApplyStudioHero({
 
           <section id="about" className="scroll-mt-24">
             <div
-              className="overflow-hidden rounded-3xl border border-black/[0.07] bg-white shadow-[0_24px_60px_-12px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.03]"
+              className="overflow-hidden rounded-3xl border border-black/[0.07] bg-white shadow-[0_18px_48px_-14px_rgba(0,0,0,0.1)] ring-1 ring-black/[0.03]"
               style={{ borderColor: STUDIOS_LINE }}
             >
-              <div className="border-b border-black/[0.06] bg-gradient-to-b from-stone-50 to-white px-6 py-10 sm:px-10 sm:py-12">
-                <div className="mx-auto flex max-w-3xl flex-col items-center gap-8 md:max-w-none md:flex-row md:items-center md:justify-center md:gap-14 lg:gap-16">
-                  <div className="relative w-full max-w-[240px] shrink-0 sm:max-w-[280px] md:max-w-[300px]">
-                    <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} />
-                    <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
-                  </div>
-                  <div className="min-w-0 text-center md:max-w-xl md:text-left">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">Studio</p>
-                    <h1
-                      id="studio-public-heading"
-                      className="mt-2 text-[1.85rem] font-bold leading-[1.15] tracking-tight text-stone-900 sm:text-[2.25rem] md:text-[2.5rem]"
-                      style={{ color: STUDIOS_INK }}
-                    >
-                      {hero.businessName?.trim() || "Studio"}
-                    </h1>
-                    {hero.fullName?.trim() ? (
-                      <p className="mt-4 text-xl font-semibold leading-snug text-stone-700 sm:text-2xl">{hero.fullName.trim()}</p>
-                    ) : null}
+              <div className="grid md:grid-cols-[1fr_1.15fr] md:items-stretch">
+                <div className="flex flex-col border-b border-black/[0.06] bg-gradient-to-b from-stone-50/90 to-white px-7 py-8 md:border-b-0 md:border-r md:border-black/[0.06] md:px-8 md:py-9">
+                  <h1
+                    id="studio-public-heading"
+                    className="text-center text-[1.35rem] font-semibold leading-snug tracking-tight text-stone-900 md:text-left md:text-[1.5rem]"
+                    style={{ color: STUDIOS_INK }}
+                  >
+                    {hero.businessName?.trim() || "Studio"}
+                  </h1>
+                  {hero.fullName?.trim() ? (
+                    <p className="mt-2 text-center text-[15px] font-normal text-stone-600 md:text-left">{hero.fullName.trim()}</p>
+                  ) : null}
+                  <div className="relative mt-7 flex w-full justify-center md:justify-start">
+                    <div className="relative w-full max-w-[280px]">
+                      <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} />
+                      <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-6 px-6 py-9 sm:px-10 sm:py-10 md:space-y-7">
-                <p className="text-lg leading-relaxed sm:text-xl md:text-[1.375rem]">
-                  <span className="font-bold uppercase tracking-[0.1em] text-stone-500">Email: </span>
-                  <span className="break-words font-semibold text-stone-900">{hero.email?.trim() || "—"}</span>
-                </p>
-                <p className="text-lg leading-relaxed sm:text-xl md:text-[1.375rem]">
-                  <span className="font-bold uppercase tracking-[0.1em] text-stone-500">Phone: </span>
-                  <span className="font-semibold text-stone-900">{hero.phone?.trim() || "—"}</span>
-                </p>
-                <p className="text-lg leading-relaxed sm:text-xl md:text-[1.375rem]">
-                  <span className="font-bold uppercase tracking-[0.1em] text-stone-500">Location: </span>
-                  <span className="font-semibold leading-snug text-stone-900">{hero.physicalAddress?.trim() || "—"}</span>
-                </p>
+                <div className="flex flex-col justify-center gap-6 px-7 py-8 md:gap-7 md:px-9 md:py-10">
+                  <p className="text-[15px] leading-relaxed text-stone-900 md:text-base">
+                    <span className="font-medium text-stone-500">Email: </span>
+                    <span className="break-words">{hero.email?.trim() || "—"}</span>
+                  </p>
+                  <p className="text-[15px] leading-relaxed text-stone-900 md:text-base">
+                    <span className="font-medium text-stone-500">Phone: </span>
+                    <span>{hero.phone?.trim() || "—"}</span>
+                  </p>
+                  <p className="text-[15px] leading-relaxed text-stone-900 md:text-base">
+                    <span className="font-medium text-stone-500">Location: </span>
+                    <span>{hero.physicalAddress?.trim() || "—"}</span>
+                  </p>
+                </div>
               </div>
             </div>
           </section>
