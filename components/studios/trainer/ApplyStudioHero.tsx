@@ -350,44 +350,41 @@ export function ApplyStudioHero({
               className="overflow-hidden rounded-3xl border border-black/[0.07] bg-white shadow-[0_24px_60px_-12px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.03]"
               style={{ borderColor: STUDIOS_LINE }}
             >
-              <div className="grid gap-8 p-8 md:grid-cols-[minmax(0,280px)_1fr] md:items-start md:gap-12">
-                <div className="mx-auto w-full max-w-[280px] md:mx-0">
-                  <div className="relative">
+              <div className="border-b border-black/[0.06] bg-gradient-to-b from-stone-50 to-white px-6 py-10 sm:px-10 sm:py-12">
+                <div className="mx-auto flex max-w-3xl flex-col items-center gap-8 md:max-w-none md:flex-row md:items-center md:justify-center md:gap-14 lg:gap-16">
+                  <div className="relative w-full max-w-[240px] shrink-0 sm:max-w-[280px] md:max-w-[300px]">
                     <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} />
                     <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
                   </div>
+                  <div className="min-w-0 text-center md:max-w-xl md:text-left">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">Studio</p>
+                    <h1
+                      id="studio-public-heading"
+                      className="mt-2 text-[1.85rem] font-bold leading-[1.15] tracking-tight text-stone-900 sm:text-[2.25rem] md:text-[2.5rem]"
+                      style={{ color: STUDIOS_INK }}
+                    >
+                      {hero.businessName?.trim() || "Studio"}
+                    </h1>
+                    {hero.fullName?.trim() ? (
+                      <p className="mt-4 text-xl font-semibold leading-snug text-stone-700 sm:text-2xl">{hero.fullName.trim()}</p>
+                    ) : null}
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-stone-500">Studio</p>
-                  <h1
-                    id="studio-public-heading"
-                    className="mt-1 text-2xl font-bold tracking-tight text-stone-900 sm:text-[1.85rem]"
-                    style={{ color: STUDIOS_INK }}
-                  >
-                    {hero.businessName?.trim() || "Studio"}
-                  </h1>
-                  {hero.fullName?.trim() ? (
-                    <p className="mt-2 text-lg font-semibold text-stone-700">{hero.fullName.trim()}</p>
-                  ) : null}
-                  <dl className="mt-8 grid gap-6 sm:grid-cols-2">
-                    <div>
-                      <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Email</dt>
-                      <dd className="mt-1 break-words text-[15px] font-semibold text-stone-900">
-                        {hero.email?.trim() || "—"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Phone</dt>
-                      <dd className="mt-1 text-[15px] font-semibold text-stone-900">{hero.phone?.trim() || "—"}</dd>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Location</dt>
-                      <dd className="mt-1 text-[15px] font-semibold leading-snug text-stone-900">
-                        {hero.physicalAddress?.trim() || "—"}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
+              </div>
+
+              <div className="space-y-6 px-6 py-9 sm:px-10 sm:py-10 md:space-y-7">
+                <p className="text-lg leading-relaxed sm:text-xl md:text-[1.375rem]">
+                  <span className="font-bold uppercase tracking-[0.1em] text-stone-500">Email: </span>
+                  <span className="break-words font-semibold text-stone-900">{hero.email?.trim() || "—"}</span>
+                </p>
+                <p className="text-lg leading-relaxed sm:text-xl md:text-[1.375rem]">
+                  <span className="font-bold uppercase tracking-[0.1em] text-stone-500">Phone: </span>
+                  <span className="font-semibold text-stone-900">{hero.phone?.trim() || "—"}</span>
+                </p>
+                <p className="text-lg leading-relaxed sm:text-xl md:text-[1.375rem]">
+                  <span className="font-bold uppercase tracking-[0.1em] text-stone-500">Location: </span>
+                  <span className="font-semibold leading-snug text-stone-900">{hero.physicalAddress?.trim() || "—"}</span>
+                </p>
               </div>
             </div>
           </section>
