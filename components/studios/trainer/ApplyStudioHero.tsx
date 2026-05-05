@@ -305,27 +305,33 @@ export function ApplyStudioHero({
     const topNavMode = studioViewMode === "published" ? "published" : "preview";
     return (
       <section
-        className="relative overflow-hidden px-5 pb-8 pt-5 sm:px-8 sm:pb-10 sm:pt-6"
+        className="relative w-full overflow-hidden pb-8 pt-0 sm:pb-10"
         data-studio-editor-section={STUDIO_EDITOR_SECTION_HERO_CONTACT}
         data-hero-contact-hidden-on-publish={heroContactHiddenOnPublish ? "true" : "false"}
         data-hero-contact-publish-ready={heroContactPublishReady ? "true" : "false"}
         aria-labelledby="studio-public-heading"
       >
+        <div className="sticky top-0 z-[80] w-full border-b border-white/10 bg-stone-950 shadow-[0_6px_24px_rgba(0,0,0,0.2)]">
+          <button
+            type="button"
+            onClick={() => shell?.setMode("edit")}
+            className="flex w-full items-center justify-center px-4 py-3.5 text-center text-[11px] font-bold uppercase tracking-[0.26em] text-white transition hover:bg-stone-900 sm:text-xs sm:tracking-[0.28em]"
+          >
+            RETURN TO STUDIO EDIT
+          </button>
+        </div>
+
         <div
-          className="pointer-events-none absolute -left-32 top-14 h-72 w-72 rounded-full blur-3xl"
+          className="pointer-events-none absolute left-0 top-24 h-72 w-72 rounded-full blur-3xl sm:top-28"
           style={{ background: "rgba(255, 218, 230, 0.35)" }}
         />
         <div
-          className="pointer-events-none absolute -right-24 top-0 h-64 w-64 rounded-full blur-3xl"
+          className="pointer-events-none absolute right-0 top-16 h-64 w-64 rounded-full blur-3xl"
           style={{ background: "rgba(230, 240, 255, 0.4)" }}
         />
 
-        <div className="relative z-10 mx-auto max-w-5xl">
-          <StudioTopNav
-            mode={topNavMode}
-            builderOwnerSurface
-            onEditProfile={() => shell?.setMode("edit")}
-          />
+        <div className="relative z-10 mx-auto max-w-5xl px-5 pt-6 sm:px-8">
+          <StudioTopNav mode={topNavMode} />
 
           <div className="mb-5 flex justify-center">
             <span
