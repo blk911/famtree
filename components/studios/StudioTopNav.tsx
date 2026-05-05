@@ -21,6 +21,8 @@ const BUSINESS_NAV: readonly { href: string; label: string }[] = [
   { href: "#about", label: "ABOUT" },
   { href: "#services", label: "SERVICES" },
   { href: "#lessons", label: "PERFORMANCE" },
+  { href: "#network", label: "NETWORK" },
+  { href: "#pvt-clients", label: "PVT CLIENTS" },
   { href: "#location", label: "LOCATION" },
   { href: "#contact", label: "CONTACT" },
 ];

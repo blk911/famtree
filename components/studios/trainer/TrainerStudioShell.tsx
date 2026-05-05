@@ -33,6 +33,8 @@ const NAV_LIVE = [
   { href: "#about", label: "About" },
   { href: "#services", label: "Services" },
   { href: "#lessons", label: "Performance" },
+  { href: "#network", label: "Network" },
+  { href: "#pvt-clients", label: "Pvt clients" },
   { href: "#location", label: "Location" },
   { href: "#contact", label: "Contact" },
 ] as const;
