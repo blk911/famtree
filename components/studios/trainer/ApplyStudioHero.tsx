@@ -353,8 +353,10 @@ export function ApplyStudioHero({
                 Hero & contact
               </h1>
               <p className="mt-1.5 max-w-md text-sm leading-relaxed text-stone-600">
-                Review each item. Profile details may be prefilled, but every row must be confirmed before publish. Saves to this
-                browser only.
+                Review each item. Profile details may be prefilled. Saves to this browser only.
+              </p>
+              <p className="mt-2 max-w-md text-xs font-bold uppercase leading-snug tracking-wide text-red-600 sm:text-[13px]">
+                BEFORE YOU CAN PUBLISH, CONFIRM BY SELECTING THE <span aria-hidden="true">✅</span>
               </p>
 
               <ul className="mt-5 divide-y divide-black/[0.06]" role="list">
@@ -430,13 +432,9 @@ export function ApplyStudioHero({
                 })}
               </ul>
 
-              {!heroContactPublishReady ? (
-                <p className="mt-3 rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2 text-xs font-medium text-amber-900">
-                  Complete each blank row, then tap the green check to confirm. Editing a row clears its confirmation.
-                </p>
-              ) : (
+              {heroContactPublishReady ? (
                 <p className="mt-3 text-xs font-medium text-green-800">All required hero rows filled and confirmed.</p>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
