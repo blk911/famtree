@@ -41,10 +41,9 @@ export const DEB_DAZZLE_STUDIO_TEMPLATE = {
     ownerDisplayName: "Deborah Flook",
     introTitle: "Why book with Deb Dazzle",
     introBullets: [
-      "Detailed shaping and structured gel applications tailored to your nail plate — not one-size prep.",
-      "Clear timing for fills, repairs, and art add-ons so appointments stay predictable.",
-      "Clients who want length + strength without compromising nail health.",
-      "Hosted in Lone Tree with parking notes sent before your first visit.",
+      "Shaping and structured gel tailored to your nail plate — intentional prep and architecture, not one-size-fits-all shortcuts.",
+      "Clear timing and scope for fills, repairs, and art add-ons so every visit stays predictable and straightforward.",
+      "Healthy length and strength without sacrificing nail health — Lone Tree studio with parking details sent before your first appointment.",
     ],
     tiers: TIERS,
     portfolio: [] as { id: string; caption: string; imageUrl: string }[],
