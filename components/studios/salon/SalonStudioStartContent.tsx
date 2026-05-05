@@ -16,7 +16,7 @@ const ROUTE = "[studios/start]";
 
 /**
  * Salon “Start your studio” base — matches `/studios/apply` shell (`variant="start"`):
- * ApplyStudioHero inputs, intro row, then profile + services + map columns.
+ * ApplyStudioHero inputs + intro video/story column, then lessons / proof / location columns.
  */
 export async function SalonStudioStartContent() {
   let user: Awaited<ReturnType<typeof getCurrentUser>> = null;

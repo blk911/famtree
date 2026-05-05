@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import type { ApplyStudioHeroFields } from "@/lib/studios/applyPreview";
+import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import type { Provider } from "@/types/studios";
 import type { StudioBuilderNavMode } from "@/components/studios/StudioBuilderNavModeContext";
 import { StudioBuilderShellProvider } from "@/components/studios/StudioBuilderNavModeContext";
@@ -10,6 +10,8 @@ import { ApplyStudioLiveNameContext } from "./ApplyStudioLiveNameContext";
 
 export function ApplyStudiosStartFrame({
   initialHero,
+  initialIntro,
+  foldImageUrl,
   provider,
   accent,
   editorPreviewSlug = null,
@@ -17,6 +19,8 @@ export function ApplyStudiosStartFrame({
   children,
 }: {
   initialHero: ApplyStudioHeroFields;
+  initialIntro: ApplyStudioIntro;
+  foldImageUrl: string;
   provider: Pick<Provider, "displayName" | "imageUrl">;
   accent: string;
   editorPreviewSlug?: string | null;
@@ -53,6 +57,8 @@ export function ApplyStudiosStartFrame({
       <ApplyStudioLiveNameContext.Provider value={liveName}>
         <ApplyStudioHero
           initialHero={initialHero}
+          initialIntro={initialIntro}
+          foldImageUrl={foldImageUrl}
           displayName={provider.displayName}
           imageUrl={provider.imageUrl}
           accent={accent}

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Building2, Mail, MapPin, Pencil, Phone, User } from "lucide-react";
-import type { ApplyStudioHeroFields } from "@/lib/studios/applyPreview";
+import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import {
   STUDIO_EDITOR_SECTION_HERO_CONTACT,
   sanitizeApplyStudioHeroFields,
@@ -13,6 +13,7 @@ import type { StudioBuilderNavMode } from "@/components/studios/StudioBuilderNav
 import { useStudioBuilderShellOptional } from "@/components/studios/StudioBuilderNavModeContext";
 import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
+import { StudioHeroIntroColumn } from "./StudioHeroIntroColumn";
 
 const DEFAULT_DRAFT_STORAGE_KEY = "amih_studios_apply_hero_v1";
 
@@ -82,37 +83,6 @@ const HERO_ROW_SHORT_LABEL: Record<FieldKey, string> = {
   phone: "Phone",
   physicalAddress: "Location",
 };
-
-const STUDIO_HERO_VALUE_BULLETS = [
-  "Lorem ipsum dolor sit amet",
-  "Consistent quality, no guesswork",
-  "Fast, clean, reliable sessions",
-  "Designed around your schedule",
-] as const;
-
-function StudioHeroValuePanel() {
-  return (
-    <div className="flex min-h-0 flex-col" aria-labelledby="studio-hero-value-heading">
-      <h2 id="studio-hero-value-heading" className="text-[0.9375rem] font-semibold leading-snug text-stone-900">
-        Why clients book here
-      </h2>
-      <ul className="mt-2.5 flex flex-col gap-1.5 text-[13px] leading-snug text-stone-600" role="list">
-        {STUDIO_HERO_VALUE_BULLETS.map((line) => (
-          <li key={line} className="flex gap-2">
-            <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-stone-400/90" aria-hidden />
-            <span>{line}</span>
-          </li>
-        ))}
-      </ul>
-      <button
-        type="button"
-        className="mt-5 w-full rounded-full bg-stone-900 px-4 py-2.5 text-center text-[10px] font-bold uppercase tracking-[0.14em] text-white shadow-sm transition hover:bg-stone-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-400 sm:w-auto sm:self-start"
-      >
-        Request Appointment
-      </button>
-    </div>
-  );
-}
 
 function normalizeHeroForSave(hero: ApplyStudioHeroFields): ApplyStudioHeroFields {
   const base = sanitizeApplyStudioHeroFields(hero);
@@ -229,6 +199,8 @@ export function ApplyStudioHero({
   onHeroCommit,
   draftStorageKey = DEFAULT_DRAFT_STORAGE_KEY,
   studioViewMode,
+  initialIntro,
+  foldImageUrl,
 }: {
   initialHero: ApplyStudioHeroFields;
   displayName: string;
@@ -238,6 +210,8 @@ export function ApplyStudioHero({
   onHeroCommit?: (next: ApplyStudioHeroFields) => void;
   draftStorageKey?: string;
   studioViewMode: StudioBuilderNavMode;
+  initialIntro: ApplyStudioIntro;
+  foldImageUrl: string;
 }) {
   void _previewSlug;
   const heroStorageKey = draftStorageKey;
@@ -436,7 +410,12 @@ export function ApplyStudioHero({
                 </div>
 
                 <div className="min-w-0 border-t border-black/[0.06] bg-stone-50/80 px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
-                  <StudioHeroValuePanel />
+                  <StudioHeroIntroColumn
+                    initialIntro={initialIntro}
+                    draftStorageKey={draftStorageKey ?? DEFAULT_DRAFT_STORAGE_KEY}
+                    foldImageUrl={foldImageUrl}
+                    showEditChrome={false}
+                  />
                 </div>
               </div>
             </div>
@@ -622,7 +601,12 @@ export function ApplyStudioHero({
             </div>
 
             <div className="min-w-0 border-t border-black/[0.06] bg-stone-50/80 px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
-              <StudioHeroValuePanel />
+              <StudioHeroIntroColumn
+                initialIntro={initialIntro}
+                draftStorageKey={draftStorageKey ?? DEFAULT_DRAFT_STORAGE_KEY}
+                foldImageUrl={foldImageUrl}
+                showEditChrome={studioViewMode === "edit"}
+              />
             </div>
           </div>
         </div>

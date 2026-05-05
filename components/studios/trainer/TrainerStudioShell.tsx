@@ -12,7 +12,6 @@ import { TrainerOfferCards } from "./TrainerOfferCards";
 import { StudioTestimonialScroller } from "./StudioTestimonialScroller";
 import { StudioTrainingCards } from "./StudioTrainingCards";
 import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
-import { StudioStartStorySection } from "./StudioStartStorySection";
 
 const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
   trainer: "#c9a66b",
@@ -40,9 +39,7 @@ const NAV_LIVE = [
 
 type ShellVariant = "live" | "start";
 
-/** Ambient training photography — decorative backgrounds only (Unsplash). */
-const TRAINING_HERO_IMG =
-  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1600&q=75";
+/** Ambient training photography — decorative video placeholder only (Unsplash). */
 const TRAINING_FOLD_IMG =
   "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=1400&q=75";
 
@@ -358,17 +355,13 @@ export function TrainerStudioShell({
       {applyHero && applyIntro ? (
         <ApplyStudiosStartFrame
           initialHero={applyHero}
+          initialIntro={applyIntro}
+          foldImageUrl={TRAINING_FOLD_IMG}
           provider={{ displayName: provider.displayName ?? "Studio", imageUrl: provider.imageUrl }}
           accent={accent}
           editorPreviewSlug={editorPreviewSlug}
           draftStorageKey={draftStorageKey}
         >
-          <StudioStartStorySection
-            initialIntro={applyIntro}
-            draftStorageKey={draftStorageKey ?? "amih_studios_start_intro_fallback"}
-            heroBgImageUrl={TRAINING_HERO_IMG}
-            foldImageUrl={TRAINING_FOLD_IMG}
-          />
           <StudioPageMainColumns variant="start" provider={provider} offers={safeOffers} />
         </ApplyStudiosStartFrame>
       ) : (
