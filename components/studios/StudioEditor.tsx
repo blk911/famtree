@@ -27,7 +27,6 @@ export function StudioEditor({
       editorPreviewSlug={initialStudio.editorPreviewSlug}
       accentHex={initialStudio.accentHex}
       draftStorageKey={initialStudio.draftStorageKey}
-      editorNavItems={initialStudio.navItems}
     />
   );
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2, Pencil, Play } from "lucide-react";
 import type { ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
+import { useStudioBuilderNavMode } from "@/components/studios/StudioBuilderNavModeContext";
 
 const MAX_STORY_WORDS = 500;
 
@@ -77,11 +78,14 @@ export function StudioStartStorySection({
   }, []);
 
   const wordsUsed = countWords(bodyDraft);
+  const studioNavMode = useStudioBuilderNavMode();
+  const sectionStoryId = studioNavMode === "edit" ? "marketing" : "about";
 
   return (
     <>
       <section
-        id="team"
+        id={sectionStoryId}
+        className="scroll-mt-24"
         style={{
           position: "relative",
           margin: "0 auto",
@@ -114,7 +118,6 @@ export function StudioStartStorySection({
             }}
           >
             <div
-              id="portfolio"
               style={{
                 borderRadius: "22px",
                 overflow: "hidden",

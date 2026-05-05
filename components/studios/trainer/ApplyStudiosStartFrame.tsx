@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { ApplyStudioHeroFields } from "@/lib/studios/applyPreview";
 import type { Provider } from "@/types/studios";
+import type { StudioBuilderNavMode } from "@/components/studios/StudioBuilderNavModeContext";
+import { StudioBuilderNavModeProvider } from "@/components/studios/StudioBuilderNavModeContext";
 import { ApplyStudioHero } from "./ApplyStudioHero";
 import { ApplyStudioLiveNameContext } from "./ApplyStudioLiveNameContext";
 
@@ -12,37 +14,47 @@ export function ApplyStudiosStartFrame({
   accent,
   editorPreviewSlug = null,
   draftStorageKey,
-  editorNavItems,
   children,
 }: {
   initialHero: ApplyStudioHeroFields;
   provider: Pick<Provider, "displayName" | "imageUrl">;
   accent: string;
-  /** When set, Preview navigates to `/studios/{slug}`. */
   editorPreviewSlug?: string | null;
   draftStorageKey?: string;
-  editorNavItems?: readonly { readonly href: string; readonly label: string }[];
   children: ReactNode;
 }) {
   const [liveName, setLiveName] = useState(initialHero.fullName);
+  const [studioViewMode, setStudioViewMode] = useState<StudioBuilderNavMode>("edit");
+
+  useEffect(() => {
+    /** QA / wiring hook: `?previewNav=1` mirrors preview-mode business nav without restoring Preview chrome yet. */
+    try {
+      const q = new URLSearchParams(window.location.search).get("previewNav");
+      if (q === "1") setStudioViewMode("preview");
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const handleHeroCommit = (next: ApplyStudioHeroFields) => {
     setLiveName(next.fullName);
   };
 
   return (
-    <ApplyStudioLiveNameContext.Provider value={liveName}>
-      <ApplyStudioHero
-        initialHero={initialHero}
-        displayName={provider.displayName}
-        imageUrl={provider.imageUrl}
-        accent={accent}
-        previewSlug={editorPreviewSlug}
-        draftStorageKey={draftStorageKey}
-        editorNavItems={editorNavItems}
-        onHeroCommit={handleHeroCommit}
-      />
-      {children}
-    </ApplyStudioLiveNameContext.Provider>
+    <StudioBuilderNavModeProvider value={studioViewMode}>
+      <ApplyStudioLiveNameContext.Provider value={liveName}>
+        <ApplyStudioHero
+          initialHero={initialHero}
+          displayName={provider.displayName}
+          imageUrl={provider.imageUrl}
+          accent={accent}
+          previewSlug={editorPreviewSlug}
+          draftStorageKey={draftStorageKey}
+          studioViewMode={studioViewMode}
+          onHeroCommit={handleHeroCommit}
+        />
+        {children}
+      </ApplyStudioLiveNameContext.Provider>
+    </StudioBuilderNavModeProvider>
   );
 }

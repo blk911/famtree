@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TrainerStudioShell } from "@/components/studios/trainer/TrainerStudioShell";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
-import { liveStoryFromProvider, STUDIO_PUBLIC_DEFAULT_NAV } from "@/lib/studio/studioDraft";
+import { liveStoryFromProvider } from "@/lib/studio/studioDraft";
 import { MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
 import { resolveStudioPage } from "@/lib/studios/resolveStudioPage";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
@@ -62,7 +62,6 @@ export default async function TrainerStudioPage({ params }: Props) {
         provider={provider}
         offers={offers}
         liveStoryIntro={liveStoryFromProvider(provider)}
-        publicNav={STUDIO_PUBLIC_DEFAULT_NAV}
       />
       <StudiosFooter />
     </>

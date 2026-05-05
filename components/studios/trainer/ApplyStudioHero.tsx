@@ -9,8 +9,8 @@ import {
   sanitizeApplyStudioHeroFields,
 } from "@/lib/studios/applyPreview";
 import { STUDIOS_INK, STUDIOS_LINE } from "@/lib/studios/visual";
-import { StudioEditorTopNav } from "@/components/studios/StudioEditorTopNav";
-import type { StudioEditorNavItem } from "@/components/studios/StudioEditorTopNav";
+import type { StudioBuilderNavMode } from "@/components/studios/StudioBuilderNavModeContext";
+import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
 
 const DEFAULT_DRAFT_STORAGE_KEY = "amih_studios_apply_hero_v1";
@@ -185,7 +185,7 @@ export function ApplyStudioHero({
   previewSlug: _previewSlug = null,
   onHeroCommit,
   draftStorageKey = DEFAULT_DRAFT_STORAGE_KEY,
-  editorNavItems,
+  studioViewMode,
 }: {
   initialHero: ApplyStudioHeroFields;
   displayName: string;
@@ -194,7 +194,7 @@ export function ApplyStudioHero({
   previewSlug?: string | null;
   onHeroCommit?: (next: ApplyStudioHeroFields) => void;
   draftStorageKey?: string;
-  editorNavItems?: readonly StudioEditorNavItem[];
+  studioViewMode: StudioBuilderNavMode;
 }) {
   void _previewSlug;
   const heroStorageKey = draftStorageKey;
@@ -308,11 +308,11 @@ export function ApplyStudioHero({
       />
 
       <div className="relative z-10 mx-auto max-w-5xl">
-        <StudioEditorTopNav items={editorNavItems} />
+        <StudioTopNav mode={studioViewMode === "edit" ? "edit" : "preview"} />
 
         <div
-          id="about"
-          className="mt-4 overflow-hidden rounded-3xl border border-black/[0.07] bg-white shadow-[0_24px_60px_-12px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.03]"
+          id={studioViewMode === "edit" ? "contact-info" : undefined}
+          className={`mt-4 overflow-hidden rounded-3xl border border-black/[0.07] bg-white shadow-[0_24px_60px_-12px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.03] ${studioViewMode === "edit" ? "scroll-mt-24" : ""}`}
           style={{ borderColor: STUDIOS_LINE }}
         >
           <div className="grid md:grid-cols-[1fr_1.15fr] md:items-stretch">
@@ -448,15 +448,11 @@ export function ApplyStudioHero({
 
               {!heroContactPublishReady ? (
                 <p className="mt-3 rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2 text-xs font-medium text-amber-900">
-                  Complete every blank row, then tap the green check to confirm. Editing a row clears its confirmation.
+                  Complete each blank row, then tap the green check to confirm. Editing a row clears its confirmation.
                 </p>
               ) : (
                 <p className="mt-3 text-xs font-medium text-green-800">All required hero rows filled and confirmed.</p>
               )}
-
-              <p className="mt-4 text-xs text-stone-500">
-                This block is separate from your public studio — we can hide it on publish when you&apos;re ready.
-              </p>
             </div>
           </div>
         </div>

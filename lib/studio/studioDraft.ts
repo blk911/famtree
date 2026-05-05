@@ -1,13 +1,12 @@
 import type { Provider } from "@/types/studios";
 import type { ApplyStudioIntro } from "@/lib/studios/applyPreview";
 
-/** Live `/studios/[slug]` nav — matches shell section ids (no admin-only chrome). */
+/** Legacy sidebar / helpers — top bar uses `StudioTopNav` business anchors + logout on `/studios/[slug]`. */
 export const STUDIO_PUBLIC_DEFAULT_NAV: { href: string; label: string }[] = [
   { href: "#about", label: "ABOUT" },
-  { href: "#team", label: "TEAM" },
-  { href: "#portfolio", label: "PORTFOLIO" },
   { href: "#services", label: "SERVICES" },
-  { href: "#book", label: "BOOK" },
+  { href: "#lessons", label: "LESSONS" },
+  { href: "#location", label: "LOCATION" },
   { href: "#contact", label: "CONTACT" },
 ];
 

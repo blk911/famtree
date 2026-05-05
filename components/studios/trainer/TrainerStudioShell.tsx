@@ -6,7 +6,7 @@ import type { Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
-import { StudioEditorTopNav } from "@/components/studios/StudioEditorTopNav";
+import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { TrainerOfferCards } from "./TrainerOfferCards";
 import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
@@ -30,9 +30,9 @@ const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
 
 const NAV_LIVE = [
   { href: "#about", label: "About" },
-  { href: "#team", label: "Story" },
-  { href: "#portfolio", label: "Profile" },
   { href: "#services", label: "Services" },
+  { href: "#lessons", label: "Lessons" },
+  { href: "#location", label: "Location" },
   { href: "#contact", label: "Contact" },
 ] as const;
 
@@ -148,8 +148,24 @@ function StudioPageMainColumns({
       >
         <div className="mx-auto max-w-[1200px] px-6 pb-[72px] pt-10 md:pt-12">
           <div style={{ minWidth: 0 }}>
-            <section id="services" style={{ marginBottom: "48px" }}>
-              <div id="book" className="scroll-mt-24" />
+            <section id="lessons" className="scroll-mt-24" style={{ marginBottom: "40px" }}>
+              <h2
+                style={{
+                  fontSize: "clamp(22px, 3vw, 28px)",
+                  fontWeight: 700,
+                  color: STUDIOS_INK,
+                  margin: "0 0 8px",
+                  letterSpacing: "-0.3px",
+                }}
+              >
+                Lessons & videos
+              </h2>
+              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: 0, lineHeight: 1.5 }}>
+                Placeholder — online lessons and video previews surface here on your published studio.
+              </p>
+            </section>
+
+            <section id="services" className="scroll-mt-24" style={{ marginBottom: "48px" }}>
               <h2
                 style={{
                   fontSize: "clamp(22px, 3vw, 28px)",
@@ -166,7 +182,42 @@ function StudioPageMainColumns({
               </p>
               <TrainerOfferCards providerName={provider.displayName ?? ""} offers={offers} previewMode gridColumns="four" />
             </section>
-            <section id="contact">
+
+            <section id="portfolio" className="scroll-mt-24" style={{ marginBottom: "40px" }}>
+              <h2
+                style={{
+                  fontSize: "clamp(22px, 3vw, 28px)",
+                  fontWeight: 700,
+                  color: STUDIOS_INK,
+                  margin: "0 0 8px",
+                  letterSpacing: "-0.3px",
+                }}
+              >
+                Portfolio
+              </h2>
+              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: 0, lineHeight: 1.5 }}>
+                Add proof of work — transformations, testimonials, press — before you launch.
+              </p>
+            </section>
+
+            <section id="launch" className="scroll-mt-24" style={{ marginBottom: "48px" }}>
+              <h2
+                style={{
+                  fontSize: "clamp(22px, 3vw, 28px)",
+                  fontWeight: 700,
+                  color: STUDIOS_INK,
+                  margin: "0 0 8px",
+                  letterSpacing: "-0.3px",
+                }}
+              >
+                Launch
+              </h2>
+              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: 0, lineHeight: 1.5 }}>
+                When contact info, story, and services are confirmed, you&apos;ll be ready to go live.
+              </p>
+            </section>
+
+            <section id="location" className="scroll-mt-24" style={{ marginBottom: "32px" }}>
               <h2
                 style={{
                   fontSize: "clamp(22px, 3vw, 28px)",
@@ -176,13 +227,30 @@ function StudioPageMainColumns({
                   letterSpacing: "-0.3px",
                 }}
               >
-                Location & contact
+                Location
               </h2>
               <LocationContactSection
                 provider={provider}
-                description="Your real service area and contact options appear here after your studio is approved and published."
+                description="Your real service area and map preview appear here after your studio is published."
                 showMap
               />
+            </section>
+
+            <section id="contact" className="scroll-mt-24">
+              <h2
+                style={{
+                  fontSize: "clamp(22px, 3vw, 28px)",
+                  fontWeight: 700,
+                  color: STUDIOS_INK,
+                  margin: "0 0 12px",
+                  letterSpacing: "-0.3px",
+                }}
+              >
+                Contact
+              </h2>
+              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: 0, lineHeight: 1.55 }}>
+                Clients reach you through service requests and the contact details on your published page.
+              </p>
             </section>
           </div>
         </div>
@@ -210,7 +278,7 @@ function StudioPageMainColumns({
       </nav>
 
       <div style={{ minWidth: 0 }}>
-        <section id="services" style={{ marginBottom: "48px" }}>
+        <section id="services" className="scroll-mt-28" style={{ marginBottom: "48px" }}>
           <h2
             style={{
               fontSize: "clamp(22px, 3vw, 28px)",
@@ -228,7 +296,7 @@ function StudioPageMainColumns({
           <TrainerOfferCards providerName={provider.displayName ?? ""} offers={offers} previewMode={false} />
         </section>
 
-        <section id="contact">
+        <section id="location" className="scroll-mt-28" style={{ marginBottom: "40px" }}>
           <h2
             style={{
               fontSize: "clamp(22px, 3vw, 28px)",
@@ -238,9 +306,28 @@ function StudioPageMainColumns({
               letterSpacing: "-0.3px",
             }}
           >
-            Location & contact
+            Location
           </h2>
-          <LocationContactSection provider={provider} description={DEFAULT_LIVE_CONTACT_COPY} showMap />
+          <LocationContactSection
+            provider={provider}
+            description="Trainings and sessions are booked through AIH Studios — map reflects your listed service area."
+            showMap
+          />
+        </section>
+
+        <section id="contact" className="scroll-mt-28">
+          <h2
+            style={{
+              fontSize: "clamp(22px, 3vw, 28px)",
+              fontWeight: 700,
+              color: STUDIOS_INK,
+              margin: "0 0 12px",
+              letterSpacing: "-0.3px",
+            }}
+          >
+            Contact
+          </h2>
+          <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: 0, lineHeight: 1.55 }}>{DEFAULT_LIVE_CONTACT_COPY}</p>
         </section>
       </div>
     </div>
@@ -255,9 +342,7 @@ export function TrainerStudioShell({
   editorPreviewSlug = null,
   accentHex,
   draftStorageKey,
-  editorNavItems,
   liveStoryIntro,
-  publicNav,
 }: {
   provider: Provider;
   offers: StudioOffer[];
@@ -266,9 +351,7 @@ export function TrainerStudioShell({
   editorPreviewSlug?: string | null;
   accentHex?: string | null;
   draftStorageKey?: string;
-  editorNavItems?: readonly { readonly href: string; readonly label: string }[];
   liveStoryIntro?: ApplyStudioIntro | null;
-  publicNav?: readonly { readonly href: string; readonly label: string }[] | null;
 }) {
   const safeOffers = Array.isArray(offers) ? offers : [];
   const trimmedAccent = accentHex?.trim();
@@ -293,7 +376,6 @@ export function TrainerStudioShell({
           accent={accent}
           editorPreviewSlug={editorPreviewSlug}
           draftStorageKey={draftStorageKey}
-          editorNavItems={editorNavItems}
         >
           <StudioStartStorySection
             initialIntro={applyIntro}
@@ -305,13 +387,13 @@ export function TrainerStudioShell({
         </ApplyStudiosStartFrame>
       ) : (
         <>
-          {publicNav && publicNav.length > 0 ? (
+          {variant === "live" ? (
             <div
               className="sticky top-0 z-40 border-b border-black/[0.06] bg-[#fafaf8]/95 backdrop-blur-md"
               style={{ marginBottom: 0 }}
             >
               <div className="mx-auto max-w-[1100px] px-4 pt-3 pb-2">
-                <StudioEditorTopNav items={[...publicNav]} />
+                <StudioTopNav mode="published" />
               </div>
             </div>
           ) : null}
@@ -390,7 +472,7 @@ export function TrainerStudioShell({
           (liveStoryIntro.title.trim().length > 0 ||
             (Array.isArray(liveStoryIntro.bullets) && liveStoryIntro.bullets.length > 0)) ? (
             <section
-              id="team"
+              id="lessons"
               className="scroll-mt-28"
               style={{
                 padding: "48px 24px 36px",
@@ -460,12 +542,7 @@ export function TrainerStudioShell({
             </div>
           </section>
 
-          <StudioPageMainColumns
-            nav={publicNav && publicNav.length > 0 ? publicNav : NAV_LIVE}
-            variant="live"
-            provider={provider}
-            offers={safeOffers}
-          />
+          <StudioPageMainColumns nav={[...NAV_LIVE]} variant="live" provider={provider} offers={safeOffers} />
         </>
       )}
     </>
