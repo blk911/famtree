@@ -159,6 +159,14 @@ export function StudioHeroIntroColumn({
             tabIndex={-1}
             className="pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover"
             aria-hidden
+            onLoadedMetadata={(e) => {
+              const v = e.currentTarget;
+              try {
+                v.currentTime = 0.001;
+              } catch {
+                /* ignore */
+              }
+            }}
           />
           <div
             aria-hidden
