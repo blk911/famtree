@@ -83,6 +83,37 @@ const HERO_ROW_SHORT_LABEL: Record<FieldKey, string> = {
   physicalAddress: "Location",
 };
 
+const STUDIO_HERO_VALUE_BULLETS = [
+  "Lorem ipsum dolor sit amet",
+  "Consistent quality, no guesswork",
+  "Fast, clean, reliable sessions",
+  "Designed around your schedule",
+] as const;
+
+function StudioHeroValuePanel() {
+  return (
+    <div className="flex min-h-0 flex-col" aria-labelledby="studio-hero-value-heading">
+      <h2 id="studio-hero-value-heading" className="text-[0.9375rem] font-semibold leading-snug text-stone-900">
+        Why clients book here
+      </h2>
+      <ul className="mt-2.5 flex flex-col gap-1.5 text-[13px] leading-snug text-stone-600" role="list">
+        {STUDIO_HERO_VALUE_BULLETS.map((line) => (
+          <li key={line} className="flex gap-2">
+            <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-stone-400/90" aria-hidden />
+            <span>{line}</span>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        className="mt-5 w-full rounded-full bg-stone-900 px-4 py-2.5 text-center text-[10px] font-bold uppercase tracking-[0.14em] text-white shadow-sm transition hover:bg-stone-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-400 sm:w-auto sm:self-start"
+      >
+        Request Appointment
+      </button>
+    </div>
+  );
+}
+
 function normalizeHeroForSave(hero: ApplyStudioHeroFields): ApplyStudioHeroFields {
   const base = sanitizeApplyStudioHeroFields(hero);
   return (Object.keys(FIELD_ROW) as FieldKey[]).reduce((acc, k) => {
@@ -341,7 +372,7 @@ export function ApplyStudioHero({
           style={{ background: "rgba(230, 240, 255, 0.4)" }}
         />
 
-        <div className="relative z-10 mx-auto max-w-5xl px-4 pt-4 sm:px-6 sm:pt-5">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pt-4 sm:px-6 sm:pt-5">
           <StudioTopNav mode={topNavMode} />
 
           <div className="mb-3 flex justify-center sm:mb-4">
@@ -361,8 +392,8 @@ export function ApplyStudioHero({
               className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_8px_30px_-10px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.02]"
               style={{ borderColor: STUDIOS_LINE }}
             >
-              <div className="grid grid-cols-1 gap-5 p-5 md:grid-cols-[40%_60%] md:items-start md:gap-6 md:p-6">
-                <div className="flex flex-col items-start justify-start border-b border-black/[0.05] pb-5 md:border-b-0 md:border-r md:border-black/[0.06] md:pb-0 md:pr-5">
+              <div className="grid grid-cols-1 md:grid-cols-[35%_35%_30%] md:items-start">
+                <div className="flex flex-col items-start justify-start border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:px-6 md:py-6 md:pb-6 md:pr-6 md:pt-6">
                   <div className="relative w-full max-w-[280px]">
                     <TrainerPhoto
                       displayName={displayName}
@@ -374,7 +405,7 @@ export function ApplyStudioHero({
                   </div>
                 </div>
 
-                <div className="flex min-h-0 flex-col items-start gap-2.5 text-left md:gap-3 md:pt-0">
+                <div className="flex min-h-0 min-w-0 flex-col items-start gap-2.5 border-b border-black/[0.06] px-5 pb-5 pt-5 text-left md:gap-3 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
                   <h1
                     id="studio-public-heading"
                     className="text-[1.5rem] font-bold leading-tight tracking-tight text-stone-900 md:text-[1.85rem]"
@@ -403,6 +434,10 @@ export function ApplyStudioHero({
                     <span className="min-w-0">{hero.physicalAddress?.trim() || "—"}</span>
                   </div>
                 </div>
+
+                <div className="border-t border-black/[0.06] bg-stone-50/80 px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
+                  <StudioHeroValuePanel />
+                </div>
               </div>
             </div>
           </section>
@@ -428,7 +463,7 @@ export function ApplyStudioHero({
         style={{ background: "rgba(230, 240, 255, 0.4)" }}
       />
 
-      <div className="relative z-10 mx-auto max-w-5xl">
+      <div className="relative z-10 mx-auto max-w-6xl">
         <StudioTopNav mode="edit" />
 
         <div
@@ -436,8 +471,8 @@ export function ApplyStudioHero({
           className={`mt-3 overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_10px_36px_-12px_rgba(0,0,0,0.1)] ring-1 ring-black/[0.02] ${studioViewMode === "edit" ? "scroll-mt-24" : ""}`}
           style={{ borderColor: STUDIOS_LINE }}
         >
-          <div className="grid grid-cols-1 gap-5 p-5 md:grid-cols-[40%_60%] md:items-start md:gap-6 md:p-6">
-            <div className="flex flex-col items-start justify-start border-b border-black/[0.05] bg-gradient-to-b from-stone-50/80 to-white pb-5 md:border-b-0 md:border-r md:border-black/[0.06] md:pb-0 md:pr-5">
+          <div className="grid grid-cols-1 md:grid-cols-[35%_35%_30%] md:items-start">
+            <div className="flex flex-col items-start justify-start border-b border-black/[0.06] bg-gradient-to-b from-stone-50/80 to-white px-5 pb-5 pt-5 md:border-b-0 md:border-r md:px-6 md:py-6 md:pb-6 md:pr-6 md:pt-6">
               <div className="relative w-full max-w-[280px]">
                 <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} compact />
                 <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
@@ -455,7 +490,7 @@ export function ApplyStudioHero({
               </p>
             </div>
 
-            <div className="flex min-h-0 flex-col items-stretch md:pt-0">
+            <div className="flex min-h-0 min-w-0 flex-col items-stretch border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-stone-500">Studio profile</p>
               <span id="hero-contact-heading" className="sr-only">
                 Hero and contact — edit each field and confirm to publish
@@ -584,6 +619,10 @@ export function ApplyStudioHero({
                   Publish
                 </button>
               </div>
+            </div>
+
+            <div className="border-t border-black/[0.06] bg-stone-50/80 px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
+              <StudioHeroValuePanel />
             </div>
           </div>
         </div>
