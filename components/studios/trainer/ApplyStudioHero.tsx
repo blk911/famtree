@@ -469,7 +469,7 @@ export function ApplyStudioHero({
               </p>
             </div>
 
-            <div className="flex min-h-0 min-w-0 flex-col items-stretch border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
+            <div className="relative z-10 flex min-h-0 min-w-0 flex-col items-stretch border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-stone-500">Studio profile</p>
               <span id="hero-contact-heading" className="sr-only">
                 Hero and contact — edit each field and confirm to publish
@@ -575,24 +575,32 @@ export function ApplyStudioHero({
               <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-black/[0.06] pt-4">
                 <button
                   type="button"
-                  disabled={!heroContactPublishReady}
-                  onClick={() => shell?.setMode("preview")}
+                  aria-disabled={!heroContactPublishReady}
+                  tabIndex={heroContactPublishReady ? undefined : -1}
+                  onClick={() => {
+                    if (!heroContactPublishReady) return;
+                    shell?.setMode("preview");
+                  }}
                   className={`rounded-full border-2 px-6 py-2 text-[10px] font-bold uppercase tracking-[0.14em] transition ${
                     heroContactPublishReady
-                      ? "border-stone-900 bg-white text-stone-900 hover:bg-stone-50"
-                      : "cursor-not-allowed border-stone-200 bg-stone-50 text-stone-400 opacity-75"
+                      ? "cursor-pointer border-stone-900 bg-white text-stone-900 hover:bg-stone-50"
+                      : "cursor-default border-stone-200 bg-stone-50 text-stone-400 opacity-75"
                   }`}
                 >
                   Preview
                 </button>
                 <button
                   type="button"
-                  disabled={!heroContactPublishReady}
-                  onClick={() => shell?.setMode("published")}
+                  aria-disabled={!heroContactPublishReady}
+                  tabIndex={heroContactPublishReady ? undefined : -1}
+                  onClick={() => {
+                    if (!heroContactPublishReady) return;
+                    shell?.setMode("published");
+                  }}
                   className={`rounded-full px-6 py-2 text-[10px] font-bold uppercase tracking-[0.14em] shadow-sm transition ${
                     heroContactPublishReady
-                      ? "bg-stone-900 text-white hover:bg-stone-800"
-                      : "cursor-not-allowed bg-stone-200 text-stone-400 opacity-75"
+                      ? "cursor-pointer bg-stone-900 text-white hover:bg-stone-800"
+                      : "cursor-default bg-stone-200 text-stone-400 opacity-75"
                   }`}
                 >
                   Publish
