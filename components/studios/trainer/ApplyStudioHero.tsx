@@ -70,21 +70,50 @@ function normalizeHeroForSave(hero: ApplyStudioHeroFields): ApplyStudioHeroField
   }, {} as ApplyStudioHeroFields);
 }
 
-function allRowsConfirmed(): Record<FieldKey, boolean> {
-  return (Object.keys(FIELD_ROW) as FieldKey[]).reduce(
-    (acc, k) => {
-      acc[k] = true;
-      return acc;
-    },
-    {} as Record<FieldKey, boolean>,
-  );
+function trimmedRow(hero: ApplyStudioHeroFields, k: FieldKey): string {
+  return (hero[k] ?? "").trim();
 }
 
-function mergeRowConfirmed(partial: Partial<Record<FieldKey, boolean>> | undefined): Record<FieldKey, boolean> {
+/**
+ * Empty → never confirmed (❎).
+ * Value exactly matches profile baseline → confirmed unless user explicitly chose ❎ (`stored === false`).
+ * Any other filled value → confirmed only after explicit ✅ (`stored === true`).
+ */
+function resolveRowConfirmedState(
+  hero: ApplyStudioHeroFields,
+  profileBaseline: ApplyStudioHeroFields,
+  stored?: Partial<Record<FieldKey, boolean>> | null,
+): Record<FieldKey, boolean> {
   const keys = Object.keys(FIELD_ROW) as FieldKey[];
   const acc = {} as Record<FieldKey, boolean>;
-  for (const k of keys) acc[k] = partial?.[k] !== false;
+  for (const k of keys) {
+    const v = trimmedRow(hero, k);
+    if (!v.length) {
+      acc[k] = false;
+      continue;
+    }
+    const base = trimmedRow(profileBaseline, k);
+    const matchesProfile = v === base;
+    const flag = stored?.[k];
+    if (matchesProfile) {
+      acc[k] = flag !== false;
+    } else {
+      acc[k] = flag === true;
+    }
+  }
   return acc;
+}
+
+function clampConfirmedForEmptyHero(
+  hero: ApplyStudioHeroFields,
+  confirmed: Record<FieldKey, boolean>,
+): Record<FieldKey, boolean> {
+  const keys = Object.keys(FIELD_ROW) as FieldKey[];
+  const next = { ...confirmed };
+  for (const k of keys) {
+    if (!trimmedRow(hero, k)) next[k] = false;
+  }
+  return next;
 }
 
 type HeroDraftBundleV2 = {
@@ -99,13 +128,13 @@ function parseHeroDraftStorage(
   initialHero: ApplyStudioHeroFields,
 ): {
   hero: ApplyStudioHeroFields;
-  confirmed: Record<FieldKey, boolean>;
+  storedConfirmed?: Partial<Record<FieldKey, boolean>>;
   heroContactHiddenOnPublish: boolean;
 } {
   if (!raw) {
     return {
       hero: normalizeHeroForSave(sanitizeApplyStudioHeroFields(initialHero)),
-      confirmed: allRowsConfirmed(),
+      storedConfirmed: undefined,
       heroContactHiddenOnPublish: false,
     };
   }
@@ -125,7 +154,7 @@ function parseHeroDraftStorage(
       );
       return {
         hero: mergedHero,
-        confirmed: mergeRowConfirmed(b.confirmed),
+        storedConfirmed: b.confirmed,
         heroContactHiddenOnPublish: Boolean(b.heroContactHiddenOnPublish),
       };
     }
@@ -133,13 +162,13 @@ function parseHeroDraftStorage(
     const mergedHero = normalizeHeroForSave(sanitizeApplyStudioHeroFields({ ...initialHero, ...flat }));
     return {
       hero: mergedHero,
-      confirmed: allRowsConfirmed(),
+      storedConfirmed: undefined,
       heroContactHiddenOnPublish: false,
     };
   } catch {
     return {
       hero: normalizeHeroForSave(sanitizeApplyStudioHeroFields(initialHero)),
-      confirmed: allRowsConfirmed(),
+      storedConfirmed: undefined,
       heroContactHiddenOnPublish: false,
     };
   }
@@ -166,10 +195,19 @@ export function ApplyStudioHero({
 }) {
   void _previewSlug;
   const heroStorageKey = draftStorageKey;
+  const [profileBaseline] = useState(() =>
+    normalizeHeroForSave(sanitizeApplyStudioHeroFields(initialHero)),
+  );
   const [hero, setHero] = useState<ApplyStudioHeroFields>(() =>
     normalizeHeroForSave(sanitizeApplyStudioHeroFields(initialHero)),
   );
-  const [rowConfirmed, setRowConfirmed] = useState<Record<FieldKey, boolean>>(allRowsConfirmed());
+  const [rowConfirmed, setRowConfirmed] = useState<Record<FieldKey, boolean>>(() =>
+    resolveRowConfirmedState(
+      normalizeHeroForSave(sanitizeApplyStudioHeroFields(initialHero)),
+      profileBaseline,
+      undefined,
+    ),
+  );
   const [heroContactHiddenOnPublish, setHeroContactHiddenOnPublish] = useState(false);
   const [heroReady, setHeroReady] = useState(false);
   const [modalKey, setModalKey] = useState<FieldKey | null>(null);
@@ -181,15 +219,16 @@ export function ApplyStudioHero({
       confirmed: Record<FieldKey, boolean>;
       heroContactHiddenOnPublish: boolean;
     }) => {
+      const confirmed = clampConfirmedForEmptyHero(bundle.hero, bundle.confirmed);
       setHero(bundle.hero);
-      setRowConfirmed(bundle.confirmed);
+      setRowConfirmed(confirmed);
       setHeroContactHiddenOnPublish(bundle.heroContactHiddenOnPublish);
       onHeroCommit?.(bundle.hero);
       try {
         const payload: HeroDraftBundleV2 = {
           v: 2,
           hero: bundle.hero,
-          confirmed: bundle.confirmed,
+          confirmed,
           heroContactHiddenOnPublish: bundle.heroContactHiddenOnPublish,
         };
         window.localStorage.setItem(heroStorageKey, JSON.stringify(payload));
@@ -204,8 +243,9 @@ export function ApplyStudioHero({
     try {
       const raw = typeof window !== "undefined" ? window.localStorage.getItem(heroStorageKey) : null;
       const parsed = parseHeroDraftStorage(raw, initialHero);
+      const confirmed = resolveRowConfirmedState(parsed.hero, profileBaseline, parsed.storedConfirmed);
       setHero(parsed.hero);
-      setRowConfirmed(parsed.confirmed);
+      setRowConfirmed(confirmed);
       setHeroContactHiddenOnPublish(parsed.heroContactHiddenOnPublish);
       queueMicrotask(() => onHeroCommit?.(parsed.hero));
     } catch {
@@ -316,16 +356,18 @@ export function ApplyStudioHero({
                 Hero & contact
               </h1>
               <p className="mt-1.5 max-w-md text-sm leading-relaxed text-stone-600">
-                Use ✅ / ❎ to confirm each fact, pencil to edit (editing clears confirmation until you ✅ again). Saves to this
-                browser only.
+                Empty fields stay on ❎ until you add a value. Values that still match your AMIH profile count as confirmed
+                unless you mark ❎. Anything you change yourself needs ✅. Pencil edits clear manual confirmation until you ✅
+                again. Saves to this browser only.
               </p>
 
               <ul className="mt-5 divide-y divide-black/[0.06]" role="list">
                 {(Object.keys(FIELD_ROW) as FieldKey[]).map((key) => {
                   const meta = FIELD_ROW[key];
                   const Icon = meta.icon;
-                  const val = hero[key]?.trim() ?? "";
-                  const display = val.length > 0 ? val : "—";
+                  const val = trimmedRow(hero, key);
+                  const empty = val.length === 0;
+                  const display = empty ? "—" : val;
 
                   return (
                     <li
@@ -348,8 +390,14 @@ export function ApplyStudioHero({
                       <div className="mt-0.5 flex shrink-0 flex-wrap items-center justify-end gap-1 sm:gap-1.5">
                         <button
                           type="button"
-                          aria-label={`${meta.placeholder}: confirmed`}
+                          aria-label={
+                            empty
+                              ? `${meta.placeholder}: add a value before confirming`
+                              : `${meta.placeholder}: confirmed`
+                          }
                           aria-pressed={rowConfirmed[key]}
+                          disabled={empty}
+                          title={empty ? "Add a value (profile or pencil) before you can confirm." : undefined}
                           onClick={() =>
                             commitDraft({
                               hero,
@@ -358,9 +406,11 @@ export function ApplyStudioHero({
                             })
                           }
                           className={`flex h-10 w-10 items-center justify-center rounded-xl border text-lg leading-none transition ${
-                            rowConfirmed[key]
-                              ? "border-green-200 bg-green-50 text-green-700 shadow-sm ring-1 ring-green-100"
-                              : "border-transparent bg-transparent text-stone-300 hover:bg-stone-50 hover:text-stone-500"
+                            empty
+                              ? "cursor-not-allowed border-transparent bg-stone-100 text-stone-300 opacity-50"
+                              : rowConfirmed[key]
+                                ? "border-green-200 bg-green-50 text-green-700 shadow-sm ring-1 ring-green-100"
+                                : "border-transparent bg-transparent text-stone-300 hover:bg-stone-50 hover:text-stone-500"
                           }`}
                         >
                           <span aria-hidden>✅</span>
@@ -400,7 +450,8 @@ export function ApplyStudioHero({
 
               {!allConfirmed ? (
                 <p className="mt-3 rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2 text-xs font-medium text-amber-900">
-                  Tap ✅ on every row to confirm these details (publish will expect each item confirmed).
+                  Rows with “—” stay on ❎ until filled. Custom values need ✅; profile matches stay ✅ unless you tap ❎. Publish
+                  will expect every filled row confirmed.
                 </p>
               ) : (
                 <p className="mt-3 text-xs font-medium text-green-800">All rows confirmed.</p>
