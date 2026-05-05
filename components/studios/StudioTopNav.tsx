@@ -26,8 +26,12 @@ const BUSINESS_NAV: readonly { href: string; label: string }[] = [
   { href: "#contact", label: "CONTACT" },
 ];
 
-/** Placeholder route until private-network login flow is wired. */
-export const STUDIOS_PVT_NET_LOGIN_HREF = "/studios/pvt-net-login";
+/** Placeholder route until private client network flow is wired. */
+export const STUDIOS_PVT_CLIENT_NETWORK_HREF = "/studios/pvt-net-login";
+
+/** Soft pill treatment — reads as a secondary control on the dark studio nav bar. */
+const PVT_CLIENT_NETWORK_BTN_CLASS =
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/22 bg-white/[0.14] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] ring-1 ring-black/[0.18] outline-none transition hover:border-white/32 hover:bg-white/[0.22] hover:!text-white visited:!text-white focus-visible:ring-2 focus-visible:ring-white/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f0f0f] sm:px-3.5 sm:text-[11px]";
 
 export function StudioTopNav({
   mode,
@@ -75,9 +79,9 @@ export function StudioTopNav({
                 LOG OUT
               </button>
             </li>
-            <li key="pvt-net-login">
-              <Link href={STUDIOS_PVT_NET_LOGIN_HREF} className={`${LINK_CLASS} whitespace-nowrap`}>
-                PVT NET LOG IN
+            <li key="pvt-client-network">
+              <Link href={STUDIOS_PVT_CLIENT_NETWORK_HREF} className={PVT_CLIENT_NETWORK_BTN_CLASS}>
+                PVT CLIENT NETWORK
               </Link>
             </li>
           </>
