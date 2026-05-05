@@ -24,7 +24,7 @@ export function StudioHeroIntroColumn({
   showEditChrome: boolean;
 }) {
   /** Bump suffix when default intro copy changes so stale drafts don’t mask server placeholders. */
-  const storageKey = `${draftStorageKey}_intro_v2`;
+  const storageKey = `${draftStorageKey}_intro_v3`;
   const [intro, setIntro] = useState<ApplyStudioIntro>(initialIntro);
   const [modalOpen, setModalOpen] = useState(false);
   const [titleDraft, setTitleDraft] = useState(initialIntro.title);
@@ -143,12 +143,12 @@ export function StudioHeroIntroColumn({
         <div className="mt-3 max-w-[280px] space-y-1">
           {bullets.length > 0 ? (
             bullets.map((line) => (
-              <p key={line} className="text-xs leading-snug text-stone-600">
+              <p key={line} className="text-base leading-snug text-stone-600">
                 {line}
               </p>
             ))
           ) : (
-            <p className="text-xs italic leading-snug text-stone-400">Add story lines in edit.</p>
+            <p className="text-base italic leading-snug text-stone-400">Add story lines in edit.</p>
           )}
         </div>
 

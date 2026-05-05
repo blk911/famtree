@@ -43,7 +43,7 @@ export const DEB_DAZZLE_STUDIO_TEMPLATE = {
     introBullets: [
       "• Structured training — no guesswork",
       "• Clear progression across every session",
-      "• Strength, conditioning, and recovery in balance",
+      "• Strength, conditioning, and recovery",
     ],
     tiers: TIERS,
     portfolio: [] as { id: string; caption: string; imageUrl: string }[],
