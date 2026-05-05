@@ -10,6 +10,7 @@ import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { useStudioBuilderShellOptional } from "@/components/studios/StudioBuilderNavModeContext";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { TrainerOfferCards } from "./TrainerOfferCards";
+import { StudioTrainingCards } from "./StudioTrainingCards";
 import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
 import { StudioStartStorySection } from "./StudioStartStorySection";
 
@@ -164,9 +165,10 @@ function StudioPageMainColumns({
               >
                 Lessons & videos
               </h2>
-              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: 0, lineHeight: 1.5 }}>
+              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
                 Placeholder — online lessons and video previews surface here on your published studio.
               </p>
+              <StudioTrainingCards className="mt-2" />
             </section>
 
             <section id="services" className="scroll-mt-24" style={{ marginBottom: "48px" }}>
