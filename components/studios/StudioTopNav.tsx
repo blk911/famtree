@@ -30,13 +30,18 @@ const BUSINESS_NAV: readonly { href: string; label: string }[] = [
 export function StudioTopNav({
   mode,
   onLogout,
+  omitAnchors,
 }: {
   mode: StudioTopNavMode;
+  /** Hide nav links (e.g. section removed from template). */
+  omitAnchors?: readonly string[];
   /** Optional override; default POST /api/auth/logout then home. */
   onLogout?: () => void | Promise<void>;
 }) {
   const router = useRouter();
-  const items = mode === "edit" ? BUILDER_NAV : BUSINESS_NAV;
+  const rawItems = mode === "edit" ? BUILDER_NAV : BUSINESS_NAV;
+  const items =
+    omitAnchors?.length ? rawItems.filter((item) => !omitAnchors.includes(item.href)) : rawItems;
 
   const handleLogout = async () => {
     if (onLogout) {

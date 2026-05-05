@@ -373,7 +373,7 @@ export function ApplyStudioHero({
         />
 
         <div className="relative z-10 mx-auto max-w-6xl px-4 pt-4 sm:px-6 sm:pt-5">
-          <StudioTopNav mode={topNavMode} />
+          <StudioTopNav mode={topNavMode} omitAnchors={["#services"]} />
 
           <div className="mb-3 flex justify-center sm:mb-4">
             <span
@@ -464,7 +464,7 @@ export function ApplyStudioHero({
       />
 
       <div className="relative z-10 mx-auto max-w-6xl">
-        <StudioTopNav mode="edit" />
+        <StudioTopNav mode="edit" omitAnchors={["#services"]} />
 
         <div
           id={studioViewMode === "edit" ? "contact-info" : undefined}
