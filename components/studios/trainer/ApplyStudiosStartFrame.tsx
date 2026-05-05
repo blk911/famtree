@@ -65,6 +65,7 @@ export function ApplyStudiosStartFrame({
           previewSlug={editorPreviewSlug}
           draftStorageKey={draftStorageKey}
           studioViewMode={studioViewMode}
+          setStudioNavMode={setStudioViewMode}
           onHeroCommit={handleHeroCommit}
         />
         {children}

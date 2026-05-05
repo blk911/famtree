@@ -10,7 +10,6 @@ import {
 } from "@/lib/studios/applyPreview";
 import { STUDIOS_INK, STUDIOS_LINE } from "@/lib/studios/visual";
 import type { StudioBuilderNavMode } from "@/components/studios/StudioBuilderNavModeContext";
-import { useStudioBuilderShellOptional } from "@/components/studios/StudioBuilderNavModeContext";
 import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { StudioHeroIntroColumn } from "./StudioHeroIntroColumn";
@@ -201,6 +200,7 @@ export function ApplyStudioHero({
   studioViewMode,
   initialIntro,
   foldImageUrl,
+  setStudioNavMode,
 }: {
   initialHero: ApplyStudioHeroFields;
   displayName: string;
@@ -212,6 +212,8 @@ export function ApplyStudioHero({
   studioViewMode: StudioBuilderNavMode;
   initialIntro: ApplyStudioIntro;
   foldImageUrl: string;
+  /** Owns edit ↔ preview/published — explicit prop so hero never relies on optional context. */
+  setStudioNavMode: (mode: StudioBuilderNavMode) => void;
 }) {
   void _previewSlug;
   const heroStorageKey = draftStorageKey;
@@ -306,7 +308,6 @@ export function ApplyStudioHero({
   ]);
 
   const heroContactPublishReady = isHeroContactPublishReady(hero, confirmedFields);
-  const shell = useStudioBuilderShellOptional();
 
   useEffect(() => {
     if (studioViewMode !== "edit") {
@@ -330,7 +331,7 @@ export function ApplyStudioHero({
         <div className="sticky top-0 z-[80] w-full border-b border-white/10 bg-stone-950 shadow-[0_6px_24px_rgba(0,0,0,0.2)]">
           <button
             type="button"
-            onClick={() => shell?.setMode("edit")}
+            onClick={() => setStudioNavMode("edit")}
             className="flex w-full items-center justify-center px-4 py-3.5 text-center text-[11px] font-bold uppercase tracking-[0.26em] text-white transition hover:bg-stone-900 sm:text-xs sm:tracking-[0.28em]"
           >
             RETURN TO STUDIO EDIT
@@ -469,7 +470,7 @@ export function ApplyStudioHero({
               </p>
             </div>
 
-            <div className="relative z-10 flex min-h-0 min-w-0 flex-col items-stretch border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
+            <div className="flex min-h-0 min-w-0 flex-col items-stretch border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-stone-500">Studio profile</p>
               <span id="hero-contact-heading" className="sr-only">
                 Hero and contact — edit each field and confirm to publish
@@ -575,32 +576,24 @@ export function ApplyStudioHero({
               <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-black/[0.06] pt-4">
                 <button
                   type="button"
-                  aria-disabled={!heroContactPublishReady}
-                  tabIndex={heroContactPublishReady ? undefined : -1}
-                  onClick={() => {
-                    if (!heroContactPublishReady) return;
-                    shell?.setMode("preview");
-                  }}
-                  className={`rounded-full border-2 px-6 py-2 text-[10px] font-bold uppercase tracking-[0.14em] transition ${
+                  disabled={!heroContactPublishReady}
+                  onClick={() => setStudioNavMode("preview")}
+                  className={`rounded-full border-2 px-6 py-2 text-[10px] font-bold uppercase tracking-[0.14em] transition disabled:cursor-default ${
                     heroContactPublishReady
                       ? "cursor-pointer border-stone-900 bg-white text-stone-900 hover:bg-stone-50"
-                      : "cursor-default border-stone-200 bg-stone-50 text-stone-400 opacity-75"
+                      : "border-stone-200 bg-stone-50 text-stone-400 opacity-75"
                   }`}
                 >
                   Preview
                 </button>
                 <button
                   type="button"
-                  aria-disabled={!heroContactPublishReady}
-                  tabIndex={heroContactPublishReady ? undefined : -1}
-                  onClick={() => {
-                    if (!heroContactPublishReady) return;
-                    shell?.setMode("published");
-                  }}
-                  className={`rounded-full px-6 py-2 text-[10px] font-bold uppercase tracking-[0.14em] shadow-sm transition ${
+                  disabled={!heroContactPublishReady}
+                  onClick={() => setStudioNavMode("published")}
+                  className={`rounded-full px-6 py-2 text-[10px] font-bold uppercase tracking-[0.14em] shadow-sm transition disabled:cursor-default ${
                     heroContactPublishReady
                       ? "cursor-pointer bg-stone-900 text-white hover:bg-stone-800"
-                      : "cursor-default bg-stone-200 text-stone-400 opacity-75"
+                      : "bg-stone-200 text-stone-400 opacity-75"
                   }`}
                 >
                   Publish
