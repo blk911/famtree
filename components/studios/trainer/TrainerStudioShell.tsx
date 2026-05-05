@@ -10,6 +10,7 @@ import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { useStudioBuilderShellOptional } from "@/components/studios/StudioBuilderNavModeContext";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { TrainerOfferCards } from "./TrainerOfferCards";
+import { StudioTestimonialScroller } from "./StudioTestimonialScroller";
 import { StudioTrainingCards } from "./StudioTrainingCards";
 import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
 import { StudioStartStorySection } from "./StudioStartStorySection";
@@ -33,7 +34,7 @@ const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
 const NAV_LIVE = [
   { href: "#about", label: "About" },
   { href: "#services", label: "Services" },
-  { href: "#lessons", label: "Lessons" },
+  { href: "#lessons", label: "Performance" },
   { href: "#location", label: "Location" },
   { href: "#contact", label: "Contact" },
 ] as const;
@@ -163,10 +164,10 @@ function StudioPageMainColumns({
                   letterSpacing: "-0.3px",
                 }}
               >
-                Lessons & videos
+                Performance & Longevity
               </h2>
               <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
-                Placeholder — online lessons and video previews surface here on your published studio.
+                Choose a training focus, then explore sessions, coaching, and video support built around how you move.
               </p>
               <StudioTrainingCards className="mt-2" />
             </section>
@@ -201,11 +202,12 @@ function StudioPageMainColumns({
                   letterSpacing: "-0.3px",
                 }}
               >
-                Portfolio
+                Proof & praise
               </h2>
-              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: 0, lineHeight: 1.5 }}>
-                Add proof of work — transformations, testimonials, press — before you launch.
+              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 16px", lineHeight: 1.5 }}>
+                Notes from people training here — swipe or scroll to browse.
               </p>
+              <StudioTestimonialScroller />
             </section>
 
             <section id="launch" className="scroll-mt-24" style={{ marginBottom: "48px" }}>

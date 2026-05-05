@@ -22,7 +22,7 @@ const BUILDER_NAV: readonly { href: string; label: string }[] = [
 const BUSINESS_NAV: readonly { href: string; label: string }[] = [
   { href: "#about", label: "ABOUT" },
   { href: "#services", label: "SERVICES" },
-  { href: "#lessons", label: "LESSONS" },
+  { href: "#lessons", label: "PERFORMANCE" },
   { href: "#location", label: "LOCATION" },
   { href: "#contact", label: "CONTACT" },
 ];

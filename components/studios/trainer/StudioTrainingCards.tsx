@@ -40,6 +40,13 @@ const TOP_CARDS: readonly {
   },
 ] as const;
 
+const CATEGORY_REVEAL_LABELS: Record<CategoryId, string> = {
+  run: "Run Stronger",
+  strength: "Build Strength",
+  cycle: "Ride Hard",
+  recover: "Recover Right",
+};
+
 const services: Record<CategoryId, ServiceItem[]> = {
   strength: [
     {
@@ -212,26 +219,36 @@ export function StudioTrainingCards({ className }: { className?: string }) {
       {activeCategory ? (
         <div
           key={activeCategory}
-          className={`mt-4 grid grid-cols-1 gap-4 transition-all duration-300 ease-out md:grid-cols-2 lg:grid-cols-4 ${
+          className={`mt-4 space-y-3 transition-all duration-300 ease-out ${
             servicesEntered ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
           }`}
         >
-          {services[activeCategory].map((svc) => (
-            <button
-              key={svc.title}
-              type="button"
-              onClick={() => {
-                setSelectedService(svc);
-                setModalOpen(true);
-              }}
-              className="flex flex-col rounded-lg border border-black/[0.08] bg-white p-3 text-left shadow-sm ring-1 ring-black/[0.03] transition hover:border-black/15 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-400"
-            >
-              <span className="text-sm font-semibold text-stone-900">{svc.title}</span>
-              <span className="mt-1 line-clamp-3 text-[12px] leading-snug text-neutral-600">{svc.desc}</span>
-              <span className="mt-2 text-sm font-semibold text-stone-900">{svc.price}</span>
-              <span className="text-[11px] font-medium text-stone-500">{svc.package}</span>
-            </button>
-          ))}
+          <div>
+            <h3 className="text-base font-semibold tracking-tight text-stone-900 md:text-lg">
+              {CATEGORY_REVEAL_LABELS[activeCategory]}
+            </h3>
+            <p className="mt-1 text-sm leading-snug text-stone-600">
+              Select a session style to request coaching or learn more.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {services[activeCategory].map((svc) => (
+              <button
+                key={svc.title}
+                type="button"
+                onClick={() => {
+                  setSelectedService(svc);
+                  setModalOpen(true);
+                }}
+                className="flex flex-col rounded-lg border border-black/[0.08] bg-white p-3 text-left shadow-sm ring-1 ring-black/[0.03] transition hover:border-black/15 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-400"
+              >
+                <span className="text-sm font-semibold text-stone-900">{svc.title}</span>
+                <span className="mt-1 line-clamp-3 text-[12px] leading-snug text-neutral-600">{svc.desc}</span>
+                <span className="mt-2 text-sm font-semibold text-stone-900">{svc.price}</span>
+                <span className="text-[11px] font-medium text-stone-500">{svc.package}</span>
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
 

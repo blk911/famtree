@@ -5,7 +5,7 @@ import type { ApplyStudioIntro } from "@/lib/studios/applyPreview";
 export const STUDIO_PUBLIC_DEFAULT_NAV: { href: string; label: string }[] = [
   { href: "#about", label: "ABOUT" },
   { href: "#services", label: "SERVICES" },
-  { href: "#lessons", label: "LESSONS" },
+  { href: "#lessons", label: "PERFORMANCE" },
   { href: "#location", label: "LOCATION" },
   { href: "#contact", label: "CONTACT" },
 ];
