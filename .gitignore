@@ -28,6 +28,8 @@ public/uploads/*
 !public/uploads/STUDIO BKGRND.jpg
 # Hero intro cinema clip (referenced by lib/studios/studioIntroVideo.ts)
 !public/uploads/STUDIO Intro Vid 1.mp4
+# HeyGen community testimonial (referenced by lib/studios/studioIntroVideo.ts)
+!public/uploads/Hailey's Community Testimonial_720p_caption.mp4
 
 # ── Logs ─────────────────────────────────────────────────────
 *.log

@@ -13,6 +13,7 @@ import type { StudioBuilderNavMode } from "@/components/studios/StudioBuilderNav
 import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { StudioHeroIntroColumn } from "./StudioHeroIntroColumn";
+import { StudioHeroHaileyTestimonial } from "./StudioHeroHaileyTestimonial";
 
 const DEFAULT_DRAFT_STORAGE_KEY = "amih_studios_apply_hero_v1";
 
@@ -369,54 +370,58 @@ export function ApplyStudioHero({
             >
               <div className="grid grid-cols-1 md:grid-cols-[35%_30%_35%] md:items-start">
                 <div className="flex flex-col items-start justify-start border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:px-6 md:py-6 md:pb-6 md:pr-6 md:pt-6">
-                  <div className="relative w-full max-w-[280px]">
+                  <div className="relative w-full max-w-[240px]">
                     <TrainerPhoto
                       displayName={displayName}
                       imageUrl={imageUrl}
                       accent={accent}
                       compact
+                      tileMaxWidth={240}
                     />
                     <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
                   </div>
-                </div>
+                  <div className="mt-4 flex w-full max-w-[280px] flex-col gap-2.5 text-left">
+                    <h1
+                      id="studio-public-heading"
+                      className="text-[1.5rem] font-bold leading-tight tracking-tight text-stone-900 md:text-[1.85rem]"
+                      style={{ color: STUDIOS_INK }}
+                    >
+                      {hero.businessName?.trim() || "Studio"}
+                    </h1>
 
-                <div className="flex min-h-0 min-w-0 flex-col items-start gap-2.5 border-b border-black/[0.06] px-5 pb-5 pt-5 text-left md:gap-3 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
-                  <h1
-                    id="studio-public-heading"
-                    className="text-[1.5rem] font-bold leading-tight tracking-tight text-stone-900 md:text-[1.85rem]"
-                    style={{ color: STUDIOS_INK }}
-                  >
-                    {hero.businessName?.trim() || "Studio"}
-                  </h1>
+                    {hero.fullName?.trim() ? (
+                      <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
+                        <User className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
+                        <span>{hero.fullName.trim()}</span>
+                      </div>
+                    ) : null}
 
-                  {hero.fullName?.trim() ? (
                     <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
-                      <User className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
-                      <span>{hero.fullName.trim()}</span>
+                      <Mail className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
+                      <span className="min-w-0 break-words">{hero.email?.trim() || "—"}</span>
                     </div>
-                  ) : null}
-
-                  <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
-                    <Mail className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
-                    <span className="min-w-0 break-words">{hero.email?.trim() || "—"}</span>
-                  </div>
-                  <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
-                    <Phone className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
-                    <span className="min-w-0">{hero.phone?.trim() || "—"}</span>
-                  </div>
-                  <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
-                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
-                    <span className="min-w-0">{hero.physicalAddress?.trim() || "—"}</span>
+                    <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
+                      <Phone className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
+                      <span className="min-w-0">{hero.phone?.trim() || "—"}</span>
+                    </div>
+                    <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
+                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
+                      <span className="min-w-0">{hero.physicalAddress?.trim() || "—"}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="min-w-0 border-t border-black/[0.06] px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
+                <div className="min-h-0 min-w-0 border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
                   <StudioHeroIntroColumn
                     initialIntro={initialIntro}
                     draftStorageKey={draftStorageKey ?? DEFAULT_DRAFT_STORAGE_KEY}
                     foldImageUrl={foldImageUrl}
                     showEditChrome={false}
                   />
+                </div>
+
+                <div className="min-w-0 border-t border-black/[0.06] px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
+                  <StudioHeroHaileyTestimonial foldImageUrl={foldImageUrl} />
                 </div>
               </div>
             </div>
@@ -453,8 +458,14 @@ export function ApplyStudioHero({
         >
           <div className="grid grid-cols-1 md:grid-cols-[35%_30%_35%] md:items-start">
             <div className="flex flex-col items-start justify-start border-b border-black/[0.06] bg-gradient-to-b from-stone-50/80 to-white px-5 pb-5 pt-5 md:border-b-0 md:border-r md:px-6 md:py-6 md:pb-6 md:pr-6 md:pt-6">
-              <div className="relative w-full max-w-[280px]">
-                <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} compact />
+              <div className="relative w-full max-w-[240px]">
+                <TrainerPhoto
+                  displayName={displayName}
+                  imageUrl={imageUrl}
+                  accent={accent}
+                  compact
+                  tileMaxWidth={240}
+                />
                 <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
                 <Link
                   href="/settings"
@@ -465,13 +476,11 @@ export function ApplyStudioHero({
                   <Pencil className="h-3.5 w-3.5 opacity-80" strokeWidth={2} />
                 </Link>
               </div>
-              <p className="mt-2 max-w-[280px] text-[10px] leading-snug text-stone-500">
+              <p className="mt-2 max-w-[240px] text-[10px] leading-snug text-stone-500">
                 Profile photo from Settings.
               </p>
-            </div>
 
-            <div className="flex min-h-0 min-w-0 flex-col items-stretch border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
-              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-stone-500">Studio profile</p>
+              <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.14em] text-stone-500">Studio profile</p>
               <span id="hero-contact-heading" className="sr-only">
                 Hero and contact — edit each field and confirm to publish
               </span>
@@ -484,7 +493,7 @@ export function ApplyStudioHero({
                 before preview or publish.
               </p>
 
-              <ul className="mt-3 flex flex-col gap-2" role="list">
+              <ul className="mt-3 flex w-full max-w-[280px] flex-col gap-2" role="list">
                 {HERO_STACK_ORDER.map((key) => {
                   const meta = FIELD_ROW[key];
                   const Icon = meta.icon;
@@ -573,7 +582,7 @@ export function ApplyStudioHero({
                 <p className="mt-2 text-xs font-medium text-green-800">All required fields confirmed.</p>
               ) : null}
 
-              <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-black/[0.06] pt-4">
+              <div className="mt-5 flex w-full max-w-[280px] flex-wrap items-center gap-2 border-t border-black/[0.06] pt-4">
                 <button
                   type="button"
                   disabled={!heroContactPublishReady}
@@ -601,13 +610,17 @@ export function ApplyStudioHero({
               </div>
             </div>
 
-            <div className="min-w-0 border-t border-black/[0.06] px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
+            <div className="min-h-0 min-w-0 border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
               <StudioHeroIntroColumn
                 initialIntro={initialIntro}
                 draftStorageKey={draftStorageKey ?? DEFAULT_DRAFT_STORAGE_KEY}
                 foldImageUrl={foldImageUrl}
                 showEditChrome={studioViewMode === "edit"}
               />
+            </div>
+
+            <div className="min-w-0 border-t border-black/[0.06] px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
+              <StudioHeroHaileyTestimonial foldImageUrl={foldImageUrl} />
             </div>
           </div>
         </div>

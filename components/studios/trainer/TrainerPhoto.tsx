@@ -19,15 +19,17 @@ type Props = {
   accent: string;
   /** ~25% shorter than default portrait for tighter hero layouts */
   compact?: boolean;
+  /** When `compact`, caps tile width (e.g. align photo with adjacent video cards). */
+  tileMaxWidth?: number;
 };
 
-export function TrainerPhoto({ displayName, imageUrl, accent, compact = false }: Props) {
+export function TrainerPhoto({ displayName, imageUrl, accent, compact = false, tileMaxWidth }: Props) {
   const src =
     typeof imageUrl === "string" && imageUrl.trim().length > 0 ? imageUrl.trim() : null;
   const [showImg, setShowImg] = useState(Boolean(src));
   /** Default 4/5 portrait; compact uses wider ratio (~25% less height at same width). */
   const aspectRatio = compact ? "16/15" : "4/5";
-  const maxWidth = compact ? 280 : 420;
+  const maxWidth = compact ? (tileMaxWidth ?? 280) : 420;
 
   if (!showImg || !src) {
     return (
