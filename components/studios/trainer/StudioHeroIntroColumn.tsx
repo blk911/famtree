@@ -143,12 +143,12 @@ export function StudioHeroIntroColumn({
         <div className="mt-3 max-w-[280px] space-y-1">
           {bullets.length > 0 ? (
             bullets.map((line) => (
-              <p key={line} className="text-[11px] leading-snug text-stone-600">
+              <p key={line} className="text-xs leading-snug text-stone-600">
                 {line}
               </p>
             ))
           ) : (
-            <p className="text-[11px] italic leading-snug text-stone-400">Add story lines in edit.</p>
+            <p className="text-xs italic leading-snug text-stone-400">Add story lines in edit.</p>
           )}
         </div>
 
