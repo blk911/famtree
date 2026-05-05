@@ -24,7 +24,7 @@ export function StudioHeroIntroColumn({
   showEditChrome: boolean;
 }) {
   /** Bump suffix when default intro copy changes so stale drafts don’t mask server placeholders. */
-  const storageKey = `${draftStorageKey}_intro_v3`;
+  const storageKey = `${draftStorageKey}_intro_v4`;
   const [intro, setIntro] = useState<ApplyStudioIntro>(initialIntro);
   const [modalOpen, setModalOpen] = useState(false);
   const [titleDraft, setTitleDraft] = useState(initialIntro.title);

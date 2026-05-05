@@ -51,7 +51,7 @@ export const APPLY_INTRO_PLACEHOLDER: ApplyStudioIntro = {
   title: "Why train with us",
   bullets: [
     "• Structured training — no guesswork",
-    "• Clear progression across every session",
+    "• Clear progression - every session",
     "• Strength, conditioning, and recovery",
   ],
 };

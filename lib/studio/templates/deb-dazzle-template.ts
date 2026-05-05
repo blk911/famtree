@@ -42,7 +42,7 @@ export const DEB_DAZZLE_STUDIO_TEMPLATE = {
     introTitle: "Why train with us",
     introBullets: [
       "• Structured training — no guesswork",
-      "• Clear progression across every session",
+      "• Clear progression - every session",
       "• Strength, conditioning, and recovery",
     ],
     tiers: TIERS,

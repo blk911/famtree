@@ -149,6 +149,6 @@ export function normalizeStudioTemplate(envelope: DebDazzleStudioTemplate): Norm
     navItems,
     editorPreviewSlug: null,
     accentHex,
-    draftStorageKey: "amih_studios_deb_template_draft_v3",
+    draftStorageKey: "amih_studios_deb_template_draft_v4",
   };
 }
