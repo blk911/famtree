@@ -359,9 +359,6 @@ export function ApplyStudioHero({
                   >
                     {hero.businessName?.trim() || "Studio"}
                   </h1>
-                  {hero.fullName?.trim() ? (
-                    <p className="mt-2 text-center text-[15px] font-normal text-stone-600 md:text-left">{hero.fullName.trim()}</p>
-                  ) : null}
                   <div className="relative mt-7 flex w-full justify-center md:justify-start">
                     <div className="relative w-full max-w-[280px]">
                       <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} />
@@ -370,19 +367,27 @@ export function ApplyStudioHero({
                   </div>
                 </div>
 
-                <div className="flex flex-col justify-center gap-6 px-7 py-8 md:gap-7 md:px-9 md:py-10">
-                  <p className="text-[15px] leading-relaxed text-stone-900 md:text-base">
-                    <span className="font-medium text-stone-500">Email: </span>
-                    <span className="break-words">{hero.email?.trim() || "—"}</span>
-                  </p>
-                  <p className="text-[15px] leading-relaxed text-stone-900 md:text-base">
-                    <span className="font-medium text-stone-500">Phone: </span>
-                    <span>{hero.phone?.trim() || "—"}</span>
-                  </p>
-                  <p className="text-[15px] leading-relaxed text-stone-900 md:text-base">
-                    <span className="font-medium text-stone-500">Location: </span>
-                    <span>{hero.physicalAddress?.trim() || "—"}</span>
-                  </p>
+                <div className="flex flex-col justify-start px-7 py-8 md:px-9 md:py-9">
+                  <div className="flex flex-col gap-1.5">
+                    {hero.fullName?.trim() ? (
+                      <p className="text-[15px] leading-snug text-stone-900 md:text-base">
+                        <span className="font-medium text-stone-500">Owner: </span>
+                        <span>{hero.fullName.trim()}</span>
+                      </p>
+                    ) : null}
+                    <p className="text-[15px] leading-snug text-stone-900 md:text-base">
+                      <span className="font-medium text-stone-500">Email: </span>
+                      <span className="break-words">{hero.email?.trim() || "—"}</span>
+                    </p>
+                    <p className="text-[15px] leading-snug text-stone-900 md:text-base">
+                      <span className="font-medium text-stone-500">Phone: </span>
+                      <span>{hero.phone?.trim() || "—"}</span>
+                    </p>
+                    <p className="text-[15px] leading-snug text-stone-900 md:text-base">
+                      <span className="font-medium text-stone-500">Location: </span>
+                      <span>{hero.physicalAddress?.trim() || "—"}</span>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
