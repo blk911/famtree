@@ -1,5 +1,6 @@
 "use client";
 
+/** Card imagery must exist under `public/images/` (URLs `/images/...`). */
 const STUDIO_TRAINING_CARDS = [
   {
     title: "RUN STRONGER",
