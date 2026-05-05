@@ -39,6 +39,7 @@ Thumbs.db
 
 # ── Claude Code session files ─────────────────────────────────
 .claude/projects/
+.claude/worktrees/
 .claude/*.jsonl
 
 # ── Misc ─────────────────────────────────────────────────────
