@@ -423,12 +423,7 @@ export function ApplyStudioHero({
                           >
                             <span aria-hidden>✅</span>
                           </button>
-                        ) : (
-                          <span
-                            className="inline-block min-h-[2.75rem] min-w-[2.75rem] shrink-0"
-                            aria-hidden
-                          />
-                        )}
+                        ) : null}
                       </div>
                     </li>
                   );
