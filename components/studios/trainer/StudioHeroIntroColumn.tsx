@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pencil, Play, X } from "lucide-react";
+import { ChevronRight, Pencil, X } from "lucide-react";
 import type { ApplyStudioIntro } from "@/lib/studios/applyPreview";
-import { STUDIO_INTRO_VIDEO_SRC } from "@/lib/studios/studioIntroVideo";
+import { STUDIO_INTRO_VIDEO_SRC, STUDIO_INTRO_VIDEO_THUMB_SRC } from "@/lib/studios/studioIntroVideo";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE } from "@/lib/studios/visual";
 
 const MAX_STORY_WORDS = 500;
@@ -39,10 +39,6 @@ export function StudioHeroIntroColumn({
   }, []);
 
   const openIntroVideoModal = useCallback(() => {
-    setIntroVideoModalOpen(true);
-  }, []);
-
-  useEffect(() => {
     setIntroVideoModalOpen(true);
   }, []);
 
@@ -105,10 +101,26 @@ export function StudioHeroIntroColumn({
   }, [bodyDraft, intro.bullets, intro.title, storageKey, titleDraft]);
 
   useEffect(() => {
-    if (!introVideoModalOpen || !cinemaVideoRef.current) return;
-    void cinemaVideoRef.current.play().catch(() => {
-      /* muted autoplay policy varies */
+    if (!introVideoModalOpen) return;
+    let cancelled = false;
+    const id = requestAnimationFrame(() => {
+      if (cancelled) return;
+      const v = cinemaVideoRef.current;
+      if (!v) return;
+      v.currentTime = 0;
+      /** Modal opened from tap — try audible playback first; fall back to muted. */
+      v.muted = false;
+      void v.play().catch(() => {
+        v.muted = true;
+        void v.play().catch(() => {
+          /* user can use controls */
+        });
+      });
     });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(id);
+    };
   }, [introVideoModalOpen]);
 
   const wordsUsed = countWords(bodyDraft);
@@ -140,12 +152,13 @@ export function StudioHeroIntroColumn({
           }}
         >
           <video
-            src={STUDIO_INTRO_VIDEO_SRC}
-            controls
+            src={STUDIO_INTRO_VIDEO_THUMB_SRC}
+            muted
             playsInline
             preload="metadata"
-            className="absolute inset-0 z-[1] h-full w-full object-cover"
-            aria-label="Studio intro video"
+            tabIndex={-1}
+            className="pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover"
+            aria-hidden
           />
           <div
             aria-hidden
@@ -155,14 +168,21 @@ export function StudioHeroIntroColumn({
           <button
             type="button"
             onClick={openIntroVideoModal}
-            className="absolute bottom-2 left-1/2 z-[2] flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/25 bg-black/55 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-lg backdrop-blur-sm transition hover:bg-black/70 sm:left-auto sm:right-2 sm:translate-x-0"
-            aria-label="Play intro full screen"
+            className="group absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2 rounded-3xl bg-gradient-to-t from-black/55 via-black/15 to-black/25 transition hover:from-black/65 hover:via-black/25 hover:to-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            aria-label="Play studio intro video full screen"
           >
-            <Play className="h-3 w-3 fill-current" aria-hidden />
-            Expand
+            <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-white text-stone-900 shadow-[0_8px_28px_rgba(0,0,0,0.35)] ring-[3px] ring-white/35 transition group-hover:scale-[1.04] group-active:scale-[0.98]">
+              <ChevronRight className="h-8 w-8 translate-x-px" strokeWidth={2.75} aria-hidden />
+            </span>
+            <span className="max-w-[14rem] px-2 text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+              Tap › · Watch intro
+            </span>
+            <span className="max-w-[13rem] px-3 text-center text-[9px] font-medium italic leading-snug text-white/85 drop-shadow-md">
+              Jenny says when you&apos;re ready…
+            </span>
           </button>
           {showEditChrome ? (
-            <span className="pointer-events-none absolute left-2 top-2 z-[2] rounded-full bg-black/50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white/95 backdrop-blur-sm">
+            <span className="pointer-events-none absolute left-2 top-2 z-[4] rounded-full bg-black/55 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white/95 backdrop-blur-sm">
               Hero clip
             </span>
           ) : null}
@@ -217,13 +237,11 @@ export function StudioHeroIntroColumn({
                 src={STUDIO_INTRO_VIDEO_SRC}
                 controls
                 playsInline
-                autoPlay
-                muted
                 className="max-h-[min(72vh,calc(100vw-48px))] w-full object-contain sm:max-h-[min(78vh,720px)]"
                 aria-label="Studio intro video playback"
               />
               <p className="border-t border-white/10 bg-stone-950/95 px-4 py-2 text-center text-[10px] leading-snug text-stone-400">
-                Sound: unmute in the player controls if needed.
+                Use controls for volume · replay anytime from the hero thumbnail.
               </p>
             </div>
           </div>
