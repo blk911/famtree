@@ -17,34 +17,41 @@ type Props = {
   displayName: string;
   imageUrl?: string | null;
   accent: string;
+  /** ~25% shorter than default portrait for tighter hero layouts */
+  compact?: boolean;
 };
 
-export function TrainerPhoto({ displayName, imageUrl, accent }: Props) {
+export function TrainerPhoto({ displayName, imageUrl, accent, compact = false }: Props) {
   const src =
     typeof imageUrl === "string" && imageUrl.trim().length > 0 ? imageUrl.trim() : null;
   const [showImg, setShowImg] = useState(Boolean(src));
+  /** Default 4/5 portrait; compact uses wider ratio (~25% less height at same width). */
+  const aspectRatio = compact ? "16/15" : "4/5";
+  const maxWidth = compact ? 280 : 420;
 
   if (!showImg || !src) {
     return (
       <div
         style={{
           width: "100%",
-          maxWidth: "420px",
-          aspectRatio: "4/5",
+          maxWidth: `${maxWidth}px`,
+          aspectRatio,
           borderRadius: "24px",
           background: `linear-gradient(145deg, ${accent}33 0%, #fff 55%, ${accent}22 100%)`,
           border: `1px solid ${STUDIOS_LINE}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          margin: "0 auto",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.08)",
+          margin: compact ? "0" : "0 auto",
+          boxShadow: compact
+            ? "0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.07)"
+            : "0 1px 3px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.08)",
         }}
         aria-hidden
       >
         <span
           style={{
-            fontSize: "clamp(48px, 12vw, 72px)",
+            fontSize: compact ? "clamp(36px, 10vw, 56px)" : "clamp(48px, 12vw, 72px)",
             fontWeight: 700,
             letterSpacing: "-0.04em",
             color: accent,
@@ -64,14 +71,16 @@ export function TrainerPhoto({ displayName, imageUrl, accent }: Props) {
       onError={() => setShowImg(false)}
       style={{
         width: "100%",
-        maxWidth: "420px",
-        aspectRatio: "4/5",
+        maxWidth: `${maxWidth}px`,
+        aspectRatio,
         borderRadius: "24px",
         objectFit: "cover",
         border: `1px solid ${STUDIOS_LINE}`,
         display: "block",
-        margin: "0 auto",
-        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.08)",
+        margin: compact ? "0" : "0 auto",
+        boxShadow: compact
+          ? "0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.07)"
+          : "0 1px 3px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.08)",
       }}
     />
   );

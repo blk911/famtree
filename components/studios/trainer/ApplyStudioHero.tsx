@@ -72,6 +72,17 @@ const FIELD_ROW: Record<
   },
 };
 
+/** Edit / preview stack order: studio → owner → contact → location */
+const HERO_STACK_ORDER = ["businessName", "fullName", "email", "phone", "physicalAddress"] as const satisfies readonly FieldKey[];
+
+const HERO_ROW_SHORT_LABEL: Record<FieldKey, string> = {
+  businessName: "Studio name",
+  fullName: "Owner",
+  email: "Email",
+  phone: "Phone",
+  physicalAddress: "Location",
+};
+
 function normalizeHeroForSave(hero: ApplyStudioHeroFields): ApplyStudioHeroFields {
   const base = sanitizeApplyStudioHeroFields(hero);
   return (Object.keys(FIELD_ROW) as FieldKey[]).reduce((acc, k) => {
@@ -305,7 +316,7 @@ export function ApplyStudioHero({
     const topNavMode = studioViewMode === "published" ? "published" : "preview";
     return (
       <section
-        className="relative w-full overflow-hidden pb-8 pt-0 sm:pb-10"
+        className="relative w-full overflow-hidden pb-5 pt-0 sm:pb-6"
         data-studio-editor-section={STUDIO_EDITOR_SECTION_HERO_CONTACT}
         data-hero-contact-hidden-on-publish={heroContactHiddenOnPublish ? "true" : "false"}
         data-hero-contact-publish-ready={heroContactPublishReady ? "true" : "false"}
@@ -330,10 +341,10 @@ export function ApplyStudioHero({
           style={{ background: "rgba(230, 240, 255, 0.4)" }}
         />
 
-        <div className="relative z-10 mx-auto max-w-5xl px-5 pt-6 sm:px-8">
+        <div className="relative z-10 mx-auto max-w-5xl px-4 pt-4 sm:px-6 sm:pt-5">
           <StudioTopNav mode={topNavMode} />
 
-          <div className="mb-5 flex justify-center">
+          <div className="mb-3 flex justify-center sm:mb-4">
             <span
               className={`rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] shadow-sm ${
                 studioViewMode === "published"
@@ -347,46 +358,49 @@ export function ApplyStudioHero({
 
           <section id="about" className="scroll-mt-24">
             <div
-              className="overflow-hidden rounded-3xl border border-black/[0.07] bg-white shadow-[0_18px_48px_-14px_rgba(0,0,0,0.1)] ring-1 ring-black/[0.03]"
+              className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_8px_30px_-10px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.02]"
               style={{ borderColor: STUDIOS_LINE }}
             >
-              <div className="grid md:grid-cols-[1fr_1.15fr] md:items-stretch">
-                <div className="flex flex-col border-b border-black/[0.06] bg-gradient-to-b from-stone-50/90 to-white px-7 py-8 md:border-b-0 md:border-r md:border-black/[0.06] md:px-8 md:py-9">
+              <div className="grid grid-cols-1 gap-5 p-5 md:grid-cols-[40%_60%] md:items-start md:gap-6 md:p-6">
+                <div className="flex flex-col items-start justify-start border-b border-black/[0.05] pb-5 md:border-b-0 md:border-r md:border-black/[0.06] md:pb-0 md:pr-5">
+                  <div className="relative w-full max-w-[280px]">
+                    <TrainerPhoto
+                      displayName={displayName}
+                      imageUrl={imageUrl}
+                      accent={accent}
+                      compact
+                    />
+                    <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
+                  </div>
+                </div>
+
+                <div className="flex min-h-0 flex-col items-start gap-2.5 text-left md:gap-3 md:pt-0">
                   <h1
                     id="studio-public-heading"
-                    className="text-center text-[1.35rem] font-semibold leading-snug tracking-tight text-stone-900 md:text-left md:text-[1.5rem]"
+                    className="text-[1.5rem] font-bold leading-tight tracking-tight text-stone-900 md:text-[1.85rem]"
                     style={{ color: STUDIOS_INK }}
                   >
                     {hero.businessName?.trim() || "Studio"}
                   </h1>
-                  <div className="relative mt-7 flex w-full justify-center md:justify-start">
-                    <div className="relative w-full max-w-[280px]">
-                      <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} />
-                      <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
-                    </div>
-                  </div>
-                </div>
 
-                <div className="flex flex-col justify-start px-7 py-8 md:px-9 md:py-9">
-                  <div className="flex flex-col gap-1.5">
-                    {hero.fullName?.trim() ? (
-                      <p className="text-[15px] leading-snug text-stone-900 md:text-base">
-                        <span className="font-medium text-stone-500">Owner: </span>
-                        <span>{hero.fullName.trim()}</span>
-                      </p>
-                    ) : null}
-                    <p className="text-[15px] leading-snug text-stone-900 md:text-base">
-                      <span className="font-medium text-stone-500">Email: </span>
-                      <span className="break-words">{hero.email?.trim() || "—"}</span>
-                    </p>
-                    <p className="text-[15px] leading-snug text-stone-900 md:text-base">
-                      <span className="font-medium text-stone-500">Phone: </span>
-                      <span>{hero.phone?.trim() || "—"}</span>
-                    </p>
-                    <p className="text-[15px] leading-snug text-stone-900 md:text-base">
-                      <span className="font-medium text-stone-500">Location: </span>
-                      <span>{hero.physicalAddress?.trim() || "—"}</span>
-                    </p>
+                  {hero.fullName?.trim() ? (
+                    <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
+                      <User className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
+                      <span>{hero.fullName.trim()}</span>
+                    </div>
+                  ) : null}
+
+                  <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
+                    <Mail className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
+                    <span className="min-w-0 break-words">{hero.email?.trim() || "—"}</span>
+                  </div>
+                  <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
+                    <Phone className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
+                    <span className="min-w-0">{hero.phone?.trim() || "—"}</span>
+                  </div>
+                  <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
+                    <span className="min-w-0">{hero.physicalAddress?.trim() || "—"}</span>
                   </div>
                 </div>
               </div>
@@ -399,11 +413,11 @@ export function ApplyStudioHero({
 
   return (
     <section
-      className="relative overflow-hidden px-5 pb-6 pt-5 sm:px-8 sm:pb-8 sm:pt-6"
+      className="relative overflow-hidden px-4 pb-4 pt-4 sm:px-6 sm:pb-5 sm:pt-5"
       data-studio-editor-section={STUDIO_EDITOR_SECTION_HERO_CONTACT}
       data-hero-contact-hidden-on-publish={heroContactHiddenOnPublish ? "true" : "false"}
       data-hero-contact-publish-ready={heroContactPublishReady ? "true" : "false"}
-      aria-labelledby="hero-contact-heading"
+      aria-labelledby="studio-name-display"
     >
       <div
         className="pointer-events-none absolute -left-32 top-14 h-72 w-72 rounded-full blur-3xl"
@@ -419,55 +433,44 @@ export function ApplyStudioHero({
 
         <div
           id={studioViewMode === "edit" ? "contact-info" : undefined}
-          className={`mt-4 overflow-hidden rounded-3xl border border-black/[0.07] bg-white shadow-[0_24px_60px_-12px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.03] ${studioViewMode === "edit" ? "scroll-mt-24" : ""}`}
+          className={`mt-3 overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_10px_36px_-12px_rgba(0,0,0,0.1)] ring-1 ring-black/[0.02] ${studioViewMode === "edit" ? "scroll-mt-24" : ""}`}
           style={{ borderColor: STUDIOS_LINE }}
         >
-          <div className="grid md:grid-cols-[1fr_1.15fr] md:items-stretch">
-            <div className="relative flex flex-col items-center justify-center border-b border-black/[0.06] bg-gradient-to-b from-stone-50/90 to-white px-6 py-6 md:border-b-0 md:border-r md:px-7 md:py-6">
-              <div className="mb-4 w-full max-w-[300px] text-center">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Studio name</p>
-                <p
-                  id="studio-name-display"
-                  className="mt-1 break-words text-lg font-bold leading-snug tracking-tight text-stone-900 sm:text-xl"
-                  style={{ color: STUDIOS_INK }}
-                >
-                  {hero.businessName?.trim() ? hero.businessName.trim() : "—"}
-                </p>
-                <p className="mt-1 text-[10px] leading-snug text-stone-500">
-                  Pulled from business or studio name — edit that row on the right.
-                </p>
-              </div>
-              <div className="relative w-full max-w-[300px]">
-                <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} />
+          <div className="grid grid-cols-1 gap-5 p-5 md:grid-cols-[40%_60%] md:items-start md:gap-6 md:p-6">
+            <div className="flex flex-col items-start justify-start border-b border-black/[0.05] bg-gradient-to-b from-stone-50/80 to-white pb-5 md:border-b-0 md:border-r md:border-black/[0.06] md:pb-0 md:pr-5">
+              <div className="relative w-full max-w-[280px]">
+                <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} compact />
                 <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
                 <Link
                   href="/settings"
                   aria-label="Edit photo"
                   title="Edit photo"
-                  className="absolute bottom-2 right-2 flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white text-stone-800 shadow-md ring-1 ring-black/[0.04] transition hover:bg-stone-50"
+                  className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white text-stone-800 shadow-md ring-1 ring-black/[0.04] transition hover:bg-stone-50"
                 >
-                  <Pencil className="h-4 w-4 opacity-80" strokeWidth={2} />
+                  <Pencil className="h-3.5 w-3.5 opacity-80" strokeWidth={2} />
                 </Link>
               </div>
-              <p className="mt-2 max-w-[260px] text-center text-[11px] leading-snug text-stone-500">
-                Uses your AMIHUMAN.NET profile photo. Change it in Settings.
+              <p className="mt-2 max-w-[280px] text-[10px] leading-snug text-stone-500">
+                Profile photo from Settings.
               </p>
             </div>
 
-            <div className="px-5 py-5 sm:px-7 sm:py-6">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">Build your studio</p>
-              <h1 id="hero-contact-heading" className="mt-1.5 text-xl font-bold tracking-tight text-stone-900 sm:text-[1.45rem]">
-                Hero & contact
-              </h1>
-              <p className="mt-1.5 max-w-md text-sm leading-relaxed text-stone-600">
-                Review each item. Profile details may be prefilled. Saves to this browser only.
-              </p>
-              <p className="mt-2 max-w-md text-xs font-bold uppercase leading-snug tracking-wide text-red-600 sm:text-[13px]">
-                BEFORE YOU CAN PUBLISH, CONFIRM BY SELECTING THE <span aria-hidden="true">✅</span>
+            <div className="flex min-h-0 flex-col items-stretch md:pt-0">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-stone-500">Studio profile</p>
+              <span id="hero-contact-heading" className="sr-only">
+                Hero and contact — edit each field and confirm to publish
+              </span>
+
+              <p className="mt-1 text-xs leading-snug text-stone-600">
+                Saves in this browser. Confirm each field with{" "}
+                <span className="whitespace-nowrap font-semibold text-stone-800" aria-hidden>
+                  ✅
+                </span>{" "}
+                before preview or publish.
               </p>
 
-              <ul className="mt-5 divide-y divide-black/[0.06]" role="list">
-                {(Object.keys(FIELD_ROW) as FieldKey[]).map((key) => {
+              <ul className="mt-3 flex flex-col gap-2" role="list">
+                {HERO_STACK_ORDER.map((key) => {
                   const meta = FIELD_ROW[key];
                   const Icon = meta.icon;
                   const val = trimmedRow(hero, key);
@@ -475,64 +478,76 @@ export function ApplyStudioHero({
                   const display = empty ? "—" : val;
                   const hasValue = !empty;
                   const isConfirmed = hasValue && confirmedFields[key] === true;
+                  const isStudioTitle = key === "businessName";
 
                   return (
                     <li
                       key={key}
-                      className={`flex items-start gap-3 rounded-xl py-3 pl-2 pr-1 transition-colors sm:py-3.5 ${
-                        isConfirmed ? "bg-green-50/50 ring-1 ring-green-100/80" : ""
-                      }`}
+                      className={`rounded-xl px-0 py-1.5 transition-colors ${isConfirmed ? "bg-green-50/45 ring-1 ring-green-100/70" : ""}`}
                     >
-                      <div
-                        className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-[#b8956c]"
-                        style={{ background: "rgba(201, 166, 107, 0.14)" }}
-                        aria-hidden
-                      >
-                        <Icon className="h-[17px] w-[17px]" strokeWidth={2} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{meta.placeholder}</p>
-                        <p className="mt-0.5 break-words text-[15px] font-semibold leading-snug" style={{ color: STUDIOS_INK }}>
-                          {display}
-                        </p>
-                      </div>
-                      <div className="mt-0.5 flex shrink-0 items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          aria-label={`Edit ${meta.placeholder}`}
-                          title={empty ? "Add a value for this row." : undefined}
-                          onClick={() => openModal(key)}
-                          className={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] shadow-sm transition ${
-                            empty
-                              ? "bg-orange-500 text-white hover:bg-orange-600"
-                              : "border border-black/[0.1] bg-white text-stone-800 hover:bg-stone-50"
-                          }`}
-                        >
-                          EDIT
-                        </button>
-                        {hasValue ? (
-                          <button
-                            type="button"
-                            aria-label={
-                              isConfirmed ? `${meta.placeholder}: confirmed` : `${meta.placeholder}: tap to confirm`
-                            }
-                            aria-pressed={isConfirmed}
-                            onClick={() =>
-                              commitDraft({
-                                hero,
-                                confirmed: { ...confirmedFields, [key]: true },
-                                heroContactHiddenOnPublish,
-                              })
-                            }
-                            className={`flex min-h-[2.75rem] min-w-[2.75rem] items-center justify-center rounded-lg text-[1.65rem] leading-none transition ${
-                              isConfirmed
-                                ? "text-green-700 hover:bg-green-50/90"
-                                : "text-green-600 hover:bg-green-50/70"
-                            }`}
-                          >
-                            <span aria-hidden>✅</span>
-                          </button>
-                        ) : null}
+                      <div className="flex items-start gap-2.5">
+                        <Icon className="mt-1 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
+                        <div className="flex min-w-0 flex-1 items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            {!isStudioTitle ? (
+                              <p className="text-[11px] font-medium text-stone-500">{HERO_ROW_SHORT_LABEL[key]}</p>
+                            ) : null}
+                            {isStudioTitle ? (
+                              <h1
+                                id="studio-name-display"
+                                className="break-words text-xl font-bold leading-tight tracking-tight text-stone-900 md:text-2xl"
+                                style={{ color: STUDIOS_INK }}
+                              >
+                                {display}
+                              </h1>
+                            ) : (
+                              <p
+                                className={`mt-0.5 break-words font-medium leading-snug text-stone-800 ${key === "physicalAddress" ? "text-[14px]" : "text-[15px]"}`}
+                                style={{ color: STUDIOS_INK }}
+                              >
+                                {display}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            <button
+                              type="button"
+                              aria-label={`Edit ${meta.placeholder}`}
+                              title={empty ? "Add a value for this row." : undefined}
+                              onClick={() => openModal(key)}
+                              className={`rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] shadow-sm transition ${
+                                empty
+                                  ? "bg-orange-500 text-white hover:bg-orange-600"
+                                  : "border border-black/[0.08] bg-white text-stone-800 hover:bg-stone-50"
+                              }`}
+                            >
+                              Edit
+                            </button>
+                            {hasValue ? (
+                              <button
+                                type="button"
+                                aria-label={
+                                  isConfirmed ? `${meta.placeholder}: confirmed` : `${meta.placeholder}: tap to confirm`
+                                }
+                                aria-pressed={isConfirmed}
+                                onClick={() =>
+                                  commitDraft({
+                                    hero,
+                                    confirmed: { ...confirmedFields, [key]: true },
+                                    heroContactHiddenOnPublish,
+                                  })
+                                }
+                                className={`flex min-h-9 min-w-9 items-center justify-center rounded-lg text-[1.35rem] leading-none transition ${
+                                  isConfirmed
+                                    ? "text-green-700 hover:bg-green-50/90"
+                                    : "text-green-600 hover:bg-green-50/70"
+                                }`}
+                              >
+                                <span aria-hidden>✅</span>
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
                       </div>
                     </li>
                   );
@@ -540,15 +555,15 @@ export function ApplyStudioHero({
               </ul>
 
               {heroContactPublishReady ? (
-                <p className="mt-3 text-xs font-medium text-green-800">All required hero rows filled and confirmed.</p>
+                <p className="mt-2 text-xs font-medium text-green-800">All required fields confirmed.</p>
               ) : null}
 
-              <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-black/[0.06] pt-6">
+              <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-black/[0.06] pt-4">
                 <button
                   type="button"
                   disabled={!heroContactPublishReady}
                   onClick={() => shell?.setMode("preview")}
-                  className={`rounded-full border-2 px-7 py-2.5 text-xs font-bold uppercase tracking-[0.14em] transition ${
+                  className={`rounded-full border-2 px-6 py-2 text-[10px] font-bold uppercase tracking-[0.14em] transition ${
                     heroContactPublishReady
                       ? "border-stone-900 bg-white text-stone-900 hover:bg-stone-50"
                       : "cursor-not-allowed border-stone-200 bg-stone-50 text-stone-400 opacity-75"
@@ -560,7 +575,7 @@ export function ApplyStudioHero({
                   type="button"
                   disabled={!heroContactPublishReady}
                   onClick={() => shell?.setMode("published")}
-                  className={`rounded-full px-7 py-2.5 text-xs font-bold uppercase tracking-[0.14em] shadow-sm transition ${
+                  className={`rounded-full px-6 py-2 text-[10px] font-bold uppercase tracking-[0.14em] shadow-sm transition ${
                     heroContactPublishReady
                       ? "bg-stone-900 text-white hover:bg-stone-800"
                       : "cursor-not-allowed bg-stone-200 text-stone-400 opacity-75"
