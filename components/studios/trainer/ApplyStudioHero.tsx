@@ -4,7 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Building2, Mail, MapPin, Pencil, Phone, User } from "lucide-react";
 import type { ApplyStudioHeroFields } from "@/lib/studios/applyPreview";
-import { sanitizeApplyStudioHeroFields } from "@/lib/studios/applyPreview";
+import {
+  STUDIO_EDITOR_SECTION_HERO_CONTACT,
+  sanitizeApplyStudioHeroFields,
+} from "@/lib/studios/applyPreview";
 import { STUDIOS_INK, STUDIOS_LINE } from "@/lib/studios/visual";
 import { StudioEditorTopNav } from "@/components/studios/StudioEditorTopNav";
 import type { StudioEditorNavItem } from "@/components/studios/StudioEditorTopNav";
@@ -67,6 +70,81 @@ function normalizeHeroForSave(hero: ApplyStudioHeroFields): ApplyStudioHeroField
   }, {} as ApplyStudioHeroFields);
 }
 
+function allRowsConfirmed(): Record<FieldKey, boolean> {
+  return (Object.keys(FIELD_ROW) as FieldKey[]).reduce(
+    (acc, k) => {
+      acc[k] = true;
+      return acc;
+    },
+    {} as Record<FieldKey, boolean>,
+  );
+}
+
+function mergeRowConfirmed(partial: Partial<Record<FieldKey, boolean>> | undefined): Record<FieldKey, boolean> {
+  const keys = Object.keys(FIELD_ROW) as FieldKey[];
+  const acc = {} as Record<FieldKey, boolean>;
+  for (const k of keys) acc[k] = partial?.[k] !== false;
+  return acc;
+}
+
+type HeroDraftBundleV2 = {
+  v: 2;
+  hero: ApplyStudioHeroFields;
+  confirmed: Record<FieldKey, boolean>;
+  heroContactHiddenOnPublish?: boolean;
+};
+
+function parseHeroDraftStorage(
+  raw: string | null,
+  initialHero: ApplyStudioHeroFields,
+): {
+  hero: ApplyStudioHeroFields;
+  confirmed: Record<FieldKey, boolean>;
+  heroContactHiddenOnPublish: boolean;
+} {
+  if (!raw) {
+    return {
+      hero: normalizeHeroForSave(sanitizeApplyStudioHeroFields(initialHero)),
+      confirmed: allRowsConfirmed(),
+      heroContactHiddenOnPublish: false,
+    };
+  }
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      "v" in parsed &&
+      (parsed as { v?: unknown }).v === 2 &&
+      "hero" in parsed &&
+      typeof (parsed as { hero?: unknown }).hero === "object"
+    ) {
+      const b = parsed as HeroDraftBundleV2;
+      const mergedHero = normalizeHeroForSave(
+        sanitizeApplyStudioHeroFields({ ...initialHero, ...(b.hero as Partial<ApplyStudioHeroFields>) }),
+      );
+      return {
+        hero: mergedHero,
+        confirmed: mergeRowConfirmed(b.confirmed),
+        heroContactHiddenOnPublish: Boolean(b.heroContactHiddenOnPublish),
+      };
+    }
+    const flat = parsed as Partial<ApplyStudioHeroFields> | null;
+    const mergedHero = normalizeHeroForSave(sanitizeApplyStudioHeroFields({ ...initialHero, ...flat }));
+    return {
+      hero: mergedHero,
+      confirmed: allRowsConfirmed(),
+      heroContactHiddenOnPublish: false,
+    };
+  } catch {
+    return {
+      hero: normalizeHeroForSave(sanitizeApplyStudioHeroFields(initialHero)),
+      confirmed: allRowsConfirmed(),
+      heroContactHiddenOnPublish: false,
+    };
+  }
+}
+
 export function ApplyStudioHero({
   initialHero,
   displayName,
@@ -88,18 +166,48 @@ export function ApplyStudioHero({
 }) {
   void _previewSlug;
   const heroStorageKey = draftStorageKey;
-  const [hero, setHero] = useState<ApplyStudioHeroFields>(() => sanitizeApplyStudioHeroFields(initialHero));
+  const [hero, setHero] = useState<ApplyStudioHeroFields>(() =>
+    normalizeHeroForSave(sanitizeApplyStudioHeroFields(initialHero)),
+  );
+  const [rowConfirmed, setRowConfirmed] = useState<Record<FieldKey, boolean>>(allRowsConfirmed());
+  const [heroContactHiddenOnPublish, setHeroContactHiddenOnPublish] = useState(false);
   const [heroReady, setHeroReady] = useState(false);
   const [modalKey, setModalKey] = useState<FieldKey | null>(null);
   const [modalDraft, setModalDraft] = useState("");
 
+  const commitDraft = useCallback(
+    (bundle: {
+      hero: ApplyStudioHeroFields;
+      confirmed: Record<FieldKey, boolean>;
+      heroContactHiddenOnPublish: boolean;
+    }) => {
+      setHero(bundle.hero);
+      setRowConfirmed(bundle.confirmed);
+      setHeroContactHiddenOnPublish(bundle.heroContactHiddenOnPublish);
+      onHeroCommit?.(bundle.hero);
+      try {
+        const payload: HeroDraftBundleV2 = {
+          v: 2,
+          hero: bundle.hero,
+          confirmed: bundle.confirmed,
+          heroContactHiddenOnPublish: bundle.heroContactHiddenOnPublish,
+        };
+        window.localStorage.setItem(heroStorageKey, JSON.stringify(payload));
+      } catch {
+        /* ignore */
+      }
+    },
+    [heroStorageKey, onHeroCommit],
+  );
+
   useEffect(() => {
     try {
       const raw = typeof window !== "undefined" ? window.localStorage.getItem(heroStorageKey) : null;
-      const parsed = raw ? (JSON.parse(raw) as Partial<ApplyStudioHeroFields>) : null;
-      const merged = sanitizeApplyStudioHeroFields(parsed ? { ...initialHero, ...parsed } : initialHero);
-      setHero(merged);
-      queueMicrotask(() => onHeroCommit?.(merged));
+      const parsed = parseHeroDraftStorage(raw, initialHero);
+      setHero(parsed.hero);
+      setRowConfirmed(parsed.confirmed);
+      setHeroContactHiddenOnPublish(parsed.heroContactHiddenOnPublish);
+      queueMicrotask(() => onHeroCommit?.(parsed.hero));
     } catch {
       /* ignore */
     } finally {
@@ -107,18 +215,6 @@ export function ApplyStudioHero({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional single hydrate
   }, []);
-
-  const writeThrough = useCallback(
-    (next: ApplyStudioHeroFields) => {
-      onHeroCommit?.(next);
-      try {
-        window.localStorage.setItem(heroStorageKey, JSON.stringify(next));
-      } catch {
-        /* ignore */
-      }
-    },
-    [heroStorageKey, onHeroCommit],
-  );
 
   const openModal = useCallback((key: FieldKey) => {
     setModalKey(key);
@@ -136,14 +232,35 @@ export function ApplyStudioHero({
     let v = modalDraft;
     if (modalKey !== "phone") v = v.trim();
     if (v.length > meta.maxLength) v = v.slice(0, meta.maxLength);
-    const next = normalizeHeroForSave({ ...hero, [modalKey]: v });
-    setHero(next);
-    writeThrough(next);
+    const nextHero = normalizeHeroForSave({ ...hero, [modalKey]: v });
+    /** Editing clears confirmation until the creator taps ✅ again. */
+    const nextConfirmed = { ...rowConfirmed, [modalKey]: false };
+    commitDraft({
+      hero: nextHero,
+      confirmed: nextConfirmed,
+      heroContactHiddenOnPublish,
+    });
     closeModal();
-  }, [closeModal, hero, heroReady, modalDraft, modalKey, writeThrough]);
+  }, [
+    closeModal,
+    commitDraft,
+    hero,
+    heroContactHiddenOnPublish,
+    heroReady,
+    modalDraft,
+    modalKey,
+    rowConfirmed,
+  ]);
+
+  const allConfirmed = (Object.keys(FIELD_ROW) as FieldKey[]).every((k) => rowConfirmed[k]);
 
   return (
-    <section className="relative overflow-hidden px-5 pb-6 pt-5 sm:px-8 sm:pb-8 sm:pt-6">
+    <section
+      className="relative overflow-hidden px-5 pb-6 pt-5 sm:px-8 sm:pb-8 sm:pt-6"
+      data-studio-editor-section={STUDIO_EDITOR_SECTION_HERO_CONTACT}
+      data-hero-contact-hidden-on-publish={heroContactHiddenOnPublish ? "true" : "false"}
+      aria-labelledby="hero-contact-heading"
+    >
       <div
         className="pointer-events-none absolute -left-32 top-14 h-72 w-72 rounded-full blur-3xl"
         style={{ background: "rgba(255, 218, 230, 0.35)" }}
@@ -163,6 +280,19 @@ export function ApplyStudioHero({
         >
           <div className="grid md:grid-cols-[1fr_1.15fr] md:items-stretch">
             <div className="relative flex flex-col items-center justify-center border-b border-black/[0.06] bg-gradient-to-b from-stone-50/90 to-white px-6 py-6 md:border-b-0 md:border-r md:px-7 md:py-6">
+              <div className="mb-4 w-full max-w-[300px] text-center">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Studio name</p>
+                <p
+                  id="studio-name-display"
+                  className="mt-1 break-words text-lg font-bold leading-snug tracking-tight text-stone-900 sm:text-xl"
+                  style={{ color: STUDIOS_INK }}
+                >
+                  {hero.businessName?.trim() ? hero.businessName.trim() : "—"}
+                </p>
+                <p className="mt-1 text-[10px] leading-snug text-stone-500">
+                  Pulled from business or studio name — edit that row on the right.
+                </p>
+              </div>
               <div className="relative w-full max-w-[300px]">
                 <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} />
                 <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
@@ -182,9 +312,12 @@ export function ApplyStudioHero({
 
             <div className="px-5 py-5 sm:px-7 sm:py-6">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">Build your studio</p>
-              <h1 className="mt-1.5 text-xl font-bold tracking-tight text-stone-900 sm:text-[1.45rem]">Hero & contact</h1>
+              <h1 id="hero-contact-heading" className="mt-1.5 text-xl font-bold tracking-tight text-stone-900 sm:text-[1.45rem]">
+                Hero & contact
+              </h1>
               <p className="mt-1.5 max-w-md text-sm leading-relaxed text-stone-600">
-                Tap the pencil on each row to edit in a simple dialog. Saves to this browser only.
+                Use ✅ / ❎ to confirm each fact, pencil to edit (editing clears confirmation until you ✅ again). Saves to this
+                browser only.
               </p>
 
               <ul className="mt-5 divide-y divide-black/[0.06]" role="list">
@@ -212,21 +345,69 @@ export function ApplyStudioHero({
                           {display}
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        aria-label={`Edit ${meta.placeholder}`}
-                        onClick={() => openModal(key)}
-                        className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-black/[0.08] bg-white text-stone-700 shadow-sm ring-1 ring-black/[0.04] transition hover:bg-stone-50"
-                      >
-                        <Pencil className="h-[18px] w-[18px]" strokeWidth={2} />
-                      </button>
+                      <div className="mt-0.5 flex shrink-0 flex-wrap items-center justify-end gap-1 sm:gap-1.5">
+                        <button
+                          type="button"
+                          aria-label={`${meta.placeholder}: confirmed`}
+                          aria-pressed={rowConfirmed[key]}
+                          onClick={() =>
+                            commitDraft({
+                              hero,
+                              confirmed: { ...rowConfirmed, [key]: true },
+                              heroContactHiddenOnPublish,
+                            })
+                          }
+                          className={`flex h-10 w-10 items-center justify-center rounded-xl border text-lg leading-none transition ${
+                            rowConfirmed[key]
+                              ? "border-green-200 bg-green-50 text-green-700 shadow-sm ring-1 ring-green-100"
+                              : "border-transparent bg-transparent text-stone-300 hover:bg-stone-50 hover:text-stone-500"
+                          }`}
+                        >
+                          <span aria-hidden>✅</span>
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`${meta.placeholder}: not confirmed`}
+                          aria-pressed={!rowConfirmed[key]}
+                          onClick={() =>
+                            commitDraft({
+                              hero,
+                              confirmed: { ...rowConfirmed, [key]: false },
+                              heroContactHiddenOnPublish,
+                            })
+                          }
+                          className={`flex h-10 w-10 items-center justify-center rounded-xl border text-lg leading-none transition ${
+                            !rowConfirmed[key]
+                              ? "border-red-200 bg-red-50 text-red-700 shadow-sm ring-1 ring-red-100"
+                              : "border-transparent bg-transparent text-stone-300 hover:bg-stone-50 hover:text-stone-500"
+                          }`}
+                        >
+                          <span aria-hidden>❎</span>
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Edit ${meta.placeholder}`}
+                          onClick={() => openModal(key)}
+                          className="flex h-10 w-10 items-center justify-center rounded-xl border border-black/[0.08] bg-white text-stone-700 shadow-sm ring-1 ring-black/[0.04] transition hover:bg-stone-50"
+                        >
+                          <Pencil className="h-[18px] w-[18px]" strokeWidth={2} />
+                        </button>
+                      </div>
                     </li>
                   );
                 })}
               </ul>
 
+              {!allConfirmed ? (
+                <p className="mt-3 rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2 text-xs font-medium text-amber-900">
+                  Tap ✅ on every row to confirm these details (publish will expect each item confirmed).
+                </p>
+              ) : (
+                <p className="mt-3 text-xs font-medium text-green-800">All rows confirmed.</p>
+              )}
+
               <p className="mt-4 text-xs text-stone-500">
-                Preview / publish controls stay hidden for now — focus on content first.
+                This block is separate from your public studio — we can hide it on publish when you&apos;re ready.
               </p>
             </div>
           </div>

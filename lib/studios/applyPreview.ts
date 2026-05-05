@@ -12,6 +12,9 @@ export type ApplyStudioHeroFields = {
   physicalAddress: string;
 };
 
+/** Identifies the hero & contact editor block; publish flow may omit it when draft marks it hidden. */
+export const STUDIO_EDITOR_SECTION_HERO_CONTACT = "hero-contact";
+
 /** Canonical empty hero — safe baseline when merging drafts / localStorage. */
 export const EMPTY_APPLY_STUDIO_HERO_FIELDS: ApplyStudioHeroFields = {
   fullName: "",
