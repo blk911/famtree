@@ -23,7 +23,8 @@ export function StudioHeroIntroColumn({
   foldImageUrl: string;
   showEditChrome: boolean;
 }) {
-  const storageKey = `${draftStorageKey}_intro_v1`;
+  /** Bump suffix when default intro copy changes so stale drafts don’t mask server placeholders. */
+  const storageKey = `${draftStorageKey}_intro_v2`;
   const [intro, setIntro] = useState<ApplyStudioIntro>(initialIntro);
   const [modalOpen, setModalOpen] = useState(false);
   const [titleDraft, setTitleDraft] = useState(initialIntro.title);

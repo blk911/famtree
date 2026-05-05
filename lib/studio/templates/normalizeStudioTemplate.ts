@@ -13,7 +13,7 @@ export type NormalizedStudioEditorProps = {
   /** Preview navigates to `/studios/{slug}` — disabled for canonical template (never targets live Deb). */
   editorPreviewSlug: string | null;
   accentHex: string;
-  /** Isolated localStorage scope so drafts never collide with `/studios/apply`. */
+  /** Isolated localStorage scope so drafts never collide with `/studios/apply`. Bump when template defaults must win over stale intro drafts. */
   draftStorageKey: string;
 };
 
@@ -149,6 +149,6 @@ export function normalizeStudioTemplate(envelope: DebDazzleStudioTemplate): Norm
     navItems,
     editorPreviewSlug: null,
     accentHex,
-    draftStorageKey: "amih_studios_deb_template_draft_v1",
+    draftStorageKey: "amih_studios_deb_template_draft_v2",
   };
 }
