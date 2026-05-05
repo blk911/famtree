@@ -2,21 +2,30 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 
-/** Builder-only: switches hero nav between workflow anchors and client-facing anchors. */
-export type StudioBuilderNavMode = "edit" | "preview";
+/** `/studios/start` shell: edit = builder, preview/published = client-style listing (owner can return to edit). */
+export type StudioBuilderNavMode = "edit" | "preview" | "published";
 
-const StudioBuilderNavModeContext = createContext<StudioBuilderNavMode>("edit");
+export type StudioBuilderShellContextValue = {
+  mode: StudioBuilderNavMode;
+  setMode: (next: StudioBuilderNavMode) => void;
+};
 
-export function StudioBuilderNavModeProvider({
+const StudioBuilderShellContext = createContext<StudioBuilderShellContextValue | null>(null);
+
+export function StudioBuilderShellProvider({
   value,
   children,
 }: {
-  value: StudioBuilderNavMode;
+  value: StudioBuilderShellContextValue;
   children: ReactNode;
 }) {
-  return <StudioBuilderNavModeContext.Provider value={value}>{children}</StudioBuilderNavModeContext.Provider>;
+  return <StudioBuilderShellContext.Provider value={value}>{children}</StudioBuilderShellContext.Provider>;
+}
+
+export function useStudioBuilderShellOptional(): StudioBuilderShellContextValue | null {
+  return useContext(StudioBuilderShellContext);
 }
 
 export function useStudioBuilderNavMode(): StudioBuilderNavMode {
-  return useContext(StudioBuilderNavModeContext);
+  return useContext(StudioBuilderShellContext)?.mode ?? "edit";
 }

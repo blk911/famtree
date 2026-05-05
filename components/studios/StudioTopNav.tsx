@@ -30,13 +30,19 @@ const BUSINESS_NAV: readonly { href: string; label: string }[] = [
 export function StudioTopNav({
   mode,
   onLogout,
+  builderOwnerSurface,
+  onEditProfile,
 }: {
   mode: StudioTopNavMode;
   /** Optional override; default POST /api/auth/logout then home. */
   onLogout?: () => void | Promise<void>;
+  /** `/studios/start` owner: in preview/published, swap LOG OUT for EDIT PROFILE (returns to builder). */
+  builderOwnerSurface?: boolean;
+  onEditProfile?: () => void;
 }) {
   const router = useRouter();
   const items = mode === "edit" ? BUILDER_NAV : BUSINESS_NAV;
+  const showOwnerEditProfile = Boolean(builderOwnerSurface && mode !== "edit");
 
   const handleLogout = async () => {
     if (onLogout) {
@@ -62,10 +68,20 @@ export function StudioTopNav({
           </li>
         ))}
         {mode !== "edit" ? (
-          <li key="logout">
-            <button type="button" onClick={() => void handleLogout()} className={`${LINK_CLASS} cursor-pointer border-0 bg-transparent`}>
-              LOG OUT
-            </button>
+          <li key="trail">
+            {showOwnerEditProfile ? (
+              <button
+                type="button"
+                onClick={() => onEditProfile?.()}
+                className={`${LINK_CLASS} cursor-pointer border-0 bg-transparent`}
+              >
+                EDIT PROFILE
+              </button>
+            ) : (
+              <button type="button" onClick={() => void handleLogout()} className={`${LINK_CLASS} cursor-pointer border-0 bg-transparent`}>
+                LOG OUT
+              </button>
+            )}
           </li>
         ) : null}
       </ul>

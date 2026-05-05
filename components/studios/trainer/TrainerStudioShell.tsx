@@ -7,6 +7,7 @@ import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 import { StudioTopNav } from "@/components/studios/StudioTopNav";
+import { useStudioBuilderShellOptional } from "@/components/studios/StudioBuilderNavModeContext";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { TrainerOfferCards } from "./TrainerOfferCards";
 import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
@@ -137,6 +138,9 @@ function StudioPageMainColumns({
   provider: Provider;
   offers: StudioOffer[];
 }) {
+  const shellOpt = useStudioBuilderShellOptional();
+  const clientListingSurface = Boolean(shellOpt && shellOpt.mode !== "edit");
+
   if (variant === "start") {
     return (
       <div
@@ -175,10 +179,12 @@ function StudioPageMainColumns({
                   letterSpacing: "-0.3px",
                 }}
               >
-                Services & offers (preview)
+                {clientListingSurface ? "Services & offers" : "Services & offers (preview)"}
               </h2>
               <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
-                These sample cards match what clients will see. Open one to try the request flow — nothing is sent yet.
+                {clientListingSurface
+                  ? "Choose a service to request — same flow clients use when you’re live."
+                  : "These sample cards match what clients will see. Open one to try the request flow — nothing is sent yet."}
               </p>
               <TrainerOfferCards providerName={provider.displayName ?? ""} offers={offers} previewMode gridColumns="four" />
             </section>

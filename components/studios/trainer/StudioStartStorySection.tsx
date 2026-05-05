@@ -79,12 +79,13 @@ export function StudioStartStorySection({
 
   const wordsUsed = countWords(bodyDraft);
   const studioNavMode = useStudioBuilderNavMode();
-  const sectionStoryId = studioNavMode === "edit" ? "marketing" : "about";
+  const storySectionId = studioNavMode === "edit" ? "marketing" : undefined;
+  const showStoryBuilderChrome = studioNavMode === "edit";
 
   return (
     <>
       <section
-        id={sectionStoryId}
+        id={storySectionId}
         className="scroll-mt-24"
         style={{
           position: "relative",
@@ -182,32 +183,36 @@ export function StudioStartStorySection({
               >
                 Placeholder — upload after approval
               </span>
-              <button
-                type="button"
-                disabled={videoBusy}
-                onClick={onVideoStub}
-                className="absolute bottom-3 right-3 z-[2] inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-stone-800 shadow-md ring-1 ring-black/[0.04] transition hover:bg-stone-50 disabled:opacity-70"
-              >
-                {videoBusy ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                    Working…
-                  </>
-                ) : (
-                  "Upload video"
-                )}
-              </button>
+              {showStoryBuilderChrome ? (
+                <button
+                  type="button"
+                  disabled={videoBusy}
+                  onClick={onVideoStub}
+                  className="absolute bottom-3 right-3 z-[2] inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-stone-800 shadow-md ring-1 ring-black/[0.04] transition hover:bg-stone-50 disabled:opacity-70"
+                >
+                  {videoBusy ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                      Working…
+                    </>
+                  ) : (
+                    "Upload video"
+                  )}
+                </button>
+              ) : null}
             </div>
 
             <div style={{ position: "relative" }}>
-              <button
-                type="button"
-                aria-label="Edit story section"
-                onClick={openModal}
-                className="absolute -right-1 -top-2 z-[2] flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white text-stone-700 shadow-md ring-1 ring-black/[0.04] transition hover:bg-stone-50 md:right-0"
-              >
-                <Pencil className="h-4 w-4" strokeWidth={2} />
-              </button>
+              {showStoryBuilderChrome ? (
+                <button
+                  type="button"
+                  aria-label="Edit story section"
+                  onClick={openModal}
+                  className="absolute -right-1 -top-2 z-[2] flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white text-stone-700 shadow-md ring-1 ring-black/[0.04] transition hover:bg-stone-50 md:right-0"
+                >
+                  <Pencil className="h-4 w-4" strokeWidth={2} />
+                </button>
+              ) : null}
               <h2
                 style={{
                   fontSize: "clamp(22px, 3vw, 28px)",
@@ -216,7 +221,7 @@ export function StudioStartStorySection({
                   margin: "0 0 20px",
                   letterSpacing: "-0.3px",
                   lineHeight: 1.2,
-                  paddingRight: "44px",
+                  paddingRight: showStoryBuilderChrome ? "44px" : 0,
                 }}
               >
                 {intro.title}

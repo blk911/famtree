@@ -10,6 +10,7 @@ import {
 } from "@/lib/studios/applyPreview";
 import { STUDIOS_INK, STUDIOS_LINE } from "@/lib/studios/visual";
 import type { StudioBuilderNavMode } from "@/components/studios/StudioBuilderNavModeContext";
+import { useStudioBuilderShellOptional } from "@/components/studios/StudioBuilderNavModeContext";
 import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
 
@@ -289,6 +290,105 @@ export function ApplyStudioHero({
   ]);
 
   const heroContactPublishReady = isHeroContactPublishReady(hero, confirmedFields);
+  const shell = useStudioBuilderShellOptional();
+
+  useEffect(() => {
+    if (studioViewMode !== "edit") {
+      setModalKey(null);
+      setModalDraft("");
+    }
+  }, [studioViewMode]);
+
+  const listingMode = studioViewMode !== "edit";
+
+  if (listingMode) {
+    const topNavMode = studioViewMode === "published" ? "published" : "preview";
+    return (
+      <section
+        className="relative overflow-hidden px-5 pb-8 pt-5 sm:px-8 sm:pb-10 sm:pt-6"
+        data-studio-editor-section={STUDIO_EDITOR_SECTION_HERO_CONTACT}
+        data-hero-contact-hidden-on-publish={heroContactHiddenOnPublish ? "true" : "false"}
+        data-hero-contact-publish-ready={heroContactPublishReady ? "true" : "false"}
+        aria-labelledby="studio-public-heading"
+      >
+        <div
+          className="pointer-events-none absolute -left-32 top-14 h-72 w-72 rounded-full blur-3xl"
+          style={{ background: "rgba(255, 218, 230, 0.35)" }}
+        />
+        <div
+          className="pointer-events-none absolute -right-24 top-0 h-64 w-64 rounded-full blur-3xl"
+          style={{ background: "rgba(230, 240, 255, 0.4)" }}
+        />
+
+        <div className="relative z-10 mx-auto max-w-5xl">
+          <StudioTopNav
+            mode={topNavMode}
+            builderOwnerSurface
+            onEditProfile={() => shell?.setMode("edit")}
+          />
+
+          <div className="mb-5 flex justify-center">
+            <span
+              className={`rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] shadow-sm ${
+                studioViewMode === "published"
+                  ? "bg-emerald-100 text-emerald-900 ring-1 ring-emerald-200/90"
+                  : "bg-amber-100 text-amber-950 ring-1 ring-amber-200/80"
+              }`}
+            >
+              {studioViewMode === "published" ? "Published listing" : "Preview"}
+            </span>
+          </div>
+
+          <section id="about" className="scroll-mt-24">
+            <div
+              className="overflow-hidden rounded-3xl border border-black/[0.07] bg-white shadow-[0_24px_60px_-12px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.03]"
+              style={{ borderColor: STUDIOS_LINE }}
+            >
+              <div className="grid gap-8 p-8 md:grid-cols-[minmax(0,280px)_1fr] md:items-start md:gap-12">
+                <div className="mx-auto w-full max-w-[280px] md:mx-0">
+                  <div className="relative">
+                    <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} />
+                    <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-stone-500">Studio</p>
+                  <h1
+                    id="studio-public-heading"
+                    className="mt-1 text-2xl font-bold tracking-tight text-stone-900 sm:text-[1.85rem]"
+                    style={{ color: STUDIOS_INK }}
+                  >
+                    {hero.businessName?.trim() || "Studio"}
+                  </h1>
+                  {hero.fullName?.trim() ? (
+                    <p className="mt-2 text-lg font-semibold text-stone-700">{hero.fullName.trim()}</p>
+                  ) : null}
+                  <dl className="mt-8 grid gap-6 sm:grid-cols-2">
+                    <div>
+                      <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Email</dt>
+                      <dd className="mt-1 break-words text-[15px] font-semibold text-stone-900">
+                        {hero.email?.trim() || "—"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Phone</dt>
+                      <dd className="mt-1 text-[15px] font-semibold text-stone-900">{hero.phone?.trim() || "—"}</dd>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Location</dt>
+                      <dd className="mt-1 text-[15px] font-semibold leading-snug text-stone-900">
+                        {hero.physicalAddress?.trim() || "—"}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -308,7 +408,7 @@ export function ApplyStudioHero({
       />
 
       <div className="relative z-10 mx-auto max-w-5xl">
-        <StudioTopNav mode={studioViewMode === "edit" ? "edit" : "preview"} />
+        <StudioTopNav mode="edit" />
 
         <div
           id={studioViewMode === "edit" ? "contact-info" : undefined}
@@ -435,6 +535,33 @@ export function ApplyStudioHero({
               {heroContactPublishReady ? (
                 <p className="mt-3 text-xs font-medium text-green-800">All required hero rows filled and confirmed.</p>
               ) : null}
+
+              <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-black/[0.06] pt-6">
+                <button
+                  type="button"
+                  disabled={!heroContactPublishReady}
+                  onClick={() => shell?.setMode("preview")}
+                  className={`rounded-full border-2 px-7 py-2.5 text-xs font-bold uppercase tracking-[0.14em] transition ${
+                    heroContactPublishReady
+                      ? "border-stone-900 bg-white text-stone-900 hover:bg-stone-50"
+                      : "cursor-not-allowed border-stone-200 bg-stone-50 text-stone-400 opacity-75"
+                  }`}
+                >
+                  Preview
+                </button>
+                <button
+                  type="button"
+                  disabled={!heroContactPublishReady}
+                  onClick={() => shell?.setMode("published")}
+                  className={`rounded-full px-7 py-2.5 text-xs font-bold uppercase tracking-[0.14em] shadow-sm transition ${
+                    heroContactPublishReady
+                      ? "bg-stone-900 text-white hover:bg-stone-800"
+                      : "cursor-not-allowed bg-stone-200 text-stone-400 opacity-75"
+                  }`}
+                >
+                  Publish
+                </button>
+              </div>
             </div>
           </div>
         </div>

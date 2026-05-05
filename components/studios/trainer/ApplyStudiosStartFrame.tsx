@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { ApplyStudioHeroFields } from "@/lib/studios/applyPreview";
 import type { Provider } from "@/types/studios";
 import type { StudioBuilderNavMode } from "@/components/studios/StudioBuilderNavModeContext";
-import { StudioBuilderNavModeProvider } from "@/components/studios/StudioBuilderNavModeContext";
+import { StudioBuilderShellProvider } from "@/components/studios/StudioBuilderNavModeContext";
 import { ApplyStudioHero } from "./ApplyStudioHero";
 import { ApplyStudioLiveNameContext } from "./ApplyStudioLiveNameContext";
 
@@ -40,8 +40,16 @@ export function ApplyStudiosStartFrame({
     setLiveName(next.fullName);
   };
 
+  const shellValue = useMemo(
+    () => ({
+      mode: studioViewMode,
+      setMode: setStudioViewMode,
+    }),
+    [studioViewMode],
+  );
+
   return (
-    <StudioBuilderNavModeProvider value={studioViewMode}>
+    <StudioBuilderShellProvider value={shellValue}>
       <ApplyStudioLiveNameContext.Provider value={liveName}>
         <ApplyStudioHero
           initialHero={initialHero}
@@ -55,6 +63,6 @@ export function ApplyStudiosStartFrame({
         />
         {children}
       </ApplyStudioLiveNameContext.Provider>
-    </StudioBuilderNavModeProvider>
+    </StudioBuilderShellProvider>
   );
 }
