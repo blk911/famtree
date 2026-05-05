@@ -50,10 +50,9 @@ export type ApplyStudioIntro = {
 export const APPLY_INTRO_PLACEHOLDER: ApplyStudioIntro = {
   title: "Why train with us",
   bullets: [
-    "Placeholder — what makes your coaching or care different.",
-    "Placeholder — how sessions flow (assessment, progression, check-ins).",
-    "Placeholder — who you help best (sport, season of life, goals).",
-    "Placeholder — where you train (studio address, mobile, hybrid).",
+    "• Structured training — no guesswork",
+    "• Clear progression across every session",
+    "• Strength, conditioning, and recovery in balance",
   ],
 };
 

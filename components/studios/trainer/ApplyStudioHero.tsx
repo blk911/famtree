@@ -366,7 +366,7 @@ export function ApplyStudioHero({
               className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_8px_30px_-10px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.02]"
               style={{ borderColor: STUDIOS_LINE }}
             >
-              <div className="grid grid-cols-1 md:grid-cols-[35%_35%_30%] md:items-start">
+              <div className="grid grid-cols-1 md:grid-cols-[35%_30%_35%] md:items-start">
                 <div className="flex flex-col items-start justify-start border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:px-6 md:py-6 md:pb-6 md:pr-6 md:pt-6">
                   <div className="relative w-full max-w-[280px]">
                     <TrainerPhoto
@@ -450,7 +450,7 @@ export function ApplyStudioHero({
           className={`mt-3 overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_10px_36px_-12px_rgba(0,0,0,0.1)] ring-1 ring-black/[0.02] ${studioViewMode === "edit" ? "scroll-mt-24" : ""}`}
           style={{ borderColor: STUDIOS_LINE }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-[35%_35%_30%] md:items-start">
+          <div className="grid grid-cols-1 md:grid-cols-[35%_30%_35%] md:items-start">
             <div className="flex flex-col items-start justify-start border-b border-black/[0.06] bg-gradient-to-b from-stone-50/80 to-white px-5 pb-5 pt-5 md:border-b-0 md:border-r md:px-6 md:py-6 md:pb-6 md:pr-6 md:pt-6">
               <div className="relative w-full max-w-[280px]">
                 <TrainerPhoto displayName={displayName} imageUrl={imageUrl} accent={accent} compact />
