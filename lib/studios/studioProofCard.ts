@@ -1,3 +1,5 @@
+import { STUDIO_TESTIMONY_FEEDBACK_1_SRC } from "@/lib/studios/studioIntroVideo";
+
 export type StudioProofCardSource = "template" | "member";
 
 export type StudioInstagramProofCardCategory =
@@ -19,7 +21,6 @@ const KNOWN_CATEGORIES: readonly StudioInstagramProofCardCategory[] = [
   "recovery",
 ];
 
-/** Clean link-card only — no Instagram embed payload. */
 export type StudioInstagramProofCard = {
   id: string;
   type: "instagram";
@@ -29,6 +30,8 @@ export type StudioInstagramProofCard = {
   quote: string;
   instagramUrl: string;
   imageUrl?: string;
+  /** Optional `/uploads/...` MP4 — thumbnail + modal in Private Client Feedback cards. */
+  testimonyVideoUrl?: string;
   category: StudioInstagramProofCardCategory;
 };
 
@@ -43,6 +46,7 @@ export const DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS: StudioInstagramProofCard[] = 
     name: "Lauren T.",
     quote: "I finally understood what to work on between sessions.",
     instagramUrl: "https://instagram.com/",
+    testimonyVideoUrl: STUDIO_TESTIMONY_FEEDBACK_1_SRC,
   },
   {
     id: "sample-proof-2",
@@ -91,6 +95,9 @@ export function sanitizeProofCard(raw: unknown): StudioInstagramProofCard {
   const o = raw as Record<string, unknown>;
   const imageRaw = o.imageUrl;
   const imageUrl = typeof imageRaw === "string" && imageRaw.trim().length > 0 ? imageRaw.trim() : undefined;
+  const testimonyRaw = o.testimonyVideoUrl;
+  const testimonyVideoUrl =
+    typeof testimonyRaw === "string" && testimonyRaw.trim().length > 0 ? testimonyRaw.trim() : undefined;
   const cat = o.category;
   const category: StudioInstagramProofCardCategory =
     typeof cat === "string" && (KNOWN_CATEGORIES as readonly string[]).includes(cat)
@@ -106,6 +113,7 @@ export function sanitizeProofCard(raw: unknown): StudioInstagramProofCard {
     quote: typeof o.quote === "string" ? o.quote : "",
     instagramUrl: typeof o.instagramUrl === "string" ? o.instagramUrl.trim() : "",
     imageUrl,
+    testimonyVideoUrl,
     category,
   };
 }

@@ -15,16 +15,15 @@ export function StudioHeroHaileyTestimonial({ foldImageUrl }: { foldImageUrl: st
         videoSrc={HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_SRC}
         thumbSrc={HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_THUMB_SRC}
         foldImageUrl={foldImageUrl}
-        modalTitle="Client testimony"
-        badgeLabel="Testimony 1"
-        overlayPrimary="Tap › · Hear the story"
-        overlaySecondary="Studios · client voice"
+        modalTitle="Private network in Studios"
+        overlayPrimary="Tap › · Your private network"
+        overlaySecondary="Studios · community lens"
         expectedFileHint={STUDIOS_COMMUNITY_CLIP_EXPECTED_PATH}
-        thumbPlayAriaLabel="Play client testimony clip"
-        cinemaAriaLabel="Client testimony video playback"
+        thumbPlayAriaLabel="Play private network in Studios clip"
+        cinemaAriaLabel="Private network in Studios video playback"
       />
       <p className="mt-3 max-w-[280px] text-[11px] leading-snug text-stone-500">
-        Short clip — placeholder thumb from the video; more testimony tiles can follow.
+        Community lens — shares how training lands for a real client.
       </p>
     </div>
   );

@@ -95,6 +95,7 @@ export function StudioProofCardsSection({
         id,
         source: rid ? "member" : studioSurface === "admin" ? "template" : "member",
         isSample: rid ? false : studioSurface === "admin",
+        testimonyVideoUrl: rid ? undefined : studioSurface === "admin" ? editingCard.testimonyVideoUrl : undefined,
       };
       setProofCards((prev) => prev.map((c) => (c.id === id ? next : c)));
       closeDialog();

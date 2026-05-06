@@ -22,7 +22,7 @@ export const STUDIO_INTRO_VIDEO_SRC =
 export const STUDIO_INTRO_VIDEO_THUMB_SRC = `${STUDIO_INTRO_VIDEO_SRC}#t=0.001`;
 
 /** Right-column hero clip (`StudioHeroHaileyTestimonial`). Filename must match `public/uploads/`. */
-export const STUDIOS_COMMUNITY_CLIP_FILENAME = "Testimony 1.mp4";
+export const STUDIOS_COMMUNITY_CLIP_FILENAME = "studio_3.mp4";
 
 export const STUDIOS_COMMUNITY_CLIP_EXPECTED_PATH =
   `public/uploads/${STUDIOS_COMMUNITY_CLIP_FILENAME}`;
@@ -38,3 +38,14 @@ export const HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_SRC = STUDIOS_COMMUNITY_CLIP_SRC
 
 export const HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_THUMB_SRC =
   STUDIOS_COMMUNITY_CLIP_THUMB_SRC;
+
+/** Private Client Feedback card 1 — `Testimony 1.mp4` under `public/uploads/`. */
+export const STUDIO_TESTIMONY_FEEDBACK_1_FILENAME = "Testimony 1.mp4";
+
+export const STUDIO_TESTIMONY_FEEDBACK_1_EXPECTED_PATH =
+  `public/uploads/${STUDIO_TESTIMONY_FEEDBACK_1_FILENAME}`;
+
+export const STUDIO_TESTIMONY_FEEDBACK_1_SRC =
+  `/uploads/${STUDIO_TESTIMONY_FEEDBACK_1_FILENAME.replace(/ /g, "%20")}`;
+
+export const STUDIO_TESTIMONY_FEEDBACK_1_THUMB_SRC = `${STUDIO_TESTIMONY_FEEDBACK_1_SRC}#t=0.001`;

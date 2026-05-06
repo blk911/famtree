@@ -1,7 +1,12 @@
 "use client";
 
 import type { StudioInstagramProofCard } from "@/lib/studios/studioProofCard";
+import {
+  STUDIO_TESTIMONY_FEEDBACK_1_EXPECTED_PATH,
+  STUDIO_TESTIMONY_FEEDBACK_1_SRC,
+} from "@/lib/studios/studioIntroVideo";
 import { STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
+import { StudioProofMiniVideo } from "@/components/studios/StudioProofMiniVideo";
 
 export type StudioProofCardProps = {
   card: StudioInstagramProofCard;
@@ -15,6 +20,19 @@ function categoryLabel(category: string): string {
   return category.replace(/-/g, " ");
 }
 
+function testimonyExpectedHint(videoUrl: string): string {
+  const normalized = videoUrl.trim();
+  if (normalized === STUDIO_TESTIMONY_FEEDBACK_1_SRC) {
+    return STUDIO_TESTIMONY_FEEDBACK_1_EXPECTED_PATH;
+  }
+  const tail = normalized.replace(/^\/uploads\//, "").split("?")[0] ?? "";
+  try {
+    return `public/uploads/${decodeURIComponent(tail)}`;
+  } catch {
+    return `public/uploads/${tail}`;
+  }
+}
+
 export function StudioProofCard({ card, mode, onEdit, onReplace, onDelete }: StudioProofCardProps) {
   const showControls = mode === "admin-template";
   const showReplace = mode === "builder" && card.isSample;
@@ -22,6 +40,10 @@ export function StudioProofCard({ card, mode, onEdit, onReplace, onDelete }: Stu
   const showViewPost = Boolean(card.instagramUrl?.trim());
 
   const img = card.imageUrl?.trim();
+  const testimony = card.testimonyVideoUrl?.trim();
+  const testimonyThumb =
+    testimony && !testimony.includes("#") ? `${testimony}#t=0.001` : testimony;
+
   const cardSurfaceInteractive = mode === "builder" || mode === "public";
 
   const handleCardActivate = () => {
@@ -63,6 +85,18 @@ export function StudioProofCard({ card, mode, onEdit, onReplace, onDelete }: Stu
         <p className="m-0 text-sm font-semibold" style={{ color: STUDIOS_INK }}>
           — {card.name}
         </p>
+
+        {testimony && testimonyThumb ? (
+          <div className="w-full" onClick={(e) => e.stopPropagation()}>
+            <StudioProofMiniVideo
+              videoSrc={testimony}
+              thumbSrc={testimonyThumb}
+              modalTitle={`${card.name} — testimony`}
+              expectedFileHint={testimonyExpectedHint(testimony)}
+              thumbAriaLabel={`Play ${card.name} testimony video`}
+            />
+          </div>
+        ) : null}
 
         {showViewPost ? (
           <a
