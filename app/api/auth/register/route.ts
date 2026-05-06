@@ -4,6 +4,7 @@ import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { hashPassword, setSessionCookie } from "@/lib/auth";
+import { normalizeInviteEmail } from "@/lib/invite";
 import { sendWelcomeEmail } from "@/lib/email";
 import { z } from "zod";
 
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
           { status: 403 }
         );
       }
-      if (invite.recipientEmail !== email) {
+      if (normalizeInviteEmail(invite.recipientEmail) !== normalizeInviteEmail(email)) {
         return NextResponse.json(
           { error: "Email does not match the invited address." },
           { status: 403 }

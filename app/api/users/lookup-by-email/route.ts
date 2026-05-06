@@ -17,8 +17,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: normalized },
+    // Match login route: case-insensitive (stored casing may differ)
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: normalized, mode: "insensitive" } },
       select: { id: true, firstName: true, lastName: true, email: true, photoUrl: true },
     });
 
@@ -27,6 +28,7 @@ export async function POST(req: NextRequest) {
     if (err.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+    console.error("[lookup-by-email]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
   });

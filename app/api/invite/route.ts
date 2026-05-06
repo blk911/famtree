@@ -3,7 +3,7 @@
 import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { createInvite } from "@/lib/invite";
+import { createInvite, normalizeInviteEmail } from "@/lib/invite";
 import { sendInviteEmail } from "@/lib/email";
 import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
@@ -31,15 +31,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { recipientEmail, relationship } = parsed.data;
+    const { recipientEmail: rawRecipientEmail, relationship } = parsed.data;
+    const recipientEmail = normalizeInviteEmail(rawRecipientEmail);
 
-    // Can't invite yourself
-    if (recipientEmail === user.email) {
+    // Can't invite yourself (match login: case-insensitive email)
+    if (recipientEmail === normalizeInviteEmail(user.email)) {
       return NextResponse.json({ error: "You cannot invite yourself" }, { status: 400 });
     }
 
     // Can't invite someone already in the tree
-    const alreadyMember = await prisma.user.findUnique({ where: { email: recipientEmail } });
+    const alreadyMember = await prisma.user.findFirst({
+      where: { email: { equals: recipientEmail, mode: "insensitive" } },
+    });
     if (alreadyMember) {
       return NextResponse.json(
         { error: "This person already has a AMIHUMAN.NET account" },
@@ -48,7 +51,19 @@ export async function POST(req: NextRequest) {
     }
 
     const invite = await createInvite(user, recipientEmail, relationship);
-    await sendInviteEmail(invite, user);
+    try {
+      await sendInviteEmail(invite, user);
+    } catch (mailErr) {
+      console.error("[invite/send-email]", mailErr);
+      return NextResponse.json(
+        {
+          error:
+            "Invite was saved but the email could not be sent. Check RESEND / EMAIL configuration, or try again shortly.",
+          inviteId: invite.id,
+        },
+        { status: 502 },
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -118,6 +133,7 @@ export async function GET(req: NextRequest) {
     if (err.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+    console.error("[invite/list]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
   });

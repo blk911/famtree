@@ -9,17 +9,23 @@ import type { Invite, User } from "@prisma/client";
 const INVITE_EXPIRES_DAYS = 7;
 const MAX_ATTEMPTS = 3;
 
+/** Lowercase + trim — Postgres `User.email` unique is case-sensitive; app treats addresses case-insensitively (see login). */
+export function normalizeInviteEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 // ─── Create an invite ────────────────────────────────────────
 export async function createInvite(
   sender: User,
   recipientEmail: string,
   relationship?: string,
 ): Promise<Invite> {
-  // Prevent duplicate pending invites to the same address from same sender
+  const normalized = normalizeInviteEmail(recipientEmail);
+  // Prevent duplicate pending invites to the same address from same sender (any casing)
   const existing = await prisma.invite.findFirst({
     where: {
       senderId: sender.id,
-      recipientEmail,
+      recipientEmail: { equals: normalized, mode: "insensitive" },
       status: "PENDING",
     },
   });
@@ -28,7 +34,7 @@ export async function createInvite(
   return prisma.invite.create({
     data: {
       senderId: sender.id,
-      recipientEmail,
+      recipientEmail: normalized,
       relationship: relationship || null,
       token: uuidv4(),
       expiresAt: new Date(Date.now() + INVITE_EXPIRES_DAYS * 86_400_000),

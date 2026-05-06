@@ -9,11 +9,13 @@ import { prisma } from "@/lib/db/prisma";
 export async function GET(req: NextRequest) {
   return withApiTrace(req, "/api/invite/lookup", async (req: NextRequest) => {
 
-  const email = req.nextUrl.searchParams.get("email")?.toLowerCase().trim();
+  const email = req.nextUrl.searchParams.get("email")?.trim();
   if (!email) return NextResponse.json({ found: false });
 
-  const existingUser = await prisma.user.findUnique({
-    where: { email },
+  const normalized = email.toLowerCase();
+
+  const existingUser = await prisma.user.findFirst({
+    where: { email: { equals: normalized, mode: "insensitive" } },
     select: { id: true },
   });
 
@@ -22,7 +24,10 @@ export async function GET(req: NextRequest) {
   }
 
   const invite = await prisma.invite.findFirst({
-    where: { recipientEmail: email, status: { in: ["PENDING", "ACCEPTED"] } },
+    where: {
+      recipientEmail: { equals: normalized, mode: "insensitive" },
+      status: { in: ["PENDING", "ACCEPTED"] },
+    },
     include: { sender: { select: { photoUrl: true, firstName: true, lastName: true } } },
     orderBy: { createdAt: "desc" },
   });

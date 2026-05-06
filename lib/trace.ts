@@ -13,9 +13,13 @@ function ensureLogDir() {
 
 /** Append one JSON line — matches reproducible bug log contract */
 export function appendApiErrorLog(entry: Record<string, unknown>) {
-  ensureLogDir();
-  const line = JSON.stringify({ ts: new Date().toISOString(), ...entry }) + "\n";
-  fs.appendFileSync(LOG_FILE, line, "utf8");
+  try {
+    ensureLogDir();
+    const line = JSON.stringify({ ts: new Date().toISOString(), ...entry }) + "\n";
+    fs.appendFileSync(LOG_FILE, line, "utf8");
+  } catch (e) {
+    console.error("[trace] appendApiErrorLog_failed", e);
+  }
 }
 
 export function getRequestIdFromRequest(req: NextRequest): string {

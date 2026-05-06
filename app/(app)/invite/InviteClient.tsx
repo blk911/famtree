@@ -248,6 +248,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   const [confirmDelete,    setConfirmDelete]    = useState<string | null>(null); // invite id pending delete confirm
   const [targetUser,       setTargetUser]       = useState<ExistingUser | null>(null);
   const [trustCandidates,  setTrustCandidates]  = useState<ExistingUser[]>([]);
+  const [inviteListError,  setInviteListError]  = useState<string | null>(null);
 
   // ── derived values — computed BEFORE any handler that references them ──
   const hasEmail      = recipientEmail.includes("@");
@@ -260,9 +261,21 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   // ── handlers ──
   const loadInvites = () => {
     setLoadingInvites(true);
-    return fetch("/api/invite")
-      .then((r) => r.json())
-      .then(({ invites: list }) => setInvites(list ?? []))
+    setInviteListError(null);
+    return fetch("/api/invite", { credentials: "include" })
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) {
+          setInvites([]);
+          setInviteListError(data.error ?? "Could not load your invites");
+          return;
+        }
+        setInvites(data.invites ?? []);
+      })
+      .catch(() => {
+        setInvites([]);
+        setInviteListError("Could not load your invites — check your connection.");
+      })
       .finally(() => setLoadingInvites(false));
   };
 
@@ -270,7 +283,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
 
   const handleCancel = async (id: string) => {
     setActioning(id);
-    const res = await fetch(`/api/invite/manage/${id}`, { method: "PATCH" });
+    const res = await fetch(`/api/invite/manage/${id}`, { method: "PATCH", credentials: "include" });
     if (res.ok) {
       // Hard delete — remove from list immediately
       setInvites((prev) => prev.filter((inv) => inv.id !== id));
@@ -281,7 +294,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   const handleDelete = async (id: string) => {
     setActioning(id);
     setConfirmDelete(null);
-    await fetch(`/api/invite/manage/${id}`, { method: "DELETE" });
+    await fetch(`/api/invite/manage/${id}`, { method: "DELETE", credentials: "include" });
     await loadInvites();
     setActioning(null);
   };
@@ -301,6 +314,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       const lookupRes = await fetch("/api/users/lookup-by-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email: recipientEmail }),
       });
       const lookupData = await lookupRes.json();
@@ -318,6 +332,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       const trustRes = await fetch("/api/trust/check-opportunity", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           currentUserId: me.id,
           targetUserId: lookupData.user.id,
@@ -348,6 +363,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       const res  = await fetch("/api/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ recipientEmail, relationship }),
       });
       const data = await res.json();
@@ -378,6 +394,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       const res = await fetch("/api/connections/create-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ targetUserId: targetUser.id }),
       });
       const data = await res.json();
@@ -404,6 +421,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       const res = await fetch("/api/trust/create-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ memberIds, createdBy: me.id }),
       });
       const data = await res.json();
@@ -506,6 +524,11 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
             {sendResult?.type === "error" && (
               <div style={{ padding:"12px 14px", borderRadius:"10px", fontSize:"14px", marginBottom:"14px", background:"#fef2f2", borderLeft:"4px solid #dc2626", color:"#dc2626" }}>
                 {sendResult.msg}
+              </div>
+            )}
+            {inviteListError && (
+              <div style={{ padding:"12px 14px", borderRadius:"10px", fontSize:"14px", marginBottom:"14px", background:"#fef2f2", borderLeft:"4px solid #dc2626", color:"#dc2626" }}>
+                {inviteListError}
               </div>
             )}
 
