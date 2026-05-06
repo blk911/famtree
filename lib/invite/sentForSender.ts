@@ -54,7 +54,14 @@ export async function enrichInvitesWithRegisteredAccounts<
 > {
   const regEmails = Array.from(
     new Set(
-      invites.filter((i) => i.status === "REGISTERED").map((i) => i.recipientEmail.toLowerCase()),
+      invites
+        .filter(
+          (i) =>
+            i.status === "REGISTERED" &&
+            typeof i.recipientEmail === "string" &&
+            i.recipientEmail.trim().length > 0,
+        )
+        .map((i) => (i.recipientEmail as string).trim().toLowerCase()),
     ),
   );
   const recipients =
@@ -71,11 +78,15 @@ export async function enrichInvitesWithRegisteredAccounts<
   const emailKey = (e: string) => e.trim().toLowerCase();
   const byEmail = new Map(recipients.map((u) => [emailKey(u.email), u]));
 
-  return invites.map((inv) => ({
-    ...inv,
-    recipientAccount:
-      inv.status === "REGISTERED"
-        ? (byEmail.get(emailKey(inv.recipientEmail)) ?? null)
-        : null,
-  }));
+  return invites.map((inv) => {
+    const email =
+      typeof inv.recipientEmail === "string" ? inv.recipientEmail : "";
+    return {
+      ...inv,
+      recipientAccount:
+        inv.status === "REGISTERED"
+          ? (byEmail.get(emailKey(email)) ?? null)
+          : null,
+    };
+  });
 }

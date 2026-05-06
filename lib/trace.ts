@@ -39,7 +39,7 @@ async function readBodyPreview(req: NextRequest): Promise<unknown> {
 
 /**
  * Wraps route handlers: forwards x-request-id on responses, logs uncaught errors to logs/api-errors.log.
- * Reads body via Request.clone() so the handler stream stays intact.
+ * Logs a redacted body preview (never parses JSON / never touches multipart streams — safe for req.json() routes).
  */
 export async function withApiTrace(
   req: NextRequest,
@@ -92,6 +92,52 @@ export async function withApiTrace<T>(
       route,
       method: req.method ?? "?",
       payload: { query, body },
+      error: e?.message ?? String(err),
+      stack: e?.stack,
+    });
+    console.error(JSON.stringify({ level: "api.error", requestId, route, error: e?.message }));
+    return NextResponse.json(
+      { error: "Internal server error", requestId },
+      { status: 500, headers: { "x-request-id": requestId } },
+    );
+  }
+}
+
+/**
+ * Observability wrapper that does NOT read the request body or clone the Request.
+ * Required for handlers that call `req.json()` — `withApiTrace` still awaits `readBodyPreview`
+ * (clone/text paths have broken POST bodies on some Next.js + Node stacks).
+ */
+export async function withApiTraceLite(
+  req: NextRequest,
+  route: string,
+  handler: (req: NextRequest) => Promise<NextResponse>,
+): Promise<NextResponse> {
+  const requestId = getRequestIdFromRequest(req);
+  console.log(
+    JSON.stringify({
+      level: "api.trace.lite",
+      requestId,
+      route,
+      method: req.method ?? "GET",
+    }),
+  );
+
+  try {
+    const res = await handler(req);
+    const headers = new Headers(res.headers);
+    headers.set("x-request-id", requestId);
+    return new NextResponse(res.body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers,
+    });
+  } catch (err: unknown) {
+    const e = err as Error;
+    appendApiErrorLog({
+      requestId,
+      route,
+      method: req.method ?? "?",
       error: e?.message ?? String(err),
       stack: e?.stack,
     });

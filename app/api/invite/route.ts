@@ -1,6 +1,6 @@
 // app/api/invite/route.ts
 
-import { withApiTrace } from "@/lib/trace";
+import { withApiTraceLite } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { createInvite, normalizeInviteEmail } from "@/lib/invite";
@@ -20,11 +20,16 @@ const sendSchema = z.object({
 
 // POST /api/invite — send a new invite
 export async function POST(req: NextRequest) {
-  return withApiTrace(req, "/api/invite", async (req: NextRequest) => {
+  return withApiTraceLite(req, "/api/invite", async (req: NextRequest) => {
 
   try {
     const user = await requireAuth();
-    const body = await req.json();
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid or empty JSON body" }, { status: 400 });
+    }
     const parsed = sendSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -92,29 +97,27 @@ export async function POST(req: NextRequest) {
 
 // GET /api/invite — list invites sent by current user
 export async function GET(req: NextRequest) {
-  return withApiTrace(req, "/api/invite", async (req: NextRequest) => {
+  return withApiTraceLite(req, "/api/invite", async (req: NextRequest) => {
+    try {
+      const user = await requireAuth();
 
-  try {
-    const user = await requireAuth();
+      const invites = await listSentInvitesForSender(user.id);
+      const enriched = await enrichInvitesWithRegisteredAccounts(invites);
 
-    const invites = await listSentInvitesForSender(user.id);
-    const enriched = await enrichInvitesWithRegisteredAccounts(invites);
-
-    return NextResponse.json(
-      { invites: enriched },
-      {
-        headers: {
-          "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+      return NextResponse.json(
+        { invites: enriched },
+        {
+          headers: {
+            "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+          },
         },
-      },
-    );
-  } catch (err: any) {
-    if (err.message === "UNAUTHORIZED") {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      );
+    } catch (err: any) {
+      if (err.message === "UNAUTHORIZED") {
+        return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      }
+      console.error("[invite/list]", err);
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-    console.error("[invite/list]", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
   });
 }
-

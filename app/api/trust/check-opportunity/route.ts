@@ -1,16 +1,24 @@
 // POST /api/trust/check-opportunity — detect shared connectors for a possible Trust Unit
 
-import { withApiTrace } from "@/lib/trace";
+import { withApiTraceLite } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { findSharedConnections, getTrustMembers } from "@/lib/trust";
 
 export async function POST(req: NextRequest) {
-  return withApiTrace(req, "/api/trust/check-opportunity", async (req: NextRequest) => {
+  return withApiTraceLite(req, "/api/trust/check-opportunity", async (req: NextRequest) => {
 
   try {
     const user = await requireAuth();
-    const { currentUserId, targetUserId } = await req.json();
+    let raw: unknown;
+    try {
+      raw = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid or empty JSON body" }, { status: 400 });
+    }
+    const body = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+    const currentUserId = typeof body.currentUserId === "string" ? body.currentUserId : "";
+    const targetUserId = typeof body.targetUserId === "string" ? body.targetUserId : "";
 
     if (currentUserId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
