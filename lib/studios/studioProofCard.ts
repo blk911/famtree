@@ -1,4 +1,8 @@
-import { STUDIO_TESTIMONY_FEEDBACK_1_SRC, STUDIO_TESTIMONY_FEEDBACK_2_SRC } from "@/lib/studios/studioIntroVideo";
+import {
+  STUDIO_TESTIMONY_FEEDBACK_1_SRC,
+  STUDIO_TESTIMONY_FEEDBACK_2_SRC,
+  STUDIO_TESTIMONY_FEEDBACK_3_SRC,
+} from "@/lib/studios/studioIntroVideo";
 
 export type StudioProofCardSource = "template" | "member";
 
@@ -68,6 +72,7 @@ export const DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS: StudioInstagramProofCard[] = 
     name: "Jordan P.",
     quote: "My body feels stronger, more balanced, and better prepared for golf.",
     instagramUrl: "https://instagram.com/",
+    testimonyVideoUrl: STUDIO_TESTIMONY_FEEDBACK_3_SRC,
   },
   {
     id: "sample-proof-4",

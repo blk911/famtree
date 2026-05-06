@@ -345,7 +345,7 @@ export function TrainerStudioShell({
 
   const seedProof = variant === "start" ? initialProofCards : [];
   const proofStorageKey =
-    variant === "start" && draftStorageKey ? `${draftStorageKey}_proof_v4` : null;
+    variant === "start" && draftStorageKey ? `${draftStorageKey}_proof_v5` : null;
   const [proofCards, setProofCards] = useStudioProofCardsDraft(seedProof, proofStorageKey);
 
   return (
