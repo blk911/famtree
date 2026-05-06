@@ -1,7 +1,8 @@
 name: API fuzz (Schemathesis)
 
+# Disabled on push — failures spam inbox; run manually from Actions when you want fuzz.
 on:
-  push:
+  workflow_dispatch:
 
 jobs:
   fuzz:
