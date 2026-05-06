@@ -28,8 +28,8 @@ public/uploads/*
 !public/uploads/STUDIO BKGRND.jpg
 # Hero intro — relationship-based business clip (referenced by lib/studios/studioIntroVideo.ts)
 !public/uploads/Studios_Relationship-Based_Business_720p_caption.mp4
-# HeyGen community testimonial (referenced by lib/studios/studioIntroVideo.ts)
-!public/uploads/Hailey's Community Testimonial_720p_caption.mp4
+# Right-column hero clip (referenced by lib/studios/studioIntroVideo.ts)
+!public/uploads/your_private_network_in_Studios_1080p_caption.mp4
 
 # ── Logs ─────────────────────────────────────────────────────
 *.log

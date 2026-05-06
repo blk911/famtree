@@ -21,9 +21,21 @@ export const STUDIO_INTRO_VIDEO_SRC =
 /** Seek hint helps browsers paint the first frame as thumbnail (`preload="metadata"`). */
 export const STUDIO_INTRO_VIDEO_THUMB_SRC = `${STUDIO_INTRO_VIDEO_SRC}#t=0.001`;
 
-/** HeyGen community testimonial — whitelist in `.gitignore` under `public/uploads/*`. */
-export const HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_SRC =
-  "/uploads/Hailey%27s%20Community%20Testimonial_720p_caption.mp4";
+/** Right-column hero clip (`StudioHeroHaileyTestimonial`). Filename must match `public/uploads/`. */
+export const STUDIOS_COMMUNITY_CLIP_FILENAME =
+  "your_private_network_in_Studios_1080p_caption.mp4";
+
+export const STUDIOS_COMMUNITY_CLIP_EXPECTED_PATH =
+  `public/uploads/${STUDIOS_COMMUNITY_CLIP_FILENAME}`;
+
+export const STUDIOS_COMMUNITY_CLIP_SRC =
+  `/uploads/${STUDIOS_COMMUNITY_CLIP_FILENAME.replace(/ /g, "%20")}`;
+
+export const STUDIOS_COMMUNITY_CLIP_THUMB_SRC =
+  `${STUDIOS_COMMUNITY_CLIP_SRC}#t=0.001`;
+
+/** Legacy names — same URLs as `STUDIOS_COMMUNITY_CLIP_*`. */
+export const HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_SRC = STUDIOS_COMMUNITY_CLIP_SRC;
 
 export const HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_THUMB_SRC =
-  `${HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_SRC}#t=0.001`;
+  STUDIOS_COMMUNITY_CLIP_THUMB_SRC;
