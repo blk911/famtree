@@ -6,6 +6,7 @@ import { Megaphone, X, CheckCircle } from "lucide-react";
 type Announcement = { id: string; title: string; body: string; isActive: boolean; createdAt: string };
 
 export function AnnouncementComposer() {
+  const [expanded, setExpanded] = useState(false);
   const [current, setCurrent] = useState<Announcement | null>(null);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -14,9 +15,12 @@ export function AnnouncementComposer() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/admin/announcement")
+    fetch("/api/admin/announcement", { credentials: "include" })
       .then((r) => r.json())
-      .then((data) => { if (data.announcement) setCurrent(data.announcement); });
+      .then((data) => {
+        if (data.announcement) setCurrent(data.announcement);
+      })
+      .catch(() => {});
   }, []);
 
   const handlePublish = async () => {
@@ -26,6 +30,7 @@ export function AnnouncementComposer() {
     const res = await fetch("/api/admin/announcement", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ title, body }),
     });
     const data = await res.json();
@@ -46,6 +51,7 @@ export function AnnouncementComposer() {
     await fetch("/api/admin/announcement", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ id: current.id, isActive: false }),
     });
     setCurrent(null);
@@ -59,19 +65,48 @@ export function AnnouncementComposer() {
     }}>
       {/* Section header */}
       <div style={{
-        padding: "14px 20px", borderBottom: "1px solid #f5f4f0",
-        display: "flex", alignItems: "center", gap: "8px",
+        padding: "14px 20px",
+        borderBottom: expanded ? "1px solid #f5f4f0" : "none",
+        display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap",
         background: "linear-gradient(90deg, #fffbeb, #fff)",
       }}>
-        <Megaphone style={{ width: 15, height: 15, color: "#d97706" }} />
+        <Megaphone style={{ width: 15, height: 15, color: "#d97706", flexShrink: 0 }} />
         <span style={{ fontWeight: 700, fontSize: "13px", color: "#92400e" }}>
           Site Announcement
         </span>
-        <span style={{ fontSize: "12px", color: "#a8a29e", marginLeft: "4px" }}>
+        {!expanded && current ? (
+          <span style={{
+            fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em",
+            padding: "2px 8px", borderRadius: "999px", background: "#fef3c7", color: "#a16207", border: "1px solid #fde68a",
+          }}>
+            Live
+          </span>
+        ) : null}
+        <span style={{ fontSize: "12px", color: "#a8a29e", flex: 1, minWidth: "140px" }}>
           — shown to all members on login &amp; vault pages
         </span>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          style={{
+            marginLeft: "auto",
+            padding: "6px 14px",
+            borderRadius: "8px",
+            border: "1px solid #fde68a",
+            background: "white",
+            fontSize: "12px",
+            fontWeight: 700,
+            color: "#92400e",
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          {expanded ? "Close" : "Open"}
+        </button>
       </div>
 
+      {expanded ? (
       <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "16px" }}>
 
         {/* Active announcement preview */}
@@ -163,6 +198,7 @@ export function AnnouncementComposer() {
           </div>
         </div>
       </div>
+      ) : null}
     </div>
   );
 }

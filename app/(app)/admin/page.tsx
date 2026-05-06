@@ -78,10 +78,11 @@ export default async function AdminPage() {
 
       <IncomingIdentityAcks />
 
-      <AdminIdentityQueue />
-
       <AnnouncementComposer />
+
       <AdminLists members={recentMembers} invites={recentInvites} waitlist={recentWaitlist} />
+
+      <AdminIdentityQueue />
     </div>
   );
 }
