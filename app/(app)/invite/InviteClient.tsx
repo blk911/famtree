@@ -189,7 +189,7 @@ function ConfirmModal({
             {([
               ["To",      recipientName ? `${recipientName} <${recipientEmail}>` : recipientEmail],
               ["From",    `${sender.firstName} ${sender.lastName} <noreply@AMIHUMAN.NET.app>`],
-              ["Subject", `You've been invited to join the ${sender.lastName} Family`],
+              ["Subject", `You've been invited to join my family`],
               ...(relationship ? [["Relation", RELATIONSHIPS.find((r) => r.value === relationship)?.label ?? relationship]] : []),
             ] as [string, string][]).map(([lbl, val], i, arr) => (
               <div key={lbl} style={{ fontSize:"13px", marginBottom: i < arr.length - 1 ? "7px" : 0 }}>
@@ -269,7 +269,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   const hasEmail      = recipientEmail.includes("@");
   const canSend       = hasEmail && !!relationship;
   const senderInitials = `${me.firstName[0]}${me.lastName[0]}`.toUpperCase();
-  const subject       = `You've been invited to join the ${me.lastName} Family`;
+  const subject       = `You've been invited to join my family`;
   const pendingCount  = invites.filter((i) => i.status === "PENDING").length;
   const joinedCount = invites.filter((i) => i.status === "REGISTERED").length;
 
@@ -677,8 +677,8 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
                 </p>
                 <p style={{ fontSize:"13px", color:"#6b7280", margin:"0 0 22px", lineHeight:1.6 }}>
                   {recipientName
-                    ? `you've been personally invited to join the ${me.lastName} family tree.`
-                    : "has invited you to join the family tree."}
+                    ? `You've been personally invited to join my family.`
+                    : "They've invited you to join their family."}
                   <br />Can you identify who invited you?
                 </p>
 
