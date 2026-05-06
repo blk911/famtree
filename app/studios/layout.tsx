@@ -9,9 +9,9 @@ import { MemberBreadcrumb } from "@/components/studios/MemberBreadcrumb";
 const STUDIOS_PAGE_BG_URL = "/uploads/STUDIO%20BKGRND.jpg";
 
 export const metadata: Metadata = {
-  title: "AIH Studios — Run Your Training Business Like a Network",
+  title: "AIH Studios — Human-first spaces for trainers & wellness pros",
   description:
-    "Studios gives trainers, recovery pros, and wellness providers a private way to connect with clients, manage access, and grow through trusted relationships.",
+    "Private studio pages where clients earn access through real relationships — built for trainers, recovery pros, and wellness providers who want human trust, not anonymous marketplace noise.",
 };
 
 export default function StudiosLayout({ children }: { children: React.ReactNode }) {

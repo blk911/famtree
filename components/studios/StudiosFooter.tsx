@@ -5,7 +5,7 @@ export function StudiosFooter() {
   return (
     <footer
       style={{
-        padding: "72px 24px 40px",
+        padding: "48px 24px 36px",
         background: "#fff",
         borderTop: `1px solid ${STUDIOS_LINE}`,
       }}
@@ -16,7 +16,7 @@ export function StudiosFooter() {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
             gap: "36px",
-            marginBottom: "52px",
+            marginBottom: "40px",
           }}
         >
           {STUDIOS_FOOTER_COLUMNS.map((col) => (
