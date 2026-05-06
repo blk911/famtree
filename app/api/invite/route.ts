@@ -23,6 +23,14 @@ function mapPrismaHttp(err: unknown): { status: number; message: string } | null
         message: "Database is temporarily unavailable. Try again in a moment.",
       };
     }
+    /** Table/column missing — production DB not migrated (e.g. `studios`, `invites`). */
+    if (err.code === "P2021" || err.code === "P2022") {
+      return {
+        status: 503,
+        message:
+          "Database schema is out of date for this deployment. Apply pending Prisma migrations to production (e.g. `prisma migrate deploy`).",
+      };
+    }
     if (err.code === "P2002") {
       return {
         status: 409,

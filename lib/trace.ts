@@ -11,12 +11,25 @@ function ensureLogDir() {
   if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
 }
 
-/** Append one JSON line — matches reproducible bug log contract */
+/** Serverless runtimes (Vercel, Lambda, etc.) mount the bundle read-only — never write ./logs there. */
+function canWriteLocalApiLogFile(): boolean {
+  if (process.env.VERCEL === "1") return false;
+  if (process.env.AWS_LAMBDA_FUNCTION_NAME) return false;
+  if (process.env.NETLIFY === "true") return false;
+  return true;
+}
+
+/**
+ * Structured API error log — always emits to stdout/stderr (picked up by Vercel Logs).
+ * Optionally appends one JSON line under ./logs locally only.
+ */
 export function appendApiErrorLog(entry: Record<string, unknown>) {
+  const lineObj = { ts: new Date().toISOString(), ...entry };
+  console.error("[api-error]", JSON.stringify(lineObj));
+  if (!canWriteLocalApiLogFile()) return;
   try {
     ensureLogDir();
-    const line = JSON.stringify({ ts: new Date().toISOString(), ...entry }) + "\n";
-    fs.appendFileSync(LOG_FILE, line, "utf8");
+    fs.appendFileSync(LOG_FILE, JSON.stringify(lineObj) + "\n", "utf8");
   } catch (e) {
     console.error("[trace] appendApiErrorLog_failed", e);
   }
@@ -38,7 +51,7 @@ async function readBodyPreview(req: NextRequest): Promise<unknown> {
 }
 
 /**
- * Wraps route handlers: forwards x-request-id on responses, logs uncaught errors to logs/api-errors.log.
+ * Wraps route handlers: forwards x-request-id on responses, logs uncaught errors (console + local logs/api-errors.log when writable).
  * Logs a redacted body preview (never parses JSON / never touches multipart streams — safe for req.json() routes).
  */
 export async function withApiTrace(
