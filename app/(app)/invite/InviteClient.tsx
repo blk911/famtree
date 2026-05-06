@@ -41,6 +41,17 @@ type ExistingUser = {
   photoUrl: string | null;
 };
 
+/** Same id Vercel/server logs use — header wins, body.requestId on JSON errors. */
+function apiTraceRef(res: Response, body: unknown): string | null {
+  const h = res.headers.get("x-request-id");
+  if (h && h.trim().length > 0) return h.trim();
+  if (body && typeof body === "object" && "requestId" in body) {
+    const v = (body as { requestId: unknown }).requestId;
+    if (typeof v === "string" && v.trim().length > 0) return v.trim();
+  }
+  return null;
+}
+
 // ── Relationship options ──────────────────────────────────────────────────────
 
 export const RELATIONSHIPS = [
@@ -241,7 +252,12 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [showTrustModal,   setShowTrustModal]   = useState(false);
   const [sending,          setSending]          = useState(false);
-  const [sendResult,       setSendResult]       = useState<{ type:"success"|"error"; msg:string; inviteeName?:string }|null>(null);
+  const [sendResult,       setSendResult]       = useState<{
+    type: "success" | "error";
+    msg: string;
+    inviteeName?: string;
+    traceRef?: string;
+  } | null>(null);
   const [invites,          setInvites]          = useState<Invite[]>([]);
   const [loadingInvites,   setLoadingInvites]   = useState(true);
   const [actioning,        setActioning]        = useState<string | null>(null);
@@ -267,7 +283,9 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         const data = await r.json();
         if (!r.ok) {
           setInvites([]);
-          setInviteListError(data.error ?? "Could not load your invites");
+          const trace = apiTraceRef(r, data);
+          const base = data.error ?? "Could not load your invites";
+          setInviteListError(trace ? `${base}\n\nSupport ref: ${trace}` : base);
           return;
         }
         setInvites(data.invites ?? []);
@@ -320,7 +338,12 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       const lookupData = await lookupRes.json();
 
       if (!lookupRes.ok) {
-        setSendResult({ type:"error", msg:lookupData.error ?? "Unable to check this email" });
+        const trace = apiTraceRef(lookupRes, lookupData);
+        setSendResult({
+          type: "error",
+          msg: lookupData.error ?? "Unable to check this email",
+          ...(trace ? { traceRef: trace } : {}),
+        });
         return;
       }
 
@@ -373,6 +396,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         inviteId?: string;
         success?: boolean;
         recipientEmail?: string;
+        requestId?: string;
       } = {};
       try {
         data = await res.json();
@@ -381,6 +405,8 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       }
 
       setShowModal(false);
+
+      const postTrace = apiTraceRef(res, data);
 
       // Always sync list after POST — including 502 (invite saved, mail failed) and odd proxies.
       await loadInvites();
@@ -398,13 +424,18 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
           msg:
             data.error ??
             "Invite saved but email failed — check RESEND. The invite appears below.",
+          ...(postTrace ? { traceRef: postTrace } : {}),
         });
         setRecipientName("");
         setRecipientEmail("");
         setRelationship("");
         setEmailError("");
       } else {
-        setSendResult({ type: "error", msg: data.error ?? "Failed to send invite" });
+        setSendResult({
+          type: "error",
+          msg: data.error ?? "Failed to send invite",
+          ...(postTrace ? { traceRef: postTrace } : {}),
+        });
       }
     } catch {
       setShowModal(false);
@@ -551,11 +582,26 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
             )}
             {sendResult?.type === "error" && (
               <div style={{ padding:"12px 14px", borderRadius:"10px", fontSize:"14px", marginBottom:"14px", background:"#fef2f2", borderLeft:"4px solid #dc2626", color:"#dc2626" }}>
-                {sendResult.msg}
+                <div>{sendResult.msg}</div>
+                {sendResult.traceRef ? (
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      fontSize: "12px",
+                      fontFamily: "ui-monospace, monospace",
+                      color: "#991b1b",
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-all",
+                      userSelect: "all",
+                    }}
+                  >
+                    Support ref: {sendResult.traceRef}
+                  </div>
+                ) : null}
               </div>
             )}
             {inviteListError && (
-              <div style={{ padding:"12px 14px", borderRadius:"10px", fontSize:"14px", marginBottom:"14px", background:"#fef2f2", borderLeft:"4px solid #dc2626", color:"#dc2626" }}>
+              <div style={{ padding:"12px 14px", borderRadius:"10px", fontSize:"14px", marginBottom:"14px", background:"#fef2f2", borderLeft:"4px solid #dc2626", color:"#dc2626", whiteSpace:"pre-wrap", wordBreak:"break-word" }}>
                 {inviteListError}
               </div>
             )}

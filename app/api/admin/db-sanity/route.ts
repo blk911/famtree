@@ -28,6 +28,8 @@ export async function GET(req: NextRequest) {
 
       return NextResponse.json({
         dbHost: getDatabaseHostHint(),
+        deployCommit: process.env.VERCEL_GIT_COMMIT_SHA ?? null,
+        vercelEnv: process.env.VERCEL_ENV ?? null,
         userCount,
         inviteCount,
         pendingInvites,
