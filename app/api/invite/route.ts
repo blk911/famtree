@@ -9,10 +9,32 @@ import { createInvite, normalizeInviteEmail } from "@/lib/invite";
 import { sendInviteEmail } from "@/lib/email";
 import { prisma } from "@/lib/db/prisma";
 import { enrichInvitesWithRegisteredAccounts, listSentInvitesForSender } from "@/lib/invite/sentForSender";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+function mapPrismaHttp(err: unknown): { status: number; message: string } | null {
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === "P1001" || err.code === "P1002" || err.code === "P1017") {
+      return {
+        status: 503,
+        message: "Database is temporarily unavailable. Try again in a moment.",
+      };
+    }
+    if (err.code === "P2002") {
+      return {
+        status: 409,
+        message: "This invite conflicts with an existing record.",
+      };
+    }
+  }
+  if (err instanceof Prisma.PrismaClientInitializationError) {
+    return { status: 503, message: "Database connection failed. Try again shortly." };
+  }
+  return null;
+}
 
 const VALID_RELATIONSHIPS = ["parent", "child", "sibling", "spouse", "so", "bf", "gf", "other"] as const;
 
@@ -106,6 +128,14 @@ export async function POST(req: NextRequest) {
         { status: 401, headers: { "x-request-id": requestId } },
       );
     }
+    const mapped = mapPrismaHttp(err);
+    if (mapped) {
+      console.error("[invite/send prisma]", err);
+      return NextResponse.json(
+        { error: mapped.message, requestId },
+        { status: mapped.status, headers: { "x-request-id": requestId } },
+      );
+    }
     console.error("[invite/send]", err);
     appendApiErrorLog({
       requestId,
@@ -151,6 +181,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(
         { error: "Not authenticated" },
         { status: 401, headers: { "x-request-id": requestId } },
+      );
+    }
+    const mapped = mapPrismaHttp(err);
+    if (mapped) {
+      console.error("[invite/list prisma]", err);
+      return NextResponse.json(
+        { error: mapped.message, requestId },
+        { status: mapped.status, headers: { "x-request-id": requestId, ...noStoreInviteJson } },
       );
     }
     console.error("[invite/list]", err);

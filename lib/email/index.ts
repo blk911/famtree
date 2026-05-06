@@ -14,6 +14,20 @@ function getResend() {
 const FROM = process.env.EMAIL_FROM ?? "AMIHUMAN.NET <noreply@AMIHUMAN.NET.app>";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
+/** Resend Node SDK returns `{ data, error }` and does not throw on HTTP/API failure — route handlers must treat `error` as failure. */
+function assertResendOk(
+  result: { error?: { message?: string; name?: string } | null },
+  context: string,
+): void {
+  if (!result.error) return;
+  console.error(`[resend:${context}]`, result.error);
+  const msg =
+    typeof result.error.message === "string" && result.error.message.length > 0
+      ? result.error.message
+      : "Email provider rejected the send";
+  throw new Error(msg);
+}
+
 // ─── Invite email ────────────────────────────────────────────
 export async function sendInviteEmail(
   invite: Invite,
@@ -97,12 +111,13 @@ export async function sendInviteEmail(
 
   const resend = getResend();
   if (!resend) { console.log(`[email:skip] invite → ${invite.recipientEmail}`); return; }
-  await resend.emails.send({
+  const out = await resend.emails.send({
     from: FROM,
     to: invite.recipientEmail,
     subject: `🌳 Someone invited you to their family tree — do you know who?`,
     html,
   });
+  assertResendOk(out, "invite");
 }
 
 // ─── Password reset email ─────────────────────────────────────
@@ -115,7 +130,7 @@ export async function sendPasswordResetEmail(
 
   const resend = getResend();
   if (!resend) { console.log(`[email:skip] password-reset → ${email}`); return; }
-  await resend.emails.send({
+  const out = await resend.emails.send({
     from: FROM,
     to: email,
     subject: `Reset your AMIHUMAN.NET password`,
@@ -151,6 +166,7 @@ export async function sendPasswordResetEmail(
 </body>
 </html>`,
   });
+  assertResendOk(out, "password-reset");
 }
 
 // ─── Admin → member private message notification ─────────────
@@ -162,7 +178,7 @@ export async function sendAdminMessageEmail(
 
   const resend = getResend();
   if (!resend) { console.log(`[email:skip] admin-msg → ${recipient.email}`); return; }
-  await resend.emails.send({
+  const out = await resend.emails.send({
     from: FROM,
     to: recipient.email,
     subject: `Private message from ${sender.firstName} ${sender.lastName} — AMIHUMAN.NET`,
@@ -200,6 +216,7 @@ export async function sendAdminMessageEmail(
 </body>
 </html>`,
   });
+  assertResendOk(out, "admin-msg");
 }
 
 // ─── Welcome email (after identity verified) ─────────────────
@@ -208,7 +225,7 @@ export async function sendWelcomeEmail(user: User): Promise<void> {
 
   const resend = getResend();
   if (!resend) { console.log(`[email:skip] welcome → ${user.email}`); return; }
-  await resend.emails.send({
+  const out = await resend.emails.send({
     from: FROM,
     to: user.email,
     subject: `Welcome to AMIHUMAN.NET, ${user.firstName}!`,
@@ -238,5 +255,6 @@ export async function sendWelcomeEmail(user: User): Promise<void> {
 </body>
 </html>`,
   });
+  assertResendOk(out, "welcome");
 }
 

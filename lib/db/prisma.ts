@@ -13,6 +13,5 @@ export const prisma =
     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
   });
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+// Reuse one client per serverless isolate (Vercel): avoids connection churn across prod reloads.
+globalForPrisma.prisma = prisma;
