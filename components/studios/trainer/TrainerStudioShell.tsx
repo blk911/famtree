@@ -1,18 +1,21 @@
 "use client";
 
+import type { Dispatch, SetStateAction } from "react";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import type { Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import type { StudioBuilderNavMode } from "@/lib/studios/builderNavMode";
+import type { StudioInstagramProofCard } from "@/lib/studios/studioProofCard";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { TrainerOfferCards } from "./TrainerOfferCards";
-import { StudioTestimonialScroller } from "./StudioTestimonialScroller";
 import { StudioTrainingCards } from "./StudioTrainingCards";
 import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
+import { StudioProofCardsSection } from "@/components/studios/StudioProofCardsSection";
+import { useStudioProofCardsDraft } from "@/components/studios/useStudioProofCardsDraft";
 
 const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
   trainer: "#c9a66b",
@@ -132,11 +135,17 @@ function StudioPageMainColumns({
   variant,
   provider,
   offers,
+  studioSurface = "member",
+  proofCards,
+  setProofCards,
 }: {
   nav?: readonly { readonly href: string; readonly label: string }[];
   variant: ShellVariant;
   provider: Provider;
   offers: StudioOffer[];
+  studioSurface?: "member" | "admin";
+  proofCards?: StudioInstagramProofCard[];
+  setProofCards?: Dispatch<SetStateAction<StudioInstagramProofCard[]>>;
 }) {
   if (variant === "start") {
     return (
@@ -167,23 +176,13 @@ function StudioPageMainColumns({
               <StudioTrainingCards className="mt-2" />
             </section>
 
-            <section id="portfolio" className="scroll-mt-24" style={{ marginBottom: "40px" }}>
-              <h2
-                style={{
-                  fontSize: "clamp(22px, 3vw, 28px)",
-                  fontWeight: 700,
-                  color: STUDIOS_INK,
-                  margin: "0 0 8px",
-                  letterSpacing: "-0.3px",
-                }}
-              >
-                Private Client Feedback
-              </h2>
-              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 16px", lineHeight: 1.5 }}>
-                Notes from people training inside this studio — swipe to browse.
-              </p>
-              <StudioTestimonialScroller />
-            </section>
+            {proofCards != null && setProofCards != null ? (
+              <StudioProofCardsSection
+                studioSurface={studioSurface}
+                proofCards={proofCards}
+                setProofCards={setProofCards}
+              />
+            ) : null}
 
             <section id="location" className="scroll-mt-24" style={{ marginBottom: "32px" }}>
               <h2
@@ -312,6 +311,8 @@ export function TrainerStudioShell({
   draftStorageKey,
   liveStoryIntro,
   initialBuilderNavMode = "published",
+  initialProofCards = [],
+  studioSurface = "member",
 }: {
   provider: Provider;
   offers: StudioOffer[];
@@ -323,6 +324,10 @@ export function TrainerStudioShell({
   liveStoryIntro?: ApplyStudioIntro | null;
   /** URL-derived mode for `/studios/start` (ignored for live variant). */
   initialBuilderNavMode?: StudioBuilderNavMode;
+  /** Template-normalized Instagram proof rows (start variant only). */
+  initialProofCards?: StudioInstagramProofCard[];
+  /** Admin preset lab uses template chrome; `/studios/start` uses member flows. */
+  studioSurface?: "member" | "admin";
 }) {
   const safeOffers = Array.isArray(offers) ? offers : [];
   const trimmedAccent = accentHex?.trim();
@@ -338,6 +343,11 @@ export function TrainerStudioShell({
   const applyHero = variant === "start" && applyTemplate ? applyTemplate.hero : null;
   const applyIntro = variant === "start" && applyTemplate ? applyTemplate.intro : null;
 
+  const seedProof = variant === "start" ? initialProofCards : [];
+  const proofStorageKey =
+    variant === "start" && draftStorageKey ? `${draftStorageKey}_proof_v1` : null;
+  const [proofCards, setProofCards] = useStudioProofCardsDraft(seedProof, proofStorageKey);
+
   return (
     <>
       {applyHero && applyIntro ? (
@@ -351,7 +361,14 @@ export function TrainerStudioShell({
           draftStorageKey={draftStorageKey}
           initialNavMode={initialBuilderNavMode}
         >
-          <StudioPageMainColumns variant="start" provider={provider} offers={safeOffers} />
+          <StudioPageMainColumns
+            variant="start"
+            provider={provider}
+            offers={safeOffers}
+            studioSurface={studioSurface}
+            proofCards={proofCards}
+            setProofCards={setProofCards}
+          />
         </ApplyStudiosStartFrame>
       ) : (
         <>

@@ -81,6 +81,7 @@ export function StudioPresetLab() {
           initialStudio={initialStudio}
           mode="template-start"
           initialBuilderNavMode="edit"
+          studioSurface="admin"
         />
       </div>
     </div>

@@ -1,9 +1,17 @@
 /**
- * @deprecated Legacy module path — canonical implementation is `fitness-studio-template.ts`.
- * Re-exports preserve grep hits for "Deb Dazzle" lineage during the neutral-spine migration.
+ * Deb Dazzle lineage — fitness starter envelope plus sample Instagram proof cards.
+ * Legacy names preserved for scripts and docs that grep `DEB_DAZZLE_*`.
  */
 
-export {
-  FITNESS_STUDIO_TEMPLATE as DEB_DAZZLE_STUDIO_TEMPLATE,
-  type FitnessStudioTemplate as DebDazzleStudioTemplate,
-} from "./fitness-studio-template";
+import { DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS } from "@/lib/studios/studioProofCard";
+import { FITNESS_STUDIO_TEMPLATE } from "@/lib/studio/templates/fitness-studio-template";
+
+export const DEB_DAZZLE_STUDIO_TEMPLATE = {
+  ...FITNESS_STUDIO_TEMPLATE,
+  data: {
+    ...FITNESS_STUDIO_TEMPLATE.data,
+    proofCards: DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS,
+  },
+} as const;
+
+export type DebDazzleStudioTemplate = typeof DEB_DAZZLE_STUDIO_TEMPLATE;

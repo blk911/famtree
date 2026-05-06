@@ -1,3 +1,5 @@
+import { DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS } from "@/lib/studios/studioProofCard";
+
 /**
  * Neutral **base** preset — shared spine for personal-services studios before vertical copy lands.
  * Used as the first tab in the admin preset lab and eventually as `/studios/start` default + profile merge target.
@@ -48,6 +50,7 @@ export const NEUTRAL_STUDIO_TEMPLATE = {
     ],
     tiers: TIERS,
     portfolio: [] as { id: string; caption: string; imageUrl: string }[],
+    proofCards: DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS,
     nav: [
       { href: "#about", label: "ABOUT" },
       { href: "#team", label: "TEAM" },

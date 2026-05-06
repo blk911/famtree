@@ -1,3 +1,5 @@
+import { DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS } from "@/lib/studios/studioProofCard";
+
 /**
  * Fitness / performance studio starter — **saved render** for `/studios/start`.
  *
@@ -49,6 +51,7 @@ export const FITNESS_STUDIO_TEMPLATE = {
     ],
     tiers: TIERS,
     portfolio: [] as { id: string; caption: string; imageUrl: string }[],
+    proofCards: DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS,
     nav: [
       { href: "#about", label: "ABOUT" },
       { href: "#team", label: "TEAM" },

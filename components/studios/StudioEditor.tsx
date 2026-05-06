@@ -12,11 +12,13 @@ export function StudioEditor({
   initialStudio,
   mode,
   initialBuilderNavMode = "published",
+  studioSurface = "member",
 }: {
   initialStudio: NormalizedStudioEditorProps;
   mode: StudioEditorMode;
   /** Start route only — from URL on `/studios/start`; admin lab defaults to published listing. */
   initialBuilderNavMode?: StudioBuilderNavMode;
+  studioSurface?: "member" | "admin";
 }) {
   if (mode !== "template-start") {
     throw new Error(`StudioEditor: unsupported mode ${String(mode)}`);
@@ -32,6 +34,8 @@ export function StudioEditor({
       accentHex={initialStudio.accentHex}
       draftStorageKey={initialStudio.draftStorageKey}
       initialBuilderNavMode={initialBuilderNavMode}
+      initialProofCards={initialStudio.proofCards}
+      studioSurface={studioSurface}
     />
   );
 }

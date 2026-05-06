@@ -3,6 +3,8 @@ import { sanitizeApplyStudioHeroFields } from "@/lib/studios/applyPreview";
 import type { OfferPackageType, Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 import type { FitnessStudioTemplate } from "@/lib/studio/templates/fitness-studio-template";
 import type { NeutralStudioTemplate } from "@/lib/studio/templates/neutral-studio-template";
+import type { StudioInstagramProofCard } from "@/lib/studios/studioProofCard";
+import { proofCardsFromTemplate } from "@/lib/studios/studioProofCard";
 
 /** Envelope shapes accepted by `normalizeStudioTemplate` (expand as vertical presets are added). */
 export type NormalizableStudioTemplate = FitnessStudioTemplate | NeutralStudioTemplate;
@@ -26,6 +28,8 @@ export type NormalizedStudioEditorProps = {
   accentHex: string;
   /** Isolated localStorage scope so drafts never collide with `/studios/apply`. Bump when template defaults must win over stale intro drafts. */
   draftStorageKey: string;
+  /** Shared Instagram proof rows — link cards only (no embed metadata). */
+  proofCards: StudioInstagramProofCard[];
 };
 
 function mapTemplateCategory(raw: string): ProviderCategory {
@@ -156,6 +160,10 @@ export function normalizeStudioTemplate(envelope: NormalizableStudioTemplate): N
 
   const accentHex = safeStr(d.accentHex) || "#d4897a";
 
+  const proofCards = proofCardsFromTemplate(
+    "proofCards" in d ? (d as { proofCards?: unknown }).proofCards : [],
+  );
+
   return {
     provider,
     offers,
@@ -165,5 +173,6 @@ export function normalizeStudioTemplate(envelope: NormalizableStudioTemplate): N
     editorPreviewSlug: null,
     accentHex,
     draftStorageKey: draftStorageKeyForTemplate(envelope.templateId),
+    proofCards,
   };
 }
