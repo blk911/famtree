@@ -1,6 +1,8 @@
 // app/api/invite/route.ts
+// IMPORTANT: No withApiTrace / withApiTraceLite wrapper — those ran middleware-like logic before the handler.
+// Invite POST must be the first consumer of req.json() (Undici/Next Request stream quirks).
 
-import { withApiTraceLite } from "@/lib/trace";
+import { appendApiErrorLog, getRequestIdFromRequest } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { createInvite, normalizeInviteEmail } from "@/lib/invite";
@@ -10,51 +12,59 @@ import { enrichInvitesWithRegisteredAccounts, listSentInvitesForSender } from "@
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-const VALID_RELATIONSHIPS = ["parent","child","sibling","spouse","so","bf","gf","other"] as const;
+const VALID_RELATIONSHIPS = ["parent", "child", "sibling", "spouse", "so", "bf", "gf", "other"] as const;
 
 const sendSchema = z.object({
   recipientEmail: z.string().email("Please enter a valid email address"),
   relationship: z.enum(VALID_RELATIONSHIPS),
 });
 
+const noStoreInviteJson = {
+  "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+} as const;
+
 // POST /api/invite — send a new invite
 export async function POST(req: NextRequest) {
-  return withApiTraceLite(req, "/api/invite", async (req: NextRequest) => {
-
+  const requestId = getRequestIdFromRequest(req);
   try {
     const user = await requireAuth();
     let body: unknown;
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json({ error: "Invalid or empty JSON body" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid or empty JSON body" },
+        { status: 400, headers: { "x-request-id": requestId } },
+      );
     }
     const parsed = sendSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Please enter a valid email address" },
-        { status: 400 }
+        { status: 400, headers: { "x-request-id": requestId } },
       );
     }
 
     const { recipientEmail: rawRecipientEmail, relationship } = parsed.data;
     const recipientEmail = normalizeInviteEmail(rawRecipientEmail);
 
-    // Can't invite yourself (match login: case-insensitive email)
     if (recipientEmail === normalizeInviteEmail(user.email)) {
-      return NextResponse.json({ error: "You cannot invite yourself" }, { status: 400 });
+      return NextResponse.json(
+        { error: "You cannot invite yourself" },
+        { status: 400, headers: { "x-request-id": requestId } },
+      );
     }
 
-    // Can't invite someone already in the tree
     const alreadyMember = await prisma.user.findFirst({
       where: { email: { equals: recipientEmail, mode: "insensitive" } },
     });
     if (alreadyMember) {
       return NextResponse.json(
         { error: "This person already has a AMIHUMAN.NET account" },
-        { status: 409 }
+        { status: 409, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -73,51 +83,87 @@ export async function POST(req: NextRequest) {
           relationship: invite.relationship,
           createdAt: invite.createdAt.toISOString(),
         },
-        { status: 502 },
+        { status: 502, headers: { "x-request-id": requestId } },
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      inviteId: invite.id,
-      recipientEmail: invite.recipientEmail,
-      status: invite.status,
-      relationship: invite.relationship,
-      createdAt: invite.createdAt.toISOString(),
-    });
-  } catch (err: any) {
-    if (err.message === "UNAUTHORIZED") {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json(
+      {
+        success: true,
+        inviteId: invite.id,
+        recipientEmail: invite.recipientEmail,
+        status: invite.status,
+        relationship: invite.relationship,
+        createdAt: invite.createdAt.toISOString(),
+      },
+      { headers: { "x-request-id": requestId } },
+    );
+  } catch (err: unknown) {
+    const e = err as { message?: string };
+    if (e.message === "UNAUTHORIZED") {
+      return NextResponse.json(
+        { error: "Not authenticated" },
+        { status: 401, headers: { "x-request-id": requestId } },
+      );
     }
     console.error("[invite/send]", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    appendApiErrorLog({
+      requestId,
+      route: "/api/invite POST",
+      method: "POST",
+      error: e.message ?? String(err),
+      stack: (err as Error).stack,
+    });
+    return NextResponse.json(
+      { error: "Internal server error", requestId },
+      { status: 500, headers: { "x-request-id": requestId } },
+    );
   }
-  });
 }
 
 // GET /api/invite — list invites sent by current user
 export async function GET(req: NextRequest) {
-  return withApiTraceLite(req, "/api/invite", async (req: NextRequest) => {
+  const requestId = getRequestIdFromRequest(req);
+  try {
+    const user = await requireAuth();
+
+    const invites = await listSentInvitesForSender(user.id);
+    let enriched;
     try {
-      const user = await requireAuth();
-
-      const invites = await listSentInvitesForSender(user.id);
-      const enriched = await enrichInvitesWithRegisteredAccounts(invites);
-
-      return NextResponse.json(
-        { invites: enriched },
-        {
-          headers: {
-            "Cache-Control": "private, no-store, max-age=0, must-revalidate",
-          },
-        },
-      );
-    } catch (err: any) {
-      if (err.message === "UNAUTHORIZED") {
-        return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-      }
-      console.error("[invite/list]", err);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      enriched = await enrichInvitesWithRegisteredAccounts(invites);
+    } catch (enrichErr) {
+      console.error("[invite/list enrich]", enrichErr);
+      enriched = invites.map((inv) => ({ ...inv, recipientAccount: null }));
     }
-  });
+
+    return NextResponse.json(
+      { invites: enriched },
+      {
+        headers: {
+          "x-request-id": requestId,
+          ...noStoreInviteJson,
+        },
+      },
+    );
+  } catch (err: unknown) {
+    const e = err as { message?: string };
+    if (e.message === "UNAUTHORIZED") {
+      return NextResponse.json(
+        { error: "Not authenticated" },
+        { status: 401, headers: { "x-request-id": requestId } },
+      );
+    }
+    console.error("[invite/list]", err);
+    appendApiErrorLog({
+      requestId,
+      route: "/api/invite GET",
+      method: "GET",
+      error: e.message ?? String(err),
+      stack: (err as Error).stack,
+    });
+    return NextResponse.json(
+      { error: "Internal server error", requestId },
+      { status: 500, headers: { "x-request-id": requestId } },
+    );
+  }
 }
