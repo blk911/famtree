@@ -1,8 +1,22 @@
-/** Public URL for studio hero intro — file lives under `public/uploads/`. */
-const STUDIOS_RELATIONSHIP_INTRO_FILE =
+/**
+ * Hero intro + testimonial clips under `public/uploads/`.
+ * Whitelist filenames in `.gitignore` when committing binaries.
+ */
+
+/** Filename only — must match disk exactly under `public/uploads/`. */
+export const STUDIO_INTRO_VIDEO_FILENAME =
   "Studios_ Relationship-Based Business_720p_caption.mp4";
 
-export const STUDIO_INTRO_VIDEO_SRC = `/uploads/${encodeURIComponent(STUDIOS_RELATIONSHIP_INTRO_FILE)}`;
+/** Repo-relative path — cinema error UI + docs (must stay aligned with STUDIO_INTRO_VIDEO_FILENAME). */
+export const STUDIO_INTRO_VIDEO_EXPECTED_PATH =
+  `public/uploads/${STUDIO_INTRO_VIDEO_FILENAME}`;
+
+/**
+ * URL path for `<video src>` — encode spaces only.
+ * (Full `encodeURIComponent` is unnecessary here and matches Next static file routing.)
+ */
+export const STUDIO_INTRO_VIDEO_SRC =
+  `/uploads/${STUDIO_INTRO_VIDEO_FILENAME.replace(/ /g, "%20")}`;
 
 /** Seek hint helps browsers paint the first frame as thumbnail (`preload="metadata"`). */
 export const STUDIO_INTRO_VIDEO_THUMB_SRC = `${STUDIO_INTRO_VIDEO_SRC}#t=0.001`;

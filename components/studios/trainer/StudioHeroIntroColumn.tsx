@@ -3,7 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import type { ApplyStudioIntro } from "@/lib/studios/applyPreview";
-import { STUDIO_INTRO_VIDEO_SRC, STUDIO_INTRO_VIDEO_THUMB_SRC } from "@/lib/studios/studioIntroVideo";
+import {
+  STUDIO_INTRO_VIDEO_EXPECTED_PATH,
+  STUDIO_INTRO_VIDEO_SRC,
+  STUDIO_INTRO_VIDEO_THUMB_SRC,
+} from "@/lib/studios/studioIntroVideo";
 import { STUDIOS_INK } from "@/lib/studios/visual";
 import { StudioHeroVideoSlot } from "./StudioHeroVideoSlot";
 
@@ -101,7 +105,7 @@ export function StudioHeroIntroColumn({
           overlayPrimary="Tap › · Watch intro"
           overlaySecondary="Jenny says when you&apos;re ready…"
           badgeLabel={showEditChrome ? "Hero clip" : null}
-          expectedFileHint="public/uploads/STUDIO Intro Vid 1.mp4"
+          expectedFileHint={STUDIO_INTRO_VIDEO_EXPECTED_PATH}
           thumbPlayAriaLabel="Play studio intro video full screen"
           cinemaAriaLabel="Studio intro video playback"
         />
