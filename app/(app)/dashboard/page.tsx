@@ -12,6 +12,7 @@ import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletio
 import { IncomingIdentityAcks } from "@/components/dashboard/IncomingIdentityAcks";
 import { CollapsibleSection } from "@/components/dashboard/CollapsibleSection";
 import { TreeList, type FlatNode } from "@/components/TreeList";
+import { listSentInvitesForSender } from "@/lib/invite/sentForSender";
 
 // ── Tree helpers (mirror of /tree page) ────────────────────────────────────────
 type Member = {
@@ -108,7 +109,7 @@ export default async function DashboardPage() {
     treeViewPrefs,
   ] = await Promise.all([
     prisma.user.count(),
-    prisma.invite.findMany({ where:{ senderId:user.id }, orderBy:{ createdAt:"desc" }, take:6 }),
+    listSentInvitesForSender(user.id, { take: 6 }),
     getPendingTrustRequestsSafe(user.id),
     loadTrustUnitsSafe(user.id),
     queryDashboardProfilePrompt(user.id),

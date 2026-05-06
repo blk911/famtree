@@ -8,6 +8,7 @@ import { AdminLists } from "@/components/admin/AdminLists";
 import { AnnouncementComposer } from "@/components/admin/AnnouncementComposer";
 import { AdminIdentityQueue } from "@/components/admin/AdminIdentityQueue";
 import { IncomingIdentityAcks } from "@/components/dashboard/IncomingIdentityAcks";
+import { getDatabaseHostHint } from "@/lib/db/databaseHostHint";
 
 const card = {
   background:"white", borderRadius:"16px",
@@ -45,6 +46,8 @@ export default async function AdminPage() {
     { label:"Waitlist", value:waitlistCount, color:"#f43f5e", hint:"People waiting for an invite" },
   ];
 
+  const dbHost = getDatabaseHostHint();
+
   return (
     <div style={{display:"flex",flexDirection:"column",gap:"28px"}}>
       <div style={{...card,padding:"22px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:"18px",background:"linear-gradient(135deg,#fff7ed,#fff1f2)"}}>
@@ -63,6 +66,21 @@ export default async function AdminPage() {
           View profile →
         </Link>
       </div>
+
+      <p
+        style={{
+          margin: 0,
+          fontSize: "11px",
+          color: "#78716c",
+          lineHeight: 1.5,
+          padding: "0 4px",
+        }}
+        title="Matches DATABASE_URL on this server (host only). If this differs from your laptop .env.production.local host, you were querying a different database."
+      >
+        <strong style={{ color: "#57534e" }}>Database:</strong> {dbHost}
+        <span style={{ margin: "0 8px", color: "#d6d3d1" }}>|</span>
+        <strong style={{ color: "#57534e" }}>Invite rows:</strong> {totalInvites} total ({pendingInvites} pending)
+      </p>
 
       <div className="admin-stats-grid">
         {stats.map((stat) => (

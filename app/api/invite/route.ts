@@ -6,6 +6,7 @@ import { requireAuth } from "@/lib/auth";
 import { createInvite, normalizeInviteEmail } from "@/lib/invite";
 import { sendInviteEmail } from "@/lib/email";
 import { prisma } from "@/lib/db/prisma";
+import { enrichInvitesWithRegisteredAccounts, listSentInvitesForSender } from "@/lib/invite/sentForSender";
 import { z } from "zod";
 
 const VALID_RELATIONSHIPS = ["parent","child","sibling","spouse","so","bf","gf","other"] as const;
@@ -86,47 +87,8 @@ export async function GET(req: NextRequest) {
   try {
     const user = await requireAuth();
 
-    const invites = await prisma.invite.findMany({
-      where: { senderId: user.id },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        recipientEmail: true,
-        relationship: true,
-        status: true,
-        attempts: true,
-        expiresAt: true,
-        acceptedAt: true,
-        createdAt: true,
-      },
-    });
-
-    const regEmails = Array.from(
-      new Set(
-        invites.filter((i) => i.status === "REGISTERED").map((i) => i.recipientEmail.toLowerCase()),
-      ),
-    );
-    const recipients =
-      regEmails.length === 0
-        ? []
-        : await prisma.user.findMany({
-            where: {
-              OR: regEmails.map((em) => ({
-                email: { equals: em, mode: "insensitive" as const },
-              })),
-            },
-            select: { id: true, email: true, firstName: true, lastName: true, status: true },
-          });
-    const emailKey = (e: string) => e.trim().toLowerCase();
-    const byEmail = new Map(recipients.map((u) => [emailKey(u.email), u]));
-
-    const enriched = invites.map((inv) => ({
-      ...inv,
-      recipientAccount:
-        inv.status === "REGISTERED"
-          ? (byEmail.get(emailKey(inv.recipientEmail)) ?? null)
-          : null,
-    }));
+    const invites = await listSentInvitesForSender(user.id);
+    const enriched = await enrichInvitesWithRegisteredAccounts(invites);
 
     return NextResponse.json({ invites: enriched });
   } catch (err: any) {
