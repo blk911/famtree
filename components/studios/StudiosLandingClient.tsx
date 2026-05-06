@@ -52,6 +52,12 @@ function StudiosHeroVideo() {
           controls
           playsInline
           preload="metadata"
+          muted={false}
+          onLoadedMetadata={(e) => {
+            const v = e.currentTarget;
+            v.muted = false;
+            v.volume = 1;
+          }}
           style={{
             display: "block",
             width: "100%",

@@ -78,7 +78,8 @@ export function StudioHeroVideoSlot({
     } catch {
       /* ignore */
     }
-    v.muted = true;
+    v.muted = false;
+    v.volume = 1;
     void v.play().catch(() => {
       cinemaAutoPlayDoneRef.current = false;
     });
@@ -101,7 +102,6 @@ export function StudioHeroVideoSlot({
       >
         <video
           src={thumbSrc}
-          muted
           playsInline
           preload="metadata"
           tabIndex={-1}
@@ -194,6 +194,7 @@ export function StudioHeroVideoSlot({
                   controls
                   playsInline
                   preload="auto"
+                  muted={false}
                   className="max-h-[min(72vh,calc(100vw-48px))] w-full object-contain sm:max-h-[min(78vh,720px)]"
                   aria-label={cinemaAriaLabel}
                   onLoadedMetadata={tryPlayCinema}
@@ -206,7 +207,7 @@ export function StudioHeroVideoSlot({
                 />
               )}
               <p className="border-t border-white/10 bg-stone-950/95 px-4 py-2 text-center text-[10px] leading-snug text-stone-400">
-                Starts muted for autoplay — unmute in controls · replay from the hero thumbnail anytime.
+                Sound on when playback starts — use controls for volume · replay from the hero thumbnail anytime.
               </p>
             </div>
           </div>
