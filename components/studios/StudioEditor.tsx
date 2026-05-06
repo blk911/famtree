@@ -4,8 +4,8 @@ import type { NormalizedStudioEditorProps } from "@/lib/studio/templates/normali
 export type StudioEditorMode = "template-start";
 
 /**
- * Canonical studio builder shell — `/studios/start` loads normalized template props only.
- * Read-only template sources live under `lib/studio/templates/*`; nothing here queries Deb’s live row.
+ * Canonical studio builder shell — `/studios/start` loads normalized fitness starter props.
+ * Template sources: `lib/studio/templates/*` + `docs/studio-templates.md`.
  */
 export function StudioEditor({
   initialStudio,

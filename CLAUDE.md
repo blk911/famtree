@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm run dev            # Start dev server (port 3000, falls back to 3001)
-npm run build          # prisma generate + next build
+npm run build          # local: prisma generate + next build (Vercel runs db push first — see vercel.json)
 npm run lint           # next lint
 
 npm run db:push        # Push schema changes to DB (no migration files — schema-first)
@@ -81,6 +81,12 @@ Photo upload inputs must **not** use `display:none` / `className="hidden"` — i
 - `components/TreeList.tsx` — renders the flattened tree with depth/connector lines
 - `components/admin/AdminLists.tsx` — members, invites, waitlist tables with actions (cancel/delete invite, link-parent modal)
 - `components/PostCard.tsx` — timeline post card with likes/comments
+
+### AIH Studios (templates)
+
+- Creator flow: `/studios/start` → `StudioEditor` + normalized starter props (`TrainerStudioShell` `variant="start"`).
+- **Roadmap / render ownership:** `docs/studio-templates.md` — neutral spine first; **current shipped starter is the fitness / performance template** (`FITNESS_STUDIO_TEMPLATE`).
+- Source of truth: `lib/studio/templates/fitness-studio-template.ts`; legacy Deb-named re-export lives in `lib/studio/templates/deb-dazzle-template.ts`.
 
 ---
 

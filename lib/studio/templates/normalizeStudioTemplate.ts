@@ -1,7 +1,7 @@
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import { sanitizeApplyStudioHeroFields } from "@/lib/studios/applyPreview";
 import type { OfferPackageType, Provider, ProviderCategory, StudioOffer } from "@/types/studios";
-import type { DebDazzleStudioTemplate } from "@/lib/studio/templates/deb-dazzle-template";
+import type { FitnessStudioTemplate } from "@/lib/studio/templates/fitness-studio-template";
 
 /** Props consumed by `StudioEditor` / `TrainerStudioShell` start variant — all concrete values. */
 export type NormalizedStudioEditorProps = {
@@ -10,7 +10,7 @@ export type NormalizedStudioEditorProps = {
   hero: ApplyStudioHeroFields;
   intro: ApplyStudioIntro;
   navItems: readonly { href: string; label: string }[];
-  /** Preview navigates to `/studios/{slug}` — disabled for canonical template (never targets live Deb). */
+  /** Preview navigates to `/studios/{slug}` — disabled for fitness starter template preview. */
   editorPreviewSlug: string | null;
   accentHex: string;
   /** Isolated localStorage scope so drafts never collide with `/studios/apply`. Bump when template defaults must win over stale intro drafts. */
@@ -20,6 +20,9 @@ export type NormalizedStudioEditorProps = {
 function mapTemplateCategory(raw: string): ProviderCategory {
   const k = raw.trim().toLowerCase().replace(/-/g, "_");
   if (k === "nail_salon" || k === "nailsalon") return "nail_salon";
+  if (k === "performance_coach" || k === "fitness") return "performance_coach";
+  if (k === "trainer") return "trainer";
+  if (k === "beauty_salon" || k === "beautysalon") return "beauty_salon";
   return "beauty_salon";
 }
 
@@ -27,7 +30,7 @@ function safeStr(v: unknown): string {
   return typeof v === "string" ? v : "";
 }
 
-/** Builds Deb-shaped offers from template tiers — IDs are template-only. */
+/** Builds offers from template tiers — IDs are template-only. */
 function templateOffersFromTiers(
   studioId: string,
   providerId: string,
@@ -68,13 +71,13 @@ function templateOffersFromTiers(
  * Turns the canonical template envelope into editor-ready props.
  * No DB reads — pure projection + string/array guards.
  */
-export function normalizeStudioTemplate(envelope: DebDazzleStudioTemplate): NormalizedStudioEditorProps {
+export function normalizeStudioTemplate(envelope: FitnessStudioTemplate): NormalizedStudioEditorProps {
   const d = envelope.data;
   const category = mapTemplateCategory(envelope.category);
 
-  const studioId = safeStr(d.studioId) || "tmpl_studio_deb_dazzle_v1";
-  const providerId = safeStr(d.providerId) || "tmpl_prov_deb_dazzle_v1";
-  const slug = safeStr(d.slug) || "deb-dazzle-template-preview";
+  const studioId = safeStr(d.studioId) || "tmpl_studio_fitness_starter_v1";
+  const providerId = safeStr(d.providerId) || "tmpl_prov_fitness_starter_v1";
+  const slug = safeStr(d.slug) || "fitness-starter-preview";
 
   const heroRaw: ApplyStudioHeroFields = {
     fullName: safeStr(d.ownerDisplayName),
@@ -149,6 +152,6 @@ export function normalizeStudioTemplate(envelope: DebDazzleStudioTemplate): Norm
     navItems,
     editorPreviewSlug: null,
     accentHex,
-    draftStorageKey: "amih_studios_deb_template_draft_v4",
+    draftStorageKey: "amih_studios_fitness_starter_draft_v1",
   };
 }
