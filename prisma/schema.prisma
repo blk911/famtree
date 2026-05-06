@@ -1,5 +1,6 @@
 // famtree/prisma/schema.prisma
-// Run: npx prisma db push && npx prisma generate
+// Local: npm run db:push && prisma generate
+// Vercel: build runs prisma db push (see vercel.json) so production Postgres matches this schema.
 
 generator client {
   provider = "prisma-client-js"
