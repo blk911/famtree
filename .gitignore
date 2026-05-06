@@ -30,8 +30,9 @@ public/uploads/*
 !public/uploads/Studios_Relationship-Based_Business_720p_caption.mp4
 # Right-column hero clip (referenced by lib/studios/studioIntroVideo.ts)
 !public/uploads/studio_3.mp4
-# Private Client Feedback — first proof card clip
+# Private Client Feedback — proof card clips
 !public/uploads/Testimony 1.mp4
+!public/uploads/Testimony 2.mp4
 # Studios marketing landing hero (StudiosLandingClient.tsx)
 !public/uploads/studio_landing_1.mp4
 

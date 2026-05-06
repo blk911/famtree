@@ -49,3 +49,14 @@ export const STUDIO_TESTIMONY_FEEDBACK_1_SRC =
   `/uploads/${STUDIO_TESTIMONY_FEEDBACK_1_FILENAME.replace(/ /g, "%20")}`;
 
 export const STUDIO_TESTIMONY_FEEDBACK_1_THUMB_SRC = `${STUDIO_TESTIMONY_FEEDBACK_1_SRC}#t=0.001`;
+
+/** Private Client Feedback card 2 — `Testimony 2.mp4` under `public/uploads/`. */
+export const STUDIO_TESTIMONY_FEEDBACK_2_FILENAME = "Testimony 2.mp4";
+
+export const STUDIO_TESTIMONY_FEEDBACK_2_EXPECTED_PATH =
+  `public/uploads/${STUDIO_TESTIMONY_FEEDBACK_2_FILENAME}`;
+
+export const STUDIO_TESTIMONY_FEEDBACK_2_SRC =
+  `/uploads/${STUDIO_TESTIMONY_FEEDBACK_2_FILENAME.replace(/ /g, "%20")}`;
+
+export const STUDIO_TESTIMONY_FEEDBACK_2_THUMB_SRC = `${STUDIO_TESTIMONY_FEEDBACK_2_SRC}#t=0.001`;

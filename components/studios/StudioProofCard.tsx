@@ -4,6 +4,8 @@ import type { StudioInstagramProofCard } from "@/lib/studios/studioProofCard";
 import {
   STUDIO_TESTIMONY_FEEDBACK_1_EXPECTED_PATH,
   STUDIO_TESTIMONY_FEEDBACK_1_SRC,
+  STUDIO_TESTIMONY_FEEDBACK_2_EXPECTED_PATH,
+  STUDIO_TESTIMONY_FEEDBACK_2_SRC,
 } from "@/lib/studios/studioIntroVideo";
 import { STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 import { StudioProofMiniVideo } from "@/components/studios/StudioProofMiniVideo";
@@ -24,6 +26,9 @@ function testimonyExpectedHint(videoUrl: string): string {
   const normalized = videoUrl.trim();
   if (normalized === STUDIO_TESTIMONY_FEEDBACK_1_SRC) {
     return STUDIO_TESTIMONY_FEEDBACK_1_EXPECTED_PATH;
+  }
+  if (normalized === STUDIO_TESTIMONY_FEEDBACK_2_SRC) {
+    return STUDIO_TESTIMONY_FEEDBACK_2_EXPECTED_PATH;
   }
   const tail = normalized.replace(/^\/uploads\//, "").split("?")[0] ?? "";
   try {

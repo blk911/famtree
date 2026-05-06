@@ -1,4 +1,4 @@
-import { STUDIO_TESTIMONY_FEEDBACK_1_SRC } from "@/lib/studios/studioIntroVideo";
+import { STUDIO_TESTIMONY_FEEDBACK_1_SRC, STUDIO_TESTIMONY_FEEDBACK_2_SRC } from "@/lib/studios/studioIntroVideo";
 
 export type StudioProofCardSource = "template" | "member";
 
@@ -54,9 +54,10 @@ export const DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS: StudioInstagramProofCard[] = 
     source: "template",
     isSample: true,
     category: "community",
-    name: "Hailey M.",
-    quote: "The morning group gave me structure, accountability, and a reason to show up.",
+    name: "Brandon R.",
+    quote: "The evening group gave me structure, accountability, and a reason to show up.",
     instagramUrl: "https://instagram.com/",
+    testimonyVideoUrl: STUDIO_TESTIMONY_FEEDBACK_2_SRC,
   },
   {
     id: "sample-proof-3",
