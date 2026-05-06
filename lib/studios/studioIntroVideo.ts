@@ -5,7 +5,7 @@
 
 /** Filename only — must match disk exactly under `public/uploads/`. */
 export const STUDIO_INTRO_VIDEO_FILENAME =
-  "Studios_ Relationship-Based Business_720p_caption.mp4";
+  "Studios_Relationship-Based Business_720p_caption.mp4";
 
 /** Repo-relative path — cinema error UI + docs (must stay aligned with STUDIO_INTRO_VIDEO_FILENAME). */
 export const STUDIO_INTRO_VIDEO_EXPECTED_PATH =
