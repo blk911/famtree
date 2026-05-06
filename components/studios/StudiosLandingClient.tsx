@@ -24,11 +24,12 @@ const muted = STUDIOS_MUTED;
 const line = STUDIOS_LINE;
 const cardShadow = STUDIOS_CARD_SHADOW;
 
-/** Set `NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC=/uploads/your-file.mp4` when the asset is in `/public`. */
+/** Default Studios landing hero — `/public/uploads/studio_landing_1.mp4`. Override with NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC if needed. */
 const STUDIOS_HERO_VIDEO_SRC =
-  typeof process.env.NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC === "string"
+  typeof process.env.NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC === "string" &&
+  process.env.NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC.trim().length > 0
     ? process.env.NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC.trim()
-    : "";
+    : "/uploads/studio_landing_1.mp4";
 
 function StudiosHeroVideo() {
   const floatShadow =
