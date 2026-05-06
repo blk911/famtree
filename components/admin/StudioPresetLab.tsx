@@ -76,7 +76,12 @@ export function StudioPresetLab() {
       </div>
 
       <div className="mx-auto max-w-[1280px] px-0 pb-16 pt-2">
-        <StudioEditor key={preset} initialStudio={initialStudio} mode="template-start" />
+        <StudioEditor
+          key={preset}
+          initialStudio={initialStudio}
+          mode="template-start"
+          initialBuilderNavMode="edit"
+        />
       </div>
     </div>
   );
