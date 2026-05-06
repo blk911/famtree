@@ -285,6 +285,11 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
           setInvites([]);
           const trace = apiTraceRef(r, data);
           const base = data.error ?? "Could not load your invites";
+          console.warn("[amihuman] GET /api/invite failed — paste supportRef in Vercel Logs search", {
+            status: r.status,
+            supportRef: trace ?? undefined,
+            error: base,
+          });
           setInviteListError(trace ? `${base}\n\nSupport ref: ${trace}` : base);
           return;
         }
@@ -339,6 +344,11 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
 
       if (!lookupRes.ok) {
         const trace = apiTraceRef(lookupRes, lookupData);
+        console.warn("[amihuman] POST /api/users/lookup-by-email failed — paste supportRef in Vercel Logs search", {
+          status: lookupRes.status,
+          supportRef: trace ?? undefined,
+          error: lookupData.error,
+        });
         setSendResult({
           type: "error",
           msg: lookupData.error ?? "Unable to check this email",
@@ -419,6 +429,10 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         setRelationship("");
         setEmailError("");
       } else if (res.status === 502 && data.inviteId) {
+        console.warn("[amihuman] POST /api/invite email path failed (invite saved)", {
+          status: res.status,
+          supportRef: postTrace ?? undefined,
+        });
         setSendResult({
           type: "error",
           msg:
@@ -431,6 +445,11 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         setRelationship("");
         setEmailError("");
       } else {
+        console.warn("[amihuman] POST /api/invite failed — paste supportRef in Vercel Logs search", {
+          status: res.status,
+          supportRef: postTrace ?? undefined,
+          error: data.error,
+        });
         setSendResult({
           type: "error",
           msg: data.error ?? "Failed to send invite",
