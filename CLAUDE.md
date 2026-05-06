@@ -84,7 +84,7 @@ Photo upload inputs must **not** use `display:none` / `className="hidden"` — i
 
 ### AIH Studios (templates)
 
-- Creator flow: `/studios/start` → `StudioEditor` + normalized starter props (`TrainerStudioShell` `variant="start"`).
+- Creator flow: `/studios/start` → neutral template (`cloneNeutralStudioTemplate`) + optional `hydrateNormalizedStudioFromProfile` when logged in → `StudioEditor` (`TrainerStudioShell` `variant="start"`).
 - **Roadmap / render ownership:** `docs/studio-templates.md` — neutral spine + fitness vertical; **admin preset lab** at `/admin/studios/template`.
 - Source: `lib/studio/templates/neutral-studio-template.ts`, `lib/studio/templates/fitness-studio-template.ts`; legacy Deb-named re-export lives in `lib/studio/templates/deb-dazzle-template.ts`.
 

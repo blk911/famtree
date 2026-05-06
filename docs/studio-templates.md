@@ -16,7 +16,7 @@ Generic placeholders + minimal tier ladder — **no vertical-specific story** un
 | Clone helper | `cloneNeutralStudioTemplate()` in `lib/studio/templates/cloneStudioTemplate.ts` |
 | Category mapping | `category: "neutral"` → `Provider.category` `trainer` in `normalizeStudioTemplate` (generic professional until we add a dedicated union member). |
 
-**Member route:** `/studios/start` still loads the **fitness** envelope until we intentionally switch the default to neutral + profile merge.
+**Member route:** `/studios/start` loads the **neutral** envelope and **hydrates** hero contact + provider bio/photo/location from the signed-in **User + Profile** when available (see `lib/studio/hydrateStudioFromProfile.ts`).
 
 ## What is frozen today: **Fitness / performance starter**
 
