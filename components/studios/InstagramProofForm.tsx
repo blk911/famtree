@@ -6,6 +6,9 @@ import { isValidInstagramProofUrl } from "@/lib/studios/studioProofCard";
 
 const CATEGORY_OPTIONS: { value: StudioInstagramProofCardCategory; label: string }[] = [
   { value: "client-moment", label: "Client moment" },
+  { value: "community", label: "Community" },
+  { value: "performance", label: "Performance" },
+  { value: "recovery", label: "Recovery" },
   { value: "testimonial", label: "Testimonial" },
   { value: "transformation", label: "Transformation" },
   { value: "group", label: "Group" },

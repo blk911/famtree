@@ -4,7 +4,20 @@ export type StudioInstagramProofCardCategory =
   | "client-moment"
   | "testimonial"
   | "transformation"
-  | "group";
+  | "group"
+  | "community"
+  | "performance"
+  | "recovery";
+
+const KNOWN_CATEGORIES: readonly StudioInstagramProofCardCategory[] = [
+  "client-moment",
+  "testimonial",
+  "transformation",
+  "group",
+  "community",
+  "performance",
+  "recovery",
+];
 
 /** Clean link-card only — no Instagram embed payload. */
 export type StudioInstagramProofCard = {
@@ -19,18 +32,47 @@ export type StudioInstagramProofCard = {
   category: StudioInstagramProofCardCategory;
 };
 
-/** Default sample row for Deb / neutral starters — matches studio template seed. */
+/** Default sample rows for Deb / neutral starters (`deb-dazzle-template`, fitness, neutral). */
 export const DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS: StudioInstagramProofCard[] = [
   {
     id: "sample-proof-1",
     type: "instagram",
     source: "template",
     isSample: true,
+    category: "client-moment",
     name: "Lauren T.",
     quote: "I finally understood what to work on between sessions.",
     instagramUrl: "https://instagram.com/",
-    imageUrl: "",
-    category: "client-moment",
+  },
+  {
+    id: "sample-proof-2",
+    type: "instagram",
+    source: "template",
+    isSample: true,
+    category: "community",
+    name: "Hailey M.",
+    quote: "The morning group gave me structure, accountability, and a reason to show up.",
+    instagramUrl: "https://instagram.com/",
+  },
+  {
+    id: "sample-proof-3",
+    type: "instagram",
+    source: "template",
+    isSample: true,
+    category: "performance",
+    name: "Jordan P.",
+    quote: "My body feels stronger, more balanced, and better prepared for golf.",
+    instagramUrl: "https://instagram.com/",
+  },
+  {
+    id: "sample-proof-4",
+    type: "instagram",
+    source: "template",
+    isSample: true,
+    category: "recovery",
+    name: "Anika S.",
+    quote: "The recovery work changed how my runs felt within two weeks.",
+    instagramUrl: "https://instagram.com/",
   },
 ];
 
@@ -51,8 +93,8 @@ export function sanitizeProofCard(raw: unknown): StudioInstagramProofCard {
   const imageUrl = typeof imageRaw === "string" && imageRaw.trim().length > 0 ? imageRaw.trim() : undefined;
   const cat = o.category;
   const category: StudioInstagramProofCardCategory =
-    cat === "testimonial" || cat === "transformation" || cat === "group" || cat === "client-moment"
-      ? cat
+    typeof cat === "string" && (KNOWN_CATEGORIES as readonly string[]).includes(cat)
+      ? (cat as StudioInstagramProofCardCategory)
       : "client-moment";
 
   return {

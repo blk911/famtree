@@ -1,6 +1,6 @@
 /**
- * Deb Dazzle lineage — fitness starter envelope plus sample Instagram proof cards.
- * Legacy names preserved for scripts and docs that grep `DEB_DAZZLE_*`.
+ * Deb Dazzle lineage — fitness starter plus sample Instagram proof cards.
+ * Canonical `proofCards` array: `DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS` in `@/lib/studios/studioProofCard`.
  */
 
 import { DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS } from "@/lib/studios/studioProofCard";

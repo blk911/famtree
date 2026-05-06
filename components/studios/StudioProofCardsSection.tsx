@@ -32,26 +32,18 @@ export function StudioProofCardsSection({
     return "builder";
   }, [studioSurface, isPublicListing]);
 
-  const visibleCards = useMemo(() => {
-    if (sectionMode === "public") return proofCards.filter((c) => !c.isSample);
-    return proofCards;
-  }, [proofCards, sectionMode]);
-
   const [dialog, setDialog] = useState<"closed" | "new" | "edit">("closed");
   const [editingCard, setEditingCard] = useState<StudioInstagramProofCard | null>(null);
 
-  if (sectionMode === "public" && visibleCards.length === 0) {
+  if (proofCards.length === 0) {
     return null;
   }
 
-  const title =
-    sectionMode === "admin-template" ? "Sample Proof Cards" : "Private Client Feedback";
+  const title = sectionMode === "admin-template" ? "Sample Proof Cards" : "Private Client Feedback";
   const subcopy =
     sectionMode === "admin-template"
       ? "These examples help creators understand what to replace with their own client posts."
-      : sectionMode === "builder"
-        ? "Add real client moments, testimonials, or Instagram posts that show how your Studio works."
-        : "Notes and moments from people training inside this Studio.";
+      : "See how private client networks turn training, trust, and referrals into momentum.";
 
   const openNew = () => {
     replaceTargetId.current = null;
@@ -152,8 +144,8 @@ export function StudioProofCardsSection({
           ) : null}
         </div>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleCards.map((card) => (
+        <div className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 pt-1 scroll-smooth">
+          {proofCards.map((card) => (
             <StudioProofCard
               key={card.id}
               card={card}
