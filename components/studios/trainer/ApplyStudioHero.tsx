@@ -581,33 +581,6 @@ export function ApplyStudioHero({
               {heroContactPublishReady ? (
                 <p className="mt-2 text-xs font-medium text-green-800">All required fields confirmed.</p>
               ) : null}
-
-              <div className="mt-5 flex w-full max-w-[280px] flex-wrap items-center gap-2 border-t border-black/[0.06] pt-4">
-                <button
-                  type="button"
-                  disabled={!heroContactPublishReady}
-                  onClick={() => setStudioNavMode("preview")}
-                  className={`rounded-full border-2 px-6 py-2 text-[10px] font-bold uppercase tracking-[0.14em] transition disabled:cursor-default ${
-                    heroContactPublishReady
-                      ? "cursor-pointer border-stone-900 bg-white text-stone-900 hover:bg-stone-50"
-                      : "border-stone-200 bg-stone-50 text-stone-400 opacity-75"
-                  }`}
-                >
-                  Preview
-                </button>
-                <button
-                  type="button"
-                  disabled={!heroContactPublishReady}
-                  onClick={() => setStudioNavMode("published")}
-                  className={`rounded-full px-6 py-2 text-[10px] font-bold uppercase tracking-[0.14em] shadow-sm transition disabled:cursor-default ${
-                    heroContactPublishReady
-                      ? "cursor-pointer bg-stone-900 text-white hover:bg-stone-800"
-                      : "bg-stone-200 text-stone-400 opacity-75"
-                  }`}
-                >
-                  Publish
-                </button>
-              </div>
             </div>
 
             <div className="min-h-0 min-w-0 border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">

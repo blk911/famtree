@@ -1,9 +1,9 @@
 "use client";
 
 import { createContext, useContext, type ReactNode } from "react";
+import type { StudioBuilderNavMode } from "@/lib/studios/builderNavMode";
 
-/** `/studios/start` shell: edit = builder, preview/published = client-style listing (owner can return to edit). */
-export type StudioBuilderNavMode = "edit" | "preview" | "published";
+export type { StudioBuilderNavMode };
 
 export type StudioBuilderShellContextValue = {
   mode: StudioBuilderNavMode;
@@ -27,5 +27,5 @@ export function useStudioBuilderShellOptional(): StudioBuilderShellContextValue 
 }
 
 export function useStudioBuilderNavMode(): StudioBuilderNavMode {
-  return useContext(StudioBuilderShellContext)?.mode ?? "edit";
+  return useContext(StudioBuilderShellContext)?.mode ?? "published";
 }

@@ -1,5 +1,6 @@
 import { TrainerStudioShell } from "@/components/studios/trainer/TrainerStudioShell";
 import type { NormalizedStudioEditorProps } from "@/lib/studio/templates/normalizeStudioTemplate";
+import type { StudioBuilderNavMode } from "@/lib/studios/builderNavMode";
 
 export type StudioEditorMode = "template-start";
 
@@ -10,9 +11,12 @@ export type StudioEditorMode = "template-start";
 export function StudioEditor({
   initialStudio,
   mode,
+  initialBuilderNavMode = "published",
 }: {
   initialStudio: NormalizedStudioEditorProps;
   mode: StudioEditorMode;
+  /** Start route only — from URL on `/studios/start`; admin lab defaults to published listing. */
+  initialBuilderNavMode?: StudioBuilderNavMode;
 }) {
   if (mode !== "template-start") {
     throw new Error(`StudioEditor: unsupported mode ${String(mode)}`);
@@ -27,6 +31,7 @@ export function StudioEditor({
       editorPreviewSlug={initialStudio.editorPreviewSlug}
       accentHex={initialStudio.accentHex}
       draftStorageKey={initialStudio.draftStorageKey}
+      initialBuilderNavMode={initialBuilderNavMode}
     />
   );
 }

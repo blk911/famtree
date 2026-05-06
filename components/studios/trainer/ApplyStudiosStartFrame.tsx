@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import type { Provider } from "@/types/studios";
-import type { StudioBuilderNavMode } from "@/components/studios/StudioBuilderNavModeContext";
+import type { StudioBuilderNavMode } from "@/lib/studios/builderNavMode";
 import { StudioBuilderShellProvider } from "@/components/studios/StudioBuilderNavModeContext";
 import { ApplyStudioHero } from "./ApplyStudioHero";
 import { ApplyStudioLiveNameContext } from "./ApplyStudioLiveNameContext";
@@ -16,6 +17,7 @@ export function ApplyStudiosStartFrame({
   accent,
   editorPreviewSlug = null,
   draftStorageKey,
+  initialNavMode,
   children,
 }: {
   initialHero: ApplyStudioHeroFields;
@@ -25,20 +27,42 @@ export function ApplyStudiosStartFrame({
   accent: string;
   editorPreviewSlug?: string | null;
   draftStorageKey?: string;
+  /** Resolved from `/studios/start` URL — keeps member breadcrumb links and shell mode aligned. */
+  initialNavMode: StudioBuilderNavMode;
   children: ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [liveName, setLiveName] = useState(initialHero.fullName);
-  const [studioViewMode, setStudioViewMode] = useState<StudioBuilderNavMode>("edit");
+  const [studioViewMode, setStudioViewModeState] = useState<StudioBuilderNavMode>(initialNavMode);
 
   useEffect(() => {
-    /** QA / wiring hook: `?previewNav=1` mirrors preview-mode business nav without restoring Preview chrome yet. */
-    try {
-      const q = new URLSearchParams(window.location.search).get("previewNav");
-      if (q === "1") setStudioViewMode("preview");
-    } catch {
-      /* ignore */
-    }
-  }, []);
+    setStudioViewModeState(initialNavMode);
+  }, [initialNavMode]);
+
+  const pushNavModeToUrl = useCallback(
+    (next: StudioBuilderNavMode) => {
+      const basePath = pathname ?? "/studios/start";
+      const qs = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+      qs.delete("previewNav");
+      if (next === "published") {
+        qs.delete("mode");
+      } else {
+        qs.set("mode", next);
+      }
+      const tail = qs.toString();
+      router.replace(tail ? `${basePath}?${tail}` : basePath, { scroll: false });
+    },
+    [pathname, router],
+  );
+
+  const setStudioViewMode = useCallback(
+    (next: StudioBuilderNavMode) => {
+      setStudioViewModeState(next);
+      pushNavModeToUrl(next);
+    },
+    [pushNavModeToUrl],
+  );
 
   const handleHeroCommit = (next: ApplyStudioHeroFields) => {
     setLiveName(next.fullName);
@@ -49,7 +73,7 @@ export function ApplyStudiosStartFrame({
       mode: studioViewMode,
       setMode: setStudioViewMode,
     }),
-    [studioViewMode],
+    [studioViewMode, setStudioViewMode],
   );
 
   return (

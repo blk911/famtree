@@ -5,6 +5,7 @@ import { MapPin } from "lucide-react";
 import type { Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
+import type { StudioBuilderNavMode } from "@/lib/studios/builderNavMode";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
@@ -310,6 +311,7 @@ export function TrainerStudioShell({
   accentHex,
   draftStorageKey,
   liveStoryIntro,
+  initialBuilderNavMode = "published",
 }: {
   provider: Provider;
   offers: StudioOffer[];
@@ -319,6 +321,8 @@ export function TrainerStudioShell({
   accentHex?: string | null;
   draftStorageKey?: string;
   liveStoryIntro?: ApplyStudioIntro | null;
+  /** URL-derived mode for `/studios/start` (ignored for live variant). */
+  initialBuilderNavMode?: StudioBuilderNavMode;
 }) {
   const safeOffers = Array.isArray(offers) ? offers : [];
   const trimmedAccent = accentHex?.trim();
@@ -345,6 +349,7 @@ export function TrainerStudioShell({
           accent={accent}
           editorPreviewSlug={editorPreviewSlug}
           draftStorageKey={draftStorageKey}
+          initialNavMode={initialBuilderNavMode}
         >
           <StudioPageMainColumns variant="start" provider={provider} offers={safeOffers} />
         </ApplyStudiosStartFrame>

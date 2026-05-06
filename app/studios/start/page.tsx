@@ -6,6 +6,7 @@ import { StudiosFooter } from "@/components/studios/StudiosFooter";
 import { StudioEditor } from "@/components/studios/StudioEditor";
 import { cloneNeutralStudioTemplate } from "@/lib/studio/templates/cloneStudioTemplate";
 import { normalizeStudioTemplate } from "@/lib/studio/templates/normalizeStudioTemplate";
+import { parseStudioBuilderNavModeFromSearchParams } from "@/lib/studios/builderNavMode";
 
 export const metadata: Metadata = {
   title: "Start your studio — AIH Studios",
@@ -14,8 +15,13 @@ export const metadata: Metadata = {
 };
 
 /** `/studios/start` loads the neutral base envelope + optional profile hydration. See docs/studio-templates.md. */
-export default async function StudiosStartPage() {
+export default async function StudiosStartPage({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
   const user = await getCurrentUser();
+  const initialBuilderNavMode = parseStudioBuilderNavModeFromSearchParams(searchParams);
 
   const profile = user
     ? await prisma.profile.findUnique({
@@ -32,7 +38,11 @@ export default async function StudiosStartPage() {
 
   return (
     <>
-      <StudioEditor initialStudio={initialStudio} mode="template-start" />
+      <StudioEditor
+        initialStudio={initialStudio}
+        mode="template-start"
+        initialBuilderNavMode={initialBuilderNavMode}
+      />
       <StudiosFooter />
     </>
   );

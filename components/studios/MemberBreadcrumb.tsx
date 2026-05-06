@@ -3,9 +3,11 @@
 // Public visitors (no session cookie) see nothing.
 // This is a server component — no client JS, no flash, no leak.
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
+import { StudiosStartModeNav } from "@/components/studios/StudiosStartModeNav";
 
 export async function MemberBreadcrumb() {
   let user: Awaited<ReturnType<typeof getCurrentUser>>;
@@ -38,26 +40,38 @@ export async function MemberBreadcrumb() {
           gap: "16px",
         }}
       >
-        <Link
-          href="/dashboard"
+        <div
           style={{
-            display: "inline-flex",
+            display: "flex",
             alignItems: "center",
-            gap: "8px",
-            color: "#262626",
-            fontSize: "13px",
-            fontWeight: 600,
-            textDecoration: "none",
-            padding: "8px 14px",
-            borderRadius: "999px",
-            background: "#fff",
-            border: "1px solid rgba(0, 0, 0, 0.08)",
-            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)",
+            gap: "12px",
+            flexWrap: "wrap",
           }}
         >
-          <ArrowLeft style={{ width: "14px", height: "14px" }} />
-          Return to AIH
-        </Link>
+          <Link
+            href="/dashboard"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              color: "#262626",
+              fontSize: "13px",
+              fontWeight: 600,
+              textDecoration: "none",
+              padding: "8px 14px",
+              borderRadius: "999px",
+              background: "#fff",
+              border: "1px solid rgba(0, 0, 0, 0.08)",
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)",
+            }}
+          >
+            <ArrowLeft style={{ width: "14px", height: "14px" }} />
+            Return to AIH
+          </Link>
+          <Suspense fallback={null}>
+            <StudiosStartModeNav />
+          </Suspense>
+        </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap", justifyContent: "flex-end" }}>
           <span style={{ fontSize: "12px", color: "#737373", fontWeight: 500 }}>
