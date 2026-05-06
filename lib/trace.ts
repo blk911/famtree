@@ -29,18 +29,12 @@ export function getRequestIdFromRequest(req: NextRequest): string {
 async function readBodyPreview(req: NextRequest): Promise<unknown> {
   const m = req.method;
   if (m === "GET" || m === "HEAD" || m === "OPTIONS") return undefined;
-  try {
-    const ct = req.headers.get("content-type") ?? "";
-    const clone = req.clone();
-    if (ct.includes("application/json")) {
-      return await clone.json();
-    }
-    if (ct.includes("multipart/form-data")) return "[multipart]";
-    const text = await clone.text();
-    return text.length > 16384 ? `${text.slice(0, 16384)}…` : text || undefined;
-  } catch {
-    return "[body unreadable]";
-  }
+  const ct = req.headers.get("content-type") ?? "";
+  // Never read Request.clone() bodies before the route handler runs — on some Next.js / Node
+  // stacks, consuming the clone can leave the original body's stream unusable and breaks req.json().
+  if (ct.includes("application/json")) return "[json omitted]";
+  if (ct.includes("multipart/form-data")) return "[multipart omitted]";
+  return "[body omitted]";
 }
 
 /**

@@ -76,10 +76,12 @@ const card = {
 };
 
 const STATUS_COLOR: Record<string,string> = {
-  PENDING:"#f59e0b", ACCEPTED:"#10b981", EXPIRED:"#ef4444", CANCELLED:"#9ca3af",
+  PENDING:"#f59e0b", ACCEPTED:"#10b981", REGISTERED:"#059669",
+  EXPIRED:"#ef4444", CANCELLED:"#9ca3af",
 };
 const STATUS_BG: Record<string,string> = {
-  PENDING:"#fef3c7", ACCEPTED:"#d1fae5", EXPIRED:"#fee2e2", CANCELLED:"#f3f4f6",
+  PENDING:"#fef3c7", ACCEPTED:"#d1fae5", REGISTERED:"#d1fae5",
+  EXPIRED:"#fee2e2", CANCELLED:"#f3f4f6",
 };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
