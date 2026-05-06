@@ -59,6 +59,13 @@ export default function AdminStudiosPage() {
           <button style={btn("secondary")}>
             <Inbox style={{ width: "15px", height: "15px" }} /> Review Requests
           </button>
+          <Link
+            href="/studios/inbox"
+            prefetch={false}
+            style={{ ...btn("secondary"), textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}
+          >
+            <Inbox style={{ width: "15px", height: "15px" }} /> Concierge inbox
+          </Link>
         </div>
       </div>
 

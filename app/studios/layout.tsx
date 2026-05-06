@@ -4,6 +4,7 @@
 
 import type { Metadata } from "next";
 import { MemberBreadcrumb } from "@/components/studios/MemberBreadcrumb";
+import { ConciergeStudiosMount } from "@/components/concierge/ConciergeStudiosMount";
 
 /** Standard Studios surface background — `public/uploads/STUDIO BKGRND.jpg` only under `/studios/*`. */
 const STUDIOS_PAGE_BG_URL = "/uploads/STUDIO%20BKGRND.jpg";
@@ -34,6 +35,7 @@ export default function StudiosLayout({ children }: { children: React.ReactNode 
     >
       <MemberBreadcrumb />
       {children}
+      <ConciergeStudiosMount />
     </div>
   );
 }

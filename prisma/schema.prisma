@@ -89,8 +89,100 @@ model Studio {
   updatedAt DateTime @updatedAt
 
   tiers StudioServiceTier[]
+  voiceProfile StudioVoiceProfile?
 
   @@map("studios")
+}
+
+model StudioVoiceProfile {
+  id                 String   @id @default(cuid())
+  studioId           String   @unique
+  studio             Studio   @relation(fields: [studioId], references: [id], onDelete: Cascade)
+  tone               String   @default("warm_curator")
+  greetingStyle      String   @db.Text @default("Hey — thanks for being here. What are you hoping to find today?")
+  businessType       String   @default("studio")
+  escalationPhrase   String   @db.Text @default("Oh! My next client just walked in — drop your number and I'll text you as soon as I'm free.")
+  communicationStyle String   @default("concierge")
+  offersSummary      String?  @db.Text
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("studio_voice_profiles")
+}
+
+/// AIH Studios concierge — Postgres persistence (Firestore-style collections mapped here).
+model ConciergeChatSession {
+  id               String   @id @default(cuid())
+  visitorToken     String
+  contextKey       String
+  mode             String
+  funnelStage      String   @default("greeting")
+  status           String   @default("active")
+  confusionSignals Int      @default(0)
+  takeoverUserId   String?
+  summaryLine      String?  @db.Text
+  lastAiConfidence Float?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  messages   ConciergeChatMessage[]
+  leads      ConciergeLeadCapture[]
+  summaries  ConciergeConversationSummary[]
+
+  @@unique([visitorToken, contextKey])
+  @@index([contextKey, status])
+  @@map("concierge_chat_sessions")
+}
+
+model ConciergeChatMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   ConciergeChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  content   String   @db.Text
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@map("concierge_chat_messages")
+}
+
+model ConciergeLeadCapture {
+  id                  String   @id @default(cuid())
+  sessionId           String
+  session             ConciergeChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  phone               String?
+  email               String?
+  igHandle            String?
+  conversationSummary String?  @db.Text
+  status              String   @default("new")
+  createdAt           DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([status])
+  @@map("concierge_lead_captures")
+}
+
+model ConciergeConversationSummary {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   ConciergeChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  summary   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@map("concierge_conversation_summaries")
+}
+
+model ConciergeClientMemory {
+  id           String   @id @default(cuid())
+  visitorToken String
+  contextKey   String
+  notes        String   @db.Text
+  updatedAt    DateTime @updatedAt
+
+  @@unique([visitorToken, contextKey])
+  @@map("concierge_client_memories")
 }
 
 model StudioServiceTier {
