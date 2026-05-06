@@ -9,6 +9,8 @@ import { prisma } from "@/lib/db/prisma";
 import { enrichInvitesWithRegisteredAccounts, listSentInvitesForSender } from "@/lib/invite/sentForSender";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const VALID_RELATIONSHIPS = ["parent","child","sibling","spouse","so","bf","gf","other"] as const;
 
 const sendSchema = z.object({
@@ -61,6 +63,10 @@ export async function POST(req: NextRequest) {
           error:
             "Invite was saved but the email could not be sent. Check RESEND / EMAIL configuration, or try again shortly.",
           inviteId: invite.id,
+          recipientEmail: invite.recipientEmail,
+          status: invite.status,
+          relationship: invite.relationship,
+          createdAt: invite.createdAt.toISOString(),
         },
         { status: 502 },
       );
@@ -69,6 +75,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       inviteId: invite.id,
+      recipientEmail: invite.recipientEmail,
+      status: invite.status,
+      relationship: invite.relationship,
+      createdAt: invite.createdAt.toISOString(),
     });
   } catch (err: any) {
     if (err.message === "UNAUTHORIZED") {
@@ -90,7 +100,14 @@ export async function GET(req: NextRequest) {
     const invites = await listSentInvitesForSender(user.id);
     const enriched = await enrichInvitesWithRegisteredAccounts(invites);
 
-    return NextResponse.json({ invites: enriched });
+    return NextResponse.json(
+      { invites: enriched },
+      {
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+        },
+      },
+    );
   } catch (err: any) {
     if (err.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

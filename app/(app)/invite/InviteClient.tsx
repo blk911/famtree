@@ -262,7 +262,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   const loadInvites = () => {
     setLoadingInvites(true);
     setInviteListError(null);
-    return fetch("/api/invite", { credentials: "include" })
+    return fetch("/api/invite", { credentials: "include", cache: "no-store" })
       .then(async (r) => {
         const data = await r.json();
         if (!r.ok) {
@@ -360,28 +360,56 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
     setSending(true);
     setSendResult(null);
     try {
-      const res  = await fetch("/api/invite", {
+      const res = await fetch("/api/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
+        cache: "no-store",
         body: JSON.stringify({ recipientEmail, relationship }),
       });
-      const data = await res.json();
+
+      let data: {
+        error?: string;
+        inviteId?: string;
+        success?: boolean;
+        recipientEmail?: string;
+      } = {};
+      try {
+        data = await res.json();
+      } catch {
+        data = {};
+      }
+
       setShowModal(false);
+
+      // Always sync list after POST — including 502 (invite saved, mail failed) and odd proxies.
+      await loadInvites();
+
       if (res.ok) {
         const inviteeName = recipientName.trim() || recipientEmail;
-        setSendResult({ type:"success", msg:"Invite sent", inviteeName });
+        setSendResult({ type: "success", msg: "Invite sent", inviteeName });
         setRecipientName("");
         setRecipientEmail("");
         setRelationship("");
         setEmailError("");
-        loadInvites();
+      } else if (res.status === 502 && data.inviteId) {
+        setSendResult({
+          type: "error",
+          msg:
+            data.error ??
+            "Invite saved but email failed — check RESEND. The invite appears below.",
+        });
+        setRecipientName("");
+        setRecipientEmail("");
+        setRelationship("");
+        setEmailError("");
       } else {
-        setSendResult({ type:"error", msg: data.error ?? "Failed to send invite" });
+        setSendResult({ type: "error", msg: data.error ?? "Failed to send invite" });
       }
     } catch {
       setShowModal(false);
-      setSendResult({ type:"error", msg:"Network error — please try again." });
+      await loadInvites();
+      setSendResult({ type: "error", msg: "Network error — please try again." });
     } finally {
       setSending(false);
     }
