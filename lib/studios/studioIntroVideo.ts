@@ -22,8 +22,7 @@ export const STUDIO_INTRO_VIDEO_SRC =
 export const STUDIO_INTRO_VIDEO_THUMB_SRC = `${STUDIO_INTRO_VIDEO_SRC}#t=0.001`;
 
 /** Right-column hero clip (`StudioHeroHaileyTestimonial`). Filename must match `public/uploads/`. */
-export const STUDIOS_COMMUNITY_CLIP_FILENAME =
-  "your_private_network_in_Studios_1080p_caption.mp4";
+export const STUDIOS_COMMUNITY_CLIP_FILENAME = "studio_3.mp4";
 
 export const STUDIOS_COMMUNITY_CLIP_EXPECTED_PATH =
   `public/uploads/${STUDIOS_COMMUNITY_CLIP_FILENAME}`;
