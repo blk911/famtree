@@ -11,6 +11,7 @@ import {
 import {
   PROVIDER_CATEGORY_LABELS,
 } from "@/types/studios";
+import Link from "next/link";
 import { Building2, Plus, Sprout, Inbox } from "lucide-react";
 
 const card = {
@@ -76,6 +77,30 @@ export default function AdminStudiosPage() {
           </div>
         ))}
       </div>
+
+      {/* Preset lab */}
+      <Link
+        href="/admin/studios/template"
+        prefetch={false}
+        style={{
+          display: "block",
+          textDecoration: "none",
+          ...card,
+          padding: "18px 22px",
+          borderLeft: "4px solid #1c1917",
+        }}
+      >
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#1c1917", marginBottom: 6 }}>
+          Studio preset lab — Neutral (base) + Fitness
+        </div>
+        <p style={{ margin: 0, fontSize: 14, color: "#57534e", lineHeight: 1.6 }}>
+          Open the embedded builder preview: first tab is the <strong>neutral</strong> spine; fitness is the saved vertical.
+          More categories show as disabled until their envelopes exist.
+        </p>
+        <span style={{ display: "inline-block", marginTop: 12, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>
+          Open preset lab →
+        </span>
+      </Link>
 
       {/* Provider Directory */}
       <div style={card}>

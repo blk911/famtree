@@ -2,6 +2,17 @@ import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/appl
 import { sanitizeApplyStudioHeroFields } from "@/lib/studios/applyPreview";
 import type { OfferPackageType, Provider, ProviderCategory, StudioOffer } from "@/types/studios";
 import type { FitnessStudioTemplate } from "@/lib/studio/templates/fitness-studio-template";
+import type { NeutralStudioTemplate } from "@/lib/studio/templates/neutral-studio-template";
+
+/** Envelope shapes accepted by `normalizeStudioTemplate` (expand as vertical presets are added). */
+export type NormalizableStudioTemplate = FitnessStudioTemplate | NeutralStudioTemplate;
+
+function draftStorageKeyForTemplate(templateId: string): string {
+  if (templateId === "fitness-starter-v1") return "amih_studios_fitness_starter_draft_v1";
+  if (templateId === "neutral-base-v1") return "amih_studios_neutral_base_draft_v1";
+  const slug = templateId.replace(/[^a-zA-Z0-9]+/g, "_");
+  return `amih_studios_${slug}_draft_v1`;
+}
 
 /** Props consumed by `StudioEditor` / `TrainerStudioShell` start variant — all concrete values. */
 export type NormalizedStudioEditorProps = {
@@ -19,6 +30,7 @@ export type NormalizedStudioEditorProps = {
 
 function mapTemplateCategory(raw: string): ProviderCategory {
   const k = raw.trim().toLowerCase().replace(/-/g, "_");
+  if (k === "neutral") return "trainer";
   if (k === "nail_salon" || k === "nailsalon") return "nail_salon";
   if (k === "performance_coach" || k === "fitness") return "performance_coach";
   if (k === "trainer") return "trainer";
@@ -71,13 +83,13 @@ function templateOffersFromTiers(
  * Turns the canonical template envelope into editor-ready props.
  * No DB reads — pure projection + string/array guards.
  */
-export function normalizeStudioTemplate(envelope: FitnessStudioTemplate): NormalizedStudioEditorProps {
+export function normalizeStudioTemplate(envelope: NormalizableStudioTemplate): NormalizedStudioEditorProps {
   const d = envelope.data;
   const category = mapTemplateCategory(envelope.category);
 
-  const studioId = safeStr(d.studioId) || "tmpl_studio_fitness_starter_v1";
-  const providerId = safeStr(d.providerId) || "tmpl_prov_fitness_starter_v1";
-  const slug = safeStr(d.slug) || "fitness-starter-preview";
+  const studioId = safeStr(d.studioId);
+  const providerId = safeStr(d.providerId);
+  const slug = safeStr(d.slug);
 
   const heroRaw: ApplyStudioHeroFields = {
     fullName: safeStr(d.ownerDisplayName),
@@ -152,6 +164,6 @@ export function normalizeStudioTemplate(envelope: FitnessStudioTemplate): Normal
     navItems,
     editorPreviewSlug: null,
     accentHex,
-    draftStorageKey: "amih_studios_fitness_starter_draft_v1",
+    draftStorageKey: draftStorageKeyForTemplate(envelope.templateId),
   };
 }

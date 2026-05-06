@@ -6,6 +6,18 @@
 2. **Vertical templates second** — presets that swap copy, categories, default tiers, and (later) section-specific blocks (e.g. trainer vs nail vs salon).
 3. **Profile hydration** — when a member opens STUDIO from AIH, merge **User + Profile** fields into the template defaults (name, email, phone, location, photo note); videos/media stay placeholders until the member uploads or links assets.
 
+## Neutral base preset (personal services spine)
+
+Generic placeholders + minimal tier ladder — **no vertical-specific story** until the member picks a category preset or edits copy.
+
+| Piece | Location |
+| ----- | -------- |
+| Envelope | `lib/studio/templates/neutral-studio-template.ts` (`NEUTRAL_STUDIO_TEMPLATE`) |
+| Clone helper | `cloneNeutralStudioTemplate()` in `lib/studio/templates/cloneStudioTemplate.ts` |
+| Category mapping | `category: "neutral"` → `Provider.category` `trainer` in `normalizeStudioTemplate` (generic professional until we add a dedicated union member). |
+
+**Member route:** `/studios/start` still loads the **fitness** envelope until we intentionally switch the default to neutral + profile merge.
+
 ## What is frozen today: **Fitness / performance starter**
 
 The current `/studios/start` experience is saved as the **Fitness template** in code:
@@ -31,10 +43,13 @@ These are still **hardcoded** in `components/studios/trainer/TrainerStudioShell.
 
 Next implementation step for Admin + neutral spine: extend the template type + normalization so those strings (and eventually cards) are **data-driven** from the same envelope Admin edits.
 
+## Admin preset lab
+
+- **URL:** `/admin/studios/template` (founder/admin only).
+- **UI:** `components/admin/StudioPresetLab.tsx` — sticky preset strip; **Neutral (base)** and **Fitness** switch the embedded `StudioEditor` (separate `draftStorageKey` per `templateId`).
+- **Future categories** (nails, hair, wax/brow/lips, spa, massage) appear as **disabled** tabs until each envelope exists — avoids an empty tab UX before presets ship.
+- Entry card from **`/admin/studios`** links here.
+
 ## Deprecated naming
 
 `lib/studio/templates/deb-dazzle-template.ts` re-exports the fitness template under legacy names (`DEB_DAZZLE_STUDIO_TEMPLATE`) for grep compatibility. **Prefer** `FITNESS_STUDIO_TEMPLATE` and `fitness-studio-template.ts` for new work.
-
-## Admin
-
-`app/(app)/admin/studios/template/page.tsx` points editors at the repo path for the canonical template (fitness starter until neutral spine ships).
