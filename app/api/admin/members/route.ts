@@ -17,6 +17,8 @@ const patchSchema = z
   })
   .strict();
 
+const deleteSchema = z.object({ userId: z.string().uuid() }).strict();
+
 function isAdmin(role: string) {
   return role === "founder" || role === "admin";
 }
@@ -78,5 +80,57 @@ export async function PATCH(req: NextRequest) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  });
+}
+
+// DELETE /api/admin/members  { userId } — permanently remove member (invites sent by them, reset tokens, cascaded profile/tree data).
+export async function DELETE(req: NextRequest) {
+  return withApiTrace(req, "/api/admin/members", async (req: NextRequest) => {
+    try {
+      const caller = await requireAuth();
+      if (!isAdmin(caller.role)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
+      const raw = await req.json();
+      const parsed = deleteSchema.safeParse(raw);
+      if (!parsed.success) {
+        return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+      }
+
+      const { userId } = parsed.data;
+      if (caller.id === userId) {
+        return NextResponse.json({ error: "Cannot delete your own account" }, { status: 403 });
+      }
+
+      const target = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true, firstName: true, lastName: true, email: true },
+      });
+      if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
+      if (target.role === "founder") {
+        return NextResponse.json({ error: "Cannot delete founder" }, { status: 403 });
+      }
+
+      await prisma.$transaction(async (tx) => {
+        await tx.invite.deleteMany({ where: { senderId: userId } });
+        await tx.passwordResetToken.deleteMany({ where: { userId } });
+        await tx.user.delete({ where: { id: userId } });
+      });
+
+      await logActivity({
+        actorId: caller.id,
+        actorName: `${caller.firstName} ${caller.lastName}`,
+        action: "member.deleted",
+        detail: `Deleted member ${target.firstName} ${target.lastName} (${target.email})`,
+      });
+
+      return NextResponse.json({ success: true });
+    } catch (err: any) {
+      if (err.message === "UNAUTHORIZED") {
+        return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      }
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
   });
 }

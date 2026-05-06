@@ -140,15 +140,25 @@ function StatusBadge({ label, colors }: { label: string; colors: { bg: string; c
 // ─── Admin action buttons ─────────────────────────────────────────────────────
 
 const ACTION_BTN: Record<string, { label: string; bg: string; color: string; title?: string }> = {
-  suspend:  { label:"Suspend",  bg:"#fef9c3", color:"#854d0e", title:"SITE-WIDE (admin only): blocks sign-in for this account everywhere" },
-  archive:  { label:"Archive (legal hold)",  bg:"#f1f5f9", color:"#475569", title:"SITE-WIDE (admin only): retains audit data; user cannot sign in anywhere" },
-  block:    { label:"Block",    bg:"#fee2e2", color:"#991b1b", title:"SITE-WIDE (admin only): hard block — sign-in denied until activated" },
+  suspend:  { label:"Suspend",  bg:"#fef9c3", color:"#854d0e", title:"Temporary site-wide lockout — blocks sign-in until you Activate or change status. Account row stays in admin lists." },
+  archive:  { label:"Archive (legal hold)",  bg:"#f1f5f9", color:"#475569", title:"Legal / compliance hold — blocks sign-in like suspend, but marks the record for retention and audit review (see internal policy)." },
+  block:    { label:"Block",    bg:"#fee2e2", color:"#991b1b", title:"Hard site-wide denial — use for abuse or policy violations; restore only via Activate." },
   activate: { label:"Activate", bg:"#dcfce7", color:"#166534", title:"SITE-WIDE (admin): restore this account to active" },
 };
 
 type ActionKey = keyof typeof ACTION_BTN;
 
-function actionForStatus(current: string): ActionKey[] {
+/** Row actions — Suspend / Block / Activate only; Archive is in the member detail modal to reduce clutter vs Suspend. */
+function inlineMemberActions(current: string): ActionKey[] {
+  if (current === "active")    return ["suspend", "block"];
+  if (current === "suspended") return ["activate", "block"];
+  if (current === "archived")  return ["activate", "block"];
+  if (current === "blocked")   return ["activate"];
+  return [];
+}
+
+/** Detail modal includes Archive (legal hold) alongside other status actions. */
+function modalMemberActions(current: string): ActionKey[] {
   if (current === "active")    return ["suspend", "archive", "block"];
   if (current === "suspended") return ["activate", "archive", "block"];
   if (current === "archived")  return ["activate", "block"];
@@ -183,6 +193,8 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
   const [selectedWaitlist, setSelectedWaitlist] = useState<WaitlistPerson | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null); // memberId
   const [inviteActioning, setInviteActioning] = useState<string | null>(null); // inviteId
+  const [deleteConfirmMember, setDeleteConfirmMember] = useState<Member | null>(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
 
   // Message compose state
   const [messagingMember, setMessagingMember] = useState<Member | null>(null);
@@ -199,7 +211,7 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
 
   // close modals on Escape
   useEffect(() => {
-    if (!selectedMember && !selectedWaitlist && !messagingMember) return;
+    if (!selectedMember && !selectedWaitlist && !messagingMember && !deleteConfirmMember) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setSelectedMember(null);
@@ -207,11 +219,12 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
         setMessagingMember(null);
         setMessageBody("");
         setMessageSent(false);
+        setDeleteConfirmMember(null);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selectedMember, selectedWaitlist, messagingMember]);
+  }, [selectedMember, selectedWaitlist, messagingMember, deleteConfirmMember]);
 
   const openMessageModal = (member: Member, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -344,6 +357,32 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
     }
   };
 
+  const openMemberDeleteConfirm = (member: Member, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setDeleteConfirmMember(member);
+  };
+
+  const handleConfirmMemberDelete = async () => {
+    if (!deleteConfirmMember || deleteSubmitting) return;
+    setDeleteSubmitting(true);
+    try {
+      const res = await fetch("/api/admin/members", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: deleteConfirmMember.id }),
+      });
+      if (res.ok) {
+        const removedId = deleteConfirmMember.id;
+        setMembers((prev) => prev.filter((m) => m.id !== removedId));
+        setSelectedMember((prev) => (prev?.id === removedId ? null : prev));
+        setMessagingMember((prev) => (prev?.id === removedId ? null : prev));
+        setDeleteConfirmMember(null);
+      }
+    } finally {
+      setDeleteSubmitting(false);
+    }
+  };
+
   // ─── Invite status counts ────────────────────────────────────────────────────
 
   const pendingCount = invites.filter((i) => i.status === "PENDING").length;
@@ -370,7 +409,7 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
             <div style={{padding:"24px",fontSize:"14px",color:"#a8a29e",textAlign:"center"}}>No members yet.</div>
           ) : members.map((member, index) => {
             const statusColors = MEMBER_STATUS_COLORS[member.status] ?? MEMBER_STATUS_COLORS.active;
-            const actions = actionForStatus(member.status);
+            const actions = inlineMemberActions(member.status);
             const isLast = index === members.length - 1;
             const loading = actionLoading === member.id;
 
@@ -464,6 +503,25 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                       </button>
                     );
                   })}
+                  {member.role !== "founder" && (
+                    <button
+                      type="button"
+                      disabled={loading}
+                      title="Permanently delete this member account and cascaded data (studios they own, profile, sessions)"
+                      onClick={(e) => openMemberDeleteConfirm(member, e)}
+                      style={{
+                        display:"flex", alignItems:"center", gap:"4px",
+                        background:"#f5f5f4", color:"#78716c",
+                        border:"1px solid #e7e5e4", borderRadius:"6px",
+                        fontSize:"11px", fontWeight:700,
+                        padding:"3px 8px", cursor: loading ? "wait" : "pointer",
+                        flexShrink:0,
+                      }}
+                    >
+                      <Trash2 style={{width:"11px",height:"11px"}} />
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -698,11 +756,11 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
             </button>
 
             {/* Status action buttons in modal */}
-            {actionForStatus(selectedMember.status).length > 0 && (
+            {modalMemberActions(selectedMember.status).length > 0 && (
               <>
                 <div style={{height:"1px",background:"#f5f4f0",margin:"16px 0"}} />
                 <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-                  {actionForStatus(selectedMember.status).map((action) => {
+                  {modalMemberActions(selectedMember.status).map((action) => {
                     const btn = ACTION_BTN[action];
                     if (!btn) return null;
                     const loading = actionLoading === selectedMember.id;
@@ -728,6 +786,84 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                 </div>
               </>
             )}
+
+            {selectedMember.role !== "founder" && (
+              <>
+                <div style={{height:"1px",background:"#f5f4f0",margin:"16px 0"}} />
+                <button
+                  type="button"
+                  disabled={actionLoading === selectedMember.id}
+                  onClick={(e) => openMemberDeleteConfirm(selectedMember, e)}
+                  style={{
+                    width:"100%",
+                    display:"flex", alignItems:"center", justifyContent:"center", gap:"6px",
+                    background:"#f5f5f4", color:"#78716c",
+                    border:"1px solid #e7e5e4", borderRadius:"10px",
+                    fontSize:"13px", fontWeight:700,
+                    height:"40px", cursor:"pointer",
+                  }}
+                >
+                  <Trash2 style={{width:"14px",height:"14px"}} />
+                  Delete member…
+                </button>
+                <p style={{fontSize:"11px",color:"#78716c",margin:"8px 0 0",textAlign:"center"}}>
+                  Removes the account permanently after confirmation (cannot delete founder).
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal — confirm delete member ─────────────────────────────────────── */}
+      {deleteConfirmMember && (
+        <div
+          onClick={(e) => e.target === e.currentTarget && !deleteSubmitting && setDeleteConfirmMember(null)}
+          style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="member-delete-title"
+            style={{background:"white",borderRadius:"16px",padding:"24px",width:"100%",maxWidth:"420px",display:"flex",flexDirection:"column",gap:"16px",boxShadow:"0 24px 64px rgba(0,0,0,0.18)"}}
+          >
+            <h3 id="member-delete-title" style={{fontSize:"17px",fontWeight:800,color:"#1c1917",margin:0}}>
+              Delete member?
+            </h3>
+            <p style={{fontSize:"14px",color:"#57534e",margin:0,lineHeight:1.55}}>
+              This permanently deletes{" "}
+              <strong>{deleteConfirmMember.firstName} {deleteConfirmMember.lastName}</strong>
+              {" "}({deleteConfirmMember.email}) — profile, sessions, studios they own, and related data tied by cascade rules. This cannot be undone.
+            </p>
+            <div style={{display:"flex",gap:"10px",justifyContent:"flex-end",flexWrap:"wrap"}}>
+              <button
+                type="button"
+                disabled={deleteSubmitting}
+                onClick={() => setDeleteConfirmMember(null)}
+                style={{
+                  padding:"10px 18px",borderRadius:"10px",
+                  border:"1px solid #e7e5e4",background:"white",
+                  fontSize:"13px",fontWeight:700,cursor:"pointer",color:"#78716c",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleteSubmitting}
+                onClick={handleConfirmMemberDelete}
+                style={{
+                  padding:"10px 18px",borderRadius:"10px",
+                  border:"1px solid #fecaca",background:"#fef2f2",
+                  fontSize:"13px",fontWeight:700,cursor:"pointer",color:"#991b1b",
+                  display:"flex",alignItems:"center",gap:"6px",
+                  opacity: deleteSubmitting ? 0.7 : 1,
+                }}
+              >
+                <Trash2 style={{width:"14px",height:"14px"}} />
+                {deleteSubmitting ? "Deleting…" : "Delete permanently"}
+              </button>
+            </div>
           </div>
         </div>
       )}
