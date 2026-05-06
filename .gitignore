@@ -26,8 +26,8 @@ public/uploads/*
 !public/uploads/.gitkeep
 # Bundled Studios marketing background (referenced by app/studios/layout.tsx)
 !public/uploads/STUDIO BKGRND.jpg
-# Hero intro cinema clip (referenced by lib/studios/studioIntroVideo.ts)
-!public/uploads/STUDIO Intro Vid 1.mp4
+# Hero intro — relationship-based business clip (referenced by lib/studios/studioIntroVideo.ts)
+!public/uploads/Studios_ Relationship-Based Business_720p_caption.mp4
 # HeyGen community testimonial (referenced by lib/studios/studioIntroVideo.ts)
 !public/uploads/Hailey's Community Testimonial_720p_caption.mp4
 
