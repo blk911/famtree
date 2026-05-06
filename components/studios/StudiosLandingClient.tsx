@@ -24,6 +24,71 @@ const muted = STUDIOS_MUTED;
 const line = STUDIOS_LINE;
 const cardShadow = STUDIOS_CARD_SHADOW;
 
+/** Set `NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC=/uploads/your-file.mp4` when the asset is in `/public`. */
+const STUDIOS_HERO_VIDEO_SRC =
+  typeof process.env.NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC === "string"
+    ? process.env.NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC.trim()
+    : "";
+
+function StudiosHeroVideo() {
+  const floatShadow =
+    "0 28px 56px rgba(38, 38, 38, 0.14), 0 12px 28px rgba(38, 38, 38, 0.08), 0 2px 8px rgba(38, 38, 38, 0.04)";
+
+  if (STUDIOS_HERO_VIDEO_SRC) {
+    return (
+      <div
+        style={{
+          position: "relative",
+          borderRadius: "22px",
+          overflow: "hidden",
+          boxShadow: floatShadow,
+          transform: "rotate(-1.25deg)",
+          transformOrigin: "center center",
+        }}
+      >
+        <video
+          src={STUDIOS_HERO_VIDEO_SRC}
+          controls
+          playsInline
+          preload="metadata"
+          style={{
+            display: "block",
+            width: "100%",
+            height: "auto",
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        aspectRatio: "16 / 10",
+        borderRadius: "22px",
+        overflow: "hidden",
+        boxShadow: floatShadow,
+        transform: "rotate(-1.25deg)",
+        transformOrigin: "center center",
+        background:
+          "linear-gradient(145deg, rgba(184, 149, 108, 0.18) 0%, rgba(255, 255, 255, 0.55) 42%, rgba(239, 233, 223, 0.65) 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+        textAlign: "center",
+      }}
+    >
+      <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: muted, lineHeight: 1.5, maxWidth: "280px" }}>
+        Hero video goes here — add your file under{" "}
+        <code style={{ fontSize: "11px", color: ink }}>/public/uploads/</code> and set{" "}
+        <code style={{ fontSize: "11px", color: ink }}>NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC</code>.
+      </p>
+    </div>
+  );
+}
+
 type BenefitDef = {
   id: string;
   title: string;
@@ -109,6 +174,40 @@ export function StudiosLanding() {
       <style>{`
         .studios-lp-benefit:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .studios-lp-studio-card:hover { transform: translateY(-1px); }
+        .studios-hero-shell {
+          max-width: 1080px;
+          margin: 0 auto;
+          display: grid;
+          gap: clamp(22px, 5vw, 36px);
+          align-items: center;
+          grid-template-columns: 1fr;
+          position: relative;
+          z-index: 1;
+          text-align: center;
+        }
+        .studios-hero-copy-inner {
+          max-width: 560px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        @media (min-width: 880px) {
+          .studios-hero-shell {
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 38%);
+            text-align: left;
+          }
+          .studios-hero-copy-inner {
+            margin-left: 0;
+            margin-right: 0;
+            max-width: 540px;
+          }
+          .studios-hero-badge-row { justify-content: flex-start !important; }
+          .studios-hero-ctas { justify-content: flex-start !important; }
+          .studios-hero-video-col {
+            justify-self: end;
+            width: 100%;
+            max-width: 420px;
+          }
+        }
       `}</style>
       {/* ── Fold 1 — tight hero ───────────────────────────────────────────── */}
       <section
@@ -132,94 +231,107 @@ export function StudiosLanding() {
           }}
         />
 
-        <div style={{ maxWidth: "920px", margin: "0 auto", textAlign: "center", position: "relative", zIndex: 1 }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "7px",
-              padding: "6px 14px",
-              borderRadius: "999px",
-              background: "#fff",
-              border: `1px solid ${line}`,
-              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)",
-              fontSize: "10px",
-              fontWeight: 700,
-              color: muted,
-              marginBottom: "18px",
-              letterSpacing: "0.09em",
-              textTransform: "uppercase",
-            }}
-          >
-            <Sparkles style={{ width: "12px", height: "12px", color: "#d4a574" }} />
-            AIH Studios · Beta
+        <div className="studios-hero-shell">
+          <div className="studios-hero-copy-inner">
+            <div
+              className="studios-hero-badge-row"
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: "18px",
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "7px",
+                  padding: "6px 14px",
+                  borderRadius: "999px",
+                  background: "#fff",
+                  border: `1px solid ${line}`,
+                  boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: muted,
+                  letterSpacing: "0.09em",
+                  textTransform: "uppercase",
+                }}
+              >
+                <Sparkles style={{ width: "12px", height: "12px", color: "#d4a574" }} />
+                AIH Studios · Beta
+              </div>
+            </div>
+
+            <h1
+              style={{
+                fontSize: "clamp(28px, 4.2vw, 44px)",
+                fontWeight: 800,
+                letterSpacing: "-1.4px",
+                lineHeight: 1.08,
+                marginBottom: "14px",
+                color: ink,
+              }}
+            >
+              Where humans
+              <span style={{ color: "#b8956c" }}> still connect</span>
+            </h1>
+
+            <p
+              style={{
+                fontSize: "clamp(15px, 2vw, 17px)",
+                lineHeight: 1.55,
+                color: muted,
+                margin: "0 0 22px",
+                fontWeight: 500,
+              }}
+            >
+              The world is filling up with automated replies and optimized feeds. Studios is the opposite — a private place for trainers and wellness pros to build{" "}
+              <strong style={{ color: ink, fontWeight: 700 }}>relationships that matter</strong>, with clients who earn access instead of arriving anonymously at scale.
+            </p>
+
+            <div className="studios-hero-ctas" style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+              <Link
+                href="/studios/start"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "12px 22px",
+                  borderRadius: "999px",
+                  background: ink,
+                  color: "#fff",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  boxShadow: "0 4px 14px rgba(38, 38, 38, 0.2)",
+                }}
+              >
+                Start your studio <ArrowRight style={{ width: "15px", height: "15px" }} />
+              </Link>
+              <Link
+                href="#studios-live"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "12px 22px",
+                  borderRadius: "999px",
+                  background: "#fff",
+                  color: ink,
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  border: `1px solid ${line}`,
+                }}
+              >
+                See live pages
+              </Link>
+            </div>
           </div>
 
-          <h1
-            style={{
-              fontSize: "clamp(28px, 4.2vw, 44px)",
-              fontWeight: 800,
-              letterSpacing: "-1.4px",
-              lineHeight: 1.08,
-              marginBottom: "14px",
-              color: ink,
-            }}
-          >
-            Where humans
-            <span style={{ color: "#b8956c" }}> still connect</span>
-          </h1>
-
-          <p
-            style={{
-              fontSize: "clamp(15px, 2vw, 17px)",
-              lineHeight: 1.55,
-              color: muted,
-              maxWidth: "540px",
-              margin: "0 auto 22px",
-              fontWeight: 500,
-            }}
-          >
-            The world is filling up with automated replies and optimized feeds. Studios is the opposite — a private place for trainers and wellness pros to build{" "}
-            <strong style={{ color: ink, fontWeight: 700 }}>relationships that matter</strong>, with clients who earn access instead of arriving anonymously at scale.
-          </p>
-
-          <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-            <Link
-              href="/studios/start"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "12px 22px",
-                borderRadius: "999px",
-                background: ink,
-                color: "#fff",
-                fontSize: "14px",
-                fontWeight: 700,
-                textDecoration: "none",
-                boxShadow: "0 4px 14px rgba(38, 38, 38, 0.2)",
-              }}
-            >
-              Start your studio <ArrowRight style={{ width: "15px", height: "15px" }} />
-            </Link>
-            <Link
-              href="#studios-live"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "12px 22px",
-                borderRadius: "999px",
-                background: "#fff",
-                color: ink,
-                fontSize: "14px",
-                fontWeight: 700,
-                textDecoration: "none",
-                border: `1px solid ${line}`,
-              }}
-            >
-              See live pages
-            </Link>
+          <div className="studios-hero-video-col">
+            <StudiosHeroVideo />
           </div>
         </div>
       </section>
