@@ -44,10 +44,17 @@ export function IncomingIdentityAcks() {
   const [acting, setActing] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const res = await fetch("/api/identity-change/incoming");
-    const json = await res.json();
-    if (!res.ok) return;
-    setItems(json.items ?? []);
+    try {
+      const res = await fetch("/api/identity-change/incoming", { credentials: "include" });
+      const json = await res.json();
+      if (!res.ok) {
+        setItems([]);
+        return;
+      }
+      setItems(json.items ?? []);
+    } catch {
+      setItems([]);
+    }
   }, []);
 
   useEffect(() => {
@@ -60,6 +67,7 @@ export function IncomingIdentityAcks() {
       const res = await fetch(`/api/identity-change/${requestId}/ack`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ accept }),
       });
       if (res.ok) await load();

@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { isIdentityChangeSchemaMissing } from "@/lib/identity-change/errors";
 import { IC_STATUS, refreshManyAckPhases } from "@/lib/identity-change/service";
 
 function isAdmin(role: string) {
@@ -20,27 +21,33 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const pendingAck = await prisma.identityChangeRequest.findMany({
-      where: { status: IC_STATUS.PENDING_ACKS },
-      select: { id: true },
-    });
-    await refreshManyAckPhases(pendingAck.map((r) => r.id));
+    try {
+      const pendingAck = await prisma.identityChangeRequest.findMany({
+        where: { status: IC_STATUS.PENDING_ACKS },
+        select: { id: true },
+      });
+      await refreshManyAckPhases(pendingAck.map((r) => r.id));
 
-    const rows = await prisma.identityChangeRequest.findMany({
-      where: { status: IC_STATUS.PENDING_ADMIN },
-      orderBy: { createdAt: "asc" },
-      include: {
-        requester: { select: { id: true, firstName: true, lastName: true, email: true } },
-        acknowledgments: {
-          include: {
-            invitee: { select: { id: true, firstName: true, lastName: true, email: true } },
+      const rows = await prisma.identityChangeRequest.findMany({
+        where: { status: IC_STATUS.PENDING_ADMIN },
+        orderBy: { createdAt: "asc" },
+        include: {
+          requester: { select: { id: true, firstName: true, lastName: true, email: true } },
+          acknowledgments: {
+            include: {
+              invitee: { select: { id: true, firstName: true, lastName: true, email: true } },
+            },
+            orderBy: { id: "asc" },
           },
-          orderBy: { id: "asc" },
         },
-      },
-    });
+      });
 
-    return NextResponse.json({ requests: rows });
+      return NextResponse.json({ requests: rows });
+    } catch (inner: unknown) {
+      if (!isIdentityChangeSchemaMissing(inner)) throw inner;
+      console.warn("[admin identity-changes GET] identity tables/columns missing — empty queue", inner);
+      return NextResponse.json({ requests: [], identityUnavailable: true });
+    }
   } catch (err: any) {
     if (err.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

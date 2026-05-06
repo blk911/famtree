@@ -41,19 +41,28 @@ const card = {
 export function AdminIdentityQueue() {
   const [rows, setRows] = useState<QueueRow[] | null>(null);
   const [err, setErr] = useState("");
+  const [identityUnavailable, setIdentityUnavailable] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     setErr("");
-    const res = await fetch("/api/admin/identity-changes");
-    const json = await res.json();
-    if (!res.ok) {
-      setErr(json?.error ?? "Could not load queue.");
+    try {
+      const res = await fetch("/api/admin/identity-changes", { credentials: "include" });
+      const json = await res.json();
+      if (!res.ok) {
+        setIdentityUnavailable(false);
+        setErr(json?.error ?? "Could not load queue.");
+        setRows([]);
+        return;
+      }
+      setIdentityUnavailable(Boolean(json.identityUnavailable));
+      setRows(json.requests ?? []);
+    } catch {
+      setIdentityUnavailable(false);
+      setErr("Could not load queue.");
       setRows([]);
-      return;
     }
-    setRows(json.requests ?? []);
   }, []);
 
   useEffect(() => {
@@ -66,6 +75,7 @@ export function AdminIdentityQueue() {
       const res = await fetch(`/api/admin/identity-changes/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           decision,
           adminNote: notes[id]?.trim() || undefined,
@@ -100,7 +110,9 @@ export function AdminIdentityQueue() {
     <section style={card}>
       <div style={{ padding: "12px 20px", borderBottom: "1px solid #f5f4f0", display: "flex", alignItems: "center", gap: "10px" }}>
         <ClipboardList style={{ width: 18, height: 18, color: "#6366f1", flexShrink: 0 }} />
-        <h2 style={{ fontSize: "15px", fontWeight: 800, color: "#1c1917", flex: 1 }}>Identity change queue</h2>
+        <h2 style={{ fontSize: "15px", fontWeight: 800, color: "#1c1917", flex: 1 }} title="Review pending legal-name / email / mobile updates members submitted under Settings → Identity">
+          Identity change queue
+        </h2>
         <button
           type="button"
           onClick={() => load()}
@@ -122,7 +134,16 @@ export function AdminIdentityQueue() {
       )}
 
       {rows.length === 0 ? (
-        <div style={{ padding: "24px", fontSize: "14px", color: "#a8a29e", textAlign: "center" }}>No requests awaiting admin review.</div>
+        <div style={{ padding: "24px", fontSize: "14px", color: "#a8a29e", textAlign: "center", lineHeight: 1.55 }}>
+          {identityUnavailable ? (
+            <>
+              Identity change workflow is not available on this database yet (tables missing). After you run migrations,
+              approved requests from Settings → Identity will appear here for final approve/reject.
+            </>
+          ) : (
+            <>No requests awaiting admin review.</>
+          )}
+        </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column" }}>
           {rows.map((r, index) => {

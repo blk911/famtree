@@ -2,10 +2,10 @@
 // POST /api/identity-change — submit a new request
 
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
+import { isIdentityChangeSchemaMissing } from "@/lib/identity-change/errors";
 import {
   IC_STATUS,
   getActiveInviteeIds,
@@ -22,13 +22,6 @@ const submitSchema = z
     requesterNote: z.string().min(10).max(4000),
   })
   .strict();
-
-function identitySchemaUnsupported(err: unknown): boolean {
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    return err.code === "P2021" || err.code === "P2022";
-  }
-  return false;
-}
 
 export async function GET() {
   try {
@@ -112,7 +105,7 @@ export async function GET() {
           : null,
       });
     } catch (inner: unknown) {
-      if (!identitySchemaUnsupported(inner)) throw inner;
+      if (!isIdentityChangeSchemaMissing(inner)) throw inner;
       console.error("[identity-change GET] identity tables/columns missing — returning degraded payload", inner);
       const prevPhoneVal = await getProfilePhoneSafe(user.id);
       let inviteePreviewCount = 0;
