@@ -24,6 +24,8 @@ const RELATIONSHIP_META: Record<string, { label: string; bg: string; color: stri
   sibling: { label:"Sibling", bg:"#ecfeff", color:"#0891b2" },
   spouse:  { label:"Spouse",  bg:"#fdf2f8", color:"#be185d" },
   so:      { label:"S.O.",    bg:"#fdf2f8", color:"#be185d" },
+  frnd:    { label:"Frnd",    bg:"#eef2ff", color:"#4338ca" },
+  /** Legacy — members invited before BF/GF were retired still show these badges */
   bf:      { label:"BF",      bg:"#fdf2f8", color:"#be185d" },
   gf:      { label:"GF",      bg:"#fdf2f8", color:"#be185d" },
   other:   { label:"Other",   bg:"#f5f4f0", color:"#78716c" },

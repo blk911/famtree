@@ -60,8 +60,7 @@ export const RELATIONSHIPS = [
   { value: "sibling", label: "Sibling", color: "#0891b2" },
   { value: "spouse",  label: "Spouse",  color: "#be185d" },
   { value: "so",      label: "S.O.",    color: "#be185d" },
-  { value: "bf",      label: "BF",      color: "#be185d" },
-  { value: "gf",      label: "GF",      color: "#be185d" },
+  { value: "frnd",    label: "Frnd",    color: "#6366f1" },
   { value: "other",   label: "Other",   color: "#78716c" },
 ] as const;
 

@@ -44,7 +44,7 @@ function mapPrismaHttp(err: unknown): { status: number; message: string } | null
   return null;
 }
 
-const VALID_RELATIONSHIPS = ["parent", "child", "sibling", "spouse", "so", "bf", "gf", "other"] as const;
+const VALID_RELATIONSHIPS = ["parent", "child", "sibling", "spouse", "so", "frnd", "other"] as const;
 
 const sendSchema = z.object({
   recipientEmail: z.string().email("Please enter a valid email address"),
