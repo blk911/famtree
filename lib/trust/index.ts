@@ -141,6 +141,28 @@ export function trustRequestMembersForClient(members: PendingTrustRequestMember[
   return out;
 }
 
+/** Props shape for `DashboardTrustUnitGate` (member `/dashboard` + founder/admin `/admin`). */
+export function serializeTrustGateRequests(
+  trustRequests: Array<{
+    id: string;
+    createdAt: Date;
+    createdBy: { id: string; firstName: string; lastName: string; email: string; photoUrl: string | null };
+    members: PendingTrustRequestMember[];
+  }>,
+) {
+  return trustRequests.map((r) => ({
+    id: r.id,
+    createdAt: r.createdAt.toISOString(),
+    createdBy: {
+      id: r.createdBy.id,
+      firstName: r.createdBy.firstName,
+      lastName: r.createdBy.lastName,
+      photoUrl: r.createdBy.photoUrl,
+    },
+    members: trustRequestMembersForClient(r.members),
+  }));
+}
+
 export async function getPendingTrustRequestsSafe(userId: string) {
   try {
     return await getPendingTrustRequests(userId);

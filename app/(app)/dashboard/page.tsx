@@ -6,8 +6,7 @@ import { redirect } from "next/navigation";
 import { MessageSquare, MessageCircle } from "lucide-react";
 import {
   getPendingTrustRequestsSafe,
-  trustRequestMembersForClient,
-  type PendingTrustRequestMember,
+  serializeTrustGateRequests,
 } from "@/lib/trust";
 import { loadTreeViewPrefsSafe, loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { queryDashboardProfilePrompt, incrementDashboardProfilePromptSeen } from "@/lib/dashboard/safe-data";
@@ -150,27 +149,7 @@ export default async function DashboardPage() {
   const joinedViaYou = myInvites.filter((i) => i.status === "REGISTERED").length;
   const vaultNewCount    = newPosts.length + newComments.length;
 
-  const serializedTrustRequests = trustRequests.map((r: {
-    id: string;
-    createdAt: Date;
-    createdBy: {
-      id: string;
-      firstName: string;
-      lastName: string;
-      photoUrl: string | null;
-    };
-    members: PendingTrustRequestMember[];
-  }) => ({
-    id: r.id,
-    createdAt: r.createdAt.toISOString(),
-    createdBy: {
-      id: r.createdBy.id,
-      firstName: r.createdBy.firstName,
-      lastName: r.createdBy.lastName,
-      photoUrl: r.createdBy.photoUrl,
-    },
-    members: trustRequestMembersForClient(r.members),
-  }));
+  const serializedTrustRequests = serializeTrustGateRequests(trustRequests);
 
   const missingProfilePhoto = !user.photoUrl;
   const promptState = promptRows[0];

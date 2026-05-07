@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { TrustApprovalStatus } from "@prisma/client";
-import { buildTrustAdjacency, pickFirstNeighbor } from "./adjacency";
+import { buildTrustAdjacency, pickNeighborForAutoTrustUnit } from "./adjacency";
 
 export function maskInviteEmail(email: string): string {
   const trimmed = email.trim();
@@ -58,7 +58,7 @@ export async function tryAutoTrustUnitAfterInvite(senderId: string, inviteId: st
   if (existing) return null;
 
   const adjacency = await buildTrustAdjacency();
-  const blk = pickFirstNeighbor(senderId, adjacency);
+  const blk = await pickNeighborForAutoTrustUnit(senderId, adjacency);
   if (!blk) return null;
 
   const uniqReg = Array.from(new Set([senderId, blk]));

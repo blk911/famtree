@@ -16,7 +16,8 @@ export async function buildTrustAdjacency(): Promise<Map<string, Set<string>>> {
   };
 
   const invites = await prisma.invite.findMany({
-    where: { status: "ACCEPTED" },
+    /** REGISTERED = invitee has an account; edge matches downhill bonds used elsewhere */
+    where: { status: { in: ["ACCEPTED", "REGISTERED"] } },
     select: { senderId: true, recipientEmail: true },
   });
   for (const invite of invites) {
@@ -52,9 +53,34 @@ export async function buildTrustAdjacency(): Promise<Map<string, Set<string>>> {
   return adjacency;
 }
 
-/** Deterministic “blk”: first sorted neighbor id ≠ senderId. */
+/** Deterministic fallback: first sorted neighbor id ≠ senderId. */
 export function pickFirstNeighbor(senderId: string, adjacency: Map<string, Set<string>>): string | null {
   const neighbors = adjacency.get(senderId) ?? new Set<string>();
   const sorted = Array.from(neighbors).filter((id) => id !== senderId).sort();
   return sorted[0] ?? null;
+}
+
+/**
+ * Prefer a downhill invite bond (sponsor → invitee) among graph neighbors so auto-TU matches the person
+ * the sponsor actually invited onto the tree; otherwise same as pickFirstNeighbor.
+ */
+export async function pickNeighborForAutoTrustUnit(
+  senderId: string,
+  adjacency: Map<string, Set<string>>,
+): Promise<string | null> {
+  const neighbors = Array.from(adjacency.get(senderId) ?? new Set<string>()).filter((id) => id !== senderId);
+  if (neighbors.length === 0) return null;
+
+  const downhill = await prisma.connectionRequest.findMany({
+    where: {
+      requesterId: senderId,
+      status: "ACCEPTED",
+      targetId: { in: neighbors },
+    },
+    select: { targetId: true },
+    orderBy: { targetId: "asc" },
+  });
+  if (downhill.length > 0) return downhill[0].targetId;
+
+  return [...neighbors].sort()[0] ?? null;
 }

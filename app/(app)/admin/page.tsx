@@ -8,6 +8,8 @@ import { AdminLists } from "@/components/admin/AdminLists";
 import { AnnouncementComposer } from "@/components/admin/AnnouncementComposer";
 import { AdminIdentityQueue } from "@/components/admin/AdminIdentityQueue";
 import { IncomingIdentityAcks } from "@/components/dashboard/IncomingIdentityAcks";
+import { DashboardTrustUnitGate } from "@/components/dashboard/DashboardTrustUnitGate";
+import { getPendingTrustRequestsSafe, serializeTrustGateRequests } from "@/lib/trust";
 import { getDatabaseHostHint } from "@/lib/db/databaseHostHint";
 
 const card = {
@@ -23,7 +25,16 @@ export default async function AdminPage() {
   if (!user) redirect("/login");
   if (!isAdmin(user.role)) redirect("/dashboard");
 
-  const [totalMembers, totalInvites, pendingInvites, waitlistCount, recentMembers, recentInvites, recentWaitlist] = await Promise.all([
+  const [
+    totalMembers,
+    totalInvites,
+    pendingInvites,
+    waitlistCount,
+    recentMembers,
+    recentInvites,
+    recentWaitlist,
+    pendingTrustRequests,
+  ] = await Promise.all([
     prisma.user.count(),
     prisma.invite.count(),
     prisma.invite.count({ where:{ status:"PENDING" } }),
@@ -38,6 +49,7 @@ export default async function AdminPage() {
       },
     }),
     loadWaitlistSafe(),
+    getPendingTrustRequestsSafe(user.id),
   ]);
 
   const stats = [
@@ -45,6 +57,8 @@ export default async function AdminPage() {
     { label:"Invites", value:totalInvites, color:"#f59e0b", hint:`${pendingInvites} pending` },
     { label:"Waitlist", value:waitlistCount, color:"#f43f5e", hint:"People waiting for an invite" },
   ];
+
+  const serializedTrustGate = serializeTrustGateRequests(pendingTrustRequests);
 
   const dbHost = getDatabaseHostHint();
 
@@ -95,6 +109,8 @@ export default async function AdminPage() {
       </div>
 
       <IncomingIdentityAcks />
+
+      <DashboardTrustUnitGate initialRequests={serializedTrustGate} currentUserId={user.id} />
 
       <AnnouncementComposer />
 

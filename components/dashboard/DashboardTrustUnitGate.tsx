@@ -8,12 +8,12 @@ import {
 } from "@/components/dashboard/TrustUnitFormationModal";
 import { TrustRequestCard } from "@/components/dashboard/TrustRequestCard";
 
-const STORAGE_KEY = "famtree_tu_modal_dismissed_ids";
+const storageKey = (userId: string) => `famtree_tu_modal_dismissed_ids:${userId}`;
 
-function readDismissedFromStorage(): Set<string> {
+function readDismissedFromStorage(userId: string): Set<string> {
   if (typeof window === "undefined") return new Set();
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = sessionStorage.getItem(storageKey(userId));
     if (!raw) return new Set();
     const arr = JSON.parse(raw) as string[];
     return new Set(Array.isArray(arr) ? arr : []);
@@ -22,9 +22,9 @@ function readDismissedFromStorage(): Set<string> {
   }
 }
 
-function writeDismissedToStorage(ids: Set<string>) {
+function writeDismissedToStorage(userId: string, ids: Set<string>) {
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(ids)));
+    sessionStorage.setItem(storageKey(userId), JSON.stringify(Array.from(ids)));
   } catch {
     /* ignore */
   }
@@ -43,17 +43,18 @@ export function DashboardTrustUnitGate({
 
   useEffect(() => {
     setRequests(initialRequests);
-  }, [initialRequests]);
-
-  useEffect(() => {
-    setDismissedModalIds(readDismissedFromStorage());
-  }, []);
+    const activeIds = new Set(initialRequests.map((r) => r.id));
+    const dismissed = readDismissedFromStorage(currentUserId);
+    const pruned = new Set(Array.from(dismissed).filter((id) => activeIds.has(id)));
+    writeDismissedToStorage(currentUserId, pruned);
+    setDismissedModalIds(pruned);
+  }, [initialRequests, currentUserId]);
 
   const persistModalDismiss = (requestId: string) => {
     setDismissedModalIds((prev) => {
       const next = new Set(prev);
       next.add(requestId);
-      writeDismissedToStorage(next);
+      writeDismissedToStorage(currentUserId, next);
       return next;
     });
   };
