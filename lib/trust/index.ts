@@ -178,33 +178,33 @@ export async function getTrustUnits(userId: string) {
   }));
 }
 
-/** Peers linked by an ACCEPTED connection_request (either direction). */
-export async function getAcceptedBondPeers(userId: string) {
+/** Accepted bonds for viewer: peer user + when the row last moved to ACCEPTED (`updatedAt`). */
+export async function getAcceptedBondDetails(userId: string) {
   const rows = await prisma.connectionRequest.findMany({
     where: {
       status: "ACCEPTED",
       OR: [{ requesterId: userId }, { targetId: userId }],
     },
-    select: { requesterId: true, targetId: true },
-  });
-
-  const peerIds = Array.from(
-    new Set(
-      rows.map((r) => (r.requesterId === userId ? r.targetId : r.requesterId)),
-    ),
-  );
-  if (peerIds.length === 0) return [];
-
-  return prisma.user.findMany({
-    where: { id: { in: peerIds } },
     select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      photoUrl: true,
+      updatedAt: true,
+      requesterId: true,
+      targetId: true,
+      requester: { select: userSelect },
+      target: { select: userSelect },
     },
-    orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+    orderBy: { updatedAt: "desc" },
   });
+
+  return rows.map((r) => ({
+    peer: r.requesterId === userId ? r.target : r.requester,
+    bondedAt: r.updatedAt,
+  }));
+}
+
+/** Peers linked by an ACCEPTED connection_request (either direction). */
+export async function getAcceptedBondPeers(userId: string) {
+  const details = await getAcceptedBondDetails(userId);
+  return details.map((d) => d.peer);
 }
 
 export async function getAcceptedBondPeersSafe(userId: string) {
@@ -212,6 +212,15 @@ export async function getAcceptedBondPeersSafe(userId: string) {
     return await getAcceptedBondPeers(userId);
   } catch (err) {
     console.error("[trust] getAcceptedBondPeers failed", err);
+    return [];
+  }
+}
+
+export async function getAcceptedBondDetailsSafe(userId: string) {
+  try {
+    return await getAcceptedBondDetails(userId);
+  } catch (err) {
+    console.error("[trust] getAcceptedBondDetails failed", err);
     return [];
   }
 }
