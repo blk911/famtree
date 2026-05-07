@@ -65,6 +65,8 @@ export function IdleSessionGuard({
 
   const lastActivityRef = useRef(Date.now());
   const modalOpenRef = useRef(false);
+  /** Mirrors `promptNum` for listeners that cannot read state (e.g. BroadcastChannel). */
+  const promptNumRef = useRef(0);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const endsAtRef = useRef<number>(0);
@@ -114,7 +116,8 @@ export function IdleSessionGuard({
     }
   }, []);
 
-  const bumpActivity = useCallback(() => {
+  /** Record activity and dismiss the idle modal (explicit button only — never from page-level input). */
+  const dismissModalAfterUserContinue = useCallback(() => {
     const at = Date.now();
     lastActivityRef.current = at;
     broadcast({ type: "ACTIVITY", at });
@@ -179,6 +182,10 @@ export function IdleSessionGuard({
   }, [open]);
 
   useEffect(() => {
+    promptNumRef.current = promptNum;
+  }, [promptNum]);
+
+  useEffect(() => {
     if (typeof BroadcastChannel === "undefined") return;
     const ch = new BroadcastChannel(CHANNEL);
     chRef.current = ch;
@@ -189,7 +196,9 @@ export function IdleSessionGuard({
 
       if (msg.type === "ACTIVITY") {
         lastActivityRef.current = Math.max(lastActivityRef.current, msg.at);
-        if (modalOpenRef.current) {
+        // Non-escalation prompts may sync-dismiss from another tab's activity.
+        // Escalation (3rd+) stays until this tab gets CLOSE_MODAL from an explicit choice.
+        if (modalOpenRef.current && promptNumRef.current < ESCALATION_AFTER) {
           stopModalUi();
         }
         scheduleIdleTimer();
@@ -225,7 +234,12 @@ export function IdleSessionGuard({
 
   useEffect(() => {
     const onActivity = () => {
-      bumpActivity();
+      // While the idle modal is open, ignore page-level movement/input so stray motion
+      // does not dismiss — especially the escalation step (must use in-modal actions).
+      if (modalOpenRef.current) return;
+      const at = Date.now();
+      lastActivityRef.current = at;
+      broadcast({ type: "ACTIVITY", at });
       scheduleIdleTimer();
     };
 
@@ -245,7 +259,7 @@ export function IdleSessionGuard({
       window.removeEventListener("touchstart", onActivity);
       window.removeEventListener("wheel", onActivity);
     };
-  }, [bumpActivity, scheduleIdleTimer]);
+  }, [broadcast, scheduleIdleTimer]);
 
   useEffect(() => {
     const onVis = () => {
@@ -273,7 +287,7 @@ export function IdleSessionGuard({
   }, [effectiveMinutes, clearCountdown, clearIdleTimer, scheduleIdleTimer]);
 
   const onStillHere = () => {
-    bumpActivity();
+    dismissModalAfterUserContinue();
     scheduleIdleTimer();
   };
 

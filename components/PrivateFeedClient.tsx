@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Image as ImageIcon, Send, Lock, Plus } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
+import { directThreadKey } from "@/lib/private-thread-keys";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,6 +72,7 @@ function buildThreads(
   trustUnits: TrustUnit[],
   memberMap: Map<string, Member>,
   currentUserId: string,
+  bondPeers: Member[],
 ): Thread[] {
   // Group posts by participant fingerprint
   const grouped = new Map<string, FeedPost[]>();
@@ -120,7 +122,26 @@ function buildThreads(
     (b.posts[0]?.createdAt ?? "").localeCompare(a.posts[0]?.createdAt ?? "")
   );
 
-  return [...tuThreads, ...otherThreads];
+  const merged = [...tuThreads, ...otherThreads];
+  const keys = new Set(merged.map((t) => t.key));
+  const seeded: Thread[] = [];
+  for (const peer of bondPeers) {
+    const key = directThreadKey(peer.id, currentUserId);
+    if (keys.has(key)) continue;
+    keys.add(key);
+    seeded.push({
+      key,
+      type: "direct",
+      label: `${peer.firstName} ${peer.lastName}`,
+      memberIds: key.split(","),
+      posts: [],
+    });
+  }
+  seeded.sort((a, b) =>
+    a.label.localeCompare(b.label, undefined, { sensitivity: "base" }),
+  );
+
+  return [...merged, ...seeded];
 }
 
 /** Everyone in the thread except the author (sorted by display name). */
@@ -265,13 +286,17 @@ export function PrivateFeedClient({
   trustUnits,
   posts,
   members,
+  bondPeers,
   initialUnitId,
+  initialPeerId,
 }: {
   currentUserId: string;
   trustUnits: TrustUnit[];
   posts: FeedPost[];
   members: Member[];
+  bondPeers: Member[];
   initialUnitId?: string;
+  initialPeerId?: string;
 }) {
   const memberMap = useMemo(
     () => new Map(members.map((m) => [m.id, m])),
@@ -288,18 +313,47 @@ export function PrivateFeedClient({
 
   // Derive threads from live items
   const threads = useMemo(
-    () => buildThreads(allItems, trustUnits, memberMap, currentUserId),
-    [allItems, trustUnits, memberMap, currentUserId]
+    () =>
+      buildThreads(allItems, trustUnits, memberMap, currentUserId, bondPeers),
+    [allItems, trustUnits, memberMap, currentUserId, bondPeers],
   );
 
   // Which thread is open (accordion — one at a time)
-  const [openKey, setOpenKey] = useState<string>(() => {
+  const [openKey, setOpenKey] = useState<string>("");
+  const [didApplyDeepLink, setDidApplyDeepLink] = useState(false);
+
+  useEffect(() => {
+    if (didApplyDeepLink) return;
+    if (initialPeerId) {
+      const k = directThreadKey(initialPeerId, currentUserId);
+      if (threads.some((t) => t.key === k)) {
+        setOpenKey(k);
+        setDidApplyDeepLink(true);
+        return;
+      }
+    }
     if (initialUnitId) {
       const tu = trustUnits.find((u) => u.id === initialUnitId);
-      if (tu) return tuKey(tu);
+      if (tu) {
+        setOpenKey(tuKey(tu));
+        setDidApplyDeepLink(true);
+        return;
+      }
     }
-    return trustUnits.length > 0 ? tuKey(trustUnits[0]) : "";
-  });
+    if (trustUnits.length > 0) {
+      setOpenKey(tuKey(trustUnits[0]));
+    } else if (threads.length > 0) {
+      setOpenKey(threads[0].key);
+    }
+    setDidApplyDeepLink(true);
+  }, [
+    threads,
+    trustUnits,
+    initialPeerId,
+    initialUnitId,
+    currentUserId,
+    didApplyDeepLink,
+  ]);
 
   // Per-thread compose state
   const [drafts, setDrafts] = useState<Record<string, string>>({});

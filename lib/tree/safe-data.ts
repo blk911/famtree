@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import { getTrustUnits } from "@/lib/trust";
+import { getAcceptedBondPeers, getTrustUnits } from "@/lib/trust";
 
 /** Tree page / dashboard: prefs table may not exist until migrations run */
 export async function loadTreeViewPrefsSafe(viewerId: string) {
@@ -20,6 +20,15 @@ export async function loadTrustUnitsSafe(userId: string) {
     return await getTrustUnits(userId);
   } catch (err) {
     console.error("[tree] getTrustUnits failed", err);
+    return [];
+  }
+}
+
+export async function loadBondPeersSafe(userId: string) {
+  try {
+    return await getAcceptedBondPeers(userId);
+  } catch (err) {
+    console.error("[tree] getAcceptedBondPeers failed", err);
     return [];
   }
 }

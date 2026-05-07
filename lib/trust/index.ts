@@ -177,3 +177,41 @@ export async function getTrustUnits(userId: string) {
     };
   }));
 }
+
+/** Peers linked by an ACCEPTED connection_request (either direction). */
+export async function getAcceptedBondPeers(userId: string) {
+  const rows = await prisma.connectionRequest.findMany({
+    where: {
+      status: "ACCEPTED",
+      OR: [{ requesterId: userId }, { targetId: userId }],
+    },
+    select: { requesterId: true, targetId: true },
+  });
+
+  const peerIds = Array.from(
+    new Set(
+      rows.map((r) => (r.requesterId === userId ? r.targetId : r.requesterId)),
+    ),
+  );
+  if (peerIds.length === 0) return [];
+
+  return prisma.user.findMany({
+    where: { id: { in: peerIds } },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      photoUrl: true,
+    },
+    orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+  });
+}
+
+export async function getAcceptedBondPeersSafe(userId: string) {
+  try {
+    return await getAcceptedBondPeers(userId);
+  } catch (err) {
+    console.error("[trust] getAcceptedBondPeers failed", err);
+    return [];
+  }
+}

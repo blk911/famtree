@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getPrivateFeedPosts } from "@/lib/posts/queries";
-import { getTrustUnits } from "@/lib/trust";
+import { getTrustUnits, getAcceptedBondPeersSafe } from "@/lib/trust";
 import { prisma } from "@/lib/db/prisma";
 import { PrivateFeedClient } from "@/components/PrivateFeedClient";
 
@@ -22,13 +22,14 @@ function serializePost(post: Awaited<ReturnType<typeof getPrivateFeedPosts>>[num
 export default async function PrivateFeedPage({
   searchParams,
 }: {
-  searchParams?: { unit?: string };
+  searchParams?: { unit?: string; peer?: string };
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const [trustUnits, posts, members] = await Promise.all([
+  const [trustUnits, bondPeers, posts, members] = await Promise.all([
     getTrustUnits(user.id),
+    getAcceptedBondPeersSafe(user.id),
     getPrivateFeedPosts(user.id),
     prisma.user.findMany({
       select: { id: true, firstName: true, lastName: true, photoUrl: true },
@@ -39,11 +40,14 @@ export default async function PrivateFeedPage({
   return (
     <div className="content-col space-y-6">
       <PrivateFeedClient
+        key={`u:${searchParams?.unit ?? ""}:p:${searchParams?.peer ?? ""}`}
         currentUserId={user.id}
         trustUnits={trustUnits}
         posts={posts.map(serializePost)}
         members={members}
+        bondPeers={bondPeers}
         initialUnitId={searchParams?.unit}
+        initialPeerId={searchParams?.peer}
       />
     </div>
   );

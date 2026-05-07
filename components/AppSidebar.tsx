@@ -17,10 +17,11 @@ const INVITE = { href: "/invite", label: "Invite", icon: Mail };
 
 // Vault sub-items
 const VAULT_ITEMS = [
-  { href: "/family-vault/posts",    label: "Open Feed" },
-  { href: "/family-vault/private",  label: "Private Feed" },
-  { href: "/profile",               label: "My Posts" },
-  { href: "/tree",                  label: "Family Tree" },
+  { href: "/family-vault/posts",        label: "Open Feed" },
+  { href: "/family-vault/private",      label: "Private Feed" },
+  { href: "/family-vault/family-units", label: "Family Units" },
+  { href: "/profile",                   label: "My Posts" },
+  { href: "/tree",                      label: "Family Tree" },
 ];
 
 // Settings sub-items (admin only — shown beneath the Settings accordion)
