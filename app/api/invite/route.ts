@@ -8,6 +8,7 @@ import { requireAuth } from "@/lib/auth";
 import { createInvite, normalizeInviteEmail } from "@/lib/invite";
 import { sendInviteEmail } from "@/lib/email";
 import { prisma } from "@/lib/db/prisma";
+import { tryAutoTrustUnitAfterInvite } from "@/lib/trust/tuProposal";
 import { enrichInvitesWithRegisteredAccounts, listSentInvitesForSender } from "@/lib/invite/sentForSender";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
@@ -115,6 +116,12 @@ export async function POST(req: NextRequest) {
         },
         { status: 502, headers: { "x-request-id": requestId } },
       );
+    }
+
+    try {
+      await tryAutoTrustUnitAfterInvite(user.id, invite.id);
+    } catch (tuErr) {
+      console.error("[invite] tryAutoTrustUnitAfterInvite", tuErr);
     }
 
     return NextResponse.json(

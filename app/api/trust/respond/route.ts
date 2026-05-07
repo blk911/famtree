@@ -70,10 +70,15 @@ export async function POST(req: NextRequest) {
       FROM "trust_unit_approvals"
       WHERE "requestId" = ${requestId}
     `;
+    const pendingInvitesLeft = await prisma.trustUnitRequestPendingInvite.count({
+      where: { requestId },
+    });
     const memberIds = members.map((member) => member.userId);
-    const allApproved = memberIds.every((id: string) =>
-      approvals.some((approval: { userId: string; status: string }) => approval.userId === id && approval.status === "APPROVED")
-    );
+    const allApproved =
+      pendingInvitesLeft === 0 &&
+      memberIds.every((id: string) =>
+        approvals.some((approval: { userId: string; status: string }) => approval.userId === id && approval.status === "APPROVED"),
+      );
 
     if (allApproved) {
       const trustUnitId = randomUUID();

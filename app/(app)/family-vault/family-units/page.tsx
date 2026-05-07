@@ -8,6 +8,7 @@ import {
   loadBondDetailsSafe,
   loadPendingTrustRequestsSafe,
 } from "@/lib/tree/safe-data";
+import { trustRequestMembersForClient, type PendingTrustRequestMember } from "@/lib/trust";
 
 export default async function FamilyUnitsPage() {
   const user = await getCurrentUser();
@@ -35,24 +36,12 @@ export default async function FamilyUnitsPage() {
       lastName: string;
       photoUrl: string | null;
     };
-    members: Array<{ user: {
-      id: string;
-      firstName: string;
-      lastName: string;
-      photoUrl: string | null;
-      approvalStatus?: string;
-    } }>;
+    members: PendingTrustRequestMember[];
   }) => ({
     id: r.id,
     createdAt: r.createdAt.toISOString(),
     createdBy: r.createdBy,
-    members: r.members.map((m) => ({
-      id: m.user.id,
-      firstName: m.user.firstName,
-      lastName: m.user.lastName,
-      photoUrl: m.user.photoUrl,
-      approvalStatus: m.user.approvalStatus ?? "PENDING",
-    })),
+    members: trustRequestMembersForClient(r.members),
   }));
 
   const hasPendingTu = serializedPendingTu.length > 0;

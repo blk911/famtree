@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 import { hashPassword, setSessionCookie } from "@/lib/auth";
 import { normalizeInviteEmail } from "@/lib/invite";
 import { sendWelcomeEmail } from "@/lib/email";
+import { resolveTrustUnitPendingInvitesOnRegister } from "@/lib/trust/tuProposal";
 import { z } from "zod";
 
 const registerSchema = z.object({
@@ -44,6 +45,7 @@ export async function POST(req: NextRequest) {
     // If invite token provided — verify it was already accepted (identity challenge passed)
     let inviteRelationship: string | null = null;
     let invitedById: string | null = null;
+    let consumedInviteId: string | null = null;
     if (inviteToken) {
       const invite = await prisma.invite.findUnique({ where: { token: inviteToken } });
       if (!invite || invite.status !== "ACCEPTED") {
@@ -60,6 +62,7 @@ export async function POST(req: NextRequest) {
       }
       inviteRelationship = invite.relationship ?? null;
       invitedById = invite.senderId;
+      consumedInviteId = invite.id;
     }
 
     // Determine role
@@ -86,11 +89,12 @@ export async function POST(req: NextRequest) {
     });
 
     // Mark invite as fully consumed — terminal state, closes reuse window
-    if (inviteToken) {
+    if (inviteToken && consumedInviteId) {
       await prisma.invite.update({
         where: { token: inviteToken },
         data: { status: "REGISTERED" },
       });
+      await resolveTrustUnitPendingInvitesOnRegister(user.id, consumedInviteId);
     }
 
     // Sponsor ↔ new member bond (invite path only) — Fam Units / graph use ACCEPTED rows.

@@ -9,6 +9,7 @@ type TrustMember = {
   lastName: string;
   photoUrl: string | null;
   approvalStatus?: string;
+  pendingInvite?: boolean;
 };
 
 type TrustRequest = {
@@ -56,7 +57,9 @@ export function TrustRequestCard({
   };
 
   const initials = (member: TrustMember) =>
-    `${member.firstName[0] ?? ""}${member.lastName[0] ?? ""}`.toUpperCase();
+    member.pendingInvite
+      ? "?"
+      : `${member.firstName[0] ?? ""}${member.lastName[0] ?? ""}`.toUpperCase();
 
   return (
     <div className="p-4 border rounded-lg bg-white">
@@ -68,7 +71,7 @@ export function TrustRequestCard({
             proposal, is starting this Trust Unit. Accept when you&apos;re ready, or hold for later.
           </p>
           <div className="mt-3 flex items-center gap-2 text-sm font-medium text-stone-800">
-            {members.map((member) => member.firstName).join(" · ")}
+            {members.map((member) => (member.pendingInvite ? "Pending invite" : member.firstName)).join(" · ")}
           </div>
           {currentUserApproved && (
             <div style={{display:"inline-flex",alignItems:"center",gap:"5px",fontSize:"12px",fontWeight:800,color:"#16a34a",marginTop:"10px"}}>
@@ -81,9 +84,10 @@ export function TrustRequestCard({
         <div style={{display:"flex",alignItems:"flex-start",gap:"22px",justifyContent:"flex-end"}}>
           {members.map((member) => {
             const approved = member.approvalStatus === "APPROVED";
+            const pendingSlot = member.pendingInvite || member.approvalStatus === "WAITING_ON_JOIN";
             return (
               <div key={member.id} style={{position:"relative",textAlign:"center",width:"76px"}}>
-                <div style={{width:"56px",height:"56px",borderRadius:"50%",margin:"0 auto",overflow:"hidden",background:"linear-gradient(135deg,#7c3aed,#c026d3)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:800,border:approved ? "3px solid #22c55e" : "3px solid #ede9fe",boxShadow:approved ? "0 0 0 4px rgba(34,197,94,0.12)" : "none"}}>
+                <div style={{width:"56px",height:"56px",borderRadius:"50%",margin:"0 auto",overflow:"hidden",background:pendingSlot ? "linear-gradient(135deg,#78716c,#a8a29e)" : "linear-gradient(135deg,#7c3aed,#c026d3)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:800,border:approved ? "3px solid #22c55e" : pendingSlot ? "3px dashed #d6d3d1" : "3px solid #ede9fe",boxShadow:approved ? "0 0 0 4px rgba(34,197,94,0.12)" : "none"}}>
                   {member.photoUrl
                     ? <img src={member.photoUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} />
                     : initials(member)}
@@ -94,8 +98,13 @@ export function TrustRequestCard({
                   </span>
                 )}
                 <div style={{fontSize:"12px",fontWeight:700,color:"#1c1917",marginTop:"7px",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                  {member.firstName}
+                  {pendingSlot ? "Invite" : member.firstName}
                 </div>
+                {pendingSlot ? (
+                  <div style={{fontSize:"9px",fontWeight:600,color:"#92400e",marginTop:"2px",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis"}} title={member.firstName}>
+                    {member.firstName}
+                  </div>
+                ) : null}
                 <div style={{height:"3px",background:approved ? "#22c55e" : "#e7e5e4",borderRadius:"999px",marginTop:"5px"}} />
                 {approved && (
                   <div style={{display:"inline-flex",alignItems:"center",gap:"3px",fontSize:"10px",fontWeight:800,color:"#16a34a",marginTop:"4px"}}>
@@ -103,6 +112,11 @@ export function TrustRequestCard({
                     Accepted
                   </div>
                 )}
+                {pendingSlot && !approved ? (
+                  <div style={{fontSize:"9px",fontWeight:700,color:"#b45309",marginTop:"4px"}}>
+                    Pending
+                  </div>
+                ) : null}
               </div>
             );
           })}

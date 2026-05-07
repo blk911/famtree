@@ -9,6 +9,8 @@ export type TuModalMember = {
   lastName: string;
   photoUrl: string | null;
   approvalStatus?: string;
+  /** Synthetic row for an invite that has not registered yet */
+  pendingInvite?: boolean;
 };
 
 export type TuModalRequest = {
@@ -23,6 +25,7 @@ function fmtName(m: TuModalMember) {
 }
 
 function initials(m: TuModalMember) {
+  if (m.pendingInvite) return "?";
   return `${m.firstName[0] ?? ""}${m.lastName[0] ?? ""}`.toUpperCase();
 }
 
@@ -49,9 +52,11 @@ export function TrustUnitFormationModal({
   const me = members.find((m) => m.id === currentUserId);
   const myStatus = me?.approvalStatus ?? "PENDING";
   const iApproved = myStatus === "APPROVED";
-  const iDeclined = myStatus === "DECLINED";
-  const acceptedCount = members.filter((m) => m.approvalStatus === "APPROVED").length;
-  const allApproved = members.length > 0 && acceptedCount === members.length;
+  const pendingSlots = members.filter((m) => m.pendingInvite);
+  const registered = members.filter((m) => !m.pendingInvite);
+  const acceptedCount = registered.filter((m) => (m.approvalStatus ?? "PENDING") === "APPROVED").length;
+  const allRegisteredAccepted =
+    registered.length > 0 && registered.every((m) => (m.approvalStatus ?? "PENDING") === "APPROVED");
 
   const respond = async (action: "ACCEPT" | "DECLINE") => {
     setLoading(action);
@@ -111,7 +116,8 @@ export function TrustUnitFormationModal({
             Proposed {new Date(request.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
             {" · "}
             <span className="font-medium text-stone-700">
-              {acceptedCount}/{members.length} accepted
+              {acceptedCount}/{registered.length} accepted
+              {pendingSlots.length > 0 ? ` · ${pendingSlots.length} invite pending` : ""}
             </span>
           </p>
         </div>
@@ -122,14 +128,17 @@ export function TrustUnitFormationModal({
             const isSelf = member.id === currentUserId;
             const approved = st === "APPROVED";
             const declined = st === "DECLINED";
+            const pendingSlot = !!member.pendingInvite;
 
             return (
               <div key={member.id} className="flex flex-wrap items-center gap-3 py-4">
                 <div className="relative shrink-0">
                   <div
-                    className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 text-sm font-bold text-white ${
-                      approved ? "ring-2 ring-green-500 ring-offset-2" : ""
-                    }`}
+                    className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-full text-sm font-bold text-white ${
+                      pendingSlot
+                        ? "bg-gradient-to-br from-stone-500 to-stone-600"
+                        : "bg-gradient-to-br from-violet-600 to-fuchsia-600"
+                    } ${approved ? "ring-2 ring-green-500 ring-offset-2" : ""}`}
                   >
                     {member.photoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -145,11 +154,18 @@ export function TrustUnitFormationModal({
                   ) : null}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-stone-900">{fmtName(member)}</p>
-                  {isSelf ? (
+                  <p className="truncate font-semibold text-stone-900">
+                    {pendingSlot ? "Pending invite" : fmtName(member)}
+                  </p>
+                  {pendingSlot ? (
+                    <p className="truncate text-xs text-amber-900">{member.firstName}</p>
+                  ) : isSelf ? (
                     <p className="text-xs text-violet-700">You</p>
                   ) : sponsor.id === member.id ? (
                     <p className="text-xs text-stone-500">Sponsor</p>
+                  ) : null}
+                  {pendingSlot ? (
+                    <p className="text-xs text-stone-500">Waiting on registration</p>
                   ) : null}
                 </div>
 
@@ -185,14 +201,16 @@ export function TrustUnitFormationModal({
                   {!isSelf ? (
                     <span
                       className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${
-                        approved
-                          ? "bg-green-50 text-green-800 ring-1 ring-green-200"
-                          : declined
-                            ? "bg-red-50 text-red-800 ring-1 ring-red-200"
-                            : "bg-amber-50 text-amber-900 ring-1 ring-amber-200"
+                        pendingSlot
+                          ? "bg-amber-50 text-amber-950 ring-1 ring-amber-200"
+                          : approved
+                            ? "bg-green-50 text-green-800 ring-1 ring-green-200"
+                            : declined
+                              ? "bg-red-50 text-red-800 ring-1 ring-red-200"
+                              : "bg-amber-50 text-amber-900 ring-1 ring-amber-200"
                       }`}
                     >
-                      {approved ? "Accepted" : declined ? "Declined" : "Waiting"}
+                      {pendingSlot ? "Invite pending" : approved ? "Accepted" : declined ? "Declined" : "Waiting"}
                     </span>
                   ) : null}
 
@@ -213,13 +231,18 @@ export function TrustUnitFormationModal({
         </div>
 
         <div className="flex flex-col gap-2 border-t border-stone-100 bg-stone-50 px-6 py-4">
-          {iApproved && !allApproved ? (
+          {iApproved && !allRegisteredAccepted ? (
             <p className="text-center text-xs text-stone-600">
               Waiting for everyone else to accept. You&apos;ll see updates here and under{" "}
               <strong>Family → Units</strong>.
             </p>
           ) : null}
-          {(iApproved || allApproved) && (
+          {iApproved && pendingSlots.length > 0 ? (
+            <p className="text-center text-xs text-amber-900">
+              An invited email hasn&apos;t registered yet. The unit activates only after they join and everyone accepts.
+            </p>
+          ) : null}
+          {(iApproved || allRegisteredAccepted) && (
             <button
               type="button"
               onClick={onHoldOrLater}

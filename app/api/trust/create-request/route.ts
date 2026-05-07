@@ -4,53 +4,73 @@ import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
-import { randomUUID } from "crypto";
+import { createTrustUnitProposal } from "@/lib/trust/tuProposal";
+import { Prisma } from "@prisma/client";
 
 export async function POST(req: NextRequest) {
   return withApiTrace(req, "/api/trust/create-request", async (req: NextRequest) => {
 
   try {
     const user = await requireAuth();
-    const { memberIds, createdBy } = await req.json();
+    const body = await req.json();
+    const { memberIds, pendingInviteIds: rawPending, createdBy } = body;
     const uniqueMemberIds = Array.isArray(memberIds) ? Array.from(new Set(memberIds)) : [];
+    const pendingInviteIds = Array.isArray(rawPending) ? Array.from(new Set(rawPending)) : [];
 
     if (createdBy !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    if (uniqueMemberIds.length < 3 || uniqueMemberIds.length > 20 || !uniqueMemberIds.includes(user.id)) {
+    const totalSlots = uniqueMemberIds.length + pendingInviteIds.length;
+    if (totalSlots < 3 || totalSlots > 20 || !uniqueMemberIds.includes(user.id)) {
       return NextResponse.json({ error: "Trust Units require 3–20 members including you" }, { status: 400 });
     }
 
-    const requestId = randomUUID();
-    await prisma.$executeRaw`
-      INSERT INTO "trust_unit_requests" (id, "createdById", status, "createdAt")
-      VALUES (${requestId}, ${user.id}, 'PENDING'::"TrustUnitRequestStatus", NOW())
-    `;
+    if (pendingInviteIds.length > 0) {
+      const invites = await prisma.invite.findMany({
+        where: {
+          id: { in: pendingInviteIds },
+          senderId: user.id,
+          status: { in: ["PENDING", "ACCEPTED"] },
+        },
+      });
+      if (invites.length !== pendingInviteIds.length) {
+        return NextResponse.json(
+          { error: "Each pending invite must be yours and not yet registered" },
+          { status: 400 },
+        );
+      }
+      const alreadySlotted = await prisma.trustUnitRequestPendingInvite.findMany({
+        where: { inviteId: { in: pendingInviteIds } },
+      });
+      if (alreadySlotted.length > 0) {
+        return NextResponse.json(
+          { error: "One or more invites are already attached to a Trust Unit proposal" },
+          { status: 409 },
+        );
+      }
+    }
 
-    for (const memberId of uniqueMemberIds) {
-      await prisma.$executeRaw`
-        INSERT INTO "trust_unit_request_members" (id, "requestId", "userId")
-        VALUES (${randomUUID()}, ${requestId}, ${memberId})
-        ON CONFLICT ("requestId", "userId") DO NOTHING
-      `;
-      await prisma.$executeRaw`
-        INSERT INTO "trust_unit_approvals" (id, "requestId", "userId", status, "updatedAt")
-        VALUES (
-          ${randomUUID()},
-          ${requestId},
-          ${memberId},
-          ${memberId === user.id ? "APPROVED" : "PENDING"}::"TrustApprovalStatus",
-          NOW()
-        )
-        ON CONFLICT ("requestId", "userId") DO NOTHING
-      `;
+    let requestId: string;
+    try {
+      requestId = await createTrustUnitProposal({
+        createdById: user.id,
+        registeredMemberIds: uniqueMemberIds,
+        pendingInviteIds,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Invalid Trust Unit proposal";
+      return NextResponse.json({ error: message }, { status: 400 });
     }
 
     return NextResponse.json({ id: requestId });
-  } catch (err: any) {
-    if (err.message === "UNAUTHORIZED") {
+  } catch (err: unknown) {
+    const anyErr = err as { message?: string };
+    if (anyErr.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json({ error: "Invite already used in another proposal" }, { status: 409 });
     }
     console.error("[trust/create-request]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

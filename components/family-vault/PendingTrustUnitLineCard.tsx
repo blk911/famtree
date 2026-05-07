@@ -18,6 +18,7 @@ export type PendingTuLineRequest = {
     lastName: string;
     photoUrl: string | null;
     approvalStatus?: string;
+    pendingInvite?: boolean;
   }>;
 };
 
@@ -25,7 +26,8 @@ function fmt(m: { firstName: string; lastName: string }) {
   return `${m.firstName} ${m.lastName}`.trim();
 }
 
-function initials(m: { firstName: string; lastName: string }) {
+function initials(m: { firstName: string; lastName: string; pendingInvite?: boolean }) {
+  if (m.pendingInvite) return "?";
   return `${m.firstName[0] ?? ""}${m.lastName[0] ?? ""}`.toUpperCase();
 }
 
@@ -38,8 +40,9 @@ export function PendingTrustUnitLineCard({
   viewerId: string;
 }) {
   const [open, setOpen] = useState(false);
-  const n = request.members.length;
-  const accepted = request.members.filter((m) => (m.approvalStatus ?? "PENDING") === "APPROVED").length;
+  const registered = request.members.filter((m) => !m.pendingInvite);
+  const pendingCnt = request.members.length - registered.length;
+  const accepted = registered.filter((m) => (m.approvalStatus ?? "PENDING") === "APPROVED").length;
   const sponsor = request.createdBy;
   const proposed = new Date(request.createdAt).toLocaleDateString("en-US", {
     month: "short",
@@ -47,9 +50,12 @@ export function PendingTrustUnitLineCard({
     year: "numeric",
   });
 
-  const sorted = [...request.members].sort((a, b) =>
-    fmt(a).localeCompare(fmt(b), undefined, { sensitivity: "base" }),
-  );
+  const sorted = [...request.members].sort((a, b) => {
+    const pa = a.pendingInvite ? 1 : 0;
+    const pb = b.pendingInvite ? 1 : 0;
+    if (pa !== pb) return pa - pb;
+    return fmt(a).localeCompare(fmt(b), undefined, { sensitivity: "base" });
+  });
 
   return (
     <div className="overflow-hidden rounded-xl border border-amber-200/80 bg-amber-50/40">
@@ -64,14 +70,15 @@ export function PendingTrustUnitLineCard({
               Forming
             </span>
             <span className="truncate text-sm font-semibold text-stone-900">
-              Trust unit · {n} member{n === 1 ? "" : "s"}
+              Trust unit · {request.members.length} member{request.members.length === 1 ? "" : "s"}
             </span>
           </div>
           <p className="text-xs text-stone-600">
             Sponsor <span className="font-semibold text-stone-800">{fmt(sponsor)}</span>
             {" · "}
             <span className="font-medium">
-              {accepted}/{n} accepted
+              {accepted}/{registered.length} accepted
+              {pendingCnt > 0 ? ` · ${pendingCnt} invite pending` : ""}
             </span>
             {" · "}Proposed {proposed}
           </p>
@@ -91,6 +98,7 @@ export function PendingTrustUnitLineCard({
               const st = m.approvalStatus ?? "PENDING";
               const isViewer = m.id === viewerId;
               const isSponsor = m.id === sponsor.id;
+              const pendingSlot = !!m.pendingInvite;
               const ok = st === "APPROVED";
               const bad = st === "DECLINED";
               return (
@@ -98,7 +106,11 @@ export function PendingTrustUnitLineCard({
                   key={m.id}
                   className="flex items-center gap-2 rounded-lg border border-stone-100 bg-stone-50/80 px-2 py-2"
                 >
-                  <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 text-[10px] font-bold text-white">
+                  <div
+                    className={`relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-bold text-white ${
+                      pendingSlot ? "bg-gradient-to-br from-stone-500 to-stone-600" : "bg-gradient-to-br from-violet-600 to-fuchsia-600"
+                    }`}
+                  >
                     {m.photoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={m.photoUrl} alt="" className="h-full w-full object-cover" />
@@ -112,7 +124,12 @@ export function PendingTrustUnitLineCard({
                     ) : null}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-semibold text-stone-900">{fmt(m)}</p>
+                    <p className="truncate text-xs font-semibold text-stone-900">
+                      {pendingSlot ? "Pending invite" : fmt(m)}
+                    </p>
+                    {pendingSlot ? (
+                      <p className="truncate text-[10px] text-amber-900">{m.firstName}</p>
+                    ) : null}
                     <p className="text-[10px] text-stone-500">
                       {isViewer ? "You · " : ""}
                       {isSponsor ? "Sponsor · " : ""}
@@ -121,7 +138,7 @@ export function PendingTrustUnitLineCard({
                           ok ? "font-bold text-green-700" : bad ? "font-bold text-red-700" : "font-medium text-amber-800"
                         }
                       >
-                        {ok ? "Accepted" : bad ? "Declined" : "Waiting"}
+                        {ok ? "Accepted" : bad ? "Declined" : pendingSlot ? "Invite pending" : "Waiting"}
                       </span>
                     </p>
                   </div>

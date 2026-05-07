@@ -4,7 +4,11 @@ import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MessageSquare, MessageCircle } from "lucide-react";
-import { getPendingTrustRequestsSafe } from "@/lib/trust";
+import {
+  getPendingTrustRequestsSafe,
+  trustRequestMembersForClient,
+  type PendingTrustRequestMember,
+} from "@/lib/trust";
 import { loadTreeViewPrefsSafe, loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { queryDashboardProfilePrompt, incrementDashboardProfilePromptSeen } from "@/lib/dashboard/safe-data";
 import { DashboardTrustUnitGate } from "@/components/dashboard/DashboardTrustUnitGate";
@@ -146,7 +150,17 @@ export default async function DashboardPage() {
   const joinedViaYou = myInvites.filter((i) => i.status === "REGISTERED").length;
   const vaultNewCount    = newPosts.length + newComments.length;
 
-  const serializedTrustRequests = trustRequests.map((r: any) => ({
+  const serializedTrustRequests = trustRequests.map((r: {
+    id: string;
+    createdAt: Date;
+    createdBy: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      photoUrl: string | null;
+    };
+    members: PendingTrustRequestMember[];
+  }) => ({
     id: r.id,
     createdAt: r.createdAt.toISOString(),
     createdBy: {
@@ -155,13 +169,7 @@ export default async function DashboardPage() {
       lastName: r.createdBy.lastName,
       photoUrl: r.createdBy.photoUrl,
     },
-    members: r.members.map((m: any) => ({
-      id: m.user.id,
-      firstName: m.user.firstName,
-      lastName: m.user.lastName,
-      photoUrl: m.user.photoUrl,
-      approvalStatus: m.user.approvalStatus ?? "PENDING",
-    })),
+    members: trustRequestMembersForClient(r.members),
   }));
 
   const missingProfilePhoto = !user.photoUrl;
