@@ -11,10 +11,10 @@ type JoinStep     = "invite" | "waitlist" | "success";
 type InviteStep   = "email" | "challenge" | "register" | "welcome";
 
 const CARDS = [
-  { id:"sign-in",    icon:LogIn, label:"Sign In",          sub:"Already a member? Welcome back to your family.",           bg:"rgba(255,255,255,0.14)", border:"rgba(255,255,255,0.35)",   hoverBg:"rgba(255,255,255,0.22)" },
-  { id:"invite",     icon:Mail,  label:"I Have an Invite", sub:"Got an invite from family? Start here.",                   bg:"rgba(255,255,255,0.10)", border:"rgba(255,220,180,0.5)",    hoverBg:"rgba(255,220,180,0.18)" },
-  { id:"waitlist",   icon:Users, label:"Need an Invite?",  sub:"Not in the network yet? Get on the list — we'll reach out.", bg:"rgba(255,255,255,0.08)", border:"rgba(255,180,210,0.45)", hoverBg:"rgba(255,180,210,0.18)" },
-  { id:"send-invite",icon:Send,  label:"Send an Invite",   sub:"Already a member? Invite someone into your family tree.",   bg:"rgba(255,255,255,0.11)", border:"rgba(180,230,255,0.45)", hoverBg:"rgba(180,230,255,0.2)" },
+  { id:"sign-in",    icon:LogIn, label:"Sign In",          sub:"Already a member? Welcome back to your family.",           bg:"rgba(255,255,255,0.92)", border:"rgba(124,58,237,0.28)",   hoverBg:"rgba(250,245,255,0.98)" },
+  { id:"invite",     icon:Mail,  label:"I Have an Invite", sub:"Got an invite from family? Start here.",                   bg:"rgba(255,255,255,0.9)", border:"rgba(234,88,12,0.35)",    hoverBg:"rgba(255,247,237,0.97)" },
+  { id:"waitlist",   icon:Users, label:"Need an Invite?",  sub:"Not in the network yet? Get on the list — we'll reach out.", bg:"rgba(255,255,255,0.88)", border:"rgba(219,39,119,0.32)", hoverBg:"rgba(253,242,248,0.97)" },
+  { id:"send-invite",icon:Send,  label:"Send an Invite",   sub:"Already a member? Invite someone into your family tree.",   bg:"rgba(255,255,255,0.9)", border:"rgba(14,165,233,0.32)", hoverBg:"rgba(240,249,255,0.98)" },
 ];
 
 function HomeModalShell({
@@ -32,7 +32,7 @@ function HomeModalShell({
     <div
       onClick={onBackdrop}
       style={{
-        position:"fixed", inset:0, background:"rgba(30,27,75,0.6)", zIndex:50,
+        position:"fixed", inset:0, background:"rgba(248,250,252,0.72)", zIndex:50,
         display:"flex", alignItems:"center", justifyContent:"center", padding:"20px", backdropFilter:"blur(4px)",
       }}
     >
@@ -247,33 +247,33 @@ export function HomeClient() {
       `}</style>
 
       {/* -- HERO -- */}
-      <section style={{ position:"relative", minHeight:"100vh", overflow:"hidden", display:"flex", flexDirection:"column", padding:"22px 28px 80px", color:"white", backgroundImage:"url('/images/index-bg3.webp')", backgroundSize:"cover", backgroundPosition:"center center" }}>
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(160deg,rgba(4,6,28,0.48) 0%,rgba(10,8,40,0.28) 50%,rgba(4,6,28,0.55) 100%)", zIndex:1, pointerEvents:"none" }} />
-        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"280px", background:"linear-gradient(to top,rgba(4,6,28,0.92) 0%,rgba(4,6,28,0.5) 55%,transparent 100%)", zIndex:1, pointerEvents:"none" }} />
+      <section style={{ position:"relative", minHeight:"100vh", overflow:"hidden", display:"flex", flexDirection:"column", padding:"22px 28px 80px", color:"#1e1b4b", backgroundImage:"url('/images/index-bg3.webp')", backgroundSize:"cover", backgroundPosition:"center center" }}>
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(165deg,rgba(255,254,252,0.94) 0%,rgba(252,248,255,0.9) 45%,rgba(255,251,247,0.93) 100%)", zIndex:1, pointerEvents:"none" }} />
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"260px", background:"linear-gradient(to top,rgba(255,253,250,0.98) 0%,rgba(255,255,255,0.42) 50%,transparent 100%)", zIndex:1, pointerEvents:"none" }} />
 
         <nav style={{ position:"relative", zIndex:3, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"11px" }}>
-            <div style={{ width:40, height:40, borderRadius:"12px", overflow:"hidden", border:"1px solid rgba(255,255,255,0.35)" }}>
+            <div style={{ width:40, height:40, borderRadius:"12px", overflow:"hidden", border:"1px solid rgba(30,27,75,0.12)", boxShadow:"0 2px 8px rgba(124,58,237,0.08)" }}>
               <img src="/images/amihuman-logo.png" alt="AMIHUMAN.NET" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
             </div>
             <span style={{ fontSize:"20px", fontWeight:900, letterSpacing:"-0.5px" }}>AMIHUMAN.NET</span>
           </div>
           <div style={{ display:"flex", gap:"10px" }}>
-            <button onClick={() => setFaqOpen(true)} style={{ border:"1px solid rgba(255,255,255,0.4)", borderRadius:"999px", background:"rgba(255,255,255,0.12)", backdropFilter:"blur(6px)", color:"white", fontSize:"14px", fontWeight:700, padding:"9px 22px", cursor:"pointer" }}>FAQ</button>
-            <button onClick={() => setContactOpen(true)} style={{ border:"1px solid rgba(255,255,255,0.5)", borderRadius:"999px", background:"rgba(255,255,255,0.22)", backdropFilter:"blur(6px)", color:"white", fontSize:"14px", fontWeight:700, padding:"10px 22px", cursor:"pointer" }}>Contact</button>
+            <button onClick={() => setFaqOpen(true)} style={{ border:"1px solid rgba(124,58,237,0.35)", borderRadius:"999px", background:"rgba(255,255,255,0.85)", backdropFilter:"blur(8px)", color:"#4c1d95", fontSize:"14px", fontWeight:700, padding:"9px 22px", cursor:"pointer", boxShadow:"0 2px 12px rgba(124,58,237,0.08)" }}>FAQ</button>
+            <button onClick={() => setContactOpen(true)} style={{ border:"1px solid rgba(192,38,211,0.35)", borderRadius:"999px", background:"rgba(255,255,255,0.92)", backdropFilter:"blur(8px)", color:"#86198f", fontSize:"14px", fontWeight:700, padding:"10px 22px", cursor:"pointer", boxShadow:"0 2px 12px rgba(192,38,211,0.1)" }}>Contact</button>
           </div>
         </nav>
 
         <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", position:"relative", zIndex:3, paddingTop:"32px" }}>
-          <div className="exclusivity-pill" style={{ display:"inline-flex", flexDirection:"column", alignItems:"center", gap:"5px", padding:"15px 30px", borderRadius:"999px", background:"rgba(255,255,255,0.16)", border:"1px solid rgba(255,255,255,0.38)", fontSize:"20px", fontWeight:900, letterSpacing:"0.04em", marginBottom:"24px", backdropFilter:"blur(8px)", boxShadow:"0 10px 34px rgba(0,0,0,0.22)", textTransform:"uppercase" }}>
+          <div className="exclusivity-pill" style={{ display:"inline-flex", flexDirection:"column", alignItems:"center", gap:"5px", padding:"15px 30px", borderRadius:"999px", background:"rgba(255,255,255,0.78)", border:"1px solid rgba(124,58,237,0.22)", fontSize:"20px", fontWeight:900, letterSpacing:"0.04em", marginBottom:"24px", backdropFilter:"blur(10px)", boxShadow:"0 10px 36px rgba(124,58,237,0.1)", textTransform:"uppercase", color:"#312e81" }}>
             <span>INVITATION ONLY &nbsp;|&nbsp; RELATIONSHIP-FIRST &nbsp;|&nbsp; COMPLETELY PRIVATE</span>
-            <span style={{ fontSize:"13px", letterSpacing:"0.12em", color:"rgba(255,255,255,0.78)" }}>NO ADS &nbsp;|&nbsp; NO BOTS &nbsp;|&nbsp; NO DATA MINING &nbsp;|&nbsp; EVER.</span>
+            <span style={{ fontSize:"13px", letterSpacing:"0.12em", color:"#64748b" }}>NO ADS &nbsp;|&nbsp; NO BOTS &nbsp;|&nbsp; NO DATA MINING &nbsp;|&nbsp; EVER.</span>
           </div>
-          <h1 className="hero-h" style={{ fontSize:"62px", fontWeight:900, lineHeight:1.03, letterSpacing:"-2.5px", margin:"0 0 18px", maxWidth:"720px", textShadow:"0 2px 24px rgba(0,0,0,0.2)" }}>
+          <h1 className="hero-h" style={{ fontSize:"62px", fontWeight:900, lineHeight:1.03, letterSpacing:"-2.5px", margin:"0 0 18px", maxWidth:"720px", color:"#1e1b4b" }}>
             Your Private<br />Family{" "}
             <span style={{ background:"linear-gradient(90deg,#fde68a,#fca5a5)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Network.</span>
           </h1>
-          <p style={{ fontSize:"17px", lineHeight:1.7, color:"rgba(255,255,255,0.78)", maxWidth:"560px", margin:"0 0 44px" }}>
+          <p style={{ fontSize:"17px", lineHeight:1.7, color:"#475569", maxWidth:"560px", margin:"0 0 44px" }}>
             A private social network built exclusively for families. Invitation-only. Just the people who matter most. No strangers or bots. All conversations are private.
           </p>
 
@@ -288,14 +288,14 @@ export function HomeClient() {
                     else if (card.id === "send-invite") openSendInviteModal();
                     else openJoin("waitlist");
                   }}
-                  style={{ ["--hbg" as any]:card.hoverBg, background:card.bg, border:`1px solid ${card.border}`, borderRadius:"20px", padding:"26px 20px", cursor:"pointer", textAlign:"left", color:"white", backdropFilter:"blur(10px)" }}
+                  style={{ ["--hbg" as any]:card.hoverBg, background:card.bg, border:`1px solid ${card.border}`, borderRadius:"20px", padding:"26px 20px", cursor:"pointer", textAlign:"left", color:"#1e1b4b", backdropFilter:"blur(10px)", boxShadow:"0 8px 28px rgba(124,58,237,0.07)" }}
                 >
-                  <div style={{ width:42, height:42, borderRadius:"12px", background:"rgba(255,255,255,0.18)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:"14px" }}>
+                  <div style={{ width:42, height:42, borderRadius:"12px", background:"rgba(124,58,237,0.1)", color:"#6d28d9", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:"14px" }}>
                     <Icon style={{ width:20, height:20 }} />
                   </div>
                   <div style={{ fontSize:"16px", fontWeight:800, marginBottom:"7px", letterSpacing:"-0.2px" }}>{card.label}</div>
-                  <div style={{ fontSize:"13px", lineHeight:1.55, color:"rgba(255,255,255,0.68)" }}>{card.sub}</div>
-                  <div style={{ marginTop:"16px", fontSize:"14px", color:"rgba(255,255,255,0.45)", fontWeight:700 }}>→</div>
+                  <div style={{ fontSize:"13px", lineHeight:1.55, color:"#64748b" }}>{card.sub}</div>
+                  <div style={{ marginTop:"16px", fontSize:"14px", color:"#a855f7", fontWeight:700 }}>→</div>
                 </button>
               );
             })}
