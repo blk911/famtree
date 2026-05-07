@@ -35,8 +35,8 @@ public/uploads/*
 !public/uploads/Testimony 2.mp4
 !public/uploads/Testimony 3.mp4
 !public/uploads/Testimony 4.mp4
-# Studios marketing landing hero (StudiosLandingClient.tsx)
-!public/uploads/studio_landing_1.mp4
+# Marketing home hero (`HomeClient.tsx`)
+!public/uploads/index bkgrnd 3.png
 
 # ── Logs ─────────────────────────────────────────────────────
 *.log

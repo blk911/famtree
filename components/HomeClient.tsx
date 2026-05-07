@@ -246,10 +246,22 @@ export function HomeClient() {
         @media(max-width:640px){ .modal-card{position:fixed !important;inset:0 !important;border-radius:0 !important;padding:28px !important;overflow-y:auto !important} .join-grid,.wl-grid{grid-template-columns:1fr !important} }
       `}</style>
 
-      {/* -- HERO -- */}
-      <section style={{ position:"relative", minHeight:"100vh", overflow:"hidden", display:"flex", flexDirection:"column", padding:"22px 28px 80px", color:"#1e1b4b", backgroundImage:"url('/images/index-bg3.webp')", backgroundSize:"cover", backgroundPosition:"center center" }}>
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(165deg,rgba(255,254,252,0.94) 0%,rgba(252,248,255,0.9) 45%,rgba(255,251,247,0.93) 100%)", zIndex:1, pointerEvents:"none" }} />
-        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"260px", background:"linear-gradient(to top,rgba(255,253,250,0.98) 0%,rgba(255,255,255,0.42) 50%,transparent 100%)", zIndex:1, pointerEvents:"none" }} />
+      {/* -- HERO -- full-bleed artwork, no overlay masks */}
+      <section
+        style={{
+          position:"relative",
+          minHeight:"100vh",
+          overflow:"hidden",
+          display:"flex",
+          flexDirection:"column",
+          padding:"22px 28px 80px",
+          color:"#1e1b4b",
+          backgroundImage:"url('/uploads/index%20bkgrnd%203.png')",
+          backgroundSize:"cover",
+          backgroundPosition:"center center",
+          backgroundRepeat:"no-repeat",
+        }}
+      >
 
         <nav style={{ position:"relative", zIndex:3, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"11px" }}>
