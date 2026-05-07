@@ -19,6 +19,29 @@ export async function findSharedConnections(currentUserId: string, targetUserId:
   return Array.from(currentConnections).filter((id) => id !== targetUserId && targetConnections.has(id));
 }
 
+/**
+ * Connectors eligible for “invite wedge → TU” UX — excludes the **pure sponsor star**:
+ * if both parties share the same `invitedById`, that sponsor appears as a mutual graph neighbor
+ * even though there is no third bond between the two invitees (only parallel downhill links).
+ */
+export async function findTrustUnitOpportunityConnectors(currentUserId: string, targetUserId: string): Promise<string[]> {
+  const mutual = await findSharedConnections(currentUserId, targetUserId);
+
+  const pair = await prisma.user.findMany({
+    where: { id: { in: [currentUserId, targetUserId] } },
+    select: { id: true, invitedById: true },
+  });
+  const invByMe = pair.find((u) => u.id === currentUserId)?.invitedById ?? null;
+  const invByPeer = pair.find((u) => u.id === targetUserId)?.invitedById ?? null;
+
+  if (!invByMe || invByMe !== invByPeer) {
+    return mutual;
+  }
+
+  const sponsorHubId = invByMe;
+  return mutual.filter((id) => id !== sponsorHubId);
+}
+
 export async function getTrustMembers(memberIds: string[]) {
   return prisma.user.findMany({
     where: { id: { in: memberIds } },

@@ -3,7 +3,7 @@
 import { withApiTraceLite } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { findSharedConnections, getTrustMembers } from "@/lib/trust";
+import { findTrustUnitOpportunityConnectors, getTrustMembers } from "@/lib/trust";
 
 export async function POST(req: NextRequest) {
   return withApiTraceLite(req, "/api/trust/check-opportunity", async (req: NextRequest) => {
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ canFormTrustUnit: false });
     }
 
-    const sharedConnections = await findSharedConnections(currentUserId, targetUserId);
+    const sharedConnections = await findTrustUnitOpportunityConnectors(currentUserId, targetUserId);
     if (sharedConnections.length === 0) {
       return NextResponse.json({ canFormTrustUnit: false });
     }
