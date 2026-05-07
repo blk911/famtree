@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import { TrustApprovalStatus } from "@prisma/client";
+import { TrustApprovalStatus, TrustUnitRequestStatus } from "@prisma/client";
 import { buildTrustAdjacency } from "./adjacency";
 import { maskInviteEmail } from "./tuProposal";
 
@@ -19,20 +19,14 @@ export async function findSharedConnections(currentUserId: string, targetUserId:
   return Array.from(currentConnections).filter((id) => id !== targetUserId && targetConnections.has(id));
 }
 
-/**
- * Connectors eligible for “invite wedge → TU” UX — excludes the **pure sponsor star**:
- * if both parties share the same `invitedById`, that sponsor appears as a mutual graph neighbor
- * even though there is no third bond between the two invitees (only parallel downhill links).
- */
-export async function findTrustUnitOpportunityConnectors(currentUserId: string, targetUserId: string): Promise<string[]> {
-  const mutual = await findSharedConnections(currentUserId, targetUserId);
-
+/** Drop shared sponsor id from mutual-neighbor list when both users were invited by them. */
+async function filterMutualIdsForTrustUnitWedge(mutual: string[], userIdA: string, userIdB: string): Promise<string[]> {
   const pair = await prisma.user.findMany({
-    where: { id: { in: [currentUserId, targetUserId] } },
+    where: { id: { in: [userIdA, userIdB] } },
     select: { id: true, invitedById: true },
   });
-  const invByMe = pair.find((u) => u.id === currentUserId)?.invitedById ?? null;
-  const invByPeer = pair.find((u) => u.id === targetUserId)?.invitedById ?? null;
+  const invByMe = pair.find((u) => u.id === userIdA)?.invitedById ?? null;
+  const invByPeer = pair.find((u) => u.id === userIdB)?.invitedById ?? null;
 
   if (!invByMe || invByMe !== invByPeer) {
     return mutual;
@@ -40,6 +34,56 @@ export async function findTrustUnitOpportunityConnectors(currentUserId: string, 
 
   const sponsorHubId = invByMe;
   return mutual.filter((id) => id !== sponsorHubId);
+}
+
+/** Same adjacency-based mutuals as {@link findSharedConnections}, then sponsor-only-star strip for wedge UX. */
+export async function findTrustUnitOpportunityConnectors(currentUserId: string, targetUserId: string): Promise<string[]> {
+  const mutual = await findSharedConnections(currentUserId, targetUserId);
+  return filterMutualIdsForTrustUnitWedge(mutual, currentUserId, targetUserId);
+}
+
+function rawMutualNeighborIds(adj: Map<string, Set<string>>, userIdA: string, userIdB: string): string[] {
+  const ca = adj.get(userIdA) ?? new Set<string>();
+  const cb = adj.get(userIdB) ?? new Set<string>();
+  return Array.from(ca).filter((id) => id !== userIdB && cb.has(id));
+}
+
+/** True when exactly-three registered members are only “joined” via stripped sponsor-hub mutual (legacy bad rows). */
+async function registeredTripletIsSponsorOnlyStar(memberIds: string[]): Promise<boolean> {
+  if (memberIds.length !== 3) return false;
+  const adj = await buildTrustAdjacency();
+  const pairs: Array<[number, number]> = [
+    [0, 1],
+    [0, 2],
+    [1, 2],
+  ];
+  for (const [i, j] of pairs) {
+    const a = memberIds[i]!;
+    const b = memberIds[j]!;
+    const raw = rawMutualNeighborIds(adj, a, b);
+    if (raw.length === 0) continue;
+    const wedge = await filterMutualIdsForTrustUnitWedge(raw, a, b);
+    if (wedge.length === 0) return true;
+  }
+  return false;
+}
+
+async function systemDeclineSponsorOnlyTrustRequest(requestId: string): Promise<void> {
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.trustUnitApproval.updateMany({
+        where: { requestId },
+        data: { status: TrustApprovalStatus.DECLINED },
+      });
+      await tx.trustUnitRequestPendingInvite.deleteMany({ where: { requestId } });
+      await tx.trustUnitRequest.update({
+        where: { id: requestId },
+        data: { status: TrustUnitRequestStatus.DECLINED },
+      });
+    });
+  } catch (err) {
+    console.error("[trust] systemDeclineSponsorOnlyTrustRequest", requestId, err);
+  }
 }
 
 export async function getTrustMembers(memberIds: string[]) {
@@ -128,6 +172,22 @@ export async function getPendingTrustRequests(userId: string): Promise<Array<{
       });
     requests = await loadPendingTrustRequestRowsForUser(userId);
   }
+
+  const kept: typeof requests = [];
+  for (const req of requests) {
+    const regIds = req.members.map((m) => m.userId);
+    if (req.pendingInviteSlots.length > 0 || regIds.length !== 3) {
+      kept.push(req);
+      continue;
+    }
+    if (await registeredTripletIsSponsorOnlyStar(regIds)) {
+      console.warn("[trust] auto-declining legacy sponsor-only-star request", req.id);
+      await systemDeclineSponsorOnlyTrustRequest(req.id);
+      continue;
+    }
+    kept.push(req);
+  }
+  requests = kept;
 
   return requests.map((req) => {
     const approvalByUser = new Map(req.approvals.map((a) => [a.userId, a.status]));
