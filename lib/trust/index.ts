@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { TrustApprovalStatus } from "@prisma/client";
 import { buildTrustAdjacency } from "./adjacency";
 import { maskInviteEmail } from "./tuProposal";
 
@@ -41,24 +42,12 @@ export type PendingTrustRequestMember =
       approvalStatus: "WAITING_ON_JOIN";
     };
 
-export async function getPendingTrustRequests(userId: string): Promise<Array<{
-  id: string;
-  createdAt: Date;
-  createdBy: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    photoUrl: string | null;
-  };
-  members: PendingTrustRequestMember[];
-  approvals: unknown[];
-}>> {
-  const requests = await prisma.trustUnitRequest.findMany({
+async function loadPendingTrustRequestRowsForUser(viewerId: string) {
+  return prisma.trustUnitRequest.findMany({
     where: {
       status: "PENDING",
-      members: { some: { userId } },
-      approvals: { some: { userId } },
+      /** Membership alone defines eligibility; approvals row should exist but we heal if missing */
+      members: { some: { userId: viewerId } },
     },
     include: {
       createdBy: { select: userSelect },
@@ -75,6 +64,47 @@ export async function getPendingTrustRequests(userId: string): Promise<Array<{
     },
     orderBy: { createdAt: "desc" },
   });
+}
+
+export async function getPendingTrustRequests(userId: string): Promise<Array<{
+  id: string;
+  createdAt: Date;
+  createdBy: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    photoUrl: string | null;
+  };
+  members: PendingTrustRequestMember[];
+  approvals: unknown[];
+}>> {
+  let requests = await loadPendingTrustRequestRowsForUser(userId);
+
+  const healApprovals: Array<{ requestId: string; userId: string; status: TrustApprovalStatus }> = [];
+  for (const req of requests) {
+    const isMember = req.members.some((m) => m.userId === userId);
+    const hasApproval = req.approvals.some((a) => a.userId === userId);
+    if (isMember && !hasApproval) {
+      healApprovals.push({
+        requestId: req.id,
+        userId,
+        status: req.createdById === userId ? TrustApprovalStatus.APPROVED : TrustApprovalStatus.PENDING,
+      });
+    }
+  }
+
+  if (healApprovals.length > 0) {
+    await prisma.trustUnitApproval
+      .createMany({
+        data: healApprovals,
+        skipDuplicates: true,
+      })
+      .catch((err) => {
+        console.error("[trust] heal TrustUnitApproval rows failed", err);
+      });
+    requests = await loadPendingTrustRequestRowsForUser(userId);
+  }
 
   return requests.map((req) => {
     const approvalByUser = new Map(req.approvals.map((a) => [a.userId, a.status]));

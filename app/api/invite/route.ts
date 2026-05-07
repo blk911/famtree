@@ -100,6 +100,14 @@ export async function POST(req: NextRequest) {
     }
 
     const invite = await createInvite(user, recipientEmail, relationship);
+
+    /* Proposal must not depend on email delivery — dev/staging often 502 on RESEND while invite row exists */
+    try {
+      await tryAutoTrustUnitAfterInvite(user.id, invite.id);
+    } catch (tuErr) {
+      console.error("[invite] tryAutoTrustUnitAfterInvite", tuErr);
+    }
+
     try {
       await sendInviteEmail(invite, user);
     } catch (mailErr) {
@@ -116,12 +124,6 @@ export async function POST(req: NextRequest) {
         },
         { status: 502, headers: { "x-request-id": requestId } },
       );
-    }
-
-    try {
-      await tryAutoTrustUnitAfterInvite(user.id, invite.id);
-    } catch (tuErr) {
-      console.error("[invite] tryAutoTrustUnitAfterInvite", tuErr);
     }
 
     return NextResponse.json(

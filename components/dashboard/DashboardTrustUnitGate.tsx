@@ -95,6 +95,13 @@ export function DashboardTrustUnitGate({
       ) : null}
 
       <div>
+        {requests.length > 0 && !modalRequest ? (
+          <p className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-snug text-amber-950">
+            Trust Unit popup is hidden for this browser session after Hold. Pending proposals are still listed below under{" "}
+            <strong className="font-semibold">Trust Unit approvals</strong>. Use a fresh tab or sign out and back in to see
+            the overlay again.
+          </p>
+        ) : null}
         <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#1c1917", marginBottom: "14px" }}>
           Trust Unit approvals
         </h2>
