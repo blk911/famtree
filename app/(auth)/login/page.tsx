@@ -1,15 +1,16 @@
 "use client";
 // app/(auth)/login/page.tsx
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { TreePine, Eye, EyeOff, CheckCircle } from "lucide-react";
 
 type View = "login" | "forgot" | "forgot-sent";
 
-export default function LoginPage() {
+function LoginPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [view, setView] = useState<View>("login");
 
   // Login state
@@ -23,6 +24,14 @@ export default function LoginPage() {
   const [resetEmail,   setResetEmail]   = useState("");
   const [resetLoading, setResetLoading] = useState(false);
   const [resetError,   setResetError]   = useState("");
+
+  useEffect(() => {
+    if (searchParams.get("forgot") === "1") {
+      setView("forgot");
+      const em = searchParams.get("email");
+      if (em) setResetEmail(em);
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,5 +233,19 @@ export default function LoginPage() {
           </div>
         )}
       </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div style={{ padding: "48px 40px", textAlign: "center", color: "#78716c", fontSize: "14px" }}>
+          Loading…
+        </div>
+      }
+    >
+      <LoginPageInner />
+    </Suspense>
   );
 }

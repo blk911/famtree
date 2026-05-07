@@ -4,7 +4,7 @@
 import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   return withApiTrace(req, "/api/auth/reset-password", async (req: NextRequest) => {
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Token and a password of at least 8 characters are required" }, { status: 400 });
     }
 
-    const record = await (prisma as any).passwordResetToken.findUnique({
+    const record = await prisma.passwordResetToken.findUnique({
       where: { token },
     });
 
@@ -30,17 +30,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "This reset link has expired — please request a new one" }, { status: 400 });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await hashPassword(password);
 
-    await Promise.all([
+    await prisma.$transaction([
       prisma.user.update({
         where: { id: record.userId },
         data: { passwordHash },
       }),
-      (prisma as any).passwordResetToken.update({
+      prisma.passwordResetToken.update({
         where: { token },
         data: { usedAt: new Date() },
       }),
+      prisma.session.deleteMany({ where: { userId: record.userId } }),
     ]);
 
     return NextResponse.json({ success: true });

@@ -2,8 +2,9 @@
 // app/(app)/settings/page.tsx
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Camera, Shield, User, Trash2, Timer } from "lucide-react";
+import { Camera, Shield, User, Trash2, Timer, KeyRound, Eye, EyeOff } from "lucide-react";
 import { IdentityChangePanel } from "@/components/settings/IdentityChangePanel";
 
 export default function SettingsPage() {
@@ -20,6 +21,13 @@ export default function SettingsPage() {
   });
   const [idleTimeoutMinutes, setIdleTimeoutMinutes] = useState<3 | 5 | 10>(5);
   const [idleSaving, setIdleSaving] = useState(false);
+
+  const [pwCurrent, setPwCurrent] = useState("");
+  const [pwNew, setPwNew] = useState("");
+  const [pwConfirm, setPwConfirm] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwShow, setPwShow] = useState(false);
+  const [pwMsg, setPwMsg] = useState<{ ok?: boolean; text: string } | null>(null);
 
   useEffect(() => {
     fetch("/api/profile")
@@ -49,6 +57,41 @@ export default function SettingsPage() {
       }
     } finally {
       setIdleSaving(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwMsg(null);
+    if (pwNew.length < 8) {
+      setPwMsg({ text: "New password must be at least 8 characters." });
+      return;
+    }
+    if (pwNew !== pwConfirm) {
+      setPwMsg({ text: "New passwords don't match." });
+      return;
+    }
+    setPwSaving(true);
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: pwCurrent, newPassword: pwNew }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setPwMsg({
+          text: typeof data?.error === "string" ? data.error : "Could not update password",
+        });
+        return;
+      }
+      setPwMsg({ ok: true, text: "Password updated. Other sessions were signed out." });
+      setPwCurrent("");
+      setPwNew("");
+      setPwConfirm("");
+      router.refresh();
+    } finally {
+      setPwSaving(false);
     }
   };
 
@@ -185,6 +228,78 @@ export default function SettingsPage() {
       </div>
 
       <IdentityChangePanel />
+
+      {/* Password */}
+      <div className="profile-card p-6 space-y-4">
+        <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
+          <KeyRound className="w-4 h-4 text-stone-600" />
+          <h2 className="font-semibold text-stone-900 text-sm">Password</h2>
+        </div>
+        <p className="text-xs text-stone-500 leading-relaxed">
+          Forgot it? Use{" "}
+          <Link href="/login?forgot=1" className="font-semibold text-violet-700 hover:underline">
+            Forgot password
+          </Link>{" "}
+          on the login page — we&apos;ll email you a one-hour link.
+        </p>
+        {pwMsg && (
+          <p className={`text-xs font-medium ${pwMsg.ok ? "text-green-600" : "text-red-600"}`}>{pwMsg.text}</p>
+        )}
+        <form onSubmit={handleChangePassword} className="space-y-3 max-w-md">
+          <div>
+            <label className="block text-xs font-semibold text-stone-600 mb-1">Current password</label>
+            <div className="relative">
+              <input
+                type={pwShow ? "text" : "password"}
+                autoComplete="current-password"
+                value={pwCurrent}
+                onChange={(e) => setPwCurrent(e.target.value)}
+                required
+                className="field-input text-sm w-full pr-10"
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-1"
+                aria-label={pwShow ? "Hide passwords" : "Show passwords"}
+                onClick={() => setPwShow((v) => !v)}
+              >
+                {pwShow ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-stone-600 mb-1">New password</label>
+            <input
+              type={pwShow ? "text" : "password"}
+              autoComplete="new-password"
+              value={pwNew}
+              onChange={(e) => setPwNew(e.target.value)}
+              required
+              minLength={8}
+              className="field-input text-sm w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-stone-600 mb-1">Confirm new password</label>
+            <input
+              type={pwShow ? "text" : "password"}
+              autoComplete="new-password"
+              value={pwConfirm}
+              onChange={(e) => setPwConfirm(e.target.value)}
+              required
+              minLength={8}
+              className="field-input text-sm w-full"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={pwSaving}
+            className="btn-primary text-sm px-4 py-2"
+          >
+            {pwSaving ? "Updating…" : "Update password"}
+          </button>
+        </form>
+      </div>
 
       {/* Session security */}
       <div className="profile-card p-6 space-y-4">

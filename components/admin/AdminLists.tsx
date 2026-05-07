@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Ban, Mail, Send, CheckCircle, Trash2 } from "lucide-react";
+import { Ban, Mail, Send, CheckCircle, Trash2, KeyRound } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -210,6 +210,7 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
   const [linkSaving, setLinkSaving] = useState(false);
 
   const [identityUnlocking, setIdentityUnlocking] = useState<string | null>(null);
+  const [passwordResetSending, setPasswordResetSending] = useState<string | null>(null);
 
   // close modals on Escape
   useEffect(() => {
@@ -333,6 +334,32 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
       }
     } finally {
       setIdentityUnlocking(null);
+    }
+  };
+
+  const handleAdminPasswordReset = async (member: Member) => {
+    if (
+      !window.confirm(
+        `Send a password reset email to ${member.email}? The link expires in 1 hour.`,
+      )
+    ) {
+      return;
+    }
+    setPasswordResetSending(member.id);
+    try {
+      const res = await fetch("/api/admin/members/password-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: member.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        window.alert(typeof data?.error === "string" ? data.error : "Could not send reset email");
+        return;
+      }
+      window.alert(`Reset link sent to ${member.email}`);
+    } finally {
+      setPasswordResetSending(null);
     }
   };
 
@@ -706,6 +733,9 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                   {selectedMember.selfServiceIdentityChangesRemaining ?? 1} left
                 </span>
               </InfoRow>
+              <p style={{ fontSize: "11px", color: "#a8a29e", margin: "-8px 0 0", lineHeight: 1.45 }}>
+                Remaining self-requested identity updates (name / email / mobile in Settings). Each approved change uses one slot; admins can unlock another.
+              </p>
             </div>
 
             {selectedMember.role !== "founder" &&
@@ -755,6 +785,42 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
             >
               <Mail style={{width:"14px",height:"14px"}} />
               Send private message
+            </button>
+
+            <button
+              type="button"
+              disabled={
+                passwordResetSending === selectedMember.id || selectedMember.status !== "active"
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+                void handleAdminPasswordReset(selectedMember);
+              }}
+              style={{
+                width: "100%",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                background: "#fffbeb",
+                color: "#b45309",
+                border: "1px solid #fde68a",
+                borderRadius: "10px",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor:
+                  passwordResetSending === selectedMember.id || selectedMember.status !== "active"
+                    ? "wait"
+                    : "pointer",
+                opacity:
+                  passwordResetSending === selectedMember.id || selectedMember.status !== "active"
+                    ? 0.65
+                    : 1,
+              }}
+            >
+              <KeyRound style={{ width: "14px", height: "14px" }} />
+              {passwordResetSending === selectedMember.id ? "Sending…" : "Email password reset link"}
             </button>
 
             {/* Status action buttons in modal */}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, MouseEvent } from "react";
+import Link from "next/link";
 import { Check, Eye, EyeOff, LogIn, Mail, Send, TreePine, Users, UserCheck } from "lucide-react";
 import { ContactModal } from "@/components/marketing/ContactModal";
 import { FaqModal } from "@/components/marketing/FaqModal";
@@ -388,7 +389,15 @@ export function HomeClient() {
                 <input type="email" value={siEmail} onChange={e=>setSiEmail(e.target.value)} required autoFocus placeholder="jane@example.com" style={inputStyle} />
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"13px", fontWeight:700, color:"#374151" }}>
-                Password
+                <span style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:"8px" }}>
+                  <span>Password</span>
+                  <Link
+                    href={siEmail.trim() ? `/login?forgot=1&email=${encodeURIComponent(siEmail.trim())}` : "/login?forgot=1"}
+                    style={{ fontSize:"12px", fontWeight:600, color:"#c026d3", textDecoration:"none" }}
+                  >
+                    Forgot password?
+                  </Link>
+                </span>
                 <div style={{ position:"relative" }}>
                   <input type={showPw?"text":"password"} value={siPw} onChange={e=>setSiPw(e.target.value)} required placeholder="Your password" style={inputStyle} />
                   <button type="button" onClick={()=>setShowPw(v=>!v)} style={{ position:"absolute", right:"12px", top:"50%", transform:"translateY(-50%)", border:"none", background:"transparent", color:"#9ca3af", cursor:"pointer", display:"flex" }}>
