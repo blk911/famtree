@@ -293,6 +293,7 @@ export function IdleSessionGuard({
         return;
       }
       setEffectiveMinutes(m);
+      router.refresh();
       onStillHere();
     } catch {
       setChoiceError("Network error — try again");

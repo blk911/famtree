@@ -2,10 +2,12 @@
 // app/(app)/settings/page.tsx
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Camera, Shield, User, Trash2, Timer } from "lucide-react";
 import { IdentityChangePanel } from "@/components/settings/IdentityChangePanel";
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -41,7 +43,10 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idleTimeoutMinutes: m }),
       });
-      if (res.ok) setIdleTimeoutMinutes(m);
+      if (res.ok) {
+        setIdleTimeoutMinutes(m);
+        router.refresh();
+      }
     } finally {
       setIdleSaving(false);
     }
