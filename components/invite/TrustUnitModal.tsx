@@ -21,8 +21,12 @@ export default function TrustUnitModal({
   return (
     <div style={{ padding:"24px" }}>
       <h2 style={{ fontSize:"18px", fontWeight:800, color:"#1c1917", margin:0 }}>
-        Possible Trust Unit Found
+        You can form a Trust Unit
       </h2>
+
+      <p style={{ fontSize:"13px", color:"#78716c", margin:"10px 0 0", lineHeight:1.5 }}>
+        These members share a trusted connection through invites or bonds. Propose this unit — everyone will confirm on their dashboard.
+      </p>
 
       <div style={{ display:"flex", gap:"16px", marginTop:"18px", justifyContent:"center" }}>
         {members.map((member) => {
@@ -43,7 +47,7 @@ export default function TrustUnitModal({
       </div>
 
       <p style={{ fontSize:"14px", color:"#78716c", lineHeight:1.6, margin:"20px 0 0" }}>
-        These members share a trusted connection. Create a Trust Unit?
+        Ready to notify everyone? They&apos;ll see this on their next dashboard visit.
       </p>
 
       <div style={{ display:"flex", gap:"10px", marginTop:"18px" }}>

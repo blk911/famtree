@@ -7,7 +7,7 @@ import { MessageSquare, MessageCircle } from "lucide-react";
 import { getPendingTrustRequestsSafe } from "@/lib/trust";
 import { loadTreeViewPrefsSafe, loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { queryDashboardProfilePrompt, incrementDashboardProfilePromptSeen } from "@/lib/dashboard/safe-data";
-import { TrustRequestsPanel } from "@/components/dashboard/TrustRequestsPanel";
+import { DashboardTrustUnitGate } from "@/components/dashboard/DashboardTrustUnitGate";
 import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletionPrompt";
 import { IncomingIdentityAcks } from "@/components/dashboard/IncomingIdentityAcks";
 import { CollapsibleSection } from "@/components/dashboard/CollapsibleSection";
@@ -147,8 +147,21 @@ export default async function DashboardPage() {
   const vaultNewCount    = newPosts.length + newComments.length;
 
   const serializedTrustRequests = trustRequests.map((r: any) => ({
-    id: r.id, createdBy: r.createdBy,
-    members: r.members.map((m: any) => m.user),
+    id: r.id,
+    createdAt: r.createdAt.toISOString(),
+    createdBy: {
+      id: r.createdBy.id,
+      firstName: r.createdBy.firstName,
+      lastName: r.createdBy.lastName,
+      photoUrl: r.createdBy.photoUrl,
+    },
+    members: r.members.map((m: any) => ({
+      id: m.user.id,
+      firstName: m.user.firstName,
+      lastName: m.user.lastName,
+      photoUrl: m.user.photoUrl,
+      approvalStatus: m.user.approvalStatus ?? "PENDING",
+    })),
   }));
 
   const missingProfilePhoto = !user.photoUrl;
@@ -253,7 +266,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <TrustRequestsPanel requests={serializedTrustRequests} currentUserId={user.id} />
+      <DashboardTrustUnitGate initialRequests={serializedTrustRequests} currentUserId={user.id} />
 
       {/* ── Family Tree (collapsible) ── */}
       <CollapsibleSection

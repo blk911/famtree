@@ -21,10 +21,13 @@ export function TrustRequestCard({
   request,
   currentUserId,
   onResolved,
+  onHold,
 }: {
   request: TrustRequest;
   currentUserId: string;
   onResolved?: (requestId: string) => void;
+  /** Optional — defer without calling API (matches dashboard modal Hold). */
+  onHold?: () => void;
 }) {
   const [loading, setLoading] = useState<"ACCEPT" | "DECLINE" | null>(null);
   const [members, setMembers] = useState(request.members);
@@ -61,7 +64,7 @@ export function TrustRequestCard({
         <div>
           <p className="font-semibold">Trust Unit Request</p>
           <p className="text-sm mt-1 text-stone-500">
-            {request.createdBy.firstName} is forming a trusted unit with these members:
+            <span className="font-semibold text-stone-700">{request.createdBy.firstName}</span> is sponsoring this Trust Unit. Accept when you&apos;re ready, or hold for later.
           </p>
           <div className="mt-3 flex items-center gap-2 text-sm font-medium text-stone-800">
             {members.map((member) => member.firstName).join(" · ")}
@@ -113,20 +116,31 @@ export function TrustRequestCard({
           </div>
         </div>
       ) : (
-        <div className="flex gap-2 mt-5 justify-center">
+        <div className="flex flex-col gap-2 mt-5 items-center">
+          <div className="flex flex-wrap gap-2 justify-center">
+            <button
+              onClick={() => respond("ACCEPT")}
+              disabled={!!loading}
+              className="btn-primary text-xs px-3 py-2"
+            >
+              {loading === "ACCEPT" ? "Accepting..." : "Accept"}
+            </button>
+            <button
+              type="button"
+              onClick={() => onHold?.()}
+              disabled={!!loading}
+              className="btn-secondary text-xs px-3 py-2"
+            >
+              Hold
+            </button>
+          </div>
           <button
-            onClick={() => respond("ACCEPT")}
-            disabled={!!loading}
-            className="btn-primary text-xs px-3 py-2"
-          >
-            {loading === "ACCEPT" ? "Accepting..." : "Accept"}
-          </button>
-          <button
+            type="button"
             onClick={() => respond("DECLINE")}
             disabled={!!loading}
-            className="btn-secondary text-xs px-3 py-2"
+            className="text-[11px] font-semibold text-red-600 underline-offset-2 hover:underline disabled:opacity-50"
           >
-            {loading === "DECLINE" ? "Declining..." : "Decline"}
+            {loading === "DECLINE" ? "Declining..." : "Decline proposal"}
           </button>
         </div>
       )}

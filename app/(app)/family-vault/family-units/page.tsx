@@ -2,15 +2,21 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { BondFamilyRow } from "@/components/family-vault/BondFamilyRow";
 import { FamilyUnitsTrustCard } from "@/components/family-vault/FamilyUnitsTrustCard";
-import { loadTrustUnitsSafe, loadBondDetailsSafe } from "@/lib/tree/safe-data";
+import { PendingTrustUnitLineCard } from "@/components/family-vault/PendingTrustUnitLineCard";
+import {
+  loadTrustUnitsSafe,
+  loadBondDetailsSafe,
+  loadPendingTrustRequestsSafe,
+} from "@/lib/tree/safe-data";
 
 export default async function FamilyUnitsPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const [trustUnits, bondDetails] = await Promise.all([
+  const [trustUnits, bondDetails, pendingTuRequests] = await Promise.all([
     loadTrustUnitsSafe(user.id),
     loadBondDetailsSafe(user.id),
+    loadPendingTrustRequestsSafe(user.id),
   ]);
 
   const currentMini = {
@@ -20,25 +26,93 @@ export default async function FamilyUnitsPage() {
     photoUrl: user.photoUrl,
   };
 
-  const hasTus = trustUnits.length > 0;
+  const serializedPendingTu = pendingTuRequests.map((r: {
+    id: string;
+    createdAt: Date;
+    createdBy: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      photoUrl: string | null;
+    };
+    members: Array<{ user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      photoUrl: string | null;
+      approvalStatus?: string;
+    } }>;
+  }) => ({
+    id: r.id,
+    createdAt: r.createdAt.toISOString(),
+    createdBy: r.createdBy,
+    members: r.members.map((m) => ({
+      id: m.user.id,
+      firstName: m.user.firstName,
+      lastName: m.user.lastName,
+      photoUrl: m.user.photoUrl,
+      approvalStatus: m.user.approvalStatus ?? "PENDING",
+    })),
+  }));
+
+  const hasPendingTu = serializedPendingTu.length > 0;
+  const hasLiveTu = trustUnits.length > 0;
   const hasBonds = bondDetails.length > 0;
 
   return (
     <div className="content-col space-y-10 pb-10">
       <p className="rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-sm text-stone-600 leading-snug">
-        Under <strong className="text-stone-900">Family → Units</strong>:{" "}
-        <strong className="text-stone-900">bonds</strong> (you and your sponsor when you joined via
-        invite) and <strong className="text-stone-900">trust units</strong> (group). Tap a row for
-        details; message opens{" "}
+        Under <strong className="text-stone-900">Family → Units</strong>: proposals that are{" "}
+        <strong className="text-stone-900">forming</strong>, then <strong className="text-stone-900">live</strong>{" "}
+        trust units, then your <strong className="text-stone-900">bonds</strong>. Messages open in{" "}
         <span className="font-medium text-stone-800">Private Feed</span>.
       </p>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-bold tracking-tight text-stone-900">Trust units forming</h2>
+        {!hasPendingTu ? (
+          <p className="text-sm text-stone-500">
+            Nothing pending. When an invite surfaces a triangle your group can form, everyone gets a dashboard modal to
+            accept or hold.
+          </p>
+        ) : (
+          <div className="flex max-w-2xl flex-col gap-2">
+            {serializedPendingTu.map((req) => (
+              <PendingTrustUnitLineCard key={req.id} request={req} viewerId={user.id} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-bold tracking-tight text-stone-900">Trust units (live)</h2>
+        {!hasLiveTu ? (
+          <p className="text-sm text-stone-500">
+            No active trust unit yet. When everyone accepts a proposal, it appears here with the sponsor noted on the
+            collapsed row where available.
+          </p>
+        ) : (
+          <div className="flex max-w-2xl flex-col gap-2">
+            {trustUnits.map((unit) => (
+              <FamilyUnitsTrustCard
+                key={unit.id}
+                unit={{
+                  id: unit.id,
+                  createdAt: unit.createdAt.toISOString(),
+                  members: unit.members,
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="space-y-3">
         <h2 className="text-lg font-bold tracking-tight text-stone-900">Bonds</h2>
         {!hasBonds ? (
           <p className="text-sm text-stone-500">
-            No accepted bonds yet. When a bond is accepted, both people appear here with the join
-            date.
+            No accepted bonds yet. Invite registration creates a sponsor bond automatically when you join through an
+            invite.
           </p>
         ) : (
           <div className="flex max-w-2xl flex-col gap-2">
@@ -53,29 +127,6 @@ export default async function FamilyUnitsPage() {
                   photoUrl: peer.photoUrl,
                 }}
                 bondedAt={bondedAt.toISOString()}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-bold tracking-tight text-stone-900">Trust units</h2>
-        {!hasTus ? (
-          <p className="text-sm text-stone-500">
-            You are not in an active trust unit yet. When one includes you, it shows here with every
-            member after you expand the row.
-          </p>
-        ) : (
-          <div className="flex max-w-2xl flex-col gap-2">
-            {trustUnits.map((unit) => (
-              <FamilyUnitsTrustCard
-                key={unit.id}
-                unit={{
-                  id: unit.id,
-                  createdAt: unit.createdAt.toISOString(),
-                  members: unit.members,
-                }}
               />
             ))}
           </div>

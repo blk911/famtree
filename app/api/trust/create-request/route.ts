@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    if (uniqueMemberIds.length < 3 || !uniqueMemberIds.includes(user.id)) {
-      return NextResponse.json({ error: "Trust Units require three members including you" }, { status: 400 });
+    if (uniqueMemberIds.length < 3 || uniqueMemberIds.length > 20 || !uniqueMemberIds.includes(user.id)) {
+      return NextResponse.json({ error: "Trust Units require 3–20 members including you" }, { status: 400 });
     }
 
     const requestId = randomUUID();

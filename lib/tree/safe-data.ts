@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import {
   getAcceptedBondDetails,
   getAcceptedBondPeers,
+  getPendingTrustRequests,
   getTrustUnits,
 } from "@/lib/trust";
 
@@ -42,6 +43,15 @@ export async function loadBondDetailsSafe(userId: string) {
     return await getAcceptedBondDetails(userId);
   } catch (err) {
     console.error("[tree] getAcceptedBondDetails failed", err);
+    return [];
+  }
+}
+
+export async function loadPendingTrustRequestsSafe(userId: string) {
+  try {
+    return await getPendingTrustRequests(userId);
+  } catch (err) {
+    console.error("[tree] getPendingTrustRequests failed", err);
     return [];
   }
 }
