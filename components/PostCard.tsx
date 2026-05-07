@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Archive, Heart, MessageCircle, Send, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Archive, Heart, MessageCircle, Send, ThumbsDown, ThumbsUp, Trash2, Users } from "lucide-react";
 
 type Comment = {
   id: string;
@@ -37,6 +37,8 @@ type Props = {
   currentUserId: string;
   canDelete: boolean;
   onDelete?: (postId: string) => void;
+  /** Private-thread recipients (omit on open/global feeds). */
+  privateRecipients?: Array<{ id: string; displayName: string }>;
 };
 
 function initials(firstName: string, lastName: string) {
@@ -51,7 +53,109 @@ function timeLabel(value: string) {
   });
 }
 
-export function PostCard({ post, currentUserId, canDelete, onDelete }: Props) {
+function PrivateRecipientsInline({ people }: { people: Array<{ id: string; displayName: string }> }) {
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const [truncated, setTruncated] = useState(false);
+  const summary = people.map((p) => p.displayName).join(", ");
+
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+    const measure = () => {
+      setTruncated(el.scrollHeight > el.clientHeight + 1);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [summary]);
+
+  useEffect(() => {
+    if (!popoverOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPopoverOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [popoverOpen]);
+
+  useEffect(() => {
+    if (!popoverOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      const root = wrapRef.current;
+      if (root && !root.contains(e.target as Node)) setPopoverOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [popoverOpen]);
+
+  const showMoreControl = truncated || people.length > 4;
+
+  return (
+    <div
+      ref={wrapRef}
+      className="relative flex max-w-[min(100%,280px)] flex-shrink-0 flex-col items-end gap-1 text-right min-[480px]:max-w-[340px]"
+    >
+      <div className="flex items-start justify-end gap-1">
+        <div
+          ref={textRef}
+          className="text-xs leading-snug text-stone-500"
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            wordBreak: "break-word",
+          }}
+          title={summary}
+        >
+          <span className="font-semibold text-stone-600">With </span>
+          {summary}
+        </div>
+        {showMoreControl && (
+          <button
+            type="button"
+            className="flex-shrink-0 rounded px-1 py-0.5 text-[11px] font-semibold text-violet-700 hover:bg-violet-50"
+            aria-expanded={popoverOpen}
+            aria-haspopup="dialog"
+            title="All recipients"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPopoverOpen((v) => !v);
+            }}
+          >
+            more…
+          </button>
+        )}
+      </div>
+
+      {popoverOpen && (
+        <div
+          role="dialog"
+          aria-label="Conversation recipients"
+          className="absolute right-0 top-full z-30 mt-1 min-w-[200px] max-w-[min(calc(100vw-32px),280px)] rounded-xl border border-stone-200 bg-white py-2 shadow-lg"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center gap-1.5 border-b border-stone-100 px-3 pb-2 text-[11px] font-bold uppercase tracking-wide text-stone-500">
+            <Users className="h-3.5 w-3.5" aria-hidden />
+            In this thread
+          </div>
+          <ul className="max-h-48 overflow-y-auto px-3 pt-2 text-sm text-stone-700">
+            {people.map((p) => (
+              <li key={p.id} className="py-1 leading-snug">
+                {p.displayName}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function PostCard({ post, currentUserId, canDelete, onDelete, privateRecipients }: Props) {
   const author = post.profile.user;
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post._count?.likes ?? 0);
@@ -171,8 +275,8 @@ export function PostCard({ post, currentUserId, canDelete, onDelete }: Props) {
 
   return (
     <div className="post-card group" style={{background:archived ? "rgba(245,158,11,0.04)" : undefined}}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5">
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <div className="w-8 h-8 rounded-full overflow-hidden bg-stone-200 flex-shrink-0 flex items-center justify-center relative">
             {author.photoUrl ? (
               <img
@@ -193,13 +297,16 @@ export function PostCard({ post, currentUserId, canDelete, onDelete }: Props) {
               {authorInitials}
             </span>
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-stone-900">
               {author.firstName} {author.lastName}
             </p>
             <p className="text-xs text-stone-400">{timeLabel(post.createdAt)}</p>
           </div>
         </div>
+        {privateRecipients && privateRecipients.length > 0 ? (
+          <PrivateRecipientsInline people={privateRecipients} />
+        ) : null}
       </div>
 
       {post.title && (

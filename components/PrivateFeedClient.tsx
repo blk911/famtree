@@ -123,6 +123,27 @@ function buildThreads(
   return [...tuThreads, ...otherThreads];
 }
 
+/** Everyone in the thread except the author (sorted by display name). */
+function recipientsExceptAuthor(
+  thread: Thread,
+  authorId: string,
+  memberMap: Map<string, Member>,
+): Array<{ id: string; displayName: string }> {
+  return thread.memberIds
+    .filter((id) => id !== authorId)
+    .map((id) => {
+      if (thread.unit) {
+        const m = thread.unit.members.find((x) => x.user.id === id);
+        if (m) return { id, displayName: `${m.user.firstName} ${m.user.lastName}` };
+      }
+      const m = memberMap.get(id);
+      return { id, displayName: m ? `${m.firstName} ${m.lastName}` : "Unknown" };
+    })
+    .sort((a, b) =>
+      a.displayName.localeCompare(b.displayName, undefined, { sensitivity: "base" }),
+    );
+}
+
 // ── Participant avatars (stacked circles) ─────────────────────────────────────
 
 function ThreadAvatars({
@@ -619,6 +640,7 @@ export function PrivateFeedClient({
                         currentUserId={currentUserId}
                         canDelete={post.profile.user.id === currentUserId}
                         onDelete={handleDelete}
+                        privateRecipients={recipientsExceptAuthor(thread, post.profile.user.id, memberMap)}
                       />
                     ))}
                   </div>
