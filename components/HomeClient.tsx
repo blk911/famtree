@@ -256,7 +256,7 @@ export function HomeClient() {
           flexDirection:"column",
           padding:"22px 28px 80px",
           color:"#1e1b4b",
-          backgroundImage:"url('/uploads/index%20bkgrnd%203.png')",
+          backgroundImage:"url('/uploads/Index%20bkgrn%204.jpg')",
           backgroundSize:"cover",
           backgroundPosition:"center center",
           backgroundRepeat:"no-repeat",
