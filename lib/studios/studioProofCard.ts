@@ -2,6 +2,7 @@ import {
   STUDIO_TESTIMONY_FEEDBACK_1_SRC,
   STUDIO_TESTIMONY_FEEDBACK_2_SRC,
   STUDIO_TESTIMONY_FEEDBACK_3_SRC,
+  STUDIO_TESTIMONY_FEEDBACK_4_SRC,
 } from "@/lib/studios/studioIntroVideo";
 
 export type StudioProofCardSource = "template" | "member";
@@ -80,9 +81,10 @@ export const DEFAULT_SAMPLE_INSTAGRAM_PROOF_CARDS: StudioInstagramProofCard[] = 
     source: "template",
     isSample: true,
     category: "recovery",
-    name: "Anika S.",
+    name: "Marshall",
     quote: "The recovery work changed how my runs felt within two weeks.",
     instagramUrl: "https://instagram.com/",
+    testimonyVideoUrl: STUDIO_TESTIMONY_FEEDBACK_4_SRC,
   },
 ];
 
