@@ -42,9 +42,9 @@ export const AMIHUMAN_NET_FAQS: FaqItem[] = [
     id: "what-is-trust-unit",
     question: "What is a \"Trust Unit\"?",
     answer: [
-      "A Trust Unit is formed when three people are mutually connected.",
-      "It's not just a connection — it's a verified relationship triangle.",
-      "This is how AMIHUMAN.NET builds a network based on real trust, not loose follows.",
+      "AMIHUMAN.NET is invite-only: you join downhill from a sponsor who invited you.",
+      "A Trust Unit forms when three (or more) aligned members agree — it sits on top of those downhill sponsor connections, not instead of them.",
+      "Everyone in the proposed unit accepts before it goes live.",
     ],
   },
   {

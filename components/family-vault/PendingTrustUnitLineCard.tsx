@@ -130,7 +130,8 @@ export function PendingTrustUnitLineCard({
             })}
           </div>
           <p className="mt-2 text-[11px] text-stone-500">
-            Completes when everyone accepts — check your <strong className="text-stone-700">Dashboard</strong> for the full modal.
+            Invite-only: downhill sponsor bonds plus optional trust units — confirm actions on your{" "}
+            <strong className="text-stone-700">Dashboard</strong>.
           </p>
         </div>
       ) : null}

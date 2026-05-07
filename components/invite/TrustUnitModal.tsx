@@ -25,7 +25,7 @@ export default function TrustUnitModal({
       </h2>
 
       <p style={{ fontSize:"13px", color:"#78716c", margin:"10px 0 0", lineHeight:1.5 }}>
-        These members share a trusted connection through invites or bonds. Propose this unit — everyone will confirm on their dashboard.
+        We&apos;re invite-only — each person joins downhill from their sponsor. These members overlap enough that a Trust Unit can form on top of those invites; everyone will confirm on their dashboard.
       </p>
 
       <div style={{ display:"flex", gap:"16px", marginTop:"18px", justifyContent:"center" }}>

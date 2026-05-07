@@ -64,7 +64,8 @@ export function TrustRequestCard({
         <div>
           <p className="font-semibold">Trust Unit Request</p>
           <p className="text-sm mt-1 text-stone-500">
-            <span className="font-semibold text-stone-700">{request.createdBy.firstName}</span> is sponsoring this Trust Unit. Accept when you&apos;re ready, or hold for later.
+            <span className="font-semibold text-stone-700">{request.createdBy.firstName}</span>, your sponsor for this
+            proposal, is starting this Trust Unit. Accept when you&apos;re ready, or hold for later.
           </p>
           <div className="mt-3 flex items-center gap-2 text-sm font-medium text-stone-800">
             {members.map((member) => member.firstName).join(" · ")}

@@ -62,10 +62,11 @@ export default async function FamilyUnitsPage() {
   return (
     <div className="content-col space-y-10 pb-10">
       <p className="rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-sm text-stone-600 leading-snug">
-        Under <strong className="text-stone-900">Family → Units</strong>: proposals that are{" "}
-        <strong className="text-stone-900">forming</strong>, then <strong className="text-stone-900">live</strong>{" "}
-        trust units, then your <strong className="text-stone-900">bonds</strong>. Messages open in{" "}
-        <span className="font-medium text-stone-800">Private Feed</span>.
+        <strong className="text-stone-900">Invite-only:</strong> every member has a{" "}
+        <strong className="text-stone-900">sponsor</strong> downhill connection from whoever invited them.{" "}
+        <strong className="text-stone-900">Bonds</strong> capture those sponsor links;{" "}
+        <strong className="text-stone-900">trust units</strong> form when aligned members agree to a shared unit on top.
+        Messages open in <span className="font-medium text-stone-800">Private Feed</span>.
       </p>
 
       <section className="space-y-3">

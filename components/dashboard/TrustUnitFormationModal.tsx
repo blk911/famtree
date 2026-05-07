@@ -98,8 +98,14 @@ export function TrustUnitFormationModal({
             You can form a Trust Unit
           </h2>
           <p className="mt-2 text-sm leading-snug text-stone-600">
-            Everyone listed below needs to accept before this unit goes live. Sponsor / organizer:
-            <span className="font-semibold text-stone-800"> {fmtName(sponsor)}</span>
+            AMIHUMAN.NET is <strong className="text-stone-800">invite-only</strong>: everyone joins downhill from a{" "}
+            <strong className="text-stone-800">sponsor</strong> who invited them. When three aligned members qualify,
+            a Trust Unit can form <span className="italic">on top of</span> those downhill links — each person here must
+            accept before it goes live.
+          </p>
+          <p className="mt-2 text-sm text-stone-600">
+            <span className="font-semibold text-stone-800">Sponsor</span> who proposed this unit:{" "}
+            <span className="font-semibold text-stone-900">{fmtName(sponsor)}</span>
           </p>
           <p className="mt-1 text-xs text-stone-500">
             Proposed {new Date(request.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}

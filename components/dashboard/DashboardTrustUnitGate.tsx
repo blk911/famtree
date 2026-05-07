@@ -98,7 +98,8 @@ export function DashboardTrustUnitGate({
           Trust Unit approvals
         </h2>
         <p className="mb-3 text-xs leading-snug text-stone-500">
-          Same proposals as the overlay — accept or hold anytime here. Hold hides the dashboard popup until your next visit this session.
+          Same proposals as the popup — your sponsor network may propose a Trust Unit when three members align.
+          Accept or hold anytime here. Hold hides the overlay until your next visit this session.
         </p>
         <div className="space-y-3">
           {requests.map((request) => (
