@@ -70,6 +70,9 @@ model User {
   /// Optional tenant slug for studio / white-label owners (e.g. deb-dazzle)
   tenantId String? @map("tenant_id")
 
+  /// Auto sign-out after true inactivity while logged in (minutes). Allowed: 3 / 5 / 10 only.
+  idleTimeoutMinutes Int @default(5)
+
   studiosOwned Studio[]
 
   @@map("users")

@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { TopBarUser } from "@/components/TopBarUser";
 import { AppPageHero } from "@/components/AppPageHero";
 import { SiteAnnouncementModal } from "@/components/SiteAnnouncementModal";
+import { IdleSessionGuard } from "@/components/IdleSessionGuard";
 import type { User as PrismaUser } from "@prisma/client";
 
 type Announcement = { id: string; title: string; body: string };
@@ -121,6 +122,8 @@ export function AppShell({ user, coverUrl, children }: Props) {
 
   return (
     <>
+      <IdleSessionGuard idleTimeoutMinutes={user.idleTimeoutMinutes ?? 5} />
+
       {/* Site announcement modal */}
       {modalOpen && annState && (
         <SiteAnnouncementModal

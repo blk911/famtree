@@ -45,6 +45,7 @@ export const PROFILE_PAGE_SELECT = {
       role: true,
       createdAt: true,
       emailVerified: true,
+      idleTimeoutMinutes: true,
     },
   },
   photos: { orderBy: { createdAt: "desc" as const } },

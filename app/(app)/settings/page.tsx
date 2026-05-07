@@ -2,7 +2,7 @@
 // app/(app)/settings/page.tsx
 
 import { useState, useEffect, useRef } from "react";
-import { Camera, Shield, User, Trash2 } from "lucide-react";
+import { Camera, Shield, User, Trash2, Timer } from "lucide-react";
 import { IdentityChangePanel } from "@/components/settings/IdentityChangePanel";
 
 export default function SettingsPage() {
@@ -16,6 +16,8 @@ export default function SettingsPage() {
     isPublicInTree: true,
     showDob: false,
   });
+  const [idleTimeoutMinutes, setIdleTimeoutMinutes] = useState<3 | 5 | 10>(5);
+  const [idleSaving, setIdleSaving] = useState(false);
 
   useEffect(() => {
     fetch("/api/profile")
@@ -26,8 +28,24 @@ export default function SettingsPage() {
           isPublicInTree: profile.isPublicInTree,
           showDob: profile.showDob,
         });
+        const idle = profile.user?.idleTimeoutMinutes;
+        if (idle === 3 || idle === 5 || idle === 10) setIdleTimeoutMinutes(idle);
       });
   }, []);
+
+  const handleSaveIdleTimeout = async (m: 3 | 5 | 10) => {
+    setIdleSaving(true);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idleTimeoutMinutes: m }),
+      });
+      if (res.ok) setIdleTimeoutMinutes(m);
+    } finally {
+      setIdleSaving(false);
+    }
+  };
 
   const handleSavePrivacy = async () => {
     setSaving(true);
@@ -162,6 +180,36 @@ export default function SettingsPage() {
       </div>
 
       <IdentityChangePanel />
+
+      {/* Session security */}
+      <div className="profile-card p-6 space-y-4">
+        <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
+          <Timer className="w-4 h-4 text-stone-600" />
+          <h2 className="font-semibold text-stone-900 text-sm">Session security</h2>
+        </div>
+        <p className="text-xs text-stone-500 leading-relaxed">
+          If you stop using the site (no mouse, keyboard, scroll, or touch) for longer than the time you choose, we
+          show a short warning and then sign you out automatically. Shorter times reduce risk if someone else picks up
+          this device. Maximum option is 10 minutes.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {([3, 5, 10] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              disabled={idleSaving}
+              onClick={() => void handleSaveIdleTimeout(m)}
+              className={`rounded-full px-4 py-2 text-xs font-semibold border transition-colors ${
+                idleTimeoutMinutes === m
+                  ? "border-stone-900 bg-stone-900 text-white"
+                  : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
+              }`}
+            >
+              {m} min
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Privacy */}
       <div className="profile-card p-6 space-y-1">

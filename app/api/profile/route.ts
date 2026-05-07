@@ -56,6 +56,7 @@ const updateSchema = z.object({
   location:      z.string().max(120).optional(),
   isPublicInTree: z.boolean().optional(),
   showDob:       z.boolean().optional(),
+  idleTimeoutMinutes: z.union([z.literal(3), z.literal(5), z.literal(10)]).optional(),
 });
 
 export async function PATCH(req: NextRequest) {
@@ -70,13 +71,27 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Please check your profile fields and try again" }, { status: 400 });
     }
 
-    const profileFields = parsed.data;
+    const { idleTimeoutMinutes, ...profileFields } = parsed.data;
 
-    const profile = await prisma.profile.update({
-      where: { userId: user.id },
-      data: profileFields,
-      select: PROFILE_SCALAR_SELECT,
-    });
+    const hasProfileUpdates = Object.keys(profileFields).length > 0;
+
+    const profile = hasProfileUpdates
+      ? await prisma.profile.update({
+          where: { userId: user.id },
+          data: profileFields,
+          select: PROFILE_SCALAR_SELECT,
+        })
+      : await prisma.profile.findUniqueOrThrow({
+          where: { userId: user.id },
+          select: PROFILE_SCALAR_SELECT,
+        });
+
+    if (idleTimeoutMinutes !== undefined) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { idleTimeoutMinutes },
+      });
+    }
 
     return NextResponse.json({ success: true, profile });
   } catch (err: any) {

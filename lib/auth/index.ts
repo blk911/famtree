@@ -30,6 +30,7 @@ const SESSION_USER_CORE_SELECT = {
   createdAt: true,
   updatedAt: true,
   invitedById: true,
+  idleTimeoutMinutes: true,
 } as const;
 
 /**
