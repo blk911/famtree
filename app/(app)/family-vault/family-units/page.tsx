@@ -26,9 +26,10 @@ export default async function FamilyUnitsPage() {
   return (
     <div className="content-col space-y-10 pb-10">
       <p className="rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-sm text-stone-600 leading-snug">
-        <strong className="text-stone-900">Bonds</strong> first (1:1), then{" "}
-        <strong className="text-stone-900">trust units</strong> (group). Tap a row for a bit more
-        detail; message opens{" "}
+        Under <strong className="text-stone-900">Family → Units</strong>:{" "}
+        <strong className="text-stone-900">bonds</strong> (you and your sponsor when you joined via
+        invite) and <strong className="text-stone-900">trust units</strong> (group). Tap a row for
+        details; message opens{" "}
         <span className="font-medium text-stone-800">Private Feed</span>.
       </p>
 

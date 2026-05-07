@@ -93,6 +93,26 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Sponsor ↔ new member bond (invite path only) — Fam Units / graph use ACCEPTED rows.
+    if (inviteToken && invitedById) {
+      await prisma.connectionRequest.upsert({
+        where: {
+          requesterId_targetId: {
+            requesterId: invitedById,
+            targetId: user.id,
+          },
+        },
+        create: {
+          requesterId: invitedById,
+          targetId: user.id,
+          status: "ACCEPTED",
+        },
+        update: {
+          status: "ACCEPTED",
+        },
+      });
+    }
+
     await setSessionCookie(user.id, req);
     await sendWelcomeEmail(user).catch(console.error); // non-blocking
 

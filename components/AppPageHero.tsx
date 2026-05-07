@@ -16,7 +16,7 @@ const HERO_COPY: Array<{ match: (path: string) => boolean; title: string; subtit
   { match: (path) => path === "/dashboard", title: "Dashboard", subtitle: "Your family activity at a glance" },
   { match: (path) => path === "/family-vault/posts", title: "Open Feed", subtitle: "Posts from you and your family network" },
   { match: (path) => path === "/family-vault/private", title: "Private Feed", subtitle: "Trust Units, bonds, and private direct messages" },
-  { match: (path) => path === "/family-vault/family-units", title: "Family Units", subtitle: "Trust Units and bonds — jump into each conversation" },
+  { match: (path) => path === "/family-vault/family-units", title: "Units", subtitle: "Bonds and trust units — jump into each conversation" },
   { match: (path) => path === "/profile", title: "My Posts", subtitle: "Your profile, photos, and timeline" },
   { match: (path) => path.startsWith("/profile/"), title: "Member Profile", subtitle: "View this family member's profile" },
   { match: (path) => path === "/tree", title: "Family Tree", subtitle: "Your invite tree and Trust Units" },

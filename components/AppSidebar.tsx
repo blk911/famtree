@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, User, Mail,
+  LayoutDashboard, User, Users, Mail,
   LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2,
 } from "lucide-react";
 import { useState } from "react";
@@ -15,13 +15,17 @@ interface Props { user: PrismaUser; open?: boolean; }
 
 const INVITE = { href: "/invite", label: "Invite", icon: Mail };
 
-// Vault sub-items
+/** Tree + Units (bonds / trust units); URLs unchanged */
+const FAMILY_ITEMS = [
+  { href: "/tree", label: "Tree" },
+  { href: "/family-vault/family-units", label: "Units" },
+];
+
+// Vault sub-items — feeds + profile only
 const VAULT_ITEMS = [
-  { href: "/family-vault/posts",        label: "Open Feed" },
-  { href: "/family-vault/private",      label: "Private Feed" },
-  { href: "/family-vault/family-units", label: "Family Units" },
-  { href: "/profile",                   label: "My Posts" },
-  { href: "/tree",                      label: "Family Tree" },
+  { href: "/family-vault/posts", label: "Open Feed" },
+  { href: "/family-vault/private", label: "Private Feed" },
+  { href: "/profile", label: "My Posts" },
 ];
 
 // Settings sub-items (admin only — shown beneath the Settings accordion)
@@ -37,10 +41,23 @@ export function AppSidebar({ user, open = false }: Props) {
 
   const isAdmin = user.role === "founder" || user.role === "admin";
 
-  const vaultActive    = pathname.startsWith("/family-vault") || pathname === "/profile" || pathname.startsWith("/profile/") || pathname === "/tree";
+  const familyActive =
+    pathname === "/tree" ||
+    pathname.startsWith("/tree/") ||
+    pathname === "/family-vault/family-units";
+
+  const vaultActive =
+    pathname === "/family-vault/posts" ||
+    pathname.startsWith("/family-vault/posts/") ||
+    pathname === "/family-vault/private" ||
+    pathname.startsWith("/family-vault/private/") ||
+    pathname === "/profile" ||
+    pathname.startsWith("/profile/");
+
   const settingsActive = pathname === "/settings" || pathname.startsWith("/settings/") || pathname === "/admin/activity" || pathname === "/admin/studios" || pathname.startsWith("/admin/studios/");
 
-  const [vaultOpen,    setVaultOpen]    = useState(vaultActive);
+  const [familyOpen, setFamilyOpen] = useState(familyActive);
+  const [vaultOpen, setVaultOpen] = useState(vaultActive);
   const [settingsOpen, setSettingsOpen] = useState(settingsActive);
 
   const handleLogout = async () => {
@@ -110,8 +127,67 @@ export function AppSidebar({ user, open = false }: Props) {
           {isAdmin ? "Admin" : "Dashboard"}
         </Link>
 
-        {/* Family Vault accordion */}
+        {/* Family — tree + units */}
         <button
+          type="button"
+          onClick={() => {
+            if (!familyActive) {
+              router.push("/tree");
+              setFamilyOpen(true);
+              return;
+            }
+            setFamilyOpen((v) => !v);
+          }}
+          style={{
+            ...linkStyle(familyActive),
+            width: "100%",
+            background: familyActive
+              ? "linear-gradient(135deg,rgba(233,108,80,0.75),rgba(244,162,97,0.55))"
+              : "transparent",
+            border: familyActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
+            cursor: "pointer",
+          }}
+        >
+          <Users style={{ width: "18px", height: "18px", flexShrink: 0 }} />
+          <span style={{ flex: 1, textAlign: "left" }}>Family</span>
+          <ChevronDown
+            style={{
+              width: "15px",
+              height: "15px",
+              flexShrink: 0,
+              transform: familyOpen ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s",
+            }}
+          />
+        </button>
+
+        {familyOpen && (
+          <div style={{ marginBottom: "3px" }}>
+            {FAMILY_ITEMS.map(({ href, label }) => {
+              const active =
+                pathname === href ||
+                (href === "/tree" ? pathname.startsWith("/tree/") : pathname.startsWith(`${href}/`));
+              return (
+                <Link key={href} href={href} style={subLinkStyle(active)}>
+                  <span
+                    style={{
+                      width: "5px",
+                      height: "5px",
+                      borderRadius: "50%",
+                      flexShrink: 0,
+                      background: active ? "white" : "rgba(255,255,255,0.3)",
+                    }}
+                  />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
+        {/* My Vault accordion */}
+        <button
+          type="button"
           onClick={() => {
             if (!vaultActive) {
               router.push("/family-vault/posts");
