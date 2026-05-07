@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { Image as ImageIcon, Plus, X, Globe, Lock } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
+import { displayRecipientsFromVisibility } from "@/lib/posts/displayRecipients";
 
 type Member = { id: string; firstName: string; lastName: string; photoUrl: string | null };
 
@@ -52,11 +53,13 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data.members)) {
-          setMembers(data.members.filter((m: Member) => m.id !== currentUserId));
+          setMembers(data.members);
         }
       })
       .catch(() => {});
   }, [currentUserId]);
+
+  const memberMap = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
   const visiblePosts = useMemo(() => {
     if (activeTab === "mine") {
@@ -219,7 +222,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
                 >
                   Everyone
                 </button>
-                {members.map((member) => {
+                {members.filter((m) => m.id !== currentUserId).map((member) => {
                   const selected = visibleTo.includes(member.id);
                   return (
                     <button
@@ -304,6 +307,11 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
               currentUserId={currentUserId}
               canDelete={post.profile.user.id === currentUserId}
               onDelete={handleDelete}
+              privateRecipients={displayRecipientsFromVisibility(
+                post.visibility,
+                post.profile.user.id,
+                memberMap,
+              )}
             />
           ))}
         </div>

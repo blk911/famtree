@@ -1,11 +1,12 @@
 "use client";
 // app/(app)/profile/page.tsx
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Plus, Image as ImageIcon, Users, ChevronDown,
 } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
+import { displayRecipientsFromVisibility } from "@/lib/posts/displayRecipients";
 
 interface ProfileData {
   id: string;
@@ -94,6 +95,11 @@ export default function ProfilePage() {
       .catch(() => null);
   }, []);
 
+  const memberMapForPosts = useMemo(
+    () => new Map(membersList.map((m) => [m.id, m])),
+    [membersList],
+  );
+
   const sameMembers = (a: string[], b: string[]) => {
     if (a.length !== b.length) return false;
     const set = new Set(a);
@@ -177,7 +183,25 @@ export default function ProfilePage() {
       }
 
       const post = data.post;
-      setProfile((p) => p ? { ...p, posts: [post, ...p.posts] } : p);
+      const visibility =
+        selectedMembers.length > 0
+          ? selectedMembers.map((userId: string) => ({ userId }))
+          : undefined;
+      setProfile((p) =>
+        p
+          ? {
+              ...p,
+              posts: [
+                {
+                  ...post,
+                  createdAt: new Date(post.createdAt).toISOString(),
+                  visibility,
+                },
+                ...p.posts,
+              ],
+            }
+          : p,
+      );
       setNewPostTitle("");
       setNewPostBody("");
       setPostImageFile(null);
@@ -404,7 +428,18 @@ export default function ProfilePage() {
           ) : (
             <>
               {profile.posts.slice(0, postsShown).map((post) => (
-                <PostCard key={post.id} post={post} currentUserId={user.id} canDelete onDelete={handleDeletePost} />
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  currentUserId={user.id}
+                  canDelete
+                  onDelete={handleDeletePost}
+                  privateRecipients={displayRecipientsFromVisibility(
+                    post.visibility,
+                    post.profile.user.id,
+                    memberMapForPosts,
+                  )}
+                />
               ))}
               {profile.posts.length > postsShown && (
                 <button

@@ -1,11 +1,12 @@
 "use client";
 // Read-only view of another member's profile
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Image as ImageIcon, MapPin } from "lucide-react";
 import { FAMILY_ROLE_LABELS, type FamilyRole } from "@/types";
 import { PostCard } from "@/components/PostCard";
+import { displayRecipientsFromVisibility } from "@/lib/posts/displayRecipients";
 
 type CurrentUser = {
   id: string;
@@ -50,6 +51,30 @@ export default function MemberProfilePage() {
   const [profileUser, setProfileUser] = useState<MemberProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"timeline" | "photos">("timeline");
+  const [familyMembers, setFamilyMembers] = useState<
+    Array<{ id: string; firstName: string; lastName: string }>
+  >([]);
+
+  useEffect(() => {
+    fetch("/api/members")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (Array.isArray(data?.members)) setFamilyMembers(data.members);
+      })
+      .catch(() => {});
+  }, []);
+
+  const memberMapForPosts = useMemo(() => {
+    const m = new Map(familyMembers.map((x) => [x.id, x]));
+    if (profileUser) {
+      m.set(profileUser.id, {
+        id: profileUser.id,
+        firstName: profileUser.firstName,
+        lastName: profileUser.lastName,
+      });
+    }
+    return m;
+  }, [familyMembers, profileUser]);
 
   useEffect(() => {
     let cancelled = false;
@@ -187,7 +212,17 @@ export default function MemberProfilePage() {
             </div>
           ) : (
             profile.posts.map((post) => (
-              <PostCard key={post.id} post={post} currentUserId={currentUser.id} canDelete={false} />
+              <PostCard
+                key={post.id}
+                post={post}
+                currentUserId={currentUser.id}
+                canDelete={false}
+                privateRecipients={displayRecipientsFromVisibility(
+                  post.visibility,
+                  post.profile.user.id,
+                  memberMapForPosts,
+                )}
+              />
             ))
           )}
         </div>
