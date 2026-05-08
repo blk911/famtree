@@ -7,7 +7,7 @@
 | Item | Value |
 |------|--------|
 | **Branch** | `recovery-famtree-trust-units-working` |
-| **Latest commit** | Authoritative tip: run `git rev-parse HEAD`. Snapshot when this file last matched the branch tip: `235140cd650bd7b5d3dbe7a7de76ab6fb06e6497`. |
+| **Latest commit** | Run `git rev-parse HEAD` after checkout — do not rely on a copied SHA in docs (it goes stale on the next commit). |
 
 ## Trust / Bond / Trust Unit — implemented behavior
 
