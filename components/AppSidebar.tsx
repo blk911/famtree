@@ -7,7 +7,7 @@ import {
   LayoutDashboard, User, Users, Mail,
   LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2, Terminal,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { User as PrismaUser } from "@prisma/client";
 import { getCurrentUserStudioHref, isStudiosPrimaryNavActive } from "@/lib/studios/getCurrentUserStudioHref";
 
@@ -55,11 +55,20 @@ export function AppSidebar({ user, open = false }: Props) {
     pathname === "/profile" ||
     pathname.startsWith("/profile/");
 
-  const settingsActive = pathname === "/settings" || pathname.startsWith("/settings/") || pathname === "/admin/tools" || pathname === "/admin/activity" || pathname === "/admin/studios" || pathname.startsWith("/admin/studios/");
+  const adminZone = pathname === "/admin" || pathname.startsWith("/admin/");
+  const settingsActive =
+    pathname === "/settings" ||
+    pathname.startsWith("/settings/") ||
+    adminZone;
 
   const [familyOpen, setFamilyOpen] = useState(familyActive);
   const [vaultOpen, setVaultOpen] = useState(vaultActive);
   const [settingsOpen, setSettingsOpen] = useState(settingsActive);
+
+  /** Expand Settings submenu whenever we're on Settings or any /admin route (client navigations skip useState init). */
+  useEffect(() => {
+    if (settingsActive) setSettingsOpen(true);
+  }, [settingsActive]);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });

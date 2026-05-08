@@ -40,10 +40,11 @@ Script: `scripts/scan-sponsor-bonds.ts`.
 
 ## Verification checklist
 
-1. `npm run typecheck`
-2. Log in as affected sponsor / member → `/family-vault/family-units` bond strip lists expected peers.
-3. `/family-vault/private` shows bond DM buckets for those peers.
-4. Re-run `npm run bonds:scan` — expect **zero** `invite_missing_connection` / `invitedBy_missing_connection` after `bonds:fix` on that DB; unresolved-invite rows need manual email alignment if still reported.
+1. Log in as **founder** or **admin** → open **Settings** in the sidebar (accordion expands on `/admin` and `/settings`) → **Tools & foundation** → `/admin/tools`.
+2. `npm run typecheck`
+3. Log in as affected sponsor / member → `/family-vault/family-units` bond strip lists expected peers.
+4. `/family-vault/private` shows bond DM buckets for those peers.
+5. Re-run `npm run bonds:scan` — expect **zero** `invite_missing_connection` / `invitedBy_missing_connection` after `bonds:fix` on that DB; unresolved-invite rows need manual email alignment if still reported.
 
 ## Scope note
 

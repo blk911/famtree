@@ -43,6 +43,13 @@ export const ADMIN_SCRIPT_OPS: OpsLine[] = [
 /** Non-CLI pointers — APIs and docs. */
 export const ADMIN_TOOL_OPS: OpsLine[] = [
   {
+    title: "Tools & foundation (admin UI)",
+    when: "Whenever you need script paths or deploy fingerprints without grep.",
+    what: "SVC snapshot (versions, DB host, counts) plus SCRIPTS/TOOLS cards.",
+    why: "One surface for the next admin; sidebar expands automatically on `/admin` and `/settings`.",
+    where: "`/admin/tools` — Settings → **Tools & foundation** (founder/admin).",
+  },
+  {
     title: "DB sanity API",
     when: "Quick check that this deployment hits the intended Postgres.",
     what: "JSON: DB host fingerprint (no password), row counts, optional Vercel commit.",
