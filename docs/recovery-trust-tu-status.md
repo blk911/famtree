@@ -7,7 +7,7 @@
 | Item | Value |
 |------|--------|
 | **Branch** | `recovery-famtree-trust-units-working` |
-| **Latest commit** | `a4bd3293234810bb88996de7ea2081ace4be611f` — run `git rev-parse HEAD` after newer commits. |
+| **Latest commit** | `a926c67074593615679ded1369f76987a0b1e193` — run `git rev-parse HEAD` after newer commits (next commit will advance HEAD past this recorded baseline). |
 
 ## Trust / Bond / Trust Unit — implemented behavior
 
