@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/db/prisma";
+import { normalizeInviteEmail } from "@/lib/invite";
 
-/** Edges: ACCEPTED invites (sender↔registered recipient), ACCEPTED connection_requests, ACTIVE trust unit cliques. */
+/** Edges: REGISTERED/ACCEPTED invites, user.invitedById sponsor links, ACCEPTED connection_requests, ACTIVE trust unit cliques. */
 export async function buildTrustAdjacency(): Promise<Map<string, Set<string>>> {
   const users = await prisma.user.findMany({
     select: { id: true, email: true },
   });
-  const emailToId = new Map(users.map((u) => [u.email.toLowerCase(), u.id]));
+  const emailToId = new Map(users.map((u) => [normalizeInviteEmail(u.email), u.id]));
 
   const adjacency = new Map<string, Set<string>>();
   const connect = (a: string, b: string) => {
@@ -21,8 +22,17 @@ export async function buildTrustAdjacency(): Promise<Map<string, Set<string>>> {
     select: { senderId: true, recipientEmail: true },
   });
   for (const invite of invites) {
-    const recipientId = emailToId.get(invite.recipientEmail.toLowerCase());
+    const recipientId = emailToId.get(normalizeInviteEmail(invite.recipientEmail));
     if (recipientId) connect(invite.senderId, recipientId);
+  }
+
+  /** Sponsor link stored on user row — covers invite email drift vs `users.email` */
+  const invitedByRows = await prisma.user.findMany({
+    where: { invitedById: { not: null } },
+    select: { id: true, invitedById: true },
+  });
+  for (const u of invitedByRows) {
+    if (u.invitedById) connect(u.invitedById, u.id);
   }
 
   const acceptedConnections = await prisma.connectionRequest.findMany({
@@ -81,6 +91,27 @@ export async function pickNeighborForAutoTrustUnit(
     orderBy: { targetId: "asc" },
   });
   if (downhill.length > 0) return downhill[0].targetId;
+
+  const neighborUsers = await prisma.user.findMany({
+    where: { id: { in: neighbors } },
+    select: { id: true, email: true },
+  });
+  const neighborSet = new Set(neighbors);
+  const emailToNeighborId = new Map(
+    neighborUsers.map((u) => [normalizeInviteEmail(u.email), u.id]),
+  );
+  const invitesFromSender = await prisma.invite.findMany({
+    where: {
+      senderId,
+      status: { in: ["ACCEPTED", "REGISTERED"] },
+    },
+    select: { recipientEmail: true },
+    orderBy: { createdAt: "desc" },
+  });
+  for (const inv of invitesFromSender) {
+    const nid = emailToNeighborId.get(normalizeInviteEmail(inv.recipientEmail));
+    if (nid && neighborSet.has(nid)) return nid;
+  }
 
   return [...neighbors].sort()[0] ?? null;
 }

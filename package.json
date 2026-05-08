@@ -15,7 +15,9 @@
     "openapi:generate": "node scripts/generate-openapi-from-fs.mjs",
     "openapi:inject": "node scripts/inject-api-trace.mjs",
     "fuzz": "node scripts/run-fuzz.mjs",
-    "seed:deb": "ts-node --project scripts/tsconfig.json scripts/seedDeb.ts"
+    "seed:deb": "ts-node --project scripts/tsconfig.json scripts/seedDeb.ts",
+    "bonds:scan": "tsx scripts/scan-sponsor-bonds.ts",
+    "bonds:fix": "tsx scripts/scan-sponsor-bonds.ts --fix"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1039.0",

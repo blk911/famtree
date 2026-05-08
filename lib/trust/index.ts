@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { TrustApprovalStatus, TrustUnitRequestStatus } from "@prisma/client";
 import { buildTrustAdjacency } from "./adjacency";
+import { normalizeInviteEmail } from "@/lib/invite";
 import { maskInviteEmail } from "./tuProposal";
 
 const userSelect = {
@@ -318,7 +319,11 @@ export async function getTrustUnits(userId: string) {
   }));
 }
 
-/** Accepted bonds for viewer: peer user + when the row last moved to ACCEPTED (`updatedAt`). */
+/**
+ * Accepted bonds for viewer: `connection_request` ACCEPTED rows, plus sponsor↔member edges implied by
+ * REGISTERED/ACCEPTED invites or `invitedById` when no connection row exists (legacy registrations or
+ * email drift vs `invites.recipientEmail`). Matches edges already counted in {@link buildTrustAdjacency}.
+ */
 export async function getAcceptedBondDetails(userId: string) {
   const rows = await prisma.connectionRequest.findMany({
     where: {
@@ -335,10 +340,69 @@ export async function getAcceptedBondDetails(userId: string) {
     orderBy: { updatedAt: "desc" },
   });
 
-  return rows.map((r) => ({
-    peer: r.requesterId === userId ? r.target : r.requester,
-    bondedAt: r.updatedAt,
-  }));
+  type Detail = { peer: (typeof rows)[number]["requester"]; bondedAt: Date };
+  const byPeerId = new Map<string, Detail>();
+
+  for (const r of rows) {
+    const peer = r.requesterId === userId ? r.target : r.requester;
+    byPeerId.set(peer.id, { peer, bondedAt: r.updatedAt });
+  }
+
+  const syntheticTimes = new Map<string, Date>();
+
+  const bumpSynthetic = (peerId: string, at: Date) => {
+    if (byPeerId.has(peerId)) return;
+    const prev = syntheticTimes.get(peerId);
+    if (!prev || at > prev) syntheticTimes.set(peerId, at);
+  };
+
+  const allUsers = await prisma.user.findMany({
+    select: { id: true, email: true, invitedById: true, createdAt: true },
+  });
+  const emailToId = new Map(allUsers.map((u) => [normalizeInviteEmail(u.email), u.id]));
+  const userById = new Map(allUsers.map((u) => [u.id, u]));
+
+  const invites = await prisma.invite.findMany({
+    where: { status: { in: ["ACCEPTED", "REGISTERED"] } },
+    select: { senderId: true, recipientEmail: true, acceptedAt: true, createdAt: true },
+  });
+
+  for (const inv of invites) {
+    const recipientId = emailToId.get(normalizeInviteEmail(inv.recipientEmail));
+    if (!recipientId) continue;
+    const sponsorId = inv.senderId;
+    const viewerPeer =
+      sponsorId === userId ? recipientId : recipientId === userId ? sponsorId : null;
+    if (!viewerPeer) continue;
+    const at = inv.acceptedAt ?? inv.createdAt;
+    bumpSynthetic(viewerPeer, at);
+  }
+
+  const viewer = userById.get(userId);
+  if (viewer?.invitedById) {
+    bumpSynthetic(viewer.invitedById, viewer.createdAt);
+  }
+  for (const u of allUsers) {
+    if (u.invitedById === userId) {
+      bumpSynthetic(u.id, u.createdAt);
+    }
+  }
+
+  const missingPeerIds = Array.from(syntheticTimes.keys()).filter((id) => !byPeerId.has(id));
+  if (missingPeerIds.length > 0) {
+    const peers = await prisma.user.findMany({
+      where: { id: { in: missingPeerIds } },
+      select: userSelect,
+    });
+    for (const peer of peers) {
+      const bondedAt = syntheticTimes.get(peer.id);
+      if (bondedAt) {
+        byPeerId.set(peer.id, { peer, bondedAt });
+      }
+    }
+  }
+
+  return Array.from(byPeerId.values()).sort((a, b) => b.bondedAt.getTime() - a.bondedAt.getTime());
 }
 
 /** Peers linked by an ACCEPTED connection_request (either direction). */
