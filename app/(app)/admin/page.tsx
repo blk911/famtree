@@ -94,6 +94,10 @@ export default async function AdminPage() {
         <strong style={{ color: "#57534e" }}>Database:</strong> {dbHost}
         <span style={{ margin: "0 8px", color: "#d6d3d1" }}>|</span>
         <strong style={{ color: "#57534e" }}>Invite rows:</strong> {totalInvites} total ({pendingInvites} pending)
+        <span style={{ margin: "0 8px", color: "#d6d3d1" }}>|</span>
+        <Link href="/admin/tools" style={{ color: "#0369a1", fontWeight: 700 }}>
+          Tools / Scripts / Services →
+        </Link>
       </p>
 
       <div className="admin-stats-grid">

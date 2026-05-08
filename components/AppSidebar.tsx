@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, User, Users, Mail,
-  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2,
+  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2, Terminal,
 } from "lucide-react";
 import { useState } from "react";
 import type { User as PrismaUser } from "@prisma/client";
@@ -30,9 +30,10 @@ const VAULT_ITEMS = [
 
 // Settings sub-items (admin only — shown beneath the Settings accordion)
 const SETTINGS_ADMIN_ITEMS = [
-  { href: "/settings",        label: "Settings",      icon: null },
-  { href: "/admin/studios",   label: "AIH Studios",   icon: Building2 },
-  { href: "/admin/activity",  label: "Activity Log",  icon: ScrollText },
+  { href: "/settings",        label: "Settings",             icon: null },
+  { href: "/admin/tools",     label: "Tools & foundation",   icon: Terminal },
+  { href: "/admin/studios",   label: "AIH Studios",          icon: Building2 },
+  { href: "/admin/activity",  label: "Activity Log",         icon: ScrollText },
 ];
 
 export function AppSidebar({ user, open = false }: Props) {
@@ -54,7 +55,7 @@ export function AppSidebar({ user, open = false }: Props) {
     pathname === "/profile" ||
     pathname.startsWith("/profile/");
 
-  const settingsActive = pathname === "/settings" || pathname.startsWith("/settings/") || pathname === "/admin/activity" || pathname === "/admin/studios" || pathname.startsWith("/admin/studios/");
+  const settingsActive = pathname === "/settings" || pathname.startsWith("/settings/") || pathname === "/admin/tools" || pathname === "/admin/activity" || pathname === "/admin/studios" || pathname.startsWith("/admin/studios/");
 
   const [familyOpen, setFamilyOpen] = useState(familyActive);
   const [vaultOpen, setVaultOpen] = useState(vaultActive);
@@ -277,7 +278,7 @@ export function AppSidebar({ user, open = false }: Props) {
             {settingsOpen && (
               <div style={{marginBottom:"3px"}}>
                 {SETTINGS_ADMIN_ITEMS.map(({ href, label, icon: Icon }) => {
-                  const active = pathname === href;
+                  const active = pathname === href || (href !== "/settings" && pathname.startsWith(`${href}/`));
                   return (
                     <Link key={href} href={href} style={subLinkStyle(active)}>
                       <span style={{
