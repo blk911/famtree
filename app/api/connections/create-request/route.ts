@@ -1,10 +1,9 @@
-// POST /api/connections/create-request — request a direct connection with an existing member
+// POST /api/connections/create-request — link two existing members (invite-only graph edge)
 
 import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
-import { randomUUID } from "crypto";
 
 export async function POST(req: NextRequest) {
   return withApiTrace(req, "/api/connections/create-request", async (req: NextRequest) => {
@@ -17,27 +16,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid connection target" }, { status: 400 });
     }
 
-    const existing = await prisma.$queryRaw<Array<{ id: string }>>`
-      SELECT id
-      FROM "connection_requests"
-      WHERE "requesterId" = ${user.id}
-        AND "targetId" = ${targetUserId}
-      LIMIT 1
-    `;
+    /** No separate “accept” UI yet — leaving rows PENDING broke adjacency & Private Feed bonds. */
+    const row = await prisma.connectionRequest.upsert({
+      where: {
+        requesterId_targetId: {
+          requesterId: user.id,
+          targetId: targetUserId,
+        },
+      },
+      create: {
+        requesterId: user.id,
+        targetId: targetUserId,
+        status: "ACCEPTED",
+      },
+      update: {
+        status: "ACCEPTED",
+      },
+      select: { id: true },
+    });
 
-    const id = existing[0]?.id ?? randomUUID();
-    if (!existing[0]) {
-      await prisma.$executeRaw`
-        INSERT INTO "connection_requests" (id, "requesterId", "targetId", status, "createdAt", "updatedAt")
-        VALUES (${id}, ${user.id}, ${targetUserId}, 'PENDING'::"ConnectionRequestStatus", NOW(), NOW())
-      `;
-    }
-
-    return NextResponse.json({ id });
-  } catch (err: any) {
-    if (err.message === "UNAUTHORIZED") {
+    return NextResponse.json({ id: row.id });
+  } catch (err: unknown) {
+    const anyErr = err as { message?: string };
+    if (anyErr.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+    console.error("[connections/create-request]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
   });

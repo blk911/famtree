@@ -2,6 +2,7 @@
 // app/(app)/invite/InviteClient.tsx
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Mail, Send, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, X, Ban, Trash2 } from "lucide-react";
@@ -242,6 +243,7 @@ function ConfirmModal({
 // ── Main client component ─────────────────────────────────────────────────────
 
 export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?: boolean }) {
+  const router = useRouter();
   // ── state ──
   const [recipientName,    setRecipientName]    = useState("");
   const [recipientEmail,   setRecipientEmail]   = useState("");
@@ -481,6 +483,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         return;
       }
       setSendResult({ type:"success", msg:"Connection request sent", inviteeName:`${targetUser.firstName} ${targetUser.lastName}` });
+      void router.refresh();
       setRecipientName("");
       setRecipientEmail("");
       setTargetUser(null);
@@ -508,6 +511,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         return;
       }
       setSendResult({ type:"success", msg:"Trust Unit request sent", inviteeName:trustCandidates.map((member) => member.firstName).join(" · ") });
+      void router.refresh();
       setRecipientName("");
       setRecipientEmail("");
       setTrustCandidates([]);
