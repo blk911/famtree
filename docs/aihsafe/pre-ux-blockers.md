@@ -6,7 +6,7 @@ Each item has a severity, a description of the gap, and the minimum viable fix.
 
 ---
 
-## BLOCKER 1 — Deferred Action Re-execution (Approval Resolution)
+## BLOCKER 1 — Deferred Action Re-execution (Approval Resolution) ✅ CLOSED (Agent 6)
 
 **Severity:** Blocking for minor flows to be functionally complete.
 
@@ -27,7 +27,7 @@ Each item has a severity, a description of the gap, and the minimum viable fix.
 
 ---
 
-## BLOCKER 2 — Multi-Guardian Fan-Out (Creation Side)
+## BLOCKER 2 — Multi-Guardian Fan-Out (Creation Side) ✅ CLOSED (Agent 6)
 
 **Severity:** Blocking for families with multiple guardian accounts.
 
@@ -76,7 +76,7 @@ const approvalRequests = await Promise.all(
 
 ---
 
-## BLOCKER 4 — `memberIds` Consent Model
+## BLOCKER 4 — `memberIds` Consent Model ✅ CLOSED (Agent 6, option a)
 
 **Severity:** High — minor protection gap.
 

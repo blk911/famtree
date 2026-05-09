@@ -136,21 +136,26 @@ export async function POST(req: NextRequest) {
       maxMemberCount,
     };
 
-    const approvalRequest = await prisma.aihApprovalRequest.create({
-      data: {
-        requestorId: user.id,
-        approverId:  eligibleApprovers[0].guardianUserId as string,
-        actionKind:  AuditEventKind.TRUST_UNIT_FORMED,
-        contextJson,
-        expiresAt,
-      },
-    });
+    const approvalRequests = await Promise.all(
+      eligibleApprovers.map(g =>
+        prisma.aihApprovalRequest.create({
+          data: {
+            requestorId: user.id,
+            approverId:  g.guardianUserId as string,
+            actionKind:  AuditEventKind.TRUST_UNIT_FORMED,
+            contextJson,
+            expiresAt,
+          },
+        })
+      )
+    );
+    const approvalRequest = approvalRequests[0];
 
     await emitAuditEvent({
       kind:     AuditEventKind.TRUST_UNIT_FORMED,
       actorId:  actor.actorUserId as string,
       targetId: null,
-      meta:     { kind, escalated: true, approvalRequestId: approvalRequest.id },
+      meta:     { kind, escalated: true, approvalRequestId: approvalRequest.id, guardianCount: approvalRequests.length },
     });
 
     return accepted(
@@ -164,15 +169,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Create TrustUnit + AihTrustUnitMeta sidecar + creator member
+  // Create TrustUnit + AihTrustUnitMeta sidecar + creator member only.
+  // memberIds are not pre-applied; additional members must use the invite flow (Blocker 4).
   const trustUnit = await prisma.trustUnit.create({
     data: {
       ...(name ? { name } : {}),
       members: {
-        create: [
-          { userId: user.id },
-          ...memberIds.filter(id => id !== user.id).map(id => ({ userId: id })),
-        ],
+        create: [{ userId: user.id }],
       },
       aihMeta: {
         create: { kind, defaultVisibilityScope, maxMemberCount },

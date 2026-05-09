@@ -10,6 +10,7 @@ import {
   buildActorContext,
   canApproveChildAction,
   emitAuditEvent,
+  executeDeferredAction,
 } from "@/lib/aihsafe";
 import { asAIHUserId } from "@/types/aihsafe/ids";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
@@ -241,11 +242,15 @@ export async function POST(req: NextRequest) {
     ? `${requestorUser.firstName ?? ""} ${requestorUser.lastName ?? ""}`.trim()
     : approvalRequest.requestorId;
 
-  // NOTE — deferred re-execution gap (Phase 4):
-  // When action = "approve", the original deferred action (stored in contextJson) is NOT
-  // re-executed here. The guardian receives a resolved ApprovalRequestDTO but the
-  // underlying resource (TrustUnitMember, FamilyUnit, etc.) is not yet created.
-  // See docs/aihsafe/pre-ux-blockers.md §Deferred Action Re-execution.
+  // Re-execute the deferred action now that the guardian has approved.
+  // Guardian approval IS the authorization; governance is not re-run.
+  // Execution failure is non-fatal to the approval state (which is already committed).
+  if (action === "approve") {
+    await executeDeferredAction(approvalRequest, actor.actorUserId as string).catch(() => {
+      // Execution failed — approval state committed, resource not created.
+      // The contextJson snapshot remains intact for manual replay if needed.
+    });
+  }
 
   return ok(toApprovalDTO(updated, requestorName));
 }

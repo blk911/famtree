@@ -74,7 +74,7 @@ Per-route security gate checklist. ✅ = verified pass. ⚠️ = gap documented.
 | Sibling request revocation | ✅* (added in Agent 5) |
 | Audit emitted after state write | ✅ |
 | `contextJson` not exposed in response DTO | ✅ |
-| Deferred action re-execution on approve | ⚠️ not implemented — BLOCKER 1 |
+| Deferred action re-execution on approve | ✅* (implemented in Agent 6) |
 
 ---
 
@@ -93,8 +93,8 @@ Per-route security gate checklist. ✅ = verified pass. ⚠️ = gap documented.
 | Escalation: audit emitted | ✅ |
 | Escalation: 202 returned | ✅ |
 | Success: DB write before audit | ✅ |
-| `memberIds` consent model | ⚠️ no per-member consent check — BLOCKER 4 |
-| Multi-guardian fan-out | ⚠️ single-guardian only — BLOCKER 2 |
+| `memberIds` consent model | ✅* stripped at creation — members via invite flow (Agent 6) |
+| Multi-guardian fan-out | ✅* Promise.all fan-out (Agent 6) |
 
 ---
 

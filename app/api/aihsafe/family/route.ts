@@ -115,21 +115,26 @@ export async function POST(req: NextRequest) {
       memberIds,
     };
 
-    const approvalRequest = await prisma.aihApprovalRequest.create({
-      data: {
-        requestorId: user.id,
-        approverId:  eligibleApprovers[0].guardianUserId as string,
-        actionKind:  AuditEventKind.FAMILY_UNIT_CREATED,
-        contextJson,
-        expiresAt,
-      },
-    });
+    const approvalRequests = await Promise.all(
+      eligibleApprovers.map(g =>
+        prisma.aihApprovalRequest.create({
+          data: {
+            requestorId: user.id,
+            approverId:  g.guardianUserId as string,
+            actionKind:  AuditEventKind.FAMILY_UNIT_CREATED,
+            contextJson,
+            expiresAt,
+          },
+        })
+      )
+    );
+    const approvalRequest = approvalRequests[0];
 
     await emitAuditEvent({
       kind:     AuditEventKind.FAMILY_UNIT_CREATED,
       actorId:  actor.actorUserId as string,
       targetId: null,
-      meta:     { name, escalated: true, approvalRequestId: approvalRequest.id },
+      meta:     { name, escalated: true, approvalRequestId: approvalRequest.id, guardianCount: approvalRequests.length },
     });
 
     return accepted(
@@ -143,18 +148,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Create family unit + creator member + any additional members
+  // Create family unit + creator as guardian only.
+  // memberIds are not pre-applied; additional members must use the invite flow (Blocker 4).
   const familyUnit = await prisma.aihFamilyUnit.create({
     data: {
       name,
       createdByUserId: user.id,
       members: {
-        create: [
-          { userId: user.id, role: "guardian" },
-          ...memberIds
-            .filter(id => id !== user.id)
-            .map(id => ({ userId: id, role: "adult" as const })),
-        ],
+        create: [{ userId: user.id, role: "guardian" }],
       },
     },
     include: { members: true },

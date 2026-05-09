@@ -95,21 +95,26 @@ export async function POST(req: NextRequest) {
       trustUnitId,
     };
 
-    const approvalRequest = await prisma.aihApprovalRequest.create({
-      data: {
-        requestorId: user.id,
-        approverId:  eligibleApprovers[0].guardianUserId as string,
-        actionKind:  AuditEventKind.TRUST_UNIT_MEMBER_ADDED,
-        contextJson,
-        expiresAt,
-      },
-    });
+    const approvalRequests = await Promise.all(
+      eligibleApprovers.map(g =>
+        prisma.aihApprovalRequest.create({
+          data: {
+            requestorId: user.id,
+            approverId:  g.guardianUserId as string,
+            actionKind:  AuditEventKind.TRUST_UNIT_MEMBER_ADDED,
+            contextJson,
+            expiresAt,
+          },
+        })
+      )
+    );
+    const approvalRequest = approvalRequests[0];
 
     await emitAuditEvent({
       kind:     AuditEventKind.TRUST_UNIT_MEMBER_ADDED,
       actorId:  actor.actorUserId as string,
       targetId: trustUnitId,
-      meta:     { escalated: true, approvalRequestId: approvalRequest.id },
+      meta:     { escalated: true, approvalRequestId: approvalRequest.id, guardianCount: approvalRequests.length },
     });
 
     return accepted(
