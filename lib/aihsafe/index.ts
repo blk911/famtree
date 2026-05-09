@@ -11,3 +11,6 @@ export * from "./visibility";
 // Agent 3 — context builder + mapper layer
 export * from "./context";
 export * from "./mappers";
+
+// Agent 4 — API helpers
+export * from "./api";
