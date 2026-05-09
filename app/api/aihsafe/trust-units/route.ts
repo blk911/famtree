@@ -63,6 +63,7 @@ function toTrustUnitDTO(
 ): TrustUnitDTO {
   return {
     id:                     row.id,
+    // name: Phase 4 — populate from aihMeta.name once AihTrustUnitMeta.name column is added
     kind:                   (row.aihMeta?.kind ?? "peer") as TrustUnitKind,
     status:                 "active",
     defaultVisibilityScope: (row.aihMeta?.defaultVisibilityScope ?? "trust_unit") as VisibilityScope,

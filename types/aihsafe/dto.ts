@@ -125,6 +125,7 @@ export interface TrustUnitMemberDTO {
 
 export interface TrustUnitDTO {
   id:                    string;    // TrustUnitId
+  name?:                 string;    // optional display name — present once AihTrustUnitMeta.name column exists
   kind:                  TrustUnitKind;
   status:                "active" | "dissolved";
   defaultVisibilityScope: VisibilityScope;

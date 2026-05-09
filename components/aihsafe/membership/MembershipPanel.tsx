@@ -91,9 +91,15 @@ export function MembershipPanel({ currentUserId }: Props) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 15, color: "#1c1917", marginBottom: 2 }}>
-                  {unit.kind.charAt(0).toUpperCase() + unit.kind.slice(1)} space
+                  {unit.name ?? `${unit.kind.charAt(0).toUpperCase()}${unit.kind.slice(1)} space`}
                 </div>
                 <div style={{ fontSize: 12, color: "#78716c" }}>
+                  {unit.name && (
+                    <span style={{ marginRight: 4 }}>
+                      {unit.kind}
+                      {" · "}
+                    </span>
+                  )}
                   {unit.members.filter(m => !m.exitedAt).length} {unit.members.filter(m => !m.exitedAt).length === 1 ? "member" : "members"}
                   {" · "}joined {new Date(myMembership.joinedAt).toLocaleDateString()}
                   {" · "}

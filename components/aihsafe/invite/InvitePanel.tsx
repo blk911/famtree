@@ -177,7 +177,9 @@ export function InvitePanel() {
             >
               <option value="">— none —</option>
               {trustUnits.map(u => (
-                <option key={u.id} value={u.id}>{u.kind} · {u.id.slice(0, 6)}</option>
+                <option key={u.id} value={u.id}>
+                  {u.name ?? `${u.kind} · ${u.id.slice(0, 6)}`}
+                </option>
               ))}
             </select>
           </div>
