@@ -411,6 +411,27 @@ export function canMessage(
 }
 
 /**
+ * Can the actor exit their own membership in a TrustUnit?
+ * Unlike canManageMembership (which gates managing others), this gate covers self-exit only.
+ * Last-member protection is enforced at the route layer (requires a DB count).
+ */
+export function canExitMembership(
+  actor: ActorContext,
+  target: TargetContext
+): GovernanceDecision {
+  if (!target.trustUnitId) {
+    return deny(ReasonCode.DENIED_TARGET_NOT_FOUND, "No trust unit specified.");
+  }
+  if (!isMemberOf(actor, target.trustUnitId)) {
+    return deny(
+      ReasonCode.DENIED_NOT_MEMBER,
+      "Actor is not an active member of this trust unit."
+    );
+  }
+  return allow(AuditEventKind.MEMBERSHIP_REVOKED);
+}
+
+/**
  * Can the actor expand their trust network to include the target?
  * Adults may freely expand; minors cannot initiate.
  * Expanding to include a minor → escalate to guardian approval.

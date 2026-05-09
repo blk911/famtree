@@ -60,7 +60,7 @@ const approvalRequests = await Promise.all(
 
 ---
 
-## BLOCKER 3 — Membership Exit / Remove / Promote / Demote
+## BLOCKER 3 — Membership Exit / Remove / Promote / Demote ✅ CLOSED (Agent 7)
 
 **Severity:** Blocking for trust unit lifecycle management.
 
