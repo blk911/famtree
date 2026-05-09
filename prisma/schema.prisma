@@ -75,6 +75,14 @@ model User {
 
   studiosOwned Studio[]
 
+  // AIH Safe — back-relations (added by Agent 3)
+  aihFamilyUnitsCreated      AihFamilyUnit[]            @relation("AihFamilyUnitCreatedBy")
+  aihFamilyUnitMemberships   AihFamilyUnitMember[]      @relation("AihFamilyUnitMember")
+  aihGuardianRelationships   AihGuardianRelationship[]  @relation("AihGuardianOf")
+  aihGuardedByRelationships  AihGuardianRelationship[]  @relation("AihChildOf")
+  aihApprovalRequestsMade    AihApprovalRequest[]       @relation("AihApprovalRequestor")
+  aihApprovalRequestsPending AihApprovalRequest[]       @relation("AihApprovalApprover")
+
   @@map("users")
 }
 
@@ -376,6 +384,9 @@ model TrustUnit {
   createdAt DateTime          @default(now())
   members   TrustUnitMember[]
 
+  // AIH Safe — back-relation (added by Agent 3)
+  aihMeta   AihTrustUnitMeta?
+
   @@map("trust_units")
 }
 
@@ -622,3 +633,177 @@ model Session {
 
   @@map("sessions")
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AIH SAFE — ADDITIVE MODELS
+// All models here are additive. No existing model is modified.
+// Enums prefixed with Aih to avoid collision with existing schema enums.
+// Tables prefixed with aih_ per @@map convention.
+// Phase: 3 — persistence foundation for graph/audit/context services.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── AIH Safe Enums ─────────────────────────────────────────────────────────
+
+enum AihGuardianKind {
+  parent
+  grandparent
+  legal_guardian
+  trusted_adult
+
+  @@map("aih_guardian_kind")
+}
+
+enum AihGuardianPermLevel {
+  view_only
+  approver
+  full_control
+
+  @@map("aih_guardian_perm_level")
+}
+
+enum AihFamilyUnitStatus {
+  active
+  dissolved
+
+  @@map("aih_family_unit_status")
+}
+
+enum AihFamilyMemberRole {
+  guardian
+  child
+  adult
+
+  @@map("aih_family_member_role")
+}
+
+enum AihTrustUnitKind {
+  family
+  peer
+  extended
+  guardian
+
+  @@map("aih_trust_unit_kind")
+}
+
+enum AihApprovalState {
+  pending
+  approved
+  denied
+  revoked
+  expired
+
+  @@map("aih_approval_state")
+}
+
+// ─── AIH Safe Models ────────────────────────────────────────────────────────
+
+/// 1:1 sidecar for existing TrustUnit — adds AIH Safe metadata without modifying the core model.
+model AihTrustUnitMeta {
+  trustUnitId            String           @id
+  trustUnit              TrustUnit        @relation(fields: [trustUnitId], references: [id], onDelete: Restrict)
+  kind                   AihTrustUnitKind
+  defaultVisibilityScope String           @default("trust_unit")
+  maxMemberCount         Int              @default(3)
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  @@map("aih_trust_unit_meta")
+}
+
+/// Named family grouping — one or more guardians + zero or more children.
+/// Not the same as TrustUnit (which is for peer trust groups).
+model AihFamilyUnit {
+  id              String              @id @default(cuid())
+  name            String
+  status          AihFamilyUnitStatus @default(active)
+  createdByUserId String
+  createdBy       User                @relation("AihFamilyUnitCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  dissolvedAt     DateTime?
+
+  members AihFamilyUnitMember[]
+
+  @@index([createdByUserId])
+  @@index([status])
+  @@map("aih_family_units")
+}
+
+/// Join table — User to AihFamilyUnit with a role.
+model AihFamilyUnitMember {
+  id           String              @id @default(cuid())
+  familyUnitId String
+  familyUnit   AihFamilyUnit       @relation(fields: [familyUnitId], references: [id], onDelete: Restrict)
+  userId       String
+  user         User                @relation("AihFamilyUnitMember", fields: [userId], references: [id], onDelete: Restrict)
+  role         AihFamilyMemberRole
+  joinedAt     DateTime            @default(now())
+  exitedAt     DateTime?
+
+  @@unique([familyUnitId, userId])
+  @@index([userId])
+  @@index([familyUnitId])
+  @@map("aih_family_unit_members")
+}
+
+/// Guardian ↔ Child relationship with permission level.
+/// Drives all minor-governance escalation logic.
+/// onDelete: Restrict — never cascade-delete; revoke via revokedAt instead.
+model AihGuardianRelationship {
+  id              String               @id @default(cuid())
+  guardianUserId  String
+  guardian        User                 @relation("AihGuardianOf", fields: [guardianUserId], references: [id], onDelete: Restrict)
+  childUserId     String
+  child           User                 @relation("AihChildOf", fields: [childUserId], references: [id], onDelete: Restrict)
+  kind            AihGuardianKind
+  permissionLevel AihGuardianPermLevel
+  establishedAt   DateTime             @default(now())
+  revokedAt       DateTime?
+
+  @@unique([guardianUserId, childUserId])
+  @@index([guardianUserId])
+  @@index([childUserId])
+  @@map("aih_guardian_relationships")
+}
+
+/// Persistent record of a governance escalation — a gated action awaiting guardian approval.
+model AihApprovalRequest {
+  id          String           @id @default(cuid())
+  requestorId String
+  requestor   User             @relation("AihApprovalRequestor", fields: [requestorId], references: [id], onDelete: Restrict)
+  approverId  String
+  approver    User             @relation("AihApprovalApprover", fields: [approverId], references: [id], onDelete: Restrict)
+  actionKind  String
+  state       AihApprovalState @default(pending)
+  contextJson Json
+  expiresAt   DateTime
+  resolvedAt  DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([approverId, state])
+  @@index([requestorId])
+  @@index([expiresAt])
+  @@map("aih_approval_requests")
+}
+
+/// Durable audit log — governance decisions and significant actions.
+/// actorId / targetId are plain strings (no FK) so events survive user deletion.
+model AihAuditEvent {
+  id        String   @id @default(cuid())
+  kind      String
+  actorId   String
+  targetId  String?
+  meta      Json
+  createdAt DateTime @default(now())
+
+  @@index([targetId, createdAt(sort: Desc)])
+  @@index([actorId, createdAt(sort: Desc)])
+  @@index([kind])
+  @@index([createdAt(sort: Desc)])
+  @@map("aih_audit_events")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// END AIH SAFE — ADDITIVE MODELS
+// ═══════════════════════════════════════════════════════════════════════════════
