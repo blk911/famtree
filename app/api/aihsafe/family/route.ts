@@ -11,10 +11,10 @@ import {
   buildActorContext,
   canCreateTrustUnit,
   emitAuditEvent,
+  selectApprovalRecipients,
 } from "@/lib/aihsafe";
 import { asAIHUserId } from "@/types/aihsafe/ids";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
-import { AgeTier } from "@/types/aihsafe/age-tiers";
 import { approvalExpiresAt, accepted, created, ok, unauthenticated, governanceDenied, validationFail, serverError } from "@/lib/aihsafe/api/envelopes";
 import { readJson, parsePagination } from "@/lib/aihsafe/api/parse";
 import type { FamilyUnitDTO } from "@/types/aihsafe/dto";
@@ -102,12 +102,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (decision.requiredApproval) {
-    // Find eligible guardian approvers
-    const eligibleApprovers = actor.guardedByRelationships
-      .filter(r =>
-        r.revokedAt === null &&
-        (r.permissionLevel === "approver" || r.permissionLevel === "full_control")
-      );
+    const eligibleApprovers = selectApprovalRecipients(actor.guardedByRelationships);
 
     if (eligibleApprovers.length === 0) {
       return governanceDenied(decision);

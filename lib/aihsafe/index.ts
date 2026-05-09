@@ -14,3 +14,6 @@ export * from "./mappers";
 
 // Agent 4 — API helpers
 export * from "./api";
+
+// Agent 5 — Approval recipient selection helper
+export * from "./approvals";

@@ -13,7 +13,6 @@ import {
 } from "@/lib/aihsafe";
 import { asAIHUserId } from "@/types/aihsafe/ids";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
-import { AgeTier } from "@/types/aihsafe/age-tiers";
 import { deriveAgeTier } from "@/lib/aihsafe";
 import {
   created,

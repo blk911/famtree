@@ -11,11 +11,13 @@ import {
   buildActorContext,
   canInviteToTrustUnit,
   emitAuditEvent,
+  selectApprovalRecipients,
 } from "@/lib/aihsafe";
 import { createInvite } from "@/lib/invite";
 import { asAIHUserId, asTrustUnitId } from "@/types/aihsafe/ids";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
 import { AgeTier } from "@/types/aihsafe/age-tiers";
+import { deriveAgeTier } from "@/lib/aihsafe";
 import {
   approvalExpiresAt,
   accepted,
@@ -93,9 +95,27 @@ export async function POST(req: NextRequest) {
 
   const { recipientEmail, relationship, targetAgeTier, trustUnitId, familyUnitId } = parsed.data;
 
+  // Derive target's age tier server-side — never trust client-supplied ageTier for
+  // governance decisions. The client hint (targetAgeTier) is ignored when the target
+  // has an existing account; it is used only when the account does not yet exist,
+  // and only to make the check MORE restrictive (minor hint → escalate).
+  let effectiveTargetAgeTier: AgeTier | undefined;
+  const targetUser = await prisma.user.findFirst({
+    where:  { email: { equals: recipientEmail, mode: "insensitive" } },
+    select: { dateOfBirth: true },
+  });
+  if (targetUser) {
+    effectiveTargetAgeTier = deriveAgeTier(targetUser.dateOfBirth ?? null);
+  } else if (targetAgeTier) {
+    // No account yet — use the client hint only if it signals a minor so that
+    // escalation is triggered. Discard adult/elder hints (safe-by-default).
+    const minorTierSet: string[] = [AgeTier.CHILD, AgeTier.PRETEEN, AgeTier.TEEN];
+    effectiveTargetAgeTier = minorTierSet.includes(targetAgeTier) ? targetAgeTier : undefined;
+  }
+
   const targetContext = {
     ...(trustUnitId ? { trustUnitId: asTrustUnitId(trustUnitId) } : {}),
-    ...(targetAgeTier ? { targetAgeTier } : {}),
+    ...(effectiveTargetAgeTier ? { targetAgeTier: effectiveTargetAgeTier } : {}),
   };
 
   const decision = canInviteToTrustUnit(actor, targetContext);
@@ -110,10 +130,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (decision.requiredApproval) {
-    const eligibleApprovers = actor.guardedByRelationships.filter(r =>
-      r.revokedAt === null &&
-      (r.permissionLevel === "approver" || r.permissionLevel === "full_control")
-    );
+    const eligibleApprovers = selectApprovalRecipients(actor.guardedByRelationships);
     if (eligibleApprovers.length === 0) return governanceDenied(decision);
 
     const expiresAt  = approvalExpiresAt();
@@ -157,8 +174,8 @@ export async function POST(req: NextRequest) {
   // Delegate to the existing invite system
   const invite = await createInvite(user, recipientEmail, relationship);
 
-  const minorTiers: string[] = [AgeTier.CHILD, AgeTier.PRETEEN, AgeTier.TEEN];
-  const auditKind = targetAgeTier && minorTiers.includes(targetAgeTier)
+  const minorTierSet: string[] = [AgeTier.CHILD, AgeTier.PRETEEN, AgeTier.TEEN];
+  const auditKind = effectiveTargetAgeTier && minorTierSet.includes(effectiveTargetAgeTier)
     ? AuditEventKind.INVITE_SENT_CHILD
     : AuditEventKind.INVITE_GUARDIAN_APPROVED;
 

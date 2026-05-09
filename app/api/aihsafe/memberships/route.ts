@@ -10,6 +10,7 @@ import {
   buildActorContext,
   canJoinTrustUnit,
   emitAuditEvent,
+  selectApprovalRecipients,
 } from "@/lib/aihsafe";
 import { asAIHUserId, asTrustUnitId } from "@/types/aihsafe/ids";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
@@ -85,10 +86,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (decision.requiredApproval) {
-    const eligibleApprovers = actor.guardedByRelationships.filter(r =>
-      r.revokedAt === null &&
-      (r.permissionLevel === "approver" || r.permissionLevel === "full_control")
-    );
+    const eligibleApprovers = selectApprovalRecipients(actor.guardedByRelationships);
     if (eligibleApprovers.length === 0) return governanceDenied(decision);
 
     const expiresAt  = approvalExpiresAt();
