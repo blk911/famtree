@@ -20,6 +20,7 @@ export function MembershipPanel({ currentUserId }: Props) {
   const [busy,    setBusy]    = useState<string | null>(null);   // membershipId being exited
   const [exited,  setExited]  = useState<Record<string, true>>({});
   const [notices, setNotices] = useState<Record<string, AihDenied>>({});
+  const [errors,  setErrors]  = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     const r = await listTrustUnits();
@@ -31,6 +32,7 @@ export function MembershipPanel({ currentUserId }: Props) {
   async function handleExit(membershipId: string) {
     setBusy(membershipId);
     setNotices(n => { const c = { ...n }; delete c[membershipId]; return c; });
+    setErrors(e  => { const c = { ...e }; delete c[membershipId]; return c; });
     const r = await exitMembership(membershipId);
     setBusy(null);
     if (r.kind === "ok") {
@@ -38,8 +40,9 @@ export function MembershipPanel({ currentUserId }: Props) {
       load();
     } else if (r.kind === "denied") {
       setNotices(n => ({ ...n, [membershipId]: r }));
+    } else if (r.kind === "error") {
+      setErrors(e => ({ ...e, [membershipId]: r.message }));
     }
-    // "error" kind: generic failure; notice not shown but button re-enables
   }
 
   if (units === null) {
@@ -71,6 +74,7 @@ export function MembershipPanel({ currentUserId }: Props) {
         const isBusy       = busy === membershipId;
         const hasExited    = exited[membershipId];
         const notice       = notices[membershipId];
+        const errorMsg     = errors[membershipId];
 
         return (
           <div
@@ -127,6 +131,11 @@ export function MembershipPanel({ currentUserId }: Props) {
               )}
             </div>
 
+            {errorMsg && (
+              <p role="alert" style={{ fontSize: 13, color: "#dc2626", marginTop: 10 }}>
+                ⚠ {errorMsg}
+              </p>
+            )}
             {notice && (
               <div style={{ marginTop: 10 }}>
                 <DecisionNotice

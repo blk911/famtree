@@ -30,9 +30,7 @@ export function DecisionNotice({ result, onDismiss }: Props) {
   const bg        = isPending ? "#fffbeb" : "#fef2f2";
   const border    = isPending ? "#fcd34d" : "#fca5a5";
 
-  const title = isPending
-    ? "Waiting for guardian approval"
-    : (REASON_COPY[(result as AihDenied).code] ? "Action not allowed" : "Action not allowed");
+  const title = isPending ? "Waiting for guardian approval" : "Action not allowed";
 
   const body = isPending
     ? `Your request is waiting. Once a guardian approves, it will happen automatically. Reference: ${(result as AihEscalated).approvalRequestId}`
@@ -40,7 +38,7 @@ export function DecisionNotice({ result, onDismiss }: Props) {
 
   return (
     <div
-      role="status"
+      role={isPending ? "status" : "alert"}
       style={{
         background:    bg,
         border:        `1px solid ${border}`,
