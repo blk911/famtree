@@ -248,6 +248,12 @@ export function AppSidebar({ user, open = false }: Props) {
           {INVITE.label}
         </Link>
 
+        {/* Family Safe */}
+        <Link href="/aihsafe" style={linkStyle(pathname === "/aihsafe" || pathname.startsWith("/aihsafe/"))}>
+          <ShieldCheck style={{width:"18px",height:"18px",flexShrink:0}} />
+          Family Safe
+        </Link>
+
         <Link href={studiosHref} style={linkStyle(isStudiosPrimaryNavActive(pathname, studiosHref))}>
           <Building2 style={{width:"18px",height:"18px",flexShrink:0}} />
           AIH Studios
