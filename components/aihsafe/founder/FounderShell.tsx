@@ -189,12 +189,12 @@ function ChildApprovedSpacesCard({
         </p>
       )}
 
-      {!loading && units.map((u) => (
+      {!loading && units.map((u, i) => (
         <div
           key={u.id}
           style={{
             padding:      "10px 0",
-            borderBottom: "1px solid #f4f4f5",
+            borderBottom: i < units.length - 1 ? "1px solid #f4f4f5" : "none",
             display:      "flex",
             alignItems:   "center",
             gap:          8,
@@ -297,11 +297,9 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
             <p style={{ margin: "8px 0 0", fontSize: 13, color: "#78716c", maxWidth: 400 }}>
               Share with the people who actually know you.
             </p>
-            {!loading && mySpaces.length > 0 && (
-              <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-                <LightStatCard value={mySpaces.length} label="spaces you're in" />
-              </div>
-            )}
+            <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+              <LightStatCard value={loading ? "…" : mySpaces.length} label="spaces you're in" />
+            </div>
           </HeroCard>
         )}
 
@@ -447,7 +445,7 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
 
                 {/* Invite action — members can invite others within their spaces */}
                 <div style={railCard}>
-                  <SectionHeader title="Quick Action" />
+                  <SectionHeader title="Quick Actions" />
                   <button type="button" style={{ ...actionBtn, marginBottom: 0 }} onClick={() => setModal("invite")}>
                     <div style={iconBox("#f0fdf4")}>📨</div>
                     <div>

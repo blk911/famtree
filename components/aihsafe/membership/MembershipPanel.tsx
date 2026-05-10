@@ -102,8 +102,6 @@ export function MembershipPanel({ currentUserId }: Props) {
                   )}
                   {unit.members.filter(m => !m.exitedAt).length} {unit.members.filter(m => !m.exitedAt).length === 1 ? "member" : "members"}
                   {" · "}joined {new Date(myMembership.joinedAt).toLocaleDateString()}
-                  {" · "}
-                  <span style={{ fontFamily: "monospace", fontSize: 11 }}>{unit.id.slice(0, 8)}…</span>
                 </div>
               </div>
 
