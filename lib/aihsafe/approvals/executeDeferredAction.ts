@@ -68,9 +68,8 @@ export async function executeDeferredAction(
       // memberIds not re-applied — see Blocker 4.
       const trustUnit = await prisma.trustUnit.create({
         data: {
-          ...(name ? { name } : {}),
           members: { create: [{ userId: requestorId }] },
-          aihMeta: { create: { kind, defaultVisibilityScope, maxMemberCount } },
+          aihMeta: { create: { kind, name: name ?? null, defaultVisibilityScope, maxMemberCount } },
         },
       });
       await emitAuditEvent({

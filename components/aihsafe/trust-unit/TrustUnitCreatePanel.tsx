@@ -161,7 +161,7 @@ export function TrustUnitCreatePanel() {
             >
               <div>
                 <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>
-                  {u.kind} space
+                  {u.name ?? `${u.kind} space`}
                 </div>
                 <div style={{ fontSize: 12, color: "#78716c" }}>
                   {u.members.length} {u.members.length === 1 ? "member" : "members"}
