@@ -183,6 +183,13 @@
   outline: none;
 }
 
+/* ── AIH Safe: hero image panel — hide on narrow viewports ──────────────── */
+@media (max-width: 680px) {
+  .aihsafe-hero-img {
+    display: none !important;
+  }
+}
+
 /* ── AIH Safe: relational dashboard 2-col grid → 1-col on mobile ─────────── */
 .aihsafe-grid {
   grid-template-columns: minmax(0, 1fr) minmax(0, 380px);

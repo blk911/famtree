@@ -108,9 +108,9 @@ const actionBtn: React.CSSProperties = {
   marginBottom: 8,
 };
 
-// ─── Hero pill ────────────────────────────────────────────────────────────────
+// ─── Light stat card (hero) ───────────────────────────────────────────────────
 
-function HeroPill({
+function LightStatCard({
   value,
   label,
   urgent = false,
@@ -120,25 +120,24 @@ function HeroPill({
   urgent?: boolean;
 }) {
   return (
-    <span
+    <div
       style={{
-        display:      "inline-flex",
-        alignItems:   "center",
-        gap:          5,
-        background:   urgent ? "rgba(251,191,36,0.14)" : "rgba(255,255,255,0.10)",
-        border:       `1px solid ${urgent ? "rgba(251,191,36,0.32)" : "rgba(255,255,255,0.14)"}`,
-        borderRadius: 20,
-        padding:      "5px 13px",
-        fontSize:     12,
-        color:        "rgba(255,255,255,0.78)",
-        whiteSpace:   "nowrap",
+        background:   "#fff",
+        border:       `1px solid ${urgent ? "#fde68a" : "#e7e5e4"}`,
+        borderRadius: 10,
+        padding:      "8px 14px",
+        minWidth:     68,
+        boxShadow:    "0 1px 3px rgba(0,0,0,0.06)",
+        flexShrink:   0,
       }}
     >
-      <strong style={{ fontWeight: 700, color: urgent ? "#fbbf24" : "#fff", fontSize: 13 }}>
+      <div style={{ fontWeight: 800, fontSize: 22, color: urgent ? "#d97706" : "#1c1917", lineHeight: 1 }}>
         {value}
-      </strong>
-      {label}
-    </span>
+      </div>
+      <div style={{ fontSize: 11, color: "#78716c", marginTop: 3, whiteSpace: "nowrap" }}>
+        {label}
+      </div>
+    </div>
   );
 }
 
@@ -208,41 +207,80 @@ export function FounderShell({ currentUserId }: Props) {
     >
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
-        {/* ── Mode hero ── */}
+        {/* ── Light hero card ── */}
         <div
           style={{
-            borderRadius: 20,
+            position:     "relative",
+            borderRadius: 22,
             overflow:     "hidden",
             marginBottom: 20,
-            position:     "relative",
-            background:   "linear-gradient(150deg, #1a0800 0%, #4a1600 38%, #7c2d12 70%, #2d0d00 100%)",
+            background:   "#fffaf3",
+            border:       "1px solid #eadfd2",
+            boxShadow:    "0 2px 12px rgba(0,0,0,0.05)",
           }}
         >
-          {/* Warm depth tint */}
+          {/* Purple-blue left accent stripe */}
           <div
             aria-hidden="true"
             style={{
               position:   "absolute",
-              inset:      0,
-              background: "linear-gradient(180deg, rgba(255,160,50,0.06) 0%, rgba(0,0,0,0.30) 100%)",
+              left:       0,
+              top:        0,
+              bottom:     0,
+              width:      6,
+              background: "linear-gradient(180deg, #7c3aed 0%, #2563eb 100%)",
             }}
           />
 
-          {/* Content */}
-          <div style={{ position: "relative", zIndex: 1, padding: "32px 36px 28px" }}>
-            {/* Mode label */}
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
-              <span style={{ fontSize: 16, lineHeight: 1 }}>🏡</span>
+          {/* Right: warm golden-hour image, masked left-to-transparent */}
+          <div
+            aria-hidden="true"
+            className="aihsafe-hero-img"
+            style={{
+              position:            "absolute",
+              right:               0,
+              top:                 0,
+              bottom:              0,
+              width:               "44%",
+              backgroundImage:     "url('/uploads/Index%20bkgrn%204.jpg')",
+              backgroundSize:      "cover",
+              backgroundPosition:  "center 40%",
+              maskImage:           "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 25%, rgba(0,0,0,0.7) 55%, rgba(0,0,0,1) 100%)",
+              WebkitMaskImage:     "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 25%, rgba(0,0,0,0.7) 55%, rgba(0,0,0,1) 100%)",
+              opacity:             0.55,
+            }}
+          />
+
+          {/* Content — offset for stripe */}
+          <div
+            style={{
+              position: "relative",
+              zIndex:   1,
+              padding:  "28px 32px 26px 26px",
+            }}
+          >
+            {/* Shield + mode label */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <svg width="20" height="22" viewBox="0 0 20 22" fill="none" aria-hidden="true">
+                <path
+                  d="M10 1L1 5v6c0 5.25 3.87 10.17 9 11.38C15.13 21.17 19 16.25 19 11V5L10 1Z"
+                  fill="#7c3aed"
+                  fillOpacity="0.12"
+                  stroke="#7c3aed"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+              </svg>
               <span
                 style={{
                   fontSize:      11,
                   fontWeight:    700,
-                  color:         "rgba(255,255,255,0.52)",
+                  color:         "#7c3aed",
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
                 }}
               >
-                Family Safe Mode
+                Family Safe
               </span>
             </div>
 
@@ -251,36 +289,37 @@ export function FounderShell({ currentUserId }: Props) {
               style={{
                 margin:        0,
                 fontWeight:    800,
-                fontSize:      30,
-                color:         "#fff",
+                fontSize:      28,
+                color:         "#1c1917",
                 letterSpacing: "-0.5px",
-                lineHeight:    1.08,
+                lineHeight:    1.1,
               }}
             >
-              Your protected family network
+              A governed network for your real people.
             </h1>
+
+            {/* Steward line */}
             <p
               style={{
-                margin:     "8px 0 0",
-                fontSize:   14,
-                color:      "rgba(255,255,255,0.68)",
-                lineHeight: 1.5,
-                maxWidth:   440,
+                margin:   "8px 0 0",
+                fontSize: 13,
+                color:    "#78716c",
+                maxWidth: 420,
               }}
             >
-              A governed space for your real people — private, calm, and human.
+              You are the steward of this family network.
             </p>
 
-            {/* Stat pills */}
+            {/* Stat cards */}
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 20 }}>
-              <HeroPill
+              <LightStatCard
                 value={loading ? "…" : pendingApprovals.length}
                 label="approvals waiting"
                 urgent={pendingApprovals.length > 0}
               />
-              <HeroPill value={loading ? "…" : mySpaces.length}       label="active spaces" />
-              <HeroPill value={loading ? "…" : trustedAdultCount}     label="trusted adults" />
-              <HeroPill
+              <LightStatCard value={loading ? "…" : mySpaces.length}      label="active spaces" />
+              <LightStatCard value={loading ? "…" : trustedAdultCount}    label="trusted adults" />
+              <LightStatCard
                 value={loading ? "…" : pendingInvites.length}
                 label="pending invites"
                 urgent={pendingInvites.length > 0}
