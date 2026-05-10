@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MessageSquare, MessageCircle } from "lucide-react";
+import { MessageSquare, MessageCircle, ShieldCheck } from "lucide-react";
 import {
   getPendingTrustRequestsSafe,
   serializeTrustGateRequests,
@@ -197,7 +197,7 @@ export default async function DashboardPage() {
         <h2 style={{ fontSize:"14px", fontWeight:700, color:"#78716c", letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:"10px" }}>
           Quick actions
         </h2>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"14px" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"14px" }}>
 
           {/* Invite someone */}
           <Link href="/invite" style={{
@@ -247,6 +247,24 @@ export default async function DashboardPage() {
               }}>
                 {vaultNewCount > 0 ? `${vaultNewCount} new since last visit` : "· all current"}
               </p>
+            </div>
+          </Link>
+
+          {/* Family Safe */}
+          <Link href="/aihsafe" style={{
+            ...card, padding:"18px 20px", textDecoration:"none",
+            display:"flex", alignItems:"center", gap:"14px",
+          }}>
+            <div style={{
+              width:"42px", height:"42px", borderRadius:"12px", flexShrink:0,
+              background:"linear-gradient(135deg,#0f3460,#16213e)",
+              display:"flex", alignItems:"center", justifyContent:"center",
+            }}>
+              <ShieldCheck style={{ width:20, height:20, color:"white" }} />
+            </div>
+            <div>
+              <p style={{ fontWeight:700, color:"#1c1917", fontSize:"15px", margin:0 }}>Family Safe</p>
+              <p style={{ color:"#a8a29e", fontSize:"12px", margin:"2px 0 0" }}>Governed spaces</p>
             </div>
           </Link>
 
