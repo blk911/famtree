@@ -9,9 +9,11 @@ interface Props {
   trustUnits:    TrustUnitDTO[];
   currentUserId: string;
   onPosted:      () => void;
+  /** Softens copy for minors — UI only; governance unchanged. */
+  viewerMode?:  "founder" | "member" | "child";
 }
 
-export function PostComposer({ trustUnits, currentUserId, onPosted }: Props) {
+export function PostComposer({ trustUnits, currentUserId, onPosted, viewerMode = "founder" }: Props) {
   const [body,        setBody]        = useState("");
   const [spaceId,     setSpaceId]     = useState<string>("");
   const [submitting,  setSubmitting]  = useState(false);
@@ -37,8 +39,9 @@ export function PostComposer({ trustUnits, currentUserId, onPosted }: Props) {
       setBody("");
       setSpaceId("");
       onPosted();
-    } else if (r.kind === "denied") {
-      setError(`Governance check: ${r.message}`);
+    } else     if (r.kind === "denied") {
+      const suffix = viewerMode === "child" ? " A guardian will review this when needed." : "";
+      setError(`Governance check: ${r.message}${suffix}`);
     } else {
       setError("Something went wrong — please try again.");
     }
@@ -46,6 +49,7 @@ export function PostComposer({ trustUnits, currentUserId, onPosted }: Props) {
 
   /* ── No-spaces state ── */
   if (!hasSpaces) {
+    const childCopy = viewerMode === "child";
     return (
       <div
         style={{
@@ -60,10 +64,12 @@ export function PostComposer({ trustUnits, currentUserId, onPosted }: Props) {
       >
         <div style={{ fontSize: 28, marginBottom: 8 }}>🤝</div>
         <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 14, color: "#1c1917" }}>
-          Create a trusted space to start sharing
+          {childCopy ? "You're not in a trusted space yet" : "Create a trusted space to start sharing"}
         </p>
         <p style={{ margin: 0, fontSize: 12, color: "#78716c", maxWidth: 320, marginInline: "auto" }}>
-          Posts are scoped to trusted spaces — your family, a peer pod, or any circle you govern. Use Quick Actions to create your first space.
+          {childCopy
+            ? "When a trusted adult adds you to a space, you'll share updates here. Posts stay inside approved circles."
+            : "Posts are scoped to trusted spaces — your family, a peer pod, or any circle you govern. Use Quick Actions to create your first space."}
         </p>
       </div>
     );

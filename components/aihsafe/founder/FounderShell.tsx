@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState, useEffect, useCallback } from "react";
 import {
   listFamilyUnits,
@@ -22,6 +23,7 @@ import { TrustUnitCreatePanel }     from "@/components/aihsafe/trust-unit/TrustU
 import { InvitePanel }              from "@/components/aihsafe/invite/InvitePanel";
 import { SectionHeader }            from "@/components/aihsafe/common/SectionHeader";
 import { ActivityFeed }             from "@/components/aihsafe/feed/ActivityFeed";
+import { MembershipPanel }          from "@/components/aihsafe/membership/MembershipPanel";
 
 import type {
   FamilyUnitDTO,
@@ -33,21 +35,39 @@ import type {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type FamilySafeShellMode = "founder" | "member" | "child";
+
 type ModalKind = "family" | "space" | "invite" | null;
 
 interface Props {
   currentUserId: string;
+  shellMode?: FamilySafeShellMode;
+  /** Inserted after hero, before pending attention (e.g. RoleBanner). */
+  belowHero?: ReactNode;
+  /** Shown above the activity feed (e.g. child approval guidance). */
+  feedPreface?: ReactNode;
 }
 
-
+const HERO_COPY: Record<FamilySafeShellMode, { title: string; steward: string }> = {
+  founder: {
+    title:   "A governed network for your real people.",
+    steward: "You are the steward of this family network.",
+  },
+  member: {
+    title:   "Your trusted family spaces",
+    steward: "Share with the people who actually know you.",
+  },
+  child: {
+    title:   "Your safe family space",
+    steward: "Share updates with your trusted circles.",
+  },
+};
 
 const MODAL_TITLES: Record<Exclude<ModalKind, null>, string> = {
   family: "New family group",
   space:  "New trusted space",
   invite: "Invite someone",
 };
-
-// ─── Quick action button style ────────────────────────────────────────────────
 
 const actionBtn: React.CSSProperties = {
   display:      "flex",
@@ -62,8 +82,6 @@ const actionBtn: React.CSSProperties = {
   cursor:       "pointer",
   marginBottom: 8,
 };
-
-// ─── Light stat card (hero) ───────────────────────────────────────────────────
 
 function LightStatCard({
   value,
@@ -97,20 +115,79 @@ function LightStatCard({
 }
 
 const iconBox = (bg: string): React.CSSProperties => ({
-  width:          34,
-  height:         34,
-  borderRadius:   10,
-  background:     bg,
-  display:        "flex",
-  alignItems:     "center",
-  justifyContent: "center",
-  fontSize:       16,
-  flexShrink:     0,
+  width:           34,
+  height:          34,
+  borderRadius:    10,
+  background:      bg,
+  display:         "flex",
+  alignItems:      "center",
+  justifyContent:  "center",
+  fontSize:        16,
+  flexShrink:      0,
 });
+
+/** Read-only sidebar list for minors — no create affordances (UI only; governance remains authoritative). */
+function ReadOnlyTrustedSpaces({
+  units,
+  currentUserId,
+  loading,
+}: {
+  units: TrustUnitDTO[];
+  currentUserId: string;
+  loading: boolean;
+}) {
+  const myUnits = units.filter((u) =>
+    u.members.some((m) => m.userId === currentUserId && !m.exitedAt),
+  );
+
+  return (
+    <div
+      style={{
+        background:   "#fff",
+        borderRadius: 16,
+        border:       "1px solid #e7e5e4",
+        padding:      "20px 22px",
+        marginBottom: 14,
+      }}
+    >
+      <SectionHeader title="Spaces you're in" />
+
+      {loading && (
+        <p style={{ fontSize: 13, color: "#a8a29e", margin: 0 }}>Loading…</p>
+      )}
+
+      {!loading && myUnits.length === 0 && (
+        <p style={{ fontSize: 13, color: "#78716c", margin: 0, lineHeight: 1.45 }}>
+          You aren&apos;t in a trusted space yet. When someone invites you in, it will show up here.
+        </p>
+      )}
+
+      {!loading &&
+        myUnits.map((u) => (
+          <div
+            key={u.id}
+            style={{
+              fontSize:     13,
+              padding:      "10px 0",
+              borderBottom: "1px solid #f4f4f5",
+              color:        "#1c1917",
+            }}
+          >
+            <strong>{u.name?.trim() ? u.name : "Trusted space"}</strong>
+          </div>
+        ))}
+    </div>
+  );
+}
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function FounderShell({ currentUserId }: Props) {
+export function FounderShell({
+  currentUserId,
+  shellMode = "founder",
+  belowHero,
+  feedPreface,
+}: Props) {
   const [familyUnits,   setFamilyUnits]   = useState<FamilyUnitDTO[]>([]);
   const [trustUnits,    setTrustUnits]    = useState<TrustUnitDTO[]>([]);
   const [approvals,     setApprovals]     = useState<ApprovalRequestDTO[]>([]);
@@ -143,25 +220,44 @@ export function FounderShell({ currentUserId }: Props) {
     load();
   }
 
-  // Derived counts
-  const pendingApprovals   = approvals.filter(a => a.state === "pending");
-  const pendingInvites     = invites.filter(i => i.status === "PENDING");
-  const mySpaces           = trustUnits.filter(u => u.members.some(m => m.userId === currentUserId && !m.exitedAt));
-  const trustedAdultCount  = guardianLinks.filter(l => !l.revokedAt).length;
-  const membershipCount    = mySpaces.reduce((sum, u) => sum + u.members.filter(m => !m.exitedAt).length, 0);
+  const pendingApprovals   = approvals.filter((a) => a.state === "pending");
+  const pendingInvites     = invites.filter((i) => i.status === "PENDING");
+  const mySpaces           = trustUnits.filter((u) =>
+    u.members.some((m) => m.userId === currentUserId && !m.exitedAt),
+  );
+  const trustedAdultCount  = guardianLinks.filter((l) => !l.revokedAt).length;
+  const membershipCount    = mySpaces.reduce(
+    (sum, u) => sum + u.members.filter((m) => !m.exitedAt).length,
+    0,
+  );
+
+  const mode = shellMode;
+  const hero = HERO_COPY[mode];
+
+  const showPendingAttention    = mode === "founder" || mode === "member";
+  const showGovernanceColumn    = mode === "founder" || mode === "member";
+  const showTrustedExtensions   = mode === "founder";
+  const showFounderSettings     = mode === "founder";
+  const showQuickActions        = mode === "founder" || mode === "member";
+  const feedSectionTitle        = mode === "founder" ? "Family Activity" : "Your activity";
+
+  const feedTrustUnits =
+    mode === "child"
+      ? trustUnits.filter((u) =>
+          u.members.some((m) => m.userId === currentUserId && !m.exitedAt),
+        )
+      : trustUnits;
 
   return (
     <div
       style={{
-        minHeight:   "100vh",
-        background:  "#fafaf9",
-        padding:     "24px 20px 64px",
-        boxSizing:   "border-box",
+        minHeight:  "100vh",
+        background: "#fafaf9",
+        padding:    "24px 20px 64px",
+        boxSizing:  "border-box",
       }}
     >
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-
-        {/* ── Light hero card ── */}
         <div
           style={{
             position:     "relative",
@@ -173,7 +269,6 @@ export function FounderShell({ currentUserId }: Props) {
             boxShadow:    "0 2px 12px rgba(0,0,0,0.05)",
           }}
         >
-          {/* Purple-blue left accent stripe */}
           <div
             aria-hidden="true"
             style={{
@@ -186,7 +281,6 @@ export function FounderShell({ currentUserId }: Props) {
             }}
           />
 
-          {/* Right: family image, masked left-to-transparent to blend into card */}
           <div
             aria-hidden="true"
             className="aihsafe-hero-img"
@@ -204,7 +298,6 @@ export function FounderShell({ currentUserId }: Props) {
             }}
           />
 
-          {/* Content — offset for stripe */}
           <div
             style={{
               position: "relative",
@@ -212,7 +305,6 @@ export function FounderShell({ currentUserId }: Props) {
               padding:  "28px 32px 26px 26px",
             }}
           >
-            {/* Shield + mode label */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
               <svg width="20" height="22" viewBox="0 0 20 22" fill="none" aria-hidden="true">
                 <path
@@ -237,7 +329,6 @@ export function FounderShell({ currentUserId }: Props) {
               </span>
             </div>
 
-            {/* Title */}
             <h1
               style={{
                 margin:        0,
@@ -248,10 +339,9 @@ export function FounderShell({ currentUserId }: Props) {
                 lineHeight:    1.1,
               }}
             >
-              A governed network for your real people.
+              {hero.title}
             </h1>
 
-            {/* Steward line */}
             <p
               style={{
                 margin:   "8px 0 0",
@@ -260,35 +350,45 @@ export function FounderShell({ currentUserId }: Props) {
                 maxWidth: 420,
               }}
             >
-              You are the steward of this family network.
+              {hero.steward}
             </p>
 
-            {/* Stat cards */}
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 20 }}>
-              <LightStatCard
-                value={loading ? "…" : pendingApprovals.length}
-                label="approvals waiting"
-                urgent={pendingApprovals.length > 0}
-              />
-              <LightStatCard value={loading ? "…" : mySpaces.length}      label="active spaces" />
-              <LightStatCard value={loading ? "…" : trustedAdultCount}    label="trusted adults" />
-              <LightStatCard
-                value={loading ? "…" : pendingInvites.length}
-                label="pending invites"
-                urgent={pendingInvites.length > 0}
-              />
+              {mode === "child" ? (
+                <>
+                  <LightStatCard value={loading ? "…" : mySpaces.length} label="spaces you're in" />
+                  <LightStatCard value={loading ? "…" : membershipCount} label="people in those circles" />
+                </>
+              ) : (
+                <>
+                  <LightStatCard
+                    value={loading ? "…" : pendingApprovals.length}
+                    label="approvals waiting"
+                    urgent={pendingApprovals.length > 0}
+                  />
+                  <LightStatCard value={loading ? "…" : mySpaces.length} label="active spaces" />
+                  <LightStatCard value={loading ? "…" : trustedAdultCount} label="trusted adults" />
+                  <LightStatCard
+                    value={loading ? "…" : pendingInvites.length}
+                    label="pending invites"
+                    urgent={pendingInvites.length > 0}
+                  />
+                </>
+              )}
             </div>
           </div>
         </div>
 
-        {/* ── Pending attention — MOST PROMINENT ── */}
-        <PendingAttention
-          pendingApprovals={pendingApprovals}
-          pendingInvites={invites}
-          loading={loading}
-        />
+        {belowHero}
 
-        {/* ── Main grid: feed (center) + governance (right) ── */}
+        {showPendingAttention && (
+          <PendingAttention
+            pendingApprovals={pendingApprovals}
+            pendingInvites={invites}
+            loading={loading}
+          />
+        )}
+
         <div
           className="aihsafe-grid"
           style={{
@@ -298,17 +398,17 @@ export function FounderShell({ currentUserId }: Props) {
             alignItems:          "start",
           }}
         >
-          {/* CENTER: governed activity feed */}
           <div>
             <div style={{ marginBottom: 10 }}>
-              <SectionHeader title="Family Activity" />
+              <SectionHeader title={feedSectionTitle} />
             </div>
+            {feedPreface}
             <ActivityFeed
               currentUserId={currentUserId}
-              trustUnits={trustUnits}
+              trustUnits={feedTrustUnits}
+              viewerMode={mode}
             />
 
-            {/* Relationship visibility (lower center) */}
             <RelationshipVisibilityCard
               familyUnits={familyUnits}
               trustUnits={trustUnits}
@@ -316,91 +416,128 @@ export function FounderShell({ currentUserId }: Props) {
             />
           </div>
 
-          {/* RIGHT: governance awareness panel */}
           <div>
-            {/* Governance overview */}
-            <GovernanceOverview
-              familyCount={familyUnits.length}
-              spaceCount={mySpaces.length}
-              trustedAdults={trustedAdultCount}
-              membershipCount={membershipCount}
-              loading={loading}
-            />
+            {showGovernanceColumn && (
+              <>
+                <GovernanceOverview
+                  familyCount={familyUnits.length}
+                  spaceCount={mySpaces.length}
+                  trustedAdults={trustedAdultCount}
+                  membershipCount={membershipCount}
+                  loading={loading}
+                />
 
-            {/* Family health */}
-            <FamilyHealthPanel
-              pendingApprovalCount={pendingApprovals.length}
-              spaceCount={mySpaces.length}
-              pendingInviteCount={pendingInvites.length}
-              trustedAdultCount={trustedAdultCount}
-              loading={loading}
-            />
+                <FamilyHealthPanel
+                  pendingApprovalCount={pendingApprovals.length}
+                  spaceCount={mySpaces.length}
+                  pendingInviteCount={pendingInvites.length}
+                  trustedAdultCount={trustedAdultCount}
+                  loading={loading}
+                />
+              </>
+            )}
 
-            {/* Quick actions */}
-            <div
-              style={{
-                background:   "#fff",
-                borderRadius: 16,
-                border:       "1px solid #e7e5e4",
-                padding:      "20px 22px",
-                marginBottom: 14,
-              }}
-            >
-              <SectionHeader title="Quick Actions" />
+            {showQuickActions && (
+              <div
+                style={{
+                  background:   "#fff",
+                  borderRadius: 16,
+                  border:       "1px solid #e7e5e4",
+                  padding:      "20px 22px",
+                  marginBottom: 14,
+                }}
+              >
+                <SectionHeader title="Quick Actions" />
 
-              <button type="button" style={actionBtn} onClick={() => setModal("invite")}>
-                <div style={iconBox("#f0fdf4")}>📨</div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>Invite someone</div>
-                  <div style={{ fontSize: 12, color: "#a8a29e" }}>Send a governed invite</div>
-                </div>
-              </button>
+                <button type="button" style={actionBtn} onClick={() => setModal("invite")}>
+                  <div style={iconBox("#f0fdf4")}>📨</div>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>Invite someone</div>
+                    <div style={{ fontSize: 12, color: "#a8a29e" }}>Send a governed invite</div>
+                  </div>
+                </button>
 
-              <button type="button" style={actionBtn} onClick={() => setModal("family")}>
-                <div style={iconBox("#eff6ff")}>🏠</div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>New family group</div>
-                  <div style={{ fontSize: 12, color: "#a8a29e" }}>Your household or close relatives</div>
-                </div>
-              </button>
+                <button type="button" style={actionBtn} onClick={() => setModal("family")}>
+                  <div style={iconBox("#eff6ff")}>🏠</div>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>New family group</div>
+                    <div style={{ fontSize: 12, color: "#a8a29e" }}>Your household or close relatives</div>
+                  </div>
+                </button>
 
-              <button type="button" style={{ ...actionBtn, marginBottom: 0 }} onClick={() => setModal("space")}>
-                <div style={iconBox("#faf5ff")}>🤝</div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>New trusted space</div>
-                  <div style={{ fontSize: 12, color: "#a8a29e" }}>Peer pod, extended circle, guardian hub</div>
-                </div>
-              </button>
-            </div>
+                <button type="button" style={{ ...actionBtn, marginBottom: 0 }} onClick={() => setModal("space")}>
+                  <div style={iconBox("#faf5ff")}>🤝</div>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>New trusted space</div>
+                    <div style={{ fontSize: 12, color: "#a8a29e" }}>Peer pod, extended circle, guardian hub</div>
+                  </div>
+                </button>
+              </div>
+            )}
 
-            {/* Trusted extensions */}
-            <TrustedExtensionsPanel
-              guardianLinks={guardianLinks}
-              currentUserId={currentUserId}
-              loading={loading}
-            />
+            {mode === "child" && (
+              <div
+                style={{
+                  background:   "#fffbeb",
+                  border:       "1px solid #fde68a",
+                  borderRadius: 16,
+                  padding:      "16px 18px",
+                  marginBottom: 14,
+                  fontSize:     13,
+                  color:        "#78350f",
+                  lineHeight:   1.5,
+                }}
+              >
+                Need a new space or want to invite someone? Ask a trusted adult — they can help from their Family Safe
+                view.
+              </div>
+            )}
 
-            {/* Governance settings preview */}
-            <FounderSettingsPreview />
+            {showTrustedExtensions && (
+              <TrustedExtensionsPanel
+                guardianLinks={guardianLinks}
+                currentUserId={currentUserId}
+                loading={loading}
+              />
+            )}
 
-            {/* Family + Spaces snapshots (sidebar, lower) */}
-            <FamilySnapshot
-              units={familyUnits}
-              loading={loading}
-              onCreateClick={() => setModal("family")}
-            />
+            {showFounderSettings && <FounderSettingsPreview />}
 
-            <SpacesSnapshot
-              units={trustUnits}
-              currentUserId={currentUserId}
-              loading={loading}
-              onCreateClick={() => setModal("space")}
-            />
+            {mode !== "child" && (
+              <>
+                <FamilySnapshot
+                  units={familyUnits}
+                  loading={loading}
+                  onCreateClick={() => setModal("family")}
+                />
+
+                <SpacesSnapshot
+                  units={trustUnits}
+                  currentUserId={currentUserId}
+                  loading={loading}
+                  onCreateClick={() => setModal("space")}
+                />
+              </>
+            )}
+
+            {mode === "child" && (
+              <ReadOnlyTrustedSpaces
+                units={trustUnits}
+                currentUserId={currentUserId}
+                loading={loading}
+              />
+            )}
+
+            {(mode === "member" || mode === "child") && (
+              <div style={{ marginBottom: 14 }}>
+                <SectionHeader title="Membership controls" />
+                <MembershipPanel currentUserId={currentUserId} />
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Quick-create modal */}
       {modal && (
         <QuickCreateModal title={MODAL_TITLES[modal]} onClose={closeModal}>
           {modal === "family" && <FamilyCreatePanel />}
@@ -411,4 +548,3 @@ export function FounderShell({ currentUserId }: Props) {
     </div>
   );
 }
-
