@@ -21,7 +21,6 @@ import { FamilyCreatePanel }        from "@/components/aihsafe/family/FamilyCrea
 import { TrustUnitCreatePanel }     from "@/components/aihsafe/trust-unit/TrustUnitCreatePanel";
 import { InvitePanel }              from "@/components/aihsafe/invite/InvitePanel";
 import { CompactActivityItem }      from "@/components/aihsafe/common/CompactActivityItem";
-import { CompactStat }              from "@/components/aihsafe/common/CompactStat";
 import { SectionHeader }            from "@/components/aihsafe/common/SectionHeader";
 
 import type {
@@ -109,6 +108,40 @@ const actionBtn: React.CSSProperties = {
   marginBottom: 8,
 };
 
+// ─── Hero pill ────────────────────────────────────────────────────────────────
+
+function HeroPill({
+  value,
+  label,
+  urgent = false,
+}: {
+  value: number | string;
+  label: string;
+  urgent?: boolean;
+}) {
+  return (
+    <span
+      style={{
+        display:      "inline-flex",
+        alignItems:   "center",
+        gap:          5,
+        background:   urgent ? "rgba(251,191,36,0.14)" : "rgba(255,255,255,0.10)",
+        border:       `1px solid ${urgent ? "rgba(251,191,36,0.32)" : "rgba(255,255,255,0.14)"}`,
+        borderRadius: 20,
+        padding:      "5px 13px",
+        fontSize:     12,
+        color:        "rgba(255,255,255,0.78)",
+        whiteSpace:   "nowrap",
+      }}
+    >
+      <strong style={{ fontWeight: 700, color: urgent ? "#fbbf24" : "#fff", fontSize: 13 }}>
+        {value}
+      </strong>
+      {label}
+    </span>
+  );
+}
+
 const iconBox = (bg: string): React.CSSProperties => ({
   width:          34,
   height:         34,
@@ -175,109 +208,82 @@ export function FounderShell({ currentUserId }: Props) {
     >
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
-        {/* ── Consolidated hero ── */}
+        {/* ── Mode hero ── */}
         <div
           style={{
-            borderRadius:       20,
-            overflow:           "hidden",
-            marginBottom:       20,
-            position:           "relative",
-            backgroundImage:    "url('/uploads/index-bg3.webp')",
-            backgroundSize:     "cover",
-            backgroundPosition: "center center",
+            borderRadius: 20,
+            overflow:     "hidden",
+            marginBottom: 20,
+            position:     "relative",
+            background:   "linear-gradient(150deg, #1a0800 0%, #4a1600 38%, #7c2d12 70%, #2d0d00 100%)",
           }}
         >
-          {/* Dark translucent overlay */}
+          {/* Warm depth tint */}
           <div
             aria-hidden="true"
             style={{
               position:   "absolute",
               inset:      0,
-              background: "linear-gradient(135deg, rgba(15,52,96,0.84) 0%, rgba(20,10,28,0.78) 100%)",
+              background: "linear-gradient(180deg, rgba(255,160,50,0.06) 0%, rgba(0,0,0,0.30) 100%)",
             }}
           />
 
           {/* Content */}
-          <div
-            style={{
-              position:       "relative",
-              zIndex:         1,
-              padding:        "36px 36px 32px",
-              display:        "flex",
-              flexWrap:       "wrap",
-              gap:            28,
-              alignItems:     "flex-end",
-              justifyContent: "space-between",
-            }}
-            className="aihsafe-hero-inner"
-          >
-            {/* Left: brand + identity */}
-            <div>
-              <div
+          <div style={{ position: "relative", zIndex: 1, padding: "32px 36px 28px" }}>
+            {/* Mode label */}
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
+              <span style={{ fontSize: 16, lineHeight: 1 }}>🏡</span>
+              <span
                 style={{
                   fontSize:      11,
                   fontWeight:    700,
-                  color:         "rgba(255,255,255,0.50)",
-                  letterSpacing: "0.13em",
+                  color:         "rgba(255,255,255,0.52)",
+                  letterSpacing: "0.12em",
                   textTransform: "uppercase",
-                  marginBottom:  10,
                 }}
               >
-                AMIHUMAN.NET
-              </div>
-              <h1
-                style={{
-                  margin:        0,
-                  fontWeight:    800,
-                  fontSize:      34,
-                  color:         "#fff",
-                  letterSpacing: "-0.6px",
-                  lineHeight:    1.05,
-                }}
-              >
-                Family Safe
-              </h1>
-              <p
-                style={{
-                  margin:     "10px 0 0",
-                  fontSize:   15,
-                  color:      "rgba(255,255,255,0.78)",
-                  lineHeight: 1.45,
-                  maxWidth:   400,
-                }}
-              >
-                A governed network for your real people.
-              </p>
-              <p
-                style={{
-                  margin:   "5px 0 0",
-                  fontSize: 12,
-                  color:    "rgba(255,255,255,0.45)",
-                }}
-              >
-                You are the steward of this family network.
-              </p>
+                Family Safe Mode
+              </span>
             </div>
 
-            {/* Right: compact stat cards */}
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <CompactStat
-                label="approvals waiting"
+            {/* Title */}
+            <h1
+              style={{
+                margin:        0,
+                fontWeight:    800,
+                fontSize:      30,
+                color:         "#fff",
+                letterSpacing: "-0.5px",
+                lineHeight:    1.08,
+              }}
+            >
+              Your protected family network
+            </h1>
+            <p
+              style={{
+                margin:     "8px 0 0",
+                fontSize:   14,
+                color:      "rgba(255,255,255,0.68)",
+                lineHeight: 1.5,
+                maxWidth:   440,
+              }}
+            >
+              A governed space for your real people — private, calm, and human.
+            </p>
+
+            {/* Stat pills */}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 20 }}>
+              <HeroPill
                 value={loading ? "…" : pendingApprovals.length}
-                accent={pendingApprovals.length > 0 ? "#fbbf24" : "#fff"}
+                label="approvals waiting"
+                urgent={pendingApprovals.length > 0}
               />
-              <CompactStat
-                label="active spaces"
-                value={loading ? "…" : mySpaces.length}
-              />
-              <CompactStat
-                label="trusted adults"
-                value={loading ? "…" : trustedAdultCount}
-              />
-              <CompactStat
-                label="pending invites"
+              <HeroPill value={loading ? "…" : mySpaces.length}       label="active spaces" />
+              <HeroPill value={loading ? "…" : trustedAdultCount}     label="trusted adults" />
+              <HeroPill
                 value={loading ? "…" : pendingInvites.length}
-                accent={pendingInvites.length > 0 ? "#fbbf24" : "#fff"}
+                label="pending invites"
+                urgent={pendingInvites.length > 0}
               />
             </div>
           </div>
