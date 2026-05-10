@@ -7,6 +7,7 @@ import type {
   TrustUnitDTO,
   InviteDTO,
   ApprovalRequestDTO,
+  GuardianLinkDTO,
 } from "@/types/aihsafe/dto";
 
 // ─── Result union ─────────────────────────────────────────────────────────────
@@ -138,6 +139,12 @@ export async function resolveApproval(
   return parseEnvelope(
     await fetch("/api/aihsafe/approvals", jsonPost({ requestId, action, ...(note ? { note } : {}) }))
   );
+}
+
+// ─── Guardian links ───────────────────────────────────────────────────────────
+
+export async function listGuardianLinks(): Promise<AihResult<Paginated<GuardianLinkDTO>>> {
+  return parseEnvelope(await fetch("/api/aihsafe/guardian-links"));
 }
 
 // ─── Memberships ──────────────────────────────────────────────────────────────
