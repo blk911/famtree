@@ -232,19 +232,21 @@ export function FounderShell({ currentUserId }: Props) {
             }}
           />
 
-          {/* Right: family image placeholder — swap backgroundImage for real asset */}
+          {/* Right: family image, masked left-to-transparent to blend into card */}
           <div
             aria-hidden="true"
             className="aihsafe-hero-img"
             style={{
-              position:   "absolute",
-              right:      0,
-              top:        0,
-              bottom:     0,
-              width:      "44%",
-              background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 40%, #fcd34d 70%, #fbbf24 100%)",
-              maskImage:           "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,1) 100%)",
-              WebkitMaskImage:     "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,1) 100%)",
+              position:           "absolute",
+              right:              0,
+              top:                0,
+              bottom:             0,
+              width:              "52%",
+              backgroundImage:    "url('/uploads/hero%202.jpg')",
+              backgroundSize:     "cover",
+              backgroundPosition: "center center",
+              maskImage:          "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,1) 65%)",
+              WebkitMaskImage:    "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,1) 65%)",
             }}
           />
 
