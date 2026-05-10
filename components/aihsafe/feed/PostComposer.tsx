@@ -9,9 +9,11 @@ interface Props {
   trustUnits:    TrustUnitDTO[];
   currentUserId: string;
   onPosted:      () => void;
+  /** Softens copy for minors — UI only; governance remains authoritative. */
+  viewerMode?:   "founder" | "member" | "child";
 }
 
-export function PostComposer({ trustUnits, currentUserId, onPosted }: Props) {
+export function PostComposer({ trustUnits, currentUserId, onPosted, viewerMode = "founder" }: Props) {
   const [body,        setBody]        = useState("");
   const [spaceId,     setSpaceId]     = useState<string>("");
   const [submitting,  setSubmitting]  = useState(false);
@@ -80,9 +82,9 @@ export function PostComposer({ trustUnits, currentUserId, onPosted }: Props) {
         boxShadow:    "0 1px 3px rgba(0,0,0,0.04)",
       }}
     >
-      {/* Audience label */}
+      {/* Audience label — phrasing adjusted for minor accounts */}
       <div style={{ fontSize: 11, fontWeight: 600, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>
-        Who sees this?
+        {viewerMode === "child" ? "Share within your approved circle" : "Who sees this?"}
       </div>
 
       {/* Space picker */}
@@ -133,7 +135,9 @@ export function PostComposer({ trustUnits, currentUserId, onPosted }: Props) {
         placeholder={
           selectedSpace
             ? `Share something with ${selectedSpace.name ?? selectedSpace.kind}…`
-            : "Visible only to you — select a space above to share with others."
+            : viewerMode === "child"
+              ? "Visible only to you — select an approved space above to share."
+              : "Visible only to you — select a space above to share with others."
         }
         rows={3}
         disabled={submitting}

@@ -35,8 +35,13 @@ import type {
 
 type ModalKind = "family" | "space" | "invite" | null;
 
+/** UI shell mode — controls which panels are rendered. NOT a security boundary. */
+export type FamilySafeShellMode = "founder" | "member" | "child";
+
 interface Props {
   currentUserId: string;
+  /** Derived from role + ageTier at the page level. Defaults to "founder". */
+  shellMode?: FamilySafeShellMode;
 }
 
 
@@ -110,7 +115,10 @@ const iconBox = (bg: string): React.CSSProperties => ({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function FounderShell({ currentUserId }: Props) {
+export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
+  // shellMode is accepted and forwarded to sub-components (activity feed, composer).
+  // Full render branching (hiding governance panels for member/child) is a
+  // remaining gap — tracked in agent-22 report. Backend governance is always enforced.
   const [familyUnits,   setFamilyUnits]   = useState<FamilyUnitDTO[]>([]);
   const [trustUnits,    setTrustUnits]    = useState<TrustUnitDTO[]>([]);
   const [approvals,     setApprovals]     = useState<ApprovalRequestDTO[]>([]);
@@ -306,6 +314,7 @@ export function FounderShell({ currentUserId }: Props) {
             <ActivityFeed
               currentUserId={currentUserId}
               trustUnits={trustUnits}
+              viewerMode={shellMode}
             />
 
             {/* Relationship visibility (lower center) */}

@@ -9,6 +9,7 @@ import type { ActivityPostDTO, TrustUnitDTO } from "@/types/aihsafe/dto";
 interface Props {
   currentUserId: string;
   trustUnits:    TrustUnitDTO[];
+  viewerMode?:   "founder" | "member" | "child";
 }
 
 const SAMPLE_PROMPTS = [
@@ -18,7 +19,7 @@ const SAMPLE_PROMPTS = [
   { icon: "🙏", text: "A thank-you or kind word for someone" },
 ];
 
-export function ActivityFeed({ currentUserId, trustUnits }: Props) {
+export function ActivityFeed({ currentUserId, trustUnits, viewerMode = "founder" }: Props) {
   const [posts,   setPosts]   = useState<ActivityPostDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [cursor,  setCursor]  = useState<string | null>(null);
@@ -44,6 +45,7 @@ export function ActivityFeed({ currentUserId, trustUnits }: Props) {
         trustUnits={trustUnits}
         currentUserId={currentUserId}
         onPosted={() => load(true)}
+        viewerMode={viewerMode}
       />
 
       {/* Loading skeleton */}
