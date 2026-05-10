@@ -182,3 +182,13 @@
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.14);
   outline: none;
 }
+
+/* ── AIH Safe: relational dashboard 2-col grid → 1-col on mobile ─────────── */
+.aihsafe-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
+}
+@media (max-width: 900px) {
+  .aihsafe-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
