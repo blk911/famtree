@@ -232,22 +232,19 @@ export function FounderShell({ currentUserId }: Props) {
             }}
           />
 
-          {/* Right: warm golden-hour image, masked left-to-transparent */}
+          {/* Right: family image placeholder — swap backgroundImage for real asset */}
           <div
             aria-hidden="true"
             className="aihsafe-hero-img"
             style={{
-              position:            "absolute",
-              right:               0,
-              top:                 0,
-              bottom:              0,
-              width:               "44%",
-              backgroundImage:     "url('/uploads/Index%20bkgrn%204.jpg')",
-              backgroundSize:      "cover",
-              backgroundPosition:  "center 40%",
-              maskImage:           "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 25%, rgba(0,0,0,0.7) 55%, rgba(0,0,0,1) 100%)",
-              WebkitMaskImage:     "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 25%, rgba(0,0,0,0.7) 55%, rgba(0,0,0,1) 100%)",
-              opacity:             0.55,
+              position:   "absolute",
+              right:      0,
+              top:        0,
+              bottom:     0,
+              width:      "44%",
+              background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 40%, #fcd34d 70%, #fbbf24 100%)",
+              maskImage:           "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,1) 100%)",
+              WebkitMaskImage:     "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,1) 100%)",
             }}
           />
 
