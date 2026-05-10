@@ -55,6 +55,7 @@ function toTrustUnitDTO(
     }>;
     aihMeta: {
       kind: string;
+      name: string | null;
       defaultVisibilityScope: string;
       maxMemberCount: number;
     } | null;
@@ -63,7 +64,7 @@ function toTrustUnitDTO(
 ): TrustUnitDTO {
   return {
     id:                     row.id,
-    // name: Phase 4 — populate from aihMeta.name once AihTrustUnitMeta.name column is added
+    ...(row.aihMeta?.name ? { name: row.aihMeta.name } : {}),
     kind:                   (row.aihMeta?.kind ?? "peer") as TrustUnitKind,
     status:                 "active",
     defaultVisibilityScope: (row.aihMeta?.defaultVisibilityScope ?? "trust_unit") as VisibilityScope,
@@ -174,12 +175,11 @@ export async function POST(req: NextRequest) {
   // memberIds are not pre-applied; additional members must use the invite flow (Blocker 4).
   const trustUnit = await prisma.trustUnit.create({
     data: {
-      ...(name ? { name } : {}),
       members: {
         create: [{ userId: user.id }],
       },
       aihMeta: {
-        create: { kind, defaultVisibilityScope, maxMemberCount },
+        create: { kind, name: name ?? null, defaultVisibilityScope, maxMemberCount },
       },
     },
     include: { members: true, aihMeta: true },

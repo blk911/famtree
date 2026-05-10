@@ -702,6 +702,7 @@ model AihTrustUnitMeta {
   trustUnitId            String           @id
   trustUnit              TrustUnit        @relation(fields: [trustUnitId], references: [id], onDelete: Restrict)
   kind                   AihTrustUnitKind
+  name                   String?
   defaultVisibilityScope String           @default("trust_unit")
   maxMemberCount         Int              @default(3)
   createdAt              DateTime         @default(now())

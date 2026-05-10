@@ -41,9 +41,9 @@ type PrismaTrustUnitWithMembers = PrismaTrustUnit & {
 
 export function mapTrustUnit(row: PrismaTrustUnitWithMembers): TrustUnit {
   const kind = mapAihTrustUnitKind(row.aihMeta?.kind ?? null);
-  // name is not mapped here: TrustUnit and AihTrustUnitMeta both lack a name column
-  // until Phase 4 adds AihTrustUnitMeta.name. The TrustUnitDTO layer (route-level mapper)
-  // carries name?: string and will populate it once the column exists.
+  // name lives on AihTrustUnitMeta (added Phase 4). mapTrustUnit builds the internal
+  // TrustUnit graph type (no name field) used by governance; the DTO layer reads name
+  // directly from the sidecar row via toTrustUnitDTO in the route.
   return {
     id:          asTrustUnitId(row.id),
     kind,
