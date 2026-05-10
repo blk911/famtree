@@ -1,5 +1,4 @@
 // ActivityCard — single governed post card.
-// Shows author, space attribution, body, visibility reason, and comment thread.
 
 import { SpaceBadge }      from "@/components/aihsafe/feed/SpaceBadge";
 import { VisibilityReason } from "@/components/aihsafe/feed/VisibilityReason";
@@ -19,7 +18,10 @@ function relTime(iso: string) {
 }
 
 function initials(name: string) {
-  return name.split(" ").map((p) => p[0] ?? "").join("").toUpperCase().slice(0, 2);
+  const parts = name.trim().split(" ");
+  const a = parts[0]?.[0] ?? "";
+  const b = parts[1]?.[0] ?? "";
+  return (a + b).toUpperCase();
 }
 
 function governanceBadge(state: string, escalation: string) {
@@ -42,100 +44,107 @@ export function ActivityCard({ post, currentUserId }: Props) {
         background:   "#fff",
         borderRadius: 16,
         border:       "1px solid #e7e5e4",
-        padding:      "16px 18px",
         marginBottom: 12,
         boxShadow:    "0 1px 3px rgba(0,0,0,0.04)",
+        overflow:     "hidden",
       }}
       aria-label={`Post by ${post.authorName}`}
     >
-      {/* Header row */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
-        {/* Avatar */}
+      {/* Governance banner (shown above content when needed) */}
+      {badge && (
         <div
           style={{
-            width:          38,
-            height:         38,
-            borderRadius:   "50%",
-            background:     "#e5e7eb",
-            display:        "flex",
-            alignItems:     "center",
-            justifyContent: "center",
-            fontSize:       13,
-            fontWeight:     700,
-            color:          "#374151",
-            flexShrink:     0,
-            overflow:       "hidden",
+            background:  badge.bg,
+            borderBottom: `1px solid ${badge.color}22`,
+            padding:     "6px 18px",
+            display:     "flex",
+            alignItems:  "center",
+            gap:         6,
           }}
-          aria-hidden="true"
+          role="status"
         >
-          {post.authorPhotoUrl ? (
-            <img src={post.authorPhotoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            initials(post.authorName)
-          )}
-        </div>
-
-        {/* Name + space + time */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-            <span style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>
-              {post.authorName}
-            </span>
-            {post.trustUnitName && (
-              <SpaceBadge name={post.trustUnitName} />
-            )}
-          </div>
-          <time
-            dateTime={post.createdAt}
-            style={{ fontSize: 11, color: "#9ca3af", marginTop: 1, display: "block" }}
-          >
-            {relTime(post.createdAt)}
-          </time>
-        </div>
-
-        {/* Governance badge */}
-        {badge && (
-          <span
-            style={{
-              fontSize:     11,
-              fontWeight:   600,
-              color:        badge.color,
-              background:   badge.bg,
-              borderRadius: 8,
-              padding:      "2px 8px",
-              whiteSpace:   "nowrap",
-              flexShrink:   0,
-            }}
-            role="status"
-          >
+          <span style={{ fontSize: 12, fontWeight: 600, color: badge.color }}>
             {badge.label}
           </span>
-        )}
+        </div>
+      )}
+
+      <div style={{ padding: "14px 18px 0" }}>
+        {/* Header row */}
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
+          {/* Avatar */}
+          <div
+            style={{
+              width:          38,
+              height:         38,
+              borderRadius:   "50%",
+              background:     "#e5e7eb",
+              display:        "flex",
+              alignItems:     "center",
+              justifyContent: "center",
+              fontSize:       13,
+              fontWeight:     700,
+              color:          "#374151",
+              flexShrink:     0,
+              overflow:       "hidden",
+            }}
+            aria-hidden="true"
+          >
+            {post.authorPhotoUrl ? (
+              <img src={post.authorPhotoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              initials(post.authorName)
+            )}
+          </div>
+
+          {/* Name + space + time */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, marginBottom: 2 }}>
+              <span style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>
+                {post.authorName}
+              </span>
+              {post.trustUnitName && (
+                <SpaceBadge name={post.trustUnitName} />
+              )}
+            </div>
+            <time
+              dateTime={post.createdAt}
+              style={{ fontSize: 11, color: "#9ca3af" }}
+            >
+              {relTime(post.createdAt)}
+            </time>
+          </div>
+        </div>
+
+        {/* Body */}
+        <p
+          style={{
+            margin:     0,
+            fontSize:   14,
+            color:      "#1c1917",
+            lineHeight: 1.65,
+            whiteSpace: "pre-wrap",
+            wordBreak:  "break-word",
+          }}
+        >
+          {post.bodyText}
+        </p>
+
+        {/* Visibility explanation */}
+        <VisibilityReason reasons={post.visibilityReasons} />
       </div>
 
-      {/* Body */}
-      <p
-        style={{
-          margin:     0,
-          fontSize:   14,
-          color:      "#1c1917",
-          lineHeight: 1.6,
-          whiteSpace: "pre-wrap",
-          wordBreak:  "break-word",
-        }}
-      >
-        {post.bodyText}
-      </p>
-
-      {/* Visibility explanation */}
-      <VisibilityReason reasons={post.visibilityReasons} />
+      {/* Separator before comments */}
+      <div style={{ height: 1, background: "#f3f4f6", margin: "12px 0 0" }} />
 
       {/* Comments */}
-      <CommentThread
-        postId={post.id}
-        initialCount={post.commentCount}
-        currentUserId={currentUserId}
-      />
+      <div style={{ padding: "0 18px 14px" }}>
+        <CommentThread
+          postId={post.id}
+          initialCount={post.commentCount}
+          currentUserId={currentUserId}
+        />
+      </div>
     </article>
   );
 }

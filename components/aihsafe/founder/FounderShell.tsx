@@ -300,6 +300,9 @@ export function FounderShell({ currentUserId }: Props) {
         >
           {/* CENTER: governed activity feed */}
           <div>
+            <div style={{ marginBottom: 10 }}>
+              <SectionHeader title="Family Activity" />
+            </div>
             <ActivityFeed
               currentUserId={currentUserId}
               trustUnits={trustUnits}

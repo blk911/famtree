@@ -15,7 +15,10 @@ function relTime(iso: string) {
 }
 
 function initials(name: string) {
-  return name.split(" ").map((p) => p[0] ?? "").join("").toUpperCase().slice(0, 2);
+  const parts = name.trim().split(" ");
+  const a = parts[0]?.[0] ?? "";
+  const b = parts[1]?.[0] ?? "";
+  return (a + b).toUpperCase();
 }
 
 interface Props {
@@ -58,37 +61,54 @@ export function CommentThread({ postId, initialCount, currentUserId }: Props) {
 
   return (
     <div style={{ marginTop: 10 }}>
-      {/* Toggle */}
+      {/* Toggle button */}
       <button
         type="button"
         onClick={toggle}
         style={{
-          background: "none",
-          border:     "none",
-          padding:    0,
-          cursor:     "pointer",
-          fontSize:   12,
-          color:      "#6b7280",
-          display:    "flex",
-          alignItems: "center",
-          gap:        4,
+          background:   "none",
+          border:       "none",
+          padding:      "4px 0",
+          cursor:       "pointer",
+          fontSize:     12,
+          fontWeight:   600,
+          color:        open ? "#7c3aed" : "#6b7280",
+          display:      "flex",
+          alignItems:   "center",
+          gap:          5,
+          transition:   "color 0.1s",
         }}
         aria-expanded={open}
       >
-        <span style={{ fontSize: 14 }}>💬</span>
-        {count > 0 ? `${count} comment${count !== 1 ? "s" : ""}` : "Add a comment"}
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path
+            d="M7 1C3.68629 1 1 3.36 1 6.27273C1 7.76612 1.68182 9.10909 2.77273 10.0545L2.63636 13L5.36364 11.4727C5.87273 11.5818 6.42727 11.5455 7 11.5455C10.3137 11.5455 13 9.18518 13 6.27273C13 3.36 10.3137 1 7 1Z"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {count > 0
+          ? `${count} comment${count !== 1 ? "s" : ""}`
+          : "Add a comment"}
+        {count > 0 && (
+          <span style={{ color: "#9ca3af", fontWeight: 400 }}>
+            {open ? "▲" : "▼"}
+          </span>
+        )}
       </button>
 
       {open && (
         <div style={{ marginTop: 10 }}>
-          {/* Existing comments */}
           {loading && (
-            <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 8px" }}>Loading…</p>
+            <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 8px" }}>Loading comments…</p>
           )}
+
+          {/* Comment list */}
           {comments.map((c) => (
             <div
               key={c.id}
-              style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "flex-start" }}
+              style={{ display: "flex", gap: 8, marginBottom: 10, alignItems: "flex-start" }}
             >
               <div
                 style={{
@@ -112,36 +132,37 @@ export function CommentThread({ postId, initialCount, currentUserId }: Props) {
                   initials(c.authorName)
                 )}
               </div>
-              <div style={{ flex: 1, background: "#f9fafb", borderRadius: 10, padding: "6px 10px" }}>
-                <div style={{ display: "flex", gap: 6, alignItems: "baseline", marginBottom: 2 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#111827" }}>{c.authorName}</span>
+              <div style={{ flex: 1, background: "#f9fafb", borderRadius: 10, padding: "7px 11px" }}>
+                <div style={{ display: "flex", gap: 6, alignItems: "baseline", marginBottom: 3 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#111827" }}>{c.authorName}</span>
                   <span style={{ fontSize: 11, color: "#9ca3af" }}>{relTime(c.createdAt)}</span>
                 </div>
-                <p style={{ margin: 0, fontSize: 13, color: "#374151", lineHeight: 1.45 }}>{c.body}</p>
+                <p style={{ margin: 0, fontSize: 13, color: "#374151", lineHeight: 1.5 }}>{c.body}</p>
               </div>
             </div>
           ))}
 
-          {/* Composer */}
-          <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+          {/* Comment composer */}
+          <div style={{ display: "flex", gap: 8, marginTop: comments.length ? 4 : 0 }}>
             <textarea
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Add a comment…"
+              placeholder="Write a comment… (Enter to send)"
               rows={2}
               disabled={sending}
               aria-label="Write a comment"
               style={{
-                flex:        1,
+                flex:         1,
                 borderRadius: 10,
-                border:      "1px solid #e5e7eb",
-                padding:     "7px 10px",
-                fontSize:    13,
-                resize:      "none",
-                outline:     "none",
-                fontFamily:  "inherit",
-                color:       "#111827",
-                background:  "#fff",
+                border:       "1px solid #e5e7eb",
+                padding:      "7px 10px",
+                fontSize:     13,
+                resize:       "none",
+                outline:      "none",
+                fontFamily:   "inherit",
+                color:        "#111827",
+                background:   "#fff",
+                boxSizing:    "border-box",
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
@@ -160,12 +181,14 @@ export function CommentThread({ postId, initialCount, currentUserId }: Props) {
                 padding:      "8px 14px",
                 fontSize:     12,
                 fontWeight:   600,
-                cursor:       "pointer",
-                opacity:      sending || !draft.trim() ? 0.5 : 1,
+                cursor:       sending || !draft.trim() ? "not-allowed" : "pointer",
+                opacity:      sending || !draft.trim() ? 0.45 : 1,
+                transition:   "opacity 0.12s",
+                whiteSpace:   "nowrap",
               }}
               aria-label="Submit comment"
             >
-              {sending ? "…" : "Post"}
+              {sending ? "…" : "Send"}
             </button>
           </div>
         </div>
