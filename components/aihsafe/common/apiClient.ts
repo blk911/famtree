@@ -8,6 +8,9 @@ import type {
   InviteDTO,
   ApprovalRequestDTO,
   GuardianLinkDTO,
+  ActivityPostDTO,
+  ActivityCommentDTO,
+  CreateActivityPostRequest,
 } from "@/types/aihsafe/dto";
 
 // ─── Result union ─────────────────────────────────────────────────────────────
@@ -145,6 +148,43 @@ export async function resolveApproval(
 
 export async function listGuardianLinks(): Promise<AihResult<Paginated<GuardianLinkDTO>>> {
   return parseEnvelope(await fetch("/api/aihsafe/guardian-links"));
+}
+
+// ─── Activity feed ────────────────────────────────────────────────────────────
+
+export async function listActivityFeed(
+  cursor?: string
+): Promise<AihResult<Paginated<ActivityPostDTO>>> {
+  const url = cursor
+    ? `/api/aihsafe/activity?cursor=${encodeURIComponent(cursor)}`
+    : "/api/aihsafe/activity";
+  return parseEnvelope(await fetch(url));
+}
+
+export async function createActivityPost(
+  data: CreateActivityPostRequest
+): Promise<AihResult<ActivityPostDTO>> {
+  return parseEnvelope(await fetch("/api/aihsafe/activity", jsonPost(data)));
+}
+
+export async function listComments(
+  postId: string
+): Promise<AihResult<Paginated<ActivityCommentDTO>>> {
+  return parseEnvelope(
+    await fetch(`/api/aihsafe/activity/${encodeURIComponent(postId)}/comments`)
+  );
+}
+
+export async function createComment(
+  postId: string,
+  body: string
+): Promise<AihResult<ActivityCommentDTO>> {
+  return parseEnvelope(
+    await fetch(
+      `/api/aihsafe/activity/${encodeURIComponent(postId)}/comments`,
+      jsonPost({ body })
+    )
+  );
 }
 
 // ─── Memberships ──────────────────────────────────────────────────────────────

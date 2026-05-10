@@ -82,6 +82,9 @@ model User {
   aihGuardedByRelationships  AihGuardianRelationship[]  @relation("AihChildOf")
   aihApprovalRequestsMade    AihApprovalRequest[]       @relation("AihApprovalRequestor")
   aihApprovalRequestsPending AihApprovalRequest[]       @relation("AihApprovalApprover")
+  // Activity layer (Agent 19)
+  aihActivityPosts           AihActivityPost[]          @relation("AihActivityPostAuthor")
+  aihActivityComments        AihActivityComment[]       @relation("AihActivityCommentAuthor")
 
   @@map("users")
 }
@@ -384,8 +387,9 @@ model TrustUnit {
   createdAt DateTime          @default(now())
   members   TrustUnitMember[]
 
-  // AIH Safe — back-relation (added by Agent 3)
-  aihMeta   AihTrustUnitMeta?
+  // AIH Safe — back-relations (added by Agent 3 / Agent 19)
+  aihMeta          AihTrustUnitMeta?
+  aihActivityPosts AihActivityPost[]
 
   @@map("trust_units")
 }
@@ -803,6 +807,48 @@ model AihAuditEvent {
   @@index([kind])
   @@index([createdAt(sort: Desc)])
   @@map("aih_audit_events")
+}
+
+// ─── Activity layer (Agent 19) ────────────────────────────────────────────────
+// Governed posts and comments scoped to trust units / family units.
+// Every post carries visibilityScope and governanceState so the visibility
+// service can answer "why can you see this?" at read time.
+
+model AihActivityPost {
+  id              String   @id @default(cuid())
+  authorId        String
+  trustUnitId     String?
+  familyUnitId    String?
+  visibilityScope String   @default("trust_unit")
+  bodyText        String
+  governanceState String   @default("allowed")
+  escalationState String   @default("none")
+  attachmentType  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  author    User                 @relation("AihActivityPostAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  trustUnit TrustUnit?           @relation(fields: [trustUnitId], references: [id], onDelete: Restrict)
+  comments  AihActivityComment[]
+
+  @@index([trustUnitId, createdAt(sort: Desc)])
+  @@index([familyUnitId, createdAt(sort: Desc)])
+  @@index([authorId, createdAt(sort: Desc)])
+  @@map("aih_activity_posts")
+}
+
+model AihActivityComment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+
+  post   AihActivityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User            @relation("AihActivityCommentAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([postId, createdAt(sort: Asc)])
+  @@map("aih_activity_comments")
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

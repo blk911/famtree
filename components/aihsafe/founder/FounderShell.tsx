@@ -20,8 +20,8 @@ import { QuickCreateModal }         from "@/components/aihsafe/dashboard/QuickCr
 import { FamilyCreatePanel }        from "@/components/aihsafe/family/FamilyCreatePanel";
 import { TrustUnitCreatePanel }     from "@/components/aihsafe/trust-unit/TrustUnitCreatePanel";
 import { InvitePanel }              from "@/components/aihsafe/invite/InvitePanel";
-import { CompactActivityItem }      from "@/components/aihsafe/common/CompactActivityItem";
 import { SectionHeader }            from "@/components/aihsafe/common/SectionHeader";
+import { ActivityFeed }             from "@/components/aihsafe/feed/ActivityFeed";
 
 import type {
   FamilyUnitDTO,
@@ -39,52 +39,7 @@ interface Props {
   currentUserId: string;
 }
 
-interface DerivedActivity {
-  icon:  string;
-  label: string;
-  time:  string;
-  ts:    number;
-}
 
-// ─── Utilities ────────────────────────────────────────────────────────────────
-
-function relativeTime(iso: string): string {
-  const ms  = Date.now() - new Date(iso).getTime();
-  const sec = Math.floor(ms / 1_000);
-  if (sec < 60)  return "just now";
-  const min = Math.floor(sec / 60);
-  if (min < 60)  return `${min}m ago`;
-  const hr  = Math.floor(min / 60);
-  if (hr  < 24)  return `${hr}h ago`;
-  const day = Math.floor(hr / 24);
-  if (day < 7)   return `${day}d ago`;
-  return new Date(iso).toLocaleDateString();
-}
-
-function deriveActivity(
-  familyUnits:   FamilyUnitDTO[],
-  trustUnits:    TrustUnitDTO[],
-  invites:       InviteDTO[],
-  guardianLinks: GuardianLinkDTO[],
-): DerivedActivity[] {
-  const items: DerivedActivity[] = [];
-
-  familyUnits.forEach(u => {
-    items.push({ icon: "🏠", label: `Family group "${u.name}" created`, time: u.createdAt, ts: new Date(u.createdAt).getTime() });
-  });
-  trustUnits.forEach(u => {
-    items.push({ icon: "🤝", label: `Trusted space "${u.name ?? u.kind}" created`, time: u.createdAt, ts: new Date(u.createdAt).getTime() });
-  });
-  invites.forEach(inv => {
-    const verb = inv.status === "REGISTERED" ? "joined via invite" : inv.status === "ACCEPTED" ? "accepted invite" : "invite sent to";
-    items.push({ icon: "📨", label: `${verb} ${inv.recipientEmail}`, time: inv.createdAt, ts: new Date(inv.createdAt).getTime() });
-  });
-  guardianLinks.filter(l => !l.revokedAt).forEach(link => {
-    items.push({ icon: "🛡", label: `Guardian link established with ${link.childName || link.guardianName}`, time: link.establishedAt, ts: new Date(link.establishedAt).getTime() });
-  });
-
-  return items.sort((a, b) => b.ts - a.ts).slice(0, 7);
-}
 
 const MODAL_TITLES: Record<Exclude<ModalKind, null>, string> = {
   family: "New family group",
@@ -194,7 +149,6 @@ export function FounderShell({ currentUserId }: Props) {
   const mySpaces           = trustUnits.filter(u => u.members.some(m => m.userId === currentUserId && !m.exitedAt));
   const trustedAdultCount  = guardianLinks.filter(l => !l.revokedAt).length;
   const membershipCount    = mySpaces.reduce((sum, u) => sum + u.members.filter(m => !m.exitedAt).length, 0);
-  const activity           = deriveActivity(familyUnits, trustUnits, invites, guardianLinks);
 
   return (
     <div
@@ -334,7 +288,7 @@ export function FounderShell({ currentUserId }: Props) {
           loading={loading}
         />
 
-        {/* ── Main grid ── */}
+        {/* ── Main grid: feed (center) + governance (right) ── */}
         <div
           className="aihsafe-grid"
           style={{
@@ -344,7 +298,22 @@ export function FounderShell({ currentUserId }: Props) {
             alignItems:          "start",
           }}
         >
-          {/* LEFT COLUMN */}
+          {/* CENTER: governed activity feed */}
+          <div>
+            <ActivityFeed
+              currentUserId={currentUserId}
+              trustUnits={trustUnits}
+            />
+
+            {/* Relationship visibility (lower center) */}
+            <RelationshipVisibilityCard
+              familyUnits={familyUnits}
+              trustUnits={trustUnits}
+              currentUserId={currentUserId}
+            />
+          </div>
+
+          {/* RIGHT: governance awareness panel */}
           <div>
             {/* Governance overview */}
             <GovernanceOverview
@@ -355,31 +324,6 @@ export function FounderShell({ currentUserId }: Props) {
               loading={loading}
             />
 
-            {/* Family snapshot */}
-            <FamilySnapshot
-              units={familyUnits}
-              loading={loading}
-              onCreateClick={() => setModal("family")}
-            />
-
-            {/* Spaces snapshot */}
-            <SpacesSnapshot
-              units={trustUnits}
-              currentUserId={currentUserId}
-              loading={loading}
-              onCreateClick={() => setModal("space")}
-            />
-
-            {/* Relationship visibility */}
-            <RelationshipVisibilityCard
-              familyUnits={familyUnits}
-              trustUnits={trustUnits}
-              currentUserId={currentUserId}
-            />
-          </div>
-
-          {/* RIGHT COLUMN */}
-          <div>
             {/* Family health */}
             <FamilyHealthPanel
               pendingApprovalCount={pendingApprovals.length}
@@ -435,46 +379,21 @@ export function FounderShell({ currentUserId }: Props) {
 
             {/* Governance settings preview */}
             <FounderSettingsPreview />
-          </div>
-        </div>
 
-        {/* ── Activity ribbon ── */}
-        <div
-          style={{
-            background:   "#fff",
-            borderRadius: 16,
-            border:       "1px solid #e7e5e4",
-            padding:      "20px 22px",
-            marginTop:    4,
-          }}
-        >
-          <SectionHeader title="Recent Activity" />
-
-          {loading && (
-            <p style={{ fontSize: 13, color: "#a8a29e", margin: 0 }}>Loading…</p>
-          )}
-
-          {!loading && activity.length === 0 && (
-            <p style={{ fontSize: 13, color: "#a8a29e", margin: 0 }}>
-              No recent activity — your network is just getting started.
-            </p>
-          )}
-
-          {!loading && activity.map((ev, i) => (
-            <CompactActivityItem
-              key={i}
-              icon={ev.icon}
-              label={ev.label}
-              time={relativeTime(ev.time)}
-              faded={i >= 4}
+            {/* Family + Spaces snapshots (sidebar, lower) */}
+            <FamilySnapshot
+              units={familyUnits}
+              loading={loading}
+              onCreateClick={() => setModal("family")}
             />
-          ))}
 
-          {!loading && activity.length === 0 && (
-            <p style={{ fontSize: 11, color: "#d6d3d1", margin: "10px 0 0", textAlign: "center" }}>
-              Activity is derived from your real network data — no mock events here
-            </p>
-          )}
+            <SpacesSnapshot
+              units={trustUnits}
+              currentUserId={currentUserId}
+              loading={loading}
+              onCreateClick={() => setModal("space")}
+            />
+          </div>
         </div>
       </div>
 

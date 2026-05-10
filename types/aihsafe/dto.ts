@@ -190,6 +190,48 @@ export interface GovernanceDecisionDTO {
   approvalRequestId?: string;       // present when requiredApproval = true and request was created
 }
 
+// ─── Activity layer ───────────────────────────────────────────────────────────
+
+export interface ActivityPostDTO {
+  id:              string;
+  authorId:        string;
+  authorName:      string;
+  authorPhotoUrl:  string | null;
+  trustUnitId:     string | null;
+  trustUnitName:   string | null;
+  familyUnitId:    string | null;
+  visibilityScope: string;
+  bodyText:        string;
+  governanceState: string;
+  escalationState: string;
+  attachmentType:  string | null;
+  createdAt:       string;
+  commentCount:    number;
+  visibilityReasons: string[];    // e.g. ["Apex Soccer", "approved trusted space"]
+}
+
+export interface ActivityCommentDTO {
+  id:             string;
+  postId:         string;
+  authorId:       string;
+  authorName:     string;
+  authorPhotoUrl: string | null;
+  body:           string;
+  createdAt:      string;
+}
+
+export interface CreateActivityPostRequest {
+  bodyText:        string;
+  trustUnitId?:    string;
+  familyUnitId?:   string;
+  visibilityScope?: string;
+  attachmentType?: string;
+}
+
+export interface CreateActivityCommentRequest {
+  body: string;
+}
+
 // ─── Pending Escalation ──────────────────────────────────────────────────────
 // Carried in 202 responses alongside GovernanceDecisionDTO.
 
