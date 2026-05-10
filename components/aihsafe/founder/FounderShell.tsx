@@ -8,20 +8,22 @@ import {
   listInvites,
   listGuardianLinks,
 } from "@/components/aihsafe/common/apiClient";
-import { GovernanceOverview }       from "@/components/aihsafe/founder/GovernanceOverview";
-import { PendingAttention }         from "@/components/aihsafe/founder/PendingAttention";
-import { FamilyHealthPanel }        from "@/components/aihsafe/founder/FamilyHealthPanel";
-import { TrustedExtensionsPanel }   from "@/components/aihsafe/founder/TrustedExtensionsPanel";
+import { GovernanceOverview }         from "@/components/aihsafe/founder/GovernanceOverview";
+import { PendingAttention }           from "@/components/aihsafe/founder/PendingAttention";
+import { FamilyHealthPanel }          from "@/components/aihsafe/founder/FamilyHealthPanel";
+import { TrustedExtensionsPanel }     from "@/components/aihsafe/founder/TrustedExtensionsPanel";
 import { RelationshipVisibilityCard } from "@/components/aihsafe/founder/RelationshipVisibilityCard";
-import { FounderSettingsPreview }   from "@/components/aihsafe/founder/FounderSettingsPreview";
-import { FamilySnapshot }           from "@/components/aihsafe/dashboard/FamilySnapshot";
-import { SpacesSnapshot }           from "@/components/aihsafe/dashboard/SpacesSnapshot";
-import { QuickCreateModal }         from "@/components/aihsafe/dashboard/QuickCreateModal";
-import { FamilyCreatePanel }        from "@/components/aihsafe/family/FamilyCreatePanel";
-import { TrustUnitCreatePanel }     from "@/components/aihsafe/trust-unit/TrustUnitCreatePanel";
-import { InvitePanel }              from "@/components/aihsafe/invite/InvitePanel";
-import { SectionHeader }            from "@/components/aihsafe/common/SectionHeader";
-import { ActivityFeed }             from "@/components/aihsafe/feed/ActivityFeed";
+import { FounderSettingsPreview }     from "@/components/aihsafe/founder/FounderSettingsPreview";
+import { FamilySnapshot }             from "@/components/aihsafe/dashboard/FamilySnapshot";
+import { SpacesSnapshot }             from "@/components/aihsafe/dashboard/SpacesSnapshot";
+import { QuickCreateModal }           from "@/components/aihsafe/dashboard/QuickCreateModal";
+import { FamilyCreatePanel }          from "@/components/aihsafe/family/FamilyCreatePanel";
+import { TrustUnitCreatePanel }       from "@/components/aihsafe/trust-unit/TrustUnitCreatePanel";
+import { InvitePanel }                from "@/components/aihsafe/invite/InvitePanel";
+import { SectionHeader }              from "@/components/aihsafe/common/SectionHeader";
+import { ActivityFeed }               from "@/components/aihsafe/feed/ActivityFeed";
+import { MembershipPanel }            from "@/components/aihsafe/membership/MembershipPanel";
+import { GuardianInbox }              from "@/components/aihsafe/guardian/GuardianInbox";
 
 import type {
   FamilyUnitDTO,
@@ -44,15 +46,7 @@ interface Props {
   shellMode?: FamilySafeShellMode;
 }
 
-
-
-const MODAL_TITLES: Record<Exclude<ModalKind, null>, string> = {
-  family: "New family group",
-  space:  "New trusted space",
-  invite: "Invite someone",
-};
-
-// ─── Quick action button style ────────────────────────────────────────────────
+// ─── Shared style constants ───────────────────────────────────────────────────
 
 const actionBtn: React.CSSProperties = {
   display:      "flex",
@@ -68,17 +62,31 @@ const actionBtn: React.CSSProperties = {
   marginBottom: 8,
 };
 
-// ─── Light stat card (hero) ───────────────────────────────────────────────────
+const iconBox = (bg: string): React.CSSProperties => ({
+  width:          34,
+  height:         34,
+  borderRadius:   10,
+  background:     bg,
+  display:        "flex",
+  alignItems:     "center",
+  justifyContent: "center",
+  fontSize:       16,
+  flexShrink:     0,
+});
+
+const railCard: React.CSSProperties = {
+  background:   "#fff",
+  borderRadius: 16,
+  border:       "1px solid #e7e5e4",
+  padding:      "20px 22px",
+  marginBottom: 14,
+};
+
+// ─── Hero stat card (founder mode only) ──────────────────────────────────────
 
 function LightStatCard({
-  value,
-  label,
-  urgent = false,
-}: {
-  value: number | string;
-  label: string;
-  urgent?: boolean;
-}) {
+  value, label, urgent = false,
+}: { value: number | string; label: string; urgent?: boolean }) {
   return (
     <div
       style={{
@@ -101,24 +109,117 @@ function LightStatCard({
   );
 }
 
-const iconBox = (bg: string): React.CSSProperties => ({
-  width:          34,
-  height:         34,
-  borderRadius:   10,
-  background:     bg,
-  display:        "flex",
-  alignItems:     "center",
-  justifyContent: "center",
-  fontSize:       16,
-  flexShrink:     0,
-});
+// ─── Hero card (shared wrapper, content varies by mode) ───────────────────────
+
+function HeroCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        position:     "relative",
+        borderRadius: 22,
+        overflow:     "hidden",
+        marginBottom: 20,
+        background:   "#fffaf3",
+        border:       "1px solid #eadfd2",
+        boxShadow:    "0 2px 12px rgba(0,0,0,0.05)",
+      }}
+    >
+      {/* Left accent stripe */}
+      <div
+        aria-hidden="true"
+        style={{
+          position:   "absolute",
+          left:       0, top: 0, bottom: 0,
+          width:      6,
+          background: "linear-gradient(180deg, #7c3aed 0%, #2563eb 100%)",
+        }}
+      />
+      {/* Family image panel — hidden on narrow viewports via CSS */}
+      <div
+        aria-hidden="true"
+        className="aihsafe-hero-img"
+        style={{
+          position:           "absolute",
+          right:              0, top: 0, bottom: 0,
+          width:              "52%",
+          backgroundImage:    "url('/uploads/hero%202.jpg')",
+          backgroundSize:     "cover",
+          backgroundPosition: "center center",
+          maskImage:          "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,1) 65%)",
+          WebkitMaskImage:    "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,1) 65%)",
+        }}
+      />
+      {/* Content — z-indexed above image */}
+      <div style={{ position: "relative", zIndex: 1, padding: "28px 32px 26px 26px" }}>
+        {/* Shield badge */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <svg width="20" height="22" viewBox="0 0 20 22" fill="none" aria-hidden="true">
+            <path
+              d="M10 1L1 5v6c0 5.25 3.87 10.17 9 11.38C15.13 21.17 19 16.25 19 11V5L10 1Z"
+              fill="#7c3aed" fillOpacity="0.12"
+              stroke="#7c3aed" strokeWidth="1.5" strokeLinejoin="round"
+            />
+          </svg>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+            Family Safe
+          </span>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─── Child read-only spaces panel ────────────────────────────────────────────
+
+function ChildApprovedSpacesCard({
+  units, loading,
+}: { units: TrustUnitDTO[]; loading: boolean }) {
+  return (
+    <div style={railCard}>
+      <SectionHeader title="Your approved spaces" />
+
+      {loading && (
+        <p style={{ fontSize: 13, color: "#a8a29e", margin: 0 }}>Loading…</p>
+      )}
+
+      {!loading && units.length === 0 && (
+        <p style={{ fontSize: 13, color: "#78716c", margin: 0, lineHeight: 1.5 }}>
+          You haven&apos;t been added to a trusted space yet. A family member will add you in.
+        </p>
+      )}
+
+      {!loading && units.map((u) => (
+        <div
+          key={u.id}
+          style={{
+            padding:      "10px 0",
+            borderBottom: "1px solid #f4f4f5",
+            display:      "flex",
+            alignItems:   "center",
+            gap:          8,
+          }}
+        >
+          <span style={{ fontSize: 18 }}>
+            {{ family: "🏠", peer: "⚽", extended: "🌿", guardian: "🛡" }[u.kind] ?? "🤝"}
+          </span>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>
+              {u.name?.trim() ? u.name : "Trusted space"}
+            </div>
+            <div style={{ fontSize: 12, color: "#78716c" }}>
+              {u.members.filter((m) => !m.exitedAt).length} members
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
-  // shellMode is accepted and forwarded to sub-components (activity feed, composer).
-  // Full render branching (hiding governance panels for member/child) is a
-  // remaining gap — tracked in agent-22 report. Backend governance is always enforced.
   const [familyUnits,   setFamilyUnits]   = useState<FamilyUnitDTO[]>([]);
   const [trustUnits,    setTrustUnits]    = useState<TrustUnitDTO[]>([]);
   const [approvals,     setApprovals]     = useState<ApprovalRequestDTO[]>([]);
@@ -146,170 +247,99 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
 
   useEffect(() => { load(); }, [load]);
 
-  function closeModal() {
-    setModal(null);
-    load();
-  }
+  function closeModal() { setModal(null); load(); }
 
-  // Derived counts
-  const pendingApprovals   = approvals.filter(a => a.state === "pending");
-  const pendingInvites     = invites.filter(i => i.status === "PENDING");
-  const mySpaces           = trustUnits.filter(u => u.members.some(m => m.userId === currentUserId && !m.exitedAt));
-  const trustedAdultCount  = guardianLinks.filter(l => !l.revokedAt).length;
-  const membershipCount    = mySpaces.reduce((sum, u) => sum + u.members.filter(m => !m.exitedAt).length, 0);
+  // Derived counts (used by founder hero + governance panels)
+  const pendingApprovals   = approvals.filter((a) => a.state === "pending");
+  const pendingInvites     = invites.filter((i) => i.status === "PENDING");
+  const mySpaces           = trustUnits.filter((u) =>
+    u.members.some((m) => m.userId === currentUserId && !m.exitedAt)
+  );
+  const trustedAdultCount  = guardianLinks.filter((l) => !l.revokedAt).length;
+  const membershipCount    = mySpaces.reduce(
+    (sum, u) => sum + u.members.filter((m) => !m.exitedAt).length, 0
+  );
+  const isGuardian         = guardianLinks.some((l) => !l.revokedAt);
+
+  // ── Feed section label ──────────────────────────────────────────────────────
+  const feedLabel = shellMode === "child" ? "Your Family Feed" : "Family Activity";
 
   return (
-    <div
-      style={{
-        minHeight:   "100vh",
-        background:  "#fafaf9",
-        padding:     "24px 20px 64px",
-        boxSizing:   "border-box",
-      }}
-    >
+    <div style={{ minHeight: "100vh", background: "#fafaf9", padding: "24px 20px 64px", boxSizing: "border-box" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
-        {/* ── Light hero card ── */}
-        <div
-          style={{
-            position:     "relative",
-            borderRadius: 22,
-            overflow:     "hidden",
-            marginBottom: 20,
-            background:   "#fffaf3",
-            border:       "1px solid #eadfd2",
-            boxShadow:    "0 2px 12px rgba(0,0,0,0.05)",
-          }}
-        >
-          {/* Purple-blue left accent stripe */}
-          <div
-            aria-hidden="true"
-            style={{
-              position:   "absolute",
-              left:       0,
-              top:        0,
-              bottom:     0,
-              width:      6,
-              background: "linear-gradient(180deg, #7c3aed 0%, #2563eb 100%)",
-            }}
-          />
+        {/* ════════════════════════════════════════════════════════
+            HERO — varies by shellMode
+            ════════════════════════════════════════════════════════ */}
 
-          {/* Right: family image, masked left-to-transparent to blend into card */}
-          <div
-            aria-hidden="true"
-            className="aihsafe-hero-img"
-            style={{
-              position:           "absolute",
-              right:              0,
-              top:                0,
-              bottom:             0,
-              width:              "52%",
-              backgroundImage:    "url('/uploads/hero%202.jpg')",
-              backgroundSize:     "cover",
-              backgroundPosition: "center center",
-              maskImage:          "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,1) 65%)",
-              WebkitMaskImage:    "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,1) 65%)",
-            }}
-          />
-
-          {/* Content — offset for stripe */}
-          <div
-            style={{
-              position: "relative",
-              zIndex:   1,
-              padding:  "28px 32px 26px 26px",
-            }}
-          >
-            {/* Shield + mode label */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <svg width="20" height="22" viewBox="0 0 20 22" fill="none" aria-hidden="true">
-                <path
-                  d="M10 1L1 5v6c0 5.25 3.87 10.17 9 11.38C15.13 21.17 19 16.25 19 11V5L10 1Z"
-                  fill="#7c3aed"
-                  fillOpacity="0.12"
-                  stroke="#7c3aed"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span
-                style={{
-                  fontSize:      11,
-                  fontWeight:    700,
-                  color:         "#7c3aed",
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Family Safe
-              </span>
-            </div>
-
-            {/* Title */}
-            <h1
-              style={{
-                margin:        0,
-                fontWeight:    800,
-                fontSize:      28,
-                color:         "#1c1917",
-                letterSpacing: "-0.5px",
-                lineHeight:    1.1,
-              }}
-            >
+        {shellMode === "founder" && (
+          <HeroCard>
+            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 28, color: "#1c1917", letterSpacing: "-0.5px", lineHeight: 1.1 }}>
               A governed network for your real people.
             </h1>
-
-            {/* Steward line */}
-            <p
-              style={{
-                margin:   "8px 0 0",
-                fontSize: 13,
-                color:    "#78716c",
-                maxWidth: 420,
-              }}
-            >
+            <p style={{ margin: "8px 0 0", fontSize: 13, color: "#78716c", maxWidth: 420 }}>
               You are the steward of this family network.
             </p>
-
-            {/* Stat cards */}
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 20 }}>
-              <LightStatCard
-                value={loading ? "…" : pendingApprovals.length}
-                label="approvals waiting"
-                urgent={pendingApprovals.length > 0}
-              />
-              <LightStatCard value={loading ? "…" : mySpaces.length}      label="active spaces" />
-              <LightStatCard value={loading ? "…" : trustedAdultCount}    label="trusted adults" />
-              <LightStatCard
-                value={loading ? "…" : pendingInvites.length}
-                label="pending invites"
-                urgent={pendingInvites.length > 0}
-              />
+              <LightStatCard value={loading ? "…" : pendingApprovals.length} label="approvals waiting" urgent={pendingApprovals.length > 0} />
+              <LightStatCard value={loading ? "…" : mySpaces.length}         label="active spaces" />
+              <LightStatCard value={loading ? "…" : trustedAdultCount}       label="trusted adults" />
+              <LightStatCard value={loading ? "…" : pendingInvites.length}   label="pending invites" urgent={pendingInvites.length > 0} />
             </div>
-          </div>
-        </div>
+          </HeroCard>
+        )}
 
-        {/* ── Pending attention — MOST PROMINENT ── */}
-        <PendingAttention
-          pendingApprovals={pendingApprovals}
-          pendingInvites={invites}
-          loading={loading}
-        />
+        {shellMode === "member" && (
+          <HeroCard>
+            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 26, color: "#1c1917", letterSpacing: "-0.4px", lineHeight: 1.15 }}>
+              Your trusted family spaces
+            </h1>
+            <p style={{ margin: "8px 0 0", fontSize: 13, color: "#78716c", maxWidth: 400 }}>
+              Share with the people who actually know you.
+            </p>
+            {!loading && mySpaces.length > 0 && (
+              <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+                <LightStatCard value={mySpaces.length} label="spaces you're in" />
+              </div>
+            )}
+          </HeroCard>
+        )}
 
-        {/* ── Main grid: feed (center) + governance (right) ── */}
+        {shellMode === "child" && (
+          <HeroCard>
+            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 26, color: "#1c1917", letterSpacing: "-0.4px", lineHeight: 1.15 }}>
+              Your safe family space
+            </h1>
+            <p style={{ margin: "8px 0 0", fontSize: 13, color: "#78716c", maxWidth: 380 }}>
+              Share updates with your trusted circles — only people approved by your family can see them.
+            </p>
+          </HeroCard>
+        )}
+
+        {/* ════════════════════════════════════════════════════════
+            PENDING ATTENTION — founder only
+            ════════════════════════════════════════════════════════ */}
+
+        {shellMode === "founder" && (
+          <PendingAttention
+            pendingApprovals={pendingApprovals}
+            pendingInvites={invites}
+            loading={loading}
+          />
+        )}
+
+        {/* ════════════════════════════════════════════════════════
+            MAIN GRID: center feed + right rail
+            ════════════════════════════════════════════════════════ */}
+
         <div
           className="aihsafe-grid"
-          style={{
-            display:             "grid",
-            gridTemplateColumns: "minmax(0,1fr) minmax(0,360px)",
-            gap:                 16,
-            alignItems:          "start",
-          }}
+          style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,360px)", gap: 16, alignItems: "start" }}
         >
-          {/* CENTER: governed activity feed */}
+          {/* ── CENTER: governed activity feed (all modes) ── */}
           <div>
             <div style={{ marginBottom: 10 }}>
-              <SectionHeader title="Family Activity" />
+              <SectionHeader title={feedLabel} />
             </div>
             <ActivityFeed
               currentUserId={currentUserId}
@@ -317,101 +347,138 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
               viewerMode={shellMode}
             />
 
-            {/* Relationship visibility (lower center) */}
-            <RelationshipVisibilityCard
-              familyUnits={familyUnits}
-              trustUnits={trustUnits}
-              currentUserId={currentUserId}
-            />
+            {/* Relationship visibility — founder only (governance-level information) */}
+            {shellMode === "founder" && (
+              <RelationshipVisibilityCard
+                familyUnits={familyUnits}
+                trustUnits={trustUnits}
+                currentUserId={currentUserId}
+              />
+            )}
           </div>
 
-          {/* RIGHT: governance awareness panel */}
+          {/* ── RIGHT RAIL ── */}
           <div>
-            {/* Governance overview */}
-            <GovernanceOverview
-              familyCount={familyUnits.length}
-              spaceCount={mySpaces.length}
-              trustedAdults={trustedAdultCount}
-              membershipCount={membershipCount}
-              loading={loading}
-            />
 
-            {/* Family health */}
-            <FamilyHealthPanel
-              pendingApprovalCount={pendingApprovals.length}
-              spaceCount={mySpaces.length}
-              pendingInviteCount={pendingInvites.length}
-              trustedAdultCount={trustedAdultCount}
-              loading={loading}
-            />
+            {/* ── FOUNDER right rail ── */}
+            {shellMode === "founder" && (
+              <>
+                <GovernanceOverview
+                  familyCount={familyUnits.length}
+                  spaceCount={mySpaces.length}
+                  trustedAdults={trustedAdultCount}
+                  membershipCount={membershipCount}
+                  loading={loading}
+                />
 
-            {/* Quick actions */}
-            <div
-              style={{
-                background:   "#fff",
-                borderRadius: 16,
-                border:       "1px solid #e7e5e4",
-                padding:      "20px 22px",
-                marginBottom: 14,
-              }}
-            >
-              <SectionHeader title="Quick Actions" />
+                <FamilyHealthPanel
+                  pendingApprovalCount={pendingApprovals.length}
+                  spaceCount={mySpaces.length}
+                  pendingInviteCount={pendingInvites.length}
+                  trustedAdultCount={trustedAdultCount}
+                  loading={loading}
+                />
 
-              <button type="button" style={actionBtn} onClick={() => setModal("invite")}>
-                <div style={iconBox("#f0fdf4")}>📨</div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>Invite someone</div>
-                  <div style={{ fontSize: 12, color: "#a8a29e" }}>Send a governed invite</div>
+                {/* Quick Actions — all three available to founders */}
+                <div style={railCard}>
+                  <SectionHeader title="Quick Actions" />
+                  <button type="button" style={actionBtn} onClick={() => setModal("invite")}>
+                    <div style={iconBox("#f0fdf4")}>📨</div>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>Invite someone</div>
+                      <div style={{ fontSize: 12, color: "#a8a29e" }}>Send a governed invite</div>
+                    </div>
+                  </button>
+                  <button type="button" style={actionBtn} onClick={() => setModal("family")}>
+                    <div style={iconBox("#eff6ff")}>🏠</div>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>New family group</div>
+                      <div style={{ fontSize: 12, color: "#a8a29e" }}>Your household or close relatives</div>
+                    </div>
+                  </button>
+                  <button type="button" style={{ ...actionBtn, marginBottom: 0 }} onClick={() => setModal("space")}>
+                    <div style={iconBox("#faf5ff")}>🤝</div>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>New trusted space</div>
+                      <div style={{ fontSize: 12, color: "#a8a29e" }}>Peer pod, extended circle, guardian hub</div>
+                    </div>
+                  </button>
                 </div>
-              </button>
 
-              <button type="button" style={actionBtn} onClick={() => setModal("family")}>
-                <div style={iconBox("#eff6ff")}>🏠</div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>New family group</div>
-                  <div style={{ fontSize: 12, color: "#a8a29e" }}>Your household or close relatives</div>
+                <TrustedExtensionsPanel
+                  guardianLinks={guardianLinks}
+                  currentUserId={currentUserId}
+                  loading={loading}
+                />
+
+                <FounderSettingsPreview />
+
+                <FamilySnapshot
+                  units={familyUnits}
+                  loading={loading}
+                  onCreateClick={() => setModal("family")}
+                />
+
+                <SpacesSnapshot
+                  units={trustUnits}
+                  currentUserId={currentUserId}
+                  loading={loading}
+                  onCreateClick={() => setModal("space")}
+                />
+              </>
+            )}
+
+            {/* ── MEMBER right rail ── */}
+            {shellMode === "member" && (
+              <>
+                {/* Guardian inbox — only visible to users who have active guardian links */}
+                {isGuardian && (
+                  <div style={railCard}>
+                    <SectionHeader title="Guardian Inbox" />
+                    <GuardianInbox />
+                  </div>
+                )}
+
+                {/* Their trust unit memberships */}
+                <div style={railCard}>
+                  <SectionHeader title="Your spaces" />
+                  <MembershipPanel currentUserId={currentUserId} />
                 </div>
-              </button>
 
-              <button type="button" style={{ ...actionBtn, marginBottom: 0 }} onClick={() => setModal("space")}>
-                <div style={iconBox("#faf5ff")}>🤝</div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>New trusted space</div>
-                  <div style={{ fontSize: 12, color: "#a8a29e" }}>Peer pod, extended circle, guardian hub</div>
+                {/* Invite action — members can invite others within their spaces */}
+                <div style={railCard}>
+                  <SectionHeader title="Quick Action" />
+                  <button type="button" style={{ ...actionBtn, marginBottom: 0 }} onClick={() => setModal("invite")}>
+                    <div style={iconBox("#f0fdf4")}>📨</div>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>Invite someone</div>
+                      <div style={{ fontSize: 12, color: "#a8a29e" }}>Add someone to your trusted spaces</div>
+                    </div>
+                  </button>
                 </div>
-              </button>
-            </div>
+              </>
+            )}
 
-            {/* Trusted extensions */}
-            <TrustedExtensionsPanel
-              guardianLinks={guardianLinks}
-              currentUserId={currentUserId}
-              loading={loading}
-            />
+            {/* ── CHILD right rail ── */}
+            {shellMode === "child" && (
+              <ChildApprovedSpacesCard units={mySpaces} loading={loading} />
+            )}
 
-            {/* Governance settings preview */}
-            <FounderSettingsPreview />
-
-            {/* Family + Spaces snapshots (sidebar, lower) */}
-            <FamilySnapshot
-              units={familyUnits}
-              loading={loading}
-              onCreateClick={() => setModal("family")}
-            />
-
-            <SpacesSnapshot
-              units={trustUnits}
-              currentUserId={currentUserId}
-              loading={loading}
-              onCreateClick={() => setModal("space")}
-            />
           </div>
         </div>
+
       </div>
 
-      {/* Quick-create modal */}
+      {/* Quick-create modal — available to founder (all 3) and member (invite only) */}
       {modal && (
-        <QuickCreateModal title={MODAL_TITLES[modal]} onClose={closeModal}>
+        <QuickCreateModal
+          title={
+            modal === "family" ? "New family group" :
+            modal === "space"  ? "New trusted space" :
+                                 "Invite someone"
+          }
+          onClose={closeModal}
+        >
           {modal === "family" && <FamilyCreatePanel />}
           {modal === "space"  && <TrustUnitCreatePanel />}
           {modal === "invite" && <InvitePanel />}
@@ -420,4 +487,3 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
     </div>
   );
 }
-
