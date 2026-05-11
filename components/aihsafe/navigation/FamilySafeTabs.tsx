@@ -18,7 +18,7 @@ interface Tab {
   label: string;
 }
 
-// ─── Master tab order (determines display order in all modes) ─────────────────
+// ─── Master tab order ─────────────────────────────────────────────────────────
 
 const ALL_TABS: Tab[] = [
   { id: "overview",  label: "Overview"  },
@@ -43,7 +43,7 @@ export function getVisibleTabs(
   } else if (shellMode === "member") {
     ids = ["overview", "activity", "spaces", "people"];
   } else {
-    // child / UNKNOWN routed to child
+    // child
     ids = ["activity", "spaces"];
   }
   return ALL_TABS.filter((t) => ids.includes(t.id));
@@ -59,9 +59,11 @@ interface Props {
   tabs:        Tab[];
   activeTab:   TabId;
   onTabChange: (tab: TabId) => void;
+  /** Optional numeric badge per tab id — shows an amber pill when > 0. */
+  badges?:     Partial<Record<TabId, number>>;
 }
 
-export function FamilySafeTabs({ tabs, activeTab, onTabChange }: Props) {
+export function FamilySafeTabs({ tabs, activeTab, onTabChange, badges }: Props) {
   const barRef = useRef<HTMLDivElement>(null);
 
   function handleKeyDown(e: React.KeyboardEvent, currentIndex: number) {
@@ -91,7 +93,8 @@ export function FamilySafeTabs({ tabs, activeTab, onTabChange }: Props) {
       className="aihsafe-tabs-bar"
     >
       {tabs.map((tab, i) => {
-        const isActive = tab.id === activeTab;
+        const isActive   = tab.id === activeTab;
+        const badgeCount = badges?.[tab.id] ?? 0;
         return (
           <button
             key={tab.id}
@@ -105,6 +108,14 @@ export function FamilySafeTabs({ tabs, activeTab, onTabChange }: Props) {
             onKeyDown={(e) => handleKeyDown(e, i)}
           >
             {tab.label}
+            {badgeCount > 0 && (
+              <span
+                className="aihsafe-tab-badge"
+                aria-label={`${badgeCount} pending`}
+              >
+                {badgeCount}
+              </span>
+            )}
           </button>
         );
       })}

@@ -138,7 +138,6 @@ function HeroCard({ children }: { children: React.ReactNode }) {
         boxShadow:    "0 2px 12px rgba(0,0,0,0.05)",
       }}
     >
-      {/* Left accent stripe */}
       <div
         aria-hidden="true"
         style={{
@@ -148,7 +147,6 @@ function HeroCard({ children }: { children: React.ReactNode }) {
           background: "linear-gradient(180deg, #7c3aed 0%, #2563eb 100%)",
         }}
       />
-      {/* Family image — hidden on narrow viewports */}
       <div
         aria-hidden="true"
         className="aihsafe-hero-img"
@@ -164,7 +162,6 @@ function HeroCard({ children }: { children: React.ReactNode }) {
         }}
       />
       <div style={{ position: "relative", zIndex: 1, padding: "28px 32px 26px 26px" }}>
-        {/* Shield badge */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           <svg width="20" height="22" viewBox="0 0 20 22" fill="none" aria-hidden="true">
             <path
@@ -242,9 +239,55 @@ function TabPanel({
       id={`aihsafe-panel-${id}`}
       aria-labelledby={`aihsafe-tab-${id}`}
       hidden={!isActive}
-      style={isActive ? undefined : { display: "none" }}
     >
       {isActive && children}
+    </div>
+  );
+}
+
+// ─── Shell-level load error banner ───────────────────────────────────────────
+
+function LoadErrorBanner({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div
+      role="alert"
+      style={{
+        background:   "#fef2f2",
+        border:       "1px solid #fca5a5",
+        borderRadius: 14,
+        padding:      "14px 18px",
+        marginBottom: 16,
+        display:      "flex",
+        alignItems:   "center",
+        gap:          12,
+      }}
+    >
+      <span style={{ fontSize: 18, flexShrink: 0 }}>⚠</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: "#dc2626" }}>
+          Couldn&apos;t load your family data
+        </div>
+        <div style={{ fontSize: 12, color: "#78716c", marginTop: 2 }}>
+          Check your connection and try again. Your data is safe.
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onRetry}
+        style={{
+          padding:      "7px 14px",
+          borderRadius: 9,
+          border:       "1px solid #fca5a5",
+          background:   "#fff",
+          color:        "#dc2626",
+          fontWeight:   600,
+          fontSize:     12,
+          cursor:       "pointer",
+          flexShrink:   0,
+        }}
+      >
+        Retry
+      </button>
     </div>
   );
 }
@@ -258,23 +301,29 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
   const [invites,       setInvites]       = useState<InviteDTO[]>([]);
   const [guardianLinks, setGuardianLinks] = useState<GuardianLinkDTO[]>([]);
   const [loading,       setLoading]       = useState(true);
+  const [loadError,     setLoadError]     = useState(false);
   const [modal,         setModal]         = useState<ModalKind>(null);
   const [activeTab,     setActiveTab]     = useState<TabId>(() => defaultTab(shellMode));
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [fuR, tuR, apR, invR, glR] = await Promise.all([
-      listFamilyUnits(),
-      listTrustUnits(),
-      listApprovals("pending"),
-      listInvites(),
-      listGuardianLinks(),
-    ]);
-    if (fuR.kind  === "ok") setFamilyUnits(fuR.data.items);
-    if (tuR.kind  === "ok") setTrustUnits(tuR.data.items);
-    if (apR.kind  === "ok") setApprovals(apR.data.items);
-    if (invR.kind === "ok") setInvites(invR.data.items);
-    if (glR.kind  === "ok") setGuardianLinks(glR.data.items);
+    setLoadError(false);
+    try {
+      const [fuR, tuR, apR, invR, glR] = await Promise.all([
+        listFamilyUnits(),
+        listTrustUnits(),
+        listApprovals("pending"),
+        listInvites(),
+        listGuardianLinks(),
+      ]);
+      if (fuR.kind  === "ok") setFamilyUnits(fuR.data.items);
+      if (tuR.kind  === "ok") setTrustUnits(tuR.data.items);
+      if (apR.kind  === "ok") setApprovals(apR.data.items);
+      if (invR.kind === "ok") setInvites(invR.data.items);
+      if (glR.kind  === "ok") setGuardianLinks(glR.data.items);
+    } catch {
+      setLoadError(true);
+    }
     setLoading(false);
   }, []);
 
@@ -294,10 +343,8 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
   );
   const isGuardian        = guardianLinks.some((l) => !l.revokedAt);
 
-  // ── Tab visibility ──────────────────────────────────────────────────────────
-  const visibleTabs = getVisibleTabs(shellMode, isGuardian);
-
-  // ── Urgent badge: show count on Approvals tab when there are pending items ──
+  // ── Tab visibility + badges ─────────────────────────────────────────────────
+  const visibleTabs  = getVisibleTabs(shellMode, isGuardian);
   const pendingCount = pendingApprovals.length + pendingInvites.length;
 
   return (
@@ -350,6 +397,9 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
           </HeroCard>
         )}
 
+        {/* Shell-level load error */}
+        {loadError && <LoadErrorBanner onRetry={load} />}
+
         {/* ════════════════════════════════════════════════════════
             INTERNAL NAVIGATION TAB BAR
             ════════════════════════════════════════════════════════ */}
@@ -358,6 +408,7 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
           tabs={visibleTabs}
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          badges={pendingCount > 0 ? { approvals: pendingCount } : undefined}
         />
 
         {/* ════════════════════════════════════════════════════════
@@ -366,6 +417,7 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
 
         {/* ── OVERVIEW ──────────────────────────────────────────── */}
         <TabPanel id="overview" activeTab={activeTab}>
+
           {shellMode === "founder" && (
             <div
               className="aihsafe-grid"
@@ -428,16 +480,36 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
 
           {shellMode === "member" && (
             <div style={{ maxWidth: 680 }}>
+              {/* Guardian inbox — action-urgent, right place for Overview */}
               {isGuardian && (
                 <div style={tabCard}>
                   <SectionHeader title="Guardian Inbox" />
                   <GuardianInbox />
                 </div>
               )}
+
+              {/* Network summary — compact, directs to Spaces tab for full list */}
               <div style={tabCard}>
-                <SectionHeader title="Your spaces" />
-                <MembershipPanel currentUserId={currentUserId} />
+                <SectionHeader title="Your network" />
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+                  <LightStatCard value={loading ? "…" : mySpaces.length} label="spaces you're in" />
+                  {isGuardian && (
+                    <LightStatCard value={loading ? "…" : trustedAdultCount} label="trusted adults" />
+                  )}
+                </div>
+                {!loading && mySpaces.length === 0 && (
+                  <p style={{ fontSize: 13, color: "#78716c", margin: 0 }}>
+                    You haven&apos;t joined a trusted space yet. Your family steward will invite you in.
+                  </p>
+                )}
+                {!loading && mySpaces.length > 0 && (
+                  <p style={{ fontSize: 12, color: "#a8a29e", margin: 0 }}>
+                    View and manage your memberships in the <strong style={{ color: "#78716c" }}>Spaces</strong> tab.
+                  </p>
+                )}
               </div>
+
+              {/* Invite action */}
               <div style={tabCard}>
                 <SectionHeader title="Quick Actions" />
                 <button type="button" style={{ ...actionBtn, marginBottom: 0 }} onClick={() => setModal("invite")}>
@@ -450,6 +522,7 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
               </div>
             </div>
           )}
+
         </TabPanel>
 
         {/* ── ACTIVITY ──────────────────────────────────────────── */}
@@ -530,6 +603,11 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
 
           {shellMode === "member" && (
             <div style={{ maxWidth: 680 }}>
+              <div style={{ marginBottom: 12 }}>
+                <p style={{ fontSize: 13, color: "#78716c", margin: 0, lineHeight: 1.6 }}>
+                  People can see you within shared trusted spaces. Outside of those spaces, your profile is private.
+                </p>
+              </div>
               <RelationshipVisibilityCard
                 familyUnits={familyUnits}
                 trustUnits={trustUnits}
@@ -542,6 +620,9 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
         {/* ── APPROVALS ─────────────────────────────────────────── */}
         <TabPanel id="approvals" activeTab={activeTab}>
           <div style={{ maxWidth: 720 }}>
+            {/* Founder: PendingAttention already embeds GuardianInbox internally
+                when there are pending approvals. Show it always for the full
+                all-clear / pending summary. */}
             {shellMode === "founder" && (
               <PendingAttention
                 pendingApprovals={pendingApprovals}
@@ -549,7 +630,9 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
                 loading={loading}
               />
             )}
-            {(shellMode === "founder" || isGuardian) && (
+
+            {/* Guardian member (non-founder): show Guardian Inbox directly. */}
+            {shellMode !== "founder" && isGuardian && (
               <div style={tabCard}>
                 <SectionHeader title="Guardian Inbox" />
                 <GuardianInbox />
@@ -568,28 +651,6 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
         </TabPanel>
 
       </div>
-
-      {/* ── Pending badge indicator in tab (rendered via CSS counter) ────────── */}
-      {pendingCount > 0 && (
-        <style>{`
-          #aihsafe-tab-approvals::after {
-            content: "${pendingCount}";
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: #d97706;
-            color: #fff;
-            font-size: 10px;
-            font-weight: 700;
-            border-radius: 9999px;
-            min-width: 16px;
-            height: 16px;
-            padding: 0 4px;
-            margin-left: 5px;
-            line-height: 1;
-          }
-        `}</style>
-      )}
 
       {/* Quick-create modal */}
       {modal && (

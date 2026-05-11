@@ -16,15 +16,22 @@ interface Props {
 }
 
 export function MembershipPanel({ currentUserId }: Props) {
-  const [units,   setUnits]   = useState<TrustUnitDTO[] | null>(null);
-  const [busy,    setBusy]    = useState<string | null>(null);   // membershipId being exited
-  const [exited,  setExited]  = useState<Record<string, true>>({});
-  const [notices, setNotices] = useState<Record<string, AihDenied>>({});
-  const [errors,  setErrors]  = useState<Record<string, string>>({});
+  const [units,      setUnits]      = useState<TrustUnitDTO[] | null>(null);
+  const [fetchError, setFetchError] = useState(false);
+  const [busy,       setBusy]       = useState<string | null>(null);
+  const [exited,     setExited]     = useState<Record<string, true>>({});
+  const [notices,    setNotices]    = useState<Record<string, AihDenied>>({});
+  const [errors,     setErrors]     = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
-    const r = await listTrustUnits();
-    if (r.kind === "ok") setUnits(r.data.items);
+    setFetchError(false);
+    try {
+      const r = await listTrustUnits();
+      if (r.kind === "ok") setUnits(r.data.items);
+      else setFetchError(true);
+    } catch {
+      setFetchError(true);
+    }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -43,6 +50,21 @@ export function MembershipPanel({ currentUserId }: Props) {
     } else if (r.kind === "error") {
       setErrors(e => ({ ...e, [membershipId]: r.message }));
     }
+  }
+
+  if (fetchError) {
+    return (
+      <p style={{ fontSize: 13, color: "#dc2626", margin: 0 }}>
+        Couldn&apos;t load your spaces. Check your connection.{" "}
+        <button
+          type="button"
+          onClick={load}
+          style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontWeight: 600, fontSize: 13, padding: 0 }}
+        >
+          Retry
+        </button>
+      </p>
+    );
   }
 
   if (units === null) {

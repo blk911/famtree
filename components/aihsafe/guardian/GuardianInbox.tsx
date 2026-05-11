@@ -35,14 +35,21 @@ function timeLeft(expiresAt: string): string {
 }
 
 export function GuardianInbox() {
-  const [items,   setItems]   = useState<ApprovalRequestDTO[] | null>(null);
-  const [busy,    setBusy]    = useState<string | null>(null); // requestId being acted on
-  const [notices, setNotices] = useState<Record<string, AihEscalated | AihDenied>>({});
-  const [done,    setDone]    = useState<Record<string, "approved" | "denied">>({});
+  const [items,      setItems]      = useState<ApprovalRequestDTO[] | null>(null);
+  const [fetchError, setFetchError] = useState(false);
+  const [busy,       setBusy]       = useState<string | null>(null);
+  const [notices,    setNotices]    = useState<Record<string, AihEscalated | AihDenied>>({});
+  const [done,       setDone]       = useState<Record<string, "approved" | "denied">>({});
 
   const load = useCallback(async () => {
-    const r = await listApprovals("pending");
-    if (r.kind === "ok") setItems(r.data.items);
+    setFetchError(false);
+    try {
+      const r = await listApprovals("pending");
+      if (r.kind === "ok") setItems(r.data.items);
+      else setFetchError(true);
+    } catch {
+      setFetchError(true);
+    }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -57,6 +64,21 @@ export function GuardianInbox() {
     } else if (r.kind === "denied" || r.kind === "pending") {
       setNotices(n => ({ ...n, [requestId]: r }));
     }
+  }
+
+  if (fetchError) {
+    return (
+      <p style={{ fontSize: 13, color: "#dc2626", margin: 0 }}>
+        Couldn&apos;t load approvals. Check your connection.{" "}
+        <button
+          type="button"
+          onClick={load}
+          style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontWeight: 600, fontSize: 13, padding: 0 }}
+        >
+          Retry
+        </button>
+      </p>
+    );
   }
 
   if (items === null) {

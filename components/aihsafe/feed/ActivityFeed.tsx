@@ -20,18 +20,26 @@ const SAMPLE_PROMPTS = [
 ];
 
 export function ActivityFeed({ currentUserId, trustUnits, viewerMode = "founder" }: Props) {
-  const [posts,   setPosts]   = useState<ActivityPostDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [cursor,  setCursor]  = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
+  const [posts,      setPosts]      = useState<ActivityPostDTO[]>([]);
+  const [loading,    setLoading]    = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [cursor,     setCursor]     = useState<string | null>(null);
+  const [hasMore,    setHasMore]    = useState(false);
 
   const load = useCallback(async (replace = true) => {
     setLoading(true);
-    const r = await listActivityFeed(replace ? undefined : (cursor ?? undefined));
-    if (r.kind === "ok") {
-      setPosts((prev) => replace ? r.data.items : [...prev, ...r.data.items]);
-      setCursor(r.data.pagination.cursor ?? null);
-      setHasMore(r.data.pagination.hasMore);
+    setFetchError(null);
+    try {
+      const r = await listActivityFeed(replace ? undefined : (cursor ?? undefined));
+      if (r.kind === "ok") {
+        setPosts((prev) => replace ? r.data.items : [...prev, ...r.data.items]);
+        setCursor(r.data.pagination.cursor ?? null);
+        setHasMore(r.data.pagination.hasMore);
+      } else {
+        setFetchError("Couldn't load posts. Try again.");
+      }
+    } catch {
+      setFetchError("Couldn't reach the server. Check your connection and try again.");
     }
     setLoading(false);
   }, [cursor]);
@@ -40,6 +48,46 @@ export function ActivityFeed({ currentUserId, trustUnits, viewerMode = "founder"
 
   return (
     <section aria-label="Family activity feed">
+      {/* Fetch error */}
+      {fetchError && !loading && (
+        <div
+          role="alert"
+          style={{
+            background:   "#fef2f2",
+            border:       "1px solid #fca5a5",
+            borderRadius: 14,
+            padding:      "14px 18px",
+            marginBottom: 12,
+            display:      "flex",
+            alignItems:   "center",
+            gap:          12,
+          }}
+        >
+          <span style={{ fontSize: 18, flexShrink: 0 }}>⚠</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 14, color: "#dc2626" }}>Couldn&apos;t load posts</div>
+            <div style={{ fontSize: 12, color: "#78716c", marginTop: 2 }}>{fetchError}</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => load(true)}
+            style={{
+              padding:      "7px 14px",
+              borderRadius: 9,
+              border:       "1px solid #fca5a5",
+              background:   "#fff",
+              color:        "#dc2626",
+              fontWeight:   600,
+              fontSize:     12,
+              cursor:       "pointer",
+              flexShrink:   0,
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Composer */}
       <PostComposer
         trustUnits={trustUnits}

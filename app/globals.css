@@ -245,3 +245,20 @@
   outline-offset: 2px;
 }
 
+.aihsafe-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #d97706;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 9999px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  margin-left: 5px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
