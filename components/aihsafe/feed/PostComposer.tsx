@@ -1,9 +1,52 @@
 "use client";
 
 import { useState } from "react";
-import { createActivityPost } from "@/components/aihsafe/common/apiClient";
-import { SpaceBadge }         from "@/components/aihsafe/feed/SpaceBadge";
-import type { TrustUnitDTO }  from "@/types/aihsafe/dto";
+import { createActivityPost }  from "@/components/aihsafe/common/apiClient";
+import { SpaceBadge }          from "@/components/aihsafe/feed/SpaceBadge";
+import {
+  INTEREST_CATEGORIES,
+  getAllowedCategories,
+  type InterestCategory,
+} from "@/lib/aihsafe/interests/categories";
+import type { TrustUnitDTO } from "@/types/aihsafe/dto";
+
+// ─── Category chip (child PostComposer) ───────────────────────────────────────
+
+function CategoryChip({
+  category,
+  selected,
+  onSelect,
+}: {
+  category: InterestCategory;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      title={category.description}
+      style={{
+        display:      "inline-flex",
+        alignItems:   "center",
+        gap:          5,
+        padding:      "4px 10px",
+        borderRadius: 20,
+        border:       `1px solid ${selected ? "#6366f1" : "#e7e5e4"}`,
+        background:   selected ? "#eef2ff" : "#fff",
+        color:        selected ? "#4338ca" : "#57534e",
+        fontSize:     12,
+        fontWeight:   selected ? 700 : 500,
+        cursor:       "pointer",
+        transition:   "all 0.12s",
+        userSelect:   "none",
+      }}
+    >
+      <span style={{ fontSize: 14 }}>{category.emoji}</span>
+      {category.label}
+    </button>
+  );
+}
 
 interface Props {
   trustUnits:    TrustUnitDTO[];
@@ -11,13 +54,29 @@ interface Props {
   onPosted:      () => void;
   /** Softens copy for minors — UI only; governance remains authoritative. */
   viewerMode?:   "founder" | "member" | "child";
+  /**
+   * IDs of categories the child may select. Empty = all enabled categories.
+   * Only used when viewerMode === "child". UI-local — not submitted to API this pass.
+   */
+  allowedCategoryIds?: string[];
 }
 
-export function PostComposer({ trustUnits, currentUserId, onPosted, viewerMode = "founder" }: Props) {
-  const [body,        setBody]        = useState("");
-  const [spaceId,     setSpaceId]     = useState<string>("");
-  const [submitting,  setSubmitting]  = useState(false);
-  const [error,       setError]       = useState<string | null>(null);
+export function PostComposer({
+  trustUnits,
+  currentUserId,
+  onPosted,
+  viewerMode = "founder",
+  allowedCategoryIds = [],
+}: Props) {
+  const [body,               setBody]               = useState("");
+  const [spaceId,            setSpaceId]            = useState<string>("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [submitting,         setSubmitting]          = useState(false);
+  const [error,              setError]               = useState<string | null>(null);
+
+  // Categories for child view — all enabled by default (empty allowedIds = no filter).
+  const childCategories: readonly InterestCategory[] =
+    viewerMode === "child" ? getAllowedCategories(allowedCategoryIds) : [];
 
   const selectedSpace = trustUnits.find((u) => u.id === spaceId);
   const hasSpaces     = trustUnits.length > 0;
@@ -38,6 +97,7 @@ export function PostComposer({ trustUnits, currentUserId, onPosted, viewerMode =
     if (r.kind === "ok") {
       setBody("");
       setSpaceId("");
+      setSelectedCategoryId(null);
       onPosted();
     } else if (r.kind === "denied") {
       setError(`Governance check: ${r.message}`);
@@ -127,6 +187,27 @@ export function PostComposer({ trustUnits, currentUserId, onPosted, viewerMode =
           </button>
         ))}
       </div>
+
+      {/* Category chip row — child/teen viewerMode only (UI-local; not submitted to API) */}
+      {viewerMode === "child" && childCategories.length > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>
+            What&apos;s this about?
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {childCategories.map((cat) => (
+              <CategoryChip
+                key={cat.id}
+                category={cat}
+                selected={selectedCategoryId === cat.id}
+                onSelect={() =>
+                  setSelectedCategoryId((prev) => (prev === cat.id ? null : cat.id))
+                }
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Text area */}
       <textarea

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SectionHeader } from "@/components/aihsafe/common/SectionHeader";
+import { SectionHeader }         from "@/components/aihsafe/common/SectionHeader";
+import { CategoryAllowlistPanel } from "@/components/aihsafe/founder/CategoryAllowlistPanel";
 import { getFounderSettings, patchFounderSettings } from "@/components/aihsafe/common/apiClient";
 import type { FounderSettingsDTO, PatchFounderSettingsRequest } from "@/types/aihsafe/dto";
 
@@ -346,6 +347,9 @@ export function FounderSettingsEditor() {
             onChange={(v) => save({ enablePrivateThreads: v })}
             disabled={saveState === "saving"}
           />
+
+          {/* ── Category allowlist ── */}
+          <CategoryAllowlistPanel />
         </div>
       )}
     </div>

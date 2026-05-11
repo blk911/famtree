@@ -181,7 +181,7 @@ function interestsDefaults(tier: AgeTier): InterestsPolicy {
   return {
     allowCustomCategories:               !isMinor,
     requireGuardianApprovalForNewInterests: isMinor,
-    allowedCategoryIds:                  [],  // populated by Agent 40
+    allowedCategoryIds:                  [],  // empty = all network-wide enabled categories; non-empty = guardian per-user restriction (Agent 41+)
   };
 }
 
