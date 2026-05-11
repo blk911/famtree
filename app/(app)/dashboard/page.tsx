@@ -191,7 +191,7 @@ export default async function DashboardPage() {
       <IncomingIdentityAcks />
 
       {/* ── 4-col metric + action strip ── */}
-      <div className="dashboard-metrics">
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"10px" }}>
         {/* Stat tiles */}
         {([
           { label:"TREE MEMBERS",   value:totalMembers,     color:"#6366f1", href:"/tree"   },
@@ -228,7 +228,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── Two-column: tabbed content hub + context rail ── */}
-      <div className="dashboard-body">
+      <div style={{ display:"grid", gridTemplateColumns:"minmax(0,1fr) 232px", gap:"16px", alignItems:"start" }}>
 
         {/* Left: trust gate + tabbed message/activity hub */}
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
