@@ -20,3 +20,6 @@ export * from "./approvals";
 
 // Agent 37 — Policy profile layer
 export * from "./policy";
+
+// Agent 41 — Usage limits engine
+export * from "./limits";

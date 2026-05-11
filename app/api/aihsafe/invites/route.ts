@@ -25,9 +25,11 @@ import {
   ok,
   unauthenticated,
   governanceDenied,
+  rateLimited,
   validationFail,
   serverError,
 } from "@/lib/aihsafe/api/envelopes";
+import { checkInviteLimits } from "@/lib/aihsafe/limits";
 import { readJson, parsePagination } from "@/lib/aihsafe/api/parse";
 import type { InviteDTO } from "@/types/aihsafe/dto";
 
@@ -94,6 +96,9 @@ export async function POST(req: NextRequest) {
   }
 
   const { recipientEmail, relationship, targetAgeTier, trustUnitId, familyUnitId } = parsed.data;
+
+  const limitCheck = await checkInviteLimits(user.id);
+  if (!limitCheck.allowed) return rateLimited(limitCheck.message);
 
   // Derive target's age tier server-side — never trust client-supplied ageTier for
   // governance decisions. The client hint (targetAgeTier) is ignored when the target

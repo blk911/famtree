@@ -142,6 +142,13 @@ export function unprocessable(message: string): NextResponse<ErrorResponse> {
   );
 }
 
+export function rateLimited(message: string): NextResponse<ErrorResponse> {
+  return NextResponse.json(
+    { ok: false, error: { message, code: "RATE_LIMITED", status: 429 }, meta: meta() },
+    { status: 429 }
+  );
+}
+
 export function serverError(message = "Internal server error"): NextResponse<ErrorResponse> {
   return NextResponse.json(
     { ok: false, error: { message, code: "INTERNAL_ERROR", status: 500 }, meta: meta() },

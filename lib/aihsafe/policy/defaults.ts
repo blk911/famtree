@@ -189,18 +189,18 @@ function limitsDefaults(tier: AgeTier): LimitsPolicy {
   switch (tier) {
     case AgeTier.CHILD:
     case AgeTier.PRETEEN:
-      return { dailyPostLimit: 10, dailyInviteLimit: 0, weeklyPostLimit: 50 };
+      return { dailyPostLimit: 10, dailyInviteLimit: 0, weeklyPostLimit: 50,  dailyCommentLimit: 20 };
 
     case AgeTier.TEEN:
-      return { dailyPostLimit: 20, dailyInviteLimit: 0, weeklyPostLimit: 100 };
+      return { dailyPostLimit: 20, dailyInviteLimit: 0, weeklyPostLimit: 100, dailyCommentLimit: 30 };
 
     case AgeTier.UNKNOWN:
-      return { dailyPostLimit: 20, dailyInviteLimit: 0, weeklyPostLimit: 100 };
+      return { dailyPostLimit: 20, dailyInviteLimit: 0, weeklyPostLimit: 100, dailyCommentLimit: 30 };
 
     case AgeTier.ADULT:
     case AgeTier.ELDER:
     default:
-      return { dailyPostLimit: 0, dailyInviteLimit: 0, weeklyPostLimit: 0 };
+      return { dailyPostLimit: 0,  dailyInviteLimit: 0, weeklyPostLimit: 0,   dailyCommentLimit: 0  };
   }
 }
 

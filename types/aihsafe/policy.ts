@@ -87,16 +87,18 @@ export interface InterestsPolicy {
 }
 
 // ─── LimitsPolicy ─────────────────────────────────────────────────────────────
-// Placeholder shape for Agent 41 (Limits Engine).
-// Ceiling definitions only — counter enforcement is Agent 41's responsibility.
+// Ceiling definitions enforced by lib/aihsafe/limits (Agent 41).
+// 0 = no limit enforced for that counter.
 
 export interface LimitsPolicy {
-  /** Max posts per calendar day. 0 = no limit. Mirrors PostingPolicy.dailyLimit. */
+  /** Max posts per calendar day. 0 = no limit. */
   dailyPostLimit: number;
-  /** Max invites per calendar day. 0 = no limit. Mirrors InvitePolicy.dailyLimit. */
+  /** Max invites per calendar day. 0 = no limit. */
   dailyInviteLimit: number;
   /** Max posts per rolling 7-day window. 0 = no limit. */
   weeklyPostLimit: number;
+  /** Max comments per calendar day. 0 = no limit. */
+  dailyCommentLimit: number;
 }
 
 // ─── EscalationPolicy ────────────────────────────────────────────────────────

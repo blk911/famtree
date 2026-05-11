@@ -20,9 +20,11 @@ import {
   ok,
   unauthenticated,
   governanceDenied,
+  rateLimited,
   validationFail,
   serverError,
 } from "@/lib/aihsafe/api/envelopes";
+import { checkPostLimits } from "@/lib/aihsafe/limits";
 import { readJson, parsePagination } from "@/lib/aihsafe/api/parse";
 import type { ActivityPostDTO } from "@/types/aihsafe/dto";
 
@@ -152,6 +154,9 @@ export async function POST(req: NextRequest) {
 
     const { bodyText, trustUnitId, familyUnitId, visibilityScope, attachmentType } = parsed.data;
     const scope = visibilityScope ?? VisibilityScope.TRUST_UNIT;
+
+    const limitCheck = await checkPostLimits(user.id);
+    if (!limitCheck.allowed) return rateLimited(limitCheck.message);
 
     const actor = await buildActorContext(asAIHUserId(user.id));
     const decision = canPostContent(actor, {

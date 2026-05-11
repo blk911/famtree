@@ -35,6 +35,9 @@ export const AuditEventKind = {
 
   // Founder settings
   FOUNDER_SETTINGS_UPDATED: "founder_settings.updated",
+
+  // Limits engine (Agent 41)
+  LIMIT_REACHED: "limits.reached",
 } as const;
 export type AuditEventKind = (typeof AuditEventKind)[keyof typeof AuditEventKind];
 

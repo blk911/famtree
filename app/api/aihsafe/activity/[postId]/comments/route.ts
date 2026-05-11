@@ -14,9 +14,11 @@ import {
   notFound,
   unauthenticated,
   governanceDenied,
+  rateLimited,
   validationFail,
   serverError,
 } from "@/lib/aihsafe/api/envelopes";
+import { checkCommentLimits } from "@/lib/aihsafe/limits";
 import { readJson } from "@/lib/aihsafe/api/parse";
 import type { ActivityCommentDTO } from "@/types/aihsafe/dto";
 
@@ -97,6 +99,9 @@ export async function POST(
     const body = await readJson(req);
     const parsed = CreateCommentSchema.safeParse(body);
     if (!parsed.success) return validationFail("Invalid request body");
+
+    const limitCheck = await checkCommentLimits(user.id);
+    if (!limitCheck.allowed) return rateLimited(limitCheck.message);
 
     const actor = await buildActorContext(asAIHUserId(user.id));
     const decision = canComment(actor, {
