@@ -24,6 +24,12 @@ import { SectionHeader }              from "@/components/aihsafe/common/SectionH
 import { ActivityFeed }               from "@/components/aihsafe/feed/ActivityFeed";
 import { MembershipPanel }            from "@/components/aihsafe/membership/MembershipPanel";
 import { GuardianInbox }              from "@/components/aihsafe/guardian/GuardianInbox";
+import {
+  FamilySafeTabs,
+  getVisibleTabs,
+  defaultTab,
+  type TabId,
+} from "@/components/aihsafe/navigation/FamilySafeTabs";
 
 import type {
   FamilyUnitDTO,
@@ -82,7 +88,15 @@ const railCard: React.CSSProperties = {
   marginBottom: 14,
 };
 
-// ─── Hero stat card (founder mode only) ──────────────────────────────────────
+const tabCard: React.CSSProperties = {
+  background:   "#fff",
+  borderRadius: 16,
+  border:       "1px solid #e7e5e4",
+  padding:      "22px 24px",
+  marginBottom: 14,
+};
+
+// ─── Hero stat card ───────────────────────────────────────────────────────────
 
 function LightStatCard({
   value, label, urgent = false,
@@ -109,7 +123,7 @@ function LightStatCard({
   );
 }
 
-// ─── Hero card (shared wrapper, content varies by mode) ───────────────────────
+// ─── Hero card (shared wrapper) ───────────────────────────────────────────────
 
 function HeroCard({ children }: { children: React.ReactNode }) {
   return (
@@ -118,7 +132,7 @@ function HeroCard({ children }: { children: React.ReactNode }) {
         position:     "relative",
         borderRadius: 22,
         overflow:     "hidden",
-        marginBottom: 20,
+        marginBottom: 16,
         background:   "#fffaf3",
         border:       "1px solid #eadfd2",
         boxShadow:    "0 2px 12px rgba(0,0,0,0.05)",
@@ -134,7 +148,7 @@ function HeroCard({ children }: { children: React.ReactNode }) {
           background: "linear-gradient(180deg, #7c3aed 0%, #2563eb 100%)",
         }}
       />
-      {/* Family image panel — hidden on narrow viewports via CSS */}
+      {/* Family image — hidden on narrow viewports */}
       <div
         aria-hidden="true"
         className="aihsafe-hero-img"
@@ -149,7 +163,6 @@ function HeroCard({ children }: { children: React.ReactNode }) {
           WebkitMaskImage:    "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,1) 65%)",
         }}
       />
-      {/* Content — z-indexed above image */}
       <div style={{ position: "relative", zIndex: 1, padding: "28px 32px 26px 26px" }}>
         {/* Shield badge */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -170,13 +183,13 @@ function HeroCard({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── Child read-only spaces panel ────────────────────────────────────────────
+// ─── Child read-only spaces panel ─────────────────────────────────────────────
 
 function ChildApprovedSpacesCard({
   units, loading,
 }: { units: TrustUnitDTO[]; loading: boolean }) {
   return (
-    <div style={railCard}>
+    <div style={tabCard}>
       <SectionHeader title="Your approved spaces" />
 
       {loading && (
@@ -217,6 +230,25 @@ function ChildApprovedSpacesCard({
   );
 }
 
+// ─── Tab panel wrapper (ARIA) ─────────────────────────────────────────────────
+
+function TabPanel({
+  id, activeTab, children,
+}: { id: TabId; activeTab: TabId; children: React.ReactNode }) {
+  const isActive = id === activeTab;
+  return (
+    <div
+      role="tabpanel"
+      id={`aihsafe-panel-${id}`}
+      aria-labelledby={`aihsafe-tab-${id}`}
+      hidden={!isActive}
+      style={isActive ? undefined : { display: "none" }}
+    >
+      {isActive && children}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
@@ -227,6 +259,7 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
   const [guardianLinks, setGuardianLinks] = useState<GuardianLinkDTO[]>([]);
   const [loading,       setLoading]       = useState(true);
   const [modal,         setModal]         = useState<ModalKind>(null);
+  const [activeTab,     setActiveTab]     = useState<TabId>(() => defaultTab(shellMode));
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -249,20 +282,23 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
 
   function closeModal() { setModal(null); load(); }
 
-  // Derived counts (used by founder hero + governance panels)
-  const pendingApprovals   = approvals.filter((a) => a.state === "pending");
-  const pendingInvites     = invites.filter((i) => i.status === "PENDING");
-  const mySpaces           = trustUnits.filter((u) =>
+  // ── Derived counts ──────────────────────────────────────────────────────────
+  const pendingApprovals  = approvals.filter((a) => a.state === "pending");
+  const pendingInvites    = invites.filter((i) => i.status === "PENDING");
+  const mySpaces          = trustUnits.filter((u) =>
     u.members.some((m) => m.userId === currentUserId && !m.exitedAt)
   );
-  const trustedAdultCount  = guardianLinks.filter((l) => !l.revokedAt).length;
-  const membershipCount    = mySpaces.reduce(
+  const trustedAdultCount = guardianLinks.filter((l) => !l.revokedAt).length;
+  const membershipCount   = mySpaces.reduce(
     (sum, u) => sum + u.members.filter((m) => !m.exitedAt).length, 0
   );
-  const isGuardian         = guardianLinks.some((l) => !l.revokedAt);
+  const isGuardian        = guardianLinks.some((l) => !l.revokedAt);
 
-  // ── Feed section label ──────────────────────────────────────────────────────
-  const feedLabel = shellMode === "child" ? "Your Family Feed" : "Family Activity";
+  // ── Tab visibility ──────────────────────────────────────────────────────────
+  const visibleTabs = getVisibleTabs(shellMode, isGuardian);
+
+  // ── Urgent badge: show count on Approvals tab when there are pending items ──
+  const pendingCount = pendingApprovals.length + pendingInvites.length;
 
   return (
     <div style={{ minHeight: "100vh", background: "#fafaf9", padding: "24px 20px 64px", boxSizing: "border-box" }}>
@@ -315,52 +351,35 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
         )}
 
         {/* ════════════════════════════════════════════════════════
-            PENDING ATTENTION — founder only
+            INTERNAL NAVIGATION TAB BAR
             ════════════════════════════════════════════════════════ */}
 
-        {shellMode === "founder" && (
-          <PendingAttention
-            pendingApprovals={pendingApprovals}
-            pendingInvites={invites}
-            loading={loading}
-          />
-        )}
+        <FamilySafeTabs
+          tabs={visibleTabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
 
         {/* ════════════════════════════════════════════════════════
-            MAIN GRID: center feed + right rail
+            TAB PANELS
             ════════════════════════════════════════════════════════ */}
 
-        <div
-          className="aihsafe-grid"
-          style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,360px)", gap: 16, alignItems: "start" }}
-        >
-          {/* ── CENTER: governed activity feed (all modes) ── */}
-          <div>
-            <div style={{ marginBottom: 10 }}>
-              <SectionHeader title={feedLabel} />
-            </div>
-            <ActivityFeed
-              currentUserId={currentUserId}
-              trustUnits={trustUnits}
-              viewerMode={shellMode}
-            />
-
-            {/* Relationship visibility — founder only (governance-level information) */}
-            {shellMode === "founder" && (
-              <RelationshipVisibilityCard
-                familyUnits={familyUnits}
-                trustUnits={trustUnits}
-                currentUserId={currentUserId}
-              />
-            )}
-          </div>
-
-          {/* ── RIGHT RAIL ── */}
-          <div>
-
-            {/* ── FOUNDER right rail ── */}
-            {shellMode === "founder" && (
-              <>
+        {/* ── OVERVIEW ──────────────────────────────────────────── */}
+        <TabPanel id="overview" activeTab={activeTab}>
+          {shellMode === "founder" && (
+            <div
+              className="aihsafe-grid"
+              style={{ display: "grid", gap: 16, alignItems: "start" }}
+            >
+              {/* Left: governance state */}
+              <div>
+                {pendingApprovals.length > 0 && (
+                  <PendingAttention
+                    pendingApprovals={pendingApprovals}
+                    pendingInvites={invites}
+                    loading={loading}
+                  />
+                )}
                 <GovernanceOverview
                   familyCount={familyUnits.length}
                   spaceCount={mySpaces.length}
@@ -368,7 +387,6 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
                   membershipCount={membershipCount}
                   loading={loading}
                 />
-
                 <FamilyHealthPanel
                   pendingApprovalCount={pendingApprovals.length}
                   spaceCount={mySpaces.length}
@@ -376,8 +394,10 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
                   trustedAdultCount={trustedAdultCount}
                   loading={loading}
                 />
+              </div>
 
-                {/* Quick Actions — all three available to founders */}
+              {/* Right: quick actions */}
+              <div>
                 <div style={railCard}>
                   <SectionHeader title="Quick Actions" />
                   <button type="button" style={actionBtn} onClick={() => setModal("invite")}>
@@ -402,72 +422,176 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
                     </div>
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
 
-                <TrustedExtensionsPanel
-                  guardianLinks={guardianLinks}
-                  currentUserId={currentUserId}
-                  loading={loading}
-                />
+          {shellMode === "member" && (
+            <div style={{ maxWidth: 680 }}>
+              {isGuardian && (
+                <div style={tabCard}>
+                  <SectionHeader title="Guardian Inbox" />
+                  <GuardianInbox />
+                </div>
+              )}
+              <div style={tabCard}>
+                <SectionHeader title="Your spaces" />
+                <MembershipPanel currentUserId={currentUserId} />
+              </div>
+              <div style={tabCard}>
+                <SectionHeader title="Quick Actions" />
+                <button type="button" style={{ ...actionBtn, marginBottom: 0 }} onClick={() => setModal("invite")}>
+                  <div style={iconBox("#f0fdf4")}>📨</div>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>Invite someone</div>
+                    <div style={{ fontSize: 12, color: "#a8a29e" }}>Add someone to your trusted spaces</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+        </TabPanel>
 
-                <FounderSettingsPreview />
+        {/* ── ACTIVITY ──────────────────────────────────────────── */}
+        <TabPanel id="activity" activeTab={activeTab}>
+          <div style={{ maxWidth: 720, margin: "0 auto" }}>
+            <ActivityFeed
+              currentUserId={currentUserId}
+              trustUnits={trustUnits}
+              viewerMode={shellMode}
+            />
+          </div>
+        </TabPanel>
 
-                <FamilySnapshot
-                  units={familyUnits}
-                  loading={loading}
-                  onCreateClick={() => setModal("family")}
-                />
-
+        {/* ── SPACES ────────────────────────────────────────────── */}
+        <TabPanel id="spaces" activeTab={activeTab}>
+          {shellMode === "founder" && (
+            <div
+              className="aihsafe-grid"
+              style={{ display: "grid", gap: 16, alignItems: "start" }}
+            >
+              <div>
                 <SpacesSnapshot
                   units={trustUnits}
                   currentUserId={currentUserId}
                   loading={loading}
                   onCreateClick={() => setModal("space")}
                 />
-              </>
-            )}
+              </div>
+              <div>
+                <FamilySnapshot
+                  units={familyUnits}
+                  loading={loading}
+                  onCreateClick={() => setModal("family")}
+                />
+              </div>
+            </div>
+          )}
 
-            {/* ── MEMBER right rail ── */}
-            {shellMode === "member" && (
-              <>
-                {/* Guardian inbox — only visible to users who have active guardian links */}
-                {isGuardian && (
-                  <div style={railCard}>
-                    <SectionHeader title="Guardian Inbox" />
-                    <GuardianInbox />
-                  </div>
-                )}
+          {shellMode === "member" && (
+            <div style={{ maxWidth: 680 }}>
+              <div style={tabCard}>
+                <SectionHeader title="Your spaces" />
+                <MembershipPanel currentUserId={currentUserId} />
+              </div>
+            </div>
+          )}
 
-                {/* Their trust unit memberships */}
-                <div style={railCard}>
-                  <SectionHeader title="Your spaces" />
-                  <MembershipPanel currentUserId={currentUserId} />
-                </div>
-
-                {/* Invite action — members can invite others within their spaces */}
-                <div style={railCard}>
-                  <SectionHeader title="Quick Actions" />
-                  <button type="button" style={{ ...actionBtn, marginBottom: 0 }} onClick={() => setModal("invite")}>
-                    <div style={iconBox("#f0fdf4")}>📨</div>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>Invite someone</div>
-                      <div style={{ fontSize: 12, color: "#a8a29e" }}>Add someone to your trusted spaces</div>
-                    </div>
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* ── CHILD right rail ── */}
-            {shellMode === "child" && (
+          {shellMode === "child" && (
+            <div style={{ maxWidth: 560 }}>
               <ChildApprovedSpacesCard units={mySpaces} loading={loading} />
-            )}
+            </div>
+          )}
+        </TabPanel>
 
+        {/* ── PEOPLE ────────────────────────────────────────────── */}
+        <TabPanel id="people" activeTab={activeTab}>
+          {shellMode === "founder" && (
+            <div
+              className="aihsafe-grid"
+              style={{ display: "grid", gap: 16, alignItems: "start" }}
+            >
+              <div>
+                <RelationshipVisibilityCard
+                  familyUnits={familyUnits}
+                  trustUnits={trustUnits}
+                  currentUserId={currentUserId}
+                />
+              </div>
+              <div>
+                <TrustedExtensionsPanel
+                  guardianLinks={guardianLinks}
+                  currentUserId={currentUserId}
+                  loading={loading}
+                />
+              </div>
+            </div>
+          )}
+
+          {shellMode === "member" && (
+            <div style={{ maxWidth: 680 }}>
+              <RelationshipVisibilityCard
+                familyUnits={familyUnits}
+                trustUnits={trustUnits}
+                currentUserId={currentUserId}
+              />
+            </div>
+          )}
+        </TabPanel>
+
+        {/* ── APPROVALS ─────────────────────────────────────────── */}
+        <TabPanel id="approvals" activeTab={activeTab}>
+          <div style={{ maxWidth: 720 }}>
+            {shellMode === "founder" && (
+              <PendingAttention
+                pendingApprovals={pendingApprovals}
+                pendingInvites={invites}
+                loading={loading}
+              />
+            )}
+            {(shellMode === "founder" || isGuardian) && (
+              <div style={tabCard}>
+                <SectionHeader title="Guardian Inbox" />
+                <GuardianInbox />
+              </div>
+            )}
           </div>
-        </div>
+        </TabPanel>
+
+        {/* ── SETTINGS ──────────────────────────────────────────── */}
+        <TabPanel id="settings" activeTab={activeTab}>
+          {shellMode === "founder" && (
+            <div style={{ maxWidth: 680 }}>
+              <FounderSettingsPreview />
+            </div>
+          )}
+        </TabPanel>
 
       </div>
 
-      {/* Quick-create modal — available to founder (all 3) and member (invite only) */}
+      {/* ── Pending badge indicator in tab (rendered via CSS counter) ────────── */}
+      {pendingCount > 0 && (
+        <style>{`
+          #aihsafe-tab-approvals::after {
+            content: "${pendingCount}";
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #d97706;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 9999px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            margin-left: 5px;
+            line-height: 1;
+          }
+        `}</style>
+      )}
+
+      {/* Quick-create modal */}
       {modal && (
         <QuickCreateModal
           title={

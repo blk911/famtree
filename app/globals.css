@@ -200,3 +200,48 @@
   }
 }
 
+/* ── AIH Safe: internal navigation tab bar ───────────────────────────────── */
+.aihsafe-tabs-bar {
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+  background: #f0efee;
+  border-radius: 14px;
+  margin-bottom: 22px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.aihsafe-tabs-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.aihsafe-tab {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #78716c;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, box-shadow 0.12s;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.aihsafe-tab:hover:not(.aihsafe-tab--active) {
+  background: rgba(255, 255, 255, 0.65);
+  color: #1c1917;
+}
+.aihsafe-tab--active {
+  background: #ffffff;
+  color: #1c1917;
+  font-weight: 650;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.09), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+.aihsafe-tab:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+

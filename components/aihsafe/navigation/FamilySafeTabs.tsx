@@ -1,0 +1,113 @@
+"use client";
+
+import { useRef } from "react";
+import type { FamilySafeShellMode } from "@/components/aihsafe/roles";
+
+// ─── Tab identifiers ──────────────────────────────────────────────────────────
+
+export type TabId =
+  | "overview"
+  | "activity"
+  | "spaces"
+  | "people"
+  | "approvals"
+  | "settings";
+
+interface Tab {
+  id:    TabId;
+  label: string;
+}
+
+// ─── Master tab order (determines display order in all modes) ─────────────────
+
+const ALL_TABS: Tab[] = [
+  { id: "overview",  label: "Overview"  },
+  { id: "activity",  label: "Activity"  },
+  { id: "spaces",    label: "Spaces"    },
+  { id: "people",    label: "People"    },
+  { id: "approvals", label: "Approvals" },
+  { id: "settings",  label: "Settings"  },
+];
+
+// ─── Role-aware tab list ──────────────────────────────────────────────────────
+
+export function getVisibleTabs(
+  shellMode:  FamilySafeShellMode,
+  isGuardian: boolean,
+): Tab[] {
+  let ids: TabId[];
+  if (shellMode === "founder") {
+    ids = ["overview", "activity", "spaces", "people", "approvals", "settings"];
+  } else if (shellMode === "member" && isGuardian) {
+    ids = ["overview", "activity", "spaces", "people", "approvals"];
+  } else if (shellMode === "member") {
+    ids = ["overview", "activity", "spaces", "people"];
+  } else {
+    // child / UNKNOWN routed to child
+    ids = ["activity", "spaces"];
+  }
+  return ALL_TABS.filter((t) => ids.includes(t.id));
+}
+
+export function defaultTab(shellMode: FamilySafeShellMode): TabId {
+  return shellMode === "child" ? "activity" : "overview";
+}
+
+// ─── Tab bar component ────────────────────────────────────────────────────────
+
+interface Props {
+  tabs:        Tab[];
+  activeTab:   TabId;
+  onTabChange: (tab: TabId) => void;
+}
+
+export function FamilySafeTabs({ tabs, activeTab, onTabChange }: Props) {
+  const barRef = useRef<HTMLDivElement>(null);
+
+  function handleKeyDown(e: React.KeyboardEvent, currentIndex: number) {
+    let nextIndex = currentIndex;
+    if (e.key === "ArrowRight") {
+      nextIndex = (currentIndex + 1) % tabs.length;
+    } else if (e.key === "ArrowLeft") {
+      nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    } else if (e.key === "Home") {
+      nextIndex = 0;
+    } else if (e.key === "End") {
+      nextIndex = tabs.length - 1;
+    } else {
+      return;
+    }
+    e.preventDefault();
+    const buttons = barRef.current?.querySelectorAll<HTMLButtonElement>("[role='tab']");
+    buttons?.[nextIndex]?.focus();
+    onTabChange(tabs[nextIndex].id);
+  }
+
+  return (
+    <div
+      ref={barRef}
+      role="tablist"
+      aria-label="Family Safe navigation"
+      className="aihsafe-tabs-bar"
+    >
+      {tabs.map((tab, i) => {
+        const isActive = tab.id === activeTab;
+        return (
+          <button
+            key={tab.id}
+            role="tab"
+            id={`aihsafe-tab-${tab.id}`}
+            aria-selected={isActive}
+            aria-controls={`aihsafe-panel-${tab.id}`}
+            tabIndex={isActive ? 0 : -1}
+            className={`aihsafe-tab${isActive ? " aihsafe-tab--active" : ""}`}
+            onClick={() => onTabChange(tab.id)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
