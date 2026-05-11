@@ -7,14 +7,14 @@ import {
   getPendingTrustRequestsSafe,
   serializeTrustGateRequests,
 } from "@/lib/trust";
-import { loadTreeViewPrefsSafe, loadTrustUnitsSafe } from "@/lib/tree/safe-data";
+import { loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { queryDashboardProfilePrompt, incrementDashboardProfilePromptSeen } from "@/lib/dashboard/safe-data";
 import { DashboardTrustUnitGate }  from "@/components/dashboard/DashboardTrustUnitGate";
 import { DashboardVaultTabs }      from "@/components/dashboard/DashboardVaultTabs";
 import { DashboardContextRail }    from "@/components/dashboard/DashboardContextRail";
 import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletionPrompt";
 import { IncomingIdentityAcks }    from "@/components/dashboard/IncomingIdentityAcks";
-import { TreeList, type FlatNode } from "@/components/TreeList";
+import type { FlatNode }           from "@/components/TreeList";
 import { listSentInvitesForSender } from "@/lib/invite/sentForSender";
 
 // ── Tree helpers ───────────────────────────────────────────────────────────────
@@ -92,10 +92,9 @@ export default async function DashboardPage() {
     trustUnits,
     promptRows,
     members,
-    invites,
+    treeInvites,
     newPosts,
     newComments,
-    treeViewPrefs,
   ] = await Promise.all([
     prisma.user.count(),
     listSentInvitesForSender(user.id, { take: 6 }),
@@ -126,11 +125,10 @@ export default async function DashboardPage() {
       orderBy: { createdAt:"desc" },
       take: 10,
     }),
-    loadTreeViewPrefsSafe(user.id),
   ]);
 
-  const joinedViaYou    = myInvites.filter(i => i.status === "REGISTERED").length;
-  const vaultNewCount   = newPosts.length + newComments.length;
+  const joinedViaYou   = myInvites.filter(i => i.status === "REGISTERED").length;
+  const vaultNewCount  = newPosts.length + newComments.length;
   const serializedTrustRequests = serializeTrustGateRequests(trustRequests);
 
   const missingProfilePhoto = !user.photoUrl;
@@ -143,11 +141,8 @@ export default async function DashboardPage() {
     await incrementDashboardProfilePromptSeen(user.id);
   }
 
-  const roots = buildTree(members, invites, user.id);
+  const roots = buildTree(members, treeInvites, user.id);
   const flat  = flattenTree(roots);
-  const treePrefsInitial = Object.fromEntries(
-    treeViewPrefs.map(p => [p.targetId, { muted: p.muted, hidden: p.hidden }]),
-  );
 
   // Serialize for client components
   const serializedInvites = myInvites.map(inv => ({
@@ -163,43 +158,47 @@ export default async function DashboardPage() {
       {showProfilePrompt && <ProfileCompletionPrompt />}
       <IncomingIdentityAcks />
 
-      {/* ── Stats ── */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"10px" }}>
-        {[
-          { label:"TREE MEMBERS",   value:totalMembers,      color:"#6366f1", href:"/tree"   },
-          { label:"INVITES SENT",   value:myInvites.length,  color:"#f59e0b", href:"/invite" },
-          { label:"JOINED VIA YOU", value:joinedViaYou,      color:"#10b981", href:"/invite" },
-        ].map(({ label, value, color, href }) => (
+      {/* ── 4-col metric + action strip ── */}
+      <div className="dashboard-metrics">
+        {/* Stat tiles */}
+        {([
+          { label:"TREE MEMBERS",   value:totalMembers,     color:"#6366f1", href:"/tree"   },
+          { label:"INVITES SENT",   value:myInvites.length, color:"#f59e0b", href:"/invite" },
+          { label:"JOINED VIA YOU", value:joinedViaYou,     color:"#10b981", href:"/invite" },
+        ] as const).map(({ label, value, color, href }) => (
           <Link key={label} href={href} style={{
-            ...card, padding:"10px 16px", borderLeft:`3px solid ${color}`,
-            textDecoration:"none", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"12px",
+            ...card, padding:"12px 16px", borderLeft:`3px solid ${color}`,
+            textDecoration:"none", display:"flex", alignItems:"center",
+            justifyContent:"space-between", gap:"10px",
           }}>
-            <span style={{ fontSize:"11px", fontWeight:700, color:"#78716c", letterSpacing:"0.06em", textTransform:"uppercase" }}>{label}</span>
-            <span style={{ fontSize:"20px", fontWeight:800, color:"#1c1917", lineHeight:1 }}>{value}</span>
+            <span style={{ fontSize:"11px", fontWeight:700, color:"#78716c", letterSpacing:"0.06em", textTransform:"uppercase" }}>
+              {label}
+            </span>
+            <span style={{ fontSize:"20px", fontWeight:800, color:"#1c1917", lineHeight:1 }}>
+              {value}
+            </span>
           </Link>
         ))}
+
+        {/* Invite action tile */}
+        <Link href="/invite" style={{
+          ...card, padding:"12px 16px",
+          background:"linear-gradient(135deg,#1a1a2e,#0f3460)",
+          borderLeft:"3px solid #6366f1",
+          textDecoration:"none", display:"flex", alignItems:"center",
+          justifyContent:"space-between", gap:"10px",
+        }}>
+          <span style={{ fontSize:"11px", fontWeight:700, color:"rgba(255,255,255,0.6)", letterSpacing:"0.06em", textTransform:"uppercase" }}>
+            INVITE
+          </span>
+          <span style={{ fontSize:"20px", lineHeight:1 }}>✉️</span>
+        </Link>
       </div>
 
-      {/* ── Invite quick action ── */}
-      <Link href="/invite" style={{
-        ...card, padding:"16px 20px", textDecoration:"none",
-        display:"flex", alignItems:"center", gap:"14px",
-      }}>
-        <div style={{
-          width:"40px", height:"40px", borderRadius:"11px", flexShrink:0,
-          background:"linear-gradient(135deg,#1a1a2e,#0f3460)",
-          display:"flex", alignItems:"center", justifyContent:"center", fontSize:"18px",
-        }}>✉️</div>
-        <div>
-          <p style={{ fontWeight:700, color:"#1c1917", fontSize:"15px", margin:0 }}>Invite someone</p>
-          <p style={{ color:"#a8a29e", fontSize:"12px", margin:"2px 0 0" }}>Send a photo-verified invite</p>
-        </div>
-      </Link>
-
-      {/* ── Two-column: tabbed content + context rail ── */}
+      {/* ── Two-column: tabbed content hub + context rail ── */}
       <div className="dashboard-body">
 
-        {/* Left: trust gate + tabbed vault/activity */}
+        {/* Left: trust gate + tabbed message/activity hub */}
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
           <DashboardTrustUnitGate initialRequests={serializedTrustRequests} currentUserId={user.id} />
           <DashboardVaultTabs
@@ -208,34 +207,6 @@ export default async function DashboardPage() {
             newCommentsCount={newComments.length}
             invites={serializedInvites}
           />
-          {/* Family tree (member-owned view, collapsible — kept below tabs) */}
-          {flat.length > 0 && (
-            <div style={{ ...card, padding:"16px 20px" }}>
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-                <span style={{ fontSize:13, fontWeight:700, color:"#1c1917" }}>
-                  Family Tree
-                  <span style={{
-                    marginLeft:8, fontSize:11, fontWeight:700, color:"#78716c",
-                    background:"#f5f4f0", borderRadius:999, padding:"2px 8px",
-                  }}>{flat.length}</span>
-                </span>
-                <Link href="/tree" style={{ fontSize:12, color:"#6366f1", fontWeight:600, textDecoration:"none" }}>
-                  View full →
-                </Link>
-              </div>
-              <TreeList
-                items={flat.slice(0, 8)}
-                currentUserId={user.id}
-                initialPrefs={treePrefsInitial}
-                privacyNote="short"
-              />
-              {flat.length > 8 && (
-                <Link href="/tree" style={{ display:"block", textAlign:"center", marginTop:10, fontSize:13, color:"#6366f1", textDecoration:"none", fontWeight:500 }}>
-                  +{flat.length - 8} more — view full tree →
-                </Link>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Right: context rail */}

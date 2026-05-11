@@ -190,6 +190,18 @@
   }
 }
 
+/* ── Member dashboard: 4-col metric strip → 2-col on narrow ─────────────── */
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 680px) {
+  .dashboard-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 /* ── Member dashboard: main column + context rail → 1-col on mobile ─────── */
 .dashboard-body {
   display: grid;
