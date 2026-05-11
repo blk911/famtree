@@ -8,10 +8,12 @@ import {
   listInvites,
   listGuardianLinks,
 } from "@/components/aihsafe/common/apiClient";
-import { GovernanceOverview }         from "@/components/aihsafe/founder/GovernanceOverview";
 import { PendingAttention }           from "@/components/aihsafe/founder/PendingAttention";
 import { FamilyHealthPanel }          from "@/components/aihsafe/founder/FamilyHealthPanel";
 import { FounderSettingsPreview }     from "@/components/aihsafe/founder/FounderSettingsPreview";
+import { OverviewCommandCard }        from "@/components/aihsafe/founder/OverviewCommandCard";
+import { NextBestActions }            from "@/components/aihsafe/founder/NextBestActions";
+import { RecentActivityTeaser }       from "@/components/aihsafe/founder/RecentActivityTeaser";
 import { QuickCreateModal }           from "@/components/aihsafe/dashboard/QuickCreateModal";
 import { FamilyCreatePanel }          from "@/components/aihsafe/family/FamilyCreatePanel";
 import { TrustUnitCreatePanel }       from "@/components/aihsafe/trust-unit/TrustUnitCreatePanel";
@@ -373,21 +375,13 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
               className="aihsafe-grid"
               style={{ display: "grid", gap: 16, alignItems: "start" }}
             >
-              {/* Left: governance state */}
+              {/* Left: attention signal + health + activity teaser */}
               <div>
-                {pendingApprovals.length > 0 && (
-                  <PendingAttention
-                    pendingApprovals={pendingApprovals}
-                    pendingInvites={invites}
-                    loading={loading}
-                  />
-                )}
-                <GovernanceOverview
-                  familyCount={familyUnits.length}
-                  spaceCount={mySpaces.length}
-                  trustedAdults={trustedAdultCount}
-                  membershipCount={membershipCount}
+                <OverviewCommandCard
+                  pendingApprovalCount={pendingApprovals.length}
+                  pendingInviteCount={pendingInvites.length}
                   loading={loading}
+                  onReviewApprovals={() => setActiveTab("approvals")}
                 />
                 <FamilyHealthPanel
                   pendingApprovalCount={pendingApprovals.length}
@@ -396,52 +390,42 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
                   trustedAdultCount={trustedAdultCount}
                   loading={loading}
                 />
+                <RecentActivityTeaser onSeeAll={() => setActiveTab("activity")} />
               </div>
 
-              {/* Right: quick actions */}
+              {/* Right: contextual next steps */}
               <div>
-                <div style={railCard}>
-                  <SectionHeader title="Quick Actions" />
-                  <button type="button" style={actionBtn} onClick={() => setModal("invite")}>
-                    <div style={iconBox("#f0fdf4")}>📨</div>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>Invite someone</div>
-                      <div style={{ fontSize: 12, color: "#a8a29e" }}>Send a governed invite</div>
-                    </div>
-                  </button>
-                  <button type="button" style={actionBtn} onClick={() => setModal("family")}>
-                    <div style={iconBox("#eff6ff")}>🏠</div>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>New family group</div>
-                      <div style={{ fontSize: 12, color: "#a8a29e" }}>Your household or close relatives</div>
-                    </div>
-                  </button>
-                  <button type="button" style={{ ...actionBtn, marginBottom: 0 }} onClick={() => setModal("space")}>
-                    <div style={iconBox("#faf5ff")}>🤝</div>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>New trusted space</div>
-                      <div style={{ fontSize: 12, color: "#a8a29e" }}>Peer pod, extended circle, guardian hub</div>
-                    </div>
-                  </button>
-                </div>
+                <NextBestActions
+                  shellMode={shellMode}
+                  isGuardian={isGuardian}
+                  pendingApprovalCount={pendingApprovals.length}
+                  totalSpaceCount={mySpaces.length + familyUnits.length}
+                  trustedAdultCount={trustedAdultCount}
+                  onTabChange={setActiveTab}
+                  onInvite={() => setModal("invite")}
+                  onCreateSpace={() => setModal("space")}
+                  onCreateFamily={() => setModal("family")}
+                />
               </div>
             </div>
           )}
 
           {shellMode === "member" && (
             <div style={{ maxWidth: 680 }}>
-              {/* Guardian inbox — action-urgent, right place for Overview */}
+              {/* Compact guardian attention signal — routes to Approvals tab */}
               {isGuardian && (
-                <div style={tabCard}>
-                  <SectionHeader title="Guardian Inbox" />
-                  <GuardianInbox />
-                </div>
+                <OverviewCommandCard
+                  pendingApprovalCount={pendingApprovals.length}
+                  pendingInviteCount={0}
+                  loading={loading}
+                  onReviewApprovals={() => setActiveTab("approvals")}
+                />
               )}
 
-              {/* Network summary — compact, directs to Spaces tab for full list */}
+              {/* Network summary — compact, directs to Spaces/People tabs */}
               <div style={tabCard}>
                 <SectionHeader title="Your network" />
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
                   <LightStatCard value={loading ? "…" : mySpaces.length} label="spaces you're in" />
                   {isGuardian && (
                     <LightStatCard value={loading ? "…" : trustedAdultCount} label="trusted adults" />
@@ -453,22 +437,89 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
                   </p>
                 )}
                 {!loading && mySpaces.length > 0 && (
-                  <p style={{ fontSize: 12, color: "#a8a29e", margin: 0 }}>
-                    View and manage your memberships in the <strong style={{ color: "#78716c" }}>Spaces</strong> tab.
-                  </p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("spaces")}
+                      style={{
+                        background:   "none",
+                        border:       "1px solid #e7e5e4",
+                        borderRadius: 8,
+                        padding:      "5px 12px",
+                        fontSize:     12,
+                        fontWeight:   600,
+                        color:        "#57534e",
+                        cursor:       "pointer",
+                      }}
+                    >
+                      Manage spaces →
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("people")}
+                      style={{
+                        background:   "none",
+                        border:       "1px solid #e7e5e4",
+                        borderRadius: 8,
+                        padding:      "5px 12px",
+                        fontSize:     12,
+                        fontWeight:   600,
+                        color:        "#57534e",
+                        cursor:       "pointer",
+                      }}
+                    >
+                      See people →
+                    </button>
+                  </div>
                 )}
               </div>
 
-              {/* Invite action */}
+              {/* Contextual next steps */}
+              <NextBestActions
+                shellMode={shellMode}
+                isGuardian={isGuardian}
+                pendingApprovalCount={pendingApprovals.length}
+                totalSpaceCount={mySpaces.length}
+                trustedAdultCount={trustedAdultCount}
+                onTabChange={setActiveTab}
+                onInvite={() => setModal("invite")}
+                onCreateSpace={() => setModal("space")}
+                onCreateFamily={() => setModal("family")}
+              />
+            </div>
+          )}
+
+          {shellMode === "child" && (
+            <div style={{ maxWidth: 540 }}>
               <div style={tabCard}>
-                <SectionHeader title="Quick Actions" />
-                <button type="button" style={{ ...actionBtn, marginBottom: 0 }} onClick={() => setModal("invite")}>
-                  <div style={iconBox("#f0fdf4")}>📨</div>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>Invite someone</div>
-                    <div style={{ fontSize: 12, color: "#a8a29e" }}>Add someone to your trusted spaces</div>
-                  </div>
-                </button>
+                <div style={{ textAlign: "center", padding: "12px 0 20px" }}>
+                  <div style={{ fontSize: 44, marginBottom: 12 }}>❤️</div>
+                  <p style={{ fontWeight: 700, fontSize: 17, color: "#1c1917", margin: "0 0 8px" }}>
+                    You&apos;re in your family&apos;s safe space.
+                  </p>
+                  <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 24px", maxWidth: 310, marginInline: "auto", lineHeight: 1.6 }}>
+                    Everything you share here is private to the circles your family has approved. Only trusted people can see it.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("activity")}
+                    style={{
+                      display:      "inline-flex",
+                      alignItems:   "center",
+                      gap:          8,
+                      padding:      "10px 22px",
+                      borderRadius: 11,
+                      border:       "none",
+                      background:   "#1c1917",
+                      color:        "#fff",
+                      fontWeight:   700,
+                      fontSize:     13,
+                      cursor:       "pointer",
+                    }}
+                  >
+                    💬 See what&apos;s happening
+                  </button>
+                </div>
               </div>
             </div>
           )}
