@@ -12,16 +12,14 @@ import { GovernanceOverview }         from "@/components/aihsafe/founder/Governa
 import { PendingAttention }           from "@/components/aihsafe/founder/PendingAttention";
 import { FamilyHealthPanel }          from "@/components/aihsafe/founder/FamilyHealthPanel";
 import { FounderSettingsPreview }     from "@/components/aihsafe/founder/FounderSettingsPreview";
-import { FamilySnapshot }             from "@/components/aihsafe/dashboard/FamilySnapshot";
-import { SpacesSnapshot }             from "@/components/aihsafe/dashboard/SpacesSnapshot";
 import { QuickCreateModal }           from "@/components/aihsafe/dashboard/QuickCreateModal";
 import { FamilyCreatePanel }          from "@/components/aihsafe/family/FamilyCreatePanel";
 import { TrustUnitCreatePanel }       from "@/components/aihsafe/trust-unit/TrustUnitCreatePanel";
 import { InvitePanel }                from "@/components/aihsafe/invite/InvitePanel";
 import { SectionHeader }              from "@/components/aihsafe/common/SectionHeader";
 import { ActivityFeed }               from "@/components/aihsafe/feed/ActivityFeed";
-import { MembershipPanel }            from "@/components/aihsafe/membership/MembershipPanel";
 import { GuardianInbox }              from "@/components/aihsafe/guardian/GuardianInbox";
+import { SpacesTab }                  from "@/components/aihsafe/spaces/SpacesTab";
 import {
   FamilySafeTabs,
   getVisibleTabs,
@@ -175,53 +173,6 @@ function HeroCard({ children }: { children: React.ReactNode }) {
         </div>
         {children}
       </div>
-    </div>
-  );
-}
-
-// ─── Child read-only spaces panel ─────────────────────────────────────────────
-
-function ChildApprovedSpacesCard({
-  units, loading,
-}: { units: TrustUnitDTO[]; loading: boolean }) {
-  return (
-    <div style={tabCard}>
-      <SectionHeader title="Your approved spaces" />
-
-      {loading && (
-        <p style={{ fontSize: 13, color: "#a8a29e", margin: 0 }}>Loading…</p>
-      )}
-
-      {!loading && units.length === 0 && (
-        <p style={{ fontSize: 13, color: "#78716c", margin: 0, lineHeight: 1.5 }}>
-          You haven&apos;t been added to a trusted space yet. A family member will add you in.
-        </p>
-      )}
-
-      {!loading && units.map((u, i) => (
-        <div
-          key={u.id}
-          style={{
-            padding:      "10px 0",
-            borderBottom: i < units.length - 1 ? "1px solid #f4f4f5" : "none",
-            display:      "flex",
-            alignItems:   "center",
-            gap:          8,
-          }}
-        >
-          <span style={{ fontSize: 18 }}>
-            {{ family: "🏠", peer: "⚽", extended: "🌿", guardian: "🛡" }[u.kind] ?? "🤝"}
-          </span>
-          <div>
-            <div style={{ fontWeight: 600, fontSize: 14, color: "#1c1917" }}>
-              {u.name?.trim() ? u.name : "Trusted space"}
-            </div>
-            <div style={{ fontSize: 12, color: "#78716c" }}>
-              {u.members.filter((m) => !m.exitedAt).length} members
-            </div>
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
@@ -537,43 +488,18 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
 
         {/* ── SPACES ────────────────────────────────────────────── */}
         <TabPanel id="spaces" activeTab={activeTab}>
-          {shellMode === "founder" && (
-            <div
-              className="aihsafe-grid"
-              style={{ display: "grid", gap: 16, alignItems: "start" }}
-            >
-              <div>
-                <SpacesSnapshot
-                  units={trustUnits}
-                  currentUserId={currentUserId}
-                  loading={loading}
-                  onCreateClick={() => setModal("space")}
-                />
-              </div>
-              <div>
-                <FamilySnapshot
-                  units={familyUnits}
-                  loading={loading}
-                  onCreateClick={() => setModal("family")}
-                />
-              </div>
-            </div>
-          )}
-
-          {shellMode === "member" && (
-            <div style={{ maxWidth: 680 }}>
-              <div style={tabCard}>
-                <SectionHeader title="Your spaces" />
-                <MembershipPanel currentUserId={currentUserId} />
-              </div>
-            </div>
-          )}
-
-          {shellMode === "child" && (
-            <div style={{ maxWidth: 560 }}>
-              <ChildApprovedSpacesCard units={mySpaces} loading={loading} />
-            </div>
-          )}
+          <SpacesTab
+            currentUserId={currentUserId}
+            shellMode={shellMode}
+            trustUnits={trustUnits}
+            familyUnits={familyUnits}
+            invites={invites}
+            loading={loading}
+            onCreateSpace={() => setModal("space")}
+            onCreateFamily={() => setModal("family")}
+            onInvite={() => setModal("invite")}
+            onReload={load}
+          />
         </TabPanel>
 
         {/* ── PEOPLE ────────────────────────────────────────────── */}
