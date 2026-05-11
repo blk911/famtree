@@ -105,15 +105,11 @@ function isScopePermittedFor(actor: ActorContext, scope: VisibilityScope): boole
   if (actor.ageTier === AgeTier.TEEN) {
     return (TEEN_ALLOWED_SCOPES as readonly string[]).includes(scope);
   }
-  // TODO(Agent 37/38): UNKNOWN tier should not be treated as adult-permissive here.
-  // The policy layer (lib/aihsafe/policy/defaults.ts) assigns conservative UNKNOWN
-  // defaults (similar to TEEN), but this kernel function still returns true for UNKNOWN,
-  // meaning a user without a DOB bypasses scope gating at the kernel layer.
-  // Resolution: Agent 38 should enforce that UNKNOWN users' AihPolicyProfile.visibilityPolicy
-  // restricts allowedScopes before this kernel function is called, or this function
-  // should accept a ResolvedPolicyProfile and short-circuit on policy.visibility.allowedScopes.
-  // Until then, the kernel remains unchanged to avoid breaking existing flows.
-  return true; // ADULT, ELDER, UNKNOWN — all scopes permitted at this layer (see TODO above)
+  if (actor.ageTier === AgeTier.UNKNOWN) {
+    // Conservative: no DOB means unverified age — treat like TEEN until DOB is provided.
+    return (TEEN_ALLOWED_SCOPES as readonly string[]).includes(scope);
+  }
+  return true; // ADULT, ELDER
 }
 
 // ─── Pure utility functions (exported) ────────────────────────────────────────

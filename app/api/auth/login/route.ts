@@ -4,6 +4,7 @@ import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { verifyPassword, setSessionCookie } from "@/lib/auth";
+import { refreshPolicySnapshotIfTierChanged } from "@/lib/aihsafe/policy";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -79,6 +80,10 @@ export async function POST(req: NextRequest) {
         select: { id: true },
       }),
     ]);
+
+    // Refresh Family Safe policy snapshot if age tier has changed since last login.
+    // Fire-and-forget: never blocks the login response.
+    refreshPolicySnapshotIfTierChanged(user.id).catch(console.error);
 
     return NextResponse.json({
       success: true,

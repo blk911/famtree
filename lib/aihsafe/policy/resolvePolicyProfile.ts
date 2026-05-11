@@ -141,6 +141,71 @@ export async function resolvePolicyProfile(userId: string): Promise<ResolvedPoli
   };
 }
 
+// ─── ensurePolicyProfile ──────────────────────────────────────────────────────
+
+/**
+ * Convenience wrapper for post-registration use.
+ * Derives age tier from dateOfBirth, loads founder settings, then upserts the
+ * AihPolicyProfile row with safe defaults. Idempotent — safe to call multiple times.
+ *
+ * Called by: registration route (immediately after user creation)
+ */
+export async function ensurePolicyProfile(
+  userId: string,
+  dateOfBirth: Date | null,
+): Promise<void> {
+  const ageTier = deriveAgeTier(dateOfBirth);
+  const founderSettings = await loadFounderSettings();
+  await createDefaultPolicyProfileRow(userId, ageTier, founderSettings);
+}
+
+// ─── refreshPolicySnapshotIfTierChanged ───────────────────────────────────────
+
+/**
+ * On login: detect whether the stored ageTierSnapshot has drifted from the
+ * current live tier (e.g. user has aged from TEEN to ADULT, or DOB was
+ * added after registration). If so, re-derive policy defaults for the new
+ * tier and write them into the profile row.
+ *
+ * Only JSON blobs managed by the system are refreshed. interestsPolicy is
+ * preserved because it may contain user-specific category selections (Agent 40).
+ *
+ * Safe to call fire-and-forget: `.catch(console.error)`.
+ */
+export async function refreshPolicySnapshotIfTierChanged(userId: string): Promise<void> {
+  const [user, stored] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { dateOfBirth: true } }),
+    prisma.aihPolicyProfile.findUnique({ where: { userId }, select: { ageTierSnapshot: true } }),
+  ]);
+
+  if (!user || !stored) return; // no profile row yet — ensurePolicyProfile handles creation
+
+  const currentTier = deriveAgeTier(user.dateOfBirth ?? null);
+  if ((stored.ageTierSnapshot as AgeTier) === currentTier) return; // no drift
+
+  const founderSettings = await loadFounderSettings();
+  const fresh = buildDefaultPolicyProfile(
+    userId,
+    currentTier,
+    founderSettings,
+    founderSettings ? PolicySourceType.FOUNDER_DEFAULT : PolicySourceType.SYSTEM_DEFAULT,
+  );
+
+  await prisma.aihPolicyProfile.update({
+    where: { userId },
+    data: {
+      ageTierSnapshot:  currentTier,
+      sourceType:       fresh.sourceType,
+      postingPolicy:    fresh.posting    as object,
+      invitePolicy:     fresh.invite     as object,
+      visibilityPolicy: fresh.visibility as object,
+      escalationPolicy: fresh.escalation as object,
+      limitsPolicy:     fresh.limits     as object,
+      // interestsPolicy intentionally preserved
+    },
+  });
+}
+
 // ─── createDefaultPolicyProfileRow ────────────────────────────────────────────
 
 /**

@@ -2,5 +2,10 @@
 // Import from here: import { resolvePolicyProfile, ... } from "@/lib/aihsafe/policy"
 
 export { buildDefaultPolicyProfile } from "./defaults";
-export { resolvePolicyProfile, createDefaultPolicyProfileRow } from "./resolvePolicyProfile";
+export {
+  resolvePolicyProfile,
+  createDefaultPolicyProfileRow,
+  ensurePolicyProfile,
+  refreshPolicySnapshotIfTierChanged,
+} from "./resolvePolicyProfile";
 export { projectChildPolicy } from "./projectChildPolicy";

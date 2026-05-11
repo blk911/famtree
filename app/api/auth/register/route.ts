@@ -7,6 +7,7 @@ import { hashPassword, setSessionCookie } from "@/lib/auth";
 import { normalizeInviteEmail } from "@/lib/invite";
 import { sendWelcomeEmail } from "@/lib/email";
 import { resolveTrustUnitPendingInvitesOnRegister } from "@/lib/trust/tuProposal";
+import { ensurePolicyProfile } from "@/lib/aihsafe/policy";
 import { z } from "zod";
 
 const registerSchema = z.object({
@@ -116,6 +117,11 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+
+    // Create the user's Family Safe policy profile with safe defaults for their age tier.
+    // Fire-and-forget: profile creation failure must not block successful registration.
+    // resolvePolicyProfile() gracefully handles missing rows (returns system defaults).
+    ensurePolicyProfile(user.id, user.dateOfBirth ?? null).catch(console.error);
 
     await setSessionCookie(user.id, req);
     await sendWelcomeEmail(user).catch(console.error); // non-blocking
