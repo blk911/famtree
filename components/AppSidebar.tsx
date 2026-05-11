@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, User, Users, Mail,
+  LayoutDashboard, Users, Mail,
   LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2, Terminal,
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -19,13 +19,6 @@ const INVITE = { href: "/invite", label: "Invite", icon: Mail };
 const FAMILY_ITEMS = [
   { href: "/tree", label: "Tree" },
   { href: "/family-vault/family-units", label: "Units" },
-];
-
-// Vault sub-items — feeds + profile only
-const VAULT_ITEMS = [
-  { href: "/family-vault/posts", label: "Open Feed" },
-  { href: "/family-vault/private", label: "Private Feed" },
-  { href: "/profile", label: "My Posts" },
 ];
 
 // Settings sub-items (admin only — shown beneath the Settings accordion)
@@ -47,14 +40,6 @@ export function AppSidebar({ user, open = false }: Props) {
     pathname.startsWith("/tree/") ||
     pathname === "/family-vault/family-units";
 
-  const vaultActive =
-    pathname === "/family-vault/posts" ||
-    pathname.startsWith("/family-vault/posts/") ||
-    pathname === "/family-vault/private" ||
-    pathname.startsWith("/family-vault/private/") ||
-    pathname === "/profile" ||
-    pathname.startsWith("/profile/");
-
   const adminZone = pathname === "/admin" || pathname.startsWith("/admin/");
   const settingsActive =
     pathname === "/settings" ||
@@ -62,7 +47,6 @@ export function AppSidebar({ user, open = false }: Props) {
     adminZone;
 
   const [familyOpen, setFamilyOpen] = useState(familyActive);
-  const [vaultOpen, setVaultOpen] = useState(vaultActive);
   const [settingsOpen, setSettingsOpen] = useState(settingsActive);
 
   /** Expand Settings submenu whenever we're on Settings or any /admin route (client navigations skip useState init). */
@@ -188,53 +172,6 @@ export function AppSidebar({ user, open = false }: Props) {
                       background: active ? "white" : "rgba(255,255,255,0.3)",
                     }}
                   />
-                  {label}
-                </Link>
-              );
-            })}
-          </div>
-        )}
-
-        {/* My Vault accordion */}
-        <button
-          type="button"
-          onClick={() => {
-            if (!vaultActive) {
-              router.push("/family-vault/posts");
-              setVaultOpen(true);
-              return;
-            }
-            setVaultOpen((v) => !v);
-          }}
-          style={{
-            ...linkStyle(vaultActive),
-            width:"100%",
-            background: vaultActive
-              ? "linear-gradient(135deg,rgba(233,108,80,0.75),rgba(244,162,97,0.55))"
-              : "transparent",
-            border: vaultActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
-            cursor:"pointer",
-          }}
-        >
-          <User style={{width:"18px",height:"18px",flexShrink:0}} />
-          <span style={{flex:1,textAlign:"left"}}>My Vault</span>
-          <ChevronDown style={{
-            width:"15px",height:"15px",flexShrink:0,
-            transform: vaultOpen ? "rotate(180deg)" : "rotate(0deg)",
-            transition:"transform 0.2s",
-          }} />
-        </button>
-
-        {vaultOpen && (
-          <div style={{marginBottom:"3px"}}>
-            {VAULT_ITEMS.map(({ href, label }) => {
-              const active = pathname === href || (href !== "/profile" && pathname.startsWith(href + "/"));
-              return (
-                <Link key={href} href={href} style={subLinkStyle(active)}>
-                  <span style={{
-                    width:"5px",height:"5px",borderRadius:"50%",flexShrink:0,
-                    background: active ? "white" : "rgba(255,255,255,0.3)",
-                  }} />
                   {label}
                 </Link>
               );

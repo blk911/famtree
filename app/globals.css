@@ -190,6 +190,19 @@
   }
 }
 
+/* ── Member dashboard: main column + context rail → 1-col on mobile ─────── */
+.dashboard-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 232px;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .dashboard-body {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── AIH Safe: relational dashboard 2-col grid → 1-col on mobile ─────────── */
 .aihsafe-grid {
   grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
