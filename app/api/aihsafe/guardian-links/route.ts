@@ -17,6 +17,7 @@ import { deriveAgeTier } from "@/lib/aihsafe";
 import {
   created,
   ok,
+  forbidden,
   unauthenticated,
   governanceDenied,
   validationFail,
@@ -87,6 +88,19 @@ export async function POST(req: NextRequest) {
   }
 
   const { childUserId, kind, permissionLevel } = parsed.data;
+
+  // Enforce enableTrustedAdults: if the founder has disabled trusted-adult relationships,
+  // reject any attempt to create one (regardless of actor role).
+  if (kind === "trusted_adult") {
+    const fs = await prisma.aihFounderSettings.findFirst({
+      select: { enableTrustedAdults: true },
+    });
+    if (fs && !fs.enableTrustedAdults) {
+      return forbidden(
+        "Trusted adult relationships are not enabled for this network. The family administrator can enable them in settings."
+      );
+    }
+  }
 
   // Load target child user to build target context
   const childUser = await prisma.user.findUnique({

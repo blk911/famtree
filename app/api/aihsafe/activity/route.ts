@@ -11,13 +11,16 @@ import {
   canPostContent,
   emitAuditEvent,
   listMembershipsForUser,
+  resolvePolicyProfile,
 } from "@/lib/aihsafe";
 import { asAIHUserId } from "@/types/aihsafe/ids";
 import { VisibilityScope } from "@/types/aihsafe/visibility";
+import { isMinorTier } from "@/types/aihsafe/age-tiers";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
 import {
   created,
   ok,
+  forbidden,
   unauthenticated,
   governanceDenied,
   rateLimited,
@@ -153,12 +156,35 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) return validationFail("Invalid request body");
 
     const { bodyText, trustUnitId, familyUnitId, visibilityScope, attachmentType } = parsed.data;
-    const scope = visibilityScope ?? VisibilityScope.TRUST_UNIT;
 
     const limitCheck = await checkPostLimits(user.id);
     if (!limitCheck.allowed) return rateLimited(limitCheck.message);
 
     const actor = await buildActorContext(asAIHUserId(user.id));
+
+    // ── Policy enforcement ────────────────────────────────────────────────────
+    // For minor actors: enforce allowMinorPosting and use policy-resolved default scope.
+    // For adult actors: use the founder's defaultVisibilityScope when no scope supplied.
+    let scope: VisibilityScope;
+    if (isMinorTier(actor.ageTier)) {
+      const policy = await resolvePolicyProfile(user.id);
+      if (!policy.posting.allowed) {
+        return forbidden(
+          "Posting is currently disabled for your account. Ask your guardian if you have questions."
+        );
+      }
+      scope = visibilityScope ?? (policy.visibility.defaultScope as VisibilityScope);
+    } else {
+      if (visibilityScope) {
+        scope = visibilityScope;
+      } else {
+        const fs = await prisma.aihFounderSettings.findFirst({
+          select: { defaultVisibilityScope: true },
+        });
+        scope = (fs?.defaultVisibilityScope as VisibilityScope | undefined) ?? VisibilityScope.TRUST_UNIT;
+      }
+    }
+
     const decision = canPostContent(actor, {
       visibilityScope: scope,
       trustUnitId:     trustUnitId as any,
