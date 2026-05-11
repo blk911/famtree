@@ -95,6 +95,8 @@ export default async function DashboardPage() {
     treeInvites,
     newPosts,
     newComments,
+    feedPreviewsRaw,
+    myPostPreviewsRaw,
   ] = await Promise.all([
     prisma.user.count(),
     listSentInvitesForSender(user.id, { take: 6 }),
@@ -125,11 +127,41 @@ export default async function DashboardPage() {
       orderBy: { createdAt:"desc" },
       take: 10,
     }),
+    prisma.post.findMany({
+      where: { visibility: { none: {} } },
+      select: {
+        id:true, body:true, createdAt:true,
+        profile: { select: { user: { select: { firstName:true, lastName:true, photoUrl:true } } } },
+      },
+      orderBy: { createdAt:"desc" },
+      take: 4,
+    }),
+    prisma.post.findMany({
+      where: { profile: { userId: user.id } },
+      select: {
+        id:true, body:true, createdAt:true,
+        _count: { select: { likes:true, comments:true } },
+      },
+      orderBy: { createdAt:"desc" },
+      take: 3,
+    }),
   ]);
 
   const joinedViaYou   = myInvites.filter(i => i.status === "REGISTERED").length;
-  const vaultNewCount  = newPosts.length + newComments.length;
   const serializedTrustRequests = serializeTrustGateRequests(trustRequests);
+
+  const feedPreviews = feedPreviewsRaw.map(p => ({
+    id: p.id,
+    body: p.body,
+    createdAt: p.createdAt.toISOString(),
+    author: p.profile.user,
+  }));
+  const myPostPreviews = myPostPreviewsRaw.map(p => ({
+    id: p.id,
+    body: p.body,
+    createdAt: p.createdAt.toISOString(),
+    _count: p._count,
+  }));
 
   const missingProfilePhoto = !user.photoUrl;
   const promptState         = promptRows[0];
@@ -205,6 +237,8 @@ export default async function DashboardPage() {
             newPostsCount={newPosts.length}
             newCommentsCount={newComments.length}
             invites={serializedInvites}
+            feedPreviews={feedPreviews}
+            myPostPreviews={myPostPreviews}
           />
         </div>
 
