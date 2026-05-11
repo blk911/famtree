@@ -11,8 +11,6 @@ import {
 import { GovernanceOverview }         from "@/components/aihsafe/founder/GovernanceOverview";
 import { PendingAttention }           from "@/components/aihsafe/founder/PendingAttention";
 import { FamilyHealthPanel }          from "@/components/aihsafe/founder/FamilyHealthPanel";
-import { TrustedExtensionsPanel }     from "@/components/aihsafe/founder/TrustedExtensionsPanel";
-import { RelationshipVisibilityCard } from "@/components/aihsafe/founder/RelationshipVisibilityCard";
 import { FounderSettingsPreview }     from "@/components/aihsafe/founder/FounderSettingsPreview";
 import { FamilySnapshot }             from "@/components/aihsafe/dashboard/FamilySnapshot";
 import { SpacesSnapshot }             from "@/components/aihsafe/dashboard/SpacesSnapshot";
@@ -30,6 +28,7 @@ import {
   defaultTab,
   type TabId,
 } from "@/components/aihsafe/navigation/FamilySafeTabs";
+import { PeopleTab } from "@/components/aihsafe/people/PeopleTab";
 
 import type {
   FamilyUnitDTO,
@@ -579,42 +578,16 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
 
         {/* ── PEOPLE ────────────────────────────────────────────── */}
         <TabPanel id="people" activeTab={activeTab}>
-          {shellMode === "founder" && (
-            <div
-              className="aihsafe-grid"
-              style={{ display: "grid", gap: 16, alignItems: "start" }}
-            >
-              <div>
-                <RelationshipVisibilityCard
-                  familyUnits={familyUnits}
-                  trustUnits={trustUnits}
-                  currentUserId={currentUserId}
-                />
-              </div>
-              <div>
-                <TrustedExtensionsPanel
-                  guardianLinks={guardianLinks}
-                  currentUserId={currentUserId}
-                  loading={loading}
-                />
-              </div>
-            </div>
-          )}
-
-          {shellMode === "member" && (
-            <div style={{ maxWidth: 680 }}>
-              <div style={{ marginBottom: 12 }}>
-                <p style={{ fontSize: 13, color: "#78716c", margin: 0, lineHeight: 1.6 }}>
-                  People can see you within shared trusted spaces. Outside of those spaces, your profile is private.
-                </p>
-              </div>
-              <RelationshipVisibilityCard
-                familyUnits={familyUnits}
-                trustUnits={trustUnits}
-                currentUserId={currentUserId}
-              />
-            </div>
-          )}
+          <PeopleTab
+            currentUserId={currentUserId}
+            shellMode={shellMode}
+            trustUnits={trustUnits}
+            familyUnits={familyUnits}
+            guardianLinks={guardianLinks}
+            invites={invites}
+            loading={loading}
+            onInvite={() => setModal("invite")}
+          />
         </TabPanel>
 
         {/* ── APPROVALS ─────────────────────────────────────────── */}
