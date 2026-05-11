@@ -42,6 +42,7 @@ function fmtShort(iso: string) {
 export function IncomingIdentityAcks() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [acting, setActing] = useState<string | null>(null);
+  const [dissolving, setDissolving] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -57,9 +58,15 @@ export function IncomingIdentityAcks() {
     }
   }, []);
 
+  useEffect(() => { load(); }, [load]);
+
   useEffect(() => {
-    load();
-  }, [load]);
+    if (items !== null) {
+      setDissolving(true);
+      const t = setTimeout(() => setDissolving(false), 500);
+      return () => clearTimeout(t);
+    }
+  }, [items]);
 
   const respond = async (requestId: string, accept: boolean) => {
     setActing(requestId);
@@ -76,11 +83,20 @@ export function IncomingIdentityAcks() {
     }
   };
 
-  if (items === null) {
+  if (items === null || dissolving) {
     return (
-      <div style={{ ...card, padding: "16px 20px", display: "flex", alignItems: "center", gap: "10px", color: "#78716c", fontSize: "13px" }}>
-        <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" />
-        Checking acknowledgments…
+      <div style={{
+        position: "fixed", bottom: 20, right: 20, zIndex: 50,
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "8px 14px", borderRadius: 999,
+        background: "rgba(28,25,23,0.75)", backdropFilter: "blur(6px)",
+        color: "white", fontSize: 12, fontWeight: 500,
+        opacity: dissolving ? 0 : 1,
+        transition: "opacity 0.45s ease",
+        pointerEvents: "none",
+      }}>
+        <Loader2 style={{ width: 13, height: 13, flexShrink: 0 }} className="animate-spin" />
+        Checking…
       </div>
     );
   }
