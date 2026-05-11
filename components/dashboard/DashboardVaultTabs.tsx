@@ -67,10 +67,15 @@ export function DashboardVaultTabs({
       background:"#fff", borderRadius:16, border:"1px solid #ece9e3",
       boxShadow:"0 1px 4px rgba(0,0,0,0.05)", overflow:"hidden",
     }}>
-      {/* Tab bar */}
+      {/* Tab bar — segmented pill control */}
       <div
         role="tablist"
-        style={{ display:"flex", borderBottom:"1px solid #f5f4f0", overflowX:"auto", scrollbarWidth:"none" }}
+        style={{
+          display:"flex", gap:3, padding:"10px 12px 0",
+          overflowX:"auto", scrollbarWidth:"none",
+          WebkitOverflowScrolling:"touch" as any,
+          borderBottom:"1px solid #f5f4f0",
+        }}
       >
         {TABS.map(({ id, label, Icon, badge }) => {
           const active = tab === id;
@@ -82,19 +87,23 @@ export function DashboardVaultTabs({
               onClick={() => setTab(id)}
               style={{
                 display:"flex", alignItems:"center", gap:5,
-                padding:"11px 14px", background:"none", border:"none",
+                padding:"7px 12px 9px", flexShrink:0,
+                background:"none", border:"none",
                 borderBottom: active ? "2px solid #6366f1" : "2px solid transparent",
-                color: active ? "#6366f1" : "#78716c",
-                fontWeight: active ? 700 : 500,
-                fontSize:13, cursor:"pointer", whiteSpace:"nowrap", flexShrink:0,
+                color: active ? "#1c1917" : "#78716c",
+                fontWeight: active ? 650 : 500,
+                fontSize:13, cursor:"pointer", whiteSpace:"nowrap",
+                transition:"color 0.12s, border-color 0.12s",
               }}
             >
-              <Icon style={{ width:13, height:13, flexShrink:0 }} />
+              <Icon style={{ width:14, height:14, flexShrink:0 }} />
               {label}
               {badge !== undefined && (
                 <span style={{
+                  display:"inline-flex", alignItems:"center", justifyContent:"center",
                   background:"#ef4444", color:"white", borderRadius:999,
-                  fontSize:9, fontWeight:800, padding:"1px 4px", lineHeight:1.4,
+                  fontSize:10, fontWeight:700, minWidth:16, height:16,
+                  padding:"0 4px", lineHeight:1,
                 }}>
                   {badge}
                 </span>
