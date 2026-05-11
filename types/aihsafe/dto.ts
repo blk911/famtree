@@ -232,6 +232,33 @@ export interface CreateActivityCommentRequest {
   body: string;
 }
 
+// ─── Founder settings ────────────────────────────────────────────────────────
+
+/** Full shape returned by GET /api/aihsafe/founder-settings. */
+export interface FounderSettingsDTO {
+  id:                              string;
+  requireGuardianApprovalForMinors: boolean;
+  allowMinorInvites:               boolean;
+  allowMinorPosting:               boolean;
+  allowMinorExternalLinks:         boolean;
+  /** VisibilityScope value — default scope for adult member content. */
+  defaultVisibilityScope:          string;
+  enableTrustedAdults:             boolean;
+  enablePrivateThreads:            boolean;
+  updatedAt:                       string; // ISO 8601
+}
+
+/** Body for PATCH /api/aihsafe/founder-settings — all fields optional. */
+export interface PatchFounderSettingsRequest {
+  requireGuardianApprovalForMinors?: boolean;
+  allowMinorInvites?:               boolean;
+  allowMinorPosting?:               boolean;
+  allowMinorExternalLinks?:         boolean;
+  defaultVisibilityScope?:          string;
+  enableTrustedAdults?:             boolean;
+  enablePrivateThreads?:            boolean;
+}
+
 // ─── Pending Escalation ──────────────────────────────────────────────────────
 // Carried in 202 responses alongside GovernanceDecisionDTO.
 

@@ -10,7 +10,7 @@ import {
 } from "@/components/aihsafe/common/apiClient";
 import { PendingAttention }           from "@/components/aihsafe/founder/PendingAttention";
 import { FamilyHealthPanel }          from "@/components/aihsafe/founder/FamilyHealthPanel";
-import { FounderSettingsPreview }     from "@/components/aihsafe/founder/FounderSettingsPreview";
+import { FounderSettingsEditor }      from "@/components/aihsafe/founder/FounderSettingsEditor";
 import { OverviewCommandCard }        from "@/components/aihsafe/founder/OverviewCommandCard";
 import { NextBestActions }            from "@/components/aihsafe/founder/NextBestActions";
 import { RecentActivityTeaser }       from "@/components/aihsafe/founder/RecentActivityTeaser";
@@ -595,7 +595,7 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
         <TabPanel id="settings" activeTab={activeTab}>
           {shellMode === "founder" && (
             <div style={{ maxWidth: 680 }}>
-              <FounderSettingsPreview />
+              <FounderSettingsEditor />
             </div>
           )}
         </TabPanel>

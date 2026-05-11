@@ -11,6 +11,8 @@ import type {
   ActivityPostDTO,
   ActivityCommentDTO,
   CreateActivityPostRequest,
+  FounderSettingsDTO,
+  PatchFounderSettingsRequest,
 } from "@/types/aihsafe/dto";
 
 // ─── Result union ─────────────────────────────────────────────────────────────
@@ -184,6 +186,24 @@ export async function createComment(
       `/api/aihsafe/activity/${encodeURIComponent(postId)}/comments`,
       jsonPost({ body })
     )
+  );
+}
+
+// ─── Founder settings ─────────────────────────────────────────────────────────
+
+export async function getFounderSettings(): Promise<AihResult<FounderSettingsDTO>> {
+  return parseEnvelope(await fetch("/api/aihsafe/founder-settings"));
+}
+
+export async function patchFounderSettings(
+  patch: PatchFounderSettingsRequest
+): Promise<AihResult<FounderSettingsDTO>> {
+  return parseEnvelope(
+    await fetch("/api/aihsafe/founder-settings", {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(patch),
+    })
   );
 }
 

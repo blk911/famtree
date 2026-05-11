@@ -32,6 +32,9 @@ export const AuditEventKind = {
   // Trust
   TRUST_UNIT_FORMED:      "trust_unit.formed",
   TRUST_UNIT_MEMBER_ADDED:"trust_unit.member_added",
+
+  // Founder settings
+  FOUNDER_SETTINGS_UPDATED: "founder_settings.updated",
 } as const;
 export type AuditEventKind = (typeof AuditEventKind)[keyof typeof AuditEventKind];
 

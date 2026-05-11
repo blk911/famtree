@@ -75,6 +75,13 @@ export function accepted(
 
 // ─── Error envelopes ──────────────────────────────────────────────────────────
 
+export function forbidden(message = "Access denied"): NextResponse<ErrorResponse> {
+  return NextResponse.json(
+    { ok: false, error: { message, code: "FORBIDDEN", status: 403 }, meta: meta() },
+    { status: 403 }
+  );
+}
+
 export function unauthenticated(): NextResponse<ErrorResponse> {
   return NextResponse.json(
     {
