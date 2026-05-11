@@ -46,7 +46,6 @@ export function AppSidebar({ user, open = false }: Props) {
     pathname.startsWith("/settings/") ||
     adminZone;
 
-  const [familyOpen, setFamilyOpen] = useState(familyActive);
   const [settingsOpen, setSettingsOpen] = useState(settingsActive);
 
   /** Expand Settings submenu whenever we're on Settings or any /admin route (client navigations skip useState init). */
@@ -122,24 +121,12 @@ export function AppSidebar({ user, open = false }: Props) {
         </Link>
 
         {/* Family — tree + units */}
-        <button
-          type="button"
-          onClick={() => {
-            if (!familyActive) {
-              router.push("/tree");
-              setFamilyOpen(true);
-              return;
-            }
-            setFamilyOpen((v) => !v);
-          }}
+        <Link
+          href="/tree"
           style={{
             ...linkStyle(familyActive),
+            display: "flex",
             width: "100%",
-            background: familyActive
-              ? "linear-gradient(135deg,rgba(233,108,80,0.75),rgba(244,162,97,0.55))"
-              : "transparent",
-            border: familyActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
-            cursor: "pointer",
           }}
         >
           <Users style={{ width: "18px", height: "18px", flexShrink: 0 }} />
@@ -149,13 +136,13 @@ export function AppSidebar({ user, open = false }: Props) {
               width: "15px",
               height: "15px",
               flexShrink: 0,
-              transform: familyOpen ? "rotate(180deg)" : "rotate(0deg)",
+              transform: familyActive ? "rotate(180deg)" : "rotate(0deg)",
               transition: "transform 0.2s",
             }}
           />
-        </button>
+        </Link>
 
-        {familyOpen && (
+        {familyActive && (
           <div style={{ marginBottom: "3px" }}>
             {FAMILY_ITEMS.map(({ href, label }) => {
               const active =
