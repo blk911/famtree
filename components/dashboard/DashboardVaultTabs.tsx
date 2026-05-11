@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MessageSquare, Lock, Rss, User, Mail, ShieldCheck, CheckCircle } from "lucide-react";
+import { Users, Lock, User, Mail, ShieldCheck, CheckCircle } from "lucide-react";
 
-type TabId = "messages" | "feed" | "posts" | "invites" | "family-safe";
+type TabId = "posts" | "pvt-feeds" | "my-posts" | "invites" | "family-safe";
 
 interface SerializedInvite {
   id:             string;
@@ -14,7 +14,6 @@ interface SerializedInvite {
 }
 
 interface Props {
-  vaultNewCount:    number;
   newPostsCount:    number;
   newCommentsCount: number;
   invites:          SerializedInvite[];
@@ -30,20 +29,19 @@ const STATUS_BG: Record<string, string> = {
 };
 
 export function DashboardVaultTabs({
-  vaultNewCount,
   newPostsCount,
   newCommentsCount,
   invites,
 }: Props) {
-  const [tab, setTab] = useState<TabId>("messages");
+  const [tab, setTab] = useState<TabId>("posts");
   const pendingCount = invites.filter(i => i.status === "PENDING").length;
 
   const TABS: { id: TabId; label: string; Icon: React.ElementType; badge?: number }[] = [
-    { id:"messages",    label:"Messages",    Icon:MessageSquare, badge:vaultNewCount > 0 ? vaultNewCount : undefined },
-    { id:"feed",        label:"Feed",        Icon:Rss,           badge:newPostsCount > 0 ? newPostsCount : undefined },
-    { id:"posts",       label:"My Posts",    Icon:User },
-    { id:"invites",     label:"Invites",     Icon:Mail,          badge:pendingCount > 0 ? pendingCount : undefined },
-    { id:"family-safe", label:"Family Safe", Icon:ShieldCheck },
+    { id:"posts",       label:"Posts",      Icon:Users,      badge:newPostsCount > 0 ? newPostsCount : undefined },
+    { id:"pvt-feeds",   label:"Pvt Feeds",  Icon:Lock,       badge:newCommentsCount > 0 ? newCommentsCount : undefined },
+    { id:"my-posts",    label:"My Posts",   Icon:User },
+    { id:"invites",     label:"Invites",    Icon:Mail,       badge:pendingCount > 0 ? pendingCount : undefined },
+    { id:"family-safe", label:"Family Safe",Icon:ShieldCheck },
   ];
 
   return (
@@ -89,121 +87,117 @@ export function DashboardVaultTabs({
       </div>
 
       {/* Panels */}
-      <div style={{ padding:"18px 20px", minHeight:220 }}>
+      <div style={{ padding:"20px", minHeight:220 }}>
 
-        {/* ── Messages: global inbox / all conversations ── */}
-        {tab === "messages" && (
+        {/* ── Posts: family-wide social stream ── */}
+        {tab === "posts" && (
           <div>
-            <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", marginBottom:14 }}>
-              <div>
-                <div style={{ fontSize:15, fontWeight:700, color:"#1c1917" }}>Your Conversations</div>
-                <div style={{ fontSize:12, color:"#a8a29e", marginTop:2 }}>
-                  {vaultNewCount > 0
-                    ? `${vaultNewCount} new item${vaultNewCount !== 1 ? "s" : ""} since your last visit`
-                    : "All caught up — no new activity"}
+            {newPostsCount > 0 ? (
+              <div style={{
+                display:"flex", alignItems:"center", gap:10,
+                padding:"12px 15px", borderRadius:12, marginBottom:18,
+                background:"#fffbeb", border:"1px solid #fde68a",
+              }}>
+                <span style={{ fontSize:18, flexShrink:0 }}>🔥</span>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:700, color:"#92400e" }}>
+                    {newPostsCount} new post{newPostsCount !== 1 ? "s" : ""} from your family
+                  </div>
+                  <div style={{ fontSize:12, color:"#b45309", marginTop:1 }}>
+                    New activity since your last visit
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-              {/* Open Feed stream */}
-              <Link href="/family-vault/posts" style={{
-                display:"flex", alignItems:"center", gap:12, padding:"13px 15px",
-                background: newPostsCount > 0 ? "#f0f7ff" : "#f8f8f7",
-                borderRadius:12, textDecoration:"none",
-                border: newPostsCount > 0 ? "1px solid #bfdbfe" : "1px solid #ece9e3",
-              }}>
-                <div style={{
-                  width:36, height:36, borderRadius:10, flexShrink:0,
-                  background: newPostsCount > 0 ? "#6366f1" : "#e7e5e4",
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                }}>
-                  <MessageSquare style={{ width:16, height:16, color: newPostsCount > 0 ? "white" : "#a8a29e" }} />
-                </div>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:"#1c1917" }}>Open Feed</div>
-                  <div style={{ fontSize:11, color:"#78716c", marginTop:1 }}>Family-wide posts and updates</div>
-                </div>
-                {newPostsCount > 0 && (
-                  <span style={{
-                    background:"#6366f1", color:"white", borderRadius:999,
-                    fontSize:10, fontWeight:800, padding:"2px 8px", flexShrink:0,
-                  }}>
-                    {newPostsCount} new
-                  </span>
-                )}
-                <span style={{ color:"#a8a29e", fontSize:16, flexShrink:0 }}>→</span>
-              </Link>
-
-              {/* Private Feed stream */}
-              <Link href="/family-vault/private" style={{
-                display:"flex", alignItems:"center", gap:12, padding:"13px 15px",
-                background: newCommentsCount > 0 ? "#faf5ff" : "#f8f8f7",
-                borderRadius:12, textDecoration:"none",
-                border: newCommentsCount > 0 ? "1px solid #e9d5ff" : "1px solid #ece9e3",
-              }}>
-                <div style={{
-                  width:36, height:36, borderRadius:10, flexShrink:0,
-                  background: newCommentsCount > 0 ? "#7c3aed" : "#e7e5e4",
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                }}>
-                  <Lock style={{ width:16, height:16, color: newCommentsCount > 0 ? "white" : "#a8a29e" }} />
-                </div>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:"#1c1917" }}>Private Feed</div>
-                  <div style={{ fontSize:11, color:"#78716c", marginTop:1 }}>Trust unit conversations</div>
-                </div>
-                {newCommentsCount > 0 && (
-                  <span style={{
-                    background:"#7c3aed", color:"white", borderRadius:999,
-                    fontSize:10, fontWeight:800, padding:"2px 8px", flexShrink:0,
-                  }}>
-                    {newCommentsCount} new
-                  </span>
-                )}
-                <span style={{ color:"#a8a29e", fontSize:16, flexShrink:0 }}>→</span>
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* ── Feed: family-wide posts ── */}
-        {tab === "feed" && (
-          <div>
-            <div style={{ fontSize:15, fontWeight:700, color:"#1c1917", marginBottom:4 }}>Family Feed</div>
-            <div style={{ fontSize:13, color:"#78716c", marginBottom:16 }}>
-              Posts and updates shared across your family network.
-            </div>
-
-            {newPostsCount > 0 && (
+            ) : (
               <div style={{
-                display:"flex", alignItems:"center", gap:8, padding:"10px 14px",
-                background:"#eff6ff", borderRadius:10, border:"1px solid #bfdbfe",
-                marginBottom:14,
+                display:"flex", alignItems:"center", gap:10,
+                padding:"12px 15px", borderRadius:12, marginBottom:18,
+                background:"#f0fdf4", border:"1px solid #bbf7d0",
               }}>
-                <span style={{
-                  width:8, height:8, borderRadius:"50%", background:"#3b82f6", flexShrink:0,
-                  display:"inline-block",
-                }} />
-                <span style={{ fontSize:13, fontWeight:600, color:"#1d4ed8" }}>
-                  {newPostsCount} new post{newPostsCount !== 1 ? "s" : ""} since your last visit
-                </span>
+                <span style={{ fontSize:18, flexShrink:0 }}>✓</span>
+                <div style={{ fontSize:13, color:"#166534", fontWeight:500 }}>
+                  You&apos;re caught up — no new posts since your last visit
+                </div>
               </div>
             )}
 
             <Link href="/family-vault/posts" style={{
-              display:"inline-flex", alignItems:"center", gap:8,
-              padding:"10px 18px", background:"#6366f1", color:"white",
-              borderRadius:10, textDecoration:"none", fontSize:13, fontWeight:700,
+              display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+              padding:"13px 20px", marginBottom:10,
+              background:"linear-gradient(135deg,#4f46e5,#6366f1)",
+              color:"white", borderRadius:12, textDecoration:"none",
+              fontSize:14, fontWeight:700, width:"100%", boxSizing:"border-box",
             }}>
-              <Rss style={{ width:14, height:14 }} />
-              Open Family Feed →
+              <Users style={{ width:16, height:16 }} />
+              See what&apos;s happening →
+            </Link>
+
+            <Link href="/family-vault/posts" style={{
+              display:"flex", alignItems:"center", justifyContent:"center", gap:6,
+              padding:"10px 16px",
+              color:"#6366f1", textDecoration:"none",
+              fontSize:13, fontWeight:600,
+              background:"#f5f3ff", borderRadius:10, border:"1px solid #e0e7ff",
+              width:"100%", boxSizing:"border-box",
+            }}>
+              ✏️ Share something with your family
             </Link>
           </div>
         )}
 
+        {/* ── Pvt Feeds: private circles and trust unit conversations ── */}
+        {tab === "pvt-feeds" && (
+          <div>
+            {newCommentsCount > 0 ? (
+              <div style={{
+                display:"flex", alignItems:"center", gap:10,
+                padding:"12px 15px", borderRadius:12, marginBottom:18,
+                background:"#faf5ff", border:"1px solid #e9d5ff",
+              }}>
+                <span style={{ fontSize:18, flexShrink:0 }}>💬</span>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:700, color:"#5b21b6" }}>
+                    {newCommentsCount} new conversation{newCommentsCount !== 1 ? "s" : ""} in your circles
+                  </div>
+                  <div style={{ fontSize:12, color:"#7c3aed", marginTop:1 }}>
+                    Activity in your private spaces
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                display:"flex", alignItems:"center", gap:10,
+                padding:"12px 15px", borderRadius:12, marginBottom:18,
+                background:"#f5f3ff", border:"1px solid #ddd6fe",
+              }}>
+                <span style={{ fontSize:18, flexShrink:0 }}>🔒</span>
+                <div style={{ fontSize:13, color:"#5b21b6", fontWeight:500 }}>
+                  Your private circles — quiet for now
+                </div>
+              </div>
+            )}
+
+            <Link href="/family-vault/private" style={{
+              display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+              padding:"13px 20px", marginBottom:10,
+              background:"linear-gradient(135deg,#5b21b6,#7c3aed)",
+              color:"white", borderRadius:12, textDecoration:"none",
+              fontSize:14, fontWeight:700, width:"100%", boxSizing:"border-box",
+            }}>
+              <Lock style={{ width:16, height:16 }} />
+              Open private feeds →
+            </Link>
+
+            <div style={{
+              fontSize:12, color:"#78716c", textAlign:"center", marginTop:8, lineHeight:1.5,
+            }}>
+              Trust units · family circles · governed pods
+            </div>
+          </div>
+        )}
+
         {/* ── My Posts: user-created content ── */}
-        {tab === "posts" && (
+        {tab === "my-posts" && (
           <div>
             <div style={{ fontSize:15, fontWeight:700, color:"#1c1917", marginBottom:4 }}>My Timeline</div>
             <div style={{ fontSize:13, color:"#78716c", marginBottom:16 }}>

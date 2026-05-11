@@ -202,7 +202,6 @@ export default async function DashboardPage() {
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
           <DashboardTrustUnitGate initialRequests={serializedTrustRequests} currentUserId={user.id} />
           <DashboardVaultTabs
-            vaultNewCount={vaultNewCount}
             newPostsCount={newPosts.length}
             newCommentsCount={newComments.length}
             invites={serializedInvites}
