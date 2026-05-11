@@ -126,6 +126,11 @@ export function GuardianInbox() {
                 <div style={{ fontWeight: 700, fontSize: 15, color: "#1c1917" }}>
                   {actionLabel(item.actionKind)}
                 </div>
+                {item.contextSummary && item.contextSummary !== actionLabel(item.actionKind) && (
+                  <div style={{ fontSize: 13, color: "#1c1917", marginTop: 1 }}>
+                    {item.contextSummary}
+                  </div>
+                )}
                 <div style={{ fontSize: 13, color: "#78716c", marginTop: 2 }}>
                   Requested by <strong>{item.requestorName || item.requestorId}</strong>
                   {" · "}{timeLeft(item.expiresAt)}

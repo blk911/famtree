@@ -11,6 +11,7 @@ import {
   canApproveChildAction,
   emitAuditEvent,
   executeDeferredAction,
+  buildContextSummary,
 } from "@/lib/aihsafe";
 import { asAIHUserId } from "@/types/aihsafe/ids";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
@@ -46,6 +47,7 @@ function toApprovalDTO(
     requestorId: string;
     approverId: string;
     actionKind: string;
+    contextJson: unknown;
     state: string;
     expiresAt: Date;
     resolvedAt: Date | null;
@@ -54,15 +56,16 @@ function toApprovalDTO(
   requestorName: string
 ): ApprovalRequestDTO {
   return {
-    id:            row.id,
-    requestorId:   row.requestorId,
+    id:             row.id,
+    requestorId:    row.requestorId,
     requestorName,
-    approverId:    row.approverId,
-    actionKind:    row.actionKind,
-    state:         row.state as ApprovalRequestDTO["state"],
-    expiresAt:     row.expiresAt.toISOString(),
-    resolvedAt:    row.resolvedAt?.toISOString() ?? null,
-    createdAt:     row.createdAt.toISOString(),
+    approverId:     row.approverId,
+    actionKind:     row.actionKind,
+    contextSummary: buildContextSummary(row.actionKind, row.contextJson),
+    state:          row.state as ApprovalRequestDTO["state"],
+    expiresAt:      row.expiresAt.toISOString(),
+    resolvedAt:     row.resolvedAt?.toISOString() ?? null,
+    createdAt:      row.createdAt.toISOString(),
   };
 }
 
@@ -98,6 +101,10 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: "desc" },
     take:    limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    select: {
+      id: true, requestorId: true, approverId: true, actionKind: true,
+      contextJson: true, state: true, expiresAt: true, resolvedAt: true, createdAt: true,
+    },
   });
 
   const hasMore = rows.length > limit;
@@ -231,7 +238,13 @@ export async function POST(req: NextRequest) {
   });
 
   // Re-fetch the resolved record for the response DTO.
-  const updated = await prisma.aihApprovalRequest.findUnique({ where: { id: requestId } });
+  const updated = await prisma.aihApprovalRequest.findUnique({
+    where:  { id: requestId },
+    select: {
+      id: true, requestorId: true, approverId: true, actionKind: true,
+      contextJson: true, state: true, expiresAt: true, resolvedAt: true, createdAt: true,
+    },
+  });
   if (!updated) return serverError("Failed to fetch resolved approval request");
 
   const requestorUser = await prisma.user.findUnique({

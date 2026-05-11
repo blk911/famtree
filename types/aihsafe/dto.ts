@@ -159,15 +159,16 @@ export interface InviteDTO {
 }
 
 export interface ApprovalRequestDTO {
-  id:            string;            // cuid
-  requestorId:   string;            // UserId
-  requestorName: string;
-  approverId:    string;            // UserId
-  actionKind:    string;            // AuditEventKind
-  state:         "pending" | "approved" | "denied" | "revoked" | "expired";
-  expiresAt:     string;            // ISO 8601
-  resolvedAt:    string | null;
-  createdAt:     string;            // ISO 8601
+  id:             string;           // cuid
+  requestorId:    string;           // UserId
+  requestorName:  string;
+  approverId:     string;           // UserId
+  actionKind:     string;           // AuditEventKind
+  contextSummary: string;           // Human-readable description of the requested action
+  state:          "pending" | "approved" | "denied" | "revoked" | "expired";
+  expiresAt:      string;           // ISO 8601
+  resolvedAt:     string | null;
+  createdAt:      string;           // ISO 8601
 }
 
 export interface AuditEventDTO {

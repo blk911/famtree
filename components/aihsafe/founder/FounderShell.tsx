@@ -29,6 +29,7 @@ import {
   type TabId,
 } from "@/components/aihsafe/navigation/FamilySafeTabs";
 import { PeopleTab } from "@/components/aihsafe/people/PeopleTab";
+import { ChildEscalationStatus } from "@/components/aihsafe/child/ChildEscalationStatus";
 
 import type {
   FamilyUnitDTO,
@@ -520,6 +521,14 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
                     💬 See what&apos;s happening
                   </button>
                 </div>
+              </div>
+
+              {/* Pending guardian approvals — so the child knows what's waiting */}
+              <div style={{ ...tabCard, padding: "18px 20px" }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: "#1c1917", marginBottom: 12 }}>
+                  Waiting for approval
+                </div>
+                <ChildEscalationStatus />
               </div>
             </div>
           )}

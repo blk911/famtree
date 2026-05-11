@@ -146,6 +146,14 @@ export async function resolveApproval(
   );
 }
 
+export async function listMyEscalations(
+  state: "pending" | "approved" | "denied" | "revoked" | "expired" = "pending"
+): Promise<AihResult<Paginated<ApprovalRequestDTO>>> {
+  return parseEnvelope(
+    await fetch(`/api/aihsafe/escalations/mine?state=${encodeURIComponent(state)}`)
+  );
+}
+
 // ─── Guardian links ───────────────────────────────────────────────────────────
 
 export async function listGuardianLinks(): Promise<AihResult<Paginated<GuardianLinkDTO>>> {
