@@ -24,3 +24,6 @@ export * from "./visibility-rules";
 // ─── Agent 2.75 API contract types ────────────────────────────────────────────
 export * from "./dto";
 export * from "./api-responses";
+
+// ─── Agent 37 policy layer types ──────────────────────────────────────────────
+export * from "./policy";

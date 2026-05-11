@@ -17,3 +17,6 @@ export * from "./api";
 
 // Agent 5 — Approval recipient selection helper
 export * from "./approvals";
+
+// Agent 37 — Policy profile layer
+export * from "./policy";

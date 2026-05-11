@@ -85,6 +85,8 @@ model User {
   // Activity layer (Agent 19)
   aihActivityPosts           AihActivityPost[]          @relation("AihActivityPostAuthor")
   aihActivityComments        AihActivityComment[]       @relation("AihActivityCommentAuthor")
+  // Policy layer (Agent 37)
+  aihPolicyProfile           AihPolicyProfile?
 
   @@map("users")
 }
@@ -849,6 +851,68 @@ model AihActivityComment {
 
   @@index([postId, createdAt(sort: Asc)])
   @@map("aih_activity_comments")
+}
+
+// ─── Policy Layer (Agent 37) ──────────────────────────────────────────────────
+// Configurable governance policy layer. Sits above the deterministic governance
+// kernel — adds founder-configurable overrides and per-user policy snapshots.
+// All models are additive; no existing model is modified beyond the User back-relation.
+
+/// Network-wide governance defaults set by the founder.
+/// Application-level singleton: services use findFirst() / upsert.
+/// founderUserId is a plain audit string — not a FK — so it survives role changes.
+model AihFounderSettings {
+  id                               String   @id @default(cuid())
+  /// ID of the user who last saved these settings (audit only; no FK).
+  founderUserId                    String?
+  /// If true, any governed action by a minor routes to guardian approval.
+  requireGuardianApprovalForMinors Boolean  @default(true)
+  /// Whether minors may send invites (subject to guardian approval).
+  allowMinorInvites                Boolean  @default(false)
+  /// Whether minors may create posts.
+  allowMinorPosting                Boolean  @default(true)
+  /// Whether minors may include external links in posts.
+  allowMinorExternalLinks          Boolean  @default(false)
+  /// Default visibility scope applied to adult members. Must be a VisibilityScope value.
+  defaultVisibilityScope           String   @default("family")
+  /// Whether the trusted-adult guardian kind is enabled on this network.
+  enableTrustedAdults              Boolean  @default(true)
+  /// Whether private thread spaces (TRUST_UNIT scope) are enabled.
+  enablePrivateThreads             Boolean  @default(true)
+  createdAt                        DateTime @default(now())
+  updatedAt                        DateTime @updatedAt
+
+  @@map("aih_founder_settings")
+}
+
+/// Per-user resolved policy snapshot.
+/// Created at registration time by lib/aihsafe/policy/resolvePolicyProfile.ts.
+/// JSON blobs store sub-policy overrides; null blobs use system+founder defaults.
+/// ageTierSnapshot is refreshed whenever the user's age tier changes.
+model AihPolicyProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// AgeTier value at last policy resolution. Refreshed on each re-resolution.
+  ageTierSnapshot  String
+  /// PolicySourceType value — provenance of this profile.
+  sourceType       String   @default("system_default")
+  /// PostingPolicy JSON — null = use system/founder defaults.
+  postingPolicy    Json?
+  /// InvitePolicy JSON — null = use system/founder defaults.
+  invitePolicy     Json?
+  /// VisibilityPolicy JSON — null = use system/founder defaults.
+  visibilityPolicy Json?
+  /// EscalationPolicy JSON — null = use system/founder defaults.
+  escalationPolicy Json?
+  /// InterestsPolicy JSON — null = use system/founder defaults. Populated by Agent 40.
+  interestsPolicy  Json?
+  /// LimitsPolicy JSON — null = use system/founder defaults. Populated by Agent 41.
+  limitsPolicy     Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("aih_policy_profiles")
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
