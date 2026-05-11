@@ -6,9 +6,7 @@ import { redirect } from "next/navigation";
 import {
   getPendingTrustRequestsSafe,
   serializeTrustGateRequests,
-  getAcceptedBondPeersSafe,
 } from "@/lib/trust";
-import { getFeedPosts, getPrivateFeedPosts } from "@/lib/posts/queries";
 import { loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { queryDashboardProfilePrompt, incrementDashboardProfilePromptSeen } from "@/lib/dashboard/safe-data";
 import { DashboardTrustUnitGate }  from "@/components/dashboard/DashboardTrustUnitGate";
@@ -72,21 +70,6 @@ function flattenTree(roots: TreeNode[]): FlatNode[] {
   return result;
 }
 
-// ── Feed serializer ───────────────────────────────────────────────────────────
-function serializeFeedPost(post: Awaited<ReturnType<typeof getFeedPosts>>[number]) {
-  return {
-    ...post,
-    createdAt: post.createdAt.toISOString(),
-    updatedAt: post.updatedAt.toISOString(),
-    profile: {
-      ...post.profile,
-      createdAt: post.profile.createdAt.toISOString(),
-      updatedAt: post.profile.updatedAt.toISOString(),
-      user: post.profile.user,
-    },
-  };
-}
-
 // ── Shared card style ──────────────────────────────────────────────────────────
 const card = {
   background:"white", borderRadius:"16px",
@@ -112,9 +95,6 @@ export default async function DashboardPage() {
     treeInvites,
     newPosts,
     newComments,
-    feedRawPosts,
-    privateRawPosts,
-    bondPeers,
   ] = await Promise.all([
     prisma.user.count(),
     listSentInvitesForSender(user.id, { take: 6 }),
@@ -145,17 +125,11 @@ export default async function DashboardPage() {
       orderBy: { createdAt:"desc" },
       take: 10,
     }),
-    getFeedPosts(user.id),
-    getPrivateFeedPosts(user.id),
-    getAcceptedBondPeersSafe(user.id),
   ]);
 
   const joinedViaYou   = myInvites.filter(i => i.status === "REGISTERED").length;
+  const vaultNewCount  = newPosts.length + newComments.length;
   const serializedTrustRequests = serializeTrustGateRequests(trustRequests);
-
-  const feedPosts    = feedRawPosts.map(serializeFeedPost);
-  const privatePosts = privateRawPosts.map(serializeFeedPost);
-  const privateMembers = members.map(m => ({ id: m.id, firstName: m.firstName, lastName: m.lastName, photoUrl: m.photoUrl }));
 
   const missingProfilePhoto = !user.photoUrl;
   const promptState         = promptRows[0];
@@ -231,12 +205,6 @@ export default async function DashboardPage() {
             newPostsCount={newPosts.length}
             newCommentsCount={newComments.length}
             invites={serializedInvites}
-            currentUserId={user.id}
-            feedPosts={feedPosts}
-            privatePosts={privatePosts}
-            privateMembers={privateMembers}
-            bondPeers={bondPeers}
-            trustUnits={trustUnits as any}
           />
         </div>
 
