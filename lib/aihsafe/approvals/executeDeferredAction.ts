@@ -133,6 +133,56 @@ export async function executeDeferredAction(
       return { ok: true };
     }
 
+    case "create_activity_post": {
+      // Guardian approved a minor's pending post. Create the post now.
+      const bodyText        = typeof ctx.bodyText        === "string" ? ctx.bodyText        : null;
+      const visibilityScope = typeof ctx.visibilityScope === "string" ? ctx.visibilityScope : "family";
+      const trustUnitId     = typeof ctx.trustUnitId     === "string" && ctx.trustUnitId     ? ctx.trustUnitId     : null;
+      const familyUnitId    = typeof ctx.familyUnitId    === "string" && ctx.familyUnitId    ? ctx.familyUnitId    : null;
+      const attachmentType  = typeof ctx.attachmentType  === "string" && ctx.attachmentType  ? ctx.attachmentType  : null;
+
+      if (!bodyText) {
+        return { ok: false, reason: "missing_body_text" };
+      }
+
+      // Validate requestor is still a member of the target trust unit.
+      // The space may have been dissolved or the child's membership revoked while pending.
+      if (trustUnitId) {
+        const membership = await prisma.trustUnitMember.findFirst({
+          where: { trustUnitId, userId: requestorId },
+        });
+        if (!membership) {
+          return { ok: false, reason: "requestor_not_member_of_trust_unit" };
+        }
+      }
+
+      const post = await prisma.aihActivityPost.create({
+        data: {
+          authorId:        requestorId,
+          trustUnitId,
+          familyUnitId,
+          visibilityScope,
+          bodyText,
+          governanceState: "allowed",
+          escalationState: "none",
+          attachmentType,
+        },
+      });
+
+      await emitAuditEvent({
+        kind:     AuditEventKind.VISIBILITY_CHANGED,
+        actorId:  requestorId,
+        targetId: post.id,
+        meta: {
+          action:             "post_created_via_guardian_approval",
+          trustUnitId:        trustUnitId ?? null,
+          scope:              visibilityScope,
+          guardianApprovedBy: guardianActorId,
+        },
+      });
+      return { ok: true };
+    }
+
     default:
       return { ok: false, reason: `unknown_action:${action}` };
   }

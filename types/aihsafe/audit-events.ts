@@ -38,6 +38,11 @@ export const AuditEventKind = {
 
   // Limits engine (Agent 41)
   LIMIT_REACHED: "limits.reached",
+
+  // Activity post escalation (Agent 45)
+  // Stored as actionKind on AihApprovalRequest when a minor's post awaits guardian approval.
+  // The executor key (contextJson.action) is "create_activity_post".
+  ACTIVITY_POST_PENDING: "activity.post_pending",
 } as const;
 export type AuditEventKind = (typeof AuditEventKind)[keyof typeof AuditEventKind];
 

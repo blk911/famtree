@@ -12,14 +12,18 @@ import {
   emitAuditEvent,
   listMembershipsForUser,
   resolvePolicyProfile,
+  selectApprovalRecipients,
 } from "@/lib/aihsafe";
 import { asAIHUserId } from "@/types/aihsafe/ids";
 import { VisibilityScope } from "@/types/aihsafe/visibility";
 import { isMinorTier } from "@/types/aihsafe/age-tiers";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
+import { ReasonCode } from "@/types/aihsafe/governance";
 import {
   created,
   ok,
+  accepted,
+  approvalExpiresAt,
   forbidden,
   unauthenticated,
   governanceDenied,
@@ -157,15 +161,19 @@ export async function POST(req: NextRequest) {
 
     const { bodyText, trustUnitId, familyUnitId, visibilityScope, attachmentType } = parsed.data;
 
+    // ── Limits gate ────────────────────────────────────────────────────────────
     const limitCheck = await checkPostLimits(user.id);
     if (!limitCheck.allowed) return rateLimited(limitCheck.message);
 
+    // ── Actor context ──────────────────────────────────────────────────────────
     const actor = await buildActorContext(asAIHUserId(user.id));
 
-    // ── Policy enforcement ────────────────────────────────────────────────────
-    // For minor actors: enforce allowMinorPosting and use policy-resolved default scope.
-    // For adult actors: use the founder's defaultVisibilityScope when no scope supplied.
+    // ── Policy resolution + scope ──────────────────────────────────────────────
+    // Minor actors: enforce allowMinorPosting and resolve default scope from policy.
+    // Adult actors: honor founder's defaultVisibilityScope when no scope supplied.
     let scope: VisibilityScope;
+    let requiresGuardianApproval = false;
+
     if (isMinorTier(actor.ageTier)) {
       const policy = await resolvePolicyProfile(user.id);
       if (!policy.posting.allowed) {
@@ -174,6 +182,7 @@ export async function POST(req: NextRequest) {
         );
       }
       scope = visibilityScope ?? (policy.visibility.defaultScope as VisibilityScope);
+      requiresGuardianApproval = policy.escalation.requiresGuardianApprovalForPostContent;
     } else {
       if (visibilityScope) {
         scope = visibilityScope;
@@ -185,13 +194,94 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── Governance gate (scope check) ──────────────────────────────────────────
     const decision = canPostContent(actor, {
       visibilityScope: scope,
       trustUnitId:     trustUnitId as any,
     });
-
     if (!decision.allowed) return governanceDenied(decision);
 
+    // ── Escalation: guardian approval required for this minor's post ───────────
+    if (requiresGuardianApproval) {
+      const eligibleApprovers = selectApprovalRecipients(actor.guardedByRelationships);
+      if (eligibleApprovers.length === 0) {
+        // Minor has no guardian with approval authority — block the post.
+        return governanceDenied({
+          allowed:          false,
+          reasonCode:       ReasonCode.REQUIRES_GUARDIAN_APPROVAL,
+          reason:           "Guardian approval is required to post, but no guardian with approval authority is linked to your account. Ask a guardian to set up their account.",
+          requiredApproval: true,
+        });
+      }
+
+      // Resolve trust unit name for the context summary shown to guardians.
+      let spaceName: string | null = null;
+      if (trustUnitId) {
+        const tuMeta = await prisma.aihTrustUnitMeta.findUnique({
+          where:  { trustUnitId },
+          select: { name: true },
+        });
+        spaceName = tuMeta?.name ?? null;
+      }
+
+      const expiresAt   = approvalExpiresAt();
+      const contextJson = {
+        action:          "create_activity_post",
+        bodyText,
+        visibilityScope: scope,
+        trustUnitId:     trustUnitId ?? null,
+        familyUnitId:    familyUnitId ?? null,
+        attachmentType:  attachmentType ?? null,
+        spaceName,
+        requestedAt:     new Date().toISOString(),
+      };
+
+      // One approval request per eligible guardian (first-write-wins; sibling revocation
+      // is already handled by the approvals POST handler on resolution).
+      const approvalRequests = await Promise.all(
+        eligibleApprovers.map(g =>
+          prisma.aihApprovalRequest.create({
+            data: {
+              requestorId: user.id,
+              approverId:  g.guardianUserId as string,
+              actionKind:  AuditEventKind.ACTIVITY_POST_PENDING,
+              contextJson,
+              expiresAt,
+            },
+          })
+        )
+      );
+      const approvalRequest = approvalRequests[0];
+
+      await emitAuditEvent({
+        kind:     AuditEventKind.ACTIVITY_POST_PENDING,
+        actorId:  user.id,
+        targetId: null,
+        meta: {
+          escalated:         true,
+          approvalRequestId: approvalRequest.id,
+          guardianCount:     approvalRequests.length,
+          bodyPreview:       bodyText.slice(0, 80),
+        },
+      });
+
+      return accepted(
+        {
+          approvalRequestId: approvalRequest.id,
+          expiresAt:         expiresAt.toISOString(),
+          actionKind:        AuditEventKind.ACTIVITY_POST_PENDING,
+        },
+        {
+          allowed:          false,
+          reasonCode:       ReasonCode.REQUIRES_GUARDIAN_APPROVAL,
+          reason:           "Your post needs guardian approval before it can be shared.",
+          requiredApproval: true,
+        },
+        approvalRequest.id
+      );
+    }
+
+    // ── Direct post creation (no escalation required) ──────────────────────────
     const post = await prisma.aihActivityPost.create({
       data: {
         authorId:        user.id,
