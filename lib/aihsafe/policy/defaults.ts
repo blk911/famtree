@@ -215,7 +215,7 @@ function escalationDefaults(tier: AgeTier, fs: FounderSettingsData | null): Esca
     requiresGuardianApprovalForTrustExpansion:
       isMinor ? requiresApproval : false,
     requiresGuardianApprovalForPostContent:
-      (tier === AgeTier.CHILD || tier === AgeTier.PRETEEN) ? requiresApproval : false,
+      isMinor ? requiresApproval : false,
     autoExpireApprovalAfterHours: 72,
   };
 }
