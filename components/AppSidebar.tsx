@@ -15,9 +15,9 @@ interface Props { user: PrismaUser; open?: boolean; }
 
 const INVITE = { href: "/invite", label: "Invite", icon: Mail };
 
-/** Tree + Units (bonds / trust units); URLs unchanged */
+/** My People (/tree) + Units (bonds / trust units); URLs unchanged */
 const FAMILY_ITEMS = [
-  { href: "/tree", label: "Tree" },
+  { href: "/tree", label: "My People" },
   { href: "/family-vault/family-units", label: "Units" },
 ];
 
@@ -120,7 +120,7 @@ export function AppSidebar({ user, open = false }: Props) {
           {isAdmin ? "Admin" : "Dashboard"}
         </Link>
 
-        {/* My Network — tree + units */}
+        {/* My Network — My People (/tree) + Units */}
         <Link
           href="/tree"
           style={{
