@@ -74,18 +74,6 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
     textDecoration:"none", transition:"all 0.15s",
   });
 
-  /** Connected platform entry — below core AMIHUMAN stack; quieter when inactive. */
-  const studiosLinkStyle = (active: boolean) => {
-    const core = linkStyle(active);
-    if (active) return core;
-    return {
-      ...core,
-      fontSize: "14px",
-      padding:  "10px 16px",
-      color:    "rgba(255,255,255,0.46)",
-    };
-  };
-
   const subLinkStyle = (active: boolean) => ({
     display:"flex", alignItems:"center", gap:"10px",
     padding:"8px 16px 8px 44px", borderRadius:"10px", marginBottom:"2px",
@@ -211,11 +199,6 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
           )}
         </Link>
 
-        <Link href={studiosHref} style={linkStyle(isStudiosPrimaryNavActive(pathname, studiosHref))}>
-          <Building2 style={{width:"18px",height:"18px",flexShrink:0}} />
-          AIH Studios
-        </Link>
-
         {/* Settings — accordion for admins, plain link for members */}
         {isAdmin ? (
           <>
@@ -282,7 +265,7 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
           }}
         />
 
-        <Link href={studiosHref} style={studiosLinkStyle(isStudiosPrimaryNavActive(pathname, studiosHref))}>
+        <Link href={studiosHref} style={linkStyle(isStudiosPrimaryNavActive(pathname, studiosHref))}>
           <Building2 style={{width:"18px",height:"18px",flexShrink:0}} />
           AIH Studios
         </Link>
