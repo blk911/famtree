@@ -13,7 +13,14 @@ const SCOPES = ["FAMILY", "BUSINESS", "CLUB", "CHURCH", "PRIVATE"] as const;
 
 type Scope = (typeof SCOPES)[number];
 
-export function DashboardPostComposer({ composerSpaces }: { composerSpaces: SpaceOption[] }) {
+export function DashboardPostComposer({
+  composerSpaces,
+  onRequestClose,
+}: {
+  composerSpaces: SpaceOption[];
+  /** When set, shows a Close control to dismiss the composer (e.g. collapsed dashboard panel). */
+  onRequestClose?: () => void;
+}) {
   const router = useRouter();
   const [body, setBody] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -179,6 +186,27 @@ export function DashboardPostComposer({ composerSpaces }: { composerSpaces: Spac
         background: "#fafaf9",
       }}
     >
+      {onRequestClose ? (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+          <button
+            type="button"
+            onClick={onRequestClose}
+            style={{
+              background: "none",
+              border: "none",
+              padding: "4px 8px",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#78716c",
+              cursor: "pointer",
+              borderRadius: 6,
+            }}
+          >
+            Close
+          </button>
+        </div>
+      ) : null}
+
       {error ? (
         <div
           style={{

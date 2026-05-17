@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardPostComposer } from "@/components/dashboard/DashboardPostComposer";
 import { PostCard } from "@/components/PostCard";
@@ -43,10 +44,59 @@ export function DashboardPostsPanel({
   emptyMineHint?: React.ReactNode;
 }) {
   const router = useRouter();
+  const [feedComposerOpen, setFeedComposerOpen] = useState(false);
 
   return (
     <div>
-      {variant === "feed" && <DashboardPostComposer composerSpaces={composerSpaces} />}
+      {variant === "feed" && (
+        <>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 14,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 700,
+                color: "#1c1917",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Posts
+            </div>
+            {!feedComposerOpen ? (
+              <button
+                type="button"
+                onClick={() => setFeedComposerOpen(true)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: "4px 0",
+                  fontSize: 13,
+                  fontWeight: 650,
+                  color: "#6366f1",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                + Post
+              </button>
+            ) : null}
+          </div>
+
+          {feedComposerOpen ? (
+            <DashboardPostComposer
+              composerSpaces={composerSpaces}
+              onRequestClose={() => setFeedComposerOpen(false)}
+            />
+          ) : null}
+        </>
+      )}
 
       {variant === "feed" &&
         (newPostsCount > 0 ? (

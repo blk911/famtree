@@ -192,7 +192,6 @@ export function DashboardVaultTabs({
       <div style={{ padding: "20px", minHeight: 220 }}>
         {tab === "posts" && (
           <div>
-            <PanelTitle>Posts</PanelTitle>
             <DashboardPostsPanel
               variant="feed"
               currentUserId={currentUserId}
