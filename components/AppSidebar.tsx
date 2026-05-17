@@ -11,11 +11,11 @@ import { useState, useEffect } from "react";
 import type { User as PrismaUser } from "@prisma/client";
 import { getCurrentUserStudioHref, isStudiosPrimaryNavActive } from "@/lib/studios/getCurrentUserStudioHref";
 
-interface Props { user: PrismaUser; open?: boolean; }
+interface Props { user: PrismaUser; open?: boolean; vaultNotificationCount?: number; }
 
 const INVITE = { href: "/invite", label: "Invite", icon: Mail };
 
-/** My People (/tree) + Units (bonds / trust units); URLs unchanged */
+const MSG_VAULT_HREF = "/aihsafe";
 const FAMILY_ITEMS = [
   { href: "/tree", label: "My People" },
   { href: "/family-vault/family-units", label: "Units" },
@@ -29,7 +29,7 @@ const SETTINGS_ADMIN_ITEMS = [
   { href: "/admin/activity",  label: "Activity Log",         icon: ScrollText },
 ];
 
-export function AppSidebar({ user, open = false }: Props) {
+export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: Props) {
   const pathname = usePathname();
   const router   = useRouter();
 
@@ -172,10 +172,32 @@ export function AppSidebar({ user, open = false }: Props) {
           {INVITE.label}
         </Link>
 
-        {/* Msg Vault */}
-        <Link href="/aihsafe" style={linkStyle(pathname === "/aihsafe" || pathname.startsWith("/aihsafe/"))}>
+        {/* Msg Vault — full page; badge matches dashboard launcher */}
+        <Link href={MSG_VAULT_HREF} style={linkStyle(pathname === MSG_VAULT_HREF || pathname.startsWith(`${MSG_VAULT_HREF}/`))}>
           <ShieldCheck style={{width:"18px",height:"18px",flexShrink:0}} />
-          Msg Vault
+          <span style={{ flex: 1, textAlign: "left" }}>Msg Vault</span>
+          {vaultNotificationCount > 0 && (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "#ef4444",
+                color: "white",
+                borderRadius: 999,
+                fontSize: 10,
+                fontWeight: 700,
+                minWidth: 18,
+                height: 18,
+                padding: "0 5px",
+                lineHeight: 1,
+                flexShrink: 0,
+              }}
+              aria-label={`${vaultNotificationCount} vault notifications`}
+            >
+              {vaultNotificationCount > 99 ? "99+" : vaultNotificationCount}
+            </span>
+          )}
         </Link>
 
         <Link href={studiosHref} style={linkStyle(isStudiosPrimaryNavActive(pathname, studiosHref))}>

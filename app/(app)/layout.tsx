@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/session-cookie";
 import { AppShell } from "@/components/AppShell";
 import { prisma } from "@/lib/db/prisma";
+import { getVaultNotificationCount } from "@/lib/dashboard/vault-notification-count";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -32,9 +33,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     console.error("[AppLayout] profile lookup failed", err);
   }
 
+  let vaultNotificationCount = 0;
+  try {
+    vaultNotificationCount = await getVaultNotificationCount(user.id);
+  } catch (err) {
+    console.error("[AppLayout] vault notification count failed", err);
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "#f8f7f4" }}>
-      <AppShell user={user} coverUrl={coverUrl}>
+      <AppShell user={user} coverUrl={coverUrl} vaultNotificationCount={vaultNotificationCount}>
         {children}
       </AppShell>
     </div>

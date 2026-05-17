@@ -22,9 +22,10 @@ interface Props {
   user: PrismaUser;
   coverUrl: string | null;
   children: React.ReactNode;
+  vaultNotificationCount?: number;
 }
 
-export function AppShell({ user, coverUrl, children }: Props) {
+export function AppShell({ user, coverUrl, children, vaultNotificationCount = 0 }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [annState, setAnnState] = useState<AnnState>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -150,7 +151,7 @@ export function AppShell({ user, coverUrl, children }: Props) {
       )}
 
       {/* Sidebar */}
-      <AppSidebar user={user} open={sidebarOpen} />
+      <AppSidebar user={user} open={sidebarOpen} vaultNotificationCount={vaultNotificationCount} />
 
       {/* Main content */}
       <main className="app-main" style={{ minHeight: "100vh", background: "#f8f7f4" }}>

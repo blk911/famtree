@@ -17,6 +17,7 @@ import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletio
 import { IncomingIdentityAcks }    from "@/components/dashboard/IncomingIdentityAcks";
 import type { FlatNode }           from "@/components/TreeList";
 import { listSentInvitesForSender } from "@/lib/invite/sentForSender";
+import { getVaultNotificationCount } from "@/lib/dashboard/vault-notification-count";
 import { dashboardFeedWhere } from "@/lib/posts/dashboard-feed-where";
 import {
   getFeedPosts,
@@ -123,6 +124,7 @@ export default async function DashboardPage() {
     myPostsRaw,
     bondPeers,
     composerSpacesRows,
+    vaultNotificationCount,
   ] = await Promise.all([
     prisma.user.count(),
     listSentInvitesForSender(user.id, { take: 25 }),
@@ -171,6 +173,7 @@ export default async function DashboardPage() {
       where: { userId: user.id },
       select: { space: { select: { id: true, kind: true, name: true } } },
     }),
+    getVaultNotificationCount(user.id),
   ]);
 
   const joinedViaYou   = myInvites.filter(i => i.status === "REGISTERED").length;
@@ -188,8 +191,6 @@ export default async function DashboardPage() {
     lastName: m.lastName,
     photoUrl: m.photoUrl,
   }));
-
-  const trustPendingCount = serializedTrustRequests.length;
 
   const missingProfilePhoto = !user.photoUrl;
   const promptState         = promptRows[0];
@@ -289,7 +290,7 @@ export default async function DashboardPage() {
             trustUnits={trustUnits as any[]}
             membersForPrivate={membersForPrivate}
             bondPeers={bondPeers}
-            trustPendingCount={trustPendingCount}
+            vaultNotificationCount={vaultNotificationCount}
           />
         </div>
 

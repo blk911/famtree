@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Users, Lock, User, Mail, ShieldCheck, CheckCircle } from "lucide-react";
+import { Users, Lock, User, Mail, ShieldCheck } from "lucide-react";
 import { PrivateFeedClient } from "@/components/PrivateFeedClient";
 import {
   DashboardPostsPanel,
   type SerializedDashboardPost,
 } from "@/components/dashboard/DashboardPostsPanel";
 
-type TabId = "posts" | "pvt-feeds" | "my-posts" | "invites" | "family-safe";
+type TabId = "posts" | "pvt-feeds" | "my-posts" | "invites";
 
 type ComposerSpace = { id: string; kind: "BUSINESS" | "CLUB" | "CHURCH"; name: string | null };
 
@@ -39,6 +39,8 @@ type PrivateMember = {
   photoUrl: string | null;
 };
 
+const MSG_VAULT_HREF = "/aihsafe";
+
 interface Props {
   currentUserId: string;
   newPostsCount: number;
@@ -51,7 +53,8 @@ interface Props {
   trustUnits: TrustUnitRow[];
   membersForPrivate: PrivateMember[];
   bondPeers: PrivateMember[];
-  trustPendingCount: number;
+  /** Badge on Msg Vault tab — same signal as sidebar (see getVaultNotificationCount). */
+  vaultNotificationCount: number;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -68,6 +71,29 @@ const STATUS_BG: Record<string, string> = {
   EXPIRED: "#fee2e2",
   CANCELLED: "#f3f4f6",
 };
+
+function TabBadge({ count }: { count: number }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#ef4444",
+        color: "white",
+        borderRadius: 999,
+        fontSize: 10,
+        fontWeight: 700,
+        minWidth: 16,
+        height: 16,
+        padding: "0 4px",
+        lineHeight: 1,
+      }}
+    >
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
 
 function PanelTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -97,7 +123,7 @@ export function DashboardVaultTabs({
   trustUnits,
   membersForPrivate,
   bondPeers,
-  trustPendingCount,
+  vaultNotificationCount,
 }: Props) {
   const [tab, setTab] = useState<TabId>("posts");
   const pendingCount = invites.filter((i) => i.status === "PENDING").length;
@@ -112,8 +138,25 @@ export function DashboardVaultTabs({
     },
     { id: "my-posts", label: "My Posts", Icon: User },
     { id: "invites", label: "Invites", Icon: Mail, badge: pendingCount > 0 ? pendingCount : undefined },
-    { id: "family-safe", label: "Msg Vault", Icon: ShieldCheck },
   ];
+
+  const inactiveTabLinkStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+    padding: "7px 12px 9px",
+    flexShrink: 0,
+    background: "none",
+    border: "none",
+    borderBottom: "2px solid transparent",
+    color: "#78716c",
+    fontWeight: 500,
+    fontSize: 13,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    textDecoration: "none",
+    transition: "color 0.12s, border-color 0.12s",
+  };
 
   return (
     <div
@@ -127,6 +170,7 @@ export function DashboardVaultTabs({
     >
       <div
         role="tablist"
+        aria-label="Dashboard sections"
         style={{
           display: "flex",
           gap: 3,
@@ -164,29 +208,27 @@ export function DashboardVaultTabs({
             >
               <Icon style={{ width: 14, height: 14, flexShrink: 0 }} />
               {label}
-              {badge !== undefined && (
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "#ef4444",
-                    color: "white",
-                    borderRadius: 999,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    minWidth: 16,
-                    height: 16,
-                    padding: "0 4px",
-                    lineHeight: 1,
-                  }}
-                >
-                  {badge}
-                </span>
-              )}
+              {badge !== undefined && <TabBadge count={badge} />}
             </button>
           );
         })}
+
+        {/* Msg Vault — navigates to full page (no inline preview). */}
+        <Link
+          href={MSG_VAULT_HREF}
+          role="tab"
+          prefetch
+          aria-label={
+            vaultNotificationCount > 0
+              ? `Msg Vault, ${vaultNotificationCount} notifications`
+              : "Msg Vault"
+          }
+          style={inactiveTabLinkStyle}
+        >
+          <ShieldCheck style={{ width: 14, height: 14, flexShrink: 0 }} />
+          Msg Vault
+          {vaultNotificationCount > 0 && <TabBadge count={vaultNotificationCount} />}
+        </Link>
       </div>
 
       <div style={{ padding: "20px", minHeight: 220 }}>
@@ -385,62 +427,6 @@ export function DashboardVaultTabs({
                   </div>
                 ))}
               </>
-            )}
-          </div>
-        )}
-
-        {tab === "family-safe" && (
-          <div>
-            <PanelTitle>Msg Vault</PanelTitle>
-            <div style={{ fontSize: 13, color: "#78716c", marginBottom: 16, lineHeight: 1.5 }}>
-              Trusted spaces, guardianship, and governance — visible only to what your membership allows.
-              {trustPendingCount > 0 && (
-                <span style={{ display: "block", marginTop: 8, fontWeight: 600, color: "#92400e" }}>
-                  {trustPendingCount} trust request{trustPendingCount !== 1 ? "s" : ""} need your attention (see above).
-                </span>
-              )}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-              {[
-                "Private circles and trusted spaces",
-                "Guardian approvals and oversight tools",
-                "Controlled membership and visibility",
-              ].map((text) => (
-                <div key={text} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <CheckCircle style={{ width: 14, height: 14, color: "#10b981", flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: "#44403c" }}>{text}</span>
-                </div>
-              ))}
-            </div>
-            {trustUnits.length === 0 ? (
-              <p style={{ fontSize: 13, color: "#a8a29e", margin: 0 }}>
-                No trust units yet. When your family creates them, they appear here.
-              </p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.06em", marginBottom: 8 }}>
-                  YOUR TRUST UNITS
-                </div>
-                {trustUnits.map((unit) => {
-                  const names = unit.members.slice(0, 3).map((m) => m.user.firstName).join(" · ");
-                  const extra = unit.members.length > 3 ? ` +${unit.members.length - 3}` : "";
-                  return (
-                    <div
-                      key={unit.id}
-                      style={{
-                        fontSize: 13,
-                        color: "#44403c",
-                        fontWeight: 500,
-                        padding: "10px 0",
-                        borderTop: "1px solid #f5f4f0",
-                      }}
-                    >
-                      🤝 {names}
-                      {extra}
-                    </div>
-                  );
-                })}
-              </div>
             )}
           </div>
         )}

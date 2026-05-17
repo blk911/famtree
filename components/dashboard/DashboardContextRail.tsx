@@ -73,10 +73,10 @@ export function DashboardContextRail({ flat, totalMembers, trustUnits }: Props) 
         </ContextRailCard>
       )}
 
-      {/* Msg Vault quick context — full tools stay in the dashboard Msg Vault tab */}
-      <ContextRailCard title="Msg Vault">
+      {/* Msg Vault — link only (full experience lives at /aihsafe) */}
+      <ContextRailCard title="Msg Vault" href="/aihsafe">
         <p style={{ fontSize: 12, color: "#78716c", margin: 0, lineHeight: 1.45 }}>
-          Governance and trust tools are available in the <strong style={{ color: "#44403c" }}>Msg Vault</strong> tab on this page.
+          Open Msg Vault for overview, trusted spaces, activity, and members.
         </p>
       </ContextRailCard>
 
