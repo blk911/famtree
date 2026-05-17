@@ -607,15 +607,15 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         document.body
       )}
 
-      <div style={{ display:"flex", flexDirection:"column", gap:"32px" }}>
+      <div style={{ display:"flex", flexDirection:"column", gap:"22px" }}>
 
         {/* Two-column grid — stacks to 1-col on mobile */}
-        <div className="invite-two-col">
+        <div className="invite-two-col invite-two-col--main">
 
           {/* LEFT: compose-as-preview */}
           <div>
             {sendResult?.type === "success" && (
-              <p className="text-base mt-2">
+              <p className="text-base mt-1 mb-0">
                 <span className="font-semibold">
                   Invite sent to {sendResult.inviteeName || sendResult.msg}
                 </span>
@@ -743,14 +743,14 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
           {/* RIGHT: How it works */}
           <div style={{ display:"flex", flexDirection:"column", gap:"20px" }}>
             <div style={{ background:"#faf5ff", borderRadius:"16px", padding:"24px 22px", border:"1px solid #ede9fe" }}>
-              <p style={{ fontSize:"13px", fontWeight:800, color:"#7c3aed", textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 18px" }}>How it works</p>
+              <p style={{ fontSize:"13px", fontWeight:800, color:"#7c3aed", textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 14px" }}>How it works</p>
               {[
                 { title:"Fill in their name & email",    desc:"Enter who you're inviting — the name personalises the greeting." },
                 { title:"They receive your photo only",  desc:"Your photo is sent but NOT your name — they must identify you." },
                 { title:"They type your name to unlock", desc:"3 wrong guesses and the invite expires automatically." },
                 { title:"They create their account",     desc:"Once verified they join the tree, linked directly to you." },
               ].map((step, i) => (
-                <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:"14px", marginBottom: i < 3 ? "18px" : 0 }}>
+                <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:"14px", marginBottom: i < 3 ? "14px" : 0 }}>
                   <span style={{ width:28, height:28, borderRadius:"50%", flexShrink:0, background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"13px", fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center" }}>{i + 1}</span>
                   <div style={{ paddingTop:"2px" }}>
                     <p style={{ fontSize:"14px", fontWeight:700, color:"#1c1917", margin:"0 0 3px" }}>{step.title}</p>
@@ -760,7 +760,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
               ))}
             </div>
 
-            <div style={{ background:"#fff7ed", borderRadius:"14px", padding:"18px 20px", border:"1px solid #fed7aa" }}>
+            <div style={{ background:"#fff7ed", borderRadius:"14px", padding:"16px 20px", border:"1px solid #fed7aa", marginTop:"2px" }}>
               <p style={{ fontSize:"13px", fontWeight:700, color:"#c2410c", margin:"0 0 8px" }}>🔒 Privacy by design</p>
               <p style={{ fontSize:"13px", color:"#7c3501", margin:0, lineHeight:1.6 }}>Your name is never revealed in the invite email. Only your photo is shared — making the identity challenge the key to joining.</p>
             </div>
@@ -769,7 +769,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
 
         {/* Sent invites */}
         <div>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"16px" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"12px" }}>
             <div>
               <h2 style={{ fontSize:"18px", fontWeight:700, color:"#1c1917", margin:0 }}>Sent invites</h2>
               <p style={{ fontSize:"13px", color:"#78716c", marginTop:"3px" }}>{pendingCount} pending · {joinedCount} joined</p>

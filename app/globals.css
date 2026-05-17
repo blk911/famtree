@@ -38,6 +38,29 @@
   }
 }
 
+/* Invite page: pull content up — less dead band below sticky top bar */
+.app-content-pad--invite {
+  padding-top: 14px;
+}
+@media (min-width: 768px) {
+  .app-content-pad--invite {
+    padding-top: 18px;
+  }
+}
+
+@media (max-width: 767px) {
+  .app-page-hero--invite {
+    min-height: 102px !important;
+    margin-bottom: 12px !important;
+    border-radius: 18px;
+  }
+  .app-page-hero--invite .app-hero-inner {
+    padding: 14px 14px !important;
+    min-height: 102px !important;
+    gap: 14px !important;
+  }
+}
+
 /* ── Admin stats cards: 3-col → 1-col ───────────────────────────────────── */
 .admin-stats-grid {
   display: grid;
@@ -73,10 +96,16 @@
   gap: 28px;
   align-items: start;
 }
+.invite-two-col--main {
+  gap: 22px;
+}
 @media (max-width: 767px) {
   .invite-two-col {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+  .invite-two-col--main {
+    gap: 16px;
   }
 }
 

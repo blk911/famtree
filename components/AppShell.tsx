@@ -181,7 +181,10 @@ export function AppShell({ user, coverUrl, children }: Props) {
         </div>
 
         {/* Page content */}
-        <div className="app-content-pad" style={{ maxWidth: "900px", margin: "0 auto" }}>
+        <div
+          className={`app-content-pad${pathname === "/invite" ? " app-content-pad--invite" : ""}`}
+          style={{ maxWidth: "900px", margin: "0 auto" }}
+        >
 
           {/* Announcement banner — vault pages only */}
           {bannerVisible && annState && (

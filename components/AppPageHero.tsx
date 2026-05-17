@@ -40,14 +40,21 @@ export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: stri
 
   if (copy.hidden) return null;
 
+  /** Invite: shorter hero + less space below so compose cards sit closer to the header strip */
+  const inviteCompact = pathname === "/invite";
+  const heroMinH = inviteCompact ? "118px" : "150px";
+  const heroMb = inviteCompact ? "14px" : "30px";
+  const heroInnerPad = inviteCompact ? "20px 24px" : "28px 30px";
+
   return (
     <section
+      className={inviteCompact ? "app-page-hero--invite" : undefined}
       style={{
         position:"relative",
-        minHeight:"150px",
+        minHeight: heroMinH,
         borderRadius:"24px",
         overflow:"hidden",
-        marginBottom:"30px",
+        marginBottom: heroMb,
         border:"1px solid rgba(255,255,255,0.55)",
         boxShadow:"0 18px 40px rgba(28,25,23,0.10)",
         background:coverUrl
@@ -63,7 +70,7 @@ export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: stri
         }}
       />
 
-      <div className="app-hero-inner" style={{position:"relative",zIndex:1,padding:"28px 30px",display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:"20px",minHeight:"150px"}}>
+      <div className="app-hero-inner" style={{position:"relative",zIndex:1,padding:heroInnerPad,display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:"20px",minHeight:heroMinH}}>
         <div>
           <p style={{fontSize:"11px",fontWeight:900,letterSpacing:"0.16em",textTransform:"uppercase",color:"rgba(255,255,255,0.72)",marginBottom:"8px"}}>
             AMIHUMAN.NET
