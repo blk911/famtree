@@ -9,7 +9,9 @@ import {
   type SerializedDashboardPost,
 } from "@/components/dashboard/DashboardPostsPanel";
 
-type TabId = "posts" | "pvt-feeds" | "my-posts" | "invites";
+export type DashboardTabId = "posts" | "private-threads" | "my-posts" | "invites";
+
+type TabId = DashboardTabId;
 
 type ComposerSpace = { id: string; kind: "BUSINESS" | "CLUB" | "CHURCH"; name: string | null };
 
@@ -43,6 +45,11 @@ const MSG_VAULT_HREF = "/aihsafe";
 
 interface Props {
   currentUserId: string;
+  /** When set with `onTabChange`, tab selection is controlled (e.g. dashboard hub rail visibility). */
+  tab?: TabId;
+  onTabChange?: (tab: TabId) => void;
+  /** For per-thread “new since last login” counts in Private Threads rail. */
+  lastSeenAt?: string | null;
   newPostsCount: number;
   newCommentsCount: number;
   invites: SerializedInvite[];
@@ -113,6 +120,9 @@ function PanelTitle({ children }: { children: React.ReactNode }) {
 
 export function DashboardVaultTabs({
   currentUserId,
+  tab: controlledTab,
+  onTabChange,
+  lastSeenAt = null,
   newPostsCount,
   newCommentsCount,
   invites,
@@ -125,14 +135,22 @@ export function DashboardVaultTabs({
   bondPeers,
   vaultNotificationCount,
 }: Props) {
-  const [tab, setTab] = useState<TabId>("posts");
+  const [uncontrolledTab, setUncontrolledTab] = useState<TabId>("posts");
+  const isControlled = controlledTab !== undefined;
+  const tab = isControlled ? controlledTab : uncontrolledTab;
+
+  function setTab(next: TabId) {
+    if (!isControlled) setUncontrolledTab(next);
+    onTabChange?.(next);
+  }
+
   const pendingCount = invites.filter((i) => i.status === "PENDING").length;
 
   const TABS: { id: TabId; label: string; Icon: React.ElementType; badge?: number }[] = [
     { id: "posts", label: "Posts", Icon: Users, badge: newPostsCount > 0 ? newPostsCount : undefined },
     {
-      id: "pvt-feeds",
-      label: "Private Feeds",
+      id: "private-threads",
+      label: "Private Threads",
       Icon: Lock,
       badge: newCommentsCount > 0 ? newCommentsCount : undefined,
     },
@@ -244,9 +262,9 @@ export function DashboardVaultTabs({
           </div>
         )}
 
-        {tab === "pvt-feeds" && (
+        {tab === "private-threads" && (
           <div>
-            <PanelTitle>Private Feeds</PanelTitle>
+            <PanelTitle>Private Threads</PanelTitle>
             {newCommentsCount > 0 ? (
               <div
                 style={{
@@ -263,10 +281,10 @@ export function DashboardVaultTabs({
                 <span style={{ fontSize: 18, flexShrink: 0 }}>💬</span>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#5b21b6" }}>
-                    {newCommentsCount} new conversation{newCommentsCount !== 1 ? "s" : ""} in your circles
+                    {newCommentsCount} new in your private threads
                   </div>
                   <div style={{ fontSize: 12, color: "#7c3aed", marginTop: 1 }}>
-                    Activity in your private spaces
+                    Since your last visit — open a thread to catch up
                   </div>
                 </div>
               </div>
@@ -285,17 +303,18 @@ export function DashboardVaultTabs({
               >
                 <span style={{ fontSize: 18, flexShrink: 0 }}>🔒</span>
                 <div style={{ fontSize: 13, color: "#5b21b6", fontWeight: 500 }}>
-                  Your private circles — quiet for now
+                  No active private threads yet. Start a direct conversation or connect with your network.
                 </div>
               </div>
             )}
             <PrivateFeedClient
-              key="dashboard-private-feed"
+              key="dashboard-private-threads"
               currentUserId={currentUserId}
               trustUnits={trustUnits}
               posts={serializedPrivatePosts}
               members={membersForPrivate}
               bondPeers={bondPeers}
+              lastSeenAt={lastSeenAt}
             />
           </div>
         )}

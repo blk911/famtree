@@ -48,6 +48,7 @@ export default async function PrivateFeedPage({
         bondPeers={bondPeers}
         initialUnitId={searchParams?.unit}
         initialPeerId={searchParams?.peer}
+        lastSeenAt={user.lastLoginAt?.toISOString() ?? null}
       />
     </div>
   );

@@ -99,7 +99,7 @@ export function BondFamilyRow({
       {open ? (
         <div className="border-t border-stone-100 bg-stone-50/60 px-3 py-2 text-xs text-stone-600">
           Bond · direct thread with both members. Messages stay in{" "}
-          <span className="font-medium text-stone-800">Private Feed</span>.
+          <span className="font-medium text-stone-800">Private Threads</span>.
         </div>
       ) : null}
     </div>
