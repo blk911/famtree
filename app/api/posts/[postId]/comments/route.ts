@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
+import { viewerCanAccessPost } from "@/lib/posts/post-scope-access";
 
 type Context = { params: { postId: string } };
 
@@ -23,7 +24,12 @@ export async function GET(_req: NextRequest, routeCtx: Context) {
 const { params } = routeCtx;
 
   try {
-    await requireAuth();
+    const user = await requireAuth();
+    const ok = await viewerCanAccessPost(user.id, params.postId);
+    if (!ok) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     const comments = await prisma.comment.findMany({
       where: { postId: params.postId },
       orderBy: { createdAt: "asc" },
@@ -47,6 +53,11 @@ const { params } = routeCtx;
 
   try {
     const user = await requireAuth();
+    const ok = await viewerCanAccessPost(user.id, params.postId);
+    if (!ok) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     const parsed = commentSchema.safeParse(await req.json());
 
     if (!parsed.success) {

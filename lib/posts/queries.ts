@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { PROFILE_FEED_SELECT } from "@/lib/profile/prisma-select";
 import { dedupePosts } from "@/lib/posts/utils";
+import { dashboardFeedWhere } from "@/lib/posts/dashboard-feed-where";
 
 const postInclude = {
   _count: { select: { likes: true, comments: true } },
@@ -13,56 +14,54 @@ const postInclude = {
 export type FeedPost = Awaited<ReturnType<typeof getFeedPosts>>[number];
 
 export async function getFeedPosts(viewerId: string) {
-  const [everyonePosts, myPosts, linkedPosts] = await Promise.all([
-    prisma.post.findMany({
-      where: { visibility: { none: {} } },
-      include: postInclude,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.post.findMany({
-      where: { profile: { userId: viewerId } },
-      include: postInclude,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.post.findMany({
-      where: { visibility: { some: { userId: viewerId } } },
-      include: postInclude,
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
-
-  return dedupePosts([
-    ...everyonePosts,
-    ...myPosts,
-    ...linkedPosts,
-  ]);
+  return prisma.post.findMany({
+    where: dashboardFeedWhere(viewerId),
+    include: postInclude,
+    orderBy: { createdAt: "desc" },
+  });
 }
 
-export async function getProfilePosts(profileUserId: string) {
+/** Timeline posts on `profileUserId` that `viewerId` is allowed to see (scoped). */
+export async function getProfilePostsForViewer(profileUserId: string, viewerId: string) {
   return prisma.post.findMany({
-    where: { profile: { userId: profileUserId } },
+    where: {
+      AND: [{ profile: { userId: profileUserId } }, dashboardFeedWhere(viewerId)],
+    },
     include: postInclude,
     orderBy: { createdAt: "desc" },
   });
 }
 
 export async function getPrivateFeedPosts(viewerId: string) {
-  // Posts where viewer is in the visibility list (received)
-  // PLUS the viewer's own posts that have any visibility restriction (sent)
-  const [received, sent] = await Promise.all([
+  const [received, minePrivate, legacyScoped] = await Promise.all([
     prisma.post.findMany({
-      where: { visibility: { some: { userId: viewerId } } },
+      where: {
+        scope: "PRIVATE",
+        visibility: { some: { userId: viewerId } },
+      },
       include: postInclude,
       orderBy: { createdAt: "desc" },
     }),
     prisma.post.findMany({
       where: {
+        scope: "PRIVATE",
         profile: { userId: viewerId },
-        visibility: { some: {} },          // has at least one visibility record
+      },
+      include: postInclude,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.post.findMany({
+      where: {
+        scope: "FAMILY",
+        visibility: { some: {} },
+        OR: [
+          { visibility: { some: { userId: viewerId } } },
+          { profile: { userId: viewerId } },
+        ],
       },
       include: postInclude,
       orderBy: { createdAt: "desc" },
     }),
   ]);
-  return dedupePosts([...received, ...sent]);
+  return dedupePosts([...received, ...minePrivate, ...legacyScoped]);
 }

@@ -6,7 +6,7 @@ import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
-import { getProfilePosts } from "@/lib/posts/queries";
+import { getProfilePostsForViewer } from "@/lib/posts/queries";
 import { PROFILE_PAGE_SELECT, PROFILE_SCALAR_SELECT } from "@/lib/profile/prisma-select";
 import { getProfilePhoneSafe } from "@/lib/profile/phone";
 import { z } from "zod";
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
         where: { userId: user.id },
         select: PROFILE_PAGE_SELECT,
       }),
-      getProfilePosts(user.id),
+      getProfilePostsForViewer(user.id, user.id),
       getProfilePhoneSafe(user.id),
     ]);
 

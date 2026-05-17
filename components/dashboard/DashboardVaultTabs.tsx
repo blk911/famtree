@@ -3,8 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Users, Lock, User, Mail, ShieldCheck, CheckCircle } from "lucide-react";
+import { DashboardPostComposer } from "@/components/dashboard/DashboardPostComposer";
 
 type TabId = "posts" | "pvt-feeds" | "my-posts" | "invites" | "family-safe";
+
+type ComposerSpace = { id: string; kind: "BUSINESS" | "CLUB" | "CHURCH"; name: string | null };
 
 interface SerializedInvite {
   id:             string;
@@ -17,6 +20,7 @@ type PostPreview = {
   id:       string;
   body:     string;
   createdAt: string;
+  scopeLabel: string;
   author:   { firstName: string; lastName: string; photoUrl: string | null };
 };
 
@@ -33,6 +37,7 @@ interface Props {
   invites:          SerializedInvite[];
   feedPreviews:     PostPreview[];
   myPostPreviews:   MyPostPreview[];
+  composerSpaces:   ComposerSpace[];
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -50,6 +55,7 @@ export function DashboardVaultTabs({
   invites,
   feedPreviews,
   myPostPreviews,
+  composerSpaces,
 }: Props) {
   const [tab, setTab] = useState<TabId>("posts");
   const pendingCount = invites.filter(i => i.status === "PENDING").length;
@@ -119,6 +125,8 @@ export function DashboardVaultTabs({
         {/* ── Posts: family-wide social stream ── */}
         {tab === "posts" && (
           <div>
+            <DashboardPostComposer composerSpaces={composerSpaces} />
+
             {newPostsCount > 0 ? (
               <div style={{
                 display:"flex", alignItems:"center", gap:10,
@@ -173,6 +181,9 @@ export function DashboardVaultTabs({
                         </span>
                         <span style={{ fontSize:11, color:"#a8a29e", marginLeft:6 }}>{date}</span>
                         <div style={{ fontSize:12, color:"#57534e", lineHeight:1.4, marginTop:2 }}>{snippet}</div>
+                        <div style={{ fontSize:10, fontWeight:700, color:"#6366f1", marginTop:4, letterSpacing:"0.02em" }}>
+                          {p.scopeLabel}
+                        </div>
                       </div>
                     </div>
                   );

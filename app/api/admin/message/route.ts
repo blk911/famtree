@@ -44,14 +44,15 @@ export async function POST(req: NextRequest) {
     }
 
     // 1 — Create private post visible only to the recipient
-    const post = await (prisma.post.create as any)({
+    const post = await prisma.post.create({
       data: {
         profileId: adminProfile.id,
         body: body.trim(),
+        scope: "PRIVATE",
       },
     });
 
-    await (prisma as any).postVisibility.create({
+    await prisma.postVisibility.create({
       data: { postId: post.id, userId: recipientId },
     });
 

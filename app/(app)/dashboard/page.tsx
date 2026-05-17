@@ -16,6 +16,8 @@ import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletio
 import { IncomingIdentityAcks }    from "@/components/dashboard/IncomingIdentityAcks";
 import type { FlatNode }           from "@/components/TreeList";
 import { listSentInvitesForSender } from "@/lib/invite/sentForSender";
+import { dashboardFeedWhere } from "@/lib/posts/dashboard-feed-where";
+import { postScopeShareLabel } from "@/lib/posts/scope-labels";
 
 // ── Tree helpers ───────────────────────────────────────────────────────────────
 type Member = {
@@ -85,6 +87,8 @@ export default async function DashboardPage() {
 
   const lastSeen = user.lastLoginAt ?? new Date(Date.now() - 24 * 60 * 60 * 1000);
 
+  const feedWhere = dashboardFeedWhere(user.id);
+
   const [
     totalMembers,
     myInvites,
@@ -97,6 +101,7 @@ export default async function DashboardPage() {
     newComments,
     feedPreviewsRaw,
     myPostPreviewsRaw,
+    composerSpacesRows,
   ] = await Promise.all([
     prisma.user.count(),
     listSentInvitesForSender(user.id, { take: 6 }),
@@ -116,7 +121,13 @@ export default async function DashboardPage() {
       select: { senderId:true, recipientEmail:true, createdAt:true },
     }),
     prisma.post.findMany({
-      where: { createdAt:{ gt: lastSeen }, profile:{ userId:{ not: user.id } } },
+      where: {
+        AND: [
+          { createdAt:{ gt: lastSeen } },
+          { profile:{ userId:{ not: user.id } } },
+          feedWhere,
+        ],
+      },
       select: { id:true, body:true, profile:{ select:{ userId:true } } },
       orderBy: { createdAt:"desc" },
       take: 10,
@@ -128,9 +139,9 @@ export default async function DashboardPage() {
       take: 10,
     }),
     prisma.post.findMany({
-      where: { visibility: { none: {} } },
+      where: feedWhere,
       select: {
-        id:true, body:true, createdAt:true,
+        id:true, body:true, scope:true, createdAt:true,
         profile: { select: { user: { select: { firstName:true, lastName:true, photoUrl:true } } } },
       },
       orderBy: { createdAt:"desc" },
@@ -145,15 +156,22 @@ export default async function DashboardPage() {
       orderBy: { createdAt:"desc" },
       take: 3,
     }),
+    prisma.dashboardSpaceMember.findMany({
+      where: { userId: user.id },
+      select: { space: { select: { id: true, kind: true, name: true } } },
+    }),
   ]);
 
   const joinedViaYou   = myInvites.filter(i => i.status === "REGISTERED").length;
   const serializedTrustRequests = serializeTrustGateRequests(trustRequests);
 
+  const composerSpaces = composerSpacesRows.map((r) => r.space);
+
   const feedPreviews = feedPreviewsRaw.map(p => ({
     id: p.id,
     body: p.body,
     createdAt: p.createdAt.toISOString(),
+    scopeLabel: postScopeShareLabel(p.scope),
     author: p.profile.user,
   }));
   const myPostPreviews = myPostPreviewsRaw.map(p => ({
@@ -239,6 +257,7 @@ export default async function DashboardPage() {
             invites={serializedInvites}
             feedPreviews={feedPreviews}
             myPostPreviews={myPostPreviews}
+            composerSpaces={composerSpaces}
           />
         </div>
 

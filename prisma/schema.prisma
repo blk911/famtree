@@ -48,6 +48,7 @@ model User {
   likes           Like[]
   comments        Comment[]
   postVisibility  PostVisibility[]
+  dashboardSpaceMemberships DashboardSpaceMember[]
 
   // Trust graph
   createdTrustUnitRequests TrustUnitRequest[]       @relation("TrustUnitRequestCreator")
@@ -248,8 +249,49 @@ model Profile {
 }
 
 // ─────────────────────────────────────────────
+// DASHBOARD SPACES (BUSINESS / CLUB / CHURCH membership for scoped posts)
+// ─────────────────────────────────────────────
+enum DashboardSpaceKind {
+  BUSINESS
+  CLUB
+  CHURCH
+}
+
+model DashboardSpace {
+  id        String             @id @default(uuid())
+  kind      DashboardSpaceKind
+  name      String?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  members   DashboardSpaceMember[]
+  posts     Post[]
+
+  @@map("dashboard_spaces")
+}
+
+model DashboardSpaceMember {
+  id        String         @id @default(cuid())
+  spaceId   String
+  space     DashboardSpace @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  @@unique([spaceId, userId])
+  @@map("dashboard_space_members")
+}
+
+// ─────────────────────────────────────────────
 // POSTS  (timeline entries on a profile)
 // ─────────────────────────────────────────────
+enum DashboardPostScope {
+  FAMILY
+  BUSINESS
+  CLUB
+  CHURCH
+  PRIVATE
+}
+
 model Post {
   id        String   @id @default(uuid())
   profileId String
@@ -258,6 +300,12 @@ model Post {
   title     String?
   body      String
   imageUrl  String?
+  /// Permission scope for dashboard / family vault feeds (server-enforced).
+  scope     DashboardPostScope @default(FAMILY)
+  /// When scope is BUSINESS | CLUB | CHURCH, must reference a space the author belongs to.
+  spaceId   String?
+  space     DashboardSpace? @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

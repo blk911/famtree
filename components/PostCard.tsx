@@ -21,6 +21,7 @@ type Post = {
   body: string;
   imageUrl: string | null;
   createdAt: string;
+  scope?: string | null;
   _count?: { likes: number; comments: number; thumbsUp?: number; thumbsDown?: number };
   profile: {
     user: {
@@ -37,7 +38,9 @@ type Props = {
   currentUserId: string;
   canDelete: boolean;
   onDelete?: (postId: string) => void;
-  /** Private-thread recipients (omit on open/global feeds). */
+  /** When set, shows a scope label instead of listing private recipients. */
+  shareScope?: string;
+  /** Private-thread recipients (omit when using shareScope). */
   privateRecipients?: Array<{ id: string; displayName: string }>;
 };
 
@@ -155,7 +158,7 @@ function PrivateRecipientsInline({ people }: { people: Array<{ id: string; displ
   );
 }
 
-export function PostCard({ post, currentUserId, canDelete, onDelete, privateRecipients }: Props) {
+export function PostCard({ post, currentUserId, canDelete, onDelete, privateRecipients, shareScope }: Props) {
   const author = post.profile.user;
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post._count?.likes ?? 0);
@@ -304,7 +307,9 @@ export function PostCard({ post, currentUserId, canDelete, onDelete, privateReci
             <p className="text-xs text-stone-400">{timeLabel(post.createdAt)}</p>
           </div>
         </div>
-        {privateRecipients && privateRecipients.length > 0 ? (
+        {shareScope ? (
+          <span className="max-w-[min(100%,240px)] text-right text-xs font-semibold text-violet-800">{shareScope}</span>
+        ) : privateRecipients && privateRecipients.length > 0 ? (
           <PrivateRecipientsInline people={privateRecipients} />
         ) : null}
       </div>

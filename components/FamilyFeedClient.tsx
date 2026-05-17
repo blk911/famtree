@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { Image as ImageIcon, Plus, X, Globe, Lock } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
-import { displayRecipientsFromVisibility } from "@/lib/posts/displayRecipients";
+import { postScopeShareLabel } from "@/lib/posts/scope-labels";
 
 type Member = { id: string; firstName: string; lastName: string; photoUrl: string | null };
 
@@ -13,6 +13,7 @@ type FeedPost = {
   body: string;
   imageUrl: string | null;
   createdAt: string;
+  scope?: string | null;
   _count?: { likes: number; comments: number; thumbsUp?: number; thumbsDown?: number };
   visibility?: Array<{ userId: string }>;
   profile: {
@@ -58,8 +59,6 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
       })
       .catch(() => {});
   }, [currentUserId]);
-
-  const memberMap = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
   const visiblePosts = useMemo(() => {
     if (activeTab === "mine") {
@@ -114,9 +113,12 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
         formData.append("body", body.trim());
         formData.append("image", imageFile);
         if (imageUrl.trim()) formData.append("imageUrl", imageUrl.trim());
+        const scope = visibleTo.length > 0 ? "PRIVATE" : "FAMILY";
+        formData.append("scope", scope);
         if (visibleTo.length > 0) formData.append("visibleTo", JSON.stringify(visibleTo));
         res = await fetch("/api/profile/posts", { method: "POST", body: formData });
       } else {
+        const scope = visibleTo.length > 0 ? "PRIVATE" : "FAMILY";
         res = await fetch("/api/profile/posts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -124,6 +126,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
             title: title.trim() || undefined,
             body: body.trim(),
             imageUrl: imageUrl.trim() || undefined,
+            scope,
             visibleTo: visibleTo.length > 0 ? visibleTo : undefined,
           }),
         });
@@ -131,15 +134,26 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data?.error ?? "Could not create post");
+        if (data?.code === "NOT_ALLOWED_FOR_SCOPE") {
+          setError("You don't have access to post in that space.");
+        } else {
+          setError(data?.error ?? "Could not create post");
+        }
         return;
       }
 
-      setItems((current) => [{
-        ...data.post,
-        createdAt: new Date(data.post.createdAt).toISOString(),
-        visibility: visibleTo.map((userId) => ({ userId })),
-      }, ...current]);
+      const raw = data.post as FeedPost & {
+        createdAt: string;
+        profile: FeedPost["profile"] & { createdAt?: string; updatedAt?: string };
+      };
+      setItems((current) => [
+        {
+          ...raw,
+          createdAt: new Date(raw.createdAt).toISOString(),
+          visibility: raw.visibility ?? visibleTo.map((userId) => ({ userId })),
+        },
+        ...current,
+      ]);
       setActiveTab("all");
       resetComposer();
       setComposerOpen(false);
@@ -307,11 +321,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
               currentUserId={currentUserId}
               canDelete={post.profile.user.id === currentUserId}
               onDelete={handleDelete}
-              privateRecipients={displayRecipientsFromVisibility(
-                post.visibility,
-                post.profile.user.id,
-                memberMap,
-              )}
+              shareScope={postScopeShareLabel(post.scope ?? "FAMILY")}
             />
           ))}
         </div>

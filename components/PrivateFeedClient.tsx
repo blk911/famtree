@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Image as ImageIcon, Send, Lock, Plus } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
 import { directThreadKey } from "@/lib/private-thread-keys";
+import { postScopeShareLabel } from "@/lib/posts/scope-labels";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -13,6 +14,7 @@ type FeedPost = {
   body: string;
   imageUrl: string | null;
   createdAt: string;
+  scope?: string | null;
   _count?: { likes: number; comments: number };
   visibility?: Array<{ userId: string }>;
   profile: {
@@ -142,27 +144,6 @@ function buildThreads(
   );
 
   return [...merged, ...seeded];
-}
-
-/** Everyone in the thread except the author (sorted by display name). */
-function recipientsExceptAuthor(
-  thread: Thread,
-  authorId: string,
-  memberMap: Map<string, Member>,
-): Array<{ id: string; displayName: string }> {
-  return thread.memberIds
-    .filter((id) => id !== authorId)
-    .map((id) => {
-      if (thread.unit) {
-        const m = thread.unit.members.find((x) => x.user.id === id);
-        if (m) return { id, displayName: `${m.user.firstName} ${m.user.lastName}` };
-      }
-      const m = memberMap.get(id);
-      return { id, displayName: m ? `${m.firstName} ${m.lastName}` : "Unknown" };
-    })
-    .sort((a, b) =>
-      a.displayName.localeCompare(b.displayName, undefined, { sensitivity: "base" }),
-    );
 }
 
 // ── Participant avatars (stacked circles) ─────────────────────────────────────
@@ -395,6 +376,7 @@ export function PrivateFeedClient({
     if (imageFile) {
       const fd = new FormData();
       fd.append("body", body);
+      fd.append("scope", "PRIVATE");
       fd.append("image", imageFile);
       fd.append("visibleTo", JSON.stringify(visibleTo));
       res = await fetch("/api/profile/posts", { method: "POST", body: fd });
@@ -402,15 +384,16 @@ export function PrivateFeedClient({
       res = await fetch("/api/profile/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body, visibleTo }),
+        body: JSON.stringify({ body, visibleTo, scope: "PRIVATE" }),
       });
     }
     if (!res.ok) return null;
     const data = await res.json();
+    const raw = data.post as FeedPost;
     return {
-      ...data.post,
-      createdAt: new Date(data.post.createdAt).toISOString(),
-      visibility: visibleTo.map((userId) => ({ userId })),
+      ...raw,
+      createdAt: new Date(raw.createdAt).toISOString(),
+      visibility: raw.visibility ?? visibleTo.map((userId) => ({ userId })),
     };
   };
 
@@ -694,7 +677,7 @@ export function PrivateFeedClient({
                         currentUserId={currentUserId}
                         canDelete={post.profile.user.id === currentUserId}
                         onDelete={handleDelete}
-                        privateRecipients={recipientsExceptAuthor(thread, post.profile.user.id, memberMap)}
+                        shareScope={postScopeShareLabel(post.scope ?? "PRIVATE")}
                       />
                     ))}
                   </div>

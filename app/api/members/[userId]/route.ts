@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { PROFILE_SCALAR_SELECT } from "@/lib/profile/prisma-select";
-import { getProfilePosts } from "@/lib/posts/queries";
+import { getProfilePostsForViewer } from "@/lib/posts/queries";
 
 type Context = { params: { userId: string } };
 
@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest, routeCtx: Context) {
 const { params } = routeCtx;
 
   try {
-    await requireAuth();
+    const viewer = await requireAuth();
     const [user, posts] = await Promise.all([
       prisma.user.findUnique({
         where: { id: params.userId },
@@ -34,7 +34,7 @@ const { params } = routeCtx;
           },
         },
       }),
-      getProfilePosts(params.userId),
+      getProfilePostsForViewer(params.userId, viewer.id),
     ]);
 
     if (!user || !user.profile) {

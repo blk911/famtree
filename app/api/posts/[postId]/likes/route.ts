@@ -4,6 +4,7 @@ import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { viewerCanAccessPost } from "@/lib/posts/post-scope-access";
 
 type Context = { params: { postId: string } };
 
@@ -13,6 +14,11 @@ const { params } = routeCtx;
 
   try {
     const user = await requireAuth();
+    const ok = await viewerCanAccessPost(user.id, params.postId);
+    if (!ok) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     const [like, count] = await Promise.all([
       prisma.like.findUnique({ where: { postId_userId: { postId: params.postId, userId: user.id } } }),
       prisma.like.count({ where: { postId: params.postId } }),
@@ -34,6 +40,11 @@ const { params } = routeCtx;
 
   try {
     const user = await requireAuth();
+    const ok = await viewerCanAccessPost(user.id, params.postId);
+    if (!ok) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     const existing = await prisma.like.findUnique({
       where: { postId_userId: { postId: params.postId, userId: user.id } },
     });
