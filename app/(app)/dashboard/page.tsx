@@ -240,50 +240,35 @@ export default async function DashboardPage() {
           </Link>
         ))}
 
-        {/* Invite action tile */}
-        <Link href="/invite" style={{
-          ...card, padding:"12px 16px",
-          background:"linear-gradient(135deg,#1a1a2e,#0f3460)",
-          borderLeft:"3px solid #6366f1",
-          textDecoration:"none", display:"flex", alignItems:"center",
-          justifyContent:"space-between", gap:"10px",
-        }}>
-          <span style={{ fontSize:"11px", fontWeight:700, color:"rgba(255,255,255,0.6)", letterSpacing:"0.06em", textTransform:"uppercase" }}>
-            INVITE
-          </span>
-          <span style={{ fontSize:"20px", lineHeight:1 }}>✉️</span>
-        </Link>
-      </div>
-
-      {/* Privacy bridge — matches dashboard warning-strip tone; full-width flowing copy */}
-      <div
-        role="region"
-        aria-label="Privacy by design"
-        style={{
-          width: "100%",
-          boxSizing: "border-box",
-          borderRadius: 12,
-          padding: "12px 16px",
-          border: "1px solid #fde68a",
-          background: "#fffbeb",
-        }}
-      >
-        <p
+        {/* Invite — same card chrome as other metrics (links to /invite) */}
+        <Link
+          href="/invite"
           style={{
-            fontSize: 13,
-            fontWeight: 800,
-            color: "#c2410c",
-            margin: "0 0 8px",
-            letterSpacing: "-0.02em",
+            ...card,
+            padding: "12px 16px",
+            borderLeft: "3px solid #6366f1",
+            textDecoration: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "10px",
           }}
         >
-          🔒 Privacy by design
-        </p>
-        <p style={{ fontSize: 13, color: "#57534e", margin: 0, lineHeight: 1.6 }}>
-          Your invite works through recognition and trust. Your name is never revealed in the invite email — only
-          your photo is shared — so the recipient must identify you before joining your network, making identity the key
-          to accepting your invitation.
-        </p>
+          <span
+            style={{
+              fontSize: "11px",
+              fontWeight: 700,
+              color: "#78716c",
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+            }}
+          >
+            INVITE
+          </span>
+          <span style={{ fontSize: "20px", fontWeight: 800, color: "#1c1917", lineHeight: 1 }} aria-hidden>
+            ✉️
+          </span>
+        </Link>
       </div>
 
       {/* ── Two-column: tabbed content hub + context rail ── */}
