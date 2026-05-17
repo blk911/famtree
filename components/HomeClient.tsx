@@ -243,8 +243,18 @@ export function HomeClient() {
         .home-card { transition:transform 0.2s,background 0.2s,box-shadow 0.2s; }
         .feat-card:hover { transform:translateY(-3px); box-shadow:0 20px 48px rgba(124,58,237,0.12) !important; }
         .feat-card { transition:transform 0.2s,box-shadow 0.2s; }
-        /* Hero CTAs: stay 4-across until narrow phones; never collapse at laptop widths */
-        @media(max-width:640px){ .action-row{grid-template-columns:repeat(2,minmax(0,148px)) !important} }
+        /* Framed tray around hero CTAs only (does not affect nav / headline / body copy) */
+        .hero-action-tray{
+          border-radius:18px;
+          border:1px solid rgba(124,58,237,0.24);
+          background:rgba(255,255,255,0.78);
+          backdrop-filter:blur(12px);
+          -webkit-backdrop-filter:blur(12px);
+          box-shadow:0 12px 44px rgba(124,58,237,0.12), inset 0 1px 0 rgba(255,255,255,0.85);
+          padding:14px 16px;
+        }
+        /* Hero CTAs: 4 equal cols inside the tray until narrow breakpoints */
+        @media(max-width:640px){ .action-row{grid-template-columns:repeat(2,minmax(0,1fr)) !important} }
         @media(max-width:380px){ .action-row{grid-template-columns:minmax(0,1fr) !important} }
         @media(max-width:860px){ .hero-h{font-size:40px !important} .exclusivity-pill{font-size:14px !important;padding:12px 18px !important} }
         @media(max-width:640px){ .modal-card{position:fixed !important;inset:0 !important;border-radius:0 !important;padding:28px !important;overflow-y:auto !important} .join-grid,.wl-grid{grid-template-columns:1fr !important} }
@@ -294,16 +304,14 @@ export function HomeClient() {
           </p>
 
           <div
-            className="action-row"
+            className="action-row hero-action-tray"
             style={{
               display:"grid",
-              gridTemplateColumns:"repeat(4, minmax(0, 148px))",
-              justifyContent:"center",
-              gap:"10px",
+              gridTemplateColumns:"repeat(4, minmax(0, 1fr))",
+              gap:"12px",
               width:"100%",
-              maxWidth:"680px",
+              maxWidth:"720px",
               marginInline:"auto",
-              paddingInline:"4px",
               boxSizing:"border-box",
             }}
           >
@@ -317,7 +325,7 @@ export function HomeClient() {
                     else if (card.id === "send-invite") openSendInviteModal();
                     else openJoin("waitlist");
                   }}
-                  style={{ ["--hbg" as any]:card.hoverBg, background:card.bg, border:`1px solid ${card.border}`, borderRadius:"12px", padding:"10px 10px", cursor:"pointer", textAlign:"left", color:"#1e1b4b", backdropFilter:"blur(10px)", boxShadow:"0 4px 14px rgba(124,58,237,0.06)", minHeight:0, width:"100%", maxWidth:"148px", justifySelf:"center" }}
+                  style={{ ["--hbg" as any]:card.hoverBg, background:card.bg, border:`1px solid ${card.border}`, borderRadius:"12px", padding:"10px 10px", cursor:"pointer", textAlign:"left", color:"#1e1b4b", backdropFilter:"blur(10px)", boxShadow:"0 4px 14px rgba(124,58,237,0.06)", minHeight:0, width:"100%", minWidth:0 }}
                 >
                   <div style={{ width:28, height:28, borderRadius:"8px", background:"rgba(124,58,237,0.1)", color:"#6d28d9", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:"8px", flexShrink:0 }}>
                     <Icon style={{ width:14, height:14 }} strokeWidth={2.25} />
