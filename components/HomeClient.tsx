@@ -243,8 +243,10 @@ export function HomeClient() {
         .home-card { transition:transform 0.2s,background 0.2s,box-shadow 0.2s; }
         .feat-card:hover { transform:translateY(-3px); box-shadow:0 20px 48px rgba(124,58,237,0.12) !important; }
         .feat-card { transition:transform 0.2s,box-shadow 0.2s; }
-        @media(max-width:1100px){ .action-row{grid-template-columns:repeat(2,minmax(0,1fr)) !important} }
-        @media(max-width:860px){ .action-row{grid-template-columns:1fr !important} .hero-h{font-size:40px !important} .exclusivity-pill{font-size:14px !important;padding:12px 18px !important} }
+        /* Hero CTAs: stay 4-across until narrow phones; never collapse at laptop widths */
+        @media(max-width:640px){ .action-row{grid-template-columns:repeat(2,minmax(0,148px)) !important} }
+        @media(max-width:380px){ .action-row{grid-template-columns:minmax(0,1fr) !important} }
+        @media(max-width:860px){ .hero-h{font-size:40px !important} .exclusivity-pill{font-size:14px !important;padding:12px 18px !important} }
         @media(max-width:640px){ .modal-card{position:fixed !important;inset:0 !important;border-radius:0 !important;padding:28px !important;overflow-y:auto !important} .join-grid,.wl-grid{grid-template-columns:1fr !important} }
       `}</style>
 
@@ -291,7 +293,20 @@ export function HomeClient() {
             A private social network built exclusively for families. Invitation-only. Just the people who matter most. No strangers or bots. All conversations are private.
           </p>
 
-          <div className="action-row" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0, 1fr))", gap:"10px", maxWidth:"1120px", width:"100%", paddingInline:"4px", boxSizing:"border-box" }}>
+          <div
+            className="action-row"
+            style={{
+              display:"grid",
+              gridTemplateColumns:"repeat(4, minmax(0, 148px))",
+              justifyContent:"center",
+              gap:"10px",
+              width:"100%",
+              maxWidth:"680px",
+              marginInline:"auto",
+              paddingInline:"4px",
+              boxSizing:"border-box",
+            }}
+          >
             {CARDS.map((card) => {
               const Icon = card.icon;
               return (
@@ -302,14 +317,14 @@ export function HomeClient() {
                     else if (card.id === "send-invite") openSendInviteModal();
                     else openJoin("waitlist");
                   }}
-                  style={{ ["--hbg" as any]:card.hoverBg, background:card.bg, border:`1px solid ${card.border}`, borderRadius:"16px", padding:"14px 12px", cursor:"pointer", textAlign:"left", color:"#1e1b4b", backdropFilter:"blur(10px)", boxShadow:"0 6px 20px rgba(124,58,237,0.06)", minHeight:0 }}
+                  style={{ ["--hbg" as any]:card.hoverBg, background:card.bg, border:`1px solid ${card.border}`, borderRadius:"12px", padding:"10px 10px", cursor:"pointer", textAlign:"left", color:"#1e1b4b", backdropFilter:"blur(10px)", boxShadow:"0 4px 14px rgba(124,58,237,0.06)", minHeight:0, width:"100%", maxWidth:"148px", justifySelf:"center" }}
                 >
-                  <div style={{ width:34, height:34, borderRadius:"10px", background:"rgba(124,58,237,0.1)", color:"#6d28d9", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:"10px", flexShrink:0 }}>
-                    <Icon style={{ width:17, height:17 }} strokeWidth={2.25} />
+                  <div style={{ width:28, height:28, borderRadius:"8px", background:"rgba(124,58,237,0.1)", color:"#6d28d9", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:"8px", flexShrink:0 }}>
+                    <Icon style={{ width:14, height:14 }} strokeWidth={2.25} />
                   </div>
-                  <div style={{ fontSize:"14px", fontWeight:800, marginBottom:"5px", letterSpacing:"-0.2px", lineHeight:1.25 }}>{card.label}</div>
-                  <div style={{ fontSize:"11.5px", lineHeight:1.45, color:"#64748b", display:"-webkit-box", WebkitLineClamp:3, WebkitBoxOrient:"vertical" as const, overflow:"hidden" }}>{card.sub}</div>
-                  <div style={{ marginTop:"10px", fontSize:"13px", color:"#a855f7", fontWeight:700 }}>→</div>
+                  <div style={{ fontSize:"12px", fontWeight:800, marginBottom:"4px", letterSpacing:"-0.2px", lineHeight:1.25 }}>{card.label}</div>
+                  <div style={{ fontSize:"10px", lineHeight:1.4, color:"#64748b", display:"-webkit-box", WebkitLineClamp:3, WebkitBoxOrient:"vertical" as const, overflow:"hidden" }}>{card.sub}</div>
+                  <div style={{ marginTop:"8px", fontSize:"12px", color:"#a855f7", fontWeight:700 }}>→</div>
                 </button>
               );
             })}
