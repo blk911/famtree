@@ -34,6 +34,10 @@ import {
 import { checkPostLimits } from "@/lib/aihsafe/limits";
 import { readJson, parsePagination } from "@/lib/aihsafe/api/parse";
 import type { ActivityPostDTO } from "@/types/aihsafe/dto";
+import {
+  vaultSharedInLabel,
+  type VaultSpaceType,
+} from "@/lib/aihsafe/vault-space";
 
 const CreatePostSchema = z.object({
   bodyText:        z.string().min(1).max(2000),
@@ -46,12 +50,13 @@ const CreatePostSchema = z.object({
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function buildVisibilityReasons(
-  trustUnitId: string | null,
   trustUnitName: string | null,
+  vaultSpaceType: VaultSpaceType | null,
   scope: string,
 ): string[] {
   const reasons: string[] = [];
   if (trustUnitName) reasons.push(trustUnitName);
+  if (vaultSpaceType) reasons.push(vaultSharedInLabel(vaultSpaceType));
   if (scope === "trust_unit") reasons.push("approved trusted space");
   else if (scope === "family") reasons.push("family members only");
   else if (scope === "guardian_only") reasons.push("guardians only");
@@ -72,11 +77,15 @@ function mapPost(
     attachmentType: string | null;
     createdAt: Date;
     author: { firstName: string; lastName: string; photoUrl: string | null };
-    trustUnit: { aihMeta: { name: string | null } | null } | null;
+    trustUnit: { aihMeta: { name: string | null; vaultSpaceType: string | null } | null } | null;
     _count: { comments: number };
   }
 ): ActivityPostDTO {
   const trustUnitName = post.trustUnit?.aihMeta?.name ?? null;
+  const vsRaw         = post.trustUnit?.aihMeta?.vaultSpaceType ?? null;
+  const VAULT         = new Set<string>(["FAMILY", "BUSINESS", "CHURCH", "CLUB", "PRIVATE", "CUSTOM"]);
+  const vaultSpaceType = vsRaw && VAULT.has(vsRaw) ? (vsRaw as VaultSpaceType) : null;
+
   return {
     id:               post.id,
     authorId:         post.authorId,
@@ -84,6 +93,7 @@ function mapPost(
     authorPhotoUrl:   post.author.photoUrl,
     trustUnitId:      post.trustUnitId,
     trustUnitName,
+    vaultSpaceType,
     familyUnitId:     post.familyUnitId,
     visibilityScope:  post.visibilityScope,
     bodyText:         post.bodyText,
@@ -92,7 +102,7 @@ function mapPost(
     attachmentType:   post.attachmentType,
     createdAt:        post.createdAt.toISOString(),
     commentCount:     post._count.comments,
-    visibilityReasons: buildVisibilityReasons(post.trustUnitId, trustUnitName, post.visibilityScope),
+    visibilityReasons: buildVisibilityReasons(trustUnitName, vaultSpaceType, post.visibilityScope),
   };
 }
 
@@ -101,7 +111,7 @@ const POST_SELECT = {
   visibilityScope: true, bodyText: true, governanceState: true,
   escalationState: true, attachmentType: true, createdAt: true,
   author:    { select: { firstName: true, lastName: true, photoUrl: true } },
-  trustUnit: { select: { aihMeta: { select: { name: true } } } },
+  trustUnit: { select: { aihMeta: { select: { name: true, vaultSpaceType: true } } } },
   _count:    { select: { comments: true } },
 } as const;
 
@@ -113,20 +123,31 @@ export async function GET(req: NextRequest) {
     if (!user) return unauthenticated();
 
     const { limit, cursor } = parsePagination(req);
+    const filterTrustUnitId = new URL(req.url).searchParams.get("trustUnitId");
 
     // Fetch the trust unit IDs this user belongs to
-    const actor = await buildActorContext(asAIHUserId(user.id));
-    const memberships = await listMembershipsForUser(asAIHUserId(user.id));
+    const memberships        = await listMembershipsForUser(asAIHUserId(user.id));
     const memberTrustUnitIds = memberships.map((m) => m.trustUnitId as string);
+
+    if (filterTrustUnitId && !memberTrustUnitIds.includes(filterTrustUnitId)) {
+      return ok({
+        items:      [],
+        pagination: { cursor: null, hasMore: false, total: 0 },
+      });
+    }
 
     // Posts visible to this user = posts in their trust units OR their own posts
     const posts = await prisma.aihActivityPost.findMany({
       where: {
-        OR: [
-          { trustUnitId: { in: memberTrustUnitIds } },
-          { authorId: user.id, trustUnitId: null },
-        ],
         governanceState: "allowed",
+        ...(filterTrustUnitId
+          ? { trustUnitId: filterTrustUnitId }
+          : {
+              OR: [
+                { trustUnitId: { in: memberTrustUnitIds } },
+                { authorId: user.id, trustUnitId: null },
+              ],
+            }),
       },
       orderBy: { createdAt: "desc" },
       take: limit + 1,

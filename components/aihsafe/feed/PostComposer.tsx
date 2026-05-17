@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createActivityPost }  from "@/components/aihsafe/common/apiClient";
 import { SpaceBadge }          from "@/components/aihsafe/feed/SpaceBadge";
 import {
@@ -9,6 +9,10 @@ import {
   type InterestCategory,
 } from "@/lib/aihsafe/interests/categories";
 import type { TrustUnitDTO } from "@/types/aihsafe/dto";
+import {
+  vaultSpaceTypeHeaderLabel,
+  vaultSpaceTypeShortLabel,
+} from "@/lib/aihsafe/vault-space";
 
 // ─── Category chip (child PostComposer) ───────────────────────────────────────
 
@@ -59,6 +63,10 @@ interface Props {
    * Only used when viewerMode === "child". UI-local — not submitted to API this pass.
    */
   allowedCategoryIds?: string[];
+  /**
+   * When Activity tab is scoped to one trust unit, pre-select it in the composer.
+   */
+  composerPresetTrustUnitId?: string | null;
 }
 
 export function PostComposer({
@@ -67,6 +75,7 @@ export function PostComposer({
   onPosted,
   viewerMode = "founder",
   allowedCategoryIds = [],
+  composerPresetTrustUnitId = null,
 }: Props) {
   const [body,               setBody]               = useState("");
   const [spaceId,            setSpaceId]            = useState<string>("");
@@ -77,6 +86,15 @@ export function PostComposer({
   // Categories for child view — all enabled by default (empty allowedIds = no filter).
   const childCategories: readonly InterestCategory[] =
     viewerMode === "child" ? getAllowedCategories(allowedCategoryIds) : [];
+
+  useEffect(() => {
+    if (
+      composerPresetTrustUnitId &&
+      trustUnits.some((u) => u.id === composerPresetTrustUnitId)
+    ) {
+      setSpaceId(composerPresetTrustUnitId);
+    }
+  }, [composerPresetTrustUnitId, trustUnits]);
 
   const selectedSpace = trustUnits.find((u) => u.id === spaceId);
   const hasSpaces     = trustUnits.length > 0;
@@ -183,7 +201,9 @@ export function PostComposer({
               transition:   "all 0.12s",
             }}
           >
-            {u.name ?? u.kind}
+            {u.name?.trim()
+              ? u.name
+              : vaultSpaceTypeShortLabel(u.vaultSpaceType)}
           </button>
         ))}
       </div>
@@ -215,7 +235,7 @@ export function PostComposer({
         onChange={(e) => setBody(e.target.value)}
         placeholder={
           selectedSpace
-            ? `Share something with ${selectedSpace.name ?? selectedSpace.kind}…`
+            ? `Share something in ${vaultSpaceTypeHeaderLabel(selectedSpace.vaultSpaceType)}…`
             : viewerMode === "child"
               ? "Visible only to you — select an approved space above to share."
               : "Visible only to you — select a space above to share with others."
@@ -246,7 +266,16 @@ export function PostComposer({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
         <div style={{ fontSize: 11, color: "#9ca3af" }}>
           {selectedSpace ? (
-            <>Sharing to: <SpaceBadge name={selectedSpace.name ?? selectedSpace.kind} /></>
+            <>
+              Sharing to:{" "}
+              <SpaceBadge
+                name={
+                  selectedSpace.name?.trim()
+                    ? `${selectedSpace.name} (${vaultSpaceTypeShortLabel(selectedSpace.vaultSpaceType)})`
+                    : vaultSpaceTypeHeaderLabel(selectedSpace.vaultSpaceType)
+                }
+              />
+            </>
           ) : (
             <span style={{ fontStyle: "italic" }}>Visible only to you</span>
           )}

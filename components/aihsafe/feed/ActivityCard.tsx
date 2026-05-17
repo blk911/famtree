@@ -4,6 +4,7 @@ import { SpaceBadge }      from "@/components/aihsafe/feed/SpaceBadge";
 import { VisibilityReason } from "@/components/aihsafe/feed/VisibilityReason";
 import { CommentThread }    from "@/components/aihsafe/feed/CommentThread";
 import type { ActivityPostDTO } from "@/types/aihsafe/dto";
+import { vaultSharedInLabel } from "@/lib/aihsafe/vault-space";
 
 function relTime(iso: string) {
   const sec = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -109,10 +110,15 @@ export function ActivityCard({ post, currentUserId }: Props) {
             </div>
             <time
               dateTime={post.createdAt}
-              style={{ fontSize: 11, color: "#9ca3af" }}
+              style={{ fontSize: 11, color: "#9ca3af", display: "block", marginTop: 2 }}
             >
               {relTime(post.createdAt)}
             </time>
+            {post.vaultSpaceType && (
+              <div style={{ fontSize: 11, color: "#7c3aed", fontWeight: 600, marginTop: 4 }}>
+                {vaultSharedInLabel(post.vaultSpaceType)}
+              </div>
+            )}
           </div>
         </div>
 

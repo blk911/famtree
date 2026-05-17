@@ -1,5 +1,7 @@
 import React from "react";
 import { SpaceKindBadge } from "@/components/aihsafe/spaces/SpaceKindBadge";
+import type { VaultSpaceType } from "@/lib/aihsafe/vault-space";
+import { vaultSpaceTypeHeaderLabel } from "@/lib/aihsafe/vault-space";
 
 const VISIBILITY_LABEL: Record<string, string> = {
   trust_unit:      "Trusted circle",
@@ -18,6 +20,9 @@ export interface LeaveAction {
 }
 
 interface Props {
+  /** Trust-unit rows pass id so viewers can jump to scoped activity. */
+  trustUnitId?:       string;
+  vaultSpaceType?:    VaultSpaceType | string | null;
   /** Display name — pass undefined/null to fall back to kind label. */
   name?:            string | null;
   kind:             string;
@@ -31,9 +36,13 @@ interface Props {
   leaveAction?:     LeaveAction;
   /** Present → render Invite button. */
   onInvite?:        () => void;
+  /** Opens Activity tab scoped to this trust unit. */
+  onViewActivity?:  (trustUnitId: string) => void;
 }
 
 export function SpaceCard({
+  trustUnitId,
+  vaultSpaceType,
   name,
   kind,
   memberCount,
@@ -42,8 +51,14 @@ export function SpaceCard({
   isMember,
   leaveAction,
   onInvite,
+  onViewActivity,
 }: Props) {
-  const displayName   = name?.trim() ? name : `${kind.charAt(0).toUpperCase()}${kind.slice(1)} space`;
+  const displayName =
+    name?.trim() ? name : `${kind.charAt(0).toUpperCase()}${kind.slice(1)} space`;
+  const vaultHeader =
+    vaultSpaceType && String(vaultSpaceType) !== ""
+      ? vaultSpaceTypeHeaderLabel(vaultSpaceType as VaultSpaceType)
+      : null;
   const visibilityTxt = visibilityScope ? VISIBILITY_LABEL[visibilityScope] : undefined;
 
   return (
@@ -73,7 +88,7 @@ export function SpaceCard({
             flexShrink:     0,
           }}
         >
-          <SpaceKindBadge kind={kind} iconOnly />
+          <SpaceKindBadge kind={kind} vaultSpaceType={vaultSpaceType ?? undefined} iconOnly />
         </div>
 
         {/* Name + badges */}
@@ -91,7 +106,7 @@ export function SpaceCard({
             >
               {displayName}
             </span>
-            <SpaceKindBadge kind={kind} />
+            <SpaceKindBadge kind={kind} vaultSpaceType={vaultSpaceType ?? undefined} />
             {isCreator && (
               <span
                 style={{
@@ -126,6 +141,12 @@ export function SpaceCard({
 
           {/* Sub-line */}
           <div style={{ fontSize: 12, color: "#a8a29e", marginTop: 3, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {vaultHeader && (
+              <>
+                <span style={{ color: "#78716c", fontWeight: 600 }}>{vaultHeader}</span>
+                <span aria-hidden="true">·</span>
+              </>
+            )}
             <span>
               {memberCount} {memberCount === 1 ? "member" : "members"}
             </span>
@@ -140,8 +161,26 @@ export function SpaceCard({
       </div>
 
       {/* Action row */}
-      {(leaveAction || onInvite) && (
+      {(leaveAction || onInvite || (trustUnitId && onViewActivity)) && (
         <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+          {trustUnitId && onViewActivity && (
+            <button
+              type="button"
+              onClick={() => onViewActivity(trustUnitId)}
+              style={{
+                padding:      "6px 14px",
+                borderRadius: 8,
+                border:       "1px solid #c4b5fd",
+                background:   "#f5f3ff",
+                color:        "#5b21b6",
+                fontWeight:   600,
+                fontSize:     12,
+                cursor:       "pointer",
+              }}
+            >
+              Activity →
+            </button>
+          )}
           {onInvite && (
             <button
               type="button"

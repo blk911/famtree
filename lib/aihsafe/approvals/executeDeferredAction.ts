@@ -7,6 +7,10 @@ import { prisma } from "@/lib/db/prisma";
 import { emitAuditEvent } from "@/lib/aihsafe/audit";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
 import type { TrustUnitKind } from "@/types/aihsafe/trust-units";
+import {
+  deriveVaultSpaceTypeFromTrustKind,
+  type VaultSpaceType,
+} from "@/lib/aihsafe/vault-space";
 import { isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 
 type DeferredResult =
@@ -65,22 +69,37 @@ export async function executeDeferredAction(
       if (!isHumanTrustEligible({ role: requestor.role, email: requestor.email })) {
         return { ok: false, reason: "requestor_not_human_trust_eligible" };
       }
-      const kind                   = String(ctx.kind ?? "peer") as TrustUnitKind;
+      const metaKind = String(ctx.kind ?? "peer") as TrustUnitKind;
+      const vsRaw    = ctx.vaultSpaceType != null ? String(ctx.vaultSpaceType) : "";
+      const VAULT    = new Set<string>(["FAMILY", "BUSINESS", "CHURCH", "CLUB", "PRIVATE", "CUSTOM"]);
+      const vaultSpaceType: VaultSpaceType = VAULT.has(vsRaw)
+        ? (vsRaw as VaultSpaceType)
+        : deriveVaultSpaceTypeFromTrustKind(metaKind);
       const name                   = ctx.name != null ? String(ctx.name) : undefined;
+      const description          = ctx.description != null ? String(ctx.description) : undefined;
       const defaultVisibilityScope = String(ctx.defaultVisibilityScope ?? "trust_unit");
       const maxMemberCount         = typeof ctx.maxMemberCount === "number" ? ctx.maxMemberCount : 3;
       // memberIds not re-applied — see Blocker 4.
       const trustUnit = await prisma.trustUnit.create({
         data: {
           members: { create: [{ userId: requestorId }] },
-          aihMeta: { create: { kind, name: name ?? null, defaultVisibilityScope, maxMemberCount } },
+          aihMeta: {
+            create: {
+              kind:              metaKind,
+              vaultSpaceType,
+              name:              name ?? null,
+              description:       description ?? null,
+              defaultVisibilityScope,
+              maxMemberCount,
+            },
+          },
         },
       });
       await emitAuditEvent({
         kind:     AuditEventKind.TRUST_UNIT_FORMED,
         actorId:  requestorId,
         targetId: trustUnit.id,
-        meta:     { kind, guardianApprovedBy: guardianActorId },
+        meta:     { kind: metaKind, vaultSpaceType, guardianApprovedBy: guardianActorId },
       });
       return { ok: true };
     }

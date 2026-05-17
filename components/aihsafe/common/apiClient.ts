@@ -101,13 +101,12 @@ export async function listTrustUnits(): Promise<AihResult<Paginated<TrustUnitDTO
   return parseEnvelope(await fetch("/api/aihsafe/trust-units"));
 }
 
-export async function createTrustUnit(
-  kind: string,
-  name?: string
-): Promise<AihResult<TrustUnitDTO>> {
-  return parseEnvelope(
-    await fetch("/api/aihsafe/trust-units", jsonPost({ kind, ...(name ? { name } : {}) }))
-  );
+export async function createTrustUnit(payload: {
+  vaultSpaceType: string;
+  name: string;
+  description?: string;
+}): Promise<AihResult<TrustUnitDTO>> {
+  return parseEnvelope(await fetch("/api/aihsafe/trust-units", jsonPost(payload)));
 }
 
 // ─── Invites ──────────────────────────────────────────────────────────────────
@@ -163,12 +162,15 @@ export async function listGuardianLinks(): Promise<AihResult<Paginated<GuardianL
 // ─── Activity feed ────────────────────────────────────────────────────────────
 
 export async function listActivityFeed(
-  cursor?: string
+  cursor?: string,
+  opts?: { limit?: number; trustUnitId?: string | null }
 ): Promise<AihResult<Paginated<ActivityPostDTO>>> {
-  const url = cursor
-    ? `/api/aihsafe/activity?cursor=${encodeURIComponent(cursor)}`
-    : "/api/aihsafe/activity";
-  return parseEnvelope(await fetch(url));
+  const params = new URLSearchParams();
+  if (cursor) params.set("cursor", cursor);
+  if (opts?.limit != null) params.set("limit", String(opts.limit));
+  if (opts?.trustUnitId) params.set("trustUnitId", opts.trustUnitId);
+  const q = params.toString();
+  return parseEnvelope(await fetch(`/api/aihsafe/activity${q ? `?${q}` : ""}`));
 }
 
 export async function createActivityPost(

@@ -15,6 +15,7 @@ import type {
 } from "./ids";
 import type { AgeTier } from "./age-tiers";
 import type { TrustUnitKind } from "./trust-units";
+import type { VaultSpaceType } from "@/lib/aihsafe/vault-space";
 import type { VisibilityScope } from "./visibility";
 import type { ReasonCode } from "./governance";
 import type { AuditEventKind } from "./audit-events";
@@ -27,8 +28,11 @@ export interface CreateFamilyUnitRequest {
 }
 
 export interface CreateTrustUnitRequest {
-  kind:                    TrustUnitKind;
+  kind?:                   TrustUnitKind;
+  /** Preferred — drives Msg Vault labels + scoped activity UX. */
+  vaultSpaceType?:         VaultSpaceType;
   name?:                   string;          // 1–80 chars
+  description?:            string;
   memberIds?:              string[];
   defaultVisibilityScope?: VisibilityScope; // defaults to "trust_unit"
   maxMemberCount?:         number;          // 3–100, defaults to 3
@@ -127,6 +131,9 @@ export interface TrustUnitDTO {
   id:                    string;    // TrustUnitId
   name?:                 string;    // optional display name — present once AihTrustUnitMeta.name column exists
   kind:                  TrustUnitKind;
+  /** Msg Vault category — always set (derived from legacy kind when missing in DB). */
+  vaultSpaceType:        VaultSpaceType;
+  description?:        string;
   status:                "active" | "dissolved";
   defaultVisibilityScope: VisibilityScope;
   maxMemberCount:        number;
@@ -200,6 +207,8 @@ export interface ActivityPostDTO {
   authorPhotoUrl:  string | null;
   trustUnitId:     string | null;
   trustUnitName:   string | null;
+  /** Present when post is tied to a trust unit that has a vault category. */
+  vaultSpaceType:  VaultSpaceType | null;
   familyUnitId:    string | null;
   visibilityScope: string;
   bodyText:        string;

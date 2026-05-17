@@ -5,11 +5,15 @@ import { listActivityFeed } from "@/components/aihsafe/common/apiClient";
 import { PostComposer }     from "@/components/aihsafe/feed/PostComposer";
 import { ActivityCard }     from "@/components/aihsafe/feed/ActivityCard";
 import type { ActivityPostDTO, TrustUnitDTO } from "@/types/aihsafe/dto";
+import { vaultSpaceTypeShortLabel } from "@/lib/aihsafe/vault-space";
 
 interface Props {
   currentUserId: string;
   trustUnits:    TrustUnitDTO[];
   viewerMode?:   "founder" | "member" | "child";
+  /** When set, GET /activity includes trustUnitId filter. */
+  scopedTrustUnitId?: string | null;
+  onScopedTrustUnitChange?: (id: string | null) => void;
 }
 
 const SAMPLE_PROMPTS = [
@@ -19,7 +23,13 @@ const SAMPLE_PROMPTS = [
   { icon: "🙏", text: "A thank-you or kind word for someone" },
 ];
 
-export function ActivityFeed({ currentUserId, trustUnits, viewerMode = "founder" }: Props) {
+export function ActivityFeed({
+  currentUserId,
+  trustUnits,
+  viewerMode = "founder",
+  scopedTrustUnitId = null,
+  onScopedTrustUnitChange,
+}: Props) {
   const [posts,      setPosts]      = useState<ActivityPostDTO[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -30,9 +40,11 @@ export function ActivityFeed({ currentUserId, trustUnits, viewerMode = "founder"
     setLoading(true);
     setFetchError(null);
     try {
-      const r = await listActivityFeed(replace ? undefined : (cursor ?? undefined));
+      const r = await listActivityFeed(replace ? undefined : (cursor ?? undefined), {
+        trustUnitId: scopedTrustUnitId ?? undefined,
+      });
       if (r.kind === "ok") {
-        setPosts((prev) => replace ? r.data.items : [...prev, ...r.data.items]);
+        setPosts((prev) => (replace ? r.data.items : [...prev, ...r.data.items]));
         setCursor(r.data.pagination.cursor ?? null);
         setHasMore(r.data.pagination.hasMore);
       } else {
@@ -42,9 +54,35 @@ export function ActivityFeed({ currentUserId, trustUnits, viewerMode = "founder"
       setFetchError("Couldn't reach the server. Check your connection and try again.");
     }
     setLoading(false);
-  }, [cursor]);
+  }, [cursor, scopedTrustUnitId]);
 
-  useEffect(() => { load(true); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setCursor(null);
+    setPosts([]);
+    setHasMore(false);
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setFetchError(null);
+      try {
+        const r = await listActivityFeed(undefined, {
+          trustUnitId: scopedTrustUnitId ?? undefined,
+        });
+        if (cancelled) return;
+        if (r.kind === "ok") {
+          setPosts(r.data.items);
+          setCursor(r.data.pagination.cursor ?? null);
+          setHasMore(r.data.pagination.hasMore);
+        } else {
+          setFetchError("Couldn't load posts. Try again.");
+        }
+      } catch {
+        if (!cancelled) setFetchError("Couldn't reach the server. Check your connection and try again.");
+      }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [scopedTrustUnitId]);
 
   return (
     <section aria-label="Family activity feed">
@@ -88,12 +126,57 @@ export function ActivityFeed({ currentUserId, trustUnits, viewerMode = "founder"
         </div>
       )}
 
+      {trustUnits.length > 0 && onScopedTrustUnitChange && (
+        <div
+          style={{
+            marginBottom: 12,
+            padding:      "10px 14px",
+            background:   "#fff",
+            borderRadius: 12,
+            border:       "1px solid #e7e5e4",
+            display:      "flex",
+            flexWrap:     "wrap",
+            alignItems:   "center",
+            gap:          10,
+          }}
+        >
+          <label htmlFor="vault-activity-scope" style={{ fontSize: 12, fontWeight: 600, color: "#57534e" }}>
+            Show activity for
+          </label>
+          <select
+            id="vault-activity-scope"
+            value={scopedTrustUnitId ?? ""}
+            onChange={(e) => onScopedTrustUnitChange(e.target.value || null)}
+            style={{
+              flex:         "1 1 180px",
+              minWidth:     160,
+              padding:      "7px 10px",
+              borderRadius: 9,
+              border:       "1px solid #d6d3d1",
+              fontSize:     13,
+              background:   "#fafaf9",
+              color:        "#1c1917",
+            }}
+          >
+            <option value="">All trusted spaces</option>
+            {trustUnits.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name?.trim()
+                  ? u.name
+                  : `${vaultSpaceTypeShortLabel(u.vaultSpaceType)} space`}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Composer */}
       <PostComposer
         trustUnits={trustUnits}
         currentUserId={currentUserId}
         onPosted={() => load(true)}
         viewerMode={viewerMode}
+        composerPresetTrustUnitId={scopedTrustUnitId}
       />
 
       {/* Loading skeleton */}

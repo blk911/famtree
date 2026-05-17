@@ -745,6 +745,18 @@ enum AihTrustUnitKind {
   @@map("aih_trust_unit_kind")
 }
 
+/// Msg Vault — operator-facing space category (drives labels + scoped activity UX).
+enum AihVaultSpaceType {
+  FAMILY
+  BUSINESS
+  CHURCH
+  CLUB
+  PRIVATE
+  CUSTOM
+
+  @@map("aih_vault_space_type")
+}
+
 enum AihApprovalState {
   pending
   approved
@@ -759,14 +771,17 @@ enum AihApprovalState {
 
 /// 1:1 sidecar for existing TrustUnit — adds AIH Safe metadata without modifying the core model.
 model AihTrustUnitMeta {
-  trustUnitId            String           @id
-  trustUnit              TrustUnit        @relation(fields: [trustUnitId], references: [id], onDelete: Restrict)
+  trustUnitId            String             @id
+  trustUnit              TrustUnit          @relation(fields: [trustUnitId], references: [id], onDelete: Restrict)
   kind                   AihTrustUnitKind
+  /// Vault category — titles like "Business Space" and activity chips like "Shared in Business".
+  vaultSpaceType         AihVaultSpaceType?
+  description            String?            @db.Text
   name                   String?
-  defaultVisibilityScope String           @default("trust_unit")
-  maxMemberCount         Int              @default(3)
-  createdAt              DateTime         @default(now())
-  updatedAt              DateTime         @updatedAt
+  defaultVisibilityScope String             @default("trust_unit")
+  maxMemberCount         Int                @default(3)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
 
   @@map("aih_trust_unit_meta")
 }

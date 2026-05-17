@@ -27,6 +27,7 @@ interface Props {
   onCreateFamily: () => void;
   onInvite:       () => void;
   onReload:       () => void;
+  onOpenSpaceActivity?: (trustUnitId: string) => void;
 }
 
 const newBtn = (onClick: () => void) => (
@@ -170,6 +171,7 @@ export function SpacesTab({
   onCreateFamily,
   onInvite,
   onReload,
+  onOpenSpaceActivity,
 }: Props) {
   const [exitingId,  setExitingId]  = useState<string | null>(null);
   const [exitErrors, setExitErrors] = useState<Record<string, string>>({});
@@ -266,6 +268,30 @@ export function SpacesTab({
 
   return (
     <div style={{ maxWidth: 760 }}>
+      {canCreate && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
+          <button
+            type="button"
+            onClick={onCreateSpace}
+            style={{
+              display:      "inline-flex",
+              alignItems:   "center",
+              gap:          8,
+              padding:      "9px 18px",
+              borderRadius: 11,
+              border:       "none",
+              background:   "#7c3aed",
+              color:        "#fff",
+              fontWeight:   700,
+              fontSize:     13,
+              cursor:       "pointer",
+              boxShadow:    "0 2px 8px rgba(124,58,237,0.22)",
+            }}
+          >
+            + Create Trusted Space
+          </button>
+        </div>
+      )}
 
       {/* ── Family Groups ──────────────────────────────────────────────── */}
       <SpacesSection
@@ -310,7 +336,7 @@ export function SpacesTab({
         emptyText="No trusted spaces yet."
         emptyAction={
           canCreate
-            ? emptyCreateBtn("+ Create a trusted space", onCreateSpace)
+            ? emptyCreateBtn("+ Create Trusted Space", onCreateSpace)
             : undefined
         }
       >
@@ -324,12 +350,15 @@ export function SpacesTab({
             return (
               <SpaceCard
                 key={u.id}
+                trustUnitId={u.id}
+                vaultSpaceType={u.vaultSpaceType}
                 name={u.name}
                 kind={u.kind}
                 memberCount={activeCount}
                 visibilityScope={u.defaultVisibilityScope}
                 isMember
                 onInvite={canCreate ? onInvite : undefined}
+                onViewActivity={onOpenSpaceActivity}
                 leaveAction={
                   myMembership && shellMode === "member"
                     ? {
@@ -440,7 +469,7 @@ export function SpacesTab({
                   cursor:       "pointer",
                 }}
               >
-                🤝 New trusted space
+                🤝 Create Trusted Space
               </button>
             </div>
           )}

@@ -11,7 +11,6 @@ import {
   buildActorContext,
   canCreateTrustUnit,
   emitAuditEvent,
-  listTrustUnitsForUser,
   selectApprovalRecipients,
 } from "@/lib/aihsafe";
 import { asAIHUserId } from "@/types/aihsafe/ids";
@@ -30,16 +29,37 @@ import { readJson, parsePagination } from "@/lib/aihsafe/api/parse";
 import type { TrustUnitDTO } from "@/types/aihsafe/dto";
 import type { TrustUnitKind } from "@/types/aihsafe/trust-units";
 import type { VisibilityScope } from "@/types/aihsafe/visibility";
+import type { VaultSpaceType } from "@/lib/aihsafe/vault-space";
+import {
+  deriveVaultSpaceTypeFromTrustKind,
+  vaultSpaceTypeToAihMetaKind,
+} from "@/lib/aihsafe/vault-space";
 
 // ─── Validation ───────────────────────────────────────────────────────────────
 
-const CreateTrustUnitSchema = z.object({
-  kind:                    z.enum(["family", "peer", "extended", "guardian"]),
-  name:                    z.string().min(1).max(80).optional(),
-  memberIds:               z.array(z.string().min(1)).optional(),
-  defaultVisibilityScope:  z.string().optional(),
-  maxMemberCount:          z.number().int().min(3).max(100).optional(),
-});
+const VaultSpaceTypeSchema = z.enum([
+  "FAMILY",
+  "BUSINESS",
+  "CHURCH",
+  "CLUB",
+  "PRIVATE",
+  "CUSTOM",
+]);
+
+const CreateTrustUnitSchema = z
+  .object({
+    kind:                   z.enum(["family", "peer", "extended", "guardian"]).optional(),
+    vaultSpaceType:         VaultSpaceTypeSchema.optional(),
+    name:                   z.string().min(1).max(80).optional(),
+    description:            z.string().max(2000).optional(),
+    memberIds:              z.array(z.string().min(1)).optional(),
+    defaultVisibilityScope: z.string().optional(),
+    maxMemberCount:         z.number().int().min(3).max(100).optional(),
+  })
+  .refine(d => d.kind != null || d.vaultSpaceType != null, {
+    message: "Provide vaultSpaceType or kind",
+    path:    ["vaultSpaceType"],
+  });
 
 // ─── DTO mapper ───────────────────────────────────────────────────────────────
 
@@ -56,16 +76,26 @@ function toTrustUnitDTO(
     aihMeta: {
       kind: string;
       name: string | null;
+      description: string | null;
+      vaultSpaceType: string | null;
       defaultVisibilityScope: string;
       maxMemberCount: number;
     } | null;
   },
   memberNames: Map<string, string>
 ): TrustUnitDTO {
+  const kind = (row.aihMeta?.kind ?? "peer") as TrustUnitKind;
+  const vaultSpaceType: VaultSpaceType =
+    row.aihMeta?.vaultSpaceType != null
+      ? (row.aihMeta.vaultSpaceType as VaultSpaceType)
+      : deriveVaultSpaceTypeFromTrustKind(kind);
+
   return {
     id:                     row.id,
     ...(row.aihMeta?.name ? { name: row.aihMeta.name } : {}),
-    kind:                   (row.aihMeta?.kind ?? "peer") as TrustUnitKind,
+    ...(row.aihMeta?.description ? { description: row.aihMeta.description } : {}),
+    kind,
+    vaultSpaceType,
     status:                 "active",
     defaultVisibilityScope: (row.aihMeta?.defaultVisibilityScope ?? "trust_unit") as VisibilityScope,
     maxMemberCount:         row.aihMeta?.maxMemberCount ?? 3,
@@ -106,20 +136,31 @@ export async function POST(req: NextRequest) {
   }
 
   const {
-    kind,
+    kind:               legacyKind,
+    vaultSpaceType:   bodyVaultType,
     name,
+    description,
     memberIds = [],
     defaultVisibilityScope = "trust_unit",
     maxMemberCount = 3,
   } = parsed.data;
 
-  const decision = canCreateTrustUnit(actor, { kind: kind as TrustUnitKind });
+  const vaultSpaceType: VaultSpaceType = bodyVaultType
+    ?? deriveVaultSpaceTypeFromTrustKind((legacyKind ?? "peer") as TrustUnitKind);
+
+  const metaKind = (
+    bodyVaultType
+      ? vaultSpaceTypeToAihMetaKind(bodyVaultType)
+      : (legacyKind ?? "peer")
+  ) as TrustUnitKind;
+
+  const decision = canCreateTrustUnit(actor, { kind: metaKind as TrustUnitKind });
   if (!decision.allowed && !decision.requiredApproval) {
     await emitAuditEvent({
       kind:     AuditEventKind.TRUST_UNIT_FORMED,
       actorId:  actor.actorUserId as string,
       targetId: null,
-      meta:     { kind, reasonCode: decision.reasonCode, denied: true },
+      meta:     { kind: metaKind, vaultSpaceType, reasonCode: decision.reasonCode, denied: true },
     });
     return governanceDenied(decision);
   }
@@ -130,9 +171,11 @@ export async function POST(req: NextRequest) {
 
     const expiresAt  = approvalExpiresAt();
     const contextJson: Prisma.InputJsonValue = {
-      action: "create_trust_unit",
-      kind,
-      name:   name ?? null,
+      action:       "create_trust_unit",
+      kind:         metaKind,
+      vaultSpaceType,
+      name:         name ?? null,
+      description:  description ?? null,
       memberIds,
       defaultVisibilityScope,
       maxMemberCount,
@@ -157,7 +200,13 @@ export async function POST(req: NextRequest) {
       kind:     AuditEventKind.TRUST_UNIT_FORMED,
       actorId:  actor.actorUserId as string,
       targetId: null,
-      meta:     { kind, escalated: true, approvalRequestId: approvalRequest.id, guardianCount: approvalRequests.length },
+      meta:     {
+        kind:               metaKind,
+        vaultSpaceType,
+        escalated:          true,
+        approvalRequestId:  approvalRequest.id,
+        guardianCount:      approvalRequests.length,
+      },
     });
 
     return accepted(
@@ -179,7 +228,14 @@ export async function POST(req: NextRequest) {
         create: [{ userId: user.id }],
       },
       aihMeta: {
-        create: { kind, name: name ?? null, defaultVisibilityScope, maxMemberCount },
+        create: {
+          kind:              metaKind,
+          vaultSpaceType,
+          name:              name ?? null,
+          description:       description ?? null,
+          defaultVisibilityScope,
+          maxMemberCount,
+        },
       },
     },
     include: { members: true, aihMeta: true },
@@ -189,7 +245,7 @@ export async function POST(req: NextRequest) {
     kind:     AuditEventKind.TRUST_UNIT_FORMED,
     actorId:  actor.actorUserId as string,
     targetId: trustUnit.id,
-    meta:     { kind, memberCount: trustUnit.members.length },
+    meta:     { kind: metaKind, vaultSpaceType, memberCount: trustUnit.members.length },
   });
 
   const memberUserIds = trustUnit.members.map(m => m.userId);

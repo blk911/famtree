@@ -7,6 +7,7 @@ import {
   listApprovals,
   listInvites,
   listGuardianLinks,
+  listActivityFeed,
 } from "@/components/aihsafe/common/apiClient";
 import { PendingAttention }           from "@/components/aihsafe/founder/PendingAttention";
 import { FamilyHealthPanel }          from "@/components/aihsafe/founder/FamilyHealthPanel";
@@ -113,10 +114,10 @@ function LightStatCard({
         flexShrink:   0,
       }}
     >
-      <div style={{ fontWeight: 800, fontSize: 22, color: urgent ? "#d97706" : "#1c1917", lineHeight: 1 }}>
+      <div style={{ fontWeight: 800, fontSize: 18, color: urgent ? "#d97706" : "#1c1917", lineHeight: 1 }}>
         {value}
       </div>
-      <div style={{ fontSize: 11, color: "#78716c", marginTop: 3, whiteSpace: "nowrap" }}>
+      <div style={{ fontSize: 10, color: "#78716c", marginTop: 2, whiteSpace: "nowrap" }}>
         {label}
       </div>
     </div>
@@ -132,8 +133,7 @@ function HeroCard({ children }: { children: React.ReactNode }) {
         position:     "relative",
         borderRadius: 22,
         overflow:     "hidden",
-        marginBottom: 16,
-        background:   "#fffaf3",
+        marginBottom: 12,
         border:       "1px solid #eadfd2",
         boxShadow:    "0 2px 12px rgba(0,0,0,0.05)",
       }}
@@ -161,8 +161,8 @@ function HeroCard({ children }: { children: React.ReactNode }) {
           WebkitMaskImage:    "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,1) 65%)",
         }}
       />
-      <div style={{ position: "relative", zIndex: 1, padding: "28px 32px 26px 26px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+      <div style={{ position: "relative", zIndex: 1, padding: "16px 18px 14px 18px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
           <svg width="20" height="22" viewBox="0 0 20 22" fill="none" aria-hidden="true">
             <path
               d="M10 1L1 5v6c0 5.25 3.87 10.17 9 11.38C15.13 21.17 19 16.25 19 11V5L10 1Z"
@@ -257,6 +257,8 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
   const [loadError,     setLoadError]     = useState(false);
   const [modal,         setModal]         = useState<ModalKind>(null);
   const [activeTab,     setActiveTab]     = useState<TabId>(() => defaultTab(shellMode));
+  const [activityTrustUnitFilter, setActivityTrustUnitFilter] = useState<string | null>(null);
+  const [recentActivityStat, setRecentActivityStat] = useState<number | string>("…");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -281,6 +283,17 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    listActivityFeed(undefined, { limit: 100 }).then((r) => {
+      if (r.kind !== "ok") {
+        setRecentActivityStat("—");
+        return;
+      }
+      const n = r.data.items.length;
+      setRecentActivityStat(r.data.pagination.hasMore ? `${n}+` : n);
+    });
+  }, []);
 
   function closeModal() { setModal(null); load(); }
 
@@ -310,42 +323,143 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
 
         {shellMode === "founder" && (
           <HeroCard>
-            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 28, color: "#1c1917", letterSpacing: "-0.5px", lineHeight: 1.1 }}>
-              A governed network for your real people.
-            </h1>
-            <p style={{ margin: "8px 0 0", fontSize: 13, color: "#78716c", maxWidth: 420 }}>
-              You are the steward of this family network.
-            </p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 20 }}>
-              <LightStatCard value={loading ? "…" : pendingApprovals.length} label="approvals waiting" urgent={pendingApprovals.length > 0} />
-              <LightStatCard value={loading ? "…" : mySpaces.length}         label="active spaces" />
-              <LightStatCard value={loading ? "…" : trustedAdultCount}       label="trusted adults" />
-              <LightStatCard value={loading ? "…" : pendingInvites.length}   label="pending invites" urgent={pendingInvites.length > 0} />
+            <div
+              style={{
+                display:        "flex",
+                flexWrap:       "wrap",
+                alignItems:     "flex-start",
+                gap:            14,
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ flex: "1 1 260px", minWidth: 0, maxWidth: 520 }}>
+                <h1
+                  style={{
+                    margin:           0,
+                    fontWeight:       800,
+                    fontSize:         22,
+                    color:            "#1c1917",
+                    letterSpacing:    "-0.4px",
+                    lineHeight:       1.15,
+                  }}
+                >
+                  Trusted Private Spaces
+                </h1>
+                <p style={{ margin: "6px 0 0", fontSize: 13, color: "#78716c", lineHeight: 1.45 }}>
+                  Create protected circles for family, business, church, club, or private groups.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setModal("space")}
+                  style={{
+                    marginTop:    10,
+                    display:      "inline-flex",
+                    alignItems:   "center",
+                    gap:          8,
+                    padding:      "8px 18px",
+                    borderRadius: 10,
+                    border:       "none",
+                    background:   "#7c3aed",
+                    color:        "#fff",
+                    fontWeight:   700,
+                    fontSize:     13,
+                    cursor:       "pointer",
+                    boxShadow:    "0 2px 8px rgba(124,58,237,0.25)",
+                  }}
+                >
+                  + Create Trusted Space
+                </button>
+              </div>
+              <div
+                style={{
+                  flex:           "1 1 260px",
+                  display:        "flex",
+                  gap:            8,
+                  flexWrap:       "wrap",
+                  justifyContent: "flex-end",
+                  alignItems:     "center",
+                }}
+              >
+                <LightStatCard value={loading ? "…" : mySpaces.length} label="Spaces" />
+                <LightStatCard value={loading ? "…" : membershipCount} label="Members" />
+                <LightStatCard
+                  value={loading ? "…" : pendingInvites.length}
+                  label="Pending invites"
+                  urgent={pendingInvites.length > 0}
+                />
+                <LightStatCard value={recentActivityStat} label="Recent activity" />
+              </div>
             </div>
           </HeroCard>
         )}
 
         {shellMode === "member" && (
           <HeroCard>
-            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 26, color: "#1c1917", letterSpacing: "-0.4px", lineHeight: 1.15 }}>
-              Your trusted family spaces
-            </h1>
-            <p style={{ margin: "8px 0 0", fontSize: 13, color: "#78716c", maxWidth: 400 }}>
-              Share with the people who actually know you.
-            </p>
-            <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-              <LightStatCard value={loading ? "…" : mySpaces.length} label="spaces you're in" />
+            <div
+              style={{
+                display:        "flex",
+                flexWrap:       "wrap",
+                alignItems:     "flex-start",
+                gap:            14,
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ flex: "1 1 260px", minWidth: 0, maxWidth: 480 }}>
+                <h1
+                  style={{
+                    margin:           0,
+                    fontWeight:       800,
+                    fontSize:         22,
+                    color:            "#1c1917",
+                    letterSpacing:    "-0.4px",
+                    lineHeight:       1.15,
+                  }}
+                >
+                  Trusted Private Spaces
+                </h1>
+                <p style={{ margin: "6px 0 0", fontSize: 13, color: "#78716c", lineHeight: 1.45 }}>
+                  Create protected circles for family, business, church, club, or private groups.
+                </p>
+              </div>
+              <div
+                style={{
+                  flex:           "1 1 240px",
+                  display:        "flex",
+                  gap:            8,
+                  flexWrap:       "wrap",
+                  justifyContent: "flex-end",
+                  alignItems:     "center",
+                }}
+              >
+                <LightStatCard value={loading ? "…" : mySpaces.length} label="Spaces" />
+                <LightStatCard value={loading ? "…" : membershipCount} label="Members" />
+                <LightStatCard
+                  value={loading ? "…" : pendingInvites.length}
+                  label="Pending invites"
+                  urgent={pendingInvites.length > 0}
+                />
+                <LightStatCard value={recentActivityStat} label="Recent activity" />
+              </div>
             </div>
           </HeroCard>
         )}
 
         {shellMode === "child" && (
           <HeroCard>
-            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 26, color: "#1c1917", letterSpacing: "-0.4px", lineHeight: 1.15 }}>
-              Your safe family space
+            <h1
+              style={{
+                margin:           0,
+                fontWeight:       800,
+                fontSize:         21,
+                color:            "#1c1917",
+                letterSpacing:    "-0.35px",
+                lineHeight:       1.15,
+              }}
+            >
+              Trusted Private Spaces
             </h1>
-            <p style={{ margin: "8px 0 0", fontSize: 13, color: "#78716c", maxWidth: 380 }}>
-              Share updates with your trusted circles — only people approved by your family can see them.
+            <p style={{ margin: "6px 0 0", fontSize: 13, color: "#78716c", maxWidth: 440, lineHeight: 1.45 }}>
+              Your family shares here inside protected circles — only people they approve can see what you post.
             </p>
           </HeroCard>
         )}
@@ -457,7 +571,7 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setActiveTab("people")}
+                      onClick={() => setActiveTab("members")}
                       style={{
                         background:   "none",
                         border:       "1px solid #e7e5e4",
@@ -469,7 +583,7 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
                         cursor:       "pointer",
                       }}
                     >
-                      See people →
+                      See members →
                     </button>
                   </div>
                 )}
@@ -542,6 +656,8 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
               currentUserId={currentUserId}
               trustUnits={trustUnits}
               viewerMode={shellMode}
+              scopedTrustUnitId={activityTrustUnitFilter}
+              onScopedTrustUnitChange={setActivityTrustUnitFilter}
             />
           </div>
         </TabPanel>
@@ -559,11 +675,15 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
             onCreateFamily={() => setModal("family")}
             onInvite={() => setModal("invite")}
             onReload={load}
+            onOpenSpaceActivity={(id) => {
+              setActivityTrustUnitFilter(id);
+              setActiveTab("activity");
+            }}
           />
         </TabPanel>
 
         {/* ── PEOPLE ────────────────────────────────────────────── */}
-        <TabPanel id="people" activeTab={activeTab}>
+        <TabPanel id="members" activeTab={activeTab}>
           <PeopleTab
             currentUserId={currentUserId}
             shellMode={shellMode}
@@ -615,7 +735,7 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
         <QuickCreateModal
           title={
             modal === "family" ? "New family group" :
-            modal === "space"  ? "New trusted space" :
+            modal === "space"  ? "Create Trusted Space" :
                                  "Invite someone"
           }
           onClose={closeModal}

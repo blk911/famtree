@@ -98,7 +98,7 @@ export function NextBestActions({
         border:  "#bbf7d0",
         label:   "Add a trusted adult",
         desc:    "Link a guardian to strengthen the network",
-        onClick: () => onTabChange("people"),
+        onClick: () => onTabChange("members"),
       });
     }
   }

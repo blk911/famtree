@@ -7,9 +7,9 @@ import type { FamilySafeShellMode } from "@/components/aihsafe/roles";
 
 export type TabId =
   | "overview"
-  | "activity"
   | "spaces"
-  | "people"
+  | "activity"
+  | "members"
   | "approvals"
   | "settings";
 
@@ -22,9 +22,9 @@ interface Tab {
 
 const ALL_TABS: Tab[] = [
   { id: "overview",  label: "Overview"  },
-  { id: "activity",  label: "Activity"  },
   { id: "spaces",    label: "Spaces"    },
-  { id: "people",    label: "People"    },
+  { id: "activity",  label: "Activity"  },
+  { id: "members",   label: "Members"   },
   { id: "approvals", label: "Approvals" },
   { id: "settings",  label: "Settings"  },
 ];
@@ -37,20 +37,20 @@ export function getVisibleTabs(
 ): Tab[] {
   let ids: TabId[];
   if (shellMode === "founder") {
-    ids = ["overview", "activity", "spaces", "people", "approvals", "settings"];
+    ids = ["overview", "spaces", "activity", "members", "approvals", "settings"];
   } else if (shellMode === "member" && isGuardian) {
-    ids = ["overview", "activity", "spaces", "people", "approvals"];
+    ids = ["overview", "spaces", "activity", "members", "approvals"];
   } else if (shellMode === "member") {
-    ids = ["overview", "activity", "spaces", "people"];
+    ids = ["overview", "spaces", "activity", "members"];
   } else {
     // child
-    ids = ["activity", "spaces"];
+    ids = ["spaces", "activity"];
   }
   return ALL_TABS.filter((t) => ids.includes(t.id));
 }
 
 export function defaultTab(shellMode: FamilySafeShellMode): TabId {
-  return shellMode === "child" ? "activity" : "overview";
+  return shellMode === "child" ? "spaces" : "overview";
 }
 
 // ─── Tab bar component ────────────────────────────────────────────────────────
