@@ -21,10 +21,13 @@ type Scope = (typeof SCOPES)[number];
 export function DashboardPostComposer({
   composerSpaces,
   onRequestClose,
+  onPostedSuccessfully,
 }: {
   composerSpaces: SpaceOption[];
   /** When set, shows a Close control to dismiss the composer (e.g. collapsed dashboard panel). */
   onRequestClose?: () => void;
+  /** Called after a successful create post (e.g. collapse composer on dashboard). */
+  onPostedSuccessfully?: () => void;
 }) {
   const router = useRouter();
   const [body, setBody] = useState("");
@@ -166,6 +169,7 @@ export function DashboardPostComposer({
       setImageUrl("");
       setVisibleTo([]);
       clearImage();
+      onPostedSuccessfully?.();
       router.refresh();
     } catch {
       setError("Network error — check your connection and try again.");

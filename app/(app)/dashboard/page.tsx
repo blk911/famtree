@@ -255,6 +255,37 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
+      {/* Privacy bridge — matches dashboard warning-strip tone; full-width flowing copy */}
+      <div
+        role="region"
+        aria-label="Privacy by design"
+        style={{
+          width: "100%",
+          boxSizing: "border-box",
+          borderRadius: 12,
+          padding: "12px 16px",
+          border: "1px solid #fde68a",
+          background: "#fffbeb",
+        }}
+      >
+        <p
+          style={{
+            fontSize: 13,
+            fontWeight: 800,
+            color: "#c2410c",
+            margin: "0 0 8px",
+            letterSpacing: "-0.02em",
+          }}
+        >
+          🔒 Privacy by design
+        </p>
+        <p style={{ fontSize: 13, color: "#57534e", margin: 0, lineHeight: 1.6 }}>
+          Your invite works through recognition and trust. Your name is never revealed in the invite email — only
+          your photo is shared — so the recipient must identify you before joining your network, making identity the key
+          to accepting your invitation.
+        </p>
+      </div>
+
       {/* ── Two-column: tabbed content hub + context rail ── */}
       <div className="grid grid-cols-[minmax(0,1fr)_232px] max-[860px]:grid-cols-1 gap-4 items-start">
 

@@ -93,6 +93,7 @@ export function DashboardPostsPanel({
             <DashboardPostComposer
               composerSpaces={composerSpaces}
               onRequestClose={() => setFeedComposerOpen(false)}
+              onPostedSuccessfully={() => setFeedComposerOpen(false)}
             />
           ) : null}
         </>
