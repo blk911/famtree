@@ -55,7 +55,7 @@ export default async function FamilyUnitsPage() {
         <strong className="text-stone-900">sponsor</strong> downhill connection from whoever invited them.{" "}
         <strong className="text-stone-900">Bonds</strong> capture those sponsor links;{" "}
         <strong className="text-stone-900">trust units</strong> form when aligned members agree to a shared unit on top.
-        Messages open in <span className="font-medium text-stone-800">Private Threads</span>.
+        Messages open in <span className="font-medium text-stone-800">Private Feed</span>.
       </p>
 
       <section className="space-y-3">

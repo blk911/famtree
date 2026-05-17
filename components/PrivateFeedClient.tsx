@@ -236,53 +236,20 @@ function ThreadAvatars({
 
 // ── Badge ─────────────────────────────────────────────────────────────────────
 
-type OrchestrationBadgeKind = "DM" | "PRIVATE" | "FAMILY" | "BUSINESS" | "CHURCH" | "CLUB" | "VAULT";
-
-function orchestrationBadgeForThread(thread: Thread): OrchestrationBadgeKind {
-  if (thread.type === "direct") return "DM";
-  if (thread.type === "group") return "PRIVATE";
-  return "VAULT";
-}
-
-function unreadCountForThread(
-  thread: Thread,
-  currentUserId: string,
-  lastSeen: Date | null
-): number {
-  if (!lastSeen || Number.isNaN(lastSeen.getTime())) return 0;
-  return thread.posts.filter(
-    (p) => new Date(p.createdAt) > lastSeen && p.profile.user.id !== currentUserId
-  ).length;
-}
-
-const ORCH_BADGE_STYLE: Record<
-  OrchestrationBadgeKind,
-  { label: string; bg: string; color: string }
-> = {
-  DM:       { label: "DM",       bg: "rgba(219,234,254,0.72)", color: "#1d4ed8" },
-  PRIVATE:  { label: "PRIVATE",  bg: "rgba(245,245,244,0.95)", color: "#57534e" },
-  FAMILY:   { label: "FAMILY",   bg: "rgba(254,243,199,0.75)", color: "#b45309" },
-  BUSINESS: { label: "BUSINESS", bg: "rgba(243,232,255,0.82)", color: "#7c3aed" },
-  CHURCH:   { label: "CHURCH",   bg: "rgba(224,231,255,0.78)", color: "#4338ca" },
-  CLUB:     { label: "CLUB",     bg: "rgba(209,250,229,0.72)", color: "#047857" },
-  VAULT:    { label: "VAULT",    bg: "rgba(237,233,254,0.82)", color: "#6d28d9" },
+const BADGE: Record<ThreadType, { label: string; bg: string; color: string }> = {
+  tu:     { label: "TU",    bg: "#ede9fe", color: "#7c3aed" },
+  direct: { label: "DM",    bg: "#dbeafe", color: "#1d4ed8" },
+  group:  { label: "GROUP", bg: "#dcfce7", color: "#15803d" },
 };
 
-function OrchestrationBadge({ kind }: { kind: OrchestrationBadgeKind }) {
-  const { label, bg, color } = ORCH_BADGE_STYLE[kind];
+function TypeBadge({ type }: { type: ThreadType }) {
+  const { label, bg, color } = BADGE[type];
   return (
-    <span
-      style={{
-        fontSize:      "9px",
-        fontWeight:    700,
-        letterSpacing: "0.07em",
-        padding:       "2px 7px",
-        borderRadius:  "999px",
-        background:    bg,
-        color,
-        flexShrink:    0,
-      }}
-    >
+    <span style={{
+      fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em",
+      padding: "2px 8px", borderRadius: "999px", background: bg, color,
+      flexShrink: 0,
+    }}>
       {label}
     </span>
   );
@@ -306,7 +273,6 @@ export function PrivateFeedClient({
   bondPeers,
   initialUnitId,
   initialPeerId,
-  lastSeenAt = null,
 }: {
   currentUserId: string;
   trustUnits: TrustUnit[];
@@ -315,8 +281,6 @@ export function PrivateFeedClient({
   bondPeers: Member[];
   initialUnitId?: string;
   initialPeerId?: string;
-  /** ISO timestamp — used for “new since last visit” counts in the thread rail. */
-  lastSeenAt?: string | null;
 }) {
   const memberMap = useMemo(
     () => new Map(members.map((m) => [m.id, m])),
@@ -338,24 +302,7 @@ export function PrivateFeedClient({
     [allItems, trustUnits, memberMap, currentUserId, bondPeers],
   );
 
-  const lastSeenDate = useMemo(
-    () => (lastSeenAt != null && lastSeenAt !== "" ? new Date(lastSeenAt) : null),
-    [lastSeenAt]
-  );
-
-  const sortedThreads = useMemo(() => {
-    const copy = [...threads];
-    copy.sort((a, b) => {
-      const ta = a.posts[0]?.createdAt ?? "";
-      const tb = b.posts[0]?.createdAt ?? "";
-      if (ta !== tb) return tb.localeCompare(ta);
-      return a.label.localeCompare(b.label, undefined, { sensitivity: "base" });
-    });
-    return copy;
-  }, [threads]);
-
-  // Which thread is active in the center panel (participant fingerprint key)
-  /** Active private thread = participant fingerprint (`directThreadKey` or sorted TU member ids). */
+  // Which thread is open (accordion — one at a time)
   const [openKey, setOpenKey] = useState<string>("");
   const [didApplyDeepLink, setDidApplyDeepLink] = useState(false);
 
@@ -391,13 +338,6 @@ export function PrivateFeedClient({
     currentUserId,
     didApplyDeepLink,
   ]);
-
-  useEffect(() => {
-    if (!didApplyDeepLink) return;
-    if (sortedThreads.length === 0) return;
-    if (openKey && sortedThreads.some((t) => t.key === openKey)) return;
-    setOpenKey(sortedThreads[0].key);
-  }, [didApplyDeepLink, sortedThreads, openKey]);
 
   // Per-thread compose state
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -535,13 +475,6 @@ export function PrivateFeedClient({
 
   const hasTUs = trustUnits.length > 0;
   const hasThreads = threads.length > 0;
-  const activeThread = sortedThreads.find((t) => t.key === openKey) ?? null;
-
-  function previewLine(thread: Thread): string | null {
-    const lastPost = thread.posts[0];
-    if (!lastPost) return null;
-    return lastPost.body.length > 56 ? `${lastPost.body.slice(0, 56)}…` : lastPost.body;
-  }
 
   return (
     <div className="space-y-3">
@@ -639,220 +572,178 @@ export function PrivateFeedClient({
         </div>
       )}
 
-      {/* ── Empty state (no threads / trust units to show) ───────────────────── */}
+      {/* ── Empty state ─────────────────────────────────────────────────────── */}
       {!hasThreads && !hasTUs && (
         <div className="rounded-2xl border border-dashed border-stone-200 py-14 text-center">
           <Lock style={{ width: 36, height: 36, margin: "0 auto 12px", color: "#d6d3d1" }} />
-          <p style={{ fontSize: "14px", fontWeight: 600, color: "#78716c" }}>
-            No active private threads yet.
-          </p>
-          <p style={{ fontSize: "13px", color: "#a8a29e", marginTop: "6px", maxWidth: 360, marginInline: "auto", lineHeight: 1.5 }}>
-            Start a direct conversation or connect with your network.
+          <p style={{ fontSize: "14px", fontWeight: 600, color: "#78716c" }}>No private threads yet.</p>
+          <p style={{ fontSize: "13px", color: "#a8a29e", marginTop: "4px" }}>
+            Start a message above, or form a Trust Unit with a family member.
           </p>
         </div>
       )}
 
-      {/* ── Center thread + right orchestration rail ────────────────────────── */}
-      {(hasThreads || hasTUs) && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_276px] lg:items-start">
-          <div className="min-w-0 space-y-3 order-2 lg:order-1">
-            {!activeThread ? (
-              <div className="rounded-2xl border border-dashed border-stone-200 py-12 text-center text-sm text-stone-500">
-                Select a thread from the list to open the conversation.
-              </div>
-            ) : (
-              (() => {
-                const thread = activeThread;
-                const { bg, border } = COMPOSE_BG[thread.type];
-                return (
-                  <section
-                    key={thread.key}
-                    className="overflow-hidden rounded-2xl border border-stone-200 bg-white"
-                  >
-                    <div className="flex flex-wrap items-center gap-3 border-b border-stone-100 px-5 py-4">
-                      <ThreadAvatars
-                        memberIds={thread.memberIds}
-                        memberMap={memberMap}
-                        unit={thread.unit}
-                        currentUserId={currentUserId}
-                        type={thread.type}
-                      />
-                      <OrchestrationBadge kind={orchestrationBadgeForThread(thread)} />
-                      <p
-                        className="min-w-0 flex-1 truncate text-sm font-bold text-stone-900"
-                        title={thread.label}
-                      >
-                        {thread.label}
-                      </p>
-                    </div>
+      {/* ── Thread list ─────────────────────────────────────────────────────── */}
+      {threads.map((thread) => {
+        const open = openKey === thread.key;
+        const lastPost = thread.posts[0];
+        const preview = lastPost
+          ? lastPost.body.length > 70
+            ? lastPost.body.slice(0, 70) + "…"
+            : lastPost.body
+          : null;
+        const { bg, border } = COMPOSE_BG[thread.type];
 
-                    <div className="space-y-4 p-5">
-                      <div
-                        style={{
-                          background: bg,
-                          border:      `1px solid ${border}`,
-                          borderRadius: "16px",
-                          padding:     "14px",
-                        }}
-                      >
-                        {mediaErrors[thread.key] ? (
-                          <div className="mb-2 rounded-lg border border-red-100 bg-red-50 px-2 py-1.5 text-xs text-red-700">
-                            {mediaErrors[thread.key]}
-                          </div>
-                        ) : null}
-                        <textarea
-                          value={drafts[thread.key] ?? ""}
-                          onChange={(e) =>
-                            setDrafts((c) => ({ ...c, [thread.key]: e.target.value }))
-                          }
-                          placeholder={
-                            thread.type === "tu"
-                              ? `Message Trust Unit · ${thread.label}…`
-                              : `Message ${thread.label}…`
-                          }
-                          rows={3}
-                          className="w-full resize-none rounded-xl bg-white px-3 py-2 text-sm outline-none"
-                          style={{ border: "1px solid rgba(0,0,0,0.08)" }}
-                        />
-                        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                          <div className="flex items-center gap-2">
-                            {imagePreviews[thread.key] && (
-                              <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-stone-100">
-                                {imageFiles[thread.key]?.type.startsWith("video/") ? (
-                                  <video
-                                    src={imagePreviews[thread.key]}
-                                    muted
-                                    playsInline
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <img src={imagePreviews[thread.key]} alt="" className="h-full w-full object-cover" />
-                                )}
-                                <button
-                                  type="button"
-                                  onClick={() => clearImage(thread.key)}
-                                  className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 text-white"
-                                  style={{ fontSize: "12px" }}
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            )}
-                            <input
-                              ref={(el) => {
-                                imageInputRefs.current[thread.key] = el;
-                              }}
-                              type="file"
-                              accept={BROWSER_POST_MEDIA_ACCEPT}
-                              className="hidden"
-                              onChange={(e) =>
-                                e.target.files?.[0] && handleImageSelect(thread.key, e.target.files[0])
-                              }
+        return (
+          <section
+            key={thread.key}
+            className="overflow-hidden rounded-2xl border border-stone-200 bg-white"
+          >
+            {/* ── Header (always visible) ─────────────────────────────────── */}
+            <button
+              type="button"
+              onClick={() => setOpenKey(open ? "" : thread.key)}
+              className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left hover:bg-stone-50 transition-colors"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <ThreadAvatars
+                  memberIds={thread.memberIds}
+                  memberMap={memberMap}
+                  unit={thread.unit}
+                  currentUserId={currentUserId}
+                  type={thread.type}
+                />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <TypeBadge type={thread.type} />
+                    <p style={{ fontSize: "14px", fontWeight: 700, color: "#1c1917" }} className="truncate">
+                      {thread.label}
+                    </p>
+                  </div>
+                  {preview && (
+                    <p className="text-xs text-stone-400 mt-0.5 truncate">{preview}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {thread.posts.length > 0 && (
+                  <span style={{
+                    fontSize: "11px", fontWeight: 600, color: "#78716c",
+                    background: "#f5f4f0", padding: "2px 8px", borderRadius: "999px",
+                  }}>
+                    {thread.posts.length}
+                  </span>
+                )}
+                <ChevronDown
+                  className="h-4 w-4 text-stone-400 transition-transform"
+                  style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+                />
+              </div>
+            </button>
+
+            {/* ── Expanded body ────────────────────────────────────────────── */}
+            {open && (
+              <div className="border-t border-stone-100 p-5 space-y-4">
+
+                {/* Compose */}
+                <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: "16px", padding: "14px" }}>
+                  {mediaErrors[thread.key] ? (
+                    <div className="mb-2 rounded-lg border border-red-100 bg-red-50 px-2 py-1.5 text-xs text-red-700">
+                      {mediaErrors[thread.key]}
+                    </div>
+                  ) : null}
+                  <textarea
+                    value={drafts[thread.key] ?? ""}
+                    onChange={(e) =>
+                      setDrafts((c) => ({ ...c, [thread.key]: e.target.value }))
+                    }
+                    placeholder={
+                      thread.type === "tu"
+                        ? `Message Trust Unit · ${thread.label}…`
+                        : `Message ${thread.label}…`
+                    }
+                    rows={3}
+                    className="w-full resize-none rounded-xl bg-white px-3 py-2 text-sm outline-none"
+                    style={{ border: "1px solid rgba(0,0,0,0.08)" }}
+                  />
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      {imagePreviews[thread.key] && (
+                        <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-stone-100">
+                          {imageFiles[thread.key]?.type.startsWith("video/") ? (
+                            <video
+                              src={imagePreviews[thread.key]}
+                              muted
+                              playsInline
+                              className="h-full w-full object-cover"
                             />
-                            <button
-                              type="button"
-                              onClick={() => imageInputRefs.current[thread.key]?.click()}
-                              className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-50"
-                            >
-                              <ImageIcon className="h-3.5 w-3.5" />
-                              Photo / video
-                            </button>
-                          </div>
+                          ) : (
+                            <img src={imagePreviews[thread.key]} alt="" className="h-full w-full object-cover" />
+                          )}
                           <button
                             type="button"
-                            onClick={() => handleSubmit(thread)}
-                            disabled={submitting === thread.key || !drafts[thread.key]?.trim()}
-                            className="inline-flex items-center gap-2 rounded-xl bg-stone-950 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                            onClick={() => clearImage(thread.key)}
+                            className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 text-white"
+                            style={{ fontSize: "12px" }}
                           >
-                            <Send className="h-3.5 w-3.5" />
-                            {submitting === thread.key ? "Sending…" : "Send"}
+                            ×
                           </button>
                         </div>
-                      </div>
-
-                      {thread.posts.length === 0 ? (
-                        <div className="rounded-xl border border-dashed border-stone-200 py-8 text-center text-sm text-stone-400">
-                          No messages yet — start the conversation!
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {thread.posts.map((post) => (
-                            <PostCard
-                              key={post.id}
-                              post={post}
-                              currentUserId={currentUserId}
-                              canDelete={post.profile.user.id === currentUserId}
-                              onDelete={handleDelete}
-                              shareScope={postScopeShareLabel(post.scope ?? "PRIVATE")}
-                            />
-                          ))}
-                        </div>
                       )}
-                    </div>
-                  </section>
-                );
-              })()
-            )}
-          </div>
-
-          <aside className="order-1 rounded-2xl border border-stone-200 bg-[#fafaf9] p-2 lg:order-2 lg:sticky lg:top-4 lg:max-h-[min(72vh,620px)] lg:overflow-y-auto">
-            <div
-              className="px-2 pb-2 pt-1 text-[11px] font-bold uppercase tracking-wider text-stone-400"
-              style={{ letterSpacing: "0.08em" }}
-            >
-              Private threads
-            </div>
-            <div className="flex flex-col gap-1">
-              {sortedThreads.map((thread) => {
-                const selected = openKey === thread.key;
-                const unread = unreadCountForThread(thread, currentUserId, lastSeenDate);
-                const pv = previewLine(thread);
-                return (
-                  <button
-                    key={thread.key}
-                    type="button"
-                    onClick={() => setOpenKey(thread.key)}
-                    className={`w-full rounded-xl px-2.5 py-2.5 text-left transition-colors ${
-                      selected
-                        ? "bg-white shadow-sm ring-1 ring-stone-200"
-                        : "hover:bg-stone-100/90"
-                    }`}
-                  >
-                    <div className="flex items-start gap-2">
-                      <ThreadAvatars
-                        memberIds={thread.memberIds}
-                        memberMap={memberMap}
-                        unit={thread.unit}
-                        currentUserId={currentUserId}
-                        type={thread.type}
+                      <input
+                        ref={(el) => { imageInputRefs.current[thread.key] = el; }}
+                        type="file"
+                        accept={BROWSER_POST_MEDIA_ACCEPT}
+                        className="hidden"
+                        onChange={(e) =>
+                          e.target.files?.[0] && handleImageSelect(thread.key, e.target.files[0])
+                        }
                       />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <OrchestrationBadge kind={orchestrationBadgeForThread(thread)} />
-                          <span className="truncate text-[13px] font-semibold text-stone-900">
-                            {thread.label}
-                          </span>
-                        </div>
-                        {pv ? (
-                          <p className="mt-0.5 truncate text-[11px] leading-snug text-stone-500">{pv}</p>
-                        ) : null}
-                      </div>
-                      {unread > 0 ? (
-                        <span
-                          className="flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-bold text-white"
-                          aria-label={`${unread} unread`}
-                        >
-                          {unread > 99 ? "99+" : unread}
-                        </span>
-                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => imageInputRefs.current[thread.key]?.click()}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-50"
+                      >
+                        <ImageIcon className="h-3.5 w-3.5" />
+                        Photo / video
+                      </button>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
-        </div>
-      )}
+                    <button
+                      type="button"
+                      onClick={() => handleSubmit(thread)}
+                      disabled={submitting === thread.key || !drafts[thread.key]?.trim()}
+                      className="inline-flex items-center gap-2 rounded-xl bg-stone-950 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                      {submitting === thread.key ? "Sending…" : "Send"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Posts */}
+                {thread.posts.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-stone-200 py-8 text-center text-sm text-stone-400">
+                    No messages yet — start the conversation!
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {thread.posts.map((post) => (
+                      <PostCard
+                        key={post.id}
+                        post={post}
+                        currentUserId={currentUserId}
+                        canDelete={post.profile.user.id === currentUserId}
+                        onDelete={handleDelete}
+                        shareScope={postScopeShareLabel(post.scope ?? "PRIVATE")}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        );
+      })}
     </div>
   );
 }

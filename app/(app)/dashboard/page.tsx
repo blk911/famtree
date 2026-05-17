@@ -10,7 +10,9 @@ import {
 } from "@/lib/trust";
 import { loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { queryDashboardProfilePrompt, incrementDashboardProfilePromptSeen } from "@/lib/dashboard/safe-data";
-import { DashboardHubSection }     from "@/components/dashboard/DashboardHubSection";
+import { DashboardTrustUnitGate }  from "@/components/dashboard/DashboardTrustUnitGate";
+import { DashboardVaultTabs }      from "@/components/dashboard/DashboardVaultTabs";
+import { DashboardContextRail }    from "@/components/dashboard/DashboardContextRail";
 import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletionPrompt";
 import { IncomingIdentityAcks }    from "@/components/dashboard/IncomingIdentityAcks";
 import type { FlatNode }           from "@/components/TreeList";
@@ -270,25 +272,36 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      {/* ── Tabbed hub + context rail (rail hidden on Private Threads for split-thread UI) ── */}
-      <DashboardHubSection
-        currentUserId={user.id}
-        lastSeenAt={user.lastLoginAt?.toISOString() ?? null}
-        newPostsCount={newPosts.length}
-        newCommentsCount={newComments.length}
-        invites={serializedInvites}
-        composerSpaces={composerSpaces}
-        serializedFeedPosts={serializedFeedPosts}
-        serializedPrivatePosts={serializedPrivatePosts}
-        serializedMyPosts={serializedMyPosts}
-        trustUnits={trustUnits as any[]}
-        membersForPrivate={membersForPrivate}
-        bondPeers={bondPeers}
-        vaultNotificationCount={vaultNotificationCount}
-        initialRequests={serializedTrustRequests}
-        flat={flat}
-        totalMembers={totalMembers}
-      />
+      {/* ── Two-column: tabbed content hub + context rail ── */}
+      <div className="grid grid-cols-[minmax(0,1fr)_232px] max-[860px]:grid-cols-1 gap-4 items-start">
+
+        {/* Left: trust gate + tabbed message/activity hub */}
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+          <DashboardTrustUnitGate initialRequests={serializedTrustRequests} currentUserId={user.id} />
+          <DashboardVaultTabs
+            currentUserId={user.id}
+            newPostsCount={newPosts.length}
+            newCommentsCount={newComments.length}
+            invites={serializedInvites}
+            composerSpaces={composerSpaces}
+            serializedFeedPosts={serializedFeedPosts}
+            serializedPrivatePosts={serializedPrivatePosts}
+            serializedMyPosts={serializedMyPosts}
+            trustUnits={trustUnits as any[]}
+            membersForPrivate={membersForPrivate}
+            bondPeers={bondPeers}
+            vaultNotificationCount={vaultNotificationCount}
+          />
+        </div>
+
+        {/* Right: context rail */}
+        <DashboardContextRail
+          flat={flat}
+          totalMembers={totalMembers}
+          trustUnits={trustUnits as any[]}
+        />
+
+      </div>
     </div>
   );
 }

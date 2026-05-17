@@ -128,7 +128,7 @@ export function FamilyUnitsTrustCard({ unit }: { unit: FamilyUnitsTrustUnit }) {
           </div>
           <p className="mt-2 text-xs text-stone-500">
             Private group thread · message everyone from{" "}
-            <span className="font-medium text-stone-700">Private Threads</span>.
+            <span className="font-medium text-stone-700">Private Feed</span>.
           </p>
         </div>
       ) : null}
