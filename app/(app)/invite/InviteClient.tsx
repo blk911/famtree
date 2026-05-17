@@ -363,6 +363,13 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         return;
       }
 
+      // System accounts are excluded from Trust Unit wedge UX — still allow normal connection invite flow.
+      if (lookupData.trustUnitEligible === false) {
+        setTargetUser(lookupData.user);
+        setShowConnectionModal(true);
+        return;
+      }
+
       const trustRes = await fetch("/api/trust/check-opportunity", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { normalizeInviteEmail } from "@/lib/invite";
+import { filterTrustUnitEligibleUserIds } from "@/lib/trust/isTrustUnitEligibleUser";
 
 /** Edges: REGISTERED/ACCEPTED invites, user.invitedById sponsor links, ACCEPTED connection_requests, ACTIVE trust unit cliques. */
 export async function buildTrustAdjacency(): Promise<Map<string, Set<string>>> {
@@ -81,22 +82,28 @@ export async function pickNeighborForAutoTrustUnit(
   const neighbors = Array.from(adjacency.get(senderId) ?? new Set<string>()).filter((id) => id !== senderId);
   if (neighbors.length === 0) return null;
 
+  const eligibleNeighbors = await filterTrustUnitEligibleUserIds(neighbors);
+  if (eligibleNeighbors.length === 0) return null;
+  const eligibleSet = new Set(eligibleNeighbors);
+
   const downhill = await prisma.connectionRequest.findMany({
     where: {
       requesterId: senderId,
       status: "ACCEPTED",
-      targetId: { in: neighbors },
+      targetId: { in: eligibleNeighbors },
     },
     select: { targetId: true },
     orderBy: { targetId: "asc" },
   });
-  if (downhill.length > 0) return downhill[0].targetId;
+  for (const row of downhill) {
+    if (eligibleSet.has(row.targetId)) return row.targetId;
+  }
 
   const neighborUsers = await prisma.user.findMany({
-    where: { id: { in: neighbors } },
+    where: { id: { in: eligibleNeighbors } },
     select: { id: true, email: true },
   });
-  const neighborSet = new Set(neighbors);
+  const neighborSet = new Set(eligibleNeighbors);
   const emailToNeighborId = new Map(
     neighborUsers.map((u) => [normalizeInviteEmail(u.email), u.id]),
   );
@@ -113,5 +120,5 @@ export async function pickNeighborForAutoTrustUnit(
     if (nid && neighborSet.has(nid)) return nid;
   }
 
-  return [...neighbors].sort()[0] ?? null;
+  return [...eligibleNeighbors].sort()[0] ?? null;
 }

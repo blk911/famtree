@@ -3,7 +3,9 @@
 import { withApiTraceLite } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
+import { prisma } from "@/lib/db/prisma";
 import { findTrustUnitOpportunityConnectors, getTrustMembers } from "@/lib/trust";
+import { isTrustUnitEligibleUser } from "@/lib/trust/isTrustUnitEligibleUser";
 
 export async function POST(req: NextRequest) {
   return withApiTraceLite(req, "/api/trust/check-opportunity", async (req: NextRequest) => {
@@ -28,19 +30,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ canFormTrustUnit: false });
     }
 
+    const pair = await prisma.user.findMany({
+      where: { id: { in: [currentUserId, targetUserId] } },
+      select: { id: true, role: true },
+    });
+    if (
+      pair.length !== 2 ||
+      pair.some((u) => !isTrustUnitEligibleUser({ role: u.role }))
+    ) {
+      return NextResponse.json({ canFormTrustUnit: false });
+    }
+
     const sharedConnections = await findTrustUnitOpportunityConnectors(currentUserId, targetUserId);
     if (sharedConnections.length === 0) {
       return NextResponse.json({ canFormTrustUnit: false });
     }
 
-    const memberIds = [currentUserId, targetUserId, sharedConnections[0]];
-    const members = await getTrustMembers(memberIds);
+    for (const connectorId of sharedConnections) {
+      const memberIds = [currentUserId, targetUserId, connectorId];
+      const members = await getTrustMembers(memberIds);
+      if (members.length === 3) {
+        return NextResponse.json({
+          canFormTrustUnit: true,
+          memberIds,
+          members,
+        });
+      }
+    }
 
-    return NextResponse.json({
-      canFormTrustUnit: true,
-      memberIds,
-      members,
-    });
+    return NextResponse.json({ canFormTrustUnit: false });
   } catch (err: any) {
     if (err.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

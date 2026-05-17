@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { createTrustUnitProposal } from "@/lib/trust/tuProposal";
+import { isTrustUnitEligibleUser } from "@/lib/trust/isTrustUnitEligibleUser";
 import { Prisma } from "@prisma/client";
 
 export async function POST(req: NextRequest) {
@@ -24,6 +25,20 @@ export async function POST(req: NextRequest) {
     const totalSlots = uniqueMemberIds.length + pendingInviteIds.length;
     if (totalSlots < 3 || totalSlots > 20 || !uniqueMemberIds.includes(user.id)) {
       return NextResponse.json({ error: "Trust Units require 3–20 members including you" }, { status: 400 });
+    }
+
+    const registeredRoles = await prisma.user.findMany({
+      where: { id: { in: uniqueMemberIds } },
+      select: { id: true, role: true },
+    });
+    if (
+      registeredRoles.length !== uniqueMemberIds.length ||
+      registeredRoles.some((u) => !isTrustUnitEligibleUser({ role: u.role }))
+    ) {
+      return NextResponse.json(
+        { error: "Trust Units cannot include system accounts" },
+        { status: 400 },
+      );
     }
 
     if (pendingInviteIds.length > 0) {

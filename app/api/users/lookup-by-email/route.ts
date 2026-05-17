@@ -4,6 +4,7 @@ import { appendApiErrorLog, getRequestIdFromRequest } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { isTrustUnitEligibleUser } from "@/lib/trust/isTrustUnitEligibleUser";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -34,12 +35,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = await prisma.user.findFirst({
+    const row = await prisma.user.findFirst({
       where: { email: { equals: normalized, mode: "insensitive" } },
-      select: { id: true, firstName: true, lastName: true, email: true, photoUrl: true },
+      select: { id: true, firstName: true, lastName: true, email: true, photoUrl: true, role: true },
     });
 
-    return NextResponse.json({ user }, { headers: { "x-request-id": requestId } });
+    const user = row
+      ? {
+          id: row.id,
+          firstName: row.firstName,
+          lastName: row.lastName,
+          email: row.email,
+          photoUrl: row.photoUrl,
+        }
+      : null;
+
+    const trustUnitEligible = row ? isTrustUnitEligibleUser({ role: row.role }) : undefined;
+
+    return NextResponse.json(
+      { user, ...(trustUnitEligible !== undefined ? { trustUnitEligible } : {}) },
+      { headers: { "x-request-id": requestId } },
+    );
   } catch (err: unknown) {
     const e = err as { message?: string };
     if (e.message === "UNAUTHORIZED") {

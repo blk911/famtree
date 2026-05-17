@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { TrustApprovalStatus } from "@prisma/client";
 import { buildTrustAdjacency, pickNeighborForAutoTrustUnit } from "./adjacency";
+import { isTrustUnitEligibleUser } from "@/lib/trust/isTrustUnitEligibleUser";
 
 export function maskInviteEmail(email: string): string {
   const trimmed = email.trim();
@@ -76,6 +77,14 @@ export async function tryAutoTrustUnitAfterInvite(senderId: string, inviteId: st
 
 /** When an invite becomes REGISTERED, promote pending TU slots into real members + pending approvals. */
 export async function resolveTrustUnitPendingInvitesOnRegister(userId: string, inviteId: string): Promise<void> {
+  const registrant = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  if (!registrant || !isTrustUnitEligibleUser({ role: registrant.role })) {
+    return;
+  }
+
   const slots = await prisma.trustUnitRequestPendingInvite.findMany({ where: { inviteId } });
   for (const slot of slots) {
     try {

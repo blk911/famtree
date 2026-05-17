@@ -36,6 +36,8 @@ export interface ActorContext {
 export interface TargetContext {
   targetUserId?:          AIHUserId;
   targetAgeTier?:         AgeTier;
+  /** When false, invite/join targets an existing account excluded from Trust Units (e.g. system admin). */
+  targetTrustUnitEligible?: boolean;
   trustUnitId?:           TrustUnitId;       // target trust unit for unit-scoped actions
   familyUnitId?:          FamilyUnitId;      // target family unit for family-scoped actions
   contentOwnerId?:        AIHUserId;         // owner of the content being acted on
@@ -70,6 +72,7 @@ export const ReasonCode = {
   DENIED_MINOR_REQUIRES_GUARDIAN:"DENIED_MINOR_REQUIRES_GUARDIAN",
   DENIED_NOT_GUARDIAN:          "DENIED_NOT_GUARDIAN",
   DENIED_NOT_MEMBER:            "DENIED_NOT_MEMBER",
+  DENIED_NOT_TRUST_UNIT_ELIGIBLE: "DENIED_NOT_TRUST_UNIT_ELIGIBLE",
   DENIED_INSUFFICIENT_ROLE:     "DENIED_INSUFFICIENT_ROLE",
   DENIED_SCOPE_NOT_ALLOWED:     "DENIED_SCOPE_NOT_ALLOWED",
   DENIED_APPROVAL_REQUIRED:     "DENIED_APPROVAL_REQUIRED",
@@ -85,4 +88,9 @@ export type ReasonCode = (typeof ReasonCode)[keyof typeof ReasonCode];
 
 export interface CreateTrustUnitInput {
   kind: import("./trust-units").TrustUnitKind;
+  /**
+   * When true, Trust Unit actor-eligibility rules are skipped (AIH Family workspace API only).
+   * Must not be used for `/api/aihsafe/trust-units` or legacy wedge formation.
+   */
+  skipTrustUnitActorEligibility?: boolean;
 }

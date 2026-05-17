@@ -18,6 +18,7 @@ import { asAIHUserId, asTrustUnitId } from "@/types/aihsafe/ids";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
 import { AgeTier } from "@/types/aihsafe/age-tiers";
 import { deriveAgeTier } from "@/lib/aihsafe";
+import { isTrustUnitEligibleUser } from "@/lib/trust/isTrustUnitEligibleUser";
 import {
   approvalExpiresAt,
   accepted,
@@ -107,7 +108,7 @@ export async function POST(req: NextRequest) {
   let effectiveTargetAgeTier: AgeTier | undefined;
   const targetUser = await prisma.user.findFirst({
     where:  { email: { equals: recipientEmail, mode: "insensitive" } },
-    select: { dateOfBirth: true },
+    select: { dateOfBirth: true, role: true },
   });
   if (targetUser) {
     effectiveTargetAgeTier = deriveAgeTier(targetUser.dateOfBirth ?? null);
@@ -118,9 +119,15 @@ export async function POST(req: NextRequest) {
     effectiveTargetAgeTier = minorTierSet.includes(targetAgeTier) ? targetAgeTier : undefined;
   }
 
+  const targetTrustUnitEligible =
+    trustUnitId && targetUser
+      ? isTrustUnitEligibleUser({ role: targetUser.role })
+      : undefined;
+
   const targetContext = {
     ...(trustUnitId ? { trustUnitId: asTrustUnitId(trustUnitId) } : {}),
     ...(effectiveTargetAgeTier ? { targetAgeTier: effectiveTargetAgeTier } : {}),
+    ...(targetTrustUnitEligible !== undefined ? { targetTrustUnitEligible } : {}),
   };
 
   const decision = canInviteToTrustUnit(actor, targetContext);

@@ -15,6 +15,7 @@ import { FamilySafeRole, TrustUnitRole } from "@/types/aihsafe/roles";
 import { VisibilityScope, MINOR_ALLOWED_SCOPES, TEEN_ALLOWED_SCOPES } from "@/types/aihsafe/visibility";
 import { GuardianPermissionLevel } from "@/types/aihsafe/guardian";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
+import { isTrustUnitEligibleActor } from "@/lib/trust/isTrustUnitEligibleUser";
 
 // ─── Internal decision helpers ────────────────────────────────────────────────
 // Not exported — internal policy primitives only.
@@ -167,7 +168,18 @@ export function canCreateTrustUnit(
   actor: ActorContext,
   input: CreateTrustUnitInput
 ): GovernanceDecision {
-  void input; // kind may drive future sub-rules; captured for forward compat
+  if (
+    !input.skipTrustUnitActorEligibility &&
+    !isTrustUnitEligibleActor(actor)
+  ) {
+    return deny(
+      ReasonCode.DENIED_NOT_TRUST_UNIT_ELIGIBLE,
+      "System accounts cannot create trust units.",
+      AuditEventKind.FAMILY_UNIT_CREATED
+    );
+  }
+
+  void input.kind; // kind may drive future sub-rules; captured for forward compat
   if (actor.ageTier === AgeTier.CHILD || actor.ageTier === AgeTier.PRETEEN) {
     return deny(
       ReasonCode.DENIED_MINOR_REQUIRES_GUARDIAN,
@@ -231,6 +243,13 @@ export function canJoinTrustUnit(
 ): GovernanceDecision {
   if (!target.trustUnitId) {
     return deny(ReasonCode.DENIED_TARGET_NOT_FOUND, "No trust unit specified.");
+  }
+  if (!isTrustUnitEligibleActor(actor)) {
+    return deny(
+      ReasonCode.DENIED_NOT_TRUST_UNIT_ELIGIBLE,
+      "System accounts cannot join trust units.",
+      AuditEventKind.TRUST_UNIT_MEMBER_ADDED
+    );
   }
   if (isMinor(actor)) {
     return escalate(

@@ -90,7 +90,10 @@ export async function POST(req: NextRequest) {
   const { name, memberIds = [] } = parsed.data;
 
   // Gate: reuse canCreateTrustUnit with family kind — same age-tier rules apply.
-  const decision = canCreateTrustUnit(actor, { kind: "family" });
+  const decision = canCreateTrustUnit(actor, {
+    kind: "family",
+    skipTrustUnitActorEligibility: true,
+  });
   if (!decision.allowed && !decision.requiredApproval) {
     await emitAuditEvent({
       kind:     AuditEventKind.FAMILY_UNIT_CREATED,

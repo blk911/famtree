@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db/prisma";
 import { emitAuditEvent } from "@/lib/aihsafe/audit";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
 import type { TrustUnitKind } from "@/types/aihsafe/trust-units";
+import { isTrustUnitEligibleUser } from "@/lib/trust/isTrustUnitEligibleUser";
 
 type DeferredResult =
   | { ok: true }
@@ -32,7 +33,7 @@ export async function executeDeferredAction(
 
   const requestor = await prisma.user.findUnique({
     where:  { id: requestorId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, role: true },
   });
   if (!requestor || requestor.status !== "active") {
     return { ok: false, reason: "requestor_inactive" };
@@ -61,6 +62,9 @@ export async function executeDeferredAction(
     }
 
     case "create_trust_unit": {
+      if (!isTrustUnitEligibleUser({ role: requestor.role })) {
+        return { ok: false, reason: "requestor_not_trust_unit_eligible" };
+      }
       const kind                   = String(ctx.kind ?? "peer") as TrustUnitKind;
       const name                   = ctx.name != null ? String(ctx.name) : undefined;
       const defaultVisibilityScope = String(ctx.defaultVisibilityScope ?? "trust_unit");
@@ -82,6 +86,9 @@ export async function executeDeferredAction(
     }
 
     case "join_trust_unit": {
+      if (!isTrustUnitEligibleUser({ role: requestor.role })) {
+        return { ok: false, reason: "requestor_not_trust_unit_eligible" };
+      }
       const trustUnitId = String(ctx.trustUnitId ?? "");
       const existing    = await prisma.trustUnitMember.findFirst({
         where: { trustUnitId, userId: requestorId },
@@ -104,6 +111,18 @@ export async function executeDeferredAction(
       const recipientEmail = String(ctx.recipientEmail ?? "").trim().toLowerCase();
       const relationship   = ctx.relationship != null ? String(ctx.relationship) : null;
       const targetId       = String(ctx.trustUnitId ?? ctx.familyUnitId ?? "");
+      const deferredTrustUnitId =
+        typeof ctx.trustUnitId === "string" ? ctx.trustUnitId.trim() : "";
+
+      if (deferredTrustUnitId) {
+        const inviteTarget = await prisma.user.findFirst({
+          where: { email: { equals: recipientEmail, mode: "insensitive" } },
+          select: { role: true },
+        });
+        if (inviteTarget && !isTrustUnitEligibleUser({ role: inviteTarget.role })) {
+          return { ok: false, reason: "recipient_not_trust_unit_eligible" };
+        }
+      }
 
       // Idempotent: skip if a pending invite already exists (guardian may retry).
       const existingInvite = await prisma.invite.findFirst({

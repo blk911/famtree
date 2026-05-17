@@ -3,6 +3,13 @@ import { TrustApprovalStatus, TrustUnitRequestStatus } from "@prisma/client";
 import { buildTrustAdjacency } from "./adjacency";
 import { normalizeInviteEmail } from "@/lib/invite";
 import { maskInviteEmail } from "./tuProposal";
+import { filterTrustUnitEligibleUserIds } from "./isTrustUnitEligibleUser";
+
+export {
+  isTrustUnitEligibleUser,
+  isTrustUnitEligibleActor,
+  filterTrustUnitEligibleUserIds,
+} from "./isTrustUnitEligibleUser";
 
 const userSelect = {
   id: true,
@@ -40,7 +47,8 @@ async function filterMutualIdsForTrustUnitWedge(mutual: string[], userIdA: strin
 /** Same adjacency-based mutuals as {@link findSharedConnections}, then sponsor-only-star strip for wedge UX. */
 export async function findTrustUnitOpportunityConnectors(currentUserId: string, targetUserId: string): Promise<string[]> {
   const mutual = await findSharedConnections(currentUserId, targetUserId);
-  return filterMutualIdsForTrustUnitWedge(mutual, currentUserId, targetUserId);
+  const wedge = await filterMutualIdsForTrustUnitWedge(mutual, currentUserId, targetUserId);
+  return filterTrustUnitEligibleUserIds(wedge);
 }
 
 function rawMutualNeighborIds(adj: Map<string, Set<string>>, userIdA: string, userIdB: string): string[] {
