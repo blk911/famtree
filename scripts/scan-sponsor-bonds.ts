@@ -8,6 +8,7 @@
  */
 import { PrismaClient } from "@prisma/client";
 import { normalizeInviteEmail } from "../lib/invite";
+import { isHumanTrustEligible } from "../lib/trust/isHumanTrustEligible";
 
 const prisma = new PrismaClient();
 
@@ -22,6 +23,7 @@ async function main() {
     select: {
       id: true,
       email: true,
+      role: true,
       firstName: true,
       lastName: true,
       invitedById: true,
@@ -29,6 +31,16 @@ async function main() {
   });
   const emailToId = new Map(users.map((u) => [normalizeInviteEmail(u.email), u.id]));
   const userById = new Map(users.map((u) => [u.id, u]));
+
+  function bondPartiesHumanEligible(sponsorId: string, memberId: string): boolean {
+    const sponsor = userById.get(sponsorId);
+    const member = userById.get(memberId);
+    if (!sponsor || !member) return false;
+    return (
+      isHumanTrustEligible({ role: sponsor.role, email: sponsor.email }) &&
+      isHumanTrustEligible({ role: member.role, email: member.email })
+    );
+  }
 
   const conns = await prisma.connectionRequest.findMany({
     where: { status: "ACCEPTED" },
@@ -84,7 +96,7 @@ async function main() {
         memberId: mid,
         detail: `${inv.status}: ${sponsor?.email ?? inv.senderId} → ${member?.email ?? mid}`,
       });
-      if (fix) {
+      if (fix && bondPartiesHumanEligible(inv.senderId, mid)) {
         await prisma.connectionRequest.upsert({
           where: {
             requesterId_targetId: {
@@ -115,7 +127,7 @@ async function main() {
         memberId: u.id,
         detail: `invitedById: ${sponsor?.email ?? u.invitedById} → ${u.email}`,
       });
-      if (fix) {
+      if (fix && bondPartiesHumanEligible(u.invitedById, u.id)) {
         await prisma.connectionRequest.upsert({
           where: {
             requesterId_targetId: {

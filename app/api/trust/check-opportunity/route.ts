@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { findTrustUnitOpportunityConnectors, getTrustMembers } from "@/lib/trust";
-import { isTrustUnitEligibleUser } from "@/lib/trust/isTrustUnitEligibleUser";
+import { isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 
 export async function POST(req: NextRequest) {
   return withApiTraceLite(req, "/api/trust/check-opportunity", async (req: NextRequest) => {
@@ -32,11 +32,11 @@ export async function POST(req: NextRequest) {
 
     const pair = await prisma.user.findMany({
       where: { id: { in: [currentUserId, targetUserId] } },
-      select: { id: true, role: true },
+      select: { id: true, role: true, email: true },
     });
     if (
       pair.length !== 2 ||
-      pair.some((u) => !isTrustUnitEligibleUser({ role: u.role }))
+      pair.some((u) => !isHumanTrustEligible({ role: u.role, email: u.email }))
     ) {
       return NextResponse.json({ canFormTrustUnit: false });
     }

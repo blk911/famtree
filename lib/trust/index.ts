@@ -3,13 +3,15 @@ import { TrustApprovalStatus, TrustUnitRequestStatus } from "@prisma/client";
 import { buildTrustAdjacency } from "./adjacency";
 import { normalizeInviteEmail } from "@/lib/invite";
 import { maskInviteEmail } from "./tuProposal";
-import { filterTrustUnitEligibleUserIds } from "./isTrustUnitEligibleUser";
+import { filterHumanTrustEligibleUserIds, isHumanTrustEligible, loadHumanEligibleUserIdSet } from "./isHumanTrustEligible";
 
 export {
-  isTrustUnitEligibleUser,
-  isTrustUnitEligibleActor,
-  filterTrustUnitEligibleUserIds,
-} from "./isTrustUnitEligibleUser";
+  ADMIN_HUMAN_TRUST_MESSAGE,
+  isHumanTrustEligible,
+  isHumanTrustEligibleActor,
+  filterHumanTrustEligibleUserIds,
+  loadHumanEligibleUserIdSet,
+} from "./isHumanTrustEligible";
 
 const userSelect = {
   id: true,
@@ -48,7 +50,7 @@ async function filterMutualIdsForTrustUnitWedge(mutual: string[], userIdA: strin
 export async function findTrustUnitOpportunityConnectors(currentUserId: string, targetUserId: string): Promise<string[]> {
   const mutual = await findSharedConnections(currentUserId, targetUserId);
   const wedge = await filterMutualIdsForTrustUnitWedge(mutual, currentUserId, targetUserId);
-  return filterTrustUnitEligibleUserIds(wedge);
+  return filterHumanTrustEligibleUserIds(wedge);
 }
 
 function rawMutualNeighborIds(adj: Map<string, Set<string>>, userIdA: string, userIdB: string): string[] {
@@ -117,6 +119,26 @@ export type PendingTrustRequestMember =
       pendingInvite: { id: string; recipientEmail: string; status: string };
       approvalStatus: "WAITING_ON_JOIN";
     };
+
+async function excludePendingTuWithIneligibleParticipants<
+  T extends { createdById: string; members: Array<{ userId: string }> },
+>(requests: T[]): Promise<T[]> {
+  if (requests.length === 0) return [];
+  const ids = new Set<string>();
+  for (const r of requests) {
+    ids.add(r.createdById);
+    for (const m of r.members) ids.add(m.userId);
+  }
+  const rows = await prisma.user.findMany({
+    where: { id: { in: Array.from(ids) } },
+    select: { id: true, role: true, email: true },
+  });
+  const ok = new Set(rows.filter((u) => isHumanTrustEligible(u)).map((u) => u.id));
+  return requests.filter((r) => {
+    if (!ok.has(r.createdById)) return false;
+    return r.members.every((m) => ok.has(m.userId));
+  });
+}
 
 async function loadPendingTrustRequestRowsForUser(viewerId: string) {
   return prisma.trustUnitRequest.findMany({
@@ -197,6 +219,8 @@ export async function getPendingTrustRequests(userId: string): Promise<Array<{
     kept.push(req);
   }
   requests = kept;
+
+  requests = await excludePendingTuWithIneligibleParticipants(requests);
 
   return requests.map((req) => {
     const approvalByUser = new Map(req.approvals.map((a) => [a.userId, a.status]));
@@ -333,6 +357,14 @@ export async function getTrustUnits(userId: string) {
  * email drift vs `invites.recipientEmail`). Matches edges already counted in {@link buildTrustAdjacency}.
  */
 export async function getAcceptedBondDetails(userId: string) {
+  const viewerRow = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true, email: true },
+  });
+  if (!viewerRow || !isHumanTrustEligible({ role: viewerRow.role, email: viewerRow.email })) {
+    return [];
+  }
+
   const rows = await prisma.connectionRequest.findMany({
     where: {
       status: "ACCEPTED",
@@ -375,10 +407,13 @@ export async function getAcceptedBondDetails(userId: string) {
     select: { senderId: true, recipientEmail: true, acceptedAt: true, createdAt: true },
   });
 
+  const eligIds = await loadHumanEligibleUserIdSet();
+
   for (const inv of invites) {
     const recipientId = emailToId.get(normalizeInviteEmail(inv.recipientEmail));
     if (!recipientId) continue;
     const sponsorId = inv.senderId;
+    if (!eligIds.has(sponsorId) || !eligIds.has(recipientId)) continue;
     const viewerPeer =
       sponsorId === userId ? recipientId : recipientId === userId ? sponsorId : null;
     if (!viewerPeer) continue;
@@ -387,11 +422,11 @@ export async function getAcceptedBondDetails(userId: string) {
   }
 
   const viewer = userById.get(userId);
-  if (viewer?.invitedById) {
+  if (viewer?.invitedById && eligIds.has(viewer.invitedById)) {
     bumpSynthetic(viewer.invitedById, viewer.createdAt);
   }
   for (const u of allUsers) {
-    if (u.invitedById === userId) {
+    if (u.invitedById === userId && eligIds.has(u.id)) {
       bumpSynthetic(u.id, u.createdAt);
     }
   }
@@ -410,7 +445,10 @@ export async function getAcceptedBondDetails(userId: string) {
     }
   }
 
-  return Array.from(byPeerId.values()).sort((a, b) => b.bondedAt.getTime() - a.bondedAt.getTime());
+  const sorted = Array.from(byPeerId.values()).sort((a, b) => b.bondedAt.getTime() - a.bondedAt.getTime());
+  const peerIds = sorted.map((d) => d.peer.id);
+  const okPeers = new Set(await filterHumanTrustEligibleUserIds(peerIds));
+  return sorted.filter((d) => okPeers.has(d.peer.id));
 }
 
 /** Peers linked by an ACCEPTED connection_request (either direction). */

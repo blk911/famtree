@@ -364,7 +364,11 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       }
 
       // System accounts are excluded from Trust Unit wedge UX — still allow normal connection invite flow.
-      if (lookupData.trustUnitEligible === false) {
+      const lookupEligible =
+        lookupData.humanTrustEligible ??
+        lookupData.trustUnitEligible ??
+        true;
+      if (lookupEligible === false) {
         setTargetUser(lookupData.user);
         setShowConnectionModal(true);
         return;
@@ -486,7 +490,11 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       const data = await res.json();
       setShowConnectionModal(false);
       if (!res.ok) {
-        setSendResult({ type:"error", msg:data.error ?? "Failed to send connection request" });
+        const msg =
+          data.code === "ADMIN_NOT_HUMAN_TRUST_ELIGIBLE" && typeof data.error === "string"
+            ? data.error
+            : (data.error ?? "Failed to send connection request");
+        setSendResult({ type:"error", msg });
         return;
       }
       setSendResult({ type:"success", msg:"Connection request sent", inviteeName:`${targetUser.firstName} ${targetUser.lastName}` });
@@ -514,7 +522,11 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       const data = await res.json();
       setShowTrustModal(false);
       if (!res.ok) {
-        setSendResult({ type:"error", msg:data.error ?? "Failed to create Trust Unit request" });
+        const msg =
+          data.code === "ADMIN_NOT_HUMAN_TRUST_ELIGIBLE" && typeof data.error === "string"
+            ? data.error
+            : (data.error ?? "Failed to create Trust Unit request");
+        setSendResult({ type:"error", msg });
         return;
       }
       setSendResult({ type:"success", msg:"Trust Unit request sent", inviteeName:trustCandidates.map((member) => member.firstName).join(" · ") });

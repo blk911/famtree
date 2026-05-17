@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/db/prisma";
 import { normalizeInviteEmail } from "@/lib/invite";
-import { filterTrustUnitEligibleUserIds } from "@/lib/trust/isTrustUnitEligibleUser";
+import { filterHumanTrustEligibleUserIds, loadHumanEligibleUserIdSet } from "@/lib/trust/isHumanTrustEligible";
 
 /** Edges: REGISTERED/ACCEPTED invites, user.invitedById sponsor links, ACCEPTED connection_requests, ACTIVE trust unit cliques. */
 export async function buildTrustAdjacency(): Promise<Map<string, Set<string>>> {
+  const eligIds = await loadHumanEligibleUserIdSet();
+
   const users = await prisma.user.findMany({
     select: { id: true, email: true },
   });
@@ -11,6 +13,7 @@ export async function buildTrustAdjacency(): Promise<Map<string, Set<string>>> {
 
   const adjacency = new Map<string, Set<string>>();
   const connect = (a: string, b: string) => {
+    if (!eligIds.has(a) || !eligIds.has(b)) return;
     if (!adjacency.has(a)) adjacency.set(a, new Set());
     if (!adjacency.has(b)) adjacency.set(b, new Set());
     adjacency.get(a)!.add(b);
@@ -82,7 +85,7 @@ export async function pickNeighborForAutoTrustUnit(
   const neighbors = Array.from(adjacency.get(senderId) ?? new Set<string>()).filter((id) => id !== senderId);
   if (neighbors.length === 0) return null;
 
-  const eligibleNeighbors = await filterTrustUnitEligibleUserIds(neighbors);
+  const eligibleNeighbors = await filterHumanTrustEligibleUserIds(neighbors);
   if (eligibleNeighbors.length === 0) return null;
   const eligibleSet = new Set(eligibleNeighbors);
 

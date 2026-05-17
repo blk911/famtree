@@ -15,7 +15,7 @@ import { FamilySafeRole, TrustUnitRole } from "@/types/aihsafe/roles";
 import { VisibilityScope, MINOR_ALLOWED_SCOPES, TEEN_ALLOWED_SCOPES } from "@/types/aihsafe/visibility";
 import { GuardianPermissionLevel } from "@/types/aihsafe/guardian";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
-import { isTrustUnitEligibleActor } from "@/lib/trust/isTrustUnitEligibleUser";
+import { isHumanTrustEligibleActor } from "@/lib/trust/isHumanTrustEligible";
 
 // ─── Internal decision helpers ────────────────────────────────────────────────
 // Not exported — internal policy primitives only.
@@ -170,7 +170,7 @@ export function canCreateTrustUnit(
 ): GovernanceDecision {
   if (
     !input.skipTrustUnitActorEligibility &&
-    !isTrustUnitEligibleActor(actor)
+    !isHumanTrustEligibleActor(actor)
   ) {
     return deny(
       ReasonCode.DENIED_NOT_TRUST_UNIT_ELIGIBLE,
@@ -216,10 +216,27 @@ export function canInviteToTrustUnit(
       AuditEventKind.INVITE_SENT_CHILD
     );
   }
+  if (target.trustUnitId && !isHumanTrustEligibleActor(actor)) {
+    return deny(
+      ReasonCode.DENIED_NOT_TRUST_UNIT_ELIGIBLE,
+      "System accounts cannot invite users into trust units.",
+      AuditEventKind.INVITE_SENT_CHILD
+    );
+  }
   if (target.trustUnitId && !isMemberOf(actor, target.trustUnitId)) {
     return deny(
       ReasonCode.DENIED_NOT_MEMBER,
       "Actor must be a member of the trust unit to invite others into it."
+    );
+  }
+  if (
+    target.trustUnitId != null &&
+    target.targetTrustUnitEligible === false
+  ) {
+    return deny(
+      ReasonCode.DENIED_NOT_TRUST_UNIT_ELIGIBLE,
+      "This account cannot be invited into trust units.",
+      AuditEventKind.INVITE_SENT_CHILD
     );
   }
   if (target.targetAgeTier && isMinorTier(target.targetAgeTier)) {
@@ -244,7 +261,7 @@ export function canJoinTrustUnit(
   if (!target.trustUnitId) {
     return deny(ReasonCode.DENIED_TARGET_NOT_FOUND, "No trust unit specified.");
   }
-  if (!isTrustUnitEligibleActor(actor)) {
+  if (!isHumanTrustEligibleActor(actor)) {
     return deny(
       ReasonCode.DENIED_NOT_TRUST_UNIT_ELIGIBLE,
       "System accounts cannot join trust units.",

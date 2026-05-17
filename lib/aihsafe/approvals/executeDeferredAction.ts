@@ -7,7 +7,7 @@ import { prisma } from "@/lib/db/prisma";
 import { emitAuditEvent } from "@/lib/aihsafe/audit";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
 import type { TrustUnitKind } from "@/types/aihsafe/trust-units";
-import { isTrustUnitEligibleUser } from "@/lib/trust/isTrustUnitEligibleUser";
+import { isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 
 type DeferredResult =
   | { ok: true }
@@ -33,7 +33,7 @@ export async function executeDeferredAction(
 
   const requestor = await prisma.user.findUnique({
     where:  { id: requestorId },
-    select: { id: true, status: true, role: true },
+    select: { id: true, status: true, role: true, email: true },
   });
   if (!requestor || requestor.status !== "active") {
     return { ok: false, reason: "requestor_inactive" };
@@ -62,8 +62,8 @@ export async function executeDeferredAction(
     }
 
     case "create_trust_unit": {
-      if (!isTrustUnitEligibleUser({ role: requestor.role })) {
-        return { ok: false, reason: "requestor_not_trust_unit_eligible" };
+      if (!isHumanTrustEligible({ role: requestor.role, email: requestor.email })) {
+        return { ok: false, reason: "requestor_not_human_trust_eligible" };
       }
       const kind                   = String(ctx.kind ?? "peer") as TrustUnitKind;
       const name                   = ctx.name != null ? String(ctx.name) : undefined;
@@ -86,8 +86,8 @@ export async function executeDeferredAction(
     }
 
     case "join_trust_unit": {
-      if (!isTrustUnitEligibleUser({ role: requestor.role })) {
-        return { ok: false, reason: "requestor_not_trust_unit_eligible" };
+      if (!isHumanTrustEligible({ role: requestor.role, email: requestor.email })) {
+        return { ok: false, reason: "requestor_not_human_trust_eligible" };
       }
       const trustUnitId = String(ctx.trustUnitId ?? "");
       const existing    = await prisma.trustUnitMember.findFirst({
@@ -117,10 +117,10 @@ export async function executeDeferredAction(
       if (deferredTrustUnitId) {
         const inviteTarget = await prisma.user.findFirst({
           where: { email: { equals: recipientEmail, mode: "insensitive" } },
-          select: { role: true },
+          select: { role: true, email: true },
         });
-        if (inviteTarget && !isTrustUnitEligibleUser({ role: inviteTarget.role })) {
-          return { ok: false, reason: "recipient_not_trust_unit_eligible" };
+        if (inviteTarget && !isHumanTrustEligible({ role: inviteTarget.role, email: inviteTarget.email })) {
+          return { ok: false, reason: "recipient_not_human_trust_eligible" };
         }
       }
 

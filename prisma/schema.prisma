@@ -473,12 +473,16 @@ model ConnectionRequest {
 
 enum TrustUnitStatus {
   ACTIVE
+  /// Flagged by system scrub — contained an admin/system account; audit retained.
+  NEEDS_REFORM_SYSTEM_EXCLUDED
 }
 
 enum TrustUnitRequestStatus {
   PENDING
   ACTIVE
   DECLINED
+  /// Cancelled by system scrub — proposal contained an admin/system participant.
+  CANCELLED_SYSTEM_EXCLUDED
 }
 
 enum TrustApprovalStatus {
@@ -491,6 +495,8 @@ enum ConnectionRequestStatus {
   PENDING
   ACCEPTED
   DECLINED
+  /// Revoked by system scrub — bond touched an admin/system account.
+  REVOKED_SYSTEM_EXCLUDED
 }
 
 // ─────────────────────────────────────────────

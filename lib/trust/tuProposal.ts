@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { TrustApprovalStatus } from "@prisma/client";
 import { buildTrustAdjacency, pickNeighborForAutoTrustUnit } from "./adjacency";
-import { isTrustUnitEligibleUser } from "@/lib/trust/isTrustUnitEligibleUser";
+import { isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 
 export function maskInviteEmail(email: string): string {
   const trimmed = email.trim();
@@ -27,6 +27,17 @@ export async function createTrustUnitProposal(opts: {
   const total = uniqReg.length + pendingInviteIds.length;
   if (total < 3 || total > 20) {
     throw new Error("Trust Units require 3–20 members including pending invites");
+  }
+
+  const roleRows = await prisma.user.findMany({
+    where: { id: { in: uniqReg } },
+    select: { id: true, role: true, email: true },
+  });
+  if (
+    roleRows.length !== uniqReg.length ||
+    roleRows.some((u) => !isHumanTrustEligible({ role: u.role, email: u.email }))
+  ) {
+    throw new Error("Trust Units cannot include system accounts");
   }
 
   const row = await prisma.trustUnitRequest.create({
@@ -58,6 +69,12 @@ export async function tryAutoTrustUnitAfterInvite(senderId: string, inviteId: st
   const existing = await prisma.trustUnitRequestPendingInvite.findUnique({ where: { inviteId } });
   if (existing) return null;
 
+  const sender = await prisma.user.findUnique({
+    where: { id: senderId },
+    select: { role: true, email: true },
+  });
+  if (!sender || !isHumanTrustEligible({ role: sender.role, email: sender.email })) return null;
+
   const adjacency = await buildTrustAdjacency();
   const blk = await pickNeighborForAutoTrustUnit(senderId, adjacency);
   if (!blk) return null;
@@ -79,9 +96,9 @@ export async function tryAutoTrustUnitAfterInvite(senderId: string, inviteId: st
 export async function resolveTrustUnitPendingInvitesOnRegister(userId: string, inviteId: string): Promise<void> {
   const registrant = await prisma.user.findUnique({
     where: { id: userId },
-    select: { role: true },
+    select: { role: true, email: true },
   });
-  if (!registrant || !isTrustUnitEligibleUser({ role: registrant.role })) {
+  if (!registrant || !isHumanTrustEligible({ role: registrant.role, email: registrant.email })) {
     return;
   }
 

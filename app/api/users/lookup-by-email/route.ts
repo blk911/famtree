@@ -4,7 +4,7 @@ import { appendApiErrorLog, getRequestIdFromRequest } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
-import { isTrustUnitEligibleUser } from "@/lib/trust/isTrustUnitEligibleUser";
+import { isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -50,10 +50,14 @@ export async function POST(req: NextRequest) {
         }
       : null;
 
-    const trustUnitEligible = row ? isTrustUnitEligibleUser({ role: row.role }) : undefined;
+    const trustUnitEligible = row ? isHumanTrustEligible({ role: row.role, email: row.email }) : undefined;
+    const humanTrustEligible = trustUnitEligible;
 
     return NextResponse.json(
-      { user, ...(trustUnitEligible !== undefined ? { trustUnitEligible } : {}) },
+      {
+        user,
+        ...(trustUnitEligible !== undefined ? { trustUnitEligible, humanTrustEligible } : {}),
+      },
       { headers: { "x-request-id": requestId } },
     );
   } catch (err: unknown) {

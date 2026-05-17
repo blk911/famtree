@@ -8,6 +8,7 @@ import { normalizeInviteEmail } from "@/lib/invite";
 import { sendWelcomeEmail } from "@/lib/email";
 import { resolveTrustUnitPendingInvitesOnRegister } from "@/lib/trust/tuProposal";
 import { ensurePolicyProfile } from "@/lib/aihsafe/policy";
+import { isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 import { z } from "zod";
 
 const registerSchema = z.object({
@@ -100,22 +101,32 @@ export async function POST(req: NextRequest) {
 
     // Sponsor ↔ new member bond (invite path only) — Fam Units / graph use ACCEPTED rows.
     if (inviteToken && invitedById) {
-      await prisma.connectionRequest.upsert({
-        where: {
-          requesterId_targetId: {
+      const sponsor = await prisma.user.findUnique({
+        where: { id: invitedById },
+        select: { id: true, role: true, email: true },
+      });
+      if (
+        sponsor &&
+        isHumanTrustEligible(sponsor) &&
+        isHumanTrustEligible({ role: user.role, email: user.email })
+      ) {
+        await prisma.connectionRequest.upsert({
+          where: {
+            requesterId_targetId: {
+              requesterId: invitedById,
+              targetId: user.id,
+            },
+          },
+          create: {
             requesterId: invitedById,
             targetId: user.id,
+            status: "ACCEPTED",
           },
-        },
-        create: {
-          requesterId: invitedById,
-          targetId: user.id,
-          status: "ACCEPTED",
-        },
-        update: {
-          status: "ACCEPTED",
-        },
-      });
+          update: {
+            status: "ACCEPTED",
+          },
+        });
+      }
     }
 
     // Create the user's Family Safe policy profile with safe defaults for their age tier.

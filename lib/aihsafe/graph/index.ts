@@ -18,6 +18,7 @@ import {
   mapGuardianRelationship,
   mapConnectionRequestToEdge,
 } from "@/lib/aihsafe/mappers";
+import { isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 
 // ─── Trust Unit Queries ────────────────────────────────────────────────────────
 
@@ -39,6 +40,7 @@ export async function listTrustUnitsForUser(
 ): Promise<TrustUnit[]> {
   const rows = await prisma.trustUnit.findMany({
     where: {
+      status: "ACTIVE",
       members: { some: { userId: userId as string } },
     },
     include: { members: true, aihMeta: true },
@@ -53,7 +55,10 @@ export async function listMembershipsForUser(
   userId: AIHUserId
 ): Promise<TrustUnitMembership[]> {
   const rows = await prisma.trustUnitMember.findMany({
-    where: { userId: userId as string },
+    where: {
+      userId: userId as string,
+      trustUnit: { status: "ACTIVE" },
+    },
   });
   return rows.map(mapTrustUnitMembership);
 }
@@ -102,13 +107,31 @@ export async function listRelationshipEdgesForUser(
 ): Promise<RelationshipEdge[]> {
   const rows = await prisma.connectionRequest.findMany({
     where: {
+      status: "ACCEPTED",
       OR: [
         { requesterId: userId as string },
         { targetId:    userId as string },
       ],
     },
   });
-  return rows.map(mapConnectionRequestToEdge);
+
+  const touched = new Set<string>();
+  for (const r of rows) {
+    touched.add(r.requesterId);
+    touched.add(r.targetId);
+  }
+  const users = await prisma.user.findMany({
+    where: { id: { in: Array.from(touched) } },
+    select: { id: true, role: true, email: true },
+  });
+  const elig = new Set(
+    users.filter((u) => isHumanTrustEligible({ role: u.role, email: u.email })).map((u) => u.id),
+  );
+
+  const filtered = rows.filter(
+    (r) => elig.has(r.requesterId) && elig.has(r.targetId),
+  );
+  return filtered.map(mapConnectionRequestToEdge);
 }
 
 // ─── Graph Shape Assertion ────────────────────────────────────────────────────

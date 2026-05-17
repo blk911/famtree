@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { createTrustUnitProposal } from "@/lib/trust/tuProposal";
-import { isTrustUnitEligibleUser } from "@/lib/trust/isTrustUnitEligibleUser";
+import { ADMIN_HUMAN_TRUST_MESSAGE, isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 import { Prisma } from "@prisma/client";
 
 export async function POST(req: NextRequest) {
@@ -22,6 +22,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const creatorRow = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { role: true, email: true },
+    });
+    if (!creatorRow || !isHumanTrustEligible(creatorRow)) {
+      return NextResponse.json(
+        { error: ADMIN_HUMAN_TRUST_MESSAGE, code: "ADMIN_NOT_HUMAN_TRUST_ELIGIBLE" },
+        { status: 403 },
+      );
+    }
+
     const totalSlots = uniqueMemberIds.length + pendingInviteIds.length;
     if (totalSlots < 3 || totalSlots > 20 || !uniqueMemberIds.includes(user.id)) {
       return NextResponse.json({ error: "Trust Units require 3–20 members including you" }, { status: 400 });
@@ -29,15 +40,15 @@ export async function POST(req: NextRequest) {
 
     const registeredRoles = await prisma.user.findMany({
       where: { id: { in: uniqueMemberIds } },
-      select: { id: true, role: true },
+      select: { id: true, role: true, email: true },
     });
     if (
       registeredRoles.length !== uniqueMemberIds.length ||
-      registeredRoles.some((u) => !isTrustUnitEligibleUser({ role: u.role }))
+      registeredRoles.some((u) => !isHumanTrustEligible({ role: u.role, email: u.email }))
     ) {
       return NextResponse.json(
-        { error: "Trust Units cannot include system accounts" },
-        { status: 400 },
+        { error: ADMIN_HUMAN_TRUST_MESSAGE, code: "ADMIN_NOT_HUMAN_TRUST_ELIGIBLE" },
+        { status: 403 },
       );
     }
 

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { randomUUID } from "crypto";
+import { ADMIN_HUMAN_TRUST_MESSAGE, isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 
 export async function POST(req: NextRequest) {
   return withApiTrace(req, "/api/trust/respond", async (req: NextRequest) => {
@@ -15,6 +16,17 @@ export async function POST(req: NextRequest) {
 
     if (userId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const actorRow = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { role: true, email: true },
+    });
+    if (!actorRow || !isHumanTrustEligible(actorRow)) {
+      return NextResponse.json(
+        { error: ADMIN_HUMAN_TRUST_MESSAGE, code: "ADMIN_NOT_HUMAN_TRUST_ELIGIBLE" },
+        { status: 403 },
+      );
     }
 
     if (!requestId || !["ACCEPT", "DECLINE"].includes(action)) {
@@ -41,6 +53,21 @@ export async function POST(req: NextRequest) {
 
     if (!members.some((member) => member.userId === user.id)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const proposalUserIds = Array.from(new Set(members.map((m) => m.userId)));
+    const proposalUsers = await prisma.user.findMany({
+      where: { id: { in: proposalUserIds } },
+      select: { id: true, role: true, email: true },
+    });
+    if (
+      proposalUsers.length !== proposalUserIds.length ||
+      proposalUsers.some((u) => !isHumanTrustEligible(u))
+    ) {
+      return NextResponse.json(
+        { error: ADMIN_HUMAN_TRUST_MESSAGE, code: "ADMIN_NOT_HUMAN_TRUST_ELIGIBLE" },
+        { status: 403 },
+      );
     }
 
     if (action === "DECLINE") {

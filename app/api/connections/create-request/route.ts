@@ -4,6 +4,7 @@ import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { ADMIN_HUMAN_TRUST_MESSAGE, isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 
 export async function POST(req: NextRequest) {
   return withApiTrace(req, "/api/connections/create-request", async (req: NextRequest) => {
@@ -14,6 +15,27 @@ export async function POST(req: NextRequest) {
 
     if (!targetUserId || targetUserId === user.id) {
       return NextResponse.json({ error: "Invalid connection target" }, { status: 400 });
+    }
+
+    const pair = await prisma.user.findMany({
+      where: { id: { in: [user.id, targetUserId] } },
+      select: { id: true, role: true, email: true },
+    });
+    if (pair.length !== 2) {
+      return NextResponse.json({ error: "Invalid connection target" }, { status: 400 });
+    }
+    const requester = pair.find((u) => u.id === user.id);
+    const target = pair.find((u) => u.id === targetUserId);
+    if (
+      !requester ||
+      !target ||
+      !isHumanTrustEligible(requester) ||
+      !isHumanTrustEligible(target)
+    ) {
+      return NextResponse.json(
+        { error: ADMIN_HUMAN_TRUST_MESSAGE, code: "ADMIN_NOT_HUMAN_TRUST_ELIGIBLE" },
+        { status: 403 },
+      );
     }
 
     /** No separate “accept” UI yet — leaving rows PENDING broke adjacency & Private Feed bonds. */

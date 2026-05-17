@@ -17,7 +17,8 @@
     "fuzz": "node scripts/run-fuzz.mjs",
     "seed:deb": "ts-node --project scripts/tsconfig.json scripts/seedDeb.ts",
     "bonds:scan": "tsx scripts/scan-sponsor-bonds.ts",
-    "bonds:fix": "tsx scripts/scan-sponsor-bonds.ts --fix"
+    "bonds:fix": "tsx scripts/scan-sponsor-bonds.ts --fix",
+    "trust:scrub-admin": "tsx scripts/scrub-admin-trust-contamination.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1039.0",
