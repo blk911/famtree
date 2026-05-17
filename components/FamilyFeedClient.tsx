@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, useEffect } from "react";
 import { Image as ImageIcon, Plus, X, Globe, Lock } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
 import { postScopeShareLabel } from "@/lib/posts/scope-labels";
+import { checkBrowserImageFile } from "@/lib/media/image-sniff";
 
 type Member = { id: string; firstName: string; lastName: string; photoUrl: string | null };
 
@@ -78,9 +79,18 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
   };
 
   const handleImageSelect = (file: File) => {
-    setImageFile(file);
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImagePreview(URL.createObjectURL(file));
+    setError("");
+    void (async () => {
+      const r = await checkBrowserImageFile(file);
+      if (!r.ok) {
+        setError(r.error);
+        clearImage();
+        return;
+      }
+      setImageFile(file);
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+      setImagePreview(URL.createObjectURL(file));
+    })();
   };
 
   const clearImage = () => {
@@ -284,7 +294,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
               <input
                 ref={imageInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
                 className="hidden"
                 onChange={(event) => event.target.files?.[0] && handleImageSelect(event.target.files[0])}
               />

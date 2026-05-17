@@ -5,7 +5,7 @@ import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
-import { uploadFile, validateImage } from "@/lib/storage";
+import { uploadFile } from "@/lib/storage";
 import { randomUUID } from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -18,9 +18,6 @@ export async function POST(req: NextRequest) {
 
     if (!file) return NextResponse.json({ error: "No cover photo provided" }, { status: 400 });
 
-    const err = validateImage(file);
-    if (err)  return NextResponse.json({ error: err }, { status: 400 });
-
     const coverUrl = await uploadFile(file, "cover", randomUUID());
 
     await prisma.profile.update({
@@ -32,6 +29,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ coverUrl });
   } catch (err: any) {
     if (err.message === "UNAUTHORIZED") return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    if (typeof err.message === "string" && err.message.startsWith("INVALID_IMAGE:")) {
+      return NextResponse.json({ error: err.message.slice("INVALID_IMAGE:".length) }, { status: 400 });
+    }
     console.error("[profile/cover]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

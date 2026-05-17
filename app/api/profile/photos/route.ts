@@ -6,7 +6,7 @@ import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
-import { uploadFile, deleteFile, validateImage } from "@/lib/storage";
+import { uploadFile, deleteFile } from "@/lib/storage";
 import { randomUUID } from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -26,9 +26,6 @@ export async function POST(req: NextRequest) {
 
     if (!file) return NextResponse.json({ error: "No photo provided" }, { status: 400 });
 
-    const err = validateImage(file);
-    if (err)  return NextResponse.json({ error: err }, { status: 400 });
-
     const url = await uploadFile(file, "gallery", randomUUID());
 
     const photo = await prisma.photo.create({
@@ -42,6 +39,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ photo });
   } catch (err: any) {
     if (err.message === "UNAUTHORIZED") return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    if (typeof err.message === "string" && err.message.startsWith("INVALID_IMAGE:")) {
+      return NextResponse.json({ error: err.message.slice("INVALID_IMAGE:".length) }, { status: 400 });
+    }
     console.error("[profile/photos POST]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Image as ImageIcon, X } from "lucide-react";
+import { checkBrowserImageFile } from "@/lib/media/image-sniff";
 
 type SpaceOption = { id: string; kind: "BUSINESS" | "CLUB" | "CHURCH"; name: string | null };
 
@@ -24,6 +25,7 @@ export function DashboardPostComposer({ composerSpaces }: { composerSpaces: Spac
   const [members, setMembers] = useState<Member[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [previewFailed, setPreviewFailed] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -58,15 +60,26 @@ export function DashboardPostComposer({ composerSpaces }: { composerSpaces: Spac
 
   const clearImage = () => {
     setImageFile(null);
+    setPreviewFailed(false);
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImagePreview(null);
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
   const handleImageSelect = (file: File) => {
-    setImageFile(file);
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImagePreview(URL.createObjectURL(file));
+    setError("");
+    void (async () => {
+      const r = await checkBrowserImageFile(file);
+      if (!r.ok) {
+        setError(r.error);
+        clearImage();
+        return;
+      }
+      setPreviewFailed(false);
+      setImageFile(file);
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+      setImagePreview(URL.createObjectURL(file));
+    })();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,12 +123,27 @@ export function DashboardPostComposer({ composerSpaces }: { composerSpaces: Spac
         });
       }
 
-      const data = await res.json().catch(() => ({}));
+      const raw = await res.text();
+      let data: { error?: string; code?: string } = {};
+      if (raw) {
+        try {
+          data = JSON.parse(raw) as typeof data;
+        } catch {
+          /* non-JSON (e.g. HTML error page) */
+        }
+      }
+
       if (!res.ok) {
+        if (res.status === 413) {
+          setError("This image is too large for the server (max 5 MB). Try a smaller file.");
+          return;
+        }
         if (data?.code === "NOT_ALLOWED_FOR_SCOPE") {
           setError("You don't have access to post in that space.");
+        } else if (typeof data?.error === "string" && data.error.trim()) {
+          setError(data.error);
         } else {
-          setError(typeof data?.error === "string" ? data.error : "Could not create post");
+          setError(`Could not create post (${res.status}).`);
         }
         return;
       }
@@ -126,7 +154,7 @@ export function DashboardPostComposer({ composerSpaces }: { composerSpaces: Spac
       clearImage();
       router.refresh();
     } catch {
-      setError("Could not create post");
+      setError("Network error — check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -289,8 +317,28 @@ export function DashboardPostComposer({ composerSpaces }: { composerSpaces: Spac
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {imagePreview ? (
-            <div style={{ position: "relative", width: 44, height: 44, borderRadius: 8, overflow: "hidden" }}>
-              <img src={imagePreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div style={{ position: "relative", width: 44, height: 44, borderRadius: 8, overflow: "hidden", background: "#f5f5f4" }}>
+              {previewFailed ? (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  title="Preview not supported in this browser; upload may still work"
+                >
+                  <ImageIcon style={{ width: 20, height: 20, color: "#78716c" }} />
+                </div>
+              ) : (
+                <img
+                  src={imagePreview}
+                  alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onError={() => setPreviewFailed(true)}
+                />
+              )}
               <button
                 type="button"
                 onClick={clearImage}
@@ -318,7 +366,7 @@ export function DashboardPostComposer({ composerSpaces }: { composerSpaces: Spac
           <input
             ref={imageInputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
             className="hidden"
             style={{ display: "none" }}
             onChange={(ev) => ev.target.files?.[0] && handleImageSelect(ev.target.files[0])}
@@ -341,8 +389,11 @@ export function DashboardPostComposer({ composerSpaces }: { composerSpaces: Spac
             }}
           >
             <ImageIcon style={{ width: 14, height: 14 }} />
-            Attach image
+            Attach photo
           </button>
+          <span style={{ fontSize: 10, color: "#a8a29e", flex: "1 1 180px" }}>
+            JPG, PNG, WebP, GIF · max 5 MB · videos not supported yet
+          </span>
         </div>
 
         <button

@@ -7,7 +7,7 @@ import { prisma } from "@/lib/db/prisma";
 import { PROFILE_FEED_SELECT } from "@/lib/profile/prisma-select";
 import { z } from "zod";
 import { randomUUID } from "crypto";
-import { uploadFile, validateImage } from "@/lib/storage";
+import { uploadFile } from "@/lib/storage";
 import type { DashboardPostScope } from "@prisma/client";
 import { userMayPostWithScope } from "@/lib/posts/post-scope-access";
 
@@ -21,12 +21,6 @@ const createPostSchema = z.object({
   scope: scopeEnum.optional(),
   spaceId: z.string().uuid().nullable().optional(),
 });
-
-async function savePostImage(file: File): Promise<string> {
-  const err = validateImage(file);
-  if (err) throw new Error("INVALID_IMAGE");
-  return uploadFile(file, "post", randomUUID());
-}
 
 const postInclude = {
   profile: {
@@ -64,7 +58,7 @@ export async function POST(req: NextRequest) {
         let visibleTo: string[] | undefined;
 
         if (image && image.size > 0) {
-          imageUrl = await savePostImage(image);
+          imageUrl = await uploadFile(image, "post", randomUUID());
         } else if (typeof imageUrlRaw === "string" && imageUrlRaw.trim()) {
           imageUrl = imageUrlRaw.trim();
         }
@@ -180,8 +174,11 @@ export async function POST(req: NextRequest) {
       if (err.message === "UNAUTHORIZED") {
         return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
       }
-      if (err.message === "INVALID_IMAGE") {
-        return NextResponse.json({ error: "File must be an image" }, { status: 400 });
+      if (typeof err.message === "string" && err.message.startsWith("INVALID_IMAGE:")) {
+        return NextResponse.json(
+          { error: err.message.slice("INVALID_IMAGE:".length) },
+          { status: 400 },
+        );
       }
       if (err.message === "IMAGE_TOO_LARGE") {
         return NextResponse.json({ error: "Image must be under 5 MB" }, { status: 400 });
