@@ -338,7 +338,6 @@ export function DashboardVaultTabs({
 
         {tab === "invites" && (
           <div>
-            <PanelTitle>Invites</PanelTitle>
             {invites.length === 0 ? (
               <div style={{ textAlign: "center", padding: "24px 0" }}>
                 <Mail style={{ width: 28, height: 28, color: "#d6d3d1", margin: "0 auto 10px" }} />
@@ -371,12 +370,11 @@ export function DashboardVaultTabs({
                     marginBottom: 12,
                   }}
                 >
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#1c1917" }}>
-                    Invite activity
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#1c1917", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span>Invites</span>
                     {pendingCount > 0 && (
                       <span
                         style={{
-                          marginLeft: 8,
                           fontSize: 11,
                           fontWeight: 700,
                           color: "#f59e0b",
