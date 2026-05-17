@@ -3,7 +3,8 @@ import { PROFILE_FEED_SELECT } from "@/lib/profile/prisma-select";
 import { dedupePosts } from "@/lib/posts/utils";
 import { dashboardFeedWhere } from "@/lib/posts/dashboard-feed-where";
 
-const postInclude = {
+/** Shared Prisma include for timeline / feed posts (dashboard, vault pages). */
+export const FEED_POST_INCLUDE = {
   _count: { select: { likes: true, comments: true } },
   visibility: { select: { userId: true } },
   profile: {
@@ -16,7 +17,7 @@ export type FeedPost = Awaited<ReturnType<typeof getFeedPosts>>[number];
 export async function getFeedPosts(viewerId: string) {
   return prisma.post.findMany({
     where: dashboardFeedWhere(viewerId),
-    include: postInclude,
+    include: FEED_POST_INCLUDE,
     orderBy: { createdAt: "desc" },
   });
 }
@@ -27,7 +28,7 @@ export async function getProfilePostsForViewer(profileUserId: string, viewerId: 
     where: {
       AND: [{ profile: { userId: profileUserId } }, dashboardFeedWhere(viewerId)],
     },
-    include: postInclude,
+    include: FEED_POST_INCLUDE,
     orderBy: { createdAt: "desc" },
   });
 }
@@ -39,7 +40,7 @@ export async function getPrivateFeedPosts(viewerId: string) {
         scope: "PRIVATE",
         visibility: { some: { userId: viewerId } },
       },
-      include: postInclude,
+      include: FEED_POST_INCLUDE,
       orderBy: { createdAt: "desc" },
     }),
     prisma.post.findMany({
@@ -47,7 +48,7 @@ export async function getPrivateFeedPosts(viewerId: string) {
         scope: "PRIVATE",
         profile: { userId: viewerId },
       },
-      include: postInclude,
+      include: FEED_POST_INCLUDE,
       orderBy: { createdAt: "desc" },
     }),
     prisma.post.findMany({
@@ -59,7 +60,7 @@ export async function getPrivateFeedPosts(viewerId: string) {
           { profile: { userId: viewerId } },
         ],
       },
-      include: postInclude,
+      include: FEED_POST_INCLUDE,
       orderBy: { createdAt: "desc" },
     }),
   ]);

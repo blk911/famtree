@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
 import { ContextRailCard } from "./ContextRailCard";
 import type { FlatNode } from "@/components/TreeList";
 
@@ -74,16 +73,11 @@ export function DashboardContextRail({ flat, totalMembers, trustUnits }: Props) 
         </ContextRailCard>
       )}
 
-      {/* Family Safe */}
+      {/* Family Safe quick context — full tools stay in the dashboard Family Safe tab */}
       <ContextRailCard title="Family Safe">
-        <Link href="/aihsafe" style={{
-          display:"flex", alignItems:"center", gap:8, padding:"9px 10px", borderRadius:10,
-          background:"linear-gradient(135deg,#0f3460,#16213e)",
-          textDecoration:"none", color:"white",
-        }}>
-          <ShieldCheck style={{ width:14, height:14, flexShrink:0 }} />
-          <span style={{ fontSize:12, fontWeight:600 }}>Open Family Safe →</span>
-        </Link>
+        <p style={{ fontSize: 12, color: "#78716c", margin: 0, lineHeight: 1.45 }}>
+          Governance and trust tools are available in the <strong style={{ color: "#44403c" }}>Family Safe</strong> tab on this page.
+        </p>
       </ContextRailCard>
 
     </div>

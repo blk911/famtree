@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import {
   getPendingTrustRequestsSafe,
   serializeTrustGateRequests,
+  getAcceptedBondPeersSafe,
 } from "@/lib/trust";
 import { loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { queryDashboardProfilePrompt, incrementDashboardProfilePromptSeen } from "@/lib/dashboard/safe-data";
@@ -17,8 +18,12 @@ import { IncomingIdentityAcks }    from "@/components/dashboard/IncomingIdentity
 import type { FlatNode }           from "@/components/TreeList";
 import { listSentInvitesForSender } from "@/lib/invite/sentForSender";
 import { dashboardFeedWhere } from "@/lib/posts/dashboard-feed-where";
-import { postScopeShareLabel } from "@/lib/posts/scope-labels";
-
+import {
+  getFeedPosts,
+  getPrivateFeedPosts,
+  FEED_POST_INCLUDE,
+  type FeedPost,
+} from "@/lib/posts/queries";
 // ── Tree helpers ───────────────────────────────────────────────────────────────
 type Member = {
   id: string; firstName: string; lastName: string; email: string;
@@ -72,6 +77,20 @@ function flattenTree(roots: TreeNode[]): FlatNode[] {
   return result;
 }
 
+function serializeDashboardPost(post: FeedPost) {
+  return {
+    ...post,
+    createdAt: post.createdAt.toISOString(),
+    updatedAt: post.updatedAt.toISOString(),
+    profile: {
+      ...post.profile,
+      createdAt: post.profile.createdAt.toISOString(),
+      updatedAt: post.profile.updatedAt.toISOString(),
+      user: post.profile.user,
+    },
+  };
+}
+
 // ── Shared card style ──────────────────────────────────────────────────────────
 const card = {
   background:"white", borderRadius:"16px",
@@ -99,12 +118,14 @@ export default async function DashboardPage() {
     treeInvites,
     newPosts,
     newComments,
-    feedPreviewsRaw,
-    myPostPreviewsRaw,
+    feedPostsRaw,
+    privatePostsRaw,
+    myPostsRaw,
+    bondPeers,
     composerSpacesRows,
   ] = await Promise.all([
     prisma.user.count(),
-    listSentInvitesForSender(user.id, { take: 6 }),
+    listSentInvitesForSender(user.id, { take: 25 }),
     getPendingTrustRequestsSafe(user.id),
     loadTrustUnitsSafe(user.id),
     queryDashboardProfilePrompt(user.id),
@@ -138,24 +159,14 @@ export default async function DashboardPage() {
       orderBy: { createdAt:"desc" },
       take: 10,
     }),
-    prisma.post.findMany({
-      where: feedWhere,
-      select: {
-        id:true, body:true, scope:true, createdAt:true,
-        profile: { select: { user: { select: { firstName:true, lastName:true, photoUrl:true } } } },
-      },
-      orderBy: { createdAt:"desc" },
-      take: 4,
-    }),
+    getFeedPosts(user.id),
+    getPrivateFeedPosts(user.id),
     prisma.post.findMany({
       where: { profile: { userId: user.id } },
-      select: {
-        id:true, body:true, createdAt:true,
-        _count: { select: { likes:true, comments:true } },
-      },
-      orderBy: { createdAt:"desc" },
-      take: 3,
+      include: FEED_POST_INCLUDE,
+      orderBy: { createdAt: "desc" },
     }),
+    getAcceptedBondPeersSafe(user.id),
     prisma.dashboardSpaceMember.findMany({
       where: { userId: user.id },
       select: { space: { select: { id: true, kind: true, name: true } } },
@@ -167,19 +178,18 @@ export default async function DashboardPage() {
 
   const composerSpaces = composerSpacesRows.map((r) => r.space);
 
-  const feedPreviews = feedPreviewsRaw.map(p => ({
-    id: p.id,
-    body: p.body,
-    createdAt: p.createdAt.toISOString(),
-    scopeLabel: postScopeShareLabel(p.scope),
-    author: p.profile.user,
+  const serializedFeedPosts = feedPostsRaw.map(serializeDashboardPost);
+  const serializedPrivatePosts = privatePostsRaw.map(serializeDashboardPost);
+  const serializedMyPosts = myPostsRaw.map(serializeDashboardPost);
+
+  const membersForPrivate = members.map((m) => ({
+    id: m.id,
+    firstName: m.firstName,
+    lastName: m.lastName,
+    photoUrl: m.photoUrl,
   }));
-  const myPostPreviews = myPostPreviewsRaw.map(p => ({
-    id: p.id,
-    body: p.body,
-    createdAt: p.createdAt.toISOString(),
-    _count: p._count,
-  }));
+
+  const trustPendingCount = serializedTrustRequests.length;
 
   const missingProfilePhoto = !user.photoUrl;
   const promptState         = promptRows[0];
@@ -252,12 +262,18 @@ export default async function DashboardPage() {
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
           <DashboardTrustUnitGate initialRequests={serializedTrustRequests} currentUserId={user.id} />
           <DashboardVaultTabs
+            currentUserId={user.id}
             newPostsCount={newPosts.length}
             newCommentsCount={newComments.length}
             invites={serializedInvites}
-            feedPreviews={feedPreviews}
-            myPostPreviews={myPostPreviews}
             composerSpaces={composerSpaces}
+            serializedFeedPosts={serializedFeedPosts}
+            serializedPrivatePosts={serializedPrivatePosts}
+            serializedMyPosts={serializedMyPosts}
+            trustUnits={trustUnits as any[]}
+            membersForPrivate={membersForPrivate}
+            bondPeers={bondPeers}
+            trustPendingCount={trustPendingCount}
           />
         </div>
 
