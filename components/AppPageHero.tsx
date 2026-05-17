@@ -43,7 +43,8 @@ export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: stri
   /** Invite: shorter hero + less space below so compose cards sit closer to the header strip */
   const inviteCompact = pathname === "/invite";
   const heroMinH = inviteCompact ? "118px" : "150px";
-  const heroMb = inviteCompact ? "14px" : "30px";
+  /** Tighter below hero so invite flow sits closer to the privacy bridge card */
+  const heroMb = inviteCompact ? "8px" : "30px";
   const heroInnerPad = inviteCompact ? "20px 24px" : "28px 30px";
 
   return (

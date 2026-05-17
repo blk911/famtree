@@ -40,18 +40,18 @@
 
 /* Invite page: pull content up — less dead band below sticky top bar */
 .app-content-pad--invite {
-  padding-top: 14px;
+  padding-top: 8px;
 }
 @media (min-width: 768px) {
   .app-content-pad--invite {
-    padding-top: 18px;
+    padding-top: 12px;
   }
 }
 
 @media (max-width: 767px) {
   .app-page-hero--invite {
     min-height: 102px !important;
-    margin-bottom: 12px !important;
+    margin-bottom: 8px !important;
     border-radius: 18px;
   }
   .app-page-hero--invite .app-hero-inner {
@@ -97,15 +97,15 @@
   align-items: start;
 }
 .invite-two-col--main {
-  gap: 22px;
+  gap: 18px;
 }
 @media (max-width: 767px) {
   .invite-two-col {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 18px;
   }
   .invite-two-col--main {
-    gap: 16px;
+    gap: 14px;
   }
 }
 

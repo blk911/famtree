@@ -607,7 +607,50 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         document.body
       )}
 
-      <div style={{ display:"flex", flexDirection:"column", gap:"22px" }}>
+      <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
+
+        {/* Bridges hero → invite flow */}
+        <div
+          role="region"
+          aria-label="Private by design"
+          style={{
+            borderRadius:"14px",
+            padding:"12px 16px",
+            border:"1px solid rgba(237, 233, 254, 0.95)",
+            background:"linear-gradient(135deg, rgba(250, 245, 255, 0.92), rgba(255, 255, 255, 0.88))",
+            boxShadow:"0 2px 18px rgba(124, 58, 237, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.65)",
+            backdropFilter:"blur(8px)",
+          }}
+        >
+          <p style={{ fontSize:"13px", fontWeight:800, color:"#3730a3", margin:"0 0 6px", letterSpacing:"-0.01em" }}>
+            Private by design
+          </p>
+          <p style={{ fontSize:"13px", color:"#57534e", margin:0, lineHeight:1.55 }}>
+            Your invite works through recognition and trust.
+            <br />
+            Only your photo is shared — never your name.
+            <br />
+            The recipient must identify you before joining your network.
+          </p>
+          <div style={{
+            display:"flex",
+            flexWrap:"wrap",
+            alignItems:"center",
+            gap:"6px 10px",
+            marginTop:"10px",
+            fontSize:"11px",
+            fontWeight:700,
+            color:"#78716c",
+            letterSpacing:"0.04em",
+            textTransform:"uppercase",
+          }}>
+            <span>Invitation-only</span>
+            <span aria-hidden style={{ color:"#d6d3d1" }}>·</span>
+            <span>Human verification</span>
+            <span aria-hidden style={{ color:"#d6d3d1" }}>·</span>
+            <span>No public discovery</span>
+          </div>
+        </div>
 
         {/* Two-column grid — stacks to 1-col on mobile */}
         <div className="invite-two-col invite-two-col--main">
@@ -741,8 +784,8 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
           </div>
 
           {/* RIGHT: How it works */}
-          <div style={{ display:"flex", flexDirection:"column", gap:"20px" }}>
-            <div style={{ background:"#faf5ff", borderRadius:"16px", padding:"24px 22px", border:"1px solid #ede9fe" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ background: "#faf5ff", borderRadius: "16px", padding: "24px 22px", border: "1px solid #ede9fe" }}>
               <p style={{ fontSize:"13px", fontWeight:800, color:"#7c3aed", textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 14px" }}>How it works</p>
               {[
                 { title:"Fill in their name & email",    desc:"Enter who you're inviting — the name personalises the greeting." },
@@ -758,11 +801,11 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div style={{ background:"#fff7ed", borderRadius:"14px", padding:"16px 20px", border:"1px solid #fed7aa", marginTop:"2px" }}>
-              <p style={{ fontSize:"13px", fontWeight:700, color:"#c2410c", margin:"0 0 8px" }}>🔒 Privacy by design</p>
-              <p style={{ fontSize:"13px", color:"#7c3501", margin:0, lineHeight:1.6 }}>Your name is never revealed in the invite email. Only your photo is shared — making the identity challenge the key to joining.</p>
+              <div style={{ marginTop: "14px", paddingTop: "14px", borderTop: "1px solid #ede9fe" }}>
+                <p style={{ fontSize: "12px", color: "#78716c", margin: 0, lineHeight: 1.55 }}>
+                  Same flow as <strong style={{ color: "#6d28d9" }}>Private by design</strong> above — invitation-only, photo-first recognition, then they confirm who you are before joining.
+                </p>
+              </div>
             </div>
           </div>
         </div>
