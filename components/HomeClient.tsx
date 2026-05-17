@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Check, Eye, EyeOff, LogIn, Mail, Send, TreePine, Users, UserCheck } from "lucide-react";
 import { ContactModal } from "@/components/marketing/ContactModal";
 import { FaqModal } from "@/components/marketing/FaqModal";
-import RotatingNetworkHeadline from "@/components/RotatingNetworkHeadline";
 
 type Modal        = "sign-in" | "join" | "invite-flow" | "send-invite" | null;
 type JoinStep     = "invite" | "waitlist" | "success";
@@ -257,7 +256,7 @@ export function HomeClient() {
         /* Hero CTAs: 4 equal cols inside the tray until narrow breakpoints */
         @media(max-width:640px){ .action-row{grid-template-columns:repeat(2,minmax(0,1fr)) !important} }
         @media(max-width:380px){ .action-row{grid-template-columns:minmax(0,1fr) !important} }
-        @media(max-width:860px){ .exclusivity-pill{font-size:14px !important;padding:12px 18px !important} }
+        @media(max-width:860px){ .hero-h{font-size:40px !important} .exclusivity-pill{font-size:14px !important;padding:12px 18px !important} }
         @media(max-width:640px){ .modal-card{position:fixed !important;inset:0 !important;border-radius:0 !important;padding:28px !important;overflow-y:auto !important} .join-grid,.wl-grid{grid-template-columns:1fr !important} }
       `}</style>
 
@@ -296,7 +295,10 @@ export function HomeClient() {
             <span>INVITATION ONLY &nbsp;|&nbsp; RELATIONSHIP-FIRST &nbsp;|&nbsp; COMPLETELY PRIVATE</span>
             <span style={{ fontSize:"13px", letterSpacing:"0.12em", color:"#64748b" }}>NO ADS &nbsp;|&nbsp; NO BOTS &nbsp;|&nbsp; NO DATA MINING &nbsp;|&nbsp; EVER.</span>
           </div>
-          <RotatingNetworkHeadline />
+          <h1 className="hero-h" style={{ fontSize:"62px", fontWeight:900, lineHeight:1.03, letterSpacing:"-2.5px", margin:"0 0 18px", maxWidth:"720px", color:"#1e1b4b" }}>
+            Your Private<br />Family{" "}
+            <span style={{ background:"linear-gradient(90deg,#fde68a,#fca5a5)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Network.</span>
+          </h1>
           <p style={{ fontSize:"17px", lineHeight:1.7, color:"#475569", maxWidth:"560px", margin:"0 0 44px" }}>
             A private social network built exclusively for families. Invitation-only. Just the people who matter most. No strangers or bots. All conversations are private.
           </p>
