@@ -27,3 +27,4 @@ export * from "./api-responses";
 
 // ─── Agent 37 policy layer types ──────────────────────────────────────────────
 export * from "./policy";
+export * from "./vault-trust-space";

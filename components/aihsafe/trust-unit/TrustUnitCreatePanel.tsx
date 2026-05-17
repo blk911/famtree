@@ -35,10 +35,11 @@ const primaryBtn: React.CSSProperties = {
   cursor:       "pointer",
 };
 
-export function TrustUnitCreatePanel() {
+export function TrustUnitCreatePanel({ onCreated }: { onCreated?: () => void }) {
   const [vaultSpaceType, setVaultSpaceType] = useState<VaultSpaceType>("CUSTOM");
   const [name,           setName]           = useState("");
   const [description,    setDescription]    = useState("");
+  const [membersRaw,     setMembersRaw]     = useState("");
   const [busy,           setBusy]           = useState(false);
   const [notice,         setNotice]         = useState<AihEscalated | AihDenied | null>(null);
   const [success,        setSuccess]        = useState<string | null>(null);
@@ -51,16 +52,24 @@ export function TrustUnitCreatePanel() {
     setBusy(true);
     setNotice(null);
     setSuccess(null);
+    const memberIds = membersRaw
+      .split(/[,;\s]+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
     const r = await createTrustUnit({
       vaultSpaceType,
       name: trimmed,
       ...(description.trim() ? { description: description.trim() } : {}),
+      ...(memberIds.length ? { memberIds } : {}),
     });
     setBusy(false);
     if (r.kind === "ok") {
       setSuccess(`${vaultSpaceTypeShortLabel(r.data.vaultSpaceType)} space created.`);
       setName("");
       setDescription("");
+      setMembersRaw("");
+      onCreated?.();
     } else if (r.kind === "pending" || r.kind === "denied") {
       setNotice(r);
     }
@@ -117,17 +126,28 @@ export function TrustUnitCreatePanel() {
           />
         </div>
 
-        <p style={{ fontSize: 12, color: "#78716c", margin: "0 0 16px", lineHeight: 1.5 }}>
-          <strong style={{ color: "#57534e" }}>Initial members:</strong> invite people after creation from each space
-          card — invites keep guardian and consent flows intact.
-        </p>
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#44403c", marginBottom: 6 }}>
+            Add members <span style={{ fontWeight: 400, color: "#a8a29e" }}>(optional)</span>
+          </label>
+          <textarea
+            style={{ ...inputStyle, minHeight: 56, resize: "vertical" }}
+            value={membersRaw}
+            onChange={(e) => setMembersRaw(e.target.value)}
+            placeholder="Comma-separated user IDs"
+            aria-label="Optional member user IDs"
+          />
+          <p style={{ fontSize: 12, color: "#78716c", margin: "6px 0 0", lineHeight: 1.45 }}>
+            Active accounts only; invalid IDs are skipped. Everyone stays inside this space&apos;s posting scope.
+          </p>
+        </div>
 
         <button
           type="submit"
           style={busy || !name.trim() ? { ...primaryBtn, opacity: 0.45, cursor: "not-allowed" } : primaryBtn}
           disabled={busy || !name.trim()}
         >
-          {busy ? "Creating…" : "Create trusted space"}
+          {busy ? "Creating…" : "Create Space"}
         </button>
       </form>
 

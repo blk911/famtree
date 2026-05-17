@@ -12,6 +12,10 @@ import {
   type VaultSpaceType,
 } from "@/lib/aihsafe/vault-space";
 import { isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
+import {
+  effectiveTrustUnitMaxMembers,
+  resolveInitialTrustUnitMemberUserIds,
+} from "@/lib/aihsafe/trust-unit-initial-members";
 
 type DeferredResult =
   | { ok: true }
@@ -78,11 +82,16 @@ export async function executeDeferredAction(
       const name                   = ctx.name != null ? String(ctx.name) : undefined;
       const description          = ctx.description != null ? String(ctx.description) : undefined;
       const defaultVisibilityScope = String(ctx.defaultVisibilityScope ?? "trust_unit");
-      const maxMemberCount         = typeof ctx.maxMemberCount === "number" ? ctx.maxMemberCount : 3;
-      // memberIds not re-applied — see Blocker 4.
+      const maxMemberCountRaw = typeof ctx.maxMemberCount === "number" ? ctx.maxMemberCount : 3;
+      const memberIdsRaw      = Array.isArray(ctx.memberIds)
+        ? ctx.memberIds.map(x => String(x))
+        : [];
+      const memberUserIds = await resolveInitialTrustUnitMemberUserIds(requestorId, memberIdsRaw);
+      const maxMemberCount = effectiveTrustUnitMaxMembers(maxMemberCountRaw, memberUserIds.length);
+
       const trustUnit = await prisma.trustUnit.create({
         data: {
-          members: { create: [{ userId: requestorId }] },
+          members: { create: memberUserIds.map(userId => ({ userId })) },
           aihMeta: {
             create: {
               kind:              metaKind,

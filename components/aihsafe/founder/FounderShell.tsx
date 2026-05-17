@@ -31,6 +31,7 @@ import {
 } from "@/components/aihsafe/navigation/FamilySafeTabs";
 import { PeopleTab } from "@/components/aihsafe/people/PeopleTab";
 import { ChildEscalationStatus } from "@/components/aihsafe/child/ChildEscalationStatus";
+import { VaultHeroSection, VaultHeroToolbar, type VaultHeroUser } from "@/components/aihsafe/founder/VaultHero";
 
 import type {
   FamilyUnitDTO,
@@ -51,6 +52,9 @@ interface Props {
   currentUserId: string;
   /** Derived from role + ageTier at the page level. Defaults to "founder". */
   shellMode?: FamilySafeShellMode;
+  /** Dashboard-aligned vault hero (avatar + optional cover). */
+  heroUser?: VaultHeroUser | null;
+  heroCoverUrl?: string | null;
 }
 
 // ─── Shared style constants ───────────────────────────────────────────────────
@@ -124,62 +128,6 @@ function LightStatCard({
   );
 }
 
-// ─── Hero card (shared wrapper) ───────────────────────────────────────────────
-
-function HeroCard({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        position:     "relative",
-        borderRadius: 22,
-        overflow:     "hidden",
-        marginBottom: 12,
-        border:       "1px solid #eadfd2",
-        boxShadow:    "0 2px 12px rgba(0,0,0,0.05)",
-      }}
-    >
-      <div
-        aria-hidden="true"
-        style={{
-          position:   "absolute",
-          left:       0, top: 0, bottom: 0,
-          width:      6,
-          background: "linear-gradient(180deg, #7c3aed 0%, #2563eb 100%)",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="aihsafe-hero-img"
-        style={{
-          position:           "absolute",
-          right:              0, top: 0, bottom: 0,
-          width:              "52%",
-          backgroundImage:    "url('/uploads/hero%202.jpg')",
-          backgroundSize:     "cover",
-          backgroundPosition: "center center",
-          maskImage:          "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,1) 65%)",
-          WebkitMaskImage:    "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,1) 65%)",
-        }}
-      />
-      <div style={{ position: "relative", zIndex: 1, padding: "16px 18px 14px 18px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-          <svg width="20" height="22" viewBox="0 0 20 22" fill="none" aria-hidden="true">
-            <path
-              d="M10 1L1 5v6c0 5.25 3.87 10.17 9 11.38C15.13 21.17 19 16.25 19 11V5L10 1Z"
-              fill="#7c3aed" fillOpacity="0.12"
-              stroke="#7c3aed" strokeWidth="1.5" strokeLinejoin="round"
-            />
-          </svg>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-            Msg Vault
-          </span>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
 // ─── Tab panel wrapper (ARIA) ─────────────────────────────────────────────────
 
 function TabPanel({
@@ -247,7 +195,12 @@ function LoadErrorBanner({ onRetry }: { onRetry: () => void }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
+export function FounderShell({
+  currentUserId,
+  shellMode = "founder",
+  heroUser = null,
+  heroCoverUrl = null,
+}: Props) {
   const [familyUnits,   setFamilyUnits]   = useState<FamilyUnitDTO[]>([]);
   const [trustUnits,    setTrustUnits]    = useState<TrustUnitDTO[]>([]);
   const [approvals,     setApprovals]     = useState<ApprovalRequestDTO[]>([]);
@@ -321,147 +274,48 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
             HERO — varies by shellMode
             ════════════════════════════════════════════════════════ */}
 
-        {shellMode === "founder" && (
-          <HeroCard>
-            <div
-              style={{
-                display:        "flex",
-                flexWrap:       "wrap",
-                alignItems:     "flex-start",
-                gap:            14,
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ flex: "1 1 260px", minWidth: 0, maxWidth: 520 }}>
-                <h1
-                  style={{
-                    margin:           0,
-                    fontWeight:       800,
-                    fontSize:         22,
-                    color:            "#1c1917",
-                    letterSpacing:    "-0.4px",
-                    lineHeight:       1.15,
-                  }}
-                >
-                  Trusted Private Spaces
-                </h1>
-                <p style={{ margin: "6px 0 0", fontSize: 13, color: "#78716c", lineHeight: 1.45 }}>
-                  Create protected circles for family, business, church, club, or private groups.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setModal("space")}
-                  style={{
-                    marginTop:    10,
-                    display:      "inline-flex",
-                    alignItems:   "center",
-                    gap:          8,
-                    padding:      "8px 18px",
-                    borderRadius: 10,
-                    border:       "none",
-                    background:   "#7c3aed",
-                    color:        "#fff",
-                    fontWeight:   700,
-                    fontSize:     13,
-                    cursor:       "pointer",
-                    boxShadow:    "0 2px 8px rgba(124,58,237,0.25)",
-                  }}
-                >
-                  + Create Trusted Space
-                </button>
-              </div>
-              <div
-                style={{
-                  flex:           "1 1 260px",
-                  display:        "flex",
-                  gap:            8,
-                  flexWrap:       "wrap",
-                  justifyContent: "flex-end",
-                  alignItems:     "center",
-                }}
-              >
-                <LightStatCard value={loading ? "…" : mySpaces.length} label="Spaces" />
-                <LightStatCard value={loading ? "…" : membershipCount} label="Members" />
-                <LightStatCard
-                  value={loading ? "…" : pendingInvites.length}
-                  label="Pending invites"
-                  urgent={pendingInvites.length > 0}
-                />
-                <LightStatCard value={recentActivityStat} label="Recent activity" />
-              </div>
-            </div>
-          </HeroCard>
-        )}
-
-        {shellMode === "member" && (
-          <HeroCard>
-            <div
-              style={{
-                display:        "flex",
-                flexWrap:       "wrap",
-                alignItems:     "flex-start",
-                gap:            14,
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ flex: "1 1 260px", minWidth: 0, maxWidth: 480 }}>
-                <h1
-                  style={{
-                    margin:           0,
-                    fontWeight:       800,
-                    fontSize:         22,
-                    color:            "#1c1917",
-                    letterSpacing:    "-0.4px",
-                    lineHeight:       1.15,
-                  }}
-                >
-                  Trusted Private Spaces
-                </h1>
-                <p style={{ margin: "6px 0 0", fontSize: 13, color: "#78716c", lineHeight: 1.45 }}>
-                  Create protected circles for family, business, church, club, or private groups.
-                </p>
-              </div>
-              <div
-                style={{
-                  flex:           "1 1 240px",
-                  display:        "flex",
-                  gap:            8,
-                  flexWrap:       "wrap",
-                  justifyContent: "flex-end",
-                  alignItems:     "center",
-                }}
-              >
-                <LightStatCard value={loading ? "…" : mySpaces.length} label="Spaces" />
-                <LightStatCard value={loading ? "…" : membershipCount} label="Members" />
-                <LightStatCard
-                  value={loading ? "…" : pendingInvites.length}
-                  label="Pending invites"
-                  urgent={pendingInvites.length > 0}
-                />
-                <LightStatCard value={recentActivityStat} label="Recent activity" />
-              </div>
-            </div>
-          </HeroCard>
+        {(shellMode === "founder" || shellMode === "member") && (
+          <>
+            <VaultHeroSection
+              variant="full"
+              coverUrl={heroCoverUrl ?? null}
+              heroUser={heroUser}
+              title="Trusted Private Spaces"
+              description="Protected circles for family, business, and private groups."
+              spacesCount={mySpaces.length}
+              membersCount={membershipCount}
+              loading={loading}
+            />
+            <VaultHeroToolbar
+              pendingInvitesCount={pendingInvites.length}
+              recentActivityDisplay={recentActivityStat}
+              loading={loading}
+              showCreateCta={shellMode === "founder"}
+              onCreateSpace={() => setModal("space")}
+            />
+          </>
         )}
 
         {shellMode === "child" && (
-          <HeroCard>
-            <h1
-              style={{
-                margin:           0,
-                fontWeight:       800,
-                fontSize:         21,
-                color:            "#1c1917",
-                letterSpacing:    "-0.35px",
-                lineHeight:       1.15,
-              }}
-            >
-              Trusted Private Spaces
-            </h1>
-            <p style={{ margin: "6px 0 0", fontSize: 13, color: "#78716c", maxWidth: 440, lineHeight: 1.45 }}>
-              Your family shares here inside protected circles — only people they approve can see what you post.
-            </p>
-          </HeroCard>
+          <>
+            <VaultHeroSection
+              variant="compact"
+              coverUrl={heroCoverUrl ?? null}
+              heroUser={null}
+              title="Trusted Private Spaces"
+              description="Your family shares here inside protected circles — only people they approve can see what you post."
+              spacesCount={0}
+              membersCount={0}
+              loading={false}
+            />
+            <VaultHeroToolbar
+              pendingInvitesCount={pendingInvites.length}
+              recentActivityDisplay={recentActivityStat}
+              loading={loading}
+              showCreateCta={false}
+              onCreateSpace={() => setModal("space")}
+            />
+          </>
         )}
 
         {/* Shell-level load error */}
@@ -741,7 +595,7 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
           onClose={closeModal}
         >
           {modal === "family" && <FamilyCreatePanel />}
-          {modal === "space"  && <TrustUnitCreatePanel />}
+          {modal === "space"  && <TrustUnitCreatePanel onCreated={load} />}
           {modal === "invite" && <InvitePanel />}
         </QuickCreateModal>
       )}

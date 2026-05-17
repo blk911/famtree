@@ -6,9 +6,10 @@
 
 export const dynamic = "force-dynamic";
 
-import { requireAuth }     from "@/lib/auth";
 import { FounderShell }    from "@/components/aihsafe/founder/FounderShell";
 import { deriveShellMode } from "@/components/aihsafe/roles";
+import { requireAuth }     from "@/lib/auth";
+import { prisma }          from "@/lib/db/prisma";
 
 export const metadata = { title: "Msg Vault · AMIHUMAN.NET" };
 
@@ -18,5 +19,24 @@ export default async function AihSafePage() {
     role:        user.role,
     dateOfBirth: user.dateOfBirth ?? null,
   });
-  return <FounderShell currentUserId={user.id} shellMode={shellMode} />;
+
+  const profile = await prisma.profile.findUnique({
+    where:  { userId: user.id },
+    select: { coverUrl: true },
+  });
+
+  const heroUser = {
+    firstName: user.firstName ?? "",
+    lastName:  user.lastName ?? "",
+    photoUrl:  user.photoUrl ?? null,
+  };
+
+  return (
+    <FounderShell
+      currentUserId={user.id}
+      shellMode={shellMode}
+      heroUser={heroUser}
+      heroCoverUrl={profile?.coverUrl ?? null}
+    />
+  );
 }

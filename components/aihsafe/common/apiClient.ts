@@ -105,6 +105,7 @@ export async function createTrustUnit(payload: {
   vaultSpaceType: string;
   name: string;
   description?: string;
+  memberIds?: string[];
 }): Promise<AihResult<TrustUnitDTO>> {
   return parseEnvelope(await fetch("/api/aihsafe/trust-units", jsonPost(payload)));
 }

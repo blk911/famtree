@@ -34,6 +34,10 @@ import {
   deriveVaultSpaceTypeFromTrustKind,
   vaultSpaceTypeToAihMetaKind,
 } from "@/lib/aihsafe/vault-space";
+import {
+  effectiveTrustUnitMaxMembers,
+  resolveInitialTrustUnitMemberUserIds,
+} from "@/lib/aihsafe/trust-unit-initial-members";
 
 // ─── Validation ───────────────────────────────────────────────────────────────
 
@@ -220,12 +224,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Create TrustUnit + AihTrustUnitMeta sidecar + creator member only.
-  // memberIds are not pre-applied; additional members must use the invite flow (Blocker 4).
+  const initialMemberUserIds = await resolveInitialTrustUnitMemberUserIds(user.id, memberIds);
+  const effectiveMax         = effectiveTrustUnitMaxMembers(maxMemberCount, initialMemberUserIds.length);
+
   const trustUnit = await prisma.trustUnit.create({
     data: {
       members: {
-        create: [{ userId: user.id }],
+        create: initialMemberUserIds.map(uid => ({ userId: uid })),
       },
       aihMeta: {
         create: {
@@ -234,7 +239,7 @@ export async function POST(req: NextRequest) {
           name:              name ?? null,
           description:       description ?? null,
           defaultVisibilityScope,
-          maxMemberCount,
+          maxMemberCount:    effectiveMax,
         },
       },
     },
