@@ -5,37 +5,54 @@ import { put, del } from "@vercel/blob";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import {
-  POST_IMAGE_MAX_BYTES,
+  MAX_IMAGE_UPLOAD_BYTES,
+  MAX_VIDEO_UPLOAD_BYTES,
+  ALLOWED_IMAGE_UPLOAD_MIMES,
+  ALLOWED_VIDEO_UPLOAD_MIMES,
+} from "@/lib/media/upload-limits";
+import {
   sniffImageMime,
-  sniffVideoMime,
+  sniffVideoContainerMime,
+} from "@/lib/media/image-sniff";
+
+export {
+  POST_IMAGE_MAX_BYTES,
   ALLOWED_IMAGE_MIMES,
 } from "@/lib/media/image-sniff";
 
-export { POST_IMAGE_MAX_BYTES, ALLOWED_IMAGE_MIMES } from "@/lib/media/image-sniff";
+export {
+  MAX_IMAGE_UPLOAD_BYTES,
+  MAX_VIDEO_UPLOAD_BYTES,
+  ALLOWED_IMAGE_UPLOAD_MIMES,
+  ALLOWED_VIDEO_UPLOAD_MIMES,
+} from "@/lib/media/upload-limits";
 
-export const MAX_SIZE_BYTES = POST_IMAGE_MAX_BYTES;
+export const MAX_SIZE_BYTES = MAX_IMAGE_UPLOAD_BYTES;
 
 async function resolveUploadImageMime(file: File): Promise<
   | { ok: true; mime: string }
   | { ok: false; error: string }
 > {
-  if (file.size > POST_IMAGE_MAX_BYTES) {
-    return { ok: false, error: "Image must be under 5 MB." };
+  if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+    return {
+      ok: false,
+      error: `Image must be under ${MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB.`,
+    };
   }
   if (file.type.startsWith("video/")) {
     return {
       ok: false,
       error:
-        "Videos aren’t supported as attachments yet. Use JPG, PNG, WebP, or GIF (under 5 MB), or paste a link.",
+        "Videos aren’t supported for profile or gallery uploads. Use JPG, PNG, WebP, or GIF, or attach videos from a post.",
     };
   }
 
   const head = new Uint8Array(await file.slice(0, 64).arrayBuffer());
-  if (sniffVideoMime(head)) {
+  if (sniffVideoContainerMime(head)) {
     return {
       ok: false,
       error:
-        "That file looks like a video. Attach an image (JPG, PNG, WebP, GIF) or paste a link instead.",
+        "That file looks like a video. Use an image (JPG, PNG, WebP, GIF) for profile or gallery uploads.",
     };
   }
 
@@ -44,22 +61,86 @@ async function resolveUploadImageMime(file: File): Promise<
     mime = sniffImageMime(head) ?? "";
   }
 
-  if (!(ALLOWED_IMAGE_MIMES as readonly string[]).includes(mime)) {
+  if (!(ALLOWED_IMAGE_UPLOAD_MIMES as readonly string[]).includes(mime)) {
     return {
       ok: false,
       error:
-        "Only JPG, PNG, WebP, and GIF images are allowed (max 5 MB). HEIC and other formats often need to be exported as JPG first.",
+        `Only JPG, PNG, WebP, and GIF images are allowed (max ${MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB). HEIC and other formats often need to be exported as JPG first.`,
     };
   }
 
   return { ok: true, mime };
 }
 
-function extensionFor(mimeType: string): string {
+async function resolvePostAttachmentMime(file: File): Promise<
+  | { ok: true; mime: string; kind: "image" | "video" }
+  | { ok: false; error: string }
+> {
+  const head = new Uint8Array(await file.slice(0, 64).arrayBuffer());
+  const sniffedVideo = sniffVideoContainerMime(head);
+  const sniffedImage = sniffImageMime(head);
+
+  const rawType = file.type.trim();
+  const wantsVideo = rawType.startsWith("video/") || sniffedVideo !== null;
+
+  if (wantsVideo) {
+    if (file.size > MAX_VIDEO_UPLOAD_BYTES) {
+      return {
+        ok: false,
+        error: `Video must be under ${MAX_VIDEO_UPLOAD_BYTES / (1024 * 1024)} MB.`,
+      };
+    }
+    let mime = "";
+    if (rawType.startsWith("video/") && (ALLOWED_VIDEO_UPLOAD_MIMES as readonly string[]).includes(rawType)) {
+      mime = rawType;
+    } else if (sniffedVideo && (ALLOWED_VIDEO_UPLOAD_MIMES as readonly string[]).includes(sniffedVideo)) {
+      mime = sniffedVideo;
+    } else if (rawType.startsWith("video/")) {
+      mime = rawType;
+    }
+    if (!(ALLOWED_VIDEO_UPLOAD_MIMES as readonly string[]).includes(mime)) {
+      return {
+        ok: false,
+        error: "Only MP4, MOV, and WebM videos are allowed.",
+      };
+    }
+    return { ok: true, mime, kind: "video" };
+  }
+
+  if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+    return {
+      ok: false,
+      error: `Image must be under ${MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB.`,
+    };
+  }
+
+  let mime = rawType;
+  if (!mime || mime === "application/octet-stream") {
+    mime = sniffedImage ?? "";
+  }
+
+  if (!(ALLOWED_IMAGE_UPLOAD_MIMES as readonly string[]).includes(mime)) {
+    return {
+      ok: false,
+      error:
+        `Only JPG, PNG, WebP, GIF images (max ${MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB) or MP4/MOV/WebM videos (max ${MAX_VIDEO_UPLOAD_BYTES / (1024 * 1024)} MB).`,
+    };
+  }
+
+  return { ok: true, mime, kind: "image" };
+}
+
+function extensionForImageMime(mimeType: string): string {
   if (mimeType === "image/png") return "png";
   if (mimeType === "image/webp") return "webp";
   if (mimeType === "image/gif") return "gif";
   return "jpg";
+}
+
+function extensionForVideoMime(mimeType: string): string {
+  if (mimeType === "video/quicktime") return "mov";
+  if (mimeType === "video/webm") return "webm";
+  return "mp4";
 }
 
 // ── Validate file (API routes can call before other logic) ────────────────────
@@ -74,10 +155,21 @@ export async function uploadFile(
   folder: "profile" | "cover" | "gallery" | "post",
   filename: string,
 ): Promise<string> {
-  const r = await resolveUploadImageMime(file);
-  if (!r.ok) throw new Error(`INVALID_IMAGE:${r.error}`);
-  const mime = r.mime;
-  const ext = extensionFor(mime);
+  let mime: string;
+  let ext: string;
+
+  if (folder === "post") {
+    const r = await resolvePostAttachmentMime(file);
+    if (!r.ok) throw new Error(`INVALID_IMAGE:${r.error}`);
+    mime = r.mime;
+    ext = r.kind === "video" ? extensionForVideoMime(mime) : extensionForImageMime(mime);
+  } else {
+    const r = await resolveUploadImageMime(file);
+    if (!r.ok) throw new Error(`INVALID_IMAGE:${r.error}`);
+    mime = r.mime;
+    ext = extensionForImageMime(mime);
+  }
+
   const key = `${folder}/${filename}.${ext}`;
   const bytes = Buffer.from(await file.arrayBuffer());
 

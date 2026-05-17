@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Image as ImageIcon, X } from "lucide-react";
-import { checkBrowserImageFile } from "@/lib/media/image-sniff";
+import { checkBrowserPostMediaFile } from "@/lib/media/image-sniff";
+import {
+  BROWSER_POST_MEDIA_ACCEPT,
+  MAX_IMAGE_UPLOAD_BYTES,
+  MAX_VIDEO_UPLOAD_BYTES,
+} from "@/lib/media/upload-limits";
 
 type SpaceOption = { id: string; kind: "BUSINESS" | "CLUB" | "CHURCH"; name: string | null };
 
@@ -76,7 +81,7 @@ export function DashboardPostComposer({
   const handleImageSelect = (file: File) => {
     setError("");
     void (async () => {
-      const r = await checkBrowserImageFile(file);
+      const r = await checkBrowserPostMediaFile(file);
       if (!r.ok) {
         setError(r.error);
         clearImage();
@@ -142,7 +147,9 @@ export function DashboardPostComposer({
 
       if (!res.ok) {
         if (res.status === 413) {
-          setError("This image is too large for the server (max 5 MB). Try a smaller file.");
+          setError(
+            `That attachment is too large for the server (images max ${MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB, videos max ${MAX_VIDEO_UPLOAD_BYTES / (1024 * 1024)} MB). Try a smaller file or shorter clip.`,
+          );
           return;
         }
         if (data?.code === "NOT_ALLOWED_FOR_SCOPE") {
@@ -346,7 +353,14 @@ export function DashboardPostComposer({
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {imagePreview ? (
             <div style={{ position: "relative", width: 44, height: 44, borderRadius: 8, overflow: "hidden", background: "#f5f5f4" }}>
-              {previewFailed ? (
+              {imageFile?.type.startsWith("video/") ? (
+                <video
+                  src={imagePreview}
+                  muted
+                  playsInline
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : previewFailed ? (
                 <div
                   style={{
                     width: "100%",
@@ -394,7 +408,7 @@ export function DashboardPostComposer({
           <input
             ref={imageInputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+            accept={BROWSER_POST_MEDIA_ACCEPT}
             className="hidden"
             style={{ display: "none" }}
             onChange={(ev) => ev.target.files?.[0] && handleImageSelect(ev.target.files[0])}
@@ -417,10 +431,11 @@ export function DashboardPostComposer({
             }}
           >
             <ImageIcon style={{ width: 14, height: 14 }} />
-            Attach photo
+            Attach photo / video
           </button>
           <span style={{ fontSize: 10, color: "#a8a29e", flex: "1 1 180px" }}>
-            JPG, PNG, WebP, GIF · max 5 MB · videos not supported yet
+            Images JPG/PNG/WebP/GIF · max {MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB · Videos MP4/MOV/WebM · max{" "}
+            {MAX_VIDEO_UPLOAD_BYTES / (1024 * 1024)} MB
           </span>
         </div>
 

@@ -5,6 +5,8 @@ import { ChevronDown, Image as ImageIcon, Send, Lock, Plus } from "lucide-react"
 import { PostCard } from "@/components/PostCard";
 import { directThreadKey } from "@/lib/private-thread-keys";
 import { postScopeShareLabel } from "@/lib/posts/scope-labels";
+import { checkBrowserPostMediaFile } from "@/lib/media/image-sniff";
+import { BROWSER_POST_MEDIA_ACCEPT } from "@/lib/media/upload-limits";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -340,6 +342,7 @@ export function PrivateFeedClient({
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [imageFiles, setImageFiles] = useState<Record<string, File | null>>({});
   const [imagePreviews, setImagePreviews] = useState<Record<string, string>>({});
+  const [mediaErrors, setMediaErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState<string | null>(null);
   const imageInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -357,10 +360,22 @@ export function PrivateFeedClient({
   };
 
   const handleImageSelect = (key: string, file: File) => {
-    const prev = imagePreviews[key];
-    if (prev) URL.revokeObjectURL(prev);
-    setImageFiles((c) => ({ ...c, [key]: file }));
-    setImagePreviews((c) => ({ ...c, [key]: URL.createObjectURL(file) }));
+    void (async () => {
+      const r = await checkBrowserPostMediaFile(file);
+      if (!r.ok) {
+        setMediaErrors((c) => ({ ...c, [key]: r.error }));
+        return;
+      }
+      setMediaErrors((c) => {
+        const n = { ...c };
+        delete n[key];
+        return n;
+      });
+      const prev = imagePreviews[key];
+      if (prev) URL.revokeObjectURL(prev);
+      setImageFiles((c) => ({ ...c, [key]: file }));
+      setImagePreviews((c) => ({ ...c, [key]: URL.createObjectURL(file) }));
+    })();
   };
 
   const clearImage = (key: string) => {
@@ -368,6 +383,11 @@ export function PrivateFeedClient({
     if (prev) URL.revokeObjectURL(prev);
     setImageFiles((c) => ({ ...c, [key]: null }));
     setImagePreviews((c) => { const n = { ...c }; delete n[key]; return n; });
+    setMediaErrors((c) => {
+      const n = { ...c };
+      delete n[key];
+      return n;
+    });
     if (imageInputRefs.current[key]) imageInputRefs.current[key]!.value = "";
   };
 
@@ -604,6 +624,11 @@ export function PrivateFeedClient({
 
                 {/* Compose */}
                 <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: "16px", padding: "14px" }}>
+                  {mediaErrors[thread.key] ? (
+                    <div className="mb-2 rounded-lg border border-red-100 bg-red-50 px-2 py-1.5 text-xs text-red-700">
+                      {mediaErrors[thread.key]}
+                    </div>
+                  ) : null}
                   <textarea
                     value={drafts[thread.key] ?? ""}
                     onChange={(e) =>
@@ -622,7 +647,16 @@ export function PrivateFeedClient({
                     <div className="flex items-center gap-2">
                       {imagePreviews[thread.key] && (
                         <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-stone-100">
-                          <img src={imagePreviews[thread.key]} alt="" className="h-full w-full object-cover" />
+                          {imageFiles[thread.key]?.type.startsWith("video/") ? (
+                            <video
+                              src={imagePreviews[thread.key]}
+                              muted
+                              playsInline
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <img src={imagePreviews[thread.key]} alt="" className="h-full w-full object-cover" />
+                          )}
                           <button
                             type="button"
                             onClick={() => clearImage(thread.key)}
@@ -636,7 +670,7 @@ export function PrivateFeedClient({
                       <input
                         ref={(el) => { imageInputRefs.current[thread.key] = el; }}
                         type="file"
-                        accept="image/*"
+                        accept={BROWSER_POST_MEDIA_ACCEPT}
                         className="hidden"
                         onChange={(e) =>
                           e.target.files?.[0] && handleImageSelect(thread.key, e.target.files[0])
@@ -648,7 +682,7 @@ export function PrivateFeedClient({
                         className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-50"
                       >
                         <ImageIcon className="h-3.5 w-3.5" />
-                        Image
+                        Photo / video
                       </button>
                     </div>
                     <button

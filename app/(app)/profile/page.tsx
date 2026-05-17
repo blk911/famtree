@@ -7,6 +7,12 @@ import {
 } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
 import { displayRecipientsFromVisibility } from "@/lib/posts/displayRecipients";
+import { checkBrowserPostMediaFile } from "@/lib/media/image-sniff";
+import {
+  BROWSER_POST_MEDIA_ACCEPT,
+  MAX_IMAGE_UPLOAD_BYTES,
+  MAX_VIDEO_UPLOAD_BYTES,
+} from "@/lib/media/upload-limits";
 
 interface ProfileData {
   id: string;
@@ -134,9 +140,17 @@ export default function ProfilePage() {
   };
 
   const handlePostImageSelect = (file: File) => {
-    setPostImageFile(file);
-    if (postImagePreview) URL.revokeObjectURL(postImagePreview);
-    setPostImagePreview(URL.createObjectURL(file));
+    void (async () => {
+      const r = await checkBrowserPostMediaFile(file);
+      if (!r.ok) {
+        setPostError(r.error);
+        return;
+      }
+      setPostError("");
+      setPostImageFile(file);
+      if (postImagePreview) URL.revokeObjectURL(postImagePreview);
+      setPostImagePreview(URL.createObjectURL(file));
+    })();
   };
 
   const handleCreatePost = async (e: React.FormEvent) => {
@@ -178,6 +192,12 @@ export default function ProfilePage() {
       }
 
       if (!res.ok) {
+        if (res.status === 413) {
+          setPostError(
+            `That attachment is too large (images max ${MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB, videos max ${MAX_VIDEO_UPLOAD_BYTES / (1024 * 1024)} MB).`,
+          );
+          return;
+        }
         setPostError(data?.error ?? `Error ${res.status}`);
         return;
       }
@@ -379,7 +399,16 @@ export default function ProfilePage() {
             <div className="flex justify-end" style={{ marginLeft: "44px" }}>
               {postImagePreview && (
                 <div className="mr-auto relative w-20 h-20 rounded-xl overflow-hidden bg-stone-100">
-                  <img src={postImagePreview} alt="Selected attachment" className="w-full h-full object-cover" />
+                  {postImageFile?.type.startsWith("video/") ? (
+                    <video
+                      src={postImagePreview}
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <img src={postImagePreview} alt="Selected attachment" className="w-full h-full object-cover" />
+                  )}
                   <button
                     type="button"
                     onClick={() => {
@@ -400,13 +429,13 @@ export default function ProfilePage() {
                 style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
               >
                 <ImageIcon className="w-3.5 h-3.5" />
-                Image
+                Photo / video
               </label>
               <input
                 id="post-image-input"
                 ref={postImageInputRef}
                 type="file"
-                accept="image/*"
+                accept={BROWSER_POST_MEDIA_ACCEPT}
                 style={{ position: "absolute", left: "-9999px", opacity: 0, width: "1px", height: "1px" }}
                 onChange={(e) => e.target.files?.[0] && handlePostImageSelect(e.target.files[0])}
               />

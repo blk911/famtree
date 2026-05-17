@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Archive, Heart, MessageCircle, Send, ThumbsDown, ThumbsUp, Trash2, Users } from "lucide-react";
+import { isVideoAttachmentUrl } from "@/lib/media/upload-limits";
 
 type Comment = {
   id: string;
@@ -318,13 +319,27 @@ export function PostCard({ post, currentUserId, canDelete, onDelete, privateReci
         <p className="text-sm font-semibold text-stone-900">{post.title}</p>
       )}
       <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-wrap">{post.body}</p>
-      {post.imageUrl && (
-        <img
-          src={post.imageUrl}
-          alt=""
-          style={{ width:"300px", height:"auto", borderRadius:"10px", display:"block" }}
-        />
-      )}
+      {post.imageUrl &&
+        (isVideoAttachmentUrl(post.imageUrl) ? (
+          <video
+            src={post.imageUrl}
+            controls
+            playsInline
+            style={{
+              width: "300px",
+              maxWidth: "100%",
+              height: "auto",
+              borderRadius: "10px",
+              display: "block",
+            }}
+          />
+        ) : (
+          <img
+            src={post.imageUrl}
+            alt=""
+            style={{ width: "300px", height: "auto", borderRadius: "10px", display: "block", maxWidth: "100%" }}
+          />
+        ))}
 
       {/* // Action bar — left: reactions (like, thumbs up/down, comments) | right: archive + delete (own posts only) */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:"1px solid #f5f4f0",paddingTop:"12px",marginTop:"4px",gap:"16px",flexWrap:"wrap"}}>

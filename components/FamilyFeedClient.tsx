@@ -4,7 +4,12 @@ import { useMemo, useRef, useState, useEffect } from "react";
 import { Image as ImageIcon, Plus, X, Globe, Lock } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
 import { postScopeShareLabel } from "@/lib/posts/scope-labels";
-import { checkBrowserImageFile } from "@/lib/media/image-sniff";
+import { checkBrowserPostMediaFile } from "@/lib/media/image-sniff";
+import {
+  BROWSER_POST_MEDIA_ACCEPT,
+  MAX_IMAGE_UPLOAD_BYTES,
+  MAX_VIDEO_UPLOAD_BYTES,
+} from "@/lib/media/upload-limits";
 
 type Member = { id: string; firstName: string; lastName: string; photoUrl: string | null };
 
@@ -81,7 +86,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
   const handleImageSelect = (file: File) => {
     setError("");
     void (async () => {
-      const r = await checkBrowserImageFile(file);
+      const r = await checkBrowserPostMediaFile(file);
       if (!r.ok) {
         setError(r.error);
         clearImage();
@@ -142,9 +147,28 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
         });
       }
 
-      const data = await res.json();
+      const rawBody = await res.text();
+      let data: {
+        error?: string;
+        code?: string;
+        post?: FeedPost & {
+          createdAt: string;
+          profile: FeedPost["profile"] & { createdAt?: string; updatedAt?: string };
+        };
+      } = {};
+      if (rawBody) {
+        try {
+          data = JSON.parse(rawBody) as typeof data;
+        } catch {
+          /* non-JSON (e.g. HTML error page) */
+        }
+      }
       if (!res.ok) {
-        if (data?.code === "NOT_ALLOWED_FOR_SCOPE") {
+        if (res.status === 413) {
+          setError(
+            `That attachment is too large for the server (images max ${MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB, videos max ${MAX_VIDEO_UPLOAD_BYTES / (1024 * 1024)} MB).`,
+          );
+        } else if (data?.code === "NOT_ALLOWED_FOR_SCOPE") {
           setError("You don't have access to post in that space.");
         } else {
           setError(data?.error ?? "Could not create post");
@@ -281,7 +305,16 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
             <div className="flex items-center gap-3">
               {imagePreview && (
                 <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-stone-100">
-                  <img src={imagePreview} alt="Selected attachment" className="h-full w-full object-cover" />
+                  {imageFile?.type.startsWith("video/") ? (
+                    <video
+                      src={imagePreview}
+                      muted
+                      playsInline
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <img src={imagePreview} alt="Selected attachment" className="h-full w-full object-cover" />
+                  )}
                   <button
                     type="button"
                     onClick={clearImage}
@@ -294,7 +327,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
               <input
                 ref={imageInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+                accept={BROWSER_POST_MEDIA_ACCEPT}
                 className="hidden"
                 onChange={(event) => event.target.files?.[0] && handleImageSelect(event.target.files[0])}
               />
@@ -304,7 +337,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
                 className="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700"
               >
                 <ImageIcon className="h-4 w-4" />
-                Image
+                Photo / video
               </button>
             </div>
             <button

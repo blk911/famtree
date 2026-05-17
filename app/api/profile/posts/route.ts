@@ -8,6 +8,7 @@ import { PROFILE_FEED_SELECT } from "@/lib/profile/prisma-select";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { uploadFile } from "@/lib/storage";
+import { MAX_IMAGE_UPLOAD_BYTES, MAX_VIDEO_UPLOAD_BYTES } from "@/lib/media/upload-limits";
 import type { DashboardPostScope } from "@prisma/client";
 import { userMayPostWithScope } from "@/lib/posts/post-scope-access";
 
@@ -181,7 +182,12 @@ export async function POST(req: NextRequest) {
         );
       }
       if (err.message === "IMAGE_TOO_LARGE") {
-        return NextResponse.json({ error: "Image must be under 5 MB" }, { status: 400 });
+        return NextResponse.json(
+          {
+            error: `Attachments: images max ${MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB, videos max ${MAX_VIDEO_UPLOAD_BYTES / (1024 * 1024)} MB.`,
+          },
+          { status: 400 },
+        );
       }
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
