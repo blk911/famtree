@@ -609,47 +609,35 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
 
       <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
 
-        {/* Bridges hero → invite flow */}
+        {/* Bridges hero → invite flow — amber warning strip (same tone as dashboard alerts) */}
         <div
           role="region"
-          aria-label="Private by design"
+          aria-label="Privacy by design"
           style={{
-            borderRadius:"14px",
-            padding:"12px 16px",
-            border:"1px solid rgba(237, 233, 254, 0.95)",
-            background:"linear-gradient(135deg, rgba(250, 245, 255, 0.92), rgba(255, 255, 255, 0.88))",
-            boxShadow:"0 2px 18px rgba(124, 58, 237, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.65)",
-            backdropFilter:"blur(8px)",
+            width: "100%",
+            boxSizing: "border-box",
+            borderRadius: 12,
+            padding: "12px 16px",
+            border: "1px solid #fde68a",
+            background: "#fffbeb",
           }}
         >
-          <p style={{ fontSize:"13px", fontWeight:800, color:"#3730a3", margin:"0 0 6px", letterSpacing:"-0.01em" }}>
-            Private by design
+          <p
+            style={{
+              fontSize: 13,
+              fontWeight: 800,
+              color: "#c2410c",
+              margin: "0 0 8px",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            🔒 Privacy by design
           </p>
-          <p style={{ fontSize:"13px", color:"#57534e", margin:0, lineHeight:1.55 }}>
-            Your invite works through recognition and trust.
-            <br />
-            Only your photo is shared — never your name.
-            <br />
-            The recipient must identify you before joining your network.
+          <p style={{ fontSize: 13, color: "#57534e", margin: 0, lineHeight: 1.6 }}>
+            Your invite works through recognition and trust. Your name is never revealed in the invite email — only
+            your photo is shared — so the recipient must identify you before joining your network, making identity the key
+            to accepting your invitation.
           </p>
-          <div style={{
-            display:"flex",
-            flexWrap:"wrap",
-            alignItems:"center",
-            gap:"6px 10px",
-            marginTop:"10px",
-            fontSize:"11px",
-            fontWeight:700,
-            color:"#78716c",
-            letterSpacing:"0.04em",
-            textTransform:"uppercase",
-          }}>
-            <span>Invitation-only</span>
-            <span aria-hidden style={{ color:"#d6d3d1" }}>·</span>
-            <span>Human verification</span>
-            <span aria-hidden style={{ color:"#d6d3d1" }}>·</span>
-            <span>No public discovery</span>
-          </div>
         </div>
 
         {/* Two-column grid — stacks to 1-col on mobile */}
@@ -803,7 +791,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
               ))}
               <div style={{ marginTop: "14px", paddingTop: "14px", borderTop: "1px solid #ede9fe" }}>
                 <p style={{ fontSize: "12px", color: "#78716c", margin: 0, lineHeight: 1.55 }}>
-                  Same flow as <strong style={{ color: "#6d28d9" }}>Private by design</strong> above — invitation-only, photo-first recognition, then they confirm who you are before joining.
+                  Same flow as <strong style={{ color: "#c2410c" }}>Privacy by design</strong> above — invitation-only, photo-first recognition, then they confirm who you are before joining.
                 </p>
               </div>
             </div>
