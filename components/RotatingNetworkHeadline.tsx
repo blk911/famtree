@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-const words = [
-  { label: "SOCIAL", color: "text-[#E94B6A]" },
-  { label: "CLUB", color: "text-[#7B3FC8]" },
-  { label: "CHURCH", color: "text-[#159A8C]" },
-  { label: "BUSINESS", color: "text-[#0067E8]" },
-  { label: "FAMILY", color: "text-[#D49300]" },
+const WORDS = [
+  { label: "SOCIAL", color: "text-[#EF476F]" },
+  { label: "CLUB", color: "text-[#7B2CBF]" },
+  { label: "CHURCH", color: "text-[#139A8F]" },
+  { label: "BUSINESS", color: "text-[#006CFF]" },
+  { label: "FAMILY", color: "text-[#D89200]" },
   { label: "PRIVATE", color: "text-[#15124A]" },
 ] as const;
 
@@ -16,45 +16,48 @@ export default function RotatingNetworkHeadline() {
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
-    let swapTimer: ReturnType<typeof setTimeout> | undefined;
-    const isPrivate = words[index].label === "PRIVATE";
-    const holdTime = isPrivate ? 5000 : 1000;
+    let t2: ReturnType<typeof setTimeout> | undefined;
+    const hold = WORDS[index].label === "PRIVATE" ? 5000 : 1000;
 
-    const holdTimer = setTimeout(() => {
+    const t1 = setTimeout(() => {
       setLeaving(true);
-      swapTimer = setTimeout(() => {
-        setIndex((prev) => (prev + 1) % words.length);
+      t2 = setTimeout(() => {
+        setIndex((prev) => (prev + 1) % WORDS.length);
         setLeaving(false);
-      }, 420);
-    }, holdTime);
+      }, 360);
+    }, hold);
 
     return () => {
-      clearTimeout(holdTimer);
-      if (swapTimer !== undefined) clearTimeout(swapTimer);
+      clearTimeout(t1);
+      if (t2 !== undefined) clearTimeout(t2);
     };
   }, [index]);
 
-  const current = words[index];
+  const word = WORDS[index];
 
   return (
-    <h1 className="mx-auto mb-[18px] flex w-full max-w-[min(100%,960px)] items-baseline justify-center whitespace-nowrap px-2 text-center text-[clamp(3.8rem,8vw,7.6rem)] font-black leading-[0.88] tracking-[-0.055em] text-[#15124A]">
-      <span className="shrink-0">Your</span>
+    <h1 className="mx-auto mb-[18px] w-full max-w-[min(100%,960px)] px-2 text-center font-black leading-[0.88] tracking-[-0.055em] text-[#15124A]">
+      <div className="flex items-end justify-center whitespace-nowrap text-[clamp(4rem,9vw,8rem)]">
+        <span className="shrink-0">Your</span>
 
-      <span className="relative mx-[0.22em] inline-block h-[0.92em] w-[7.1em] overflow-hidden align-baseline">
-        <span
-          key={current.label}
-          className={[
-            "absolute bottom-0 left-0 block w-full text-left font-black leading-[0.88] tracking-[-0.055em]",
-            "transition-all duration-[420ms] ease-out will-change-transform",
-            current.color,
-            leaving ? "-translate-y-[115%] opacity-0" : "translate-y-0 opacity-100",
-          ].join(" ")}
-        >
-          {current.label}
+        <span className="relative ml-[0.22em] inline-block h-[0.9em] w-[6.9em] shrink-0 overflow-hidden text-left">
+          <span
+            key={word.label}
+            className={[
+              "absolute bottom-0 left-0 block leading-[0.88]",
+              "transition-all duration-[360ms] ease-out",
+              leaving ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100",
+              word.color,
+            ].join(" ")}
+          >
+            {word.label}
+          </span>
         </span>
-      </span>
+      </div>
 
-      <span className="shrink-0">Network.</span>
+      <div className="mt-[0.08em] shrink-0 text-[clamp(4.5rem,10vw,9rem)] text-[#15124A]">
+        Network.
+      </div>
     </h1>
   );
 }
