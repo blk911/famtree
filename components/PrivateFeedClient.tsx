@@ -7,6 +7,7 @@ import { directThreadKey } from "@/lib/private-thread-keys";
 import { postScopeShareLabel } from "@/lib/posts/scope-labels";
 import { checkBrowserPostMediaFile } from "@/lib/media/image-sniff";
 import { BROWSER_POST_MEDIA_ACCEPT } from "@/lib/media/upload-limits";
+import { preparePostMediaForSubmit } from "@/lib/posts/upload-post-media-client";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -392,19 +393,41 @@ export function PrivateFeedClient({
   };
 
   const postToThread = async (visibleTo: string[], body: string, imageFile?: File | null): Promise<FeedPost | null> => {
+    let blobAttachmentUrl: string | undefined;
+    let multipartFile: File | null | undefined = imageFile ?? null;
+
+    if (multipartFile) {
+      try {
+        const prepared = await preparePostMediaForSubmit(multipartFile);
+        if (prepared.kind === "blob") {
+          blobAttachmentUrl = prepared.url;
+          multipartFile = null;
+        }
+      } catch {
+        return null;
+      }
+    }
+
+    const resolvedImageUrl = (blobAttachmentUrl ?? "").trim() || undefined;
+
     let res: Response;
-    if (imageFile) {
+    if (multipartFile) {
       const fd = new FormData();
       fd.append("body", body);
       fd.append("scope", "PRIVATE");
-      fd.append("image", imageFile);
+      fd.append("image", multipartFile);
       fd.append("visibleTo", JSON.stringify(visibleTo));
       res = await fetch("/api/profile/posts", { method: "POST", body: fd });
     } else {
       res = await fetch("/api/profile/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body, visibleTo, scope: "PRIVATE" }),
+        body: JSON.stringify({
+          body,
+          visibleTo,
+          scope: "PRIVATE",
+          ...(resolvedImageUrl ? { imageUrl: resolvedImageUrl } : {}),
+        }),
       });
     }
     if (!res.ok) return null;

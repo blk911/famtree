@@ -1,7 +1,10 @@
 /** Central upload limits for posts, feeds, and profile-style image uploads.
  *
- * Hosting note: multipart bodies must fit your runtime and reverse-proxy limits (e.g.
- * `client_max_body_size`). These constants define application-side validation only.
+ * Hosting note: serverless platforms often cap HTTP request bodies (~4.5 MB on Vercel Hobby).
+ * When `BLOB_READ_WRITE_TOKEN` is set, post media uses **client → Vercel Blob** (`preparePostMediaForSubmit`)
+ * so large MP4/MOV/WebM never hit `/api/profile/posts` as multipart.
+ *
+ * multipart bodies must still fit your runtime and reverse-proxy limits (`client_max_body_size`).
  */
 
 export const MAX_IMAGE_UPLOAD_BYTES = 15 * 1024 * 1024;
@@ -18,6 +21,9 @@ export const ALLOWED_IMAGE_UPLOAD_MIMES = [
 
 /** Short consumer-grade clips — MP4, MOV (QuickTime), WebM. */
 export const ALLOWED_VIDEO_UPLOAD_MIMES = ["video/mp4", "video/quicktime", "video/webm"] as const;
+
+/** Use multipart mode for `@vercel/blob/client` `upload()` at/above this size (parallel parts + retries). */
+export const BLOB_CLIENT_MULTIPART_THRESHOLD_BYTES = 8 * 1024 * 1024;
 
 /** @deprecated Prefer MAX_IMAGE_UPLOAD_BYTES — kept for legacy imports. */
 export const POST_IMAGE_MAX_BYTES = MAX_IMAGE_UPLOAD_BYTES;

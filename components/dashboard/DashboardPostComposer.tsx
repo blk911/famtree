@@ -9,6 +9,7 @@ import {
   MAX_IMAGE_UPLOAD_BYTES,
   MAX_VIDEO_UPLOAD_BYTES,
 } from "@/lib/media/upload-limits";
+import { preparePostMediaForSubmit } from "@/lib/posts/upload-post-media-client";
 
 type SpaceOption = { id: string; kind: "BUSINESS" | "CLUB" | "CHURCH"; name: string | null };
 
@@ -107,15 +108,34 @@ export function DashboardPostComposer({
 
     try {
       let res: Response;
+      let blobAttachmentUrl: string | undefined;
+      let multipartFile: File | null = imageFile;
+
       if (imageFile) {
+        try {
+          const prepared = await preparePostMediaForSubmit(imageFile);
+          if (prepared.kind === "blob") {
+            blobAttachmentUrl = prepared.url;
+            multipartFile = null;
+          }
+        } catch (uploadErr) {
+          setError(uploadErr instanceof Error ? uploadErr.message : "Upload failed");
+          return;
+        }
+      }
+
+      const resolvedImageUrl =
+        (blobAttachmentUrl ?? "").trim() || (imageUrl.trim() ? imageUrl.trim() : undefined);
+
+      if (multipartFile) {
         const fd = new FormData();
         fd.append("body", text);
         fd.append("scope", scope);
         if (scope === "BUSINESS" || scope === "CLUB" || scope === "CHURCH") {
           if (spaceId) fd.append("spaceId", spaceId);
         }
-        fd.append("image", imageFile);
-        if (imageUrl.trim()) fd.append("imageUrl", imageUrl.trim());
+        fd.append("image", multipartFile);
+        if (resolvedImageUrl) fd.append("imageUrl", resolvedImageUrl);
         if (scope === "PRIVATE" && visibleTo.length > 0) {
           fd.append("visibleTo", JSON.stringify(visibleTo));
         }
@@ -132,7 +152,7 @@ export function DashboardPostComposer({
                 ? { spaceId }
                 : {}
               : {}),
-            imageUrl: imageUrl.trim() || undefined,
+            imageUrl: resolvedImageUrl,
             ...(scope === "PRIVATE" && visibleTo.length > 0 ? { visibleTo } : {}),
           }),
         });

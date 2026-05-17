@@ -12,6 +12,10 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_VIDEO_UPLOAD_BYTES } from "@/lib/media/uplo
 import type { DashboardPostScope } from "@prisma/client";
 import { userMayPostWithScope } from "@/lib/posts/post-scope-access";
 
+export const runtime = "nodejs";
+/** Large multipart posts on Vercel Pro+; harmless elsewhere. */
+export const maxDuration = 60;
+
 const scopeEnum = z.enum(["FAMILY", "BUSINESS", "CLUB", "CHURCH", "PRIVATE"]);
 
 const createPostSchema = z.object({
@@ -41,9 +45,16 @@ async function loadCreatedPost(postId: string) {
 // POST — create a timeline post
 export async function POST(req: NextRequest) {
   return withApiTrace(req, "/api/profile/posts", async (req: NextRequest) => {
+    const dbg = process.env.DEBUG_MEDIA_UPLOAD === "1";
     try {
       const user = await requireAuth();
       const contentType = req.headers.get("content-type") ?? "";
+      if (dbg) {
+        console.log("[posts POST] transport", {
+          contentLength: req.headers.get("content-length"),
+          contentType,
+        });
+      }
       let parsed: ReturnType<typeof createPostSchema.safeParse>;
 
       if (contentType.includes("multipart/form-data")) {
@@ -59,6 +70,13 @@ export async function POST(req: NextRequest) {
         let visibleTo: string[] | undefined;
 
         if (image && image.size > 0) {
+          if (dbg) {
+            console.log("[posts POST] validation layer=multipart file", {
+              size: image.size,
+              type: image.type,
+              name: image.name,
+            });
+          }
           imageUrl = await uploadFile(image, "post", randomUUID());
         } else if (typeof imageUrlRaw === "string" && imageUrlRaw.trim()) {
           imageUrl = imageUrlRaw.trim();
@@ -96,6 +114,11 @@ export async function POST(req: NextRequest) {
         });
       } else {
         const body = await req.json();
+        if (dbg && body && typeof body === "object" && "imageUrl" in body) {
+          console.log("[posts POST] json body imageUrl present", {
+            hasImageUrl: Boolean((body as { imageUrl?: string }).imageUrl),
+          });
+        }
         parsed = createPostSchema.safeParse(body);
       }
 
@@ -188,6 +211,9 @@ export async function POST(req: NextRequest) {
           },
           { status: 400 },
         );
+      }
+      if (process.env.DEBUG_MEDIA_UPLOAD === "1") {
+        console.error("[posts POST] reject layer=unhandled", err);
       }
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }

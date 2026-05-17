@@ -13,6 +13,7 @@ import {
   MAX_IMAGE_UPLOAD_BYTES,
   MAX_VIDEO_UPLOAD_BYTES,
 } from "@/lib/media/upload-limits";
+import { preparePostMediaForSubmit } from "@/lib/posts/upload-post-media-client";
 
 interface ProfileData {
   id: string;
@@ -161,12 +162,31 @@ export default function ProfilePage() {
 
     try {
       let res: Response;
+      let blobAttachmentUrl: string | undefined;
+      let multipartFile: File | null = postImageFile;
+
       if (postImageFile) {
+        try {
+          const prepared = await preparePostMediaForSubmit(postImageFile);
+          if (prepared.kind === "blob") {
+            blobAttachmentUrl = prepared.url;
+            multipartFile = null;
+          }
+        } catch (uploadErr: unknown) {
+          setPostError(uploadErr instanceof Error ? uploadErr.message : "Upload failed");
+          return;
+        }
+      }
+
+      const resolvedImageUrl =
+        (blobAttachmentUrl ?? "").trim() || (postImageUrl.trim() ? postImageUrl.trim() : undefined);
+
+      if (multipartFile) {
         const fd = new FormData();
         if (newPostTitle.trim()) fd.append("title", newPostTitle.trim());
         fd.append("body", newPostBody);
-        fd.append("image", postImageFile);
-        if (postImageUrl.trim()) fd.append("imageUrl", postImageUrl.trim());
+        fd.append("image", multipartFile);
+        if (resolvedImageUrl) fd.append("imageUrl", resolvedImageUrl);
         if (selectedMembers.length > 0) fd.append("visibleTo", JSON.stringify(selectedMembers));
         res = await fetch("/api/profile/posts", { method: "POST", body: fd });
       } else {
@@ -176,7 +196,7 @@ export default function ProfilePage() {
           body: JSON.stringify({
             body: newPostBody,
             title: newPostTitle.trim() || undefined,
-            imageUrl: postImageUrl.trim() || undefined,
+            imageUrl: resolvedImageUrl,
             visibleTo: selectedMembers.length > 0 ? selectedMembers : undefined,
           }),
         });

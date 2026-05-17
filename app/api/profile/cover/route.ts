@@ -8,6 +8,8 @@ import { prisma } from "@/lib/db/prisma";
 import { uploadFile } from "@/lib/storage";
 import { randomUUID } from "crypto";
 
+export const runtime = "nodejs";
+
 export async function POST(req: NextRequest) {
   return withApiTrace(req, "/api/profile/cover", async (req: NextRequest) => {
 

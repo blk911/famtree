@@ -8,6 +8,8 @@ import { prisma } from "@/lib/db/prisma";
 import { uploadFile } from "@/lib/storage";
 import { v4 as uuidv4 } from "uuid";
 
+export const runtime = "nodejs";
+
 export async function POST(req: NextRequest) {
   return withApiTrace(req, "/api/profile/photo", async (req: NextRequest) => {
 

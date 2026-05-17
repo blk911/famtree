@@ -5,6 +5,10 @@ const nextConfig = {
   },
   experimental: {
     instrumentationHook: false,
+    /** Route handlers still follow platform limits; this raises Server Actions caps if used later. */
+    serverActions: {
+      bodySizeLimit: "80mb",
+    },
   },
   images: {
     remotePatterns: [

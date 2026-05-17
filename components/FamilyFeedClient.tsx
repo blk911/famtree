@@ -10,6 +10,7 @@ import {
   MAX_IMAGE_UPLOAD_BYTES,
   MAX_VIDEO_UPLOAD_BYTES,
 } from "@/lib/media/upload-limits";
+import { preparePostMediaForSubmit } from "@/lib/posts/upload-post-media-client";
 
 type Member = { id: string; firstName: string; lastName: string; photoUrl: string | null };
 
@@ -122,12 +123,31 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
 
     try {
       let res: Response;
+      let blobAttachmentUrl: string | undefined;
+      let multipartFile: File | null = imageFile;
+
       if (imageFile) {
+        try {
+          const prepared = await preparePostMediaForSubmit(imageFile);
+          if (prepared.kind === "blob") {
+            blobAttachmentUrl = prepared.url;
+            multipartFile = null;
+          }
+        } catch (uploadErr) {
+          setError(uploadErr instanceof Error ? uploadErr.message : "Upload failed");
+          return;
+        }
+      }
+
+      const resolvedImageUrl =
+        (blobAttachmentUrl ?? "").trim() || (imageUrl.trim() ? imageUrl.trim() : undefined);
+
+      if (multipartFile) {
         const formData = new FormData();
         if (title.trim()) formData.append("title", title.trim());
         formData.append("body", body.trim());
-        formData.append("image", imageFile);
-        if (imageUrl.trim()) formData.append("imageUrl", imageUrl.trim());
+        formData.append("image", multipartFile);
+        if (resolvedImageUrl) formData.append("imageUrl", resolvedImageUrl);
         const scope = visibleTo.length > 0 ? "PRIVATE" : "FAMILY";
         formData.append("scope", scope);
         if (visibleTo.length > 0) formData.append("visibleTo", JSON.stringify(visibleTo));
@@ -140,7 +160,7 @@ export function FamilyFeedClient({ currentUserId, posts }: { currentUserId: stri
           body: JSON.stringify({
             title: title.trim() || undefined,
             body: body.trim(),
-            imageUrl: imageUrl.trim() || undefined,
+            imageUrl: resolvedImageUrl,
             scope,
             visibleTo: visibleTo.length > 0 ? visibleTo : undefined,
           }),
