@@ -11,6 +11,58 @@ type Modal        = "sign-in" | "join" | "invite-flow" | "send-invite" | null;
 type JoinStep     = "invite" | "waitlist" | "success";
 type InviteStep   = "email" | "challenge" | "register" | "welcome";
 
+const INVITE_DRAFT_KEY = "vmb_invite_flow_draft";
+
+type InviteFlowDraftV1 = {
+  v: 1;
+  inviteStep: InviteStep;
+  ifEmail: string;
+  ifToken: string;
+  ifPhoto: string | null;
+  ifFirst: string;
+  ifLast: string;
+  regFirst: string;
+  regLast: string;
+  regPw: string;
+  invitePhotoDataUrl: string | null;
+  welcomeName: string;
+};
+
+function readInviteDraft(): InviteFlowDraftV1 | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(INVITE_DRAFT_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw) as InviteFlowDraftV1;
+    if (d.v !== 1 || !d.inviteStep) return null;
+    return d;
+  } catch {
+    return null;
+  }
+}
+
+function writeInviteDraft(d: InviteFlowDraftV1) {
+  try {
+    sessionStorage.setItem(INVITE_DRAFT_KEY, JSON.stringify(d));
+  } catch {
+    /* quota / private mode */
+  }
+}
+
+function clearInviteDraftStorage() {
+  try {
+    sessionStorage.removeItem(INVITE_DRAFT_KEY);
+  } catch {
+    /* noop */
+  }
+}
+
+async function dataUrlToFile(dataUrl: string, filename: string): Promise<File> {
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  return new File([blob], filename, { type: blob.type || "image/jpeg" });
+}
+
 const CARDS = [
   { id:"sign-in",    icon:LogIn, label:"Sign In",          sub:"Already a member? Welcome back to your family.",           bg:"rgba(255,255,255,0.92)", border:"rgba(124,58,237,0.28)",   hoverBg:"rgba(250,245,255,0.98)" },
   { id:"invite",     icon:Mail,  label:"I Have an Invite", sub:"Got an invite from family? Start here.",                   bg:"rgba(255,255,255,0.9)", border:"rgba(234,88,12,0.35)",    hoverBg:"rgba(255,247,237,0.97)" },
@@ -39,6 +91,7 @@ function HomeModalShell({
     >
       <div
         className="modal-card"
+        onClick={(e) => e.stopPropagation()}
         style={{
           width:"100%", maxWidth, background:"white", borderRadius:"22px", padding:"40px",
           boxShadow:"0 32px 80px rgba(124,58,237,0.25)", boxSizing:"border-box",
@@ -101,26 +154,157 @@ export function HomeClient() {
   // -- invite flow: step 4 - welcome --
   const [welcomeName, setWelcomeName] = useState("");
 
+  /** Serialized selfie for sessionStorage restore (registration step). */
+  const [invitePhotoDataUrl, setInvitePhotoDataUrl] = useState<string | null>(null);
+
+  /** Client-only: avoids SSR mismatch when sessionStorage has a draft. */
+  const [inviteResumeVisible, setInviteResumeVisible] = useState(false);
+
+  useEffect(() => {
+    setInviteResumeVisible(modal !== "invite-flow" && !!readInviteDraft());
+  }, [modal, inviteStep, ifEmail, invitePhotoDataUrl, welcomeName]);
+
+  const hasInviteRegPhoto = !!regPhoto || !!invitePhotoDataUrl;
+
+  const resetInviteFlowState = () => {
+    setInviteStep("email");
+    setIfEmail("");
+    setIfLookErr("");
+    setIfLookup(false);
+    setIfToken("");
+    setIfPhoto(null);
+    setIfFirst("");
+    setIfLast("");
+    setIfChallLoad(false);
+    setIfChallErr("");
+    setRegFirst("");
+    setRegLast("");
+    setRegPw("");
+    setRegPhoto(null);
+    setRegPreview((prev) => {
+      if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setInvitePhotoDataUrl(null);
+    setRegErr("");
+    setWelcomeName("");
+  };
+
+  const hydrateInviteDraft = (d: InviteFlowDraftV1) => {
+    setInviteStep(d.inviteStep);
+    setIfEmail(d.ifEmail);
+    setIfToken(d.ifToken);
+    setIfPhoto(d.ifPhoto);
+    setIfFirst(d.ifFirst);
+    setIfLast(d.ifLast);
+    setRegFirst(d.regFirst);
+    setRegLast(d.regLast);
+    setRegPw(d.regPw);
+    setWelcomeName(d.welcomeName);
+    setInvitePhotoDataUrl(d.invitePhotoDataUrl);
+    setRegPreview((prev) => {
+      if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return d.invitePhotoDataUrl;
+    });
+    setRegPhoto(null);
+    setIfLookErr("");
+    setIfChallErr("");
+    setRegErr("");
+  };
+
+  const cancelInviteFlow = () => {
+    clearInviteDraftStorage();
+    resetInviteFlowState();
+    setModal(null);
+  };
+
+  /** Clear draft and restart invite steps while keeping the modal open. */
+  const startOverInviteInsideModal = () => {
+    clearInviteDraftStorage();
+    resetInviteFlowState();
+    setInviteStep("email");
+  };
+
+  const startOverInviteFromBanner = () => {
+    clearInviteDraftStorage();
+    resetInviteFlowState();
+    setModal(null);
+  };
+
+  const continueInviteFromDraft = () => {
+    const d = readInviteDraft();
+    if (!d) return;
+    hydrateInviteDraft(d);
+    setModal("invite-flow");
+  };
+
   // -- helpers --
   const openSignIn = () => { setSiErr(""); setModal("sign-in"); };
   const openJoin   = (step: JoinStep = "invite") => { setWErr(""); setJoinStep(step); setModal("join"); };
-  const openInvite = () => { setIfEmail(""); setIfLookErr(""); setInviteStep("email"); setModal("invite-flow"); };
+  const openInvite = () => {
+    setIfLookErr("");
+    const existing = readInviteDraft();
+    if (existing) hydrateInviteDraft(existing);
+    else {
+      resetInviteFlowState();
+      setInviteStep("email");
+    }
+    setModal("invite-flow");
+  };
   const openSendInviteModal = () => { setModal("send-invite"); };
   const close      = () => { setModal(null); setSiErr(""); setWErr(""); setIfChallErr(""); setRegErr(""); };
   const goWaitlist = () => {
-    if (ifEmail && !wEmail) setWEmail(ifEmail);
+    const savedEmail = ifEmail;
+    clearInviteDraftStorage();
+    resetInviteFlowState();
+    if (savedEmail && !wEmail) setWEmail(savedEmail);
     setModal("join");
     setJoinStep("waitlist");
   };
 
   useEffect(() => {
     if (!modal) return;
+    if (modal === "invite-flow") return;
     const h = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
   }, [modal]);
 
-  const overlay = (e: MouseEvent<HTMLDivElement>) => { if (e.target === e.currentTarget) close(); };
+  useEffect(() => {
+    if (modal !== "invite-flow") return;
+    writeInviteDraft({
+      v: 1,
+      inviteStep,
+      ifEmail,
+      ifToken,
+      ifPhoto,
+      ifFirst,
+      ifLast,
+      regFirst,
+      regLast,
+      regPw,
+      invitePhotoDataUrl,
+      welcomeName,
+    });
+  }, [
+    modal,
+    inviteStep,
+    ifEmail,
+    ifToken,
+    ifPhoto,
+    ifFirst,
+    ifLast,
+    regFirst,
+    regLast,
+    regPw,
+    invitePhotoDataUrl,
+    welcomeName,
+  ]);
+
+  const overlay = (e: MouseEvent<HTMLDivElement>) => {
+    if (modal === "invite-flow") return;
+    if (e.target === e.currentTarget) close();
+  };
 
   const inputStyle: React.CSSProperties = {
     height:"46px", border:"1.5px solid #e5e7eb", borderRadius:"10px",
@@ -170,7 +354,9 @@ export function HomeClient() {
       setIfPhoto(data.senderPhotoUrl ?? null);
       setIfFirst(""); setIfLast(""); setIfChallErr("");
       if (data.status === "ACCEPTED") {
-        setRegFirst(""); setRegLast(""); setRegPw(""); setRegPhoto(null); setRegPreview(null); setRegErr("");
+        setRegFirst(""); setRegLast(""); setRegPw(""); setRegPhoto(null); setInvitePhotoDataUrl(null);
+        setRegPreview((prev) => { if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev); return null; });
+        setRegErr("");
         setInviteStep("register");
       } else {
         setInviteStep("challenge");
@@ -194,7 +380,9 @@ export function HomeClient() {
       });
       const data = await res.json();
       if (data.success) {
-        setRegFirst(""); setRegLast(""); setRegPw(""); setRegPhoto(null); setRegPreview(null); setRegErr("");
+        setRegFirst(""); setRegLast(""); setRegPw(""); setRegPhoto(null); setInvitePhotoDataUrl(null);
+        setRegPreview((prev) => { if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev); return null; });
+        setRegErr("");
         setInviteStep("register");
       } else if (data.reason === "wrong_name" && data.attemptsLeft > 0) {
         setIfChallErr(data.message ?? `That doesn't match. ${data.attemptsLeft} attempts remaining.`);
@@ -207,7 +395,24 @@ export function HomeClient() {
 
   // Step 3 - quick registration
   const handleRegister = async (e: FormEvent) => {
-    e.preventDefault(); setRegLoad(true); setRegErr("");
+    e.preventDefault();
+
+    let uploadPhoto = regPhoto;
+    if (!uploadPhoto && invitePhotoDataUrl) {
+      try {
+        uploadPhoto = await dataUrlToFile(invitePhotoDataUrl, "profile.jpg");
+        setRegPhoto(uploadPhoto);
+      } catch {
+        setRegErr("Could not restore your photo — please add your selfie again.");
+        return;
+      }
+    }
+    if (!uploadPhoto) {
+      setRegErr("A photo is required — please add a selfie so your family can recognise you.");
+      return;
+    }
+
+    setRegLoad(true); setRegErr("");
     try {
       const res  = await fetch("/api/auth/register", {
         method:"POST",
@@ -217,12 +422,11 @@ export function HomeClient() {
       const data = await res.json();
       if (!res.ok) { setRegErr(data.error ?? "Registration failed"); return; }
 
-      if (regPhoto) {
-        const fd = new FormData();
-        fd.append("photo", regPhoto);
-        await fetch("/api/profile/photo", { method:"POST", body:fd }).catch(() => null);
-      }
+      const fd = new FormData();
+      fd.append("photo", uploadPhoto);
+      await fetch("/api/profile/photo", { method:"POST", body:fd }).catch(() => null);
 
+      clearInviteDraftStorage();
       setWelcomeName(regFirst);
       setInviteStep("welcome");
     } catch { setRegErr("Something went wrong. Please try again."); }
@@ -231,8 +435,13 @@ export function HomeClient() {
 
   const handleRegPhoto = (file: File) => {
     setRegPhoto(file);
-    if (regPreview) URL.revokeObjectURL(regPreview);
-    setRegPreview(URL.createObjectURL(file));
+    setRegPreview((prev) => {
+      if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+    const reader = new FileReader();
+    reader.onload = () => setInvitePhotoDataUrl(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   // -- render --
@@ -291,6 +500,59 @@ export function HomeClient() {
         </nav>
 
         <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", position:"relative", zIndex:3, paddingTop:"32px" }}>
+          {inviteResumeVisible && (
+            <div
+              role="region"
+              aria-label="Invite in progress"
+              style={{
+                width:"100%",
+                maxWidth:560,
+                marginBottom:20,
+                padding:"14px 18px",
+                borderRadius:14,
+                background:"rgba(255,255,255,0.92)",
+                border:"1px solid rgba(124,58,237,0.28)",
+                boxShadow:"0 8px 28px rgba(124,58,237,0.1)",
+                boxSizing:"border-box",
+              }}
+            >
+              <p style={{ margin:"0 0 12px", fontWeight:800, fontSize:15, color:"#1e1b4b" }}>Your invite is in progress.</p>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:10, justifyContent:"center" }}>
+                <button
+                  type="button"
+                  onClick={continueInviteFromDraft}
+                  style={{
+                    padding:"10px 18px",
+                    borderRadius:10,
+                    border:"none",
+                    background:"linear-gradient(135deg,#7c3aed,#c026d3)",
+                    color:"white",
+                    fontWeight:800,
+                    fontSize:14,
+                    cursor:"pointer",
+                  }}
+                >
+                  Continue Invite
+                </button>
+                <button
+                  type="button"
+                  onClick={startOverInviteFromBanner}
+                  style={{
+                    padding:"10px 18px",
+                    borderRadius:10,
+                    border:"1px solid #e7e5e4",
+                    background:"#fafafa",
+                    color:"#44403c",
+                    fontWeight:700,
+                    fontSize:14,
+                    cursor:"pointer",
+                  }}
+                >
+                  Start Over
+                </button>
+              </div>
+            </div>
+          )}
           <div className="exclusivity-pill" style={{ display:"inline-flex", flexDirection:"column", alignItems:"center", gap:"5px", padding:"15px 30px", borderRadius:"999px", background:"rgba(255,255,255,0.78)", border:"1px solid rgba(124,58,237,0.22)", fontSize:"20px", fontWeight:900, letterSpacing:"0.04em", marginBottom:"24px", backdropFilter:"blur(10px)", boxShadow:"0 10px 36px rgba(124,58,237,0.1)", textTransform:"uppercase", color:"#312e81" }}>
             <span>INVITATION ONLY &nbsp;|&nbsp; RELATIONSHIP-FIRST &nbsp;|&nbsp; COMPLETELY PRIVATE</span>
             <span style={{ fontSize:"13px", letterSpacing:"0.12em", color:"#64748b" }}>NO ADS &nbsp;|&nbsp; NO BOTS &nbsp;|&nbsp; NO DATA MINING &nbsp;|&nbsp; EVER.</span>
@@ -535,7 +797,7 @@ export function HomeClient() {
       {/* MODAL: Invite Flow */}
       {modal === "invite-flow" && (
         <HomeModalShell
-          onBackdrop={overlay}
+          onBackdrop={() => { /* invite flow: close only via Cancel / success */ }}
           cardStyle={inviteStep !== "welcome" ? { minHeight:"min(85vh, 620px)" } : undefined}
         >
             {/* Step indicator */}
@@ -643,10 +905,7 @@ export function HomeClient() {
                   <p style={{ fontSize:"14px", color:"#6b7280", margin:0 }}>Create your account to join the family tree.</p>
                 </div>
                 {regErr && <div style={{ background:"#fef2f2", borderLeft:"4px solid #dc2626", color:"#dc2626", padding:"11px 14px", borderRadius:"10px", fontSize:"14px", marginBottom:"16px" }}>{regErr}</div>}
-                <form onSubmit={(e) => {
-                  if (!regPhoto) { e.preventDefault(); setRegErr("A photo is required — please add a selfie so your family can recognise you."); return; }
-                  handleRegister(e);
-                }} style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+                <form onSubmit={handleRegister} style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
 
                   {/* Photo — first, required */}
                   <div style={{textAlign:"center",marginBottom:"4px"}}>
@@ -662,8 +921,8 @@ export function HomeClient() {
                       style={{
                         width:"96px", height:"96px", borderRadius:"50%", margin:"0 auto 10px",
                         overflow:"hidden", cursor:"pointer", flexShrink:0,
-                        border: regPhoto ? "3px solid #7c3aed" : "3px dashed #c4b5fd",
-                        background: regPhoto ? "transparent" : "#faf5ff",
+                        border: hasInviteRegPhoto ? "3px solid #7c3aed" : "3px dashed #c4b5fd",
+                        background: hasInviteRegPhoto ? "transparent" : "#faf5ff",
                         display:"flex", alignItems:"center", justifyContent:"center",
                       }}
                     >
@@ -675,8 +934,8 @@ export function HomeClient() {
                           </div>
                       }
                     </div>
-                    <div style={{fontSize:"12px",fontWeight:700,color: regPhoto ? "#16a34a" : "#dc2626"}}>
-                      {regPhoto ? "✓ Photo added" : "* Required — add your selfie"}
+                    <div style={{fontSize:"12px",fontWeight:700,color: hasInviteRegPhoto ? "#16a34a" : "#dc2626"}}>
+                      {hasInviteRegPhoto ? "✓ Photo added" : "* Required — add your selfie"}
                     </div>
                   </div>
 
@@ -691,7 +950,7 @@ export function HomeClient() {
                       {showRegPw ? <EyeOff style={{width:18,height:18}}/> : <Eye style={{width:18,height:18}}/>}
                     </button>
                   </div>
-                  <button type="submit" disabled={regLoad} style={{ height:"48px", border:"none", borderRadius:"12px", background: regPhoto ? "linear-gradient(135deg,#7c3aed,#c026d3)" : "#d1d5db", color:"white", fontSize:"15px", fontWeight:800, cursor: regPhoto ? "pointer" : "not-allowed", opacity:regLoad?0.75:1, boxShadow: regPhoto ? "0 8px 24px rgba(124,58,237,0.3)" : "none" }}>
+                  <button type="submit" disabled={regLoad} style={{ height:"48px", border:"none", borderRadius:"12px", background: hasInviteRegPhoto ? "linear-gradient(135deg,#7c3aed,#c026d3)" : "#d1d5db", color:"white", fontSize:"15px", fontWeight:800, cursor: hasInviteRegPhoto ? "pointer" : "not-allowed", opacity:regLoad?0.75:1, boxShadow: hasInviteRegPhoto ? "0 8px 24px rgba(124,58,237,0.3)" : "none" }}>
                     {regLoad ? "Creating account…" : "Join the Family Tree →"}
                   </button>
                 </form>
@@ -709,10 +968,57 @@ export function HomeClient() {
                   You're officially part of the family tree. Your profile is ready — start exploring and connecting.
                 </p>
                 <button
-                  onClick={() => { window.location.href = "/dashboard"; }}
+                  onClick={() => { clearInviteDraftStorage(); window.location.href = "/dashboard"; }}
                   style={{ height:"50px", padding:"0 32px", border:"none", borderRadius:"12px", background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"16px", fontWeight:800, cursor:"pointer", boxShadow:"0 8px 24px rgba(124,58,237,0.35)" }}
                 >
                   Go to My Profile →
+                </button>
+              </div>
+            )}
+
+            {inviteStep !== "welcome" && (
+              <div
+                style={{
+                  marginTop:      28,
+                  paddingTop:     18,
+                  borderTop:      "1px solid #f3f4f6",
+                  display:        "flex",
+                  flexWrap:       "wrap",
+                  gap:            12,
+                  justifyContent: "center",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={cancelInviteFlow}
+                  style={{
+                    padding:      "8px 16px",
+                    borderRadius: 10,
+                    border:       "1px solid #e7e5e4",
+                    background:   "#fff",
+                    fontSize:     13,
+                    fontWeight:   700,
+                    color:        "#57534e",
+                    cursor:       "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={startOverInviteInsideModal}
+                  style={{
+                    padding:      "8px 16px",
+                    borderRadius: 10,
+                    border:       "1px solid #fecaca",
+                    background:   "#fef2f2",
+                    fontSize:     13,
+                    fontWeight:   700,
+                    color:        "#b91c1c",
+                    cursor:       "pointer",
+                  }}
+                >
+                  Start Over
                 </button>
               </div>
             )}
