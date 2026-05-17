@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { PeopleSection }     from "@/components/aihsafe/people/PeopleSection";
 import { PersonRow }         from "@/components/aihsafe/people/PersonRow";
 import { RelationshipBadge } from "@/components/aihsafe/people/RelationshipBadge";
@@ -19,7 +20,6 @@ interface Props {
   guardianLinks: GuardianLinkDTO[];
   invites:       InviteDTO[];
   loading:       boolean;
-  onInvite:      () => void;
 }
 
 export function PeopleTab({
@@ -30,7 +30,6 @@ export function PeopleTab({
   guardianLinks,
   invites,
   loading,
-  onInvite,
 }: Props) {
 
   // ── Guardian links where I am the child (my guardians) ──────────────────────
@@ -274,9 +273,8 @@ export function PeopleTab({
           <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 20px", maxWidth: 320, marginInline: "auto" }}>
             Invite trusted family members and friends to build your safe network.
           </p>
-          <button
-            type="button"
-            onClick={onInvite}
+          <Link
+            href="/invite"
             style={{
               display:      "inline-flex",
               alignItems:   "center",
@@ -289,19 +287,19 @@ export function PeopleTab({
               fontWeight:   700,
               fontSize:     13,
               cursor:       "pointer",
+              textDecoration: "none",
             }}
           >
             📨 Invite someone
-          </button>
+          </Link>
         </div>
       )}
 
       {/* ── Invite CTA (when there are already people) ───────────────────────── */}
       {totalPeople > 0 && (
         <div style={{ textAlign: "center", paddingTop: 4 }}>
-          <button
-            type="button"
-            onClick={onInvite}
+          <Link
+            href="/invite"
             style={{
               background:   "none",
               border:       "1px solid #e7e5e4",
@@ -311,10 +309,12 @@ export function PeopleTab({
               color:        "#57534e",
               fontWeight:   600,
               cursor:       "pointer",
+              textDecoration: "none",
+              display:      "inline-block",
             }}
           >
             📨 Invite someone new
-          </button>
+          </Link>
         </div>
       )}
     </div>

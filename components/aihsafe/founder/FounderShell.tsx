@@ -572,7 +572,6 @@ export function FounderShell({ currentUserId, shellMode = "founder" }: Props) {
             guardianLinks={guardianLinks}
             invites={invites}
             loading={loading}
-            onInvite={() => setModal("invite")}
           />
         </TabPanel>
 
