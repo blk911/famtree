@@ -11,6 +11,8 @@ import {
 
 type TabId = "posts" | "pvt-feeds" | "my-posts" | "invites";
 
+export type DashboardTabId = TabId;
+
 type ComposerSpace = { id: string; kind: "BUSINESS" | "CLUB" | "CHURCH"; name: string | null };
 
 interface SerializedInvite {
@@ -43,6 +45,9 @@ const MSG_VAULT_HREF = "/aihsafe";
 
 interface Props {
   currentUserId: string;
+  tab?: TabId;
+  onTabChange?: (tab: TabId) => void;
+  lastSeenAt?: string | null;
   newPostsCount: number;
   newCommentsCount: number;
   invites: SerializedInvite[];
@@ -55,6 +60,9 @@ interface Props {
   bondPeers: PrivateMember[];
   /** Badge on Msg Vault tab — same signal as sidebar (see getVaultNotificationCount). */
   vaultNotificationCount: number;
+  launchDmPeerId?: string | null;
+  onLaunchDmPeerConsumed?: () => void;
+  onActiveDirectPeerChange?: (peerId: string | null) => void;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -113,6 +121,12 @@ function PanelTitle({ children }: { children: React.ReactNode }) {
 
 export function DashboardVaultTabs({
   currentUserId,
+  tab: controlledTab,
+  onTabChange,
+  lastSeenAt = null,
+  launchDmPeerId = null,
+  onLaunchDmPeerConsumed,
+  onActiveDirectPeerChange,
   newPostsCount,
   newCommentsCount,
   invites,
@@ -125,14 +139,21 @@ export function DashboardVaultTabs({
   bondPeers,
   vaultNotificationCount,
 }: Props) {
-  const [tab, setTab] = useState<TabId>("posts");
+  const [uncontrolledTab, setUncontrolledTab] = useState<TabId>("posts");
+  const isControlled = controlledTab !== undefined;
+  const tab = isControlled ? controlledTab : uncontrolledTab;
+
+  function setTab(next: TabId) {
+    if (!isControlled) setUncontrolledTab(next);
+    onTabChange?.(next);
+  }
   const pendingCount = invites.filter((i) => i.status === "PENDING").length;
 
   const TABS: { id: TabId; label: string; Icon: React.ElementType; badge?: number }[] = [
     { id: "posts", label: "Posts", Icon: Users, badge: newPostsCount > 0 ? newPostsCount : undefined },
     {
       id: "pvt-feeds",
-      label: "Private Feeds",
+      label: "Private Threads",
       Icon: Lock,
       badge: newCommentsCount > 0 ? newCommentsCount : undefined,
     },
@@ -246,7 +267,7 @@ export function DashboardVaultTabs({
 
         {tab === "pvt-feeds" && (
           <div>
-            <PanelTitle>Private Feeds</PanelTitle>
+            <PanelTitle>Private Threads</PanelTitle>
             {newCommentsCount > 0 ? (
               <div
                 style={{
@@ -284,8 +305,8 @@ export function DashboardVaultTabs({
                 }}
               >
                 <span style={{ fontSize: 18, flexShrink: 0 }}>🔒</span>
-                <div style={{ fontSize: 13, color: "#5b21b6", fontWeight: 500 }}>
-                  Your private circles — quiet for now
+                <div style={{ fontSize: 12, color: "#6d28d9", fontWeight: 500, lineHeight: 1.45 }}>
+                  Select a member on the right to open a private thread, or continue one below.
                 </div>
               </div>
             )}
@@ -296,6 +317,9 @@ export function DashboardVaultTabs({
               posts={serializedPrivatePosts}
               members={membersForPrivate}
               bondPeers={bondPeers}
+              launchDmPeerId={launchDmPeerId}
+              onLaunchDmPeerConsumed={onLaunchDmPeerConsumed}
+              onActiveDirectPeerChange={onActiveDirectPeerChange}
             />
           </div>
         )}

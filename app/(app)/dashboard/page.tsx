@@ -10,9 +10,7 @@ import {
 } from "@/lib/trust";
 import { loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { queryDashboardProfilePrompt, incrementDashboardProfilePromptSeen } from "@/lib/dashboard/safe-data";
-import { DashboardTrustUnitGate }  from "@/components/dashboard/DashboardTrustUnitGate";
-import { DashboardVaultTabs }      from "@/components/dashboard/DashboardVaultTabs";
-import { DashboardContextRail }    from "@/components/dashboard/DashboardContextRail";
+import { DashboardHubColumns } from "@/components/dashboard/DashboardHubColumns";
 import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletionPrompt";
 import { IncomingIdentityAcks }    from "@/components/dashboard/IncomingIdentityAcks";
 import type { FlatNode }           from "@/components/TreeList";
@@ -90,6 +88,36 @@ function serializeDashboardPost(post: FeedPost) {
       user: post.profile.user,
     },
   };
+}
+function dmUnreadByPeerFromPrivatePosts(
+  posts: Array<{
+    createdAt: string;
+    visibility?: Array<{ userId: string }>;
+    profile: { user: { id: string } };
+  }>,
+  currentUserId: string,
+  lastSeen: Date | null,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!lastSeen || Number.isNaN(lastSeen.getTime())) return out;
+
+  for (const post of posts) {
+    const authorId = post.profile.user.id;
+    if (authorId === currentUserId) continue;
+
+    const vis = post.visibility?.map((v) => v.userId) ?? [];
+    const ids = new Set<string>([authorId, ...vis]);
+    if (ids.size !== 2 || !ids.has(currentUserId)) continue;
+
+    const peerId = Array.from(ids).find((id) => id !== currentUserId);
+    if (!peerId) continue;
+
+    if (new Date(post.createdAt) <= lastSeen) continue;
+
+    out[peerId] = (out[peerId] ?? 0) + 1;
+  }
+
+  return out;
 }
 
 // ── Shared card style ──────────────────────────────────────────────────────────
@@ -185,6 +213,12 @@ export default async function DashboardPage() {
   const serializedPrivatePosts = privatePostsRaw.map(serializeDashboardPost);
   const serializedMyPosts = myPostsRaw.map(serializeDashboardPost);
 
+  const dmUnreadByPeerId = dmUnreadByPeerFromPrivatePosts(
+    serializedPrivatePosts,
+    user.id,
+    user.lastLoginAt ?? null,
+  );
+
   const membersForPrivate = members.map((m) => ({
     id: m.id,
     firstName: m.firstName,
@@ -273,35 +307,25 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── Two-column: tabbed content hub + context rail ── */}
-      <div className="grid grid-cols-[minmax(0,1fr)_232px] max-[860px]:grid-cols-1 gap-4 items-start">
-
-        {/* Left: trust gate + tabbed message/activity hub */}
-        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-          <DashboardTrustUnitGate initialRequests={serializedTrustRequests} currentUserId={user.id} />
-          <DashboardVaultTabs
-            currentUserId={user.id}
-            newPostsCount={newPosts.length}
-            newCommentsCount={newComments.length}
-            invites={serializedInvites}
-            composerSpaces={composerSpaces}
-            serializedFeedPosts={serializedFeedPosts}
-            serializedPrivatePosts={serializedPrivatePosts}
-            serializedMyPosts={serializedMyPosts}
-            trustUnits={trustUnits as any[]}
-            membersForPrivate={membersForPrivate}
-            bondPeers={bondPeers}
-            vaultNotificationCount={vaultNotificationCount}
-          />
-        </div>
-
-        {/* Right: context rail */}
-        <DashboardContextRail
-          flat={flat}
-          totalMembers={totalMembers}
-          trustUnits={trustUnits as any[]}
-        />
-
-      </div>
+      <DashboardHubColumns
+        currentUserId={user.id}
+        initialRequests={serializedTrustRequests}
+        lastSeenAt={user.lastLoginAt?.toISOString() ?? null}
+        dmUnreadByPeerId={dmUnreadByPeerId}
+        flat={flat}
+        totalMembers={totalMembers}
+        trustUnits={trustUnits as any[]}
+        newPostsCount={newPosts.length}
+        newCommentsCount={newComments.length}
+        invites={serializedInvites}
+        composerSpaces={composerSpaces}
+        serializedFeedPosts={serializedFeedPosts}
+        serializedPrivatePosts={serializedPrivatePosts}
+        serializedMyPosts={serializedMyPosts}
+        membersForPrivate={membersForPrivate}
+        bondPeers={bondPeers}
+        vaultNotificationCount={vaultNotificationCount}
+      />
     </div>
   );
 }

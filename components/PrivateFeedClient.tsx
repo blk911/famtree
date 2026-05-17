@@ -273,6 +273,9 @@ export function PrivateFeedClient({
   bondPeers,
   initialUnitId,
   initialPeerId,
+  launchDmPeerId = null,
+  onLaunchDmPeerConsumed,
+  onActiveDirectPeerChange,
 }: {
   currentUserId: string;
   trustUnits: TrustUnit[];
@@ -281,6 +284,9 @@ export function PrivateFeedClient({
   bondPeers: Member[];
   initialUnitId?: string;
   initialPeerId?: string;
+  launchDmPeerId?: string | null;
+  onLaunchDmPeerConsumed?: () => void;
+  onActiveDirectPeerChange?: (peerId: string | null) => void;
 }) {
   const memberMap = useMemo(
     () => new Map(members.map((m) => [m.id, m])),
@@ -292,14 +298,23 @@ export function PrivateFeedClient({
     [members, currentUserId]
   );
 
+  const seedDmPeers = useMemo(() => {
+    const byId = new Map(bondPeers.map((p) => [p.id, p]));
+    if (launchDmPeerId && launchDmPeerId !== currentUserId) {
+      const m = memberMap.get(launchDmPeerId);
+      if (m) byId.set(m.id, m);
+    }
+    return Array.from(byId.values());
+  }, [bondPeers, launchDmPeerId, memberMap, currentUserId]);
+
   // Live post items (mutated by send/delete)
   const [allItems, setAllItems] = useState<FeedPost[]>(posts);
 
   // Derive threads from live items
   const threads = useMemo(
     () =>
-      buildThreads(allItems, trustUnits, memberMap, currentUserId, bondPeers),
-    [allItems, trustUnits, memberMap, currentUserId, bondPeers],
+      buildThreads(allItems, trustUnits, memberMap, currentUserId, seedDmPeers),
+    [allItems, trustUnits, memberMap, currentUserId, seedDmPeers],
   );
 
   // Which thread is open (accordion — one at a time)
@@ -338,6 +353,25 @@ export function PrivateFeedClient({
     currentUserId,
     didApplyDeepLink,
   ]);
+
+  useEffect(() => {
+    if (!launchDmPeerId || launchDmPeerId === currentUserId) return;
+    const k = directThreadKey(launchDmPeerId, currentUserId);
+    if (!threads.some((t) => t.key === k && t.type === "direct")) return;
+    setOpenKey(k);
+    onLaunchDmPeerConsumed?.();
+  }, [launchDmPeerId, threads, currentUserId, onLaunchDmPeerConsumed]);
+
+  useEffect(() => {
+    if (!onActiveDirectPeerChange) return;
+    const t = threads.find((th) => th.key === openKey);
+    if (!t || t.type !== "direct") {
+      onActiveDirectPeerChange(null);
+      return;
+    }
+    const peer = t.memberIds.find((id) => id !== currentUserId) ?? null;
+    onActiveDirectPeerChange(peer);
+  }, [openKey, threads, currentUserId, onActiveDirectPeerChange]);
 
   // Per-thread compose state
   const [drafts, setDrafts] = useState<Record<string, string>>({});
