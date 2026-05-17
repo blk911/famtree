@@ -25,7 +25,6 @@ const FAMILY_ITEMS = [
 const SETTINGS_ADMIN_ITEMS = [
   { href: "/settings",        label: "Settings",             icon: null },
   { href: "/admin/tools",     label: "Tools & foundation",   icon: Terminal },
-  { href: "/admin/studios",   label: "AIH Studios",          icon: Building2 },
   { href: "/admin/activity",  label: "Activity Log",         icon: ScrollText },
 ];
 
@@ -74,6 +73,18 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
     border: active ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
     textDecoration:"none", transition:"all 0.15s",
   });
+
+  /** Connected platform entry — below core AMIHUMAN stack; quieter when inactive. */
+  const studiosLinkStyle = (active: boolean) => {
+    const core = linkStyle(active);
+    if (active) return core;
+    return {
+      ...core,
+      fontSize: "14px",
+      padding:  "10px 16px",
+      color:    "rgba(255,255,255,0.46)",
+    };
+  };
 
   const subLinkStyle = (active: boolean) => ({
     display:"flex", alignItems:"center", gap:"10px",
@@ -260,6 +271,21 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
             Settings
           </Link>
         )}
+
+        {/* Separates core trust/network nav from AIH Studios (connected platform). */}
+        <div
+          role="separator"
+          aria-orientation="horizontal"
+          style={{
+            margin:       "12px 14px 10px",
+            borderTop:    "1px solid rgba(255,255,255,0.085)",
+          }}
+        />
+
+        <Link href={studiosHref} style={studiosLinkStyle(isStudiosPrimaryNavActive(pathname, studiosHref))}>
+          <Building2 style={{width:"18px",height:"18px",flexShrink:0}} />
+          AIH Studios
+        </Link>
 
       </nav>
 
