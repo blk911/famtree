@@ -171,7 +171,7 @@ function HeroCard({ children }: { children: React.ReactNode }) {
             />
           </svg>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-            Family Safe
+            Msg Vault
           </span>
         </div>
         {children}

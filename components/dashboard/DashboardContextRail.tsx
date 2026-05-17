@@ -73,10 +73,10 @@ export function DashboardContextRail({ flat, totalMembers, trustUnits }: Props) 
         </ContextRailCard>
       )}
 
-      {/* Family Safe quick context — full tools stay in the dashboard Family Safe tab */}
-      <ContextRailCard title="Family Safe">
+      {/* Msg Vault quick context — full tools stay in the dashboard Msg Vault tab */}
+      <ContextRailCard title="Msg Vault">
         <p style={{ fontSize: 12, color: "#78716c", margin: 0, lineHeight: 1.45 }}>
-          Governance and trust tools are available in the <strong style={{ color: "#44403c" }}>Family Safe</strong> tab on this page.
+          Governance and trust tools are available in the <strong style={{ color: "#44403c" }}>Msg Vault</strong> tab on this page.
         </p>
       </ContextRailCard>
 

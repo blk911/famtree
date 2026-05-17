@@ -10,7 +10,7 @@ import { requireAuth }     from "@/lib/auth";
 import { FounderShell }    from "@/components/aihsafe/founder/FounderShell";
 import { deriveShellMode } from "@/components/aihsafe/roles";
 
-export const metadata = { title: "Family Safe · AMIHUMAN.NET" };
+export const metadata = { title: "Msg Vault · AMIHUMAN.NET" };
 
 export default async function AihSafePage() {
   const user      = await requireAuth();

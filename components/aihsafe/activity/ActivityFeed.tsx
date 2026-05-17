@@ -6,7 +6,7 @@ import { CompactActivityItem } from "@/components/aihsafe/common/CompactActivity
 // Placeholder events shown when no real data is available (e.g. RelationalDashboard standalone).
 // FounderShell derives real activity from live API data.
 const PLACEHOLDER_EVENTS = [
-  { icon: "🛡", label: "Family Safe activated",     time: "just now",   faded: false },
+  { icon: "🛡", label: "Msg Vault activated",     time: "just now",   faded: false },
   { icon: "✓",  label: "Guardian inbox checked",    time: "today",      faded: false },
   { icon: "🤝", label: "Trusted space created",     time: "recently",   faded: true  },
   { icon: "📨", label: "Invite sent",               time: "recently",   faded: true  },

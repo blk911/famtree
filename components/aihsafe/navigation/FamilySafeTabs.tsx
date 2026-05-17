@@ -89,7 +89,7 @@ export function FamilySafeTabs({ tabs, activeTab, onTabChange, badges }: Props) 
     <div
       ref={barRef}
       role="tablist"
-      aria-label="Family Safe navigation"
+      aria-label="Msg Vault navigation"
       className="aihsafe-tabs-bar"
     >
       {tabs.map((tab, i) => {

@@ -112,7 +112,7 @@ export function DashboardVaultTabs({
     },
     { id: "my-posts", label: "My Posts", Icon: User },
     { id: "invites", label: "Invites", Icon: Mail, badge: pendingCount > 0 ? pendingCount : undefined },
-    { id: "family-safe", label: "Family Safe", Icon: ShieldCheck },
+    { id: "family-safe", label: "Msg Vault", Icon: ShieldCheck },
   ];
 
   return (
@@ -392,7 +392,7 @@ export function DashboardVaultTabs({
 
         {tab === "family-safe" && (
           <div>
-            <PanelTitle>Family Safe</PanelTitle>
+            <PanelTitle>Msg Vault</PanelTitle>
             <div style={{ fontSize: 13, color: "#78716c", marginBottom: 16, lineHeight: 1.5 }}>
               Trusted spaces, guardianship, and governance — visible only to what your membership allows.
               {trustPendingCount > 0 && (

@@ -23,7 +23,7 @@ export function AihSafeShell({ children }: Props) {
             marginBottom:  10,
           }}
         >
-          Family Safe
+          Msg Vault
         </p>
         <h1
           style={{

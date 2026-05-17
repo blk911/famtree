@@ -120,7 +120,7 @@ export function AppSidebar({ user, open = false }: Props) {
           {isAdmin ? "Admin" : "Dashboard"}
         </Link>
 
-        {/* Family — tree + units */}
+        {/* My Network — tree + units */}
         <Link
           href="/tree"
           style={{
@@ -130,7 +130,7 @@ export function AppSidebar({ user, open = false }: Props) {
           }}
         >
           <Users style={{ width: "18px", height: "18px", flexShrink: 0 }} />
-          <span style={{ flex: 1, textAlign: "left" }}>Family</span>
+          <span style={{ flex: 1, textAlign: "left" }}>My Network</span>
           <ChevronDown
             style={{
               width: "15px",
@@ -172,10 +172,10 @@ export function AppSidebar({ user, open = false }: Props) {
           {INVITE.label}
         </Link>
 
-        {/* Family Safe */}
+        {/* Msg Vault */}
         <Link href="/aihsafe" style={linkStyle(pathname === "/aihsafe" || pathname.startsWith("/aihsafe/"))}>
           <ShieldCheck style={{width:"18px",height:"18px",flexShrink:0}} />
-          Family Safe
+          Msg Vault
         </Link>
 
         <Link href={studiosHref} style={linkStyle(isStudiosPrimaryNavActive(pathname, studiosHref))}>

@@ -42,7 +42,7 @@ export function HeroBar({ familyCount, spaceCount, pendingCount, onPendingClick 
         </div>
         <div>
           <div style={{ fontWeight: 800, fontSize: 18, color: "#fff", lineHeight: 1.1 }}>
-            Family Safe
+            Msg Vault
           </div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>
             Your family&apos;s healthy internet
