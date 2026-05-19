@@ -13,7 +13,7 @@ import { SESSION_COOKIE_NAME } from "@/lib/auth/session-cookie";
 // /admin/* and /family-vault/* live under the authenticated app shell and must
 // require login at the edge (same as /dashboard); otherwise anon hits layout-only
 // auth and can surface confusing 500s depending on runtime.
-const PROTECTED = ["/dashboard", "/profile", "/tree", "/settings", "/admin", "/family-vault"];
+const PROTECTED = ["/dashboard", "/profile", "/tree", "/settings", "/admin", "/family-vault", "/msg-vault", "/aihsafe"];
 const AUTH_ROUTES = ["/login", "/register"];
 
 export async function middleware(request: NextRequest) {

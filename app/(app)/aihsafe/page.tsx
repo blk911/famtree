@@ -11,7 +11,7 @@ import { deriveShellMode } from "@/components/aihsafe/roles";
 import { requireAuth }     from "@/lib/auth";
 import { prisma }          from "@/lib/db/prisma";
 
-export const metadata = { title: "Msg Vault · AMIHUMAN.NET" };
+export const metadata = { title: "Family Safe · AMIHUMAN.NET" };
 
 export default async function AihSafePage() {
   const user      = await requireAuth();

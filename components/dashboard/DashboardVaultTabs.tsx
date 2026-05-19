@@ -41,7 +41,7 @@ type PrivateMember = {
   photoUrl: string | null;
 };
 
-const MSG_VAULT_HREF = "/aihsafe";
+const MSG_VAULT_HREF = "/msg-vault";
 
 interface Props {
   currentUserId: string;

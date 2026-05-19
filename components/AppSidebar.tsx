@@ -15,7 +15,8 @@ interface Props { user: PrismaUser; open?: boolean; vaultNotificationCount?: num
 
 const INVITE = { href: "/invite", label: "Invite", icon: Mail };
 
-const MSG_VAULT_HREF = "/aihsafe";
+const MSG_VAULT_HREF = "/msg-vault";
+const FAMILY_SAFE_HREF = "/aihsafe";
 const FAMILY_ITEMS = [
   { href: "/tree", label: "My People" },
   { href: "/family-vault/family-units", label: "Units" },
@@ -171,9 +172,9 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
           {INVITE.label}
         </Link>
 
-        {/* Msg Vault — full page; badge matches dashboard launcher */}
+        {/* Msg Vault — governed communication */}
         <Link href={MSG_VAULT_HREF} style={linkStyle(pathname === MSG_VAULT_HREF || pathname.startsWith(`${MSG_VAULT_HREF}/`))}>
-          <ShieldCheck style={{width:"18px",height:"18px",flexShrink:0}} />
+          <Mail style={{width:"18px",height:"18px",flexShrink:0}} />
           <span style={{ flex: 1, textAlign: "left" }}>Msg Vault</span>
           {vaultNotificationCount > 0 && (
             <span
@@ -197,6 +198,15 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
               {vaultNotificationCount > 99 ? "99+" : vaultNotificationCount}
             </span>
           )}
+        </Link>
+
+        {/* Family Safe — governance & policy (separate from Msg Vault) */}
+        <Link
+          href={FAMILY_SAFE_HREF}
+          style={linkStyle(pathname === FAMILY_SAFE_HREF || pathname.startsWith(`${FAMILY_SAFE_HREF}/`))}
+        >
+          <ShieldCheck style={{width:"18px",height:"18px",flexShrink:0}} />
+          Family Safe
         </Link>
 
         {/* Settings — accordion for admins, plain link for members */}
