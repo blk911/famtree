@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Pencil } from "lucide-react";
+import { formatDisplayInitials, formatDisplayName } from "@/lib/user/display-name";
 
 type HeroUser = {
   firstName: string;
   lastName: string;
   photoUrl: string | null;
+  role?: string;
 };
 
 const HERO_COPY: Array<{ match: (path: string) => boolean; title: string; subtitle: string; hidden?: true }> = [
@@ -16,7 +18,7 @@ const HERO_COPY: Array<{ match: (path: string) => boolean; title: string; subtit
   { match: (path) => path === "/admin/studios" || path.startsWith("/admin/studios/"), title: "AIH Studios", subtitle: "Studio management and directory" },
   { match: (path) => path === "/admin/tools", title: "Tools & foundation", subtitle: "Scripts, services, and ops reference for admins" },
   { match: (path) => path === "/admin", title: "Admin", subtitle: "AMIHUMAN.NET control center" },
-  { match: (path) => path === "/dashboard", title: "Dashboard", subtitle: "Your family activity at a glance" },
+  { match: (path) => path === "/dashboard", title: "Dashboard", subtitle: "Your network activity at a glance" },
   { match: (path) => path === "/family-vault/posts", title: "Open Feed", subtitle: "Posts from you and your family network" },
   { match: (path) => path === "/family-vault/private", title: "Private Feed", subtitle: "Trust Units, bonds, and private direct messages" },
   { match: (path) => path === "/family-vault/family-units", title: "Units", subtitle: "Bonds and trust units — jump into each conversation" },
@@ -27,9 +29,6 @@ const HERO_COPY: Array<{ match: (path: string) => boolean; title: string; subtit
   { match: (path) => path === "/settings", title: "Settings", subtitle: "Manage your account and privacy preferences" },
 ];
 
-function initials(user: HeroUser) {
-  return `${user.firstName[0] ?? ""}${user.lastName[0] ?? ""}`.toUpperCase();
-}
 
 export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: string | null }) {
   const pathname = usePathname();
@@ -90,9 +89,9 @@ export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: stri
           <div style={{position:"relative"}}>
             <div className="app-hero-avatar-wrap" style={{width:"70px",height:"70px",borderRadius:"50%",overflow:"hidden",background:"rgba(255,255,255,0.24)",border:"3px solid rgba(255,255,255,0.78)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 10px 26px rgba(0,0,0,0.20)"}}>
               {user.photoUrl ? (
-                <img src={user.photoUrl} alt={`${user.firstName} ${user.lastName}`} style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                <img src={user.photoUrl} alt={formatDisplayName(user)} style={{width:"100%",height:"100%",objectFit:"cover"}} />
               ) : (
-                <span style={{color:"white",fontWeight:900,fontSize:"20px"}}>{initials(user)}</span>
+                <span style={{color:"white",fontWeight:900,fontSize:"20px"}}>{formatDisplayInitials(user)}</span>
               )}
             </div>
             {/* Edit icon */}
@@ -107,7 +106,7 @@ export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: stri
           </div>
           {/* Name */}
           <span className="app-hero-name" style={{fontSize:"12px",fontWeight:800,color:"white",textShadow:"0 1px 10px rgba(0,0,0,0.28)"}}>
-            {user.firstName} {user.lastName}
+            {formatDisplayName(user)}
           </span>
         </div>
       </div>

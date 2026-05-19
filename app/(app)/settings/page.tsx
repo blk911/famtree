@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Camera, Shield, User, Trash2, Timer, KeyRound, Eye, EyeOff } from "lucide-react";
 import { IdentityChangePanel } from "@/components/settings/IdentityChangePanel";
+import { formatDisplayInitials, formatDisplayName } from "@/lib/user/display-name";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -170,7 +171,7 @@ export default function SettingsPage() {
                   <img src={profile.user.photoUrl} alt="Profile" className="h-full w-full object-cover" />
                 ) : (
                   <span className="text-lg font-bold text-stone-500">
-                    {(profile.user.firstName?.[0] ?? "")}{(profile.user.lastName?.[0] ?? "")}
+                    {formatDisplayInitials(profile.user)}
                   </span>
                 )}
               </div>
@@ -198,7 +199,7 @@ export default function SettingsPage() {
               <div className="grid grid-cols-[100px_1fr] items-start gap-2">
                 <span className="text-stone-500 pt-0.5">Name</span>
                 <span className="text-stone-900 font-medium break-words">
-                  {profile.user.firstName} {profile.user.lastName}
+                  {formatDisplayName(profile.user)}
                 </span>
               </div>
               <div className="grid grid-cols-[100px_1fr] items-start gap-2">

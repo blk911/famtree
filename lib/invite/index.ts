@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db/prisma";
 import Fuse from "fuse.js";
 import { v4 as uuidv4 } from "uuid";
 import type { Invite, User } from "@prisma/client";
+import type { InviteIntentCreateFields } from "@/lib/aihsafe/invites/invite-fields";
 
 const INVITE_EXPIRES_DAYS = 7;
 const MAX_ATTEMPTS = 3;
@@ -19,6 +20,7 @@ export async function createInvite(
   sender: User,
   recipientEmail: string,
   relationship?: string,
+  intentFields?: Partial<InviteIntentCreateFields>,
 ): Promise<Invite> {
   const normalized = normalizeInviteEmail(recipientEmail);
   // Prevent duplicate pending invites to the same address from same sender (any casing)
@@ -38,6 +40,18 @@ export async function createInvite(
       relationship: relationship || null,
       token: uuidv4(),
       expiresAt: new Date(Date.now() + INVITE_EXPIRES_DAYS * 86_400_000),
+      ...(intentFields
+        ? {
+            inviteIntent:       intentFields.inviteIntent ?? null,
+            relationshipKind:   intentFields.relationshipKind ?? null,
+            inviteeAgeBracket:  intentFields.inviteeAgeBracket ?? null,
+            stewardDeclaration: intentFields.stewardDeclaration ?? false,
+            sponsorUserId:      intentFields.sponsorUserId ?? sender.id,
+            stewardUserId:        intentFields.stewardUserId ?? null,
+            targetTrustUnitId:    intentFields.targetTrustUnitId ?? null,
+            targetFamilyUnitId:   intentFields.targetFamilyUnitId ?? null,
+          }
+        : {}),
     },
   });
 }

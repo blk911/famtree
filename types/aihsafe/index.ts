@@ -11,6 +11,7 @@ export * from "./age-tiers";
 export * from "./visibility";
 export * from "./approval-states";
 export * from "./invite-states";
+export * from "./invite-intent";
 export * from "./audit-events";
 export * from "./trust-units";
 export * from "./guardian";

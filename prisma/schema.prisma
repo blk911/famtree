@@ -399,6 +399,16 @@ model Invite {
   // Relationship sender has to recipient (e.g. "parent", "child", "spouse", "so", "frnd", "sibling", "other")
   relationship   String?
 
+  // Agent 73 — invite intent routing (see types/aihsafe/invite-intent.ts)
+  inviteIntent          String?   // adult_friend | family_adult | child | teen | trusted_adult | business_member | business_admin
+  relationshipKind      String?   // normalized edge for graph/governance
+  inviteeAgeBracket     String?   // child | teen | adult | unknown
+  stewardDeclaration    Boolean   @default(false)
+  sponsorUserId         String?   // usually senderId; explicit sponsor for delegated sends
+  stewardUserId         String?   // declared family steward for child/teen intents
+  targetTrustUnitId     String?   // business / workspace scope
+  targetFamilyUnitId    String?   // family unit scope
+
   // Timestamps
   expiresAt      DateTime     // 7 days from creation
   acceptedAt     DateTime?

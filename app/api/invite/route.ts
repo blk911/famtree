@@ -5,7 +5,12 @@
 import { appendApiErrorLog, getRequestIdFromRequest } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { createInvite, normalizeInviteEmail } from "@/lib/invite";
+import { normalizeInviteEmail } from "@/lib/invite";
+import {
+  InviteRoutingError,
+  routeInviteByIntent,
+} from "@/lib/aihsafe/invites/routeByIntent";
+import { INVITE_INTENTS, INVITEE_AGE_BRACKETS } from "@/types/aihsafe/invite-intent";
 import { sendInviteEmail } from "@/lib/email";
 import { prisma } from "@/lib/db/prisma";
 import { tryAutoTrustUnitAfterInvite } from "@/lib/trust/tuProposal";
@@ -47,10 +52,20 @@ function mapPrismaHttp(err: unknown): { status: number; message: string } | null
 
 const VALID_RELATIONSHIPS = ["parent", "child", "sibling", "spouse", "so", "frnd", "other"] as const;
 
-const sendSchema = z.object({
-  recipientEmail: z.string().email("Please enter a valid email address"),
-  relationship: z.enum(VALID_RELATIONSHIPS),
-});
+const sendSchema = z
+  .object({
+    recipientEmail:      z.string().email("Please enter a valid email address"),
+    relationship:        z.enum(VALID_RELATIONSHIPS).optional(),
+    inviteIntent:        z.enum(INVITE_INTENTS as [string, ...string[]]).optional(),
+    inviteeAgeBracket:   z.enum(INVITEE_AGE_BRACKETS as [string, ...string[]]).optional(),
+    stewardDeclaration:  z.boolean().optional(),
+    targetTrustUnitId:   z.string().min(1).optional(),
+    targetFamilyUnitId:  z.string().min(1).optional(),
+  })
+  .refine((d) => d.relationship || d.inviteIntent, {
+    message: "Select a relationship or invite type",
+    path:    ["relationship"],
+  });
 
 const noStoreInviteJson = {
   "Cache-Control": "private, no-store, max-age=0, must-revalidate",
@@ -79,7 +94,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { recipientEmail: rawRecipientEmail, relationship } = parsed.data;
+    const {
+      recipientEmail: rawRecipientEmail,
+      relationship,
+      inviteIntent,
+      inviteeAgeBracket,
+      stewardDeclaration,
+      targetTrustUnitId,
+      targetFamilyUnitId,
+    } = parsed.data;
     const recipientEmail = normalizeInviteEmail(rawRecipientEmail);
 
     if (recipientEmail === normalizeInviteEmail(user.email)) {
@@ -99,13 +122,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const invite = await createInvite(user, recipientEmail, relationship);
+    let invite;
+    let allowAutoTrustUnit = true;
+    try {
+      const routed = await routeInviteByIntent({
+        sender:              user,
+        recipientEmail,
+        relationship:        relationship ?? null,
+        inviteIntent:        inviteIntent ?? null,
+        inviteeAgeBracket:   inviteeAgeBracket ?? null,
+        stewardDeclaration:  stewardDeclaration ?? false,
+        targetTrustUnitId:   targetTrustUnitId ?? null,
+        targetFamilyUnitId:  targetFamilyUnitId ?? null,
+      });
+      invite = routed.invite;
+      allowAutoTrustUnit = routed.allowAutoTrustUnit;
+    } catch (err) {
+      if (err instanceof InviteRoutingError) {
+        return NextResponse.json(
+          { error: err.message, code: err.code },
+          { status: 400, headers: { "x-request-id": requestId } },
+        );
+      }
+      throw err;
+    }
 
     /* Proposal must not depend on email delivery — dev/staging often 502 on RESEND while invite row exists */
-    try {
-      await tryAutoTrustUnitAfterInvite(user.id, invite.id);
-    } catch (tuErr) {
-      console.error("[invite] tryAutoTrustUnitAfterInvite", tuErr);
+    if (allowAutoTrustUnit) {
+      try {
+        await tryAutoTrustUnitAfterInvite(user.id, invite.id);
+      } catch (tuErr) {
+        console.error("[invite] tryAutoTrustUnitAfterInvite", tuErr);
+      }
     }
 
     try {
@@ -119,10 +167,11 @@ export async function POST(req: NextRequest) {
           inviteId: invite.id,
           recipientEmail: invite.recipientEmail,
           status: invite.status,
-          relationship: invite.relationship,
-          createdAt: invite.createdAt.toISOString(),
-        },
-        { status: 502, headers: { "x-request-id": requestId } },
+        relationship: invite.relationship,
+        inviteIntent: invite.inviteIntent,
+        createdAt: invite.createdAt.toISOString(),
+      },
+      { status: 502, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -133,6 +182,7 @@ export async function POST(req: NextRequest) {
         recipientEmail: invite.recipientEmail,
         status: invite.status,
         relationship: invite.relationship,
+        inviteIntent: invite.inviteIntent,
         createdAt: invite.createdAt.toISOString(),
       },
       { headers: { "x-request-id": requestId } },

@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import type { FamilySafeShellMode } from "@/components/aihsafe/roles";
+import { settingsTabLabel } from "@/components/aihsafe/roles/governanceView";
 
 // ─── Tab identifiers ──────────────────────────────────────────────────────────
 
@@ -26,7 +27,7 @@ const ALL_TABS: Tab[] = [
   { id: "activity",  label: "Activity"  },
   { id: "members",   label: "Members"   },
   { id: "approvals", label: "Approvals" },
-  { id: "settings",  label: "Policies & Settings"  },
+  { id: "settings",  label: "Msg Rules"  },
 ];
 
 // ─── Role-aware tab list ──────────────────────────────────────────────────────
@@ -39,14 +40,17 @@ export function getVisibleTabs(
   if (shellMode === "founder") {
     ids = ["overview", "spaces", "activity", "members", "approvals", "settings"];
   } else if (shellMode === "member" && isGuardian) {
-    ids = ["overview", "spaces", "activity", "members", "approvals"];
+    ids = ["overview", "spaces", "activity", "members", "approvals", "settings"];
   } else if (shellMode === "member") {
-    ids = ["overview", "spaces", "activity", "members"];
+    ids = ["overview", "spaces", "activity", "members", "settings"];
   } else {
-    // child
-    ids = ["spaces", "activity"];
+    // child / teen — visible governance, no Members or Approvals
+    ids = ["spaces", "activity", "settings"];
   }
-  return ALL_TABS.filter((t) => ids.includes(t.id));
+  const label = settingsTabLabel(shellMode);
+  return ALL_TABS.filter((t) => ids.includes(t.id)).map((t) =>
+    t.id === "settings" ? { ...t, label } : t,
+  );
 }
 
 export function defaultTab(shellMode: FamilySafeShellMode): TabId {

@@ -3,12 +3,37 @@
 import { withApiTrace } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { getInviteByToken, verifyIdentityChallenge } from "@/lib/invite";
+import { prisma } from "@/lib/db/prisma";
+import {
+  requiresDateOfBirthAtRegister,
+  isMinorInviteIntent,
+} from "@/types/aihsafe/invite-intent";
+import { resolveInviteIntentFromRow } from "@/lib/aihsafe/invites/invite-fields";
 import { z } from "zod";
 
 // GET /api/invite/[token] — get invite info (shows sender photo, no name)
 export async function GET(_req: NextRequest, routeCtx: { params: { token: string } }) {
   return withApiTrace(_req, "/api/invite/[token]", async (_req: NextRequest, routeCtx) => {
 const { params } = routeCtx;
+
+  const forRegister = _req.nextUrl.searchParams.get("forRegister") === "1";
+  if (forRegister) {
+    const row = await prisma.invite.findUnique({
+      where: { token: params.token },
+      include: { sender: true },
+    });
+    if (!row || row.status !== "ACCEPTED") {
+      return NextResponse.json({ error: "Invite not found or not ready for registration" }, { status: 404 });
+    }
+    const intent = resolveInviteIntentFromRow(row);
+    return NextResponse.json({
+      inviteId: row.id,
+      recipientEmail: row.recipientEmail,
+      inviteIntent: intent,
+      requiresDateOfBirth: requiresDateOfBirthAtRegister(intent),
+      isMinorInvite: isMinorInviteIntent(intent),
+    });
+  }
 
   const invite = await getInviteByToken(params.token);
 

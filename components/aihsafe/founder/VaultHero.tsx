@@ -2,18 +2,14 @@
 
 import Link from "next/link";
 import { Pencil } from "lucide-react";
+import { formatDisplayInitials, formatDisplayName } from "@/lib/user/display-name";
 
 export type VaultHeroUser = {
   firstName: string;
   lastName: string;
   photoUrl: string | null;
+  role?: string;
 };
-
-function initials(user: VaultHeroUser) {
-  const a = user.firstName?.[0] ?? "";
-  const b = user.lastName?.[0] ?? "";
-  return `${a}${b}`.toUpperCase() || "?";
-}
 
 function HeroMetricPill({
   value,
@@ -212,12 +208,12 @@ export function VaultHeroSection({
                 {heroUser.photoUrl ? (
                   <img
                     src={heroUser.photoUrl}
-                    alt={`${heroUser.firstName} ${heroUser.lastName}`}
+                    alt={formatDisplayName(heroUser)}
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                 ) : (
                   <span style={{ color: "white", fontWeight: 900, fontSize: "20px" }}>
-                    {initials(heroUser)}
+                    {formatDisplayInitials(heroUser)}
                   </span>
                 )}
               </div>
@@ -253,7 +249,7 @@ export function VaultHeroSection({
                 lineHeight:   1.2,
               }}
             >
-              {heroUser.firstName} {heroUser.lastName}
+              {formatDisplayName(heroUser)}
             </span>
           </div>
         )}

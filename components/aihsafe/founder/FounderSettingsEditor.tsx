@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SectionHeader }         from "@/components/aihsafe/common/SectionHeader";
+import { settingsPanelSubcopy, settingsPanelTitle } from "@/components/aihsafe/roles/governanceView";
 import { CategoryAllowlistPanel } from "@/components/aihsafe/founder/CategoryAllowlistPanel";
 import { getFounderSettings, patchFounderSettings } from "@/components/aihsafe/common/apiClient";
 import type { FounderSettingsDTO, PatchFounderSettingsRequest } from "@/types/aihsafe/dto";
@@ -242,9 +243,12 @@ export function FounderSettingsEditor() {
       }}
     >
       <SectionHeader
-        title="Governance Settings"
+        title={settingsPanelTitle("founder")}
         action={<SaveIndicator state={saveState} />}
       />
+      <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 16px", lineHeight: 1.55 }}>
+        {settingsPanelSubcopy("founder")}
+      </p>
 
       {loadError && (
         <div
@@ -291,7 +295,7 @@ export function FounderSettingsEditor() {
         <div>
           {/* ── Minor protection ─── */}
           <p style={{ fontSize: 11, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", textTransform: "uppercase", margin: "4px 0 0" }}>
-            Minor protection
+            Care & sharing for minors
           </p>
 
           <ToggleRow
@@ -325,7 +329,7 @@ export function FounderSettingsEditor() {
 
           {/* ── Network defaults ─── */}
           <p style={{ fontSize: 11, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", textTransform: "uppercase", margin: "16px 0 0" }}>
-            Network defaults
+            Family-wide defaults
           </p>
 
           <ScopeSelector

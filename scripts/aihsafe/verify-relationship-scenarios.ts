@@ -83,7 +83,10 @@ async function main() {
   const childShell = deriveShellMode({ role: childUser!.role, dateOfBirth: childUser!.dateOfBirth });
   record("s1.child.shell", childShell === "child", `shell=${childShell}`);
   const childTabs = getVisibleTabs("child", false).map((t) => t.id);
-  record("s1.child.tabs", childTabs.join() === "spaces,activity", childTabs.join());
+  record("s1.child.tabs", childTabs.join() === "spaces,activity,settings", childTabs.join());
+
+  const teenTabs = getVisibleTabs("child", false).map((t) => t.id);
+  record("s2.teen.tabs", teenTabs.includes("settings"), teenTabs.join());
 
   // Teen
   const teenUser = await prisma.user.findUnique({ where: { id: te }, select: { role: true, dateOfBirth: true } });

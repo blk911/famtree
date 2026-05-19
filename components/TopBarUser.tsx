@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { User as PrismaUser } from "@prisma/client";
+import { formatAdminTopBarLabel, formatDisplayInitials } from "@/lib/user/display-name";
 
 interface Props {
   user: PrismaUser;
@@ -34,7 +35,7 @@ export function TopBarUser({ user }: Props) {
           }
         </div>
         <span style={{fontSize:"15px",fontWeight:600,color:"#1c1917"}}>
-          {isAdmin ? "ADMIN: " : ""}{user.firstName} {user.lastName}
+          {formatAdminTopBarLabel(user)}
         </span>
       </div>
 

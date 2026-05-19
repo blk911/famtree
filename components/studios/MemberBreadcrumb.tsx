@@ -8,6 +8,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { StudiosStartModeNav } from "@/components/studios/StudiosStartModeNav";
+import { formatDisplayName } from "@/lib/user/display-name";
 
 export async function MemberBreadcrumb() {
   let user: Awaited<ReturnType<typeof getCurrentUser>>;
@@ -77,7 +78,7 @@ export async function MemberBreadcrumb() {
           <span style={{ fontSize: "12px", color: "#737373", fontWeight: 500 }}>
             Logged in as{" "}
             <span style={{ color: "#262626" }}>
-              {user.firstName ?? ""} {user.lastName ?? ""}
+              {formatDisplayName(user)}
             </span>
           </span>
           <Link

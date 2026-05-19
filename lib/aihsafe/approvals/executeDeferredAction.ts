@@ -2,7 +2,6 @@
 // Called after a guardian approves an AihApprovalRequest to replay the original action.
 // Guardian approval IS the authorization — governance gate is NOT re-run here.
 
-import { v4 as uuidv4 } from "uuid";
 import { prisma } from "@/lib/db/prisma";
 import { emitAuditEvent } from "@/lib/aihsafe/audit";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
@@ -16,6 +15,7 @@ import {
   effectiveTrustUnitMaxMembers,
   resolveInitialTrustUnitMemberUserIds,
 } from "@/lib/aihsafe/trust-unit-initial-members";
+import { routeInviteByIntent } from "@/lib/aihsafe/invites/routeByIntent";
 
 type DeferredResult =
   | { ok: true }
@@ -161,14 +161,21 @@ export async function executeDeferredAction(
         },
       });
       if (!existingInvite) {
-        await prisma.invite.create({
-          data: {
-            senderId:       requestorId,
-            recipientEmail,
-            relationship,
-            token:          uuidv4(),
-            expiresAt:      new Date(Date.now() + 7 * 86_400_000),
-          },
+        const requestorUser = await prisma.user.findUnique({ where: { id: requestorId } });
+        if (!requestorUser) {
+          return { ok: false, reason: "requestor_not_found" };
+        }
+        await routeInviteByIntent({
+          sender:              requestorUser,
+          recipientEmail,
+          relationship,
+          inviteIntent:        ctx.inviteIntent != null ? String(ctx.inviteIntent) : null,
+          inviteeAgeBracket:   ctx.inviteeAgeBracket != null ? String(ctx.inviteeAgeBracket) : null,
+          stewardDeclaration:  ctx.stewardDeclaration === true,
+          targetTrustUnitId:   deferredTrustUnitId || null,
+          targetFamilyUnitId:
+            typeof ctx.familyUnitId === "string" ? ctx.familyUnitId : null,
+          allowAutoTrustUnit:  false,
         });
       }
       await emitAuditEvent({

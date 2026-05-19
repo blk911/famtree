@@ -11,6 +11,7 @@ import { IncomingIdentityAcks } from "@/components/dashboard/IncomingIdentityAck
 import { DashboardTrustUnitGate } from "@/components/dashboard/DashboardTrustUnitGate";
 import { getPendingTrustRequestsSafe, serializeTrustGateRequests } from "@/lib/trust";
 import { getDatabaseHostHint } from "@/lib/db/databaseHostHint";
+import { formatDisplayName } from "@/lib/user/display-name";
 
 const card = {
   background:"white", borderRadius:"16px",
@@ -70,7 +71,7 @@ export default async function AdminPage() {
             Signed in as admin
           </p>
           <p style={{fontSize:"18px",fontWeight:800,color:"#0f1729"}}>
-            {user.firstName} {user.lastName}
+            {formatDisplayName(user)}
           </p>
           <p style={{fontSize:"14px",color:"#78716c",marginTop:"2px"}}>
             {user.email} · {user.role}

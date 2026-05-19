@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Ban, Mail, Send, CheckCircle, Trash2, KeyRound } from "lucide-react";
+import { formatDisplayInitials, formatDisplayName } from "@/lib/user/display-name";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -188,15 +189,18 @@ function InfoRow({ label, children }: { label: string; children: React.ReactNode
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function AdminLists({ members: initialMembers, invites: initialInvites, waitlist }: Props) {
+export function AdminLists({ members: initialMembers, invites: initialInvites, waitlist: initialWaitlist }: Props) {
   const [members, setMembers] = useState<Member[]>(initialMembers);
   const [invites, setInvites] = useState<Invite[]>(initialInvites);
+  const [waitlist, setWaitlist] = useState<WaitlistPerson[]>(initialWaitlist);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [selectedWaitlist, setSelectedWaitlist] = useState<WaitlistPerson | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null); // memberId
   const [inviteActioning, setInviteActioning] = useState<string | null>(null); // inviteId
+  const [waitlistActioning, setWaitlistActioning] = useState<string | null>(null); // waitlist id
   const [deleteConfirmMember, setDeleteConfirmMember] = useState<Member | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Message compose state
   const [messagingMember, setMessagingMember] = useState<Member | null>(null);
@@ -304,6 +308,26 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
     }
   };
 
+  const handleWaitlistDelete = async (person: WaitlistPerson) => {
+    if (
+      !window.confirm(
+        `Remove ${person.firstName} ${person.lastName} (${person.email}) from the waitlist?`,
+      )
+    ) {
+      return;
+    }
+    setWaitlistActioning(person.id);
+    try {
+      const res = await fetch(`/api/admin/waitlist/${person.id}`, { method: "DELETE" });
+      if (res.ok) {
+        setWaitlist((prev) => prev.filter((p) => p.id !== person.id));
+        if (selectedWaitlist?.id === person.id) setSelectedWaitlist(null);
+      }
+    } finally {
+      setWaitlistActioning(null);
+    }
+  };
+
   // ─── Handle member status action ────────────────────────────────────────────
 
   const handleUnlockIdentity = async (member: Member) => {
@@ -388,25 +412,33 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
 
   const openMemberDeleteConfirm = (member: Member, e?: React.MouseEvent) => {
     e?.stopPropagation();
+    setDeleteError(null);
     setDeleteConfirmMember(member);
   };
 
   const handleConfirmMemberDelete = async () => {
     if (!deleteConfirmMember || deleteSubmitting) return;
     setDeleteSubmitting(true);
+    setDeleteError(null);
     try {
       const res = await fetch("/api/admin/members", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: deleteConfirmMember.id }),
       });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (res.ok) {
         const removedId = deleteConfirmMember.id;
         setMembers((prev) => prev.filter((m) => m.id !== removedId));
         setSelectedMember((prev) => (prev?.id === removedId ? null : prev));
         setMessagingMember((prev) => (prev?.id === removedId ? null : prev));
         setDeleteConfirmMember(null);
+        setDeleteError(null);
+      } else {
+        setDeleteError(data.error ?? `Delete failed (${res.status})`);
       }
+    } catch {
+      setDeleteError("Network error — could not delete member.");
     } finally {
       setDeleteSubmitting(false);
     }
@@ -461,12 +493,12 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
                   background:"#0f1729",display:"flex",alignItems:"center",justifyContent:"center",
                   color:"white",fontSize:"11px",fontWeight:700,
                 }}>
-                  {initials(member.firstName, member.lastName)}
+                  {formatDisplayInitials(member)}
                 </div>
 
                 {/* Name + relationship */}
                 <div style={{ display:"flex", alignItems:"center", gap:"6px", minWidth:"130px" }}>
-                  <span style={nameStyle}>{member.firstName} {member.lastName}</span>
+                  <span style={nameStyle}>{formatDisplayName(member)}</span>
                   <RelBadge value={member.relationship} />
                 </div>
 
@@ -668,19 +700,38 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
               <div style={nameStyle}>{person.firstName} {person.lastName}</div>
               <div className="al-col-secondary" style={emailStyle}>{person.email}</div>
               <div className="al-col-secondary" style={metaStyle}>{person.phone ?? "—"} · {shortDate(person.createdAt)}</div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/invite?prefill=${encodeURIComponent(person.email)}`;
-                }}
-                style={{
-                  background:"#0f1729", color:"white", border:"none",
-                  borderRadius:"7px", fontSize:"11px", fontWeight:700,
-                  padding:"4px 10px", cursor:"pointer", flexShrink:0,
-                }}
-              >
-                Invite →
-              </button>
+              <div style={{display:"flex", alignItems:"center", gap:"6px", marginLeft:"auto", flexShrink:0}} onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.href = `/invite?prefill=${encodeURIComponent(person.email)}`;
+                  }}
+                  style={{
+                    background:"#0f1729", color:"white", border:"none",
+                    borderRadius:"7px", fontSize:"11px", fontWeight:700,
+                    padding:"4px 10px", cursor:"pointer",
+                  }}
+                >
+                  Invite →
+                </button>
+                <button
+                  disabled={waitlistActioning === person.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleWaitlistDelete(person);
+                  }}
+                  style={{
+                    display:"flex", alignItems:"center", gap:"4px",
+                    background:"#f5f5f4", color:"#78716c",
+                    border:"1px solid #e7e5e4", borderRadius:"6px",
+                    fontSize:"11px", fontWeight:700,
+                    padding:"3px 8px", cursor:"pointer",
+                  }}
+                >
+                  <Trash2 style={{width:"11px",height:"11px"}} />
+                  {waitlistActioning === person.id ? "…" : "Delete"}
+                </button>
+              </div>
             </div>
           ))}
         </section>
@@ -700,10 +751,10 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
             >×</button>
 
             <div style={{width:"48px",height:"48px",borderRadius:"50%",background:"#0f1729",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:700}}>
-              {initials(selectedMember.firstName, selectedMember.lastName)}
+              {formatDisplayInitials(selectedMember)}
             </div>
             <h2 style={{fontSize:"22px",fontWeight:800,color:"#1c1917",marginTop:"12px"}}>
-              {selectedMember.firstName} {selectedMember.lastName}
+              {formatDisplayName(selectedMember)}
             </h2>
             <p style={{fontSize:"14px",color:"#78716c",marginTop:"4px"}}>{selectedMember.email}</p>
 
@@ -900,9 +951,14 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
             </h3>
             <p style={{fontSize:"14px",color:"#57534e",margin:0,lineHeight:1.55}}>
               This permanently deletes{" "}
-              <strong>{deleteConfirmMember.firstName} {deleteConfirmMember.lastName}</strong>
-              {" "}({deleteConfirmMember.email}) — profile, sessions, studios they own, and related data tied by cascade rules. This cannot be undone.
+              <strong>{formatDisplayName(deleteConfirmMember)}</strong>
+              {" "}({deleteConfirmMember.email}) — profile, sessions, Msg Vault participation, trust units, and related data. This cannot be undone.
             </p>
+            {deleteError ? (
+              <p role="alert" style={{ fontSize: 13, color: "#b91c1c", margin: 0, lineHeight: 1.45 }}>
+                {deleteError}
+              </p>
+            ) : null}
             <div style={{display:"flex",gap:"10px",justifyContent:"flex-end",flexWrap:"wrap"}}>
               <button
                 type="button"
@@ -1088,12 +1144,28 @@ export function AdminLists({ members: initialMembers, invites: initialInvites, w
               <InfoRow label="Email">{selectedWaitlist.email}</InfoRow>
             </div>
 
-            <button
-              onClick={() => { window.location.href = `/invite?prefill=${encodeURIComponent(selectedWaitlist.email)}`; }}
-              style={{width:"100%",height:"44px",background:"#0f1729",color:"white",fontWeight:700,borderRadius:"10px",fontSize:"14px",border:"none",cursor:"pointer",marginTop:"24px"}}
-            >
-              Send Invite →
-            </button>
+            <div style={{display:"flex", gap:"10px", marginTop:"24px"}}>
+              <button
+                onClick={() => { window.location.href = `/invite?prefill=${encodeURIComponent(selectedWaitlist.email)}`; }}
+                style={{flex:1,height:"44px",background:"#0f1729",color:"white",fontWeight:700,borderRadius:"10px",fontSize:"14px",border:"none",cursor:"pointer"}}
+              >
+                Send Invite →
+              </button>
+              <button
+                disabled={waitlistActioning === selectedWaitlist.id}
+                onClick={() => handleWaitlistDelete(selectedWaitlist)}
+                style={{
+                  display:"flex", alignItems:"center", justifyContent:"center", gap:"6px",
+                  height:"44px", padding:"0 16px",
+                  background:"#f5f5f4", color:"#78716c",
+                  border:"1px solid #e7e5e4", borderRadius:"10px",
+                  fontSize:"14px", fontWeight:700, cursor:"pointer",
+                }}
+              >
+                <Trash2 style={{width:"14px",height:"14px"}} />
+                {waitlistActioning === selectedWaitlist.id ? "…" : "Delete"}
+              </button>
+            </div>
           </div>
         </div>
       )}

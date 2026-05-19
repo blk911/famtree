@@ -7,7 +7,14 @@ import { hashPassword, setSessionCookie } from "@/lib/auth";
 import { normalizeInviteEmail } from "@/lib/invite";
 import { sendWelcomeEmail } from "@/lib/email";
 import { resolveTrustUnitPendingInvitesOnRegister } from "@/lib/trust/tuProposal";
-import { ensurePolicyProfile } from "@/lib/aihsafe/policy";
+import { materializeInviteOutcome } from "@/lib/aihsafe/invites/materializeInviteOutcome";
+import {
+  InviteRegisterValidationError,
+  validateRegistrationAgainstInvite,
+} from "@/lib/aihsafe/invites/validateRegisterInvite";
+import { isBusinessInviteIntent } from "@/types/aihsafe/invite-intent";
+import { resolveInviteIntentFromRow } from "@/lib/aihsafe/invites/invite-fields";
+import { shouldResolveTrustUnitPendingOnRegister } from "@/lib/aihsafe/invites/inviteRegisterPolicy";
 import { isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 import { z } from "zod";
 
@@ -48,6 +55,9 @@ export async function POST(req: NextRequest) {
     let inviteRelationship: string | null = null;
     let invitedById: string | null = null;
     let consumedInviteId: string | null = null;
+    let acceptedInvite: Awaited<ReturnType<typeof prisma.invite.findUnique>> = null;
+    const parsedDob = dateOfBirth ? new Date(dateOfBirth) : null;
+
     if (inviteToken) {
       const invite = await prisma.invite.findUnique({ where: { token: inviteToken } });
       if (!invite || invite.status !== "ACCEPTED") {
@@ -62,9 +72,18 @@ export async function POST(req: NextRequest) {
           { status: 403 }
         );
       }
+      try {
+        validateRegistrationAgainstInvite(invite, parsedDob);
+      } catch (err) {
+        if (err instanceof InviteRegisterValidationError) {
+          return NextResponse.json({ error: err.message, code: err.code }, { status: 400 });
+        }
+        throw err;
+      }
       inviteRelationship = invite.relationship ?? null;
-      invitedById = invite.senderId;
+      invitedById = invite.sponsorUserId ?? invite.senderId;
       consumedInviteId = invite.id;
+      acceptedInvite = invite;
     }
 
     // Determine role
@@ -79,7 +98,7 @@ export async function POST(req: NextRequest) {
         passwordHash,
         firstName,
         lastName,
-        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+        dateOfBirth: parsedDob,
         role,
         relationship: inviteRelationship,
         invitedById: invitedById ?? undefined,
@@ -96,16 +115,21 @@ export async function POST(req: NextRequest) {
         where: { token: inviteToken },
         data: { status: "REGISTERED" },
       });
-      await resolveTrustUnitPendingInvitesOnRegister(user.id, consumedInviteId);
+      const regIntent = acceptedInvite ? resolveInviteIntentFromRow(acceptedInvite) : null;
+      if (shouldResolveTrustUnitPendingOnRegister(regIntent)) {
+        await resolveTrustUnitPendingInvitesOnRegister(user.id, consumedInviteId);
+      }
     }
 
-    // Sponsor ↔ new member bond (invite path only) — Fam Units / graph use ACCEPTED rows.
-    if (inviteToken && invitedById) {
+    // Sponsor ↔ new member bond (invite path only) — not used for business-only authority.
+    if (inviteToken && invitedById && acceptedInvite) {
+      const intent = resolveInviteIntentFromRow(acceptedInvite);
       const sponsor = await prisma.user.findUnique({
         where: { id: invitedById },
         select: { id: true, role: true, email: true },
       });
       if (
+        !isBusinessInviteIntent(intent) &&
         sponsor &&
         isHumanTrustEligible(sponsor) &&
         isHumanTrustEligible({ role: user.role, email: user.email })
@@ -129,10 +153,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Create the user's Family Safe policy profile with safe defaults for their age tier.
-    // Fire-and-forget: profile creation failure must not block successful registration.
-    // resolvePolicyProfile() gracefully handles missing rows (returns system defaults).
-    ensurePolicyProfile(user.id, user.dateOfBirth ?? null).catch(console.error);
+    if (acceptedInvite) {
+      await materializeInviteOutcome(user.id, acceptedInvite, user.dateOfBirth ?? null);
+    }
 
     await setSessionCookie(user.id, req);
     await sendWelcomeEmail(user).catch(console.error); // non-blocking

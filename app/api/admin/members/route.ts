@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { logActivity } from "@/lib/activity/log";
+import { deleteMemberAccount } from "@/lib/admin/delete-member-account";
 import { z } from "zod";
 
 const patchSchema = z
@@ -113,9 +114,7 @@ export async function DELETE(req: NextRequest) {
       }
 
       await prisma.$transaction(async (tx) => {
-        await tx.invite.deleteMany({ where: { senderId: userId } });
-        await tx.passwordResetToken.deleteMany({ where: { userId } });
-        await tx.user.delete({ where: { id: userId } });
+        await deleteMemberAccount(userId, tx);
       });
 
       await logActivity({
@@ -126,10 +125,24 @@ export async function DELETE(req: NextRequest) {
       });
 
       return NextResponse.json({ success: true });
-    } catch (err: any) {
-      if (err.message === "UNAUTHORIZED") {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === "UNAUTHORIZED") {
         return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
       }
+      const code =
+        err && typeof err === "object" && "code" in err
+          ? String((err as { code: string }).code)
+          : "";
+      if (code === "P2003") {
+        return NextResponse.json(
+          {
+            error:
+              "Cannot delete this member yet — related Msg Vault or Family Safe records still reference them. Contact engineering.",
+          },
+          { status: 409 },
+        );
+      }
+      console.error("[DELETE /api/admin/members]", err);
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
   });

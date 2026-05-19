@@ -29,6 +29,7 @@ export default async function AihSafePage() {
     firstName: user.firstName ?? "",
     lastName:  user.lastName ?? "",
     photoUrl:  user.photoUrl ?? null,
+    role:      user.role,
   };
 
   return (

@@ -6,6 +6,7 @@ import {
   Plus, Image as ImageIcon, Users, ChevronDown,
 } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
+import { formatDisplayInitials } from "@/lib/user/display-name";
 import { displayRecipientsFromVisibility } from "@/lib/posts/displayRecipients";
 import { checkBrowserPostMediaFile } from "@/lib/media/image-sniff";
 import {
@@ -276,7 +277,7 @@ export default function ProfilePage() {
   if (!profile) return <div className="alert-error">Failed to load profile.</div>;
 
   const { user } = profile;
-  const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+  const initials = formatDisplayInitials(user);
 
   return (
     <div className="content-col space-y-6">

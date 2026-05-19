@@ -1,7 +1,7 @@
 "use client";
 // app/(auth)/register/page.tsx
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { TreePine, Eye, EyeOff, Upload } from "lucide-react";
@@ -12,6 +12,8 @@ function RegisterForm() {
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get("token") ?? undefined;
   const prefillEmail = searchParams.get("email") ?? "";
+  const [requiresDob, setRequiresDob] = useState(false);
+  const [minorInvite, setMinorInvite] = useState(false);
 
   const [form, setForm] = useState({
     firstName: "",
@@ -25,6 +27,17 @@ function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!inviteToken) return;
+    fetch(`/api/invite/${inviteToken}?forRegister=1`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.requiresDateOfBirth) setRequiresDob(true);
+        if (data.isMinorInvite) setMinorInvite(true);
+      })
+      .catch(() => undefined);
+  }, [inviteToken]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,12 +60,19 @@ function RegisterForm() {
       return;
     }
 
+    const dobString =
+      dob.year.length === 4 && dob.month && dob.day
+        ? `${dob.year}-${dob.month.padStart(2, "0")}-${dob.day.padStart(2, "0")}`
+        : undefined;
+
+    if ((requiresDob || minorInvite) && !dobString) {
+      setLoading(false);
+      setError("Date of birth is required for this family invite so we can apply the right Boundaries.");
+      return;
+    }
+
     try {
       // 1. Register account
-      const dobString =
-        dob.year.length === 4 && dob.month && dob.day
-          ? `${dob.year}-${dob.month.padStart(2, "0")}-${dob.day.padStart(2, "0")}`
-          : undefined;
 
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -105,7 +125,9 @@ function RegisterForm() {
         </h1>
         <p className="text-sm text-stone-500">
           {inviteToken
-            ? "Create your account to complete your invitation"
+            ? minorInvite
+              ? "Create your account to complete your invitation. Children and teens join with Boundaries on by default."
+              : "Create your account to complete your invitation"
             : "You'll be the founding member"}
         </p>
       </div>

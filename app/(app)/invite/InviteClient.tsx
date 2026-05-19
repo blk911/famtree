@@ -7,6 +7,19 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Mail, Send, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, X, Ban, Trash2 } from "lucide-react";
 import TrustUnitModal from "@/components/invite/TrustUnitModal";
+import {
+  type InviteKind,
+  INVITE_KINDS,
+  STEWARD_DECLARATION_LABEL,
+  MINOR_BOUNDARIES_NOTE,
+  BUSINESS_WORKSPACE_NOTE,
+  inviteEmailSubject,
+  inviteKindLabel,
+  confirmChecklist,
+  previewBodyLine,
+  inviteIntentForKind,
+  defaultRelationshipForKind,
+} from "@/components/invite/inviteUxCopy";
 
 interface Invite {
   id: string;
@@ -61,7 +74,7 @@ export const RELATIONSHIPS = [
   { value: "sibling", label: "Sibling", color: "#0891b2" },
   { value: "spouse",  label: "Spouse",  color: "#be185d" },
   { value: "so",      label: "S.O.",    color: "#be185d" },
-  { value: "frnd",    label: "Frnd",    color: "#6366f1" },
+  { value: "frnd",    label: "Friend",  color: "#6366f1" },
   { value: "other",   label: "Other",   color: "#78716c" },
 ] as const;
 
@@ -95,7 +108,7 @@ function RelationshipPicker({ value, onChange }: { value: string; onChange: (v: 
           transition: "all 0.12s",
         }}
       >
-        {selected ? selected.label : "＋ tag"}
+        {selected ? selected.label : "＋ relationship"}
         {selected && (
           <span
             onClick={(e) => { e.stopPropagation(); onChange(""); }}
@@ -148,11 +161,19 @@ const STATUS_CONFIG = {
 // ── Confirm modal (portalled to document.body) ────────────────────────────────
 
 function ConfirmModal({
-  recipientName, recipientEmail, relationship, sender, onConfirm, onCancel, sending,
+  recipientName,
+  recipientEmail,
+  relationship,
+  inviteKind,
+  sender,
+  onConfirm,
+  onCancel,
+  sending,
 }: {
   recipientName: string;
   recipientEmail: string;
   relationship: string;
+  inviteKind: InviteKind;
   sender: Me;
   onConfirm: () => void;
   onCancel: () => void;
@@ -190,8 +211,11 @@ function ConfirmModal({
             {([
               ["To",      recipientName ? `${recipientName} <${recipientEmail}>` : recipientEmail],
               ["From",    `${sender.firstName} ${sender.lastName} <noreply@AMIHUMAN.NET.app>`],
-              ["Subject", `You've been invited to join my family`],
-              ...(relationship ? [["Relation", RELATIONSHIPS.find((r) => r.value === relationship)?.label ?? relationship]] : []),
+              ["Subject", inviteEmailSubject(inviteKind)],
+              ["Invite type", inviteKindLabel(inviteKind)],
+              ...(relationship && inviteKind === "family"
+                ? [["Relationship", RELATIONSHIPS.find((r) => r.value === relationship)?.label ?? relationship]]
+                : []),
             ] as [string, string][]).map(([lbl, val], i, arr) => (
               <div key={lbl} style={{ fontSize:"13px", marginBottom: i < arr.length - 1 ? "7px" : 0 }}>
                 <span style={{ fontWeight:700, color:"#374151", display:"inline-block", minWidth:52 }}>{lbl}:</span>
@@ -213,7 +237,7 @@ function ConfirmModal({
 
           {/* Checklist */}
           <div style={{ background:"#f0fdf4", borderRadius:"10px", padding:"12px 14px", marginBottom:"20px", border:"1px solid #bbf7d0" }}>
-            {["Invite email sent immediately", "Recipient identifies you to unlock registration", "Their account links to yours in the tree", "Appears as Pending until they join"].map((line, i, arr) => (
+            {confirmChecklist(inviteKind).map((line, i, arr) => (
               <div key={i} style={{ display:"flex", gap:"8px", marginBottom: i < arr.length - 1 ? "5px" : 0 }}>
                 <span style={{ fontSize:"12px", color:"#16a34a", fontWeight:700 }}>✓</span>
                 <span style={{ fontSize:"13px", color:"#166534" }}>{line}</span>
@@ -248,6 +272,9 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   const [recipientName,    setRecipientName]    = useState("");
   const [recipientEmail,   setRecipientEmail]   = useState("");
   const [relationship,     setRelationship]     = useState("");
+  const [inviteKind,       setInviteKind]       = useState<InviteKind>("friend");
+  const [minorBracket,     setMinorBracket]     = useState<"child" | "teen">("child");
+  const [stewardDeclaration, setStewardDeclaration] = useState(false);
   const [emailError,       setEmailError]       = useState("");
   const [showModal,        setShowModal]        = useState(false);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
@@ -269,9 +296,16 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
 
   // ── derived values — computed BEFORE any handler that references them ──
   const hasEmail      = recipientEmail.includes("@");
-  const canSend       = hasEmail && !!relationship;
+  const canSend       =
+    hasEmail &&
+    (inviteKind === "minor"
+      ? stewardDeclaration
+      : inviteKind === "family"
+        ? !!relationship
+        : true);
   const senderInitials = `${me.firstName[0]}${me.lastName[0]}`.toUpperCase();
-  const subject       = `You've been invited to join my family`;
+  const subject       = inviteEmailSubject(inviteKind);
+  const kindMeta      = INVITE_KINDS.find((k) => k.id === inviteKind);
   const pendingCount  = invites.filter((i) => i.status === "PENDING").length;
   const joinedCount = invites.filter((i) => i.status === "REGISTERED").length;
 
@@ -328,8 +362,12 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       setEmailError("Please enter a valid email address first.");
       return;
     }
-    if (!relationship) {
-      setEmailError("Please select a relationship before sending.");
+    if (inviteKind === "family" && !relationship) {
+      setEmailError("Please choose how they are related to you (for example parent, sibling, or spouse).");
+      return;
+    }
+    if (inviteKind === "minor" && !stewardDeclaration) {
+      setEmailError(STEWARD_DECLARATION_LABEL);
       return;
     }
     setEmailError("");
@@ -410,7 +448,16 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         cache: "no-store",
-        body: JSON.stringify({ recipientEmail, relationship }),
+        body: JSON.stringify({
+          recipientEmail,
+          relationship: defaultRelationshipForKind(inviteKind, relationship),
+          inviteIntent: inviteIntentForKind(inviteKind, { relationship, minorBracket }),
+          inviteeAgeBracket:
+            inviteKind === "minor"
+              ? minorBracket
+              : "adult",
+          stewardDeclaration: inviteKind === "minor" ? stewardDeclaration : false,
+        }),
       });
 
       let data: {
@@ -439,6 +486,9 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         setRecipientName("");
         setRecipientEmail("");
         setRelationship("");
+        setStewardDeclaration(false);
+        setInviteKind("friend");
+        setRelationship("");
         setEmailError("");
       } else if (res.status === 502 && data.inviteId) {
         console.warn("[amihuman] POST /api/invite email path failed (invite saved)", {
@@ -455,6 +505,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         setRecipientName("");
         setRecipientEmail("");
         setRelationship("");
+        setStewardDeclaration(false);
         setEmailError("");
       } else {
         console.warn("[amihuman] POST /api/invite failed — paste supportRef in Vercel Logs search", {
@@ -550,6 +601,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
           recipientName={recipientName}
           recipientEmail={recipientEmail}
           relationship={relationship}
+          inviteKind={inviteKind}
           sender={me}
           onConfirm={handleConfirmSend}
           onCancel={() => setShowModal(false)}
@@ -718,22 +770,99 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
                   <span style={{ fontSize:"13px", color:"#374151" }}>{subject}</span>
                 </div>
 
-                <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid #ede9fe", padding:"8px 18px", gap:"8px" }}>
-                  <span style={{ fontSize:"13px", fontWeight:700, color:"#374151", minWidth:58, flexShrink:0 }}>Relation:</span>
-                  <RelationshipPicker value={relationship} onChange={setRelationship} />
+                <div style={{ borderTop:"1px solid #ede9fe", padding:"14px 18px" }}>
+                  <p style={{ fontSize:"13px", fontWeight:700, color:"#374151", margin:"0 0 10px" }}>
+                    Who are you inviting?
+                  </p>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"12px" }}>
+                    {INVITE_KINDS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          setInviteKind(opt.id);
+                          setStewardDeclaration(false);
+                          if (opt.id === "friend") setRelationship("frnd");
+                          else if (opt.id !== "family") setRelationship("");
+                        }}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: "999px",
+                          border: inviteKind === opt.id ? "1px solid #7c3aed" : "1px solid #e7e5e4",
+                          background: inviteKind === opt.id ? "#ede9fe" : "white",
+                          color: inviteKind === opt.id ? "#6d28d9" : "#57534e",
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  {kindMeta && (
+                    <p style={{ fontSize:"12px", color:"#57534e", margin:"0 0 12px", lineHeight:1.55 }}>
+                      {kindMeta.description}
+                    </p>
+                  )}
+                  {inviteKind === "minor" && (
+                    <div style={{ background:"#fffbeb", border:"1px solid #fde68a", borderRadius:"10px", padding:"12px 14px", marginBottom:"12px" }}>
+                      <p style={{ fontSize:"12px", color:"#92400e", margin:"0 0 10px", lineHeight:1.5 }}>
+                        {MINOR_BOUNDARIES_NOTE}
+                      </p>
+                      <p style={{ fontSize:"12px", fontWeight:700, color:"#78350f", margin:"0 0 8px" }}>Age group</p>
+                      <div style={{ display:"flex", gap:"6px", marginBottom:"12px" }}>
+                        {(["child", "teen"] as const).map((b) => (
+                          <button
+                            key={b}
+                            type="button"
+                            onClick={() => setMinorBracket(b)}
+                            style={{
+                              padding: "4px 12px",
+                              borderRadius: "999px",
+                              border: minorBracket === b ? "1px solid #7c3aed" : "1px solid #e7e5e4",
+                              background: minorBracket === b ? "#ede9fe" : "white",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {b === "child" ? "Under 13" : "13–17"}
+                          </button>
+                        ))}
+                      </div>
+                      <label style={{ display:"flex", gap:"8px", alignItems:"flex-start", cursor:"pointer", fontSize:"13px", color:"#44403c", lineHeight:1.5 }}>
+                        <input
+                          type="checkbox"
+                          checked={stewardDeclaration}
+                          onChange={(e) => setStewardDeclaration(e.target.checked)}
+                          style={{ marginTop:"3px" }}
+                        />
+                        <span>{STEWARD_DECLARATION_LABEL}</span>
+                      </label>
+                    </div>
+                  )}
+                  {inviteKind === "business" && (
+                    <p style={{ fontSize:"12px", color:"#57534e", margin:"0 0 8px", lineHeight:1.55, fontStyle:"italic" }}>
+                      {BUSINESS_WORKSPACE_NOTE}
+                    </p>
+                  )}
+                  {inviteKind === "family" && (
+                    <div style={{ display:"flex", alignItems:"center", gap:"8px", flexWrap:"wrap" }}>
+                      <span style={{ fontSize:"12px", fontWeight:700, color:"#57534e" }}>How are you related?</span>
+                      <RelationshipPicker value={relationship} onChange={setRelationship} />
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Email body */}
               <div style={{ background:"white", padding:"28px 24px", textAlign:"center" }}>
                 <p style={{ fontSize:"15px", fontWeight:600, color:"#1e1b4b", margin:"0 0 4px" }}>
-                  {recipientName ? `Hi ${recipientName.split(" ")[0]},` : "Someone in your family network"}
+                  {previewBodyLine(inviteKind, recipientName ? recipientName.split(" ")[0] : undefined)}
                 </p>
                 <p style={{ fontSize:"13px", color:"#6b7280", margin:"0 0 22px", lineHeight:1.6 }}>
-                  {recipientName
-                    ? `You've been personally invited to join my family.`
-                    : "They've invited you to join their family."}
-                  <br />Can you identify who invited you?
+                  Can you identify who invited you? Your invite email includes your photo only — not your name.
                 </p>
 
                 <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"10px" }}>
@@ -776,10 +905,10 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
             <div style={{ background: "#faf5ff", borderRadius: "16px", padding: "24px 22px", border: "1px solid #ede9fe" }}>
               <p style={{ fontSize:"13px", fontWeight:800, color:"#7c3aed", textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 14px" }}>How it works</p>
               {[
-                { title:"Fill in their name & email",    desc:"Enter who you're inviting — the name personalises the greeting." },
+                { title:"Choose who you're inviting",     desc:"Friend, family member, child or teen, trusted adult, or work colleague — each path works differently." },
                 { title:"They receive your photo only",  desc:"Your photo is sent but NOT your name — they must identify you." },
                 { title:"They type your name to unlock", desc:"3 wrong guesses and the invite expires automatically." },
-                { title:"They create their account",     desc:"Once verified they join the tree, linked directly to you." },
+                { title:"They create their account",     desc:"They join with the right connection for the invite type you chose." },
               ].map((step, i) => (
                 <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:"14px", marginBottom: i < 3 ? "14px" : 0 }}>
                   <span style={{ width:28, height:28, borderRadius:"50%", flexShrink:0, background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"13px", fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center" }}>{i + 1}</span>

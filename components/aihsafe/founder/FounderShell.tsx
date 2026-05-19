@@ -12,6 +12,7 @@ import {
 import { PendingAttention }           from "@/components/aihsafe/founder/PendingAttention";
 import { FamilyHealthPanel }          from "@/components/aihsafe/founder/FamilyHealthPanel";
 import { FounderSettingsEditor }      from "@/components/aihsafe/founder/FounderSettingsEditor";
+import { FamilySettingsView }         from "@/components/aihsafe/founder/FamilySettingsView";
 import { OverviewCommandCard }        from "@/components/aihsafe/founder/OverviewCommandCard";
 import { NextBestActions }            from "@/components/aihsafe/founder/NextBestActions";
 import { RecentActivityTeaser }       from "@/components/aihsafe/founder/RecentActivityTeaser";
@@ -260,11 +261,20 @@ export function FounderShell({
   const membershipCount   = mySpaces.reduce(
     (sum, u) => sum + u.members.filter((m) => !m.exitedAt).length, 0
   );
-  const isGuardian        = guardianLinks.some((l) => !l.revokedAt);
+  const isGuardian        = guardianLinks.some(
+    (l) => !l.revokedAt && l.guardianUserId === currentUserId,
+  );
 
   // ── Tab visibility + badges ─────────────────────────────────────────────────
   const visibleTabs  = getVisibleTabs(shellMode, isGuardian);
   const pendingCount = pendingApprovals.length + pendingInvites.length;
+
+  useEffect(() => {
+    const ids = visibleTabs.map((t) => t.id);
+    if (!ids.includes(activeTab)) {
+      setActiveTab(defaultTab(shellMode));
+    }
+  }, [visibleTabs, activeTab, shellMode]);
 
   return (
     <div style={{ minHeight: "100vh", background: "#fafaf9", padding: "24px 20px 64px", boxSizing: "border-box" }}>
@@ -402,7 +412,7 @@ export function FounderShell({
                 </div>
                 {!loading && mySpaces.length === 0 && (
                   <p style={{ fontSize: 13, color: "#78716c", margin: 0 }}>
-                    You haven&apos;t joined a trusted space yet. Your family steward will invite you in.
+                    You haven&apos;t joined a trusted space yet. Ask whoever invited you to add you to a space.
                   </p>
                 )}
                 {!loading && mySpaces.length > 0 && (
@@ -576,11 +586,13 @@ export function FounderShell({
 
         {/* ── SETTINGS ──────────────────────────────────────────── */}
         <TabPanel id="settings" activeTab={activeTab}>
-          {shellMode === "founder" && (
-            <div style={{ maxWidth: 680 }}>
+          <div style={{ maxWidth: 680 }}>
+            {shellMode === "founder" ? (
               <FounderSettingsEditor />
-            </div>
-          )}
+            ) : (
+              <FamilySettingsView shellMode={shellMode} isGuardian={isGuardian} />
+            )}
+          </div>
         </TabPanel>
 
       </div>

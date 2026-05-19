@@ -42,7 +42,7 @@ function buildCards(signals: DashboardActivitySignals): CardConfig[] {
       label: "Posts",
       Icon: Users,
       status: newPostsCount > 0 ? `${newPostsCount} new` : "All caught up",
-      action: "See family activity",
+      action: "See network activity",
       urgent: newPostsCount > 0,
     },
     {

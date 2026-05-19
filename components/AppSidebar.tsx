@@ -10,6 +10,7 @@ import {
 import { useState, useEffect } from "react";
 import type { User as PrismaUser } from "@prisma/client";
 import { getCurrentUserStudioHref, isStudiosPrimaryNavActive } from "@/lib/studios/getCurrentUserStudioHref";
+import { formatDisplayInitials, formatDisplayName } from "@/lib/user/display-name";
 
 interface Props { user: PrismaUser; open?: boolean; vaultNotificationCount?: number; }
 
@@ -59,7 +60,7 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
     router.refresh();
   };
 
-  const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+  const initials = formatDisplayInitials(user);
 
   const studiosHref = getCurrentUserStudioHref(user);
 
@@ -293,7 +294,7 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
           </div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:"14px",fontWeight:600,color:"white",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-              {user.firstName} {user.lastName}
+              {formatDisplayName(user)}
             </div>
             <div style={{fontSize:"11px",color:"rgba(255,255,255,0.4)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
               {user.email}

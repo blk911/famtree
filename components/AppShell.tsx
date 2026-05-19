@@ -255,6 +255,7 @@ export function AppShell({ user, coverUrl, children, vaultNotificationCount = 0 
               firstName: user.firstName,
               lastName: user.lastName,
               photoUrl: user.photoUrl,
+              role: user.role,
             }}
             coverUrl={coverUrl}
           />

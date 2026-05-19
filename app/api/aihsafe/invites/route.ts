@@ -13,7 +13,15 @@ import {
   emitAuditEvent,
   selectApprovalRecipients,
 } from "@/lib/aihsafe";
-import { createInvite } from "@/lib/invite";
+import {
+  InviteRoutingError,
+  routeInviteByIntent,
+} from "@/lib/aihsafe/invites/routeByIntent";
+import {
+  InviteIntent,
+  InviteeAgeBracket,
+  INVITE_INTENTS,
+} from "@/types/aihsafe/invite-intent";
 import { asAIHUserId, asTrustUnitId } from "@/types/aihsafe/ids";
 import { AuditEventKind } from "@/types/aihsafe/audit-events";
 import { AgeTier } from "@/types/aihsafe/age-tiers";
@@ -37,11 +45,14 @@ import type { InviteDTO } from "@/types/aihsafe/dto";
 // ─── Validation ───────────────────────────────────────────────────────────────
 
 const InviteMemberSchema = z.object({
-  trustUnitId:    z.string().min(1).optional(),
-  familyUnitId:   z.string().min(1).optional(),
-  recipientEmail: z.string().email(),
-  relationship:   z.enum(["parent", "child", "sibling", "spouse", "so", "frnd", "other"]),
-  targetAgeTier:  z.nativeEnum(AgeTier).optional(),
+  trustUnitId:          z.string().min(1).optional(),
+  familyUnitId:         z.string().min(1).optional(),
+  recipientEmail:       z.string().email(),
+  relationship:         z.enum(["parent", "child", "sibling", "spouse", "so", "frnd", "other"]),
+  targetAgeTier:        z.nativeEnum(AgeTier).optional(),
+  inviteIntent:         z.enum(INVITE_INTENTS as [string, ...string[]]).optional(),
+  inviteeAgeBracket:    z.enum(["child", "teen", "adult", "unknown"] as const).optional(),
+  stewardDeclaration:   z.boolean().optional(),
 }).refine(
   data => data.trustUnitId || data.familyUnitId,
   { message: "At least one of trustUnitId or familyUnitId is required" }
@@ -96,7 +107,16 @@ export async function POST(req: NextRequest) {
     return validationFail("Invalid request body", fields);
   }
 
-  const { recipientEmail, relationship, targetAgeTier, trustUnitId, familyUnitId } = parsed.data;
+  const {
+    recipientEmail,
+    relationship,
+    targetAgeTier,
+    trustUnitId,
+    familyUnitId,
+    inviteIntent: bodyIntent,
+    inviteeAgeBracket: bodyBracket,
+    stewardDeclaration,
+  } = parsed.data;
 
   const limitCheck = await checkInviteLimits(user.id);
   if (!limitCheck.allowed) return rateLimited(limitCheck.message);
@@ -146,6 +166,13 @@ export async function POST(req: NextRequest) {
     if (eligibleApprovers.length === 0) return governanceDenied(decision);
 
     const expiresAt  = approvalExpiresAt();
+    const minorBracket =
+      effectiveTargetAgeTier === AgeTier.TEEN
+        ? InviteeAgeBracket.TEEN
+        : effectiveTargetAgeTier &&
+            ([AgeTier.CHILD, AgeTier.PRETEEN] as AgeTier[]).includes(effectiveTargetAgeTier)
+          ? InviteeAgeBracket.CHILD
+          : null;
     const contextJson: Prisma.InputJsonValue = {
       action: "invite_member",
       recipientEmail,
@@ -153,6 +180,15 @@ export async function POST(req: NextRequest) {
       trustUnitId:  trustUnitId ?? null,
       familyUnitId: familyUnitId ?? null,
       targetAgeTier: targetAgeTier ?? null,
+      inviteIntent:
+        bodyIntent ??
+        (minorBracket === InviteeAgeBracket.TEEN
+          ? InviteIntent.TEEN
+          : minorBracket
+            ? InviteIntent.CHILD
+            : null),
+      inviteeAgeBracket: bodyBracket ?? minorBracket,
+      stewardDeclaration: stewardDeclaration ?? false,
     };
 
     const approvalRequests = await Promise.all(
@@ -188,10 +224,47 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Delegate to the existing invite system
-  const invite = await createInvite(user, recipientEmail, relationship);
-
   const minorTierSet: string[] = [AgeTier.CHILD, AgeTier.PRETEEN, AgeTier.TEEN];
+  const resolvedBracket =
+    bodyBracket ??
+    (effectiveTargetAgeTier === AgeTier.TEEN
+      ? InviteeAgeBracket.TEEN
+      : effectiveTargetAgeTier && minorTierSet.includes(effectiveTargetAgeTier)
+        ? InviteeAgeBracket.CHILD
+        : trustUnitId
+          ? InviteeAgeBracket.ADULT
+          : null);
+  const resolvedIntent =
+    bodyIntent ??
+    (resolvedBracket === InviteeAgeBracket.TEEN
+      ? InviteIntent.TEEN
+      : resolvedBracket === InviteeAgeBracket.CHILD
+        ? InviteIntent.CHILD
+        : trustUnitId
+          ? InviteIntent.BUSINESS_MEMBER
+          : InviteIntent.FAMILY_ADULT);
+
+  let invite;
+  try {
+    const routed = await routeInviteByIntent({
+      sender:              user,
+      recipientEmail,
+      relationship,
+      inviteIntent:        resolvedIntent,
+      inviteeAgeBracket:   resolvedBracket,
+      stewardDeclaration:  stewardDeclaration ?? false,
+      targetTrustUnitId:   trustUnitId ?? null,
+      targetFamilyUnitId:  familyUnitId ?? null,
+      allowAutoTrustUnit:  false,
+    });
+    invite = routed.invite;
+  } catch (err) {
+    if (err instanceof InviteRoutingError) {
+      return validationFail(err.message, [{ path: "inviteIntent", message: err.message }]);
+    }
+    throw err;
+  }
+
   const auditKind = effectiveTargetAgeTier && minorTierSet.includes(effectiveTargetAgeTier)
     ? AuditEventKind.INVITE_SENT_CHILD
     : AuditEventKind.INVITE_GUARDIAN_APPROVED;

@@ -13,6 +13,7 @@ import type {
   CreateActivityPostRequest,
   FounderSettingsDTO,
   PatchFounderSettingsRequest,
+  FamilyGovernanceViewDTO,
 } from "@/types/aihsafe/dto";
 
 // ─── Result union ─────────────────────────────────────────────────────────────
@@ -224,6 +225,10 @@ export async function patchFounderSettings(
       body:    JSON.stringify(patch),
     })
   );
+}
+
+export async function getFamilyGovernance(): Promise<AihResult<FamilyGovernanceViewDTO>> {
+  return parseEnvelope(await fetch("/api/aihsafe/family-governance"));
 }
 
 // ─── Memberships ──────────────────────────────────────────────────────────────

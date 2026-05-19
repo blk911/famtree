@@ -258,6 +258,25 @@ export interface FounderSettingsDTO {
   updatedAt:                       string; // ISO 8601
 }
 
+/** Read-only family + personal governance snapshot (GET /api/aihsafe/family-governance). */
+export interface PersonalGovernanceDTO {
+  ageTierSnapshot: string;
+  postingAllowed: boolean;
+  postingRequiresGuardianApproval: boolean;
+  dailyPostLimit: number;
+  dailyInviteLimit: number;
+  defaultVisibility: string;
+  allowedVisibilityScopes: string[];
+  inviteAllowed: boolean;
+  privateThreadsEnabled: boolean;
+  trustedAdultsEnabled: boolean;
+}
+
+export interface FamilyGovernanceViewDTO {
+  family: FounderSettingsDTO;
+  personal: PersonalGovernanceDTO;
+}
+
 /** Body for PATCH /api/aihsafe/founder-settings — all fields optional. */
 export interface PatchFounderSettingsRequest {
   requireGuardianApprovalForMinors?: boolean;

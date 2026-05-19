@@ -85,7 +85,7 @@ export function NextBestActions({
         icon:    "💬",
         bg:      "#f0f9ff",
         border:  "#bae6fd",
-        label:   "Post a family update",
+        label:   "Post an update",
         desc:    "Share a moment with your trusted circles",
         onClick: () => onTabChange("activity"),
       });
@@ -119,7 +119,7 @@ export function NextBestActions({
       icon:    "💬",
       bg:      "#f0f9ff",
       border:  "#bae6fd",
-      label:   "Post a family update",
+      label:   "Post an update",
       desc:    "Share a moment with your circles",
       onClick: () => onTabChange("activity"),
     });
