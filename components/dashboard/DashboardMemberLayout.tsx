@@ -94,7 +94,7 @@ export function DashboardMemberLayout({
   const handleTabChange = useCallback((next: DashboardTabId) => setTab(next), []);
 
   return (
-    <>
+    <div className="dashboard-member-stack">
       <DashboardActivityCtaStrip
         activeTab={tab}
         onSelectTab={handleTabChange}
@@ -125,6 +125,6 @@ export function DashboardMemberLayout({
         bondPeers={bondPeers}
         vaultNotificationCount={vaultNotificationCount}
       />
-    </>
+    </div>
   );
 }

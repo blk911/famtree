@@ -100,8 +100,8 @@ export function DashboardHubColumns({
       trustUnits={trustUnits}
       onPrivateTabSelect={handlePrivateTabSelect}
     >
-      <div className="thread-hub-grid">
-        <div className="thread-hub-grid__main" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="dashboard-body thread-hub-grid">
+        <div className="dashboard-body__main thread-hub-grid__main" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <DashboardTrustUnitGate
             initialRequests={initialRequests}
             currentUserId={currentUserId}
@@ -125,7 +125,7 @@ export function DashboardHubColumns({
             vaultNotificationCount={vaultNotificationCount}
           />
         </div>
-        <div className="thread-hub-grid__rail">
+        <div className="dashboard-body__rail thread-hub-grid__rail">
           <DashboardContextRail
             flat={flat}
             totalMembers={totalMembers}

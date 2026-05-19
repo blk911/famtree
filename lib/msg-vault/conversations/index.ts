@@ -207,6 +207,21 @@ export async function createThreadConversation(
     throw notFound("Trust unit not found.");
   }
 
+  const existingThread = await prisma.aihMsgConversation.findFirst({
+    where: {
+      trustUnitId,
+      kind: { in: [MsgConversationKind.THREAD, MsgConversationKind.SPACE_THREAD] },
+      status: "ACTIVE",
+    },
+    include: {
+      participants: { where: { status: "ACTIVE" }, include: PARTICIPANT_INCLUDE },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+  if (existingThread) {
+    return toConversationDTO(existingThread, existingThread.participants);
+  }
+
   const policy = await resolvePolicyProfile(actorUserId);
   const visibilityScope = input.visibilityScope ?? VisibilityScope.TRUST_UNIT;
   const kind =

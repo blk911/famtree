@@ -56,18 +56,21 @@ export function DashboardPrivateThreadCenter({
   );
 
   const loadMessages = useCallback(async (conversationId: string) => {
+    const loadSeq = ++messagesLoadSeqRef.current;
     setMessagesLoading(true);
     setMessagesError(null);
     try {
       const result = await fetchMessages(conversationId, undefined, { limit: 100 });
+      if (loadSeq !== messagesLoadSeqRef.current) return;
       setMessages(result.items);
     } catch (err) {
+      if (loadSeq !== messagesLoadSeqRef.current) return;
       setMessages([]);
       setMessagesError(
         err instanceof MsgVaultApiError ? err.message : "Could not load messages.",
       );
     } finally {
-      setMessagesLoading(false);
+      if (loadSeq === messagesLoadSeqRef.current) setMessagesLoading(false);
     }
   }, []);
 

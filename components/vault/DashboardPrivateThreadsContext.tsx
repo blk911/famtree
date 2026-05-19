@@ -17,6 +17,7 @@ import {
 } from "@/lib/msg-vault/api-client";
 import type { MsgConversationDTO, MsgMessageDTO } from "@/types/msg-vault";
 import { MsgConversationKind } from "@/types/msg-vault";
+import { makeDirectConversationKey } from "@/lib/msg-vault/directKey";
 import { conversationUnreadCount } from "@/components/vault/conversation-unread";
 
 type TrustUnitRow = {
@@ -111,13 +112,20 @@ export function DashboardPrivateThreadsProvider({
   );
 
   const findDirectWithPeer = useCallback(
-    (peerUserId: string) =>
-      conversations.find(
-        (c) =>
-          c.kind === MsgConversationKind.DIRECT &&
-          c.participants?.some((p) => p.userId === peerUserId),
-      ),
-    [conversations],
+    (peerUserId: string) => {
+      const key = makeDirectConversationKey(currentUserId, peerUserId);
+      return (
+        conversations.find(
+          (c) => c.kind === MsgConversationKind.DIRECT && c.directKey === key,
+        ) ??
+        conversations.find(
+          (c) =>
+            c.kind === MsgConversationKind.DIRECT &&
+            c.participants?.some((p) => p.userId === peerUserId),
+        )
+      );
+    },
+    [conversations, currentUserId],
   );
 
   const findThreadForUnit = useCallback(
