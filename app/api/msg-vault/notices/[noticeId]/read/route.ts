@@ -6,6 +6,7 @@ import { requireAuth } from "@/lib/auth";
 import { ok, unauthenticated, validationFail } from "@/lib/aihsafe/api/envelopes";
 import { handleMsgVaultError } from "@/lib/msg-vault/route-utils";
 import { markNoticeRead } from "@/lib/msg-vault/notices";
+import { parseDerivedNoticeId } from "@/lib/msg-vault/notices/refs";
 
 type RouteCtx = { params: Promise<{ noticeId: string }> };
 
@@ -18,7 +19,9 @@ export async function POST(_req: Request, routeCtx: RouteCtx) {
     }
 
     const notice = await markNoticeRead(user.id, noticeId);
-    return ok({ notice });
+    const id =
+      parseDerivedNoticeId(noticeId) && notice.id !== noticeId ? noticeId : notice.id;
+    return ok({ notice: { ...notice, id } });
   } catch (err) {
     if (err instanceof Error && err.message === "UNAUTHORIZED") {
       return unauthenticated();

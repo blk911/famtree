@@ -15,14 +15,14 @@ import {
   fetchMessages,
   fetchNotices,
   MsgVaultApiError,
+  type VaultNoticeItem,
 } from "@/lib/msg-vault/api-client";
 import type {
   GovernanceOverlayDTO,
   MsgConversationDTO,
   MsgMessageDTO,
-  MsgNoticeDTO,
 } from "@/types/msg-vault";
-import { MsgConversationKind, MsgNoticeStatus } from "@/types/msg-vault";
+import { MsgConversationKind } from "@/types/msg-vault";
 
 const card: React.CSSProperties = {
   background:   "#fff",
@@ -45,7 +45,9 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MsgMessageDTO[]>([]);
   const [overlay, setOverlay] = useState<GovernanceOverlayDTO | null>(null);
-  const [notices, setNotices] = useState<MsgNoticeDTO[]>([]);
+  const [notices, setNotices] = useState<VaultNoticeItem[]>([]);
+  const [unreadNotices, setUnreadNotices] = useState(0);
+  const [selectedNoticeId, setSelectedNoticeId] = useState<string | null>(null);
   const [loadingConvs, setLoadingConvs] = useState(true);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [loadingNotices, setLoadingNotices] = useState(true);
@@ -68,10 +70,12 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
   const loadNotices = useCallback(async () => {
     setLoadingNotices(true);
     try {
-      const items = await fetchNotices();
+      const { items, unreadCount } = await fetchNotices();
       setNotices(items);
+      setUnreadNotices(unreadCount);
     } catch {
       setNotices([]);
+      setUnreadNotices(0);
     } finally {
       setLoadingNotices(false);
     }
@@ -110,6 +114,13 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
   }, []);
 
   useEffect(() => {
+    if (tab !== "notices") return;
+    if (notices.length > 0 && !selectedNoticeId) {
+      setSelectedNoticeId(notices[0].id);
+    }
+  }, [tab, notices, selectedNoticeId]);
+
+  useEffect(() => {
     if (tab !== "chats" && tab !== "threads") return;
     const list = conversations.filter((c) =>
       tab === "chats"
@@ -136,7 +147,11 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
     [selectConversation],
   );
 
-  const unreadNotices = notices.filter((n) => n.status === MsgNoticeStatus.UNREAD).length;
+  const selectedNotice = useMemo(
+    () => notices.find((n) => n.id === selectedNoticeId) ?? null,
+    [notices, selectedNoticeId],
+  );
+
   const directCount = conversations.filter((c) => c.kind === MsgConversationKind.DIRECT).length;
   const threadCount = conversations.filter((c) => c.kind !== MsgConversationKind.DIRECT).length;
 
@@ -192,6 +207,11 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
               Governed communication for {firstName} — relationship-scoped chats and threads only.
               No open DMs. No stranger discovery.
             </p>
+            {unreadNotices > 0 && (
+              <p style={{ margin: "10px 0 0", fontSize: 12, fontWeight: 600, color: "#fde68a" }}>
+                {unreadNotices} unread notice{unreadNotices === 1 ? "" : "s"}
+              </p>
+            )}
           </div>
         </div>
       </header>
@@ -237,13 +257,19 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
       )}
 
       {tab === "notices" && (
-        <div style={{ ...card, minHeight: 400 }}>
-          <NoticesPanel
+        <div className="msg-vault-grid">
+          <NoticesListPane
             notices={notices}
             loading={loadingNotices}
             shellMode={shellMode}
-            onRead={(n) => setNotices((prev) => prev.map((x) => (x.id === n.id ? n : x)))}
+            selectedNoticeId={selectedNoticeId}
+            onSelect={setSelectedNoticeId}
+            onRead={(n: VaultNoticeItem) => {
+              setNotices((prev) => prev.map((x) => (x.id === n.id ? n : x)));
+              setUnreadNotices((c) => Math.max(0, c - 1));
+            }}
           />
+          <NoticesRailPane selectedNotice={selectedNotice} shellMode={shellMode} />
         </div>
       )}
 
@@ -312,7 +338,12 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
           </div>
 
           <div style={{ minHeight: 480 }}>
-            <MsgContextRail overlay={overlay} shellMode={shellMode} loading={loadingMsgs && !!selectedId} />
+            <MsgContextRail
+              overlay={overlay}
+              selectedNotice={null}
+              shellMode={shellMode}
+              loading={loadingMsgs && !!selectedId}
+            />
           </div>
         </div>
       )}
@@ -322,6 +353,49 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
         onClose={() => setStartChatOpen(false)}
         onStarted={handleChatStarted}
       />
+    </div>
+  );
+}
+
+function NoticesListPane({
+  notices,
+  loading,
+  shellMode,
+  selectedNoticeId,
+  onSelect,
+  onRead,
+}: {
+  notices: VaultNoticeItem[];
+  loading: boolean;
+  shellMode: FamilySafeShellMode;
+  selectedNoticeId: string | null;
+  onSelect: (id: string) => void;
+  onRead: (notice: VaultNoticeItem) => void;
+}) {
+  return (
+    <div style={{ ...card, minHeight: 480, gridColumn: "span 2" }}>
+      <NoticesPanel
+        notices={notices}
+        loading={loading}
+        shellMode={shellMode}
+        selectedId={selectedNoticeId}
+        onSelect={(n) => onSelect(n.id)}
+        onRead={onRead}
+      />
+    </div>
+  );
+}
+
+function NoticesRailPane({
+  selectedNotice,
+  shellMode,
+}: {
+  selectedNotice: VaultNoticeItem | null;
+  shellMode: FamilySafeShellMode;
+}) {
+  return (
+    <div style={{ minHeight: 480 }}>
+      <MsgContextRail overlay={null} selectedNotice={selectedNotice} shellMode={shellMode} />
     </div>
   );
 }

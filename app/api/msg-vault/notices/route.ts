@@ -23,8 +23,8 @@ export async function GET(req: NextRequest) {
       statusFilter = raw as typeof statusFilter;
     }
 
-    const items = await listNoticesForUser(user.id, statusFilter);
-    return ok({ items });
+    const { items, unreadCount } = await listNoticesForUser(user.id, statusFilter);
+    return ok({ items, unreadCount });
   } catch (err) {
     if (err instanceof Error && err.message === "UNAUTHORIZED") {
       return unauthenticated();

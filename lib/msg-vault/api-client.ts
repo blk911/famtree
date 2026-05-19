@@ -103,12 +103,21 @@ export async function sendVaultMessage(
   return data.message;
 }
 
-export async function fetchNotices(status?: string): Promise<MsgNoticeDTO[]> {
+export interface VaultNoticeItem extends MsgNoticeDTO {
+  source: "persisted" | "approval" | "invite" | "audit";
+  sourceId: string;
+  href: string | null;
+  contextLines: string[];
+}
+
+export async function fetchNotices(
+  status?: string,
+): Promise<{ items: VaultNoticeItem[]; unreadCount: number }> {
   const qs = status ? `?status=${encodeURIComponent(status)}` : "";
-  const data = await parseEnvelope<{ items: MsgNoticeDTO[] }>(
+  const data = await parseEnvelope<{ items: VaultNoticeItem[]; unreadCount: number }>(
     await fetch(`/api/msg-vault/notices${qs}`, { cache: "no-store" }),
   );
-  return data.items;
+  return { items: data.items, unreadCount: data.unreadCount };
 }
 
 export async function markVaultNoticeRead(noticeId: string): Promise<MsgNoticeDTO> {

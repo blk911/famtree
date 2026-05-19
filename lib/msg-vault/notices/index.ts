@@ -1,35 +1,31 @@
-// Msg Vault — notice services (Agent 50).
+// Msg Vault — notice services (Agent 50 + aggregated notices Agent 53).
 
 import { prisma } from "@/lib/db/prisma";
 import { notFound, accessDenied } from "@/lib/msg-vault/errors";
 import { toNoticeDTO } from "@/lib/msg-vault/mappers";
 import type { CreateNoticeInput, MsgNoticeDTO, MsgNoticeStatus } from "@/types/msg-vault";
+import { aggregateNoticesForUser } from "./aggregate";
+import { markDerivedNoticeRead } from "./mark-derived";
+import { parseDerivedNoticeId } from "./refs";
+import type { VaultNoticesResult } from "./types";
+
+export type { VaultNoticeDTO, VaultNoticesResult } from "./types";
 
 export async function listNoticesForUser(
   userId: string,
   statusFilter?: MsgNoticeStatus,
-): Promise<MsgNoticeDTO[]> {
-  const rows = await prisma.aihMsgNotice.findMany({
-    where: {
-      userId,
-      ...(statusFilter ? { status: statusFilter } : {}),
-    },
-    orderBy: [
-      { status: "asc" },
-      { createdAt: "desc" },
-    ],
-  });
-
-  // UNREAD sorts before READ/ARCHIVED with status asc — refine: unread first
-  const unread = rows.filter((r) => r.status === "UNREAD");
-  const rest = rows.filter((r) => r.status !== "UNREAD");
-  return [...unread, ...rest].map(toNoticeDTO);
+): Promise<VaultNoticesResult> {
+  return aggregateNoticesForUser(userId, statusFilter);
 }
 
 export async function markNoticeRead(
   userId: string,
   noticeId: string,
 ): Promise<MsgNoticeDTO> {
+  if (parseDerivedNoticeId(noticeId)) {
+    return markDerivedNoticeRead(userId, noticeId);
+  }
+
   const row = await prisma.aihMsgNotice.findUnique({ where: { id: noticeId } });
   if (!row) {
     throw notFound("Notice not found.");
