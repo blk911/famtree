@@ -546,6 +546,7 @@ export function FounderShell({
             guardianLinks={guardianLinks}
             invites={invites}
             loading={loading}
+            onReload={load}
           />
         </TabPanel>
 

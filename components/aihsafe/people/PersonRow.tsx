@@ -6,6 +6,8 @@ interface Props {
   detail?:  string;
   /** Relationship badge(s) rendered after the name. */
   badge?:   React.ReactNode;
+  /** Optional trailing actions (e.g. remove link). */
+  actions?: React.ReactNode;
   /** Faded appearance for expired/revoked entries. */
   dimmed?:  boolean;
 }
@@ -30,7 +32,7 @@ function avatarColor(name: string) {
   return AVATAR_COLORS[idx];
 }
 
-export function PersonRow({ name, detail, badge, dimmed = false }: Props) {
+export function PersonRow({ name, detail, badge, actions, dimmed = false }: Props) {
   const { bg, fg } = avatarColor(name);
 
   return (
@@ -78,6 +80,7 @@ export function PersonRow({ name, detail, badge, dimmed = false }: Props) {
           </div>
         )}
       </div>
+      {actions}
     </div>
   );
 }

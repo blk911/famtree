@@ -20,7 +20,10 @@
     "bonds:fix": "tsx scripts/scan-sponsor-bonds.ts --fix",
     "trust:scrub-admin": "tsx scripts/scrub-admin-trust-contamination.ts",
     "migrate:private-posts": "tsx scripts/msg-vault/migrate-legacy-private-posts.ts",
-    "migrate:private-posts:apply": "tsx scripts/msg-vault/migrate-legacy-private-posts.ts --apply"
+    "migrate:private-posts:apply": "tsx scripts/msg-vault/migrate-legacy-private-posts.ts --apply",
+    "seed:aihsafe-scenarios": "tsx scripts/aihsafe/seed-relationship-scenarios.ts",
+    "seed:aihsafe-scenarios:apply": "tsx scripts/aihsafe/seed-relationship-scenarios.ts --apply",
+    "verify:aihsafe-scenarios": "tsx scripts/aihsafe/verify-relationship-scenarios.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1039.0",

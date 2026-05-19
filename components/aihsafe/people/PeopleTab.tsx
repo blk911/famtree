@@ -1,9 +1,13 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { PeopleSection }     from "@/components/aihsafe/people/PeopleSection";
 import { PersonRow }         from "@/components/aihsafe/people/PersonRow";
 import { RelationshipBadge } from "@/components/aihsafe/people/RelationshipBadge";
+import { GuardianLinkModal, type GuardianLinkModalMode } from "@/components/aihsafe/people/GuardianLinkModal";
+import { RevokeLinkButton }  from "@/components/aihsafe/people/LinkRowActions";
+import { buildMemberCandidates } from "@/components/aihsafe/people/memberCandidates";
 import type {
   FamilyUnitDTO,
   TrustUnitDTO,
@@ -20,6 +24,36 @@ interface Props {
   guardianLinks: GuardianLinkDTO[];
   invites:       InviteDTO[];
   loading:       boolean;
+  onReload?:     () => void;
+}
+
+const actionBtnStyle: React.CSSProperties = {
+  display:      "inline-flex",
+  alignItems:   "center",
+  gap:          6,
+  padding:      "8px 14px",
+  borderRadius: 10,
+  border:       "1px solid #e7e5e4",
+  background:   "#fff",
+  fontSize:     12,
+  fontWeight:   700,
+  color:        "#44403c",
+  cursor:       "pointer",
+};
+
+const primaryBtnStyle: React.CSSProperties = {
+  ...actionBtnStyle,
+  background: "#1c1917",
+  color:      "#fff",
+  border:     "none",
+};
+
+function linkDetail(link: GuardianLinkDTO, perspective: "guardian" | "child"): string {
+  const other =
+    perspective === "guardian" ? link.childName : link.guardianName;
+  return perspective === "guardian"
+    ? `You support ${other}`
+    : `${other} supports you`;
 }
 
 export function PeopleTab({
@@ -30,25 +64,58 @@ export function PeopleTab({
   guardianLinks,
   invites,
   loading,
+  onReload,
 }: Props) {
+  const [linkModal, setLinkModal] = useState<GuardianLinkModalMode | null>(null);
 
-  // ── Guardian links where I am the child (my guardians) ──────────────────────
-  const myGuardians = guardianLinks.filter(
-    (l) => !l.revokedAt && l.childUserId === currentUserId
+  const activeLinks = guardianLinks.filter((l) => !l.revokedAt);
+
+  const myGuardians = activeLinks.filter((l) => l.childUserId === currentUserId);
+
+  const myChildren = activeLinks.filter(
+    (l) => l.guardianUserId === currentUserId && l.kind !== "trusted_adult",
   );
 
-  // ── Guardian links where I am the guardian (children I supervise) ────────────
-  const myChildren = guardianLinks.filter(
-    (l) => !l.revokedAt && l.guardianUserId === currentUserId && l.kind !== "trusted_adult"
+  const myTrustedAdults = activeLinks.filter(
+    (l) => l.guardianUserId === currentUserId && l.kind === "trusted_adult",
   );
 
-  // ── Guardian links where I am the guardian, trusted_adult kind ───────────────
-  const myTrustedAdults = guardianLinks.filter(
-    (l) => !l.revokedAt && l.guardianUserId === currentUserId && l.kind === "trusted_adult"
+  const isGuardian =
+    myChildren.length > 0 || myTrustedAdults.length > 0;
+
+  const canManageLinks = shellMode === "founder";
+
+  const linkedChildIds = useMemo(
+    () =>
+      new Set(
+        activeLinks
+          .filter((l) => l.guardianUserId === currentUserId)
+          .map((l) => l.childUserId),
+      ),
+    [activeLinks, currentUserId],
   );
 
-  // ── Family unit members (excluding self, active only) ────────────────────────
-  // Deduplicate across multiple family units; track which units they're in.
+  const candidates = useMemo(
+    () => buildMemberCandidates(currentUserId, trustUnits, familyUnits),
+    [currentUserId, trustUnits, familyUnits],
+  );
+
+  // Family-unit roles (directory — not the same as guardian-link records)
+  const familyStewards = useMemo(() => {
+    const map = new Map<string, { name: string; unitNames: string[] }>();
+    for (const fu of familyUnits) {
+      if (fu.status === "dissolved") continue;
+      for (const m of fu.members) {
+        if (m.exitedAt || m.role !== "guardian" || m.userId === currentUserId) continue;
+        if (!map.has(m.userId)) {
+          map.set(m.userId, { name: m.displayName, unitNames: [] });
+        }
+        map.get(m.userId)!.unitNames.push(fu.name);
+      }
+    }
+    return Array.from(map.entries());
+  }, [familyUnits, currentUserId]);
+
   const familyMemberIds = new Set<string>();
   const familyMemberMap = new Map<string, { name: string; role: string; unitNames: string[] }>();
   for (const fu of familyUnits) {
@@ -62,15 +129,15 @@ export function PeopleTab({
     }
   }
 
-  // ── Trust unit network members not already categorized above ─────────────────
   const knownIds = new Set(
     [
       currentUserId,
       ...myGuardians.map((l) => l.guardianUserId),
       ...myChildren.map((l) => l.childUserId),
       ...myTrustedAdults.map((l) => l.childUserId),
+      ...familyStewards.map(([id]) => id),
       ...Array.from(familyMemberIds),
-    ]
+    ],
   );
 
   const networkMemberMap = new Map<string, { name: string; spaceNames: string[] }>();
@@ -86,16 +153,33 @@ export function PeopleTab({
 
   const networkMembers = Array.from(networkMemberMap.entries());
   const familyMembers  = Array.from(familyMemberMap.entries());
-
-  // ── Pending outgoing invites ─────────────────────────────────────────────────
   const pendingInvites = invites.filter((i) => i.status === "PENDING");
 
   const totalPeople =
     myGuardians.length +
     myChildren.length +
     myTrustedAdults.length +
+    familyStewards.length +
     familyMembers.length +
     networkMembers.length;
+
+  function renderGuardianLinkRow(
+    link: GuardianLinkDTO,
+    nameField: "childName" | "guardianName",
+    perspective: "guardian" | "child",
+  ) {
+    return (
+      <PersonRow
+        key={link.id}
+        name={link[nameField]}
+        detail={linkDetail(link, perspective)}
+        badge={
+          <RelationshipBadge kind={link.kind} permissionLevel={link.permissionLevel} />
+        }
+        actions={canManageLinks ? <RevokeLinkButton /> : undefined}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -122,7 +206,6 @@ export function PeopleTab({
   return (
     <div style={{ maxWidth: 680 }}>
 
-      {/* ── Steward banner (founder only) ──────────────────────────────────── */}
       {shellMode === "founder" && (
         <div
           style={{
@@ -131,78 +214,132 @@ export function PeopleTab({
             borderRadius: 16,
             padding:      "16px 22px",
             marginBottom: 14,
-            display:      "flex",
-            alignItems:   "center",
-            gap:          12,
           }}
         >
-          <span style={{ fontSize: 22 }} aria-hidden="true">🛡</span>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 14, color: "#5b21b6" }}>
-              You are the network steward
-            </div>
-            <div style={{ fontSize: 12, color: "#78716c", marginTop: 2 }}>
-              You govern who joins, who can approve requests, and how trust is extended.
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <span style={{ fontSize: 22 }} aria-hidden="true">🛡</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "#5b21b6" }}>
+                Family steward
+              </div>
+              <div style={{ fontSize: 12, color: "#78716c", marginTop: 2, lineHeight: 1.5 }}>
+                You help your family decide who is in each approved circle, who can approve
+                requests, and how trusted adults participate.
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── My guardians (I am supervised) ─────────────────────────────────── */}
-      {myGuardians.length > 0 && (
-        <PeopleSection icon="🛡" title="My guardians" count={myGuardians.length}>
-          {myGuardians.map((l) => (
-            <PersonRow
-              key={l.id}
-              name={l.guardianName}
-              badge={
-                <RelationshipBadge
-                  kind={l.kind}
-                  permissionLevel={l.permissionLevel}
-                />
-              }
-            />
-          ))}
-        </PeopleSection>
+      {shellMode === "member" && isGuardian && (
+        <div
+          style={{
+            background:   "#f0fdf4",
+            border:       "1px solid #bbf7d0",
+            borderRadius: 16,
+            padding:      "14px 18px",
+            marginBottom: 14,
+            fontSize:     13,
+            color:        "#166534",
+            lineHeight:   1.5,
+          }}
+        >
+          You support people in your approved circle. Review pending items in the{" "}
+          <strong>Approvals</strong> tab when someone needs your sign-off.
+        </div>
       )}
 
-      {/* ── Children I supervise ─────────────────────────────────────────────── */}
+      {canManageLinks && (
+        <div
+          style={{
+            display:    "flex",
+            flexWrap:   "wrap",
+            gap:        8,
+            marginBottom: 14,
+          }}
+        >
+          <button
+            type="button"
+            style={primaryBtnStyle}
+            onClick={() => setLinkModal("guardian")}
+          >
+            Connect as guardian
+          </button>
+          <button
+            type="button"
+            style={actionBtnStyle}
+            onClick={() => setLinkModal("trusted_adult")}
+          >
+            Add trusted adult
+          </button>
+        </div>
+      )}
+
       {myChildren.length > 0 && (
-        <PeopleSection icon="👶" title="Children & teens" count={myChildren.length}>
-          {myChildren.map((l) => (
-            <PersonRow
-              key={l.id}
-              name={l.childName}
-              badge={
-                <RelationshipBadge
-                  kind={l.kind}
-                  permissionLevel={l.permissionLevel}
-                />
-              }
-            />
-          ))}
+        <PeopleSection
+          icon="👶"
+          title="Children & teens in your care"
+          count={myChildren.length}
+          emptyText="No children or teens linked to you yet."
+        >
+          {myChildren.map((l) => renderGuardianLinkRow(l, "childName", "guardian"))}
         </PeopleSection>
       )}
 
-      {/* ── Trusted adults I manage ──────────────────────────────────────────── */}
+      {canManageLinks && myChildren.length === 0 && (
+        <PeopleSection
+          icon="👶"
+          title="Children & teens in your care"
+          emptyText="Connect as a guardian when someone in your approved circle needs your support."
+        />
+      )}
+
       {myTrustedAdults.length > 0 && (
-        <PeopleSection icon="🤝" title="Trusted adults" count={myTrustedAdults.length}>
-          {myTrustedAdults.map((l) => (
+        <PeopleSection
+          icon="🤝"
+          title="Trusted adults"
+          count={myTrustedAdults.length}
+        >
+          {myTrustedAdults.map((l) => renderGuardianLinkRow(l, "childName", "guardian"))}
+        </PeopleSection>
+      )}
+
+      {myGuardians.length > 0 && (
+        <PeopleSection icon="🛡" title="Your guardians" count={myGuardians.length}>
+          {myGuardians.map((l) => renderGuardianLinkRow(l, "guardianName", "child"))}
+        </PeopleSection>
+      )}
+
+      {familyStewards.length > 0 && (
+        <PeopleSection
+          icon="🏡"
+          title="Family stewards"
+          count={familyStewards.length}
+        >
+          {familyStewards.map(([userId, entry]) => (
             <PersonRow
-              key={l.id}
-              name={l.childName}
+              key={userId}
+              name={entry.name}
+              detail={entry.unitNames.join(", ")}
               badge={
-                <RelationshipBadge
-                  kind={l.kind}
-                  permissionLevel={l.permissionLevel}
-                />
+                <span
+                  style={{
+                    fontSize:     10,
+                    fontWeight:   600,
+                    color:        "#5b21b6",
+                    background:   "#faf5ff",
+                    borderRadius: 6,
+                    padding:      "2px 7px",
+                  }}
+                >
+                  Steward
+                </span>
               }
             />
           ))}
         </PeopleSection>
       )}
 
-      {/* ── Family members ─────────────────────────────────────────────────── */}
       {familyMembers.length > 0 && (
         <PeopleSection icon="🏠" title="Family members" count={familyMembers.length}>
           {familyMembers.map(([userId, entry]) => (
@@ -210,16 +347,29 @@ export function PeopleTab({
               key={userId}
               name={entry.name}
               detail={
-                entry.unitNames.length > 0
-                  ? entry.unitNames.join(", ")
-                  : undefined
+                entry.unitNames.length > 0 ? entry.unitNames.join(", ") : undefined
+              }
+              badge={
+                entry.role === "child" ? (
+                  <span
+                    style={{
+                      fontSize:     10,
+                      fontWeight:   600,
+                      color:        "#0369a1",
+                      background:   "#f0f9ff",
+                      borderRadius: 6,
+                      padding:      "2px 7px",
+                    }}
+                  >
+                    Family
+                  </span>
+                ) : undefined
               }
             />
           ))}
         </PeopleSection>
       )}
 
-      {/* ── Trust unit network ──────────────────────────────────────────────── */}
       {networkMembers.length > 0 && (
         <PeopleSection icon="🌐" title="Network members" count={networkMembers.length}>
           {networkMembers.map(([userId, entry]) => (
@@ -236,13 +386,13 @@ export function PeopleTab({
         </PeopleSection>
       )}
 
-      {/* ── Pending invites ─────────────────────────────────────────────────── */}
       {pendingInvites.length > 0 && (
         <PeopleSection icon="📨" title="Pending invites" count={pendingInvites.length}>
           {pendingInvites.map((inv) => {
             const expiresMs = new Date(inv.expiresAt).getTime() - Date.now();
             const hrs       = Math.floor(expiresMs / 3_600_000);
-            const expiry    = expiresMs <= 0 ? "Expired" : hrs > 0 ? `Expires in ${hrs}h` : "Expires soon";
+            const expiry    =
+              expiresMs <= 0 ? "Expired" : hrs > 0 ? `Expires in ${hrs}h` : "Expires soon";
             return (
               <PersonRow
                 key={inv.id}
@@ -255,7 +405,6 @@ export function PeopleTab({
         </PeopleSection>
       )}
 
-      {/* ── Empty state ─────────────────────────────────────────────────────── */}
       {totalPeople === 0 && pendingInvites.length === 0 && (
         <div
           style={{
@@ -268,54 +417,40 @@ export function PeopleTab({
         >
           <div style={{ fontSize: 36, marginBottom: 12 }}>👥</div>
           <p style={{ fontWeight: 700, fontSize: 15, color: "#1c1917", margin: "0 0 6px" }}>
-            No people in your network yet
+            Your approved circle is just getting started
           </p>
           <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 20px", maxWidth: 320, marginInline: "auto" }}>
-            Invite trusted family members and friends to build your safe network.
+            Invite trusted family and friends, then connect guardian and trusted-adult links here.
           </p>
-          <Link
-            href="/invite"
-            style={{
-              display:      "inline-flex",
-              alignItems:   "center",
-              gap:          8,
-              padding:      "10px 20px",
-              borderRadius: 11,
-              border:       "none",
-              background:   "#1c1917",
-              color:        "#fff",
-              fontWeight:   700,
-              fontSize:     13,
-              cursor:       "pointer",
-              textDecoration: "none",
-            }}
-          >
-            📨 Invite someone
+          <Link href="/invite" style={{ ...primaryBtnStyle, textDecoration: "none" }}>
+            Invite someone
           </Link>
         </div>
       )}
 
-      {/* ── Invite CTA (when there are already people) ───────────────────────── */}
       {totalPeople > 0 && (
         <div style={{ textAlign: "center", paddingTop: 4 }}>
           <Link
             href="/invite"
             style={{
-              background:   "none",
-              border:       "1px solid #e7e5e4",
-              borderRadius: 10,
-              padding:      "8px 18px",
-              fontSize:     13,
-              color:        "#57534e",
-              fontWeight:   600,
-              cursor:       "pointer",
+              ...actionBtnStyle,
               textDecoration: "none",
               display:      "inline-block",
             }}
           >
-            📨 Invite someone new
+            Invite someone new
           </Link>
         </div>
+      )}
+
+      {linkModal && (
+        <GuardianLinkModal
+          mode={linkModal}
+          candidates={candidates}
+          linkedChildIds={linkedChildIds}
+          onClose={() => setLinkModal(null)}
+          onCreated={() => onReload?.()}
+        />
       )}
     </div>
   );

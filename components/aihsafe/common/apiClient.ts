@@ -160,6 +160,14 @@ export async function listGuardianLinks(): Promise<AihResult<Paginated<GuardianL
   return parseEnvelope(await fetch("/api/aihsafe/guardian-links"));
 }
 
+export async function createGuardianLink(payload: {
+  childUserId:     string;
+  kind:            GuardianLinkDTO["kind"];
+  permissionLevel: GuardianLinkDTO["permissionLevel"];
+}): Promise<AihResult<GuardianLinkDTO>> {
+  return parseEnvelope(await fetch("/api/aihsafe/guardian-links", jsonPost(payload)));
+}
+
 // ─── Activity feed ────────────────────────────────────────────────────────────
 
 export async function listActivityFeed(

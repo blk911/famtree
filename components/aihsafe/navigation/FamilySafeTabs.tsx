@@ -26,7 +26,7 @@ const ALL_TABS: Tab[] = [
   { id: "activity",  label: "Activity"  },
   { id: "members",   label: "Members"   },
   { id: "approvals", label: "Approvals" },
-  { id: "settings",  label: "Settings"  },
+  { id: "settings",  label: "Policies & Settings"  },
 ];
 
 // ─── Role-aware tab list ──────────────────────────────────────────────────────
@@ -89,7 +89,7 @@ export function FamilySafeTabs({ tabs, activeTab, onTabChange, badges }: Props) 
     <div
       ref={barRef}
       role="tablist"
-      aria-label="Msg Vault navigation"
+      aria-label="Family Safe navigation"
       className="aihsafe-tabs-bar"
     >
       {tabs.map((tab, i) => {
