@@ -257,7 +257,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-4 max-[680px]:grid-cols-2 gap-[10px]">
         {/* Stat tiles */}
         {([
-          { label:"TREE MEMBERS",   value:totalMembers,     color:"#6366f1", href:"/tree"   },
+          { label:"My Family",      value:totalMembers,     color:"#6366f1", href:"/tree"   },
           { label:"INVITES SENT",   value:myInvites.length, color:"#f59e0b", href:"/invite" },
           { label:"JOINED VIA YOU", value:joinedViaYou,     color:"#10b981", href:"/invite" },
         ] as const).map(({ label, value, color, href }) => (
