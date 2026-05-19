@@ -5,6 +5,7 @@ import type { MsgConversationDTO, MsgMessageDTO } from "@/types/msg-vault";
 import { conversationLabel } from "@/lib/msg-vault/display";
 import { MessageComposer } from "@/components/msg-vault/MessageComposer";
 import { EmptyThreadState } from "@/components/vault/EmptyThreadState";
+import { sortMessagesChronological } from "@/components/vault/vault-message-order";
 
 interface Props {
   conversation: MsgConversationDTO | null;
@@ -41,7 +42,7 @@ export function ConversationPanel({
     conversation.status === "LOCKED" ||
     conversation.status === "PENDING_APPROVAL";
 
-  const ordered = [...messages].reverse();
+  const ordered = sortMessagesChronological(messages);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 360 }}>

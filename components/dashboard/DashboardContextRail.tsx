@@ -5,8 +5,10 @@ import { ContextRailCard } from "./ContextRailCard";
 import type { FlatNode } from "@/components/TreeList";
 import { ThreadSelectorRow } from "@/components/vault/ThreadSelectorRow";
 import { ThreadSelectorList } from "@/components/vault/ThreadSelectorList";
-import { directThreadKey } from "@/lib/private-thread-keys";
-import { tuThreadKey } from "@/components/dashboard/private-thread-model";
+import { useDashboardPrivateThreads } from "@/components/vault/DashboardPrivateThreadsContext";
+import { VaultInlineError } from "@/components/vault/VaultInlineError";
+import { conversationLabel } from "@/lib/msg-vault/display";
+import { MsgConversationKind } from "@/types/msg-vault";
 
 interface TrustUnit {
   id: string;
@@ -28,9 +30,6 @@ interface Props {
   trustUnits: TrustUnit[];
   bondPeers: BondPeer[];
   currentUserId: string;
-  activePrivateThreadKey: string | null;
-  dmUnreadByPeerId: Record<string, number>;
-  onSelectPrivateThread: (threadKey: string) => void;
 }
 
 export function DashboardContextRail({
@@ -39,18 +38,83 @@ export function DashboardContextRail({
   trustUnits,
   bondPeers,
   currentUserId,
-  activePrivateThreadKey,
-  dmUnreadByPeerId,
-  onSelectPrivateThread,
 }: Props) {
+  const {
+    directConversations,
+    threadConversations,
+    loading,
+    error,
+    activeConversationId,
+    selectConversation,
+    openDirectPeer,
+    openTrustUnit,
+    isDirectPeerActive,
+    isTrustUnitActive,
+    unreadForConversation,
+    refreshConversations,
+  } = useDashboardPrivateThreads();
+
   const treePreview = flat.slice(0, 5);
   const shownTreeIds = new Set(treePreview.map((n) => n.member.id));
   const extraBondPeers = bondPeers.filter(
     (p) => p.id !== currentUserId && !shownTreeIds.has(p.id),
   );
 
+  const vaultConversationCount = directConversations.length + threadConversations.length;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <ContextRailCard title="Private Threads" count={vaultConversationCount} href="/msg-vault">
+        {error ? (
+          <VaultInlineError message={error} onRetry={() => void refreshConversations()} />
+        ) : null}
+        {loading ? (
+          <p style={{ fontSize: 12, color: "#a8a29e", margin: 0 }}>Loading conversations…</p>
+        ) : vaultConversationCount === 0 ? (
+          <p style={{ fontSize: 12, color: "#78716c", margin: 0, lineHeight: 1.45 }}>
+            No private threads yet. Start from Msg Vault or pick someone below.
+          </p>
+        ) : (
+          <ThreadSelectorList>
+            {directConversations.map((conv) => {
+              const label = conversationLabel(conv, currentUserId);
+              const other = conv.participants?.find((p) => p.userId !== currentUserId);
+              const user = other?.user;
+              return (
+                <ThreadSelectorRow
+                  key={conv.id}
+                  label={label}
+                  firstName={user?.firstName ?? label.split(" ")[0] ?? "?"}
+                  lastName={user?.lastName ?? label.split(" ").slice(1).join(" ") ?? ""}
+                  photoUrl={user?.photoUrl ?? null}
+                  active={conv.id === activeConversationId}
+                  unread={unreadForConversation(conv)}
+                  onClick={() => selectConversation(conv.id)}
+                  title={`Open ${label}`}
+                />
+              );
+            })}
+            {threadConversations.map((conv) => {
+              const label = conversationLabel(conv, currentUserId);
+              const isTu = conv.kind === MsgConversationKind.THREAD && conv.trustUnitId;
+              return (
+                <ThreadSelectorRow
+                  key={conv.id}
+                  label={isTu ? `🤝 ${label}` : label}
+                  firstName={label.split(" ")[0] ?? "Thread"}
+                  lastName={label.split(" ").slice(1).join(" ")}
+                  photoUrl={null}
+                  active={conv.id === activeConversationId}
+                  unread={unreadForConversation(conv)}
+                  onClick={() => selectConversation(conv.id)}
+                  title={`Open ${label}`}
+                />
+              );
+            })}
+          </ThreadSelectorList>
+        )}
+      </ContextRailCard>
+
       <ContextRailCard title="Family Tree" count={totalMembers} href="/tree">
         {flat.length === 0 ? (
           <p style={{ fontSize: 12, color: "#a8a29e", margin: 0 }}>
@@ -60,7 +124,6 @@ export function DashboardContextRail({
           <ThreadSelectorList>
             {treePreview.map((node) => {
               const isSelf = node.member.id === currentUserId;
-              const threadKey = directThreadKey(node.member.id, currentUserId);
               return (
                 <ThreadSelectorRow
                   key={node.member.id}
@@ -68,10 +131,10 @@ export function DashboardContextRail({
                   firstName={node.member.firstName}
                   lastName={node.member.lastName}
                   photoUrl={node.member.photoUrl}
-                  active={activePrivateThreadKey === threadKey}
+                  active={isDirectPeerActive(node.member.id)}
                   disabled={isSelf}
-                  unread={dmUnreadByPeerId[node.member.id] ?? 0}
-                  onClick={() => onSelectPrivateThread(threadKey)}
+                  unread={0}
+                  onClick={() => void openDirectPeer(node.member.id)}
                   title={
                     isSelf
                       ? "This is you"
@@ -80,22 +143,19 @@ export function DashboardContextRail({
                 />
               );
             })}
-            {extraBondPeers.map((peer) => {
-              const threadKey = directThreadKey(peer.id, currentUserId);
-              return (
-                <ThreadSelectorRow
-                  key={peer.id}
-                  label={`${peer.firstName} ${peer.lastName}`}
-                  firstName={peer.firstName}
-                  lastName={peer.lastName}
-                  photoUrl={peer.photoUrl}
-                  active={activePrivateThreadKey === threadKey}
-                  unread={dmUnreadByPeerId[peer.id] ?? 0}
-                  onClick={() => onSelectPrivateThread(threadKey)}
-                  title={`Open private thread with ${peer.firstName} ${peer.lastName}`}
-                />
-              );
-            })}
+            {extraBondPeers.map((peer) => (
+              <ThreadSelectorRow
+                key={peer.id}
+                label={`${peer.firstName} ${peer.lastName}`}
+                firstName={peer.firstName}
+                lastName={peer.lastName}
+                photoUrl={peer.photoUrl}
+                active={isDirectPeerActive(peer.id)}
+                unread={0}
+                onClick={() => void openDirectPeer(peer.id)}
+                title={`Open private thread with ${peer.firstName} ${peer.lastName}`}
+              />
+            ))}
           </ThreadSelectorList>
         )}
         {flat.length > 5 && (
@@ -119,14 +179,13 @@ export function DashboardContextRail({
         <ContextRailCard title="Trust Units" count={trustUnits.length} href="/tree">
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {trustUnits.slice(0, 4).map((unit) => {
-              const key = tuThreadKey(unit);
-              const tuActive = activePrivateThreadKey === key;
+              const tuActive = isTrustUnitActive(unit.id);
               const tuLabel = unit.members.map((m) => m.user.firstName).join(" · ");
               return (
                 <div key={unit.id} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <button
                     type="button"
-                    onClick={() => onSelectPrivateThread(key)}
+                    onClick={() => void openTrustUnit(unit)}
                     title="Open Trust Unit group thread"
                     className={`thread-selector-tu${tuActive ? " thread-selector-tu--active" : ""}`}
                   >
@@ -134,7 +193,6 @@ export function DashboardContextRail({
                   </button>
                   {unit.members.map((m) => {
                     const isSelf = m.user.id === currentUserId;
-                    const threadKey = directThreadKey(m.user.id, currentUserId);
                     return (
                       <ThreadSelectorRow
                         key={m.user.id}
@@ -142,10 +200,10 @@ export function DashboardContextRail({
                         firstName={m.user.firstName}
                         lastName={m.user.lastName}
                         photoUrl={m.user.photoUrl}
-                        active={activePrivateThreadKey === threadKey}
+                        active={isDirectPeerActive(m.user.id)}
                         disabled={isSelf}
-                        unread={dmUnreadByPeerId[m.user.id] ?? 0}
-                        onClick={() => onSelectPrivateThread(threadKey)}
+                        unread={0}
+                        onClick={() => void openDirectPeer(m.user.id)}
                         title={
                           isSelf
                             ? "This is you"

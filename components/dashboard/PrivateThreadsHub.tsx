@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { FlatNode } from "@/components/TreeList";
 import { DashboardContextRail } from "@/components/dashboard/DashboardContextRail";
 import { DashboardPrivateThreadCenter } from "@/components/dashboard/DashboardPrivateThreadCenter";
 import type { SerializedDashboardPost } from "@/components/dashboard/DashboardPostsPanel";
-import { directThreadKey } from "@/lib/private-thread-keys";
-import { tuThreadKey } from "@/components/dashboard/private-thread-model";
+import {
+  DashboardPrivateThreadsProvider,
+  useDashboardPrivateThreads,
+} from "@/components/vault/DashboardPrivateThreadsContext";
 
 type TrustUnitRow = {
   id: string;
@@ -22,19 +24,67 @@ type PrivateMember = {
   photoUrl: string | null;
 };
 
+function PrivateThreadsHubInner({
+  currentUserId,
+  flat,
+  totalMembers,
+  trustUnits,
+  bondPeers,
+  initialPeerId,
+  initialUnitId,
+}: {
+  currentUserId: string;
+  flat: FlatNode[];
+  totalMembers: number;
+  trustUnits: TrustUnitRow[];
+  bondPeers: PrivateMember[];
+  initialPeerId?: string;
+  initialUnitId?: string;
+}) {
+  const { openDirectPeer, openTrustUnit } = useDashboardPrivateThreads();
+
+  useEffect(() => {
+    if (initialPeerId && initialPeerId !== currentUserId) {
+      void openDirectPeer(initialPeerId);
+      return;
+    }
+    if (initialUnitId) {
+      const unit = trustUnits.find((u) => u.id === initialUnitId);
+      if (unit) void openTrustUnit(unit);
+    }
+  }, [initialPeerId, initialUnitId, currentUserId, trustUnits, openDirectPeer, openTrustUnit]);
+
+  return (
+    <div className="thread-hub-grid">
+      <div className="thread-hub-grid__main">
+        <DashboardPrivateThreadCenter currentUserId={currentUserId} />
+      </div>
+      <div className="thread-hub-grid__rail">
+        <DashboardContextRail
+          flat={flat}
+          totalMembers={totalMembers}
+          trustUnits={trustUnits}
+          bondPeers={bondPeers}
+          currentUserId={currentUserId}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function PrivateThreadsHub({
   currentUserId,
   flat,
   totalMembers,
   trustUnits,
   bondPeers,
-  membersForPrivate,
-  serializedPrivatePosts,
-  dmUnreadByPeerId,
+  membersForPrivate: _membersForPrivate,
+  serializedPrivatePosts: _serializedPrivatePosts,
+  dmUnreadByPeerId: _dmUnreadByPeerId,
   initialPeerId,
   initialUnitId,
-  selectedThreadKey: controlledKey,
-  onSelectedThreadKeyChange,
+  selectedThreadKey: _selectedThreadKey,
+  onSelectedThreadKeyChange: _onSelectedThreadKeyChange,
 }: {
   currentUserId: string;
   flat: FlatNode[];
@@ -49,47 +99,17 @@ export function PrivateThreadsHub({
   selectedThreadKey?: string | null;
   onSelectedThreadKeyChange?: (key: string | null) => void;
 }) {
-  const [uncontrolledKey, setUncontrolledKey] = useState<string | null>(null);
-  const isControlled = controlledKey !== undefined;
-  const selectedThreadKey = isControlled ? controlledKey : uncontrolledKey;
-  const setSelectedThreadKey = (key: string | null) => {
-    if (!isControlled) setUncontrolledKey(key);
-    onSelectedThreadKeyChange?.(key);
-  };
-
-  useEffect(() => {
-    if (selectedThreadKey) return;
-    if (initialPeerId && initialPeerId !== currentUserId) {
-      setSelectedThreadKey(directThreadKey(initialPeerId, currentUserId));
-      return;
-    }
-    if (initialUnitId) {
-      const unit = trustUnits.find((u) => u.id === initialUnitId);
-      if (unit) setSelectedThreadKey(tuThreadKey(unit));
-    }
-  }, [initialPeerId, initialUnitId, currentUserId, trustUnits, selectedThreadKey]);
-
   return (
-    <div className="thread-hub-grid">
-      <DashboardPrivateThreadCenter
+    <DashboardPrivateThreadsProvider currentUserId={currentUserId} trustUnits={trustUnits}>
+      <PrivateThreadsHubInner
         currentUserId={currentUserId}
-        trustUnits={trustUnits}
-        posts={serializedPrivatePosts}
-        members={membersForPrivate}
-        bondPeers={bondPeers}
-        selectedThreadKey={selectedThreadKey ?? null}
-        onSelectedThreadKeyChange={setSelectedThreadKey}
-      />
-      <DashboardContextRail
         flat={flat}
         totalMembers={totalMembers}
         trustUnits={trustUnits}
         bondPeers={bondPeers}
-        currentUserId={currentUserId}
-        activePrivateThreadKey={selectedThreadKey ?? null}
-        dmUnreadByPeerId={dmUnreadByPeerId}
-        onSelectPrivateThread={setSelectedThreadKey}
+        initialPeerId={initialPeerId}
+        initialUnitId={initialUnitId}
       />
-    </div>
+    </DashboardPrivateThreadsProvider>
   );
 }

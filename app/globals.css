@@ -540,6 +540,31 @@
   .thread-hub-grid {
     grid-template-columns: 1fr;
   }
+  .thread-hub-grid__main {
+    order: 2;
+  }
+  .thread-hub-grid__rail {
+    order: 1;
+  }
+}
+
+/* Msg Vault notices: list + context rail */
+.msg-vault-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .msg-vault-grid {
+    grid-template-columns: 1fr;
+  }
+  .msg-vault-grid__rail {
+    order: 1;
+  }
+  .msg-vault-grid__list {
+    order: 2;
+  }
 }
 
 .thread-empty-state {

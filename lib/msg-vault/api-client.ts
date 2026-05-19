@@ -6,6 +6,8 @@ import type {
   MsgMessageDTO,
   MsgNoticeDTO,
   MsgParticipantDTO,
+  RelationshipContextDTO,
+  TrustUnitContextDTO,
 } from "@/types/msg-vault";
 
 type Envelope<T> = {
@@ -65,10 +67,33 @@ export async function startDirectConversation(
   return data.conversation;
 }
 
+export async function startThreadConversation(input: {
+  trustUnitId: string;
+  participantUserIds?: string[];
+  title?: string;
+}): Promise<MsgConversationDTO> {
+  const data = await parseEnvelope<{ conversation: MsgConversationDTO }>(
+    await fetch("/api/msg-vault/conversations", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({
+        type:               "thread",
+        trustUnitId:        input.trustUnitId,
+        participantUserIds: input.participantUserIds ?? [],
+        title:              input.title,
+      }),
+    }),
+  );
+  return data.conversation;
+}
+
 export async function fetchConversationDetail(conversationId: string): Promise<{
   conversation: MsgConversationDTO;
   participants: MsgParticipantDTO[];
   governanceOverlay: GovernanceOverlayDTO;
+  relationshipContext: RelationshipContextDTO;
+  trustUnit: TrustUnitContextDTO | null;
+  privateThreadsEnabled: boolean;
 }> {
   return parseEnvelope(
     await fetch(`/api/msg-vault/conversations/${conversationId}`, { cache: "no-store" }),
@@ -78,9 +103,11 @@ export async function fetchConversationDetail(conversationId: string): Promise<{
 export async function fetchMessages(
   conversationId: string,
   cursor?: string,
+  options?: { limit?: number },
 ): Promise<{ items: MsgMessageDTO[]; pagination: { cursor: string | null; hasMore: boolean } }> {
   const qs = new URLSearchParams();
   if (cursor) qs.set("cursor", cursor);
+  if (options?.limit != null) qs.set("limit", String(options.limit));
   const suffix = qs.toString() ? `?${qs}` : "";
   return parseEnvelope(
     await fetch(`/api/msg-vault/conversations/${conversationId}/messages${suffix}`, {

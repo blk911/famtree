@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Bell } from "lucide-react";
 import type { VaultNoticeItem } from "@/lib/msg-vault/api-client";
-import { markVaultNoticeRead, MsgVaultApiError } from "@/lib/msg-vault/api-client";
+import { markVaultNoticeRead } from "@/lib/msg-vault/api-client";
 import { MsgNoticeStatus } from "@/types/msg-vault";
 import { formatRelativeTime } from "@/lib/msg-vault/display";
 
@@ -37,8 +37,8 @@ export function NoticesPanel({
         href:         notice.href,
         contextLines: notice.contextLines,
       });
-    } catch (err) {
-      console.error(err instanceof MsgVaultApiError ? err.message : err);
+    } catch {
+      /* mark-read is best-effort; list state unchanged on failure */
     }
   }
 

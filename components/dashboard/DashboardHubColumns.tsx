@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import type { FlatNode } from "@/components/TreeList";
 import type { TuModalRequest } from "@/components/dashboard/TrustUnitFormationModal";
 import { DashboardTrustUnitGate } from "@/components/dashboard/DashboardTrustUnitGate";
@@ -9,6 +9,7 @@ import {
   type DashboardTabId,
 } from "@/components/dashboard/DashboardVaultTabs";
 import { DashboardContextRail } from "@/components/dashboard/DashboardContextRail";
+import { DashboardPrivateThreadsProvider } from "@/components/vault/DashboardPrivateThreadsContext";
 import type { SerializedDashboardPost } from "@/components/dashboard/DashboardPostsPanel";
 
 type ComposerSpace = {
@@ -50,7 +51,6 @@ export function DashboardHubColumns({
   onTabChange,
   initialRequests,
   lastSeenAt,
-  dmUnreadByPeerId,
   flat,
   totalMembers,
   trustUnits,
@@ -59,11 +59,12 @@ export function DashboardHubColumns({
   invites,
   composerSpaces,
   serializedFeedPosts,
-  serializedPrivatePosts,
   serializedMyPosts,
   membersForPrivate,
   bondPeers,
   vaultNotificationCount,
+  serializedPrivatePosts: _serializedPrivatePosts,
+  dmUnreadByPeerId: _dmUnreadByPeerId,
 }: {
   currentUserId: string;
   currentUserRole: string;
@@ -71,7 +72,6 @@ export function DashboardHubColumns({
   onTabChange: (tab: DashboardTabId) => void;
   initialRequests: TuModalRequest[];
   lastSeenAt: string | null;
-  dmUnreadByPeerId: Record<string, number>;
   flat: FlatNode[];
   totalMembers: number;
   trustUnits: TrustUnitRow[];
@@ -80,59 +80,61 @@ export function DashboardHubColumns({
   invites: SerializedInvite[];
   composerSpaces: ComposerSpace[];
   serializedFeedPosts: SerializedDashboardPost[];
-  serializedPrivatePosts: SerializedDashboardPost[];
   serializedMyPosts: SerializedDashboardPost[];
   membersForPrivate: PrivateMember[];
   bondPeers: PrivateMember[];
   vaultNotificationCount: number;
+  serializedPrivatePosts?: SerializedDashboardPost[];
+  dmUnreadByPeerId?: Record<string, number>;
 }) {
   const tab = controlledTab;
   const setTab = onTabChange;
-  const [activePrivateThreadKey, setActivePrivateThreadKey] = useState<string | null>(null);
 
-  const handleSelectPrivateThread = useCallback((threadKey: string) => {
-    setActivePrivateThreadKey(threadKey);
+  const handlePrivateTabSelect = useCallback(() => {
     setTab("pvt-feeds");
   }, [setTab]);
 
   return (
-    <div className="thread-hub-grid">
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <DashboardTrustUnitGate
-          initialRequests={initialRequests}
-          currentUserId={currentUserId}
-        />
-        <DashboardVaultTabs
-          currentUserId={currentUserId}
-          currentUserRole={currentUserRole}
-          tab={tab}
-          onTabChange={setTab}
-          lastSeenAt={lastSeenAt}
-          selectedPrivateThreadKey={activePrivateThreadKey}
-          onSelectedPrivateThreadKeyChange={setActivePrivateThreadKey}
-          newPostsCount={newPostsCount}
-          newCommentsCount={newCommentsCount}
-          invites={invites}
-          composerSpaces={composerSpaces}
-          serializedFeedPosts={serializedFeedPosts}
-          serializedPrivatePosts={serializedPrivatePosts}
-          serializedMyPosts={serializedMyPosts}
-          trustUnits={trustUnits}
-          membersForPrivate={membersForPrivate}
-          bondPeers={bondPeers}
-          vaultNotificationCount={vaultNotificationCount}
-        />
+    <DashboardPrivateThreadsProvider
+      currentUserId={currentUserId}
+      trustUnits={trustUnits}
+      onPrivateTabSelect={handlePrivateTabSelect}
+    >
+      <div className="thread-hub-grid">
+        <div className="thread-hub-grid__main" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <DashboardTrustUnitGate
+            initialRequests={initialRequests}
+            currentUserId={currentUserId}
+          />
+          <DashboardVaultTabs
+            currentUserId={currentUserId}
+            currentUserRole={currentUserRole}
+            tab={tab}
+            onTabChange={setTab}
+            lastSeenAt={lastSeenAt}
+            newPostsCount={newPostsCount}
+            newCommentsCount={newCommentsCount}
+            invites={invites}
+            composerSpaces={composerSpaces}
+            serializedFeedPosts={serializedFeedPosts}
+            serializedPrivatePosts={[]}
+            serializedMyPosts={serializedMyPosts}
+            trustUnits={trustUnits}
+            membersForPrivate={membersForPrivate}
+            bondPeers={bondPeers}
+            vaultNotificationCount={vaultNotificationCount}
+          />
+        </div>
+        <div className="thread-hub-grid__rail">
+          <DashboardContextRail
+            flat={flat}
+            totalMembers={totalMembers}
+            trustUnits={trustUnits}
+            bondPeers={bondPeers}
+            currentUserId={currentUserId}
+          />
+        </div>
       </div>
-      <DashboardContextRail
-        flat={flat}
-        totalMembers={totalMembers}
-        trustUnits={trustUnits}
-        bondPeers={bondPeers}
-        currentUserId={currentUserId}
-        activePrivateThreadKey={activePrivateThreadKey}
-        dmUnreadByPeerId={dmUnreadByPeerId}
-        onSelectPrivateThread={handleSelectPrivateThread}
-      />
-    </div>
+    </DashboardPrivateThreadsProvider>
   );
 }

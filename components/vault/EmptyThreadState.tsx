@@ -1,4 +1,4 @@
-export type EmptyThreadVariant = "pick" | "no-messages";
+export type EmptyThreadVariant = "pick" | "no-messages" | "no-threads";
 
 const COPY: Record<EmptyThreadVariant, { title: string; body?: string }> = {
   pick: {
@@ -6,6 +6,10 @@ const COPY: Record<EmptyThreadVariant, { title: string; body?: string }> = {
   },
   "no-messages": {
     title: "No private messages yet.",
+  },
+  "no-threads": {
+    title: "No private threads yet.",
+    body: "Start from Msg Vault or open a trusted space.",
   },
 };
 

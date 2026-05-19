@@ -24,8 +24,12 @@ import type {
   GovernanceOverlayDTO,
   MsgConversationDTO,
   MsgMessageDTO,
+  MsgParticipantDTO,
+  RelationshipContextDTO,
+  TrustUnitContextDTO,
 } from "@/types/msg-vault";
 import { MsgConversationKind } from "@/types/msg-vault";
+import { prependVaultMessage } from "@/components/vault/vault-message-order";
 
 const card: React.CSSProperties = {
   background:   "#fff",
@@ -46,6 +50,7 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
   const searchParams = useSearchParams();
   const deepLinkPeerId = searchParams.get("peer")?.trim() || null;
   const deepLinkHandledRef = useRef(false);
+  const conversationLoadSeqRef = useRef(0);
 
   const initialTab = searchParams.get("tab");
   const [tab, setTab] = useState<MsgVaultTabId>(() => {
@@ -63,6 +68,11 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MsgMessageDTO[]>([]);
   const [overlay, setOverlay] = useState<GovernanceOverlayDTO | null>(null);
+  const [participants, setParticipants] = useState<MsgParticipantDTO[]>([]);
+  const [relationshipContext, setRelationshipContext] =
+    useState<RelationshipContextDTO | null>(null);
+  const [trustUnit, setTrustUnit] = useState<TrustUnitContextDTO | null>(null);
+  const [privateThreadsEnabled, setPrivateThreadsEnabled] = useState(true);
   const [notices, setNotices] = useState<VaultNoticeItem[]>([]);
   const [unreadNotices, setUnreadNotices] = useState(0);
   const [selectedNoticeId, setSelectedNoticeId] = useState<string | null>(null);
@@ -110,24 +120,39 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
   );
 
   const selectConversation = useCallback(async (id: string) => {
+    const loadSeq = ++conversationLoadSeqRef.current;
     setSelectedId(id);
     setLoadingMsgs(true);
     setOverlay(null);
+    setRelationshipContext(null);
+    setTrustUnit(null);
+    setParticipants([]);
     try {
+      setError("");
       const [detail, msgPage] = await Promise.all([
         fetchConversationDetail(id),
-        fetchMessages(id),
+        fetchMessages(id, undefined, { limit: 100 }),
       ]);
+      if (loadSeq !== conversationLoadSeqRef.current) return;
       setConversations((prev) =>
         prev.map((c) => (c.id === id ? { ...c, ...detail.conversation, participants: detail.participants } : c)),
       );
       setMessages(msgPage.items);
+      setParticipants(detail.participants);
       setOverlay(detail.governanceOverlay);
+      setRelationshipContext(detail.relationshipContext);
+      setTrustUnit(detail.trustUnit);
+      setPrivateThreadsEnabled(detail.privateThreadsEnabled);
     } catch (err) {
+      if (loadSeq !== conversationLoadSeqRef.current) return;
       setMessages([]);
+      setParticipants([]);
+      setOverlay(null);
+      setRelationshipContext(null);
+      setTrustUnit(null);
       setError(err instanceof MsgVaultApiError ? err.message : "Could not load conversation.");
     } finally {
-      setLoadingMsgs(false);
+      if (loadSeq === conversationLoadSeqRef.current) setLoadingMsgs(false);
     }
   }, []);
 
@@ -205,7 +230,7 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
     tab === "chats" ? "direct" : "thread";
 
   function handleMessageSent(message: MsgMessageDTO) {
-    setMessages((prev) => [message, ...prev]);
+    setMessages((prev) => prependVaultMessage(prev, message));
     setConversations((prev) =>
       prev.map((c) =>
         c.id === message.conversationId
@@ -315,13 +340,20 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
               setUnreadNotices((c) => Math.max(0, c - 1));
             }}
           />
-          <NoticesRailPane selectedNotice={selectedNotice} shellMode={shellMode} />
+          <NoticesRailPane
+            selectedNotice={selectedNotice}
+            shellMode={shellMode}
+            currentUserId={currentUserId}
+          />
         </div>
       )}
 
       {showMessaging && (
         <div className="thread-hub-grid thread-hub-grid--vault">
-          <div style={{ ...card, display: "flex", flexDirection: "column", minHeight: 480 }}>
+          <div
+            className="thread-hub-grid__main"
+            style={{ ...card, display: "flex", flexDirection: "column", minHeight: 480 }}
+          >
             <ConversationPanel
               conversation={selectedConversation}
               messages={messages}
@@ -331,7 +363,10 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
             />
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, minHeight: 480 }}>
+          <div
+            className="thread-hub-grid__rail"
+            style={{ display: "flex", flexDirection: "column", gap: 12, minHeight: 480 }}
+          >
             <MsgVaultThreadSelectorRail
               conversations={conversations}
               currentUserId={currentUserId}
@@ -342,7 +377,17 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
               onStartChat={tab === "chats" ? () => setStartChatOpen(true) : undefined}
             />
             <MsgContextRail
+              conversation={selectedConversation}
+              participants={
+                participants.length > 0
+                  ? participants
+                  : selectedConversation?.participants ?? []
+              }
               overlay={overlay}
+              relationshipContext={relationshipContext}
+              trustUnit={trustUnit}
+              privateThreadsEnabled={privateThreadsEnabled}
+              currentUserId={currentUserId}
               selectedNotice={null}
               shellMode={shellMode}
               loading={loadingMsgs && !!selectedId}
@@ -376,7 +421,7 @@ function NoticesListPane({
   onRead: (notice: VaultNoticeItem) => void;
 }) {
   return (
-    <div style={{ ...card, minHeight: 480, gridColumn: "span 2" }}>
+    <div className="msg-vault-grid__list" style={{ ...card, minHeight: 480 }}>
       <NoticesPanel
         notices={notices}
         loading={loading}
@@ -392,13 +437,25 @@ function NoticesListPane({
 function NoticesRailPane({
   selectedNotice,
   shellMode,
+  currentUserId,
 }: {
   selectedNotice: VaultNoticeItem | null;
   shellMode: FamilySafeShellMode;
+  currentUserId: string;
 }) {
   return (
-    <div style={{ minHeight: 480 }}>
-      <MsgContextRail overlay={null} selectedNotice={selectedNotice} shellMode={shellMode} />
+    <div className="msg-vault-grid__rail" style={{ minHeight: 480 }}>
+      <MsgContextRail
+        conversation={null}
+        participants={[]}
+        overlay={null}
+        relationshipContext={null}
+        trustUnit={null}
+        privateThreadsEnabled={true}
+        currentUserId={currentUserId}
+        selectedNotice={selectedNotice}
+        shellMode={shellMode}
+      />
     </div>
   );
 }

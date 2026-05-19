@@ -5,3 +5,4 @@ export * from "./conversation";
 export * from "./message";
 export * from "./notice";
 export * from "./governance-overlay";
+export * from "./context-rail";

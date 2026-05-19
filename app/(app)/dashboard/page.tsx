@@ -20,7 +20,6 @@ import { getVaultNotificationCount } from "@/lib/dashboard/vault-notification-co
 import { dashboardFeedWhere } from "@/lib/posts/dashboard-feed-where";
 import {
   getFeedPosts,
-  getPrivateFeedPosts,
   FEED_POST_INCLUDE,
   type FeedPost,
 } from "@/lib/posts/queries";
@@ -90,37 +89,6 @@ function serializeDashboardPost(post: FeedPost) {
     },
   };
 }
-function dmUnreadByPeerFromPrivatePosts(
-  posts: Array<{
-    createdAt: string;
-    visibility?: Array<{ userId: string }>;
-    profile: { user: { id: string } };
-  }>,
-  currentUserId: string,
-  lastSeen: Date | null,
-): Record<string, number> {
-  const out: Record<string, number> = {};
-  if (!lastSeen || Number.isNaN(lastSeen.getTime())) return out;
-
-  for (const post of posts) {
-    const authorId = post.profile.user.id;
-    if (authorId === currentUserId) continue;
-
-    const vis = post.visibility?.map((v) => v.userId) ?? [];
-    const ids = new Set<string>([authorId, ...vis]);
-    if (ids.size !== 2 || !ids.has(currentUserId)) continue;
-
-    const peerId = Array.from(ids).find((id) => id !== currentUserId);
-    if (!peerId) continue;
-
-    if (new Date(post.createdAt) <= lastSeen) continue;
-
-    out[peerId] = (out[peerId] ?? 0) + 1;
-  }
-
-  return out;
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -142,7 +110,6 @@ export default async function DashboardPage() {
     newPosts,
     newComments,
     feedPostsRaw,
-    privatePostsRaw,
     myPostsRaw,
     bondPeers,
     composerSpacesRows,
@@ -184,7 +151,6 @@ export default async function DashboardPage() {
       take: 10,
     }),
     getFeedPosts(user.id),
-    getPrivateFeedPosts(user.id),
     prisma.post.findMany({
       where: { profile: { userId: user.id } },
       include: FEED_POST_INCLUDE,
@@ -203,14 +169,7 @@ export default async function DashboardPage() {
   const composerSpaces = composerSpacesRows.map((r) => r.space);
 
   const serializedFeedPosts = feedPostsRaw.map(serializeDashboardPost);
-  const serializedPrivatePosts = privatePostsRaw.map(serializeDashboardPost);
   const serializedMyPosts = myPostsRaw.map(serializeDashboardPost);
-
-  const dmUnreadByPeerId = dmUnreadByPeerFromPrivatePosts(
-    serializedPrivatePosts,
-    user.id,
-    user.lastLoginAt ?? null,
-  );
 
   const membersForPrivate = members.map((m) => ({
     id: m.id,
@@ -252,7 +211,7 @@ export default async function DashboardPage() {
         currentUserRole={user.role}
         initialRequests={serializedTrustRequests}
         lastSeenAt={user.lastLoginAt?.toISOString() ?? null}
-        dmUnreadByPeerId={dmUnreadByPeerId}
+        dmUnreadByPeerId={{}}
         flat={flat}
         totalMembers={totalMembers}
         trustUnits={trustUnits as any[]}
@@ -261,7 +220,7 @@ export default async function DashboardPage() {
         invites={serializedInvites}
         composerSpaces={composerSpaces}
         serializedFeedPosts={serializedFeedPosts}
-        serializedPrivatePosts={serializedPrivatePosts}
+        serializedPrivatePosts={[]}
         serializedMyPosts={serializedMyPosts}
         membersForPrivate={membersForPrivate}
         bondPeers={bondPeers}

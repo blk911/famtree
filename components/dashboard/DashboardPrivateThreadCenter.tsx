@@ -1,354 +1,265 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Image as ImageIcon } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EmptyThreadState } from "@/components/vault/EmptyThreadState";
-import { ThreadComposer } from "@/components/vault/ThreadComposer";
-import { PostCard } from "@/components/PostCard";
-import { directThreadKey } from "@/lib/private-thread-keys";
-import { postScopeShareLabel } from "@/lib/posts/scope-labels";
-import { checkBrowserPostMediaFile } from "@/lib/media/image-sniff";
-import { BROWSER_POST_MEDIA_ACCEPT } from "@/lib/media/upload-limits";
-import { preparePostMediaForSubmit } from "@/lib/posts/upload-post-media-client";
+import { useDashboardPrivateThreads } from "@/components/vault/DashboardPrivateThreadsContext";
+import { MessageComposer } from "@/components/msg-vault/MessageComposer";
+import { VaultInlineError } from "@/components/vault/VaultInlineError";
 import {
-  buildPrivateThreads,
-  type PrivateFeedPost,
-  type PrivateMember,
-  type PrivateThread,
-  type TrustUnitRow,
-  peerIdFromDirectThread,
-} from "@/components/dashboard/private-thread-model";
-
-const COMPOSE_BG: Record<PrivateThread["type"], { bg: string; border: string }> = {
-  tu: { bg: "#faf5ff", border: "#e9d5ff" },
-  direct: { bg: "#eff6ff", border: "#bfdbfe" },
-  group: { bg: "#f0fdf4", border: "#bbf7d0" },
-};
+  prependVaultMessage,
+  sortMessagesChronological,
+} from "@/components/vault/vault-message-order";
+import { conversationLabel } from "@/lib/msg-vault/display";
+import { fetchMessages, MsgVaultApiError } from "@/lib/msg-vault/api-client";
+import type { MsgMessageDTO } from "@/types/msg-vault";
+import { MsgConversationKind } from "@/types/msg-vault";
 
 type Props = {
   currentUserId: string;
-  trustUnits: TrustUnitRow[];
-  posts: PrivateFeedPost[];
-  members: PrivateMember[];
-  bondPeers: PrivateMember[];
-  selectedThreadKey: string | null;
   launchDmPeerId?: string | null;
   onLaunchDmPeerConsumed?: () => void;
-  onActiveDirectPeerChange?: (peerId: string | null) => void;
+  /** @deprecated Legacy props — ignored; vault is source of truth */
+  trustUnits?: unknown;
+  posts?: unknown;
+  members?: unknown;
+  bondPeers?: unknown;
+  selectedThreadKey?: string | null;
   onSelectedThreadKeyChange?: (key: string | null) => void;
+  onActiveDirectPeerChange?: (peerId: string | null) => void;
 };
 
 export function DashboardPrivateThreadCenter({
   currentUserId,
-  trustUnits,
-  posts,
-  members,
-  bondPeers,
-  selectedThreadKey,
   launchDmPeerId = null,
   onLaunchDmPeerConsumed,
   onActiveDirectPeerChange,
-  onSelectedThreadKeyChange,
 }: Props) {
-  const memberMap = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
+  const {
+    conversations,
+    loading: conversationsLoading,
+    error: conversationsError,
+    activeConversationId,
+    openDirectPeer,
+    refreshConversations,
+    recordMessageSent,
+  } = useDashboardPrivateThreads();
 
-  const seedDmPeers = useMemo(() => {
-    const byId = new Map(bondPeers.map((p) => [p.id, p]));
-    if (launchDmPeerId && launchDmPeerId !== currentUserId) {
-      const m = memberMap.get(launchDmPeerId);
-      if (m) byId.set(m.id, m);
-    }
-    return Array.from(byId.values());
-  }, [bondPeers, launchDmPeerId, memberMap, currentUserId]);
+  const [messages, setMessages] = useState<MsgMessageDTO[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [messagesError, setMessagesError] = useState<string | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesLoadSeqRef = useRef(0);
 
-  const [allItems, setAllItems] = useState<PrivateFeedPost[]>(posts);
-
-  useEffect(() => {
-    setAllItems(posts);
-  }, [posts]);
-
-  const threads = useMemo(
-    () =>
-      buildPrivateThreads(allItems, trustUnits, memberMap, currentUserId, seedDmPeers),
-    [allItems, trustUnits, memberMap, currentUserId, seedDmPeers],
+  const activeConversation = useMemo(
+    () => conversations.find((c) => c.id === activeConversationId) ?? null,
+    [conversations, activeConversationId],
   );
 
-  const activeThread = useMemo(() => {
-    if (!selectedThreadKey) return null;
-    const found = threads.find((t) => t.key === selectedThreadKey);
-    if (found) return found;
-
-    const memberIds = selectedThreadKey.split(",");
-    if (!memberIds.includes(currentUserId)) return null;
-
-    const tu = trustUnits.find((u) => {
-      const key = u.members
-        .map((m) => m.user.id)
-        .sort()
-        .join(",");
-      return key === selectedThreadKey;
-    });
-    if (tu) {
-      return {
-        key: selectedThreadKey,
-        type: "tu" as const,
-        label: tu.members.map((m) => `${m.user.firstName} ${m.user.lastName}`).join(" · "),
-        memberIds: tu.members.map((m) => m.user.id),
-        posts: [],
-        unit: tu,
-      };
+  const loadMessages = useCallback(async (conversationId: string) => {
+    setMessagesLoading(true);
+    setMessagesError(null);
+    try {
+      const result = await fetchMessages(conversationId, undefined, { limit: 100 });
+      setMessages(result.items);
+    } catch (err) {
+      setMessages([]);
+      setMessagesError(
+        err instanceof MsgVaultApiError ? err.message : "Could not load messages.",
+      );
+    } finally {
+      setMessagesLoading(false);
     }
-
-    const otherIds = memberIds.filter((id) => id !== currentUserId);
-    if (otherIds.length === 1) {
-      const peer = memberMap.get(otherIds[0]!);
-      if (peer) {
-        return {
-          key: selectedThreadKey,
-          type: "direct" as const,
-          label: `${peer.firstName} ${peer.lastName}`,
-          memberIds,
-          posts: [],
-        };
-      }
-    }
-
-    return null;
-  }, [threads, selectedThreadKey, currentUserId, trustUnits, memberMap]);
+  }, []);
 
   useEffect(() => {
     if (!launchDmPeerId || launchDmPeerId === currentUserId) return;
-    const k = directThreadKey(launchDmPeerId, currentUserId);
-    onSelectedThreadKeyChange?.(k);
-    onLaunchDmPeerConsumed?.();
-  }, [launchDmPeerId, currentUserId, onLaunchDmPeerConsumed, onSelectedThreadKeyChange]);
+    void openDirectPeer(launchDmPeerId).then(() => onLaunchDmPeerConsumed?.());
+  }, [launchDmPeerId, currentUserId, openDirectPeer, onLaunchDmPeerConsumed]);
 
   useEffect(() => {
     if (!onActiveDirectPeerChange) return;
-    if (!activeThread) {
+    if (!activeConversation || activeConversation.kind !== MsgConversationKind.DIRECT) {
       onActiveDirectPeerChange(null);
       return;
     }
-    onActiveDirectPeerChange(peerIdFromDirectThread(activeThread, currentUserId));
-  }, [activeThread, currentUserId, onActiveDirectPeerChange]);
-
-  const [draft, setDraft] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [mediaError, setMediaError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const imageInputRef = useRef<HTMLInputElement | null>(null);
+    const peer = activeConversation.participants?.find((p) => p.userId !== currentUserId);
+    onActiveDirectPeerChange(peer?.userId ?? null);
+  }, [activeConversation, currentUserId, onActiveDirectPeerChange]);
 
   useEffect(() => {
-    setDraft("");
-    setImageFile(null);
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImagePreview(null);
-    setMediaError(null);
-    if (imageInputRef.current) imageInputRef.current.value = "";
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset compose when switching threads
-  }, [selectedThreadKey]);
-
-  const handleDelete = async (postId: string) => {
-    await fetch(`/api/profile/posts?postId=${postId}`, { method: "DELETE" });
-    setAllItems((cur) => cur.filter((p) => p.id !== postId));
-  };
-
-  const handleImageSelect = (file: File) => {
-    void (async () => {
-      const r = await checkBrowserPostMediaFile(file);
-      if (!r.ok) {
-        setMediaError(r.error);
-        return;
-      }
-      setMediaError(null);
-      if (imagePreview) URL.revokeObjectURL(imagePreview);
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    })();
-  };
-
-  const clearImage = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImageFile(null);
-    setImagePreview(null);
-    setMediaError(null);
-    if (imageInputRef.current) imageInputRef.current.value = "";
-  };
-
-  const postToThread = async (
-    visibleTo: string[],
-    body: string,
-    file?: File | null,
-  ): Promise<PrivateFeedPost | null> => {
-    let blobAttachmentUrl: string | undefined;
-    let multipartFile: File | null | undefined = file ?? null;
-
-    if (multipartFile) {
-      try {
-        const prepared = await preparePostMediaForSubmit(multipartFile);
-        if (prepared.kind === "blob") {
-          blobAttachmentUrl = prepared.url;
-          multipartFile = null;
-        }
-      } catch {
-        return null;
-      }
+    if (!activeConversationId) {
+      setMessages([]);
+      setMessagesError(null);
+      return;
     }
 
-    const resolvedImageUrl = (blobAttachmentUrl ?? "").trim() || undefined;
+    const loadSeq = ++messagesLoadSeqRef.current;
+    setMessagesLoading(true);
+    setMessagesError(null);
 
-    let res: Response;
-    if (multipartFile) {
-      const fd = new FormData();
-      fd.append("body", body);
-      fd.append("scope", "PRIVATE");
-      fd.append("image", multipartFile);
-      fd.append("visibleTo", JSON.stringify(visibleTo));
-      res = await fetch("/api/profile/posts", { method: "POST", body: fd });
-    } else {
-      res = await fetch("/api/profile/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          body,
-          visibleTo,
-          scope: "PRIVATE",
-          ...(resolvedImageUrl ? { imageUrl: resolvedImageUrl } : {}),
-        }),
+    void fetchMessages(activeConversationId, undefined, { limit: 100 })
+      .then((result) => {
+        if (loadSeq !== messagesLoadSeqRef.current) return;
+        setMessages(result.items);
+      })
+      .catch((err) => {
+        if (loadSeq !== messagesLoadSeqRef.current) return;
+        setMessages([]);
+        setMessagesError(
+          err instanceof MsgVaultApiError ? err.message : "Could not load messages.",
+        );
+      })
+      .finally(() => {
+        if (loadSeq === messagesLoadSeqRef.current) setMessagesLoading(false);
       });
-    }
-    if (!res.ok) return null;
-    const data = await res.json();
-    const raw = data.post as PrivateFeedPost;
-    return {
-      ...raw,
-      createdAt: new Date(raw.createdAt).toISOString(),
-      visibility: raw.visibility ?? visibleTo.map((userId) => ({ userId })),
-    };
-  };
+  }, [activeConversationId]);
 
-  const handleSubmit = async (thread: PrivateThread) => {
-    const body = draft.trim();
-    if (!body || submitting) return;
-    setSubmitting(true);
-    const visibleTo = thread.memberIds.filter((id) => id !== currentUserId);
-    const newPost = await postToThread(visibleTo, body, imageFile);
-    if (newPost) {
-      setAllItems((cur) => [newPost, ...cur]);
-      setDraft("");
-      clearImage();
-    }
-    setSubmitting(false);
-  };
+  const ordered = useMemo(() => sortMessagesChronological(messages), [messages]);
 
-  if (!selectedThreadKey || !activeThread) {
-    return <EmptyThreadState variant="pick" />;
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [ordered.length, activeConversationId]);
+
+  const handleMessageSent = useCallback(
+    (message: MsgMessageDTO) => {
+      setMessages((cur) => prependVaultMessage(cur, message));
+      recordMessageSent(message);
+    },
+    [recordMessageSent],
+  );
+
+  if (conversationsLoading && conversations.length === 0) {
+    return (
+      <p style={{ fontSize: 13, color: "#a8a29e", margin: 0 }}>Loading private threads…</p>
+    );
   }
 
-  const { bg, border } = COMPOSE_BG[activeThread.type];
+  if (!conversationsLoading && conversationsError && conversations.length === 0) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <VaultInlineError message={conversationsError} onRetry={() => void refreshConversations()} />
+        <EmptyThreadState variant="no-threads" />
+      </div>
+    );
+  }
+
+  if (!conversationsLoading && conversations.length === 0) {
+    return <EmptyThreadState variant="no-threads" />;
+  }
+
+  if (!activeConversationId || !activeConversation) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {conversationsError ? (
+          <VaultInlineError message={conversationsError} onRetry={() => void refreshConversations()} />
+        ) : null}
+        <EmptyThreadState variant="pick" />
+      </div>
+    );
+  }
+
+  const title = conversationLabel(activeConversation, currentUserId);
+  const closed =
+    activeConversation.status === "ARCHIVED" ||
+    activeConversation.status === "LOCKED" ||
+    activeConversation.status === "PENDING_APPROVAL";
+
+  const badge =
+    activeConversation.kind === MsgConversationKind.DIRECT
+      ? "Direct"
+      : activeConversation.trustUnitId
+        ? "Trust Unit"
+        : "Thread";
 
   return (
     <div className="thread-active-panel">
       <header className="thread-active-panel__header">
-        <h3 className="thread-active-panel__title">{activeThread.label}</h3>
+        <h3 className="thread-active-panel__title">{title}</h3>
         <span
-          className={`thread-active-panel__badge thread-active-panel__badge--${activeThread.type}`}
+          className={`thread-active-panel__badge thread-active-panel__badge--${
+            activeConversation.kind === MsgConversationKind.DIRECT ? "direct" : "tu"
+          }`}
         >
-          {activeThread.type === "tu"
-            ? "Trust Unit"
-            : activeThread.type === "direct"
-              ? "Direct"
-              : "Group"}
+          {badge}
         </span>
       </header>
 
-      <ThreadComposer
-        value={draft}
-        onChange={setDraft}
-        onSubmit={() => handleSubmit(activeThread)}
-        placeholder={
-          activeThread.type === "tu"
-            ? `Message Trust Unit · ${activeThread.label}…`
-            : `Message ${activeThread.label}…`
-        }
-        submitting={submitting}
-        error={mediaError}
-        tint={{ bg, border }}
-        footer={
-          <ThreadComposeMediaFooter
-            imagePreview={imagePreview}
-            imageFile={imageFile}
-            imageInputRef={imageInputRef}
-            onClearImage={clearImage}
-            onImageSelect={handleImageSelect}
-          />
-        }
-      />
-
-      {activeThread.posts.length === 0 ? (
-        <EmptyThreadState variant="no-messages" />
-      ) : (
-        <div className="space-y-3">
-          {activeThread.posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              currentUserId={currentUserId}
-              canDelete={post.profile.user.id === currentUserId}
-              onDelete={handleDelete}
-              shareScope={postScopeShareLabel(post.scope ?? "PRIVATE")}
-            />
-          ))}
-        </div>
+      {(conversationsError || messagesError) && (
+        <VaultInlineError
+          message={messagesError ?? conversationsError ?? "Something went wrong."}
+          onRetry={
+            messagesError
+              ? () => void loadMessages(activeConversation.id)
+              : () => void refreshConversations()
+          }
+        />
       )}
-    </div>
-  );
-}
 
-function ThreadComposeMediaFooter(props: {
-  imagePreview: string | null;
-  imageFile: File | null;
-  imageInputRef: React.MutableRefObject<HTMLInputElement | null>;
-  onClearImage: () => void;
-  onImageSelect: (file: File) => void;
-}) {
-  const { imagePreview, imageFile, imageInputRef, onClearImage, onImageSelect } = props;
-
-  return (
-    <div className="flex items-center gap-2">
-      {imagePreview && (
-        <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-stone-100">
-          {imageFile?.type.startsWith("video/") ? (
-            <video src={imagePreview} muted playsInline className="h-full w-full object-cover" />
-          ) : (
-            <img src={imagePreview} alt="" className="h-full w-full object-cover" />
-          )}
-          <button
-            type="button"
-            onClick={onClearImage}
-            className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 text-white"
-            style={{ fontSize: 12 }}
-          >
-            ×
-          </button>
-        </div>
+      {closed && (
+        <p style={{ fontSize: 12, color: "#b45309", margin: "0 0 8px" }}>
+          This conversation is {activeConversation.status.toLowerCase().replace("_", " ")}.
+        </p>
       )}
-      <input
-        ref={imageInputRef}
-        type="file"
-        accept={BROWSER_POST_MEDIA_ACCEPT}
-        className="hidden"
-        onChange={(e) => e.target.files?.[0] && onImageSelect(e.target.files[0])}
-      />
-      <button
-        type="button"
-        onClick={() => imageInputRef.current?.click()}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-50"
+
+      <div
+        style={{
+          flex: 1,
+          overflow: "auto",
+          minHeight: 120,
+          maxHeight: 360,
+          marginBottom: 12,
+          padding: "8px 0",
+        }}
       >
-        <ImageIcon className="h-3.5 w-3.5" />
-        Photo / video
-      </button>
+        {messagesLoading ? (
+          <p style={{ fontSize: 13, color: "#a8a29e", margin: 0 }}>Loading messages…</p>
+        ) : ordered.length === 0 ? (
+          <EmptyThreadState variant="no-messages" />
+        ) : (
+          ordered.map((msg) => {
+            const mine = msg.authorId === currentUserId;
+            return (
+              <div
+                key={msg.id}
+                style={{
+                  display: "flex",
+                  justifyContent: mine ? "flex-end" : "flex-start",
+                  marginBottom: 10,
+                }}
+              >
+                <div style={{ maxWidth: "85%", display: "flex", flexDirection: "column", gap: 4 }}>
+                  {!mine && msg.author && (
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#78716c" }}>
+                      {msg.author.firstName} {msg.author.lastName}
+                    </span>
+                  )}
+                  <div
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+                      background: mine ? "#6366f1" : "#f5f4f0",
+                      color: mine ? "white" : "#1c1917",
+                      fontSize: 14,
+                      lineHeight: 1.45,
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {msg.bodyText}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      <MessageComposer
+        conversationId={activeConversation.id}
+        disabled={closed}
+        onSent={handleMessageSent}
+      />
     </div>
   );
 }
