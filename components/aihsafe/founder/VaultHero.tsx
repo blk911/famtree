@@ -63,6 +63,7 @@ function HeroMetricPill({
 export function VaultHeroSection({
   coverUrl,
   heroUser,
+  eyebrow = "Msg Vault",
   title,
   description,
   spacesCount,
@@ -72,6 +73,8 @@ export function VaultHeroSection({
 }: {
   coverUrl: string | null;
   heroUser: VaultHeroUser | null;
+  /** Small label above the title — use "Family Safe" on /aihsafe, "Msg Vault" on /msg-vault. */
+  eyebrow?: string;
   title: string;
   description: string;
   spacesCount: number | string;
@@ -133,7 +136,7 @@ export function VaultHeroSection({
               marginTop:      0,
             }}
           >
-            Msg Vault
+            {eyebrow}
           </p>
           <h1
             className="vault-hero-title"

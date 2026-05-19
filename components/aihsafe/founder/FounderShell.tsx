@@ -288,6 +288,7 @@ export function FounderShell({
           <>
             <VaultHeroSection
               variant="full"
+              eyebrow="Family Safe"
               coverUrl={heroCoverUrl ?? null}
               heroUser={heroUser}
               title="Trusted Private Spaces"
@@ -310,6 +311,7 @@ export function FounderShell({
           <>
             <VaultHeroSection
               variant="compact"
+              eyebrow="Family Safe"
               coverUrl={heroCoverUrl ?? null}
               heroUser={null}
               title="Trusted Private Spaces"
