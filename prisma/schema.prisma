@@ -89,6 +89,13 @@ model User {
   // Policy layer (Agent 37)
   aihPolicyProfile           AihPolicyProfile?
 
+  // Msg Vault — governed communication (Agent 49)
+  aihMsgConversationsCreated AihMsgConversation[]     @relation("AihMsgConversationCreatedBy")
+  aihMsgParticipants         AihMsgParticipant[]
+  aihMsgMessagesAuthored     AihMsgMessage[]          @relation("AihMsgMessageAuthor")
+  aihMsgNotices              AihMsgNotice[]
+  aihMsgGovernanceEvents     AihMsgGovernanceEvent[]  @relation("AihMsgGovernanceEventActor")
+
   @@map("users")
 }
 
@@ -440,6 +447,7 @@ model TrustUnit {
   // AIH Safe — back-relations (added by Agent 3 / Agent 19)
   aihMeta          AihTrustUnitMeta?
   aihActivityPosts AihActivityPost[]
+  aihMsgConversations AihMsgConversation[]
 
   @@map("trust_units")
 }
@@ -857,6 +865,8 @@ model AihApprovalRequest {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
+  aihMsgNotices AihMsgNotice[]
+
   @@index([approverId, state])
   @@index([requestorId])
   @@index([expiresAt])
@@ -982,6 +992,198 @@ model AihPolicyProfile {
   updatedAt        DateTime @updatedAt
 
   @@map("aih_policy_profiles")
+}
+
+// ─── Msg Vault — Governed Communication (Agent 49) ───────────────────────────
+// Relationship-scoped conversations, messages, notices, and comm-layer audit detail.
+// Does not replace AihAuditEvent. No open/stranger conversations — enforced in services.
+
+enum AihMsgConversationKind {
+  DIRECT
+  THREAD
+  NOTICE_THREAD
+  SPACE_THREAD
+
+  @@map("aih_msg_conversation_kind")
+}
+
+enum AihMsgConversationStatus {
+  ACTIVE
+  ARCHIVED
+  LOCKED
+  PENDING_APPROVAL
+
+  @@map("aih_msg_conversation_status")
+}
+
+enum AihMsgParticipantRole {
+  OWNER
+  PARTICIPANT
+  OBSERVER
+  GUARDIAN
+  MODERATOR
+
+  @@map("aih_msg_participant_role")
+}
+
+enum AihMsgParticipantStatus {
+  ACTIVE
+  LEFT
+  REMOVED
+  PENDING
+
+  @@map("aih_msg_participant_status")
+}
+
+enum AihMsgMessageStatus {
+  SENT
+  PENDING_APPROVAL
+  REMOVED
+  BLOCKED
+
+  @@map("aih_msg_message_status")
+}
+
+enum AihMsgNoticeKind {
+  APPROVAL_REQUIRED
+  INVITE_ACCEPTED
+  MEMBER_JOINED
+  MEMBER_LEFT
+  POLICY_CHANGED
+  MESSAGE_BLOCKED
+  POST_APPROVED
+  POST_DENIED
+
+  @@map("aih_msg_notice_kind")
+}
+
+enum AihMsgNoticeStatus {
+  UNREAD
+  READ
+  ARCHIVED
+
+  @@map("aih_msg_notice_status")
+}
+
+/// Governed direct chat or thread container. DIRECT rows use directKey for pair uniqueness.
+model AihMsgConversation {
+  id               String                   @id @default(cuid())
+  kind             AihMsgConversationKind
+  title            String?
+  createdById      String
+  createdBy        User                     @relation("AihMsgConversationCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  trustUnitId      String?
+  trustUnit        TrustUnit?               @relation(fields: [trustUnitId], references: [id], onDelete: Restrict)
+  /// Sorted participant IDs for DIRECT kind — unique when set (A/B same as B/A).
+  directKey        String?                  @unique
+  /// Resolved policy + visibility rationale at creation time (explainability).
+  policySnapshot   Json?
+  /// VisibilityScope string — why participants may see this conversation.
+  visibilityScope  String                   @default("trust_unit")
+  status           AihMsgConversationStatus @default(ACTIVE)
+  lastMessageAt    DateTime?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+
+  participants     AihMsgParticipant[]
+  messages         AihMsgMessage[]
+  notices          AihMsgNotice[]
+  governanceEvents AihMsgGovernanceEvent[]
+
+  @@index([createdById])
+  @@index([trustUnitId])
+  @@index([status])
+  @@index([lastMessageAt(sort: Desc)])
+  @@index([kind, status])
+  @@map("aih_msg_conversations")
+}
+
+/// Membership in a governed conversation — drives "who can participate".
+model AihMsgParticipant {
+  id             String                  @id @default(cuid())
+  conversationId String
+  conversation   AihMsgConversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User                    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  role           AihMsgParticipantRole   @default(PARTICIPANT)
+  status         AihMsgParticipantStatus @default(ACTIVE)
+  joinedAt       DateTime                @default(now())
+  lastReadAt     DateTime?
+  mutedAt        DateTime?
+
+  @@unique([conversationId, userId])
+  @@index([userId, status])
+  @@index([conversationId, status])
+  @@map("aih_msg_participants")
+}
+
+/// Individual governed message in a conversation.
+model AihMsgMessage {
+  id               String              @id @default(cuid())
+  conversationId   String
+  conversation     AihMsgConversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  authorId         String
+  author           User                @relation("AihMsgMessageAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  bodyText         String              @db.Text
+  status           AihMsgMessageStatus @default(SENT)
+  governanceState  String              @default("allowed")
+  escalationState  String            @default("none")
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  deletedAt        DateTime?
+
+  governanceEvents AihMsgGovernanceEvent[]
+
+  @@index([conversationId, createdAt(sort: Desc)])
+  @@index([authorId, createdAt(sort: Desc)])
+  @@index([status])
+  @@map("aih_msg_messages")
+}
+
+/// System/governance notice for Msg Vault (approvals, membership, policy).
+model AihMsgNotice {
+  id                String           @id @default(cuid())
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId    String?
+  conversation      AihMsgConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  trustUnitId       String?
+  approvalRequestId String?
+  approvalRequest   AihApprovalRequest? @relation(fields: [approvalRequestId], references: [id], onDelete: SetNull)
+  kind              AihMsgNoticeKind
+  title             String
+  body              String           @db.Text
+  status            AihMsgNoticeStatus @default(UNREAD)
+  createdAt         DateTime         @default(now())
+  readAt            DateTime?
+
+  @@index([userId, status, createdAt(sort: Desc)])
+  @@index([conversationId])
+  @@index([trustUnitId])
+  @@index([approvalRequestId])
+  @@map("aih_msg_notices")
+}
+
+/// Communication-layer governance detail (complements AihAuditEvent).
+model AihMsgGovernanceEvent {
+  id             String              @id @default(cuid())
+  conversationId String?
+  conversation   AihMsgConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  messageId      String?
+  message        AihMsgMessage?      @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  actorUserId    String
+  actor          User                @relation("AihMsgGovernanceEventActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+  /// Plain string — no FK so events survive target user deletion.
+  targetUserId   String?
+  eventType      String
+  contextJson    Json
+  createdAt      DateTime            @default(now())
+
+  @@index([conversationId, createdAt(sort: Desc)])
+  @@index([messageId])
+  @@index([actorUserId, createdAt(sort: Desc)])
+  @@index([eventType])
+  @@map("aih_msg_governance_events")
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
