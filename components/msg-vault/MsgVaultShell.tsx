@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Lock } from "lucide-react";
 import type { FamilySafeShellMode } from "@/components/aihsafe/roles/shellMode";
 import { MsgVaultTabs, type MsgVaultTabId } from "@/components/msg-vault/MsgVaultTabs";
-import { ConversationList } from "@/components/msg-vault/ConversationList";
+import { MsgVaultThreadSelectorRail } from "@/components/msg-vault/MsgVaultThreadSelectorRail";
 import { ConversationPanel } from "@/components/msg-vault/ConversationPanel";
 import { NoticesPanel } from "@/components/msg-vault/NoticesPanel";
 import { MsgContextRail } from "@/components/msg-vault/MsgContextRail";
@@ -15,8 +16,10 @@ import {
   fetchMessages,
   fetchNotices,
   MsgVaultApiError,
+  startDirectConversation,
   type VaultNoticeItem,
 } from "@/lib/msg-vault/api-client";
+import { findDirectConversationByPeer } from "@/lib/msg-vault/directKey";
 import type {
   GovernanceOverlayDTO,
   MsgConversationDTO,
@@ -40,7 +43,22 @@ interface Props {
 }
 
 export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }: Props) {
-  const [tab, setTab] = useState<MsgVaultTabId>("overview");
+  const searchParams = useSearchParams();
+  const deepLinkPeerId = searchParams.get("peer")?.trim() || null;
+  const deepLinkHandledRef = useRef(false);
+
+  const initialTab = searchParams.get("tab");
+  const [tab, setTab] = useState<MsgVaultTabId>(() => {
+    if (
+      initialTab === "chats" ||
+      initialTab === "threads" ||
+      initialTab === "notices" ||
+      initialTab === "overview"
+    ) {
+      return initialTab;
+    }
+    return deepLinkPeerId ? "chats" : "overview";
+  });
   const [conversations, setConversations] = useState<MsgConversationDTO[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MsgMessageDTO[]>([]);
@@ -120,18 +138,6 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
     }
   }, [tab, notices, selectedNoticeId]);
 
-  useEffect(() => {
-    if (tab !== "chats" && tab !== "threads") return;
-    const list = conversations.filter((c) =>
-      tab === "chats"
-        ? c.kind === MsgConversationKind.DIRECT
-        : c.kind !== MsgConversationKind.DIRECT,
-    );
-    if (list.length > 0 && !selectedId) {
-      void selectConversation(list[0].id);
-    }
-  }, [tab, conversations, selectedId, selectConversation]);
-
   const handleChatStarted = useCallback(
     (conversation: MsgConversationDTO) => {
       setConversations((prev) => {
@@ -147,6 +153,46 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
     [selectConversation],
   );
 
+  useEffect(() => {
+    if (!deepLinkPeerId || deepLinkPeerId === currentUserId) return;
+    if (loadingConvs || deepLinkHandledRef.current) return;
+
+    const match = findDirectConversationByPeer(
+      conversations,
+      currentUserId,
+      deepLinkPeerId,
+    );
+    if (match) {
+      deepLinkHandledRef.current = true;
+      setTab("chats");
+      void selectConversation(match.id);
+      return;
+    }
+
+    deepLinkHandledRef.current = true;
+    setTab("chats");
+    void (async () => {
+      try {
+        const conversation = await startDirectConversation(deepLinkPeerId);
+        handleChatStarted(conversation);
+      } catch (err) {
+        setError(
+          err instanceof MsgVaultApiError
+            ? err.message
+            : "Could not open a governed chat for this person.",
+        );
+        setStartChatOpen(true);
+      }
+    })();
+  }, [
+    conversations,
+    currentUserId,
+    deepLinkPeerId,
+    loadingConvs,
+    selectConversation,
+    handleChatStarted,
+  ]);
+
   const selectedNotice = useMemo(
     () => notices.find((n) => n.id === selectedNoticeId) ?? null,
     [notices, selectedNoticeId],
@@ -155,8 +201,8 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
   const directCount = conversations.filter((c) => c.kind === MsgConversationKind.DIRECT).length;
   const threadCount = conversations.filter((c) => c.kind !== MsgConversationKind.DIRECT).length;
 
-  const kindFilter =
-    tab === "chats" ? "direct" : tab === "threads" ? "thread" : "all";
+  const kindFilter: "direct" | "thread" =
+    tab === "chats" ? "direct" : "thread";
 
   function handleMessageSent(message: MsgMessageDTO) {
     setMessages((prev) => [message, ...prev]);
@@ -274,59 +320,7 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
       )}
 
       {showMessaging && (
-        <div className="msg-vault-grid">
-          <div style={{ ...card, padding: 10, minHeight: 480 }}>
-            <div
-              style={{
-                display:    "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                margin:     "4px 8px 10px",
-                gap:        8,
-              }}
-            >
-              <p
-                style={{
-                  margin:        0,
-                  fontSize:      11,
-                  fontWeight:    700,
-                  color:         "#78716c",
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                }}
-              >
-                {tab === "chats" ? "Chats" : "Threads"}
-              </p>
-              {tab === "chats" && (
-                <button
-                  type="button"
-                  onClick={() => setStartChatOpen(true)}
-                  style={{
-                    fontSize:     11,
-                    fontWeight:   700,
-                    color:        "#6366f1",
-                    background:   "#eef2ff",
-                    border:       "1px solid #c7d2fe",
-                    borderRadius: 8,
-                    padding:      "4px 8px",
-                    cursor:       "pointer",
-                  }}
-                >
-                  + Start chat
-                </button>
-              )}
-            </div>
-            <ConversationList
-              conversations={conversations}
-              currentUserId={currentUserId}
-              selectedId={selectedId}
-              onSelect={(id) => void selectConversation(id)}
-              kindFilter={kindFilter}
-              loading={loadingConvs}
-              onStartChat={tab === "chats" ? () => setStartChatOpen(true) : undefined}
-            />
-          </div>
-
+        <div className="thread-hub-grid thread-hub-grid--vault">
           <div style={{ ...card, display: "flex", flexDirection: "column", minHeight: 480 }}>
             <ConversationPanel
               conversation={selectedConversation}
@@ -337,7 +331,16 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
             />
           </div>
 
-          <div style={{ minHeight: 480 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, minHeight: 480 }}>
+            <MsgVaultThreadSelectorRail
+              conversations={conversations}
+              currentUserId={currentUserId}
+              selectedId={selectedId}
+              kindFilter={kindFilter}
+              loading={loadingConvs}
+              onSelect={(id) => void selectConversation(id)}
+              onStartChat={tab === "chats" ? () => setStartChatOpen(true) : undefined}
+            />
             <MsgContextRail
               overlay={overlay}
               selectedNotice={null}

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MessageSquare } from "lucide-react";
 import type { MsgConversationDTO, MsgMessageDTO } from "@/types/msg-vault";
 import { conversationLabel } from "@/lib/msg-vault/display";
 import { MessageComposer } from "@/components/msg-vault/MessageComposer";
+import { EmptyThreadState } from "@/components/vault/EmptyThreadState";
 
 interface Props {
   conversation: MsgConversationDTO | null;
@@ -29,26 +29,8 @@ export function ConversationPanel({
 
   if (!conversation) {
     return (
-      <div
-        style={{
-          flex:           1,
-          display:        "flex",
-          flexDirection:  "column",
-          alignItems:     "center",
-          justifyContent: "center",
-          padding:        32,
-          color:          "#78716c",
-          textAlign:      "center",
-        }}
-      >
-        <MessageSquare style={{ width: 40, height: 40, color: "#c4b5fd", marginBottom: 14 }} />
-        <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "#1c1917" }}>
-          Select a conversation
-        </p>
-        <p style={{ margin: "8px 0 0", fontSize: 13, lineHeight: 1.5, maxWidth: 280 }}>
-          Choose a chat or thread from the list. Messages stay within your family trust
-          relationships — never with strangers.
-        </p>
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
+        <EmptyThreadState variant="pick" />
       </div>
     );
   }
@@ -89,14 +71,7 @@ export function ConversationPanel({
         {loading ? (
           <p style={{ padding: 20, fontSize: 13, color: "#a8a29e" }}>Loading messages…</p>
         ) : ordered.length === 0 ? (
-          <div style={{ padding: 24, textAlign: "center" }}>
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1c1917" }}>
-              No messages yet
-            </p>
-            <p style={{ margin: "8px 0 0", fontSize: 13, color: "#78716c" }}>
-              Send a message to start coordinating in this governed space.
-            </p>
-          </div>
+          <EmptyThreadState variant="no-messages" />
         ) : (
           ordered.map((msg) => {
             const mine = msg.authorId === currentUserId;

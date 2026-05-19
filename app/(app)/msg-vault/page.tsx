@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { Suspense } from "react";
 import { MsgVaultShell } from "@/components/msg-vault/MsgVaultShell";
 import { deriveShellMode } from "@/components/aihsafe/roles";
 import { requireAuth } from "@/lib/auth";
@@ -14,11 +15,13 @@ export default async function MsgVaultPage() {
   });
 
   return (
-    <MsgVaultShell
-      currentUserId={user.id}
-      shellMode={shellMode}
-      firstName={user.firstName}
-      lastName={user.lastName}
-    />
+    <Suspense fallback={<div style={{ padding: 24, color: "#78716c" }}>Loading Msg Vault…</div>}>
+      <MsgVaultShell
+        currentUserId={user.id}
+        shellMode={shellMode}
+        firstName={user.firstName}
+        lastName={user.lastName}
+      />
+    </Suspense>
   );
 }

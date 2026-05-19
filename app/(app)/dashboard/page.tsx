@@ -1,7 +1,8 @@
 // app/(app)/dashboard/page.tsx
+export const dynamic = "force-dynamic";
+
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   getPendingTrustRequestsSafe,
@@ -10,7 +11,7 @@ import {
 } from "@/lib/trust";
 import { loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { queryDashboardProfilePrompt, incrementDashboardProfilePromptSeen } from "@/lib/dashboard/safe-data";
-import { DashboardHubColumns } from "@/components/dashboard/DashboardHubColumns";
+import { DashboardMemberLayout } from "@/components/dashboard/DashboardMemberLayout";
 import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletionPrompt";
 import { IncomingIdentityAcks }    from "@/components/dashboard/IncomingIdentityAcks";
 import type { FlatNode }           from "@/components/TreeList";
@@ -120,13 +121,6 @@ function dmUnreadByPeerFromPrivatePosts(
   return out;
 }
 
-// ── Shared card style ──────────────────────────────────────────────────────────
-const card = {
-  background:"white", borderRadius:"16px",
-  border:"1px solid #ece9e3", overflow:"hidden",
-  boxShadow:"0 1px 4px rgba(0,0,0,0.05)",
-};
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -204,7 +198,6 @@ export default async function DashboardPage() {
     getVaultNotificationCount(user.id),
   ]);
 
-  const joinedViaYou   = myInvites.filter(i => i.status === "REGISTERED").length;
   const serializedTrustRequests = serializeTrustGateRequests(trustRequests);
 
   const composerSpaces = composerSpacesRows.map((r) => r.space);
@@ -253,62 +246,10 @@ export default async function DashboardPage() {
       {showProfilePrompt && <ProfileCompletionPrompt />}
       <IncomingIdentityAcks />
 
-      {/* ── 4-col metric + action strip ── */}
-      <div className="grid grid-cols-4 max-[680px]:grid-cols-2 gap-[10px]">
-        {/* Stat tiles */}
-        {([
-          { label:"My Family",      value:totalMembers,     color:"#6366f1", href:"/tree"   },
-          { label:"INVITES SENT",   value:myInvites.length, color:"#f59e0b", href:"/invite" },
-          { label:"JOINED VIA YOU", value:joinedViaYou,     color:"#10b981", href:"/invite" },
-        ] as const).map(({ label, value, color, href }) => (
-          <Link key={label} href={href} style={{
-            ...card, padding:"12px 16px", borderLeft:`3px solid ${color}`,
-            textDecoration:"none", display:"flex", alignItems:"center",
-            justifyContent:"space-between", gap:"10px",
-          }}>
-            <span style={{ fontSize:"11px", fontWeight:700, color:"#78716c", letterSpacing:"0.06em", textTransform:"uppercase" }}>
-              {label}
-            </span>
-            <span style={{ fontSize:"20px", fontWeight:800, color:"#1c1917", lineHeight:1 }}>
-              {value}
-            </span>
-          </Link>
-        ))}
-
-        {/* Invite — same card chrome as other metrics (links to /invite) */}
-        <Link
-          href="/invite"
-          style={{
-            ...card,
-            padding: "12px 16px",
-            borderLeft: "3px solid #6366f1",
-            textDecoration: "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "10px",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "11px",
-              fontWeight: 700,
-              color: "#78716c",
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-            }}
-          >
-            INVITE
-          </span>
-          <span style={{ fontSize: "20px", fontWeight: 800, color: "#1c1917", lineHeight: 1 }} aria-hidden>
-            ✉️
-          </span>
-        </Link>
-      </div>
-
       {/* ── Two-column: tabbed content hub + context rail ── */}
-      <DashboardHubColumns
+      <DashboardMemberLayout
         currentUserId={user.id}
+        currentUserRole={user.role}
         initialRequests={serializedTrustRequests}
         lastSeenAt={user.lastLoginAt?.toISOString() ?? null}
         dmUnreadByPeerId={dmUnreadByPeerId}

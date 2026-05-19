@@ -45,6 +45,9 @@ type PrivateMember = {
 
 export function DashboardHubColumns({
   currentUserId,
+  currentUserRole,
+  tab: controlledTab,
+  onTabChange,
   initialRequests,
   lastSeenAt,
   dmUnreadByPeerId,
@@ -63,6 +66,9 @@ export function DashboardHubColumns({
   vaultNotificationCount,
 }: {
   currentUserId: string;
+  currentUserRole: string;
+  tab: DashboardTabId;
+  onTabChange: (tab: DashboardTabId) => void;
   initialRequests: TuModalRequest[];
   lastSeenAt: string | null;
   dmUnreadByPeerId: Record<string, number>;
@@ -80,14 +86,17 @@ export function DashboardHubColumns({
   bondPeers: PrivateMember[];
   vaultNotificationCount: number;
 }) {
-  const [tab, setTab] = useState<DashboardTabId>("posts");
-  const [launchDmPeerId, setLaunchDmPeerId] = useState<string | null>(null);
-  const [activeDmPeerId, setActiveDmPeerId] = useState<string | null>(null);
+  const tab = controlledTab;
+  const setTab = onTabChange;
+  const [activePrivateThreadKey, setActivePrivateThreadKey] = useState<string | null>(null);
 
-  const handleLaunchConsumed = useCallback(() => setLaunchDmPeerId(null), []);
+  const handleSelectPrivateThread = useCallback((threadKey: string) => {
+    setActivePrivateThreadKey(threadKey);
+    setTab("pvt-feeds");
+  }, [setTab]);
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_232px] max-[860px]:grid-cols-1 gap-4 items-start">
+    <div className="thread-hub-grid">
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <DashboardTrustUnitGate
           initialRequests={initialRequests}
@@ -95,12 +104,12 @@ export function DashboardHubColumns({
         />
         <DashboardVaultTabs
           currentUserId={currentUserId}
+          currentUserRole={currentUserRole}
           tab={tab}
           onTabChange={setTab}
           lastSeenAt={lastSeenAt}
-          launchDmPeerId={launchDmPeerId}
-          onLaunchDmPeerConsumed={handleLaunchConsumed}
-          onActiveDirectPeerChange={setActiveDmPeerId}
+          selectedPrivateThreadKey={activePrivateThreadKey}
+          onSelectedPrivateThreadKeyChange={setActivePrivateThreadKey}
           newPostsCount={newPostsCount}
           newCommentsCount={newCommentsCount}
           invites={invites}
@@ -118,13 +127,11 @@ export function DashboardHubColumns({
         flat={flat}
         totalMembers={totalMembers}
         trustUnits={trustUnits}
+        bondPeers={bondPeers}
         currentUserId={currentUserId}
-        activeDmPeerId={activeDmPeerId}
+        activePrivateThreadKey={activePrivateThreadKey}
         dmUnreadByPeerId={dmUnreadByPeerId}
-        onMemberPrivateThreadClick={(memberId) => {
-          setLaunchDmPeerId(memberId);
-          setTab("pvt-feeds");
-        }}
+        onSelectPrivateThread={handleSelectPrivateThread}
       />
     </div>
   );

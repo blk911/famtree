@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Users, Lock, User, Mail, ShieldCheck } from "lucide-react";
-import { PrivateFeedClient } from "@/components/PrivateFeedClient";
+import { DashboardPrivateThreadCenter } from "@/components/dashboard/DashboardPrivateThreadCenter";
 import {
   DashboardPostsPanel,
   type SerializedDashboardPost,
@@ -45,6 +45,7 @@ const MSG_VAULT_HREF = "/msg-vault";
 
 interface Props {
   currentUserId: string;
+  currentUserRole: string;
   tab?: TabId;
   onTabChange?: (tab: TabId) => void;
   lastSeenAt?: string | null;
@@ -63,6 +64,8 @@ interface Props {
   launchDmPeerId?: string | null;
   onLaunchDmPeerConsumed?: () => void;
   onActiveDirectPeerChange?: (peerId: string | null) => void;
+  selectedPrivateThreadKey?: string | null;
+  onSelectedPrivateThreadKeyChange?: (key: string | null) => void;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -121,12 +124,15 @@ function PanelTitle({ children }: { children: React.ReactNode }) {
 
 export function DashboardVaultTabs({
   currentUserId,
+  currentUserRole,
   tab: controlledTab,
   onTabChange,
   lastSeenAt = null,
   launchDmPeerId = null,
   onLaunchDmPeerConsumed,
   onActiveDirectPeerChange,
+  selectedPrivateThreadKey = null,
+  onSelectedPrivateThreadKeyChange,
   newPostsCount,
   newCommentsCount,
   invites,
@@ -186,7 +192,7 @@ export function DashboardVaultTabs({
         borderRadius: 16,
         border: "1px solid #ece9e3",
         boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-        overflow: "hidden",
+        overflow: "visible",
       }}
     >
       <div
@@ -258,6 +264,7 @@ export function DashboardVaultTabs({
             <DashboardPostsPanel
               variant="feed"
               currentUserId={currentUserId}
+              currentUserRole={currentUserRole}
               composerSpaces={composerSpaces}
               posts={serializedFeedPosts}
               newPostsCount={newPostsCount}
@@ -268,58 +275,18 @@ export function DashboardVaultTabs({
         {tab === "pvt-feeds" && (
           <div>
             <PanelTitle>Private Threads</PanelTitle>
-            {newCommentsCount > 0 ? (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "12px 15px",
-                  borderRadius: 12,
-                  marginBottom: 18,
-                  background: "#faf5ff",
-                  border: "1px solid #e9d5ff",
-                }}
-              >
-                <span style={{ fontSize: 18, flexShrink: 0 }}>💬</span>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#5b21b6" }}>
-                    {newCommentsCount} new conversation{newCommentsCount !== 1 ? "s" : ""} in your circles
-                  </div>
-                  <div style={{ fontSize: 12, color: "#7c3aed", marginTop: 1 }}>
-                    Activity in your private spaces
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "12px 15px",
-                  borderRadius: 12,
-                  marginBottom: 18,
-                  background: "#f5f3ff",
-                  border: "1px solid #ddd6fe",
-                }}
-              >
-                <span style={{ fontSize: 18, flexShrink: 0 }}>🔒</span>
-                <div style={{ fontSize: 12, color: "#6d28d9", fontWeight: 500, lineHeight: 1.45 }}>
-                  Select a member on the right to open a private thread, or continue one below.
-                </div>
-              </div>
-            )}
-            <PrivateFeedClient
+            <DashboardPrivateThreadCenter
               key="dashboard-private-feed"
               currentUserId={currentUserId}
               trustUnits={trustUnits}
               posts={serializedPrivatePosts}
               members={membersForPrivate}
               bondPeers={bondPeers}
+              selectedThreadKey={selectedPrivateThreadKey}
               launchDmPeerId={launchDmPeerId}
               onLaunchDmPeerConsumed={onLaunchDmPeerConsumed}
               onActiveDirectPeerChange={onActiveDirectPeerChange}
+              onSelectedThreadKeyChange={onSelectedPrivateThreadKeyChange}
             />
           </div>
         )}
@@ -330,6 +297,7 @@ export function DashboardVaultTabs({
             <DashboardPostsPanel
               variant="mine"
               currentUserId={currentUserId}
+              currentUserRole={currentUserRole}
               composerSpaces={composerSpaces}
               posts={serializedMyPosts}
               newPostsCount={0}

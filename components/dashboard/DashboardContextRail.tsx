@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { MessageCircle } from "lucide-react";
 import { ContextRailCard } from "./ContextRailCard";
 import type { FlatNode } from "@/components/TreeList";
+import { ThreadSelectorRow } from "@/components/vault/ThreadSelectorRow";
+import { ThreadSelectorList } from "@/components/vault/ThreadSelectorList";
+import { directThreadKey } from "@/lib/private-thread-keys";
+import { tuThreadKey } from "@/components/dashboard/private-thread-model";
 
 interface TrustUnit {
   id: string;
@@ -12,25 +15,40 @@ interface TrustUnit {
   }[];
 }
 
+type BondPeer = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  photoUrl: string | null;
+};
+
 interface Props {
   flat: FlatNode[];
   totalMembers: number;
   trustUnits: TrustUnit[];
+  bondPeers: BondPeer[];
   currentUserId: string;
-  activeDmPeerId: string | null;
+  activePrivateThreadKey: string | null;
   dmUnreadByPeerId: Record<string, number>;
-  onMemberPrivateThreadClick: (memberUserId: string) => void;
+  onSelectPrivateThread: (threadKey: string) => void;
 }
 
 export function DashboardContextRail({
   flat,
   totalMembers,
   trustUnits,
+  bondPeers,
   currentUserId,
-  activeDmPeerId,
+  activePrivateThreadKey,
   dmUnreadByPeerId,
-  onMemberPrivateThreadClick,
+  onSelectPrivateThread,
 }: Props) {
+  const treePreview = flat.slice(0, 5);
+  const shownTreeIds = new Set(treePreview.map((n) => n.member.id));
+  const extraBondPeers = bondPeers.filter(
+    (p) => p.id !== currentUserId && !shownTreeIds.has(p.id),
+  );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <ContextRailCard title="Family Tree" count={totalMembers} href="/tree">
@@ -39,153 +57,103 @@ export function DashboardContextRail({
             No members yet — invite your family!
           </p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {flat.slice(0, 5).map((node) => {
+          <ThreadSelectorList>
+            {treePreview.map((node) => {
               const isSelf = node.member.id === currentUserId;
-              const unread = dmUnreadByPeerId[node.member.id] ?? 0;
-              const active = activeDmPeerId === node.member.id;
+              const threadKey = directThreadKey(node.member.id, currentUserId);
               return (
-                <button
+                <ThreadSelectorRow
                   key={node.member.id}
-                  type="button"
+                  label={`${node.member.firstName} ${node.member.lastName}`}
+                  firstName={node.member.firstName}
+                  lastName={node.member.lastName}
+                  photoUrl={node.member.photoUrl}
+                  active={activePrivateThreadKey === threadKey}
                   disabled={isSelf}
-                  onClick={() => {
-                    if (!isSelf) onMemberPrivateThreadClick(node.member.id);
-                  }}
+                  unread={dmUnreadByPeerId[node.member.id] ?? 0}
+                  onClick={() => onSelectPrivateThread(threadKey)}
                   title={
                     isSelf
                       ? "This is you"
                       : `Open private thread with ${node.member.firstName} ${node.member.lastName}`
                   }
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "6px 8px",
-                    marginInline: -8,
-                    borderRadius: 10,
-                    border: active ? "1px solid #c7d2fe" : "1px solid transparent",
-                    background: active ? "rgba(238,242,255,0.92)" : "transparent",
-                    cursor: isSelf ? "default" : "pointer",
-                    textAlign: "left",
-                    opacity: isSelf ? 0.65 : 1,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: "50%",
-                      flexShrink: 0,
-                      overflow: "hidden",
-                      background: "linear-gradient(135deg,#1a1a2e,#0f3460)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 9,
-                      fontWeight: 700,
-                      color: "white",
-                    }}
-                  >
-                    {node.member.photoUrl ? (
-                      <img
-                        src={node.member.photoUrl}
-                        alt=""
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
-                    ) : (
-                      `${node.member.firstName[0] ?? ""}${node.member.lastName[0] ?? ""}`.toUpperCase()
-                    )}
-                  </div>
-                  <span
-                    style={{
-                      fontSize: 12,
-                      color: "#1c1917",
-                      fontWeight: 500,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      flex: 1,
-                      minWidth: 0,
-                    }}
-                  >
-                    {node.member.firstName} {node.member.lastName}
-                  </span>
-                  {!isSelf && (
-                    <span
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                        flexShrink: 0,
-                      }}
-                    >
-                      <MessageCircle
-                        aria-hidden
-                        style={{ width: 13, height: 13, color: "#818cf8", opacity: 0.9 }}
-                      />
-                      {unread > 0 ? (
-                        <span
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 700,
-                            color: "white",
-                            background: "#6366f1",
-                            borderRadius: 999,
-                            minWidth: 16,
-                            height: 16,
-                            padding: "0 4px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            lineHeight: 1,
-                          }}
-                        >
-                          {unread > 99 ? "99+" : unread}
-                        </span>
-                      ) : null}
-                    </span>
-                  )}
-                </button>
+                />
               );
             })}
-            {flat.length > 5 && (
-              <Link
-                href="/tree"
-                style={{
-                  fontSize: 11,
-                  color: "#6366f1",
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  marginTop: 2,
-                }}
-              >
-                +{flat.length - 5} more →
-              </Link>
-            )}
-          </div>
+            {extraBondPeers.map((peer) => {
+              const threadKey = directThreadKey(peer.id, currentUserId);
+              return (
+                <ThreadSelectorRow
+                  key={peer.id}
+                  label={`${peer.firstName} ${peer.lastName}`}
+                  firstName={peer.firstName}
+                  lastName={peer.lastName}
+                  photoUrl={peer.photoUrl}
+                  active={activePrivateThreadKey === threadKey}
+                  unread={dmUnreadByPeerId[peer.id] ?? 0}
+                  onClick={() => onSelectPrivateThread(threadKey)}
+                  title={`Open private thread with ${peer.firstName} ${peer.lastName}`}
+                />
+              );
+            })}
+          </ThreadSelectorList>
+        )}
+        {flat.length > 5 && (
+          <Link
+            href="/tree"
+            style={{
+              fontSize: 11,
+              color: "#6366f1",
+              fontWeight: 600,
+              textDecoration: "none",
+              marginTop: 8,
+              display: "inline-block",
+            }}
+          >
+            +{flat.length - 5} more →
+          </Link>
         )}
       </ContextRailCard>
 
       {trustUnits.length > 0 && (
         <ContextRailCard title="Trust Units" count={trustUnits.length} href="/tree">
-          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {trustUnits.slice(0, 4).map((unit) => {
-              const names = unit.members.slice(0, 2).map((m) => m.user.firstName).join(" · ");
-              const extra = unit.members.length > 2 ? ` +${unit.members.length - 2}` : "";
+              const key = tuThreadKey(unit);
+              const tuActive = activePrivateThreadKey === key;
+              const tuLabel = unit.members.map((m) => m.user.firstName).join(" · ");
               return (
-                <div
-                  key={unit.id}
-                  style={{
-                    fontSize: 12,
-                    color: "#44403c",
-                    fontWeight: 500,
-                    padding: "5px 0",
-                    borderTop: "1px solid #f5f4f0",
-                  }}
-                >
-                  🤝 {names}
-                  {extra}
+                <div key={unit.id} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <button
+                    type="button"
+                    onClick={() => onSelectPrivateThread(key)}
+                    title="Open Trust Unit group thread"
+                    className={`thread-selector-tu${tuActive ? " thread-selector-tu--active" : ""}`}
+                  >
+                    <span>🤝 {tuLabel}</span>
+                  </button>
+                  {unit.members.map((m) => {
+                    const isSelf = m.user.id === currentUserId;
+                    const threadKey = directThreadKey(m.user.id, currentUserId);
+                    return (
+                      <ThreadSelectorRow
+                        key={m.user.id}
+                        label={`${m.user.firstName} ${m.user.lastName}`}
+                        firstName={m.user.firstName}
+                        lastName={m.user.lastName}
+                        photoUrl={m.user.photoUrl}
+                        active={activePrivateThreadKey === threadKey}
+                        disabled={isSelf}
+                        unread={dmUnreadByPeerId[m.user.id] ?? 0}
+                        onClick={() => onSelectPrivateThread(threadKey)}
+                        title={
+                          isSelf
+                            ? "This is you"
+                            : `Direct message ${m.user.firstName} ${m.user.lastName}`
+                        }
+                      />
+                    );
+                  })}
                 </div>
               );
             })}
@@ -193,9 +161,9 @@ export function DashboardContextRail({
         </ContextRailCard>
       )}
 
-      <ContextRailCard title="Msg Vault" href="/aihsafe">
+      <ContextRailCard title="Msg Vault" href="/msg-vault">
         <p style={{ fontSize: 12, color: "#78716c", margin: 0, lineHeight: 1.45 }}>
-          Open Msg Vault for overview, trusted spaces, activity, and members.
+          Governed chats and threads with relationship checks.
         </p>
       </ContextRailCard>
     </div>
