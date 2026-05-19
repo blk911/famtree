@@ -12,6 +12,7 @@ import { handleMsgVaultError } from "@/lib/msg-vault/route-utils";
 import {
   createDirectConversation,
   createThreadConversation,
+  listAllowedChatContacts,
   listConversationsForUser,
 } from "@/lib/msg-vault/conversations";
 import { MsgConversationKind } from "@/types/msg-vault";
@@ -31,9 +32,14 @@ const CreateConversationSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const user = await requireAuth();
+    const allowedContacts = new URL(req.url).searchParams.get("allowedContacts");
+    if (allowedContacts === "1" || allowedContacts === "true") {
+      const contacts = await listAllowedChatContacts(user.id);
+      return ok({ contacts });
+    }
     const items = await listConversationsForUser(user.id);
     return ok({ items });
   } catch (err) {

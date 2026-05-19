@@ -7,6 +7,7 @@ import { asAIHUserId } from "@/types/aihsafe/ids";
 import { resolvePolicyProfile } from "@/lib/aihsafe/policy/resolvePolicyProfile";
 import { loadConversationForParticipant } from "@/lib/msg-vault/access";
 import { notFound } from "@/lib/msg-vault/errors";
+import { listAllowedChatContacts } from "@/lib/msg-vault/conversations/allowed-contacts";
 import type { GovernanceOverlayDTO, RelationshipContextDTO } from "@/types/msg-vault";
 
 export async function buildGovernanceOverlay(
@@ -24,10 +25,7 @@ export async function buildGovernanceOverlay(
 
   if (conversation.kind === "DIRECT" && otherParticipants.length === 1) {
     const other = otherParticipants[0]!;
-    const name = other.user
-      ? `${other.user.firstName} ${other.user.lastName}`.trim()
-      : "this member";
-    visibilityReason = `Direct chat with ${name} — allowed by your family trust relationships.`;
+    visibilityReason = await explainDirectChatBetween(userId, other.userId);
   } else if (conversation.trustUnitId) {
     const unitName =
       conversation.trustUnit?.aihMeta?.name ?? "your shared trust space";
@@ -56,6 +54,20 @@ export async function buildGovernanceOverlay(
     externalSharingAllowed,
     escalationPending: conversation.status === "PENDING_APPROVAL",
   };
+}
+
+/** Why a direct chat with `targetUserId` is permitted for `actorUserId`. */
+export async function explainDirectChatBetween(
+  actorUserId: string,
+  targetUserId: string,
+): Promise<string> {
+  const contacts = await listAllowedChatContacts(actorUserId);
+  const contact = contacts.find((c) => c.userId === targetUserId);
+  const name = contact
+    ? `${contact.firstName} ${contact.lastName}`.trim()
+    : "this member";
+  const reason = contact?.reasons[0] ?? "you share a governed family or trust relationship";
+  return `Direct chat with ${name} — allowed because ${reason}. No open DMs or public search.`;
 }
 
 export async function explainConversationAccess(

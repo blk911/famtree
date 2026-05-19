@@ -8,6 +8,7 @@ import { ConversationList } from "@/components/msg-vault/ConversationList";
 import { ConversationPanel } from "@/components/msg-vault/ConversationPanel";
 import { NoticesPanel } from "@/components/msg-vault/NoticesPanel";
 import { MsgContextRail } from "@/components/msg-vault/MsgContextRail";
+import { StartChatModal } from "@/components/msg-vault/StartChatModal";
 import {
   fetchConversationDetail,
   fetchConversations,
@@ -49,6 +50,7 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [loadingNotices, setLoadingNotices] = useState(true);
   const [error, setError] = useState("");
+  const [startChatOpen, setStartChatOpen] = useState(false);
 
   const loadConversations = useCallback(async () => {
     setLoadingConvs(true);
@@ -108,18 +110,31 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
   }, []);
 
   useEffect(() => {
-    if (tab === "chats" || tab === "threads") {
-      const kind = tab === "chats" ? "direct" : "thread";
-      const list = conversations.filter((c) =>
-        kind === "direct"
-          ? c.kind === MsgConversationKind.DIRECT
-          : c.kind !== MsgConversationKind.DIRECT,
-      );
-      if (list.length > 0 && !selectedId) {
-        void selectConversation(list[0].id);
-      }
+    if (tab !== "chats" && tab !== "threads") return;
+    const list = conversations.filter((c) =>
+      tab === "chats"
+        ? c.kind === MsgConversationKind.DIRECT
+        : c.kind !== MsgConversationKind.DIRECT,
+    );
+    if (list.length > 0 && !selectedId) {
+      void selectConversation(list[0].id);
     }
   }, [tab, conversations, selectedId, selectConversation]);
+
+  const handleChatStarted = useCallback(
+    (conversation: MsgConversationDTO) => {
+      setConversations((prev) => {
+        const exists = prev.some((c) => c.id === conversation.id);
+        if (exists) {
+          return prev.map((c) => (c.id === conversation.id ? { ...c, ...conversation } : c));
+        }
+        return [conversation, ...prev];
+      });
+      setTab("chats");
+      void selectConversation(conversation.id);
+    },
+    [selectConversation],
+  );
 
   const unreadNotices = notices.filter((n) => n.status === MsgNoticeStatus.UNREAD).length;
   const directCount = conversations.filter((c) => c.kind === MsgConversationKind.DIRECT).length;
@@ -235,18 +250,46 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
       {showMessaging && (
         <div className="msg-vault-grid">
           <div style={{ ...card, padding: 10, minHeight: 480 }}>
-            <p
+            <div
               style={{
-                margin:        "4px 8px 10px",
-                fontSize:      11,
-                fontWeight:    700,
-                color:         "#78716c",
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
+                display:    "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                margin:     "4px 8px 10px",
+                gap:        8,
               }}
             >
-              {tab === "chats" ? "Chats" : "Threads"}
-            </p>
+              <p
+                style={{
+                  margin:        0,
+                  fontSize:      11,
+                  fontWeight:    700,
+                  color:         "#78716c",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                }}
+              >
+                {tab === "chats" ? "Chats" : "Threads"}
+              </p>
+              {tab === "chats" && (
+                <button
+                  type="button"
+                  onClick={() => setStartChatOpen(true)}
+                  style={{
+                    fontSize:     11,
+                    fontWeight:   700,
+                    color:        "#6366f1",
+                    background:   "#eef2ff",
+                    border:       "1px solid #c7d2fe",
+                    borderRadius: 8,
+                    padding:      "4px 8px",
+                    cursor:       "pointer",
+                  }}
+                >
+                  + Start chat
+                </button>
+              )}
+            </div>
             <ConversationList
               conversations={conversations}
               currentUserId={currentUserId}
@@ -254,6 +297,7 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
               onSelect={(id) => void selectConversation(id)}
               kindFilter={kindFilter}
               loading={loadingConvs}
+              onStartChat={tab === "chats" ? () => setStartChatOpen(true) : undefined}
             />
           </div>
 
@@ -273,6 +317,11 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
         </div>
       )}
 
+      <StartChatModal
+        open={startChatOpen}
+        onClose={() => setStartChatOpen(false)}
+        onStarted={handleChatStarted}
+      />
     </div>
   );
 }

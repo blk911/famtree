@@ -25,6 +25,9 @@ import type {
 } from "@/types/msg-vault";
 import { MsgConversationKind } from "@/types/msg-vault";
 
+export { listAllowedChatContacts } from "@/lib/msg-vault/conversations/allowed-contacts";
+export type { AllowedChatContactDTO } from "@/lib/msg-vault/conversations/allowed-contacts";
+
 export async function listConversationsForUser(userId: string): Promise<MsgConversationDTO[]> {
   const rows = await prisma.aihMsgParticipant.findMany({
     where: { userId, status: "ACTIVE" },

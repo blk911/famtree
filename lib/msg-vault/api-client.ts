@@ -29,11 +29,40 @@ async function parseEnvelope<T>(res: Response): Promise<T> {
   return json.data;
 }
 
+export interface AllowedChatContact {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  photoUrl: string | null;
+  reasons: string[];
+  existingConversationId: string | null;
+}
+
 export async function fetchConversations(): Promise<MsgConversationDTO[]> {
   const data = await parseEnvelope<{ items: MsgConversationDTO[] }>(
     await fetch("/api/msg-vault/conversations", { cache: "no-store" }),
   );
   return data.items;
+}
+
+export async function fetchAllowedChatContacts(): Promise<AllowedChatContact[]> {
+  const data = await parseEnvelope<{ contacts: AllowedChatContact[] }>(
+    await fetch("/api/msg-vault/conversations?allowedContacts=1", { cache: "no-store" }),
+  );
+  return data.contacts;
+}
+
+export async function startDirectConversation(
+  targetUserId: string,
+): Promise<MsgConversationDTO> {
+  const data = await parseEnvelope<{ conversation: MsgConversationDTO }>(
+    await fetch("/api/msg-vault/conversations", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ type: "direct", targetUserId }),
+    }),
+  );
+  return data.conversation;
 }
 
 export async function fetchConversationDetail(conversationId: string): Promise<{

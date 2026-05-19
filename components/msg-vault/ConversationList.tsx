@@ -13,6 +13,7 @@ interface Props {
   kindFilter?: "direct" | "thread" | "all";
   loading?: boolean;
   emptyMessage?: string;
+  onStartChat?: () => void;
 }
 
 export function ConversationList({
@@ -23,6 +24,7 @@ export function ConversationList({
   kindFilter = "all",
   loading = false,
   emptyMessage,
+  onStartChat,
 }: Props) {
   const filtered = conversations.filter((c) => {
     if (kindFilter === "direct") return c.kind === MsgConversationKind.DIRECT;
@@ -57,6 +59,26 @@ export function ConversationList({
           {emptyMessage ??
             "Chats and threads appear when you share a trust relationship with someone. There is no open search or stranger messaging."}
         </p>
+        {onStartChat && kindFilter === "direct" && (
+          <button
+            type="button"
+            onClick={onStartChat}
+            style={{
+              marginTop:    14,
+              width:        "100%",
+              padding:      "10px 14px",
+              borderRadius: 10,
+              border:       "none",
+              background:   "#6366f1",
+              color:        "white",
+              fontWeight:   600,
+              fontSize:     13,
+              cursor:       "pointer",
+            }}
+          >
+            Start a chat
+          </button>
+        )}
       </div>
     );
   }
