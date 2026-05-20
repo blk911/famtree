@@ -50,6 +50,13 @@ export const ADMIN_TOOL_OPS: OpsLine[] = [
     where: "`/admin/tools` — Settings → **Tools & foundation** (founder/admin).",
   },
   {
+    title: "Member video messages (repository)",
+    when: "New HeyGen intro, seasonal update, or test-prod watch-once gate.",
+    what: "Add version rows (title, MP4 URL, notes); enable one per slot; env gate for members.",
+    why: "Swap offline without redeploy; placeholder rows OK until URL is pasted.",
+    where: "`/admin/tools` → **Member video messages** · `MEMBER_VIDEO_GATE_ENABLED=true` · `npm run db:push` after schema pull.",
+  },
+  {
     title: "DB sanity API",
     when: "Quick check that this deployment hits the intended Postgres.",
     what: "JSON: DB host fingerprint (no password), row counts, optional Vercel commit.",

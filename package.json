@@ -12,6 +12,7 @@
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "seed:member-intro-video": "tsx scripts/seed-member-intro-video.ts",
     "openapi:generate": "node scripts/generate-openapi-from-fs.mjs",
     "openapi:inject": "node scripts/inject-api-trace.mjs",
     "fuzz": "node scripts/run-fuzz.mjs",

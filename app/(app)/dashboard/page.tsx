@@ -13,6 +13,7 @@ import { loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { queryDashboardProfilePrompt, incrementDashboardProfilePromptSeen } from "@/lib/dashboard/safe-data";
 import { DashboardMemberLayout } from "@/components/dashboard/DashboardMemberLayout";
 import { ProfileCompletionPrompt } from "@/components/dashboard/ProfileCompletionPrompt";
+import { MemberIntroVideoGate } from "@/components/dashboard/MemberIntroVideoGate";
 import { IncomingIdentityAcks }    from "@/components/dashboard/IncomingIdentityAcks";
 import type { FlatNode }           from "@/components/TreeList";
 import { listSentInvitesForSender } from "@/lib/invite/sentForSender";
@@ -202,6 +203,7 @@ export default async function DashboardPage() {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:"20px" }}>
 
+      <MemberIntroVideoGate />
       {showProfilePrompt && <ProfileCompletionPrompt />}
       <IncomingIdentityAcks />
 

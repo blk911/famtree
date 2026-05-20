@@ -699,6 +699,38 @@ model AnnouncementView {
 }
 
 // ─────────────────────────────────────────────
+// MEMBER VIDEO MESSAGES  (admin intro / watch-once slots)
+// ─────────────────────────────────────────────
+model MemberVideoMessage {
+  id          String   @id @default(cuid())
+  slug        String   // e.g. "dashboard-intro"
+  title       String
+  caption     String   @default("Watch Once")
+  videoUrl    String?  // MP4 or direct stream URL (HeyGen export, Blob, etc.)
+  notes       String?  // admin-only context for offline updates
+  isEnabled   Boolean  @default(false)
+  watchOnce   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  completions MemberVideoCompletion[]
+
+  @@index([slug, isEnabled])
+  @@map("member_video_messages")
+}
+
+model MemberVideoCompletion {
+  id          String   @id @default(cuid())
+  userId      String
+  messageId   String
+  message     MemberVideoMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, messageId])
+  @@map("member_video_completions")
+}
+
+// ─────────────────────────────────────────────
 // SESSIONS  (simple JWT refresh tracking)
 // ─────────────────────────────────────────────
 model Session {

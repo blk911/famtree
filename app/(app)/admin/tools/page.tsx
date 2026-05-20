@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getRuntimeFoundationSnapshot } from "@/lib/admin/foundationSnapshot";
 import { ADMIN_SCRIPT_OPS, ADMIN_TOOL_OPS } from "@/lib/admin/opsCatalog";
 import { AdminToolsFoundation } from "@/components/admin/AdminToolsFoundation";
+import { MemberVideoMessageRepository } from "@/components/admin/MemberVideoMessageRepository";
 
 const card = {
   background: "white",
@@ -68,6 +69,8 @@ export default async function AdminToolsPage() {
           ← Admin home
         </Link>
       </div>
+
+      <MemberVideoMessageRepository />
 
       <AdminToolsFoundation
         snapshot={snapshot}
