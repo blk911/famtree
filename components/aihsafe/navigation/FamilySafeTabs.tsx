@@ -44,8 +44,7 @@ export function getVisibleTabs(
   } else if (shellMode === "member") {
     ids = ["overview", "spaces", "activity", "members", "settings"];
   } else {
-    // child / teen — visible governance, no Members or Approvals
-    ids = ["spaces", "activity", "settings"];
+    ids = ["overview", "spaces", "activity", "settings"];
   }
   const label = settingsTabLabel(shellMode);
   return ALL_TABS.filter((t) => ids.includes(t.id)).map((t) =>
@@ -54,7 +53,7 @@ export function getVisibleTabs(
 }
 
 export function defaultTab(shellMode: FamilySafeShellMode): TabId {
-  return shellMode === "child" ? "spaces" : "overview";
+  return "overview";
 }
 
 // ─── Tab bar component ────────────────────────────────────────────────────────

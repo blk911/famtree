@@ -22,6 +22,10 @@ export function FamilySafeContextLayout({
   pendingInviteCount,
   spaceCount,
   trustedAdultCount,
+  unreadNotices = 0,
+  membershipCount = 0,
+  recentInvites = [],
+  recentActivityDisplay = "—",
   onTabChange,
   onInvite,
 }: {
@@ -35,6 +39,10 @@ export function FamilySafeContextLayout({
   pendingInviteCount: number;
   spaceCount: number;
   trustedAdultCount: number;
+  unreadNotices?: number;
+  membershipCount?: number;
+  recentInvites?: import("@/types/aihsafe/dto").InviteDTO[];
+  recentActivityDisplay?: number | string;
   onTabChange: (tab: TabId) => void;
   onInvite: () => void;
 }) {
@@ -79,6 +87,10 @@ export function FamilySafeContextLayout({
             pendingInviteCount={pendingInviteCount}
             spaceCount={spaceCount}
             trustedAdultCount={trustedAdultCount}
+            membershipCount={membershipCount}
+            unreadNotices={unreadNotices}
+            recentActivityDisplay={recentActivityDisplay}
+            recentInvites={recentInvites}
             members={members}
             onOpenSettings={() => onTabChange("settings")}
             onOpenApprovals={() => onTabChange("approvals")}

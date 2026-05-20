@@ -16,6 +16,8 @@ export type TrustUnitLike = {
 
 export const TRUST_CIRCLES_EMPTY_TITLE = "No trust circles yet.";
 export const TRUST_CIRCLES_EMPTY_HINT =
+  "Create one for family, friends, work, or private groups.";
+export const TRUST_CIRCLES_EMPTY_SUBHINT =
   "Invite someone or create a trusted space to get started.";
 
 export function trustUnitMemberUserId(member: TrustUnitMemberLike): string | undefined {

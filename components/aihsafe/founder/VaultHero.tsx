@@ -289,46 +289,13 @@ const primaryCtaStyle: React.CSSProperties = {
   boxShadow:      "0 4px 14px rgba(124,58,237,0.28)",
 };
 
-export function VaultHeroToolbar({
-  pendingInvitesCount,
-  recentActivityDisplay,
-  loading,
-  showCreateCta,
-  onCreateSpace,
-}: {
-  pendingInvitesCount: number;
-  recentActivityDisplay: number | string;
-  loading: boolean;
-  showCreateCta: boolean;
-  onCreateSpace: () => void;
+/** @deprecated Agent 86 — status moved to context rail; hero toolbar removed. */
+export function VaultHeroToolbar(_props: {
+  pendingInvitesCount?: number;
+  recentActivityDisplay?: number | string;
+  loading?: boolean;
+  showCreateCta?: boolean;
+  onCreateSpace?: () => void;
 }) {
-  const pend = loading ? "…" : pendingInvitesCount;
-  const act = loading ? "…" : recentActivityDisplay;
-
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <div
-        style={{
-          display:    "flex",
-          flexWrap:   "wrap",
-          alignItems: "center",
-          gap:        8,
-          marginBottom: showCreateCta ? 12 : 0,
-        }}
-      >
-        <span style={pillStyle}>
-          {pend} pending invites
-        </span>
-        <span style={pillStyle}>
-          {act} recent activity
-        </span>
-      </div>
-
-      {showCreateCta && (
-        <button type="button" onClick={onCreateSpace} style={primaryCtaStyle}>
-          + Create Trusted Space
-        </button>
-      )}
-    </div>
-  );
+  return null;
 }

@@ -59,8 +59,11 @@ export type GovernanceRailProps = {
   pendingInviteCount: number;
   spaceCount: number;
   trustedAdultCount: number;
+  membershipCount?: number;
+  unreadNotices?: number;
+  recentActivityDisplay?: number | string;
+  recentInvites?: import("@/types/aihsafe/dto").InviteDTO[];
   members: ContextRailMember[];
-  recentActivityHint?: string;
   onOpenSettings: () => void;
   onOpenApprovals: () => void;
   onOpenMembers: () => void;

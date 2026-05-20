@@ -92,8 +92,13 @@ export async function listFamilyUnits(): Promise<AihResult<Paginated<FamilyUnitD
   return parseEnvelope(await fetch("/api/aihsafe/family"));
 }
 
-export async function createFamilyUnit(name: string): Promise<AihResult<FamilyUnitDTO>> {
-  return parseEnvelope(await fetch("/api/aihsafe/family", jsonPost({ name })));
+export async function createFamilyUnit(
+  name: string,
+  opts?: { memberIds?: string[] },
+): Promise<AihResult<FamilyUnitDTO>> {
+  return parseEnvelope(
+    await fetch("/api/aihsafe/family", jsonPost({ name, ...(opts?.memberIds?.length ? { memberIds: opts.memberIds } : {}) })),
+  );
 }
 
 // ─── Trust units ──────────────────────────────────────────────────────────────

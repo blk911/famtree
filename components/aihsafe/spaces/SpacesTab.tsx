@@ -14,13 +14,9 @@ import {
   countDraftTrustUnits,
   getActiveTrustUnits,
   TRUST_CIRCLES_EMPTY_HINT,
+  TRUST_CIRCLES_EMPTY_SUBHINT,
   TRUST_CIRCLES_EMPTY_TITLE,
 } from "@/lib/trust/display";
-
-// ─── Data limitation note ──────────────────────────────────────────────────────
-// TrustUnitMember.role is always "member" (Phase 4 schema gap; see service-boundaries.md).
-// Creator detection for trust units is not possible. Only FamilyUnitDTO.createdByUserId
-// is available to mark family group founders.
 
 interface Props {
   currentUserId: string;
@@ -36,53 +32,30 @@ interface Props {
   onOpenSpaceActivity?: (trustUnitId: string) => void;
 }
 
-const newBtn = (onClick: () => void) => (
-  <button
-    type="button"
-    onClick={onClick}
-    style={{
-      background:   "transparent",
-      border:       "1px solid #e7e5e4",
-      borderRadius: 8,
-      padding:      "4px 12px",
-      fontSize:     12,
-      fontWeight:   600,
-      color:        "#44403c",
-      cursor:       "pointer",
-    }}
-  >
-    + New
-  </button>
-);
+function sectionCta(label: string, onClick: () => void, accent = false) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={accent ? "aihsafe-spaces-cta aihsafe-spaces-cta--primary" : "aihsafe-spaces-cta"}
+    >
+      {label}
+    </button>
+  );
+}
 
-const emptyCreateBtn = (label: string, onClick: () => void) => (
-  <button
-    type="button"
-    onClick={onClick}
-    style={{
-      display:      "inline-flex",
-      alignItems:   "center",
-      gap:          6,
-      background:   "transparent",
-      border:       "1px dashed #d6d3d1",
-      borderRadius: 9,
-      padding:      "8px 16px",
-      fontSize:     13,
-      fontWeight:   600,
-      color:        "#78716c",
-      cursor:       "pointer",
-    }}
-  >
-    {label}
-  </button>
-);
-
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
+function emptyCta(label: string, onClick: () => void) {
+  return (
+    <button type="button" onClick={onClick} className="aihsafe-spaces-cta aihsafe-spaces-cta--empty">
+      {label}
+    </button>
+  );
+}
 
 function LoadingSkeleton() {
   return (
     <>
-      {[1, 2].map(i => (
+      {[1, 2].map((i) => (
         <div
           key={i}
           style={{
@@ -105,8 +78,6 @@ function LoadingSkeleton() {
     </>
   );
 }
-
-// ─── Pending invite row ───────────────────────────────────────────────────────
 
 function PendingInviteRow({ invite }: { invite: InviteDTO }) {
   const expiresMs = new Date(invite.expiresAt).getTime() - Date.now();
@@ -164,8 +135,6 @@ function PendingInviteRow({ invite }: { invite: InviteDTO }) {
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
-
 export function SpacesTab({
   currentUserId,
   shellMode,
@@ -184,7 +153,7 @@ export function SpacesTab({
 
   const handleLeave = useCallback(async (membershipId: string) => {
     setExitingId(membershipId);
-    setExitErrors(e => { const c = { ...e }; delete c[membershipId]; return c; });
+    setExitErrors((e) => { const c = { ...e }; delete c[membershipId]; return c; });
     const r = await exitMembership(membershipId);
     setExitingId(null);
     if (r.kind === "ok") {
@@ -193,43 +162,36 @@ export function SpacesTab({
       const msg = r.kind === "error" ? r.message
         : r.kind === "denied" ? r.message
         : "Couldn't leave that space right now.";
-      setExitErrors(e => ({ ...e, [membershipId]: msg }));
+      setExitErrors((e) => ({ ...e, [membershipId]: msg }));
     }
   }, [onReload]);
 
-  // ── Active trust units for current user ───────────────────────────────────
-  const myTrustUnits = trustUnits.filter(u =>
-    u.members.some(m => m.userId === currentUserId && !m.exitedAt)
+  const myTrustUnits = trustUnits.filter((u) =>
+    u.members.some((m) => m.userId === currentUserId && !m.exitedAt),
   );
   const activeTrustUnits = getActiveTrustUnits(myTrustUnits, currentUserId);
   const draftTrustCount = countDraftTrustUnits(myTrustUnits, currentUserId);
 
-  // ── Family units for current user ─────────────────────────────────────────
-  const myFamilyUnits = familyUnits.filter(u =>
+  const myFamilyUnits = familyUnits.filter((u) =>
     u.status !== "dissolved" &&
-    u.members.some(m => m.userId === currentUserId && !m.exitedAt)
+    u.members.some((m) => m.userId === currentUserId && !m.exitedAt),
   );
 
-  // ── Pending outgoing invites ──────────────────────────────────────────────
-  const pendingInvites = invites.filter(i => i.status === "PENDING");
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // CHILD MODE
-  // ─────────────────────────────────────────────────────────────────────────
+  const pendingInvites = invites.filter((i) => i.status === "PENDING");
 
   if (shellMode === "child") {
     const allMySpaces: Array<{ id: string; name?: string | null; kind: string; memberCount: number; visibilityScope?: string }> = [
-      ...myFamilyUnits.map(u => ({
+      ...myFamilyUnits.map((u) => ({
         id:          u.id,
         name:        u.name,
         kind:        "family",
-        memberCount: u.members.filter(m => !m.exitedAt).length,
+        memberCount: u.members.filter((m) => !m.exitedAt).length,
       })),
-      ...activeTrustUnits.map(u => ({
+      ...activeTrustUnits.map((u) => ({
         id:              u.id,
         name:            u.name,
         kind:            u.kind,
-        memberCount:     u.members.filter(m => !m.exitedAt).length,
+        memberCount:     u.members.filter((m) => !m.exitedAt).length,
         visibilityScope: u.defaultVisibilityScope,
       })),
     ];
@@ -245,7 +207,7 @@ export function SpacesTab({
           {loading ? (
             <LoadingSkeleton />
           ) : (
-            allMySpaces.map(s => (
+            allMySpaces.map((s) => (
               <SpaceCard
                 key={s.id}
                 name={s.name}
@@ -267,58 +229,35 @@ export function SpacesTab({
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // FOUNDER + MEMBER MODE
-  // ─────────────────────────────────────────────────────────────────────────
-
   const canCreate = shellMode === "founder";
   const totalSpaces = myFamilyUnits.length + activeTrustUnits.length;
 
+  const trustEmpty = (
+    <>
+      <p style={{ fontWeight: 600, fontSize: 14, color: "#44403c", margin: "0 0 6px" }}>
+        {TRUST_CIRCLES_EMPTY_TITLE}
+      </p>
+      <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 14px", lineHeight: 1.45 }}>
+        {TRUST_CIRCLES_EMPTY_HINT}
+      </p>
+    </>
+  );
+
   return (
     <div style={{ maxWidth: 760 }}>
-      {canCreate && (
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
-          <button
-            type="button"
-            onClick={onCreateSpace}
-            style={{
-              display:      "inline-flex",
-              alignItems:   "center",
-              gap:          8,
-              padding:      "9px 18px",
-              borderRadius: 11,
-              border:       "none",
-              background:   "#7c3aed",
-              color:        "#fff",
-              fontWeight:   700,
-              fontSize:     13,
-              cursor:       "pointer",
-              boxShadow:    "0 2px 8px rgba(124,58,237,0.22)",
-            }}
-          >
-            + Create Trusted Space
-          </button>
-        </div>
-      )}
-
-      {/* ── Family Groups ──────────────────────────────────────────────── */}
       <SpacesSection
         icon="🏠"
         title="Family Groups"
         count={myFamilyUnits.length}
-        action={canCreate ? newBtn(onCreateFamily) : undefined}
-        emptyText="No family groups yet."
-        emptyAction={
-          canCreate
-            ? emptyCreateBtn("+ Create a family group", onCreateFamily)
-            : undefined
-        }
+        action={canCreate ? sectionCta("+ Family Group", onCreateFamily) : undefined}
+        emptyText={canCreate ? "No family groups yet." : "No family groups in your network yet."}
+        emptyAction={canCreate ? emptyCta("+ Family Group", onCreateFamily) : undefined}
       >
         {loading ? (
           <LoadingSkeleton />
         ) : (
-          myFamilyUnits.map(u => {
-            const activeCount = u.members.filter(m => !m.exitedAt).length;
+          myFamilyUnits.map((u) => {
+            const activeCount = u.members.filter((m) => !m.exitedAt).length;
             const isCreator   = u.createdByUserId === currentUserId;
             return (
               <SpaceCard
@@ -335,29 +274,27 @@ export function SpacesTab({
         )}
       </SpacesSection>
 
-      {/* ── Trusted Spaces ─────────────────────────────────────────────── */}
       <SpacesSection
         icon="🤝"
         title="Trusted Spaces"
         count={activeTrustUnits.length}
-        action={canCreate ? newBtn(onCreateSpace) : undefined}
-        emptyText={
-          draftTrustCount > 0
-            ? `${TRUST_CIRCLES_EMPTY_TITLE} ${TRUST_CIRCLES_EMPTY_HINT}`
-            : TRUST_CIRCLES_EMPTY_TITLE
-        }
+        action={canCreate ? sectionCta("+ Trusted Space", onCreateSpace, true) : undefined}
+        emptyText={canCreate ? undefined : TRUST_CIRCLES_EMPTY_TITLE}
         emptyAction={
-          canCreate
-            ? emptyCreateBtn("+ Create Trusted Space", onCreateSpace)
-            : undefined
+          canCreate ? (
+            <div style={{ textAlign: "center" }}>
+              {trustEmpty}
+              {emptyCta("+ Trusted Space", onCreateSpace)}
+            </div>
+          ) : undefined
         }
       >
         {loading ? (
           <LoadingSkeleton />
         ) : (
-          activeTrustUnits.map(u => {
-            const activeCount  = u.members.filter(m => !m.exitedAt).length;
-            const myMembership = u.members.find(m => m.userId === currentUserId && !m.exitedAt);
+          activeTrustUnits.map((u) => {
+            const activeCount  = u.members.filter((m) => !m.exitedAt).length;
+            const myMembership = u.members.find((m) => m.userId === currentUserId && !m.exitedAt);
 
             return (
               <SpaceCard
@@ -388,119 +325,44 @@ export function SpacesTab({
       </SpacesSection>
 
       {!loading && draftTrustCount > 0 && (
-        <p
-          style={{
-            fontSize:     12,
-            color:        "#78716c",
-            margin:       "0 0 16px",
-            lineHeight:   1.45,
-            padding:      "10px 12px",
-            background:   "#fafaf9",
-            borderRadius: 10,
-            border:       "1px solid #e7e5e4",
-          }}
-        >
-          <strong style={{ color: "#57534e" }}>Draft — setup needed</strong>
-          {draftTrustCount > 1 ? ` (${draftTrustCount} spaces)` : ""}. {TRUST_CIRCLES_EMPTY_HINT}
+        <p className="aihsafe-spaces-draft-note">
+          <strong>Draft — setup needed</strong>
+          {draftTrustCount > 1 ? ` (${draftTrustCount} spaces)` : ""}. {TRUST_CIRCLES_EMPTY_SUBHINT}
         </p>
       )}
 
-      {/* ── Pending Invites ─────────────────────────────────────────────── */}
       {(pendingInvites.length > 0 || canCreate) && (
         <SpacesSection
           icon="📨"
           title="Pending Invites"
           count={pendingInvites.length}
-          action={
-            <button
-              type="button"
-              onClick={onInvite}
-              style={{
-                background:   "transparent",
-                border:       "1px solid #e7e5e4",
-                borderRadius: 8,
-                padding:      "4px 12px",
-                fontSize:     12,
-                fontWeight:   600,
-                color:        "#44403c",
-                cursor:       "pointer",
-              }}
-            >
-              + Invite
-            </button>
-          }
+          action={canCreate ? sectionCta("+ Invite", onInvite) : undefined}
           emptyText={
             canCreate
-              ? "No pending invites. Send one when you're ready to grow your network."
+              ? "No outstanding invites. Send one when you're ready to grow your trusted circle."
               : undefined
           }
-          emptyAction={
-            canCreate
-              ? emptyCreateBtn("📨 Invite someone", onInvite)
-              : undefined
-          }
+          emptyAction={canCreate ? emptyCta("Invite someone", onInvite) : undefined}
         >
-          {pendingInvites.map(inv => (
+          {pendingInvites.map((inv) => (
             <PendingInviteRow key={inv.id} invite={inv} />
           ))}
         </SpacesSection>
       )}
 
-      {/* ── All-empty state ──────────────────────────────────────────────── */}
       {!loading && totalSpaces === 0 && pendingInvites.length === 0 && (
-        <div
-          style={{
-            background:   "#fff",
-            borderRadius: 16,
-            border:       "1px solid #e7e5e4",
-            padding:      "40px 24px",
-            textAlign:    "center",
-            marginTop:    8,
-          }}
-        >
-          <div style={{ fontSize: 40, marginBottom: 12 }}>🌱</div>
+        <div className="aihsafe-spaces-all-empty">
+          <div style={{ fontSize: 40, marginBottom: 12 }} aria-hidden="true">🌱</div>
           <p style={{ fontWeight: 700, fontSize: 15, color: "#1c1917", margin: "0 0 6px" }}>
-            No trusted spaces yet
+            {TRUST_CIRCLES_EMPTY_TITLE}
           </p>
-          <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 24px", maxWidth: 340, marginInline: "auto" }}>
-            {canCreate
-              ? "Create a family group or trusted space when you're ready to bring your people together."
-              : "Your family network hasn't set up any spaces yet. Your steward will invite you in."}
+          <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 20px", maxWidth: 360, marginInline: "auto", lineHeight: 1.45 }}>
+            {TRUST_CIRCLES_EMPTY_SUBHINT}
           </p>
           {canCreate && (
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-              <button
-                type="button"
-                onClick={onCreateFamily}
-                style={{
-                  padding:      "9px 18px",
-                  borderRadius: 10,
-                  border:       "none",
-                  background:   "#1c1917",
-                  color:        "#fff",
-                  fontWeight:   700,
-                  fontSize:     13,
-                  cursor:       "pointer",
-                }}
-              >
-                🏠 New family group
-              </button>
-              <button
-                type="button"
-                onClick={onCreateSpace}
-                style={{
-                  padding:      "9px 18px",
-                  borderRadius: 10,
-                  border:       "1px solid #e7e5e4",
-                  background:   "#fafaf9",
-                  color:        "#1c1917",
-                  fontWeight:   700,
-                  fontSize:     13,
-                  cursor:       "pointer",
-                }}
-              >
-                🤝 Create Trusted Space
-              </button>
+              {emptyCta("+ Trusted Space", onCreateSpace)}
+              {emptyCta("+ Family Group", onCreateFamily)}
             </div>
           )}
         </div>

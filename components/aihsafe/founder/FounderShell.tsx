@@ -10,16 +10,14 @@ import {
   listActivityFeed,
 } from "@/components/aihsafe/common/apiClient";
 import { PendingAttention }           from "@/components/aihsafe/founder/PendingAttention";
-import { FamilyHealthPanel }          from "@/components/aihsafe/founder/FamilyHealthPanel";
 import { FounderSettingsEditor }      from "@/components/aihsafe/founder/FounderSettingsEditor";
 import { FamilySettingsView }         from "@/components/aihsafe/founder/FamilySettingsView";
-import { OverviewCommandCard }        from "@/components/aihsafe/founder/OverviewCommandCard";
-import { NextBestActions }            from "@/components/aihsafe/founder/NextBestActions";
-import { RecentActivityTeaser }       from "@/components/aihsafe/founder/RecentActivityTeaser";
+import { OverviewOperationalHQ }      from "@/components/aihsafe/founder/OverviewOperationalHQ";
+import { fetchNotices }                 from "@/lib/msg-vault/api-client";
 import { QuickCreateModal }           from "@/components/aihsafe/dashboard/QuickCreateModal";
-import { FamilyCreatePanel }          from "@/components/aihsafe/family/FamilyCreatePanel";
-import { TrustUnitCreatePanel }       from "@/components/aihsafe/trust-unit/TrustUnitCreatePanel";
 import { InvitePanel }                from "@/components/aihsafe/invite/InvitePanel";
+import { TrustedSpaceCreateFlow }     from "@/components/aihsafe/spaces/TrustedSpaceCreateFlow";
+import { FamilyGroupCreateFlow }      from "@/components/aihsafe/spaces/FamilyGroupCreateFlow";
 import { SectionHeader }              from "@/components/aihsafe/common/SectionHeader";
 import { ActivityFeed }               from "@/components/aihsafe/feed/ActivityFeed";
 import { GuardianInbox }              from "@/components/aihsafe/guardian/GuardianInbox";
@@ -31,8 +29,7 @@ import {
   type TabId,
 } from "@/components/aihsafe/navigation/FamilySafeTabs";
 import { PeopleTab } from "@/components/aihsafe/people/PeopleTab";
-import { ChildEscalationStatus } from "@/components/aihsafe/child/ChildEscalationStatus";
-import { VaultHeroSection, VaultHeroToolbar, type VaultHeroUser } from "@/components/aihsafe/founder/VaultHero";
+import { VaultHeroSection, type VaultHeroUser } from "@/components/aihsafe/founder/VaultHero";
 import { FamilySafeContextLayout } from "@/components/context-rail/FamilySafeContextLayout";
 import { getActiveTrustUnits } from "@/lib/trust/display";
 
@@ -60,42 +57,6 @@ interface Props {
   heroCoverUrl?: string | null;
 }
 
-// ─── Shared style constants ───────────────────────────────────────────────────
-
-const actionBtn: React.CSSProperties = {
-  display:      "flex",
-  alignItems:   "center",
-  gap:          10,
-  width:        "100%",
-  textAlign:    "left",
-  background:   "#fafaf9",
-  border:       "1px solid #e7e5e4",
-  borderRadius: 12,
-  padding:      "13px 16px",
-  cursor:       "pointer",
-  marginBottom: 8,
-};
-
-const iconBox = (bg: string): React.CSSProperties => ({
-  width:          34,
-  height:         34,
-  borderRadius:   10,
-  background:     bg,
-  display:        "flex",
-  alignItems:     "center",
-  justifyContent: "center",
-  fontSize:       16,
-  flexShrink:     0,
-});
-
-const railCard: React.CSSProperties = {
-  background:   "#fff",
-  borderRadius: 16,
-  border:       "1px solid #e7e5e4",
-  padding:      "20px 22px",
-  marginBottom: 14,
-};
-
 const tabCard: React.CSSProperties = {
   background:   "#fff",
   borderRadius: 16,
@@ -103,33 +64,6 @@ const tabCard: React.CSSProperties = {
   padding:      "22px 24px",
   marginBottom: 14,
 };
-
-// ─── Hero stat card ───────────────────────────────────────────────────────────
-
-function LightStatCard({
-  value, label, urgent = false,
-}: { value: number | string; label: string; urgent?: boolean }) {
-  return (
-    <div
-      style={{
-        background:   "#fff",
-        border:       `1px solid ${urgent ? "#fde68a" : "#e7e5e4"}`,
-        borderRadius: 10,
-        padding:      "8px 14px",
-        minWidth:     68,
-        boxShadow:    "0 1px 3px rgba(0,0,0,0.06)",
-        flexShrink:   0,
-      }}
-    >
-      <div style={{ fontWeight: 800, fontSize: 18, color: urgent ? "#d97706" : "#1c1917", lineHeight: 1 }}>
-        {value}
-      </div>
-      <div style={{ fontSize: 10, color: "#78716c", marginTop: 2, whiteSpace: "nowrap" }}>
-        {label}
-      </div>
-    </div>
-  );
-}
 
 // ─── Tab panel wrapper (ARIA) ─────────────────────────────────────────────────
 
@@ -215,6 +149,7 @@ export function FounderShell({
   const [activeTab,     setActiveTab]     = useState<TabId>(() => defaultTab(shellMode));
   const [activityTrustUnitFilter, setActivityTrustUnitFilter] = useState<string | null>(null);
   const [recentActivityStat, setRecentActivityStat] = useState<number | string>("…");
+  const [unreadNotices, setUnreadNotices] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -249,6 +184,9 @@ export function FounderShell({
       const n = r.data.items.length;
       setRecentActivityStat(r.data.pagination.hasMore ? `${n}+` : n);
     });
+    fetchNotices()
+      .then(({ unreadCount }) => setUnreadNotices(unreadCount))
+      .catch(() => setUnreadNotices(0));
   }, []);
 
   function closeModal() { setModal(null); load(); }
@@ -298,37 +236,21 @@ export function FounderShell({
               membersCount={membershipCount}
               loading={loading}
             />
-            <VaultHeroToolbar
-              pendingInvitesCount={pendingInvites.length}
-              recentActivityDisplay={recentActivityStat}
-              loading={loading}
-              showCreateCta={shellMode === "founder"}
-              onCreateSpace={() => setModal("space")}
-            />
           </>
         )}
 
         {shellMode === "child" && (
-          <>
-            <VaultHeroSection
-              variant="compact"
-              eyebrow="Family Safe"
-              coverUrl={heroCoverUrl ?? null}
-              heroUser={null}
-              title="Trusted Private Spaces"
-              description="Protected circles your family approves for you."
-              spacesCount={0}
-              membersCount={0}
-              loading={false}
-            />
-            <VaultHeroToolbar
-              pendingInvitesCount={pendingInvites.length}
-              recentActivityDisplay={recentActivityStat}
-              loading={loading}
-              showCreateCta={false}
-              onCreateSpace={() => setModal("space")}
-            />
-          </>
+          <VaultHeroSection
+            variant="compact"
+            eyebrow="Family Safe"
+            coverUrl={heroCoverUrl ?? null}
+            heroUser={null}
+            title="Trusted Private Spaces"
+            description="Protected circles your family approves for you."
+            spacesCount={0}
+            membersCount={0}
+            loading={false}
+          />
         )}
 
         {/* Shell-level load error */}
@@ -355,175 +277,35 @@ export function FounderShell({
           pendingInviteCount={pendingInvites.length}
           spaceCount={mySpaces.length}
           trustedAdultCount={trustedAdultCount}
+          unreadNotices={unreadNotices}
+          membershipCount={membershipCount}
+          recentInvites={invites.slice(0, 3)}
+          recentActivityDisplay={recentActivityStat}
           onTabChange={setActiveTab}
           onInvite={() => setModal("invite")}
         >
 
         {/* ── OVERVIEW ──────────────────────────────────────────── */}
         <TabPanel id="overview" activeTab={activeTab}>
-
-          {shellMode === "founder" && (
-            <div
-              className="aihsafe-grid"
-              style={{ display: "grid", gap: 16, alignItems: "start" }}
-            >
-              {/* Left: attention signal + health + activity teaser */}
-              <div>
-                <OverviewCommandCard
-                  pendingApprovalCount={pendingApprovals.length}
-                  pendingInviteCount={pendingInvites.length}
-                  loading={loading}
-                  onReviewApprovals={() => setActiveTab("approvals")}
-                />
-                <FamilyHealthPanel
-                  pendingApprovalCount={pendingApprovals.length}
-                  spaceCount={mySpaces.length}
-                  pendingInviteCount={pendingInvites.length}
-                  trustedAdultCount={trustedAdultCount}
-                  loading={loading}
-                />
-                <RecentActivityTeaser onSeeAll={() => setActiveTab("activity")} />
-              </div>
-
-              {/* Right: contextual next steps */}
-              <div>
-                <NextBestActions
-                  shellMode={shellMode}
-                  isGuardian={isGuardian}
-                  pendingApprovalCount={pendingApprovals.length}
-                  totalSpaceCount={mySpaces.length + familyUnits.length}
-                  trustedAdultCount={trustedAdultCount}
-                  onTabChange={setActiveTab}
-                  onInvite={() => setModal("invite")}
-                  onCreateSpace={() => setModal("space")}
-                  onCreateFamily={() => setModal("family")}
-                />
-              </div>
-            </div>
-          )}
-
-          {shellMode === "member" && (
-            <div style={{ maxWidth: 680 }}>
-              {/* Compact guardian attention signal — routes to Approvals tab */}
-              {isGuardian && (
-                <OverviewCommandCard
-                  pendingApprovalCount={pendingApprovals.length}
-                  pendingInviteCount={0}
-                  loading={loading}
-                  onReviewApprovals={() => setActiveTab("approvals")}
-                />
-              )}
-
-              {/* Network summary — compact, directs to Spaces/People tabs */}
-              <div style={tabCard}>
-                <SectionHeader title="Your network" />
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
-                  <LightStatCard value={loading ? "…" : mySpaces.length} label="spaces you're in" />
-                  {isGuardian && (
-                    <LightStatCard value={loading ? "…" : trustedAdultCount} label="trusted adults" />
-                  )}
-                </div>
-                {!loading && mySpaces.length === 0 && (
-                  <p style={{ fontSize: 13, color: "#78716c", margin: 0 }}>
-                    You haven&apos;t joined a trusted space yet. Ask whoever invited you to add you to a space.
-                  </p>
-                )}
-                {!loading && mySpaces.length > 0 && (
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("spaces")}
-                      style={{
-                        background:   "none",
-                        border:       "1px solid #e7e5e4",
-                        borderRadius: 8,
-                        padding:      "5px 12px",
-                        fontSize:     12,
-                        fontWeight:   600,
-                        color:        "#57534e",
-                        cursor:       "pointer",
-                      }}
-                    >
-                      Manage spaces →
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("members")}
-                      style={{
-                        background:   "none",
-                        border:       "1px solid #e7e5e4",
-                        borderRadius: 8,
-                        padding:      "5px 12px",
-                        fontSize:     12,
-                        fontWeight:   600,
-                        color:        "#57534e",
-                        cursor:       "pointer",
-                      }}
-                    >
-                      See members →
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Contextual next steps */}
-              <NextBestActions
-                shellMode={shellMode}
-                isGuardian={isGuardian}
-                pendingApprovalCount={pendingApprovals.length}
-                totalSpaceCount={mySpaces.length}
-                trustedAdultCount={trustedAdultCount}
-                onTabChange={setActiveTab}
-                onInvite={() => setModal("invite")}
-                onCreateSpace={() => setModal("space")}
-                onCreateFamily={() => setModal("family")}
-              />
-            </div>
-          )}
-
-          {shellMode === "child" && (
-            <div style={{ maxWidth: 540 }}>
-              <div style={tabCard}>
-                <div style={{ textAlign: "center", padding: "12px 0 20px" }}>
-                  <div style={{ fontSize: 44, marginBottom: 12 }}>❤️</div>
-                  <p style={{ fontWeight: 700, fontSize: 17, color: "#1c1917", margin: "0 0 8px" }}>
-                    You&apos;re in your family&apos;s safe space.
-                  </p>
-                  <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 24px", maxWidth: 310, marginInline: "auto", lineHeight: 1.6 }}>
-                    Everything you share here is private to the circles your family has approved. Only trusted people can see it.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("activity")}
-                    style={{
-                      display:      "inline-flex",
-                      alignItems:   "center",
-                      gap:          8,
-                      padding:      "10px 22px",
-                      borderRadius: 11,
-                      border:       "none",
-                      background:   "#1c1917",
-                      color:        "#fff",
-                      fontWeight:   700,
-                      fontSize:     13,
-                      cursor:       "pointer",
-                    }}
-                  >
-                    💬 See what&apos;s happening
-                  </button>
-                </div>
-              </div>
-
-              {/* Pending guardian approvals — so the child knows what's waiting */}
-              <div style={{ ...tabCard, padding: "18px 20px" }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: "#1c1917", marginBottom: 12 }}>
-                  Waiting for approval
-                </div>
-                <ChildEscalationStatus />
-              </div>
-            </div>
-          )}
-
+          <div style={{ maxWidth: 720 }}>
+            <OverviewOperationalHQ
+              shellMode={shellMode}
+              currentUserId={currentUserId}
+              isGuardian={isGuardian}
+              loading={loading}
+              trustUnits={trustUnits}
+              familyUnits={familyUnits}
+              guardianLinks={guardianLinks}
+              invites={invites}
+              pendingApprovals={pendingApprovals}
+              mySpaces={mySpaces}
+              unreadNotices={unreadNotices}
+              onTabChange={setActiveTab}
+              onInvite={() => setModal("invite")}
+              onCreateSpace={() => setModal("space")}
+              onCreateFamily={() => setModal("family")}
+            />
+          </div>
         </TabPanel>
 
         {/* ── ACTIVITY ──────────────────────────────────────────── */}
@@ -614,14 +396,31 @@ export function FounderShell({
       {modal && (
         <QuickCreateModal
           title={
-            modal === "family" ? "New family group" :
-            modal === "space"  ? "Create Trusted Space" :
+            modal === "family" ? "Create family group" :
+            modal === "space"  ? "Create trusted space" :
                                  "Invite someone"
           }
           onClose={closeModal}
         >
-          {modal === "family" && <FamilyCreatePanel />}
-          {modal === "space"  && <TrustUnitCreatePanel onCreated={load} />}
+          {modal === "family" && (
+            <FamilyGroupCreateFlow
+              currentUserId={currentUserId}
+              trustUnits={trustUnits}
+              familyUnits={familyUnits}
+              guardianLinks={guardianLinks}
+              onCreated={closeModal}
+            />
+          )}
+          {modal === "space" && (
+            <TrustedSpaceCreateFlow
+              currentUserId={currentUserId}
+              trustUnits={trustUnits}
+              familyUnits={familyUnits}
+              guardianLinks={guardianLinks}
+              invites={invites}
+              onCreated={closeModal}
+            />
+          )}
           {modal === "invite" && <InvitePanel />}
         </QuickCreateModal>
       )}
