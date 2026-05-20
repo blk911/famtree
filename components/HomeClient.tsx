@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { FormEvent, MouseEvent } from "react";
 import Link from "next/link";
 import { Check, Eye, EyeOff, LogIn, Mail, Send, TreePine, Users, UserCheck } from "lucide-react";
@@ -75,17 +76,27 @@ function HomeModalShell({
   maxWidth = "460px",
   onBackdrop,
   cardStyle,
+  ariaLabelledBy,
 }: {
   children: React.ReactNode;
   maxWidth?: string;
   onBackdrop: (e: MouseEvent<HTMLDivElement>) => void;
   cardStyle?: React.CSSProperties;
+  ariaLabelledBy?: string;
 }) {
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={ariaLabelledBy}
       onClick={onBackdrop}
       style={{
-        position:"fixed", inset:0, background:"rgba(248,250,252,0.72)", zIndex:50,
+        position:"fixed", inset:0, background:"rgba(248,250,252,0.72)", zIndex:200,
         display:"flex", alignItems:"center", justifyContent:"center", padding:"20px", backdropFilter:"blur(4px)",
       }}
     >
@@ -100,7 +111,8 @@ function HomeModalShell({
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -163,6 +175,29 @@ export function HomeClient() {
   useEffect(() => {
     setInviteResumeVisible(modal !== "invite-flow" && !!readInviteDraft());
   }, [modal, inviteStep, ifEmail, invitePhotoDataUrl, welcomeName]);
+
+  /** Drop orphaned JWT cookies (session revoked but cookie left) so home sign-in can set a fresh session. */
+  useEffect(() => {
+    void (async () => {
+      try {
+        const r = await fetch("/api/auth/me", { credentials: "include" });
+        if (r.status === 401) {
+          await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!modal) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [modal]);
 
   const hasInviteRegPhoto = !!regPhoto || !!invitePhotoDataUrl;
 
@@ -313,20 +348,38 @@ export function HomeClient() {
   };
 
   // -- handlers --
-  const handleLogin = async (e: FormEvent) => {
-    e.preventDefault(); setSiLoad(true); setSiErr("");
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSiLoad(true);
+    setSiErr("");
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") ?? siEmail).trim();
+    const password = String(fd.get("password") ?? siPw);
     try {
-      const res  = await fetch("/api/auth/login", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        credentials:"include",
-        body:JSON.stringify({ email:siEmail, password:siPw }),
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
-      if (!res.ok) { setSiErr(data.error ?? "Login failed"); return; }
-      window.location.href = data.user?.role === "founder" || data.user?.role === "admin" ? "/admin" : "/dashboard";
-    } catch { setSiErr("Something went wrong."); }
-    finally { setSiLoad(false); }
+      const ct = res.headers.get("content-type") ?? "";
+      const data = ct.includes("application/json")
+        ? await res.json()
+        : { error: "Unexpected server response." };
+      if (!res.ok) {
+        setSiErr(data.error ?? "Login failed");
+        return;
+      }
+      const dest =
+        data.user?.role === "founder" || data.user?.role === "admin"
+          ? "/admin"
+          : "/dashboard";
+      window.location.assign(dest);
+    } catch {
+      setSiErr("Something went wrong. Please try again.");
+    } finally {
+      setSiLoad(false);
+    }
   };
 
   const handleWaitlist = async (e: FormEvent) => {
@@ -580,7 +633,7 @@ export function HomeClient() {
             {CARDS.map((card) => {
               const Icon = card.icon;
               return (
-                <button key={card.id} className="home-card"
+                <button key={card.id} type="button" className="home-card"
                   onClick={() => {
                     if (card.id === "sign-in") openSignIn();
                     else if (card.id === "invite") openInvite();
@@ -660,19 +713,19 @@ export function HomeClient() {
 
       {/* MODAL: Sign In */}
       {modal === "sign-in" && (
-        <HomeModalShell onBackdrop={overlay}>
+        <HomeModalShell onBackdrop={overlay} ariaLabelledBy="home-sign-in-title">
             <div style={{ textAlign:"center", marginBottom:"28px" }}>
               <div style={{ width:52, height:52, borderRadius:"16px", background:"linear-gradient(135deg,#7c3aed,#c026d3)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px" }}>
                 <TreePine style={{ width:26, height:26, color:"white" }} />
               </div>
-              <h2 style={{ fontSize:"26px", fontWeight:900, color:"#1e1b4b", margin:"0 0 5px" }}>Welcome back</h2>
+              <h2 id="home-sign-in-title" style={{ fontSize:"26px", fontWeight:900, color:"#1e1b4b", margin:"0 0 5px" }}>Welcome back</h2>
               <p style={{ fontSize:"14px", color:"#6b7280", margin:0 }}>Sign in to your family tree</p>
             </div>
             {siError && <div style={{ background:"#fdf2f8", borderLeft:"4px solid #db2777", color:"#9d174d", padding:"11px 14px", borderRadius:"10px", fontSize:"14px", marginBottom:"16px" }}>{siError}</div>}
             <form onSubmit={handleLogin} style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
               <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"13px", fontWeight:700, color:"#374151" }}>
                 Email
-                <input type="email" value={siEmail} onChange={e=>setSiEmail(e.target.value)} required autoFocus placeholder="jane@example.com" style={inputStyle} />
+                <input name="email" type="email" value={siEmail} onChange={e=>setSiEmail(e.target.value)} required autoFocus autoComplete="email" placeholder="jane@example.com" style={inputStyle} />
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"13px", fontWeight:700, color:"#374151" }}>
                 <span style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:"8px" }}>
@@ -685,7 +738,7 @@ export function HomeClient() {
                   </Link>
                 </span>
                 <div style={{ position:"relative" }}>
-                  <input type={showPw?"text":"password"} value={siPw} onChange={e=>setSiPw(e.target.value)} required placeholder="Your password" style={inputStyle} />
+                  <input name="password" type={showPw?"text":"password"} value={siPw} onChange={e=>setSiPw(e.target.value)} required autoComplete="current-password" placeholder="Your password" style={inputStyle} />
                   <button type="button" onClick={()=>setShowPw(v=>!v)} style={{ position:"absolute", right:"12px", top:"50%", transform:"translateY(-50%)", border:"none", background:"transparent", color:"#9ca3af", cursor:"pointer", display:"flex" }}>
                     {showPw ? <EyeOff style={{width:18,height:18}}/> : <Eye style={{width:18,height:18}}/>}
                   </button>
@@ -697,7 +750,11 @@ export function HomeClient() {
             </form>
             <p style={{ textAlign:"center", fontSize:"14px", color:"#6b7280", margin:"20px 0 0" }}>
               Need an invite?{" "}
-              <button onClick={()=>openJoin("waitlist")} style={{ border:"none", background:"transparent", padding:0, color:"#c026d3", fontWeight:700, cursor:"pointer" }}>Join the waitlist</button>
+              <button type="button" onClick={()=>openJoin("waitlist")} style={{ border:"none", background:"transparent", padding:0, color:"#c026d3", fontWeight:700, cursor:"pointer" }}>Join the waitlist</button>
+            </p>
+            <p style={{ textAlign:"center", fontSize:"13px", color:"#9ca3af", margin:"14px 0 0" }}>
+              Trouble here?{" "}
+              <Link href="/login" style={{ color:"#6366f1", fontWeight:600, textDecoration:"none" }}>Use the full sign-in page</Link>
             </p>
         </HomeModalShell>
       )}

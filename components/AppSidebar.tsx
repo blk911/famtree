@@ -55,9 +55,12 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
   }, [settingsActive]);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
-    router.refresh();
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    } catch {
+      /* still leave the app shell */
+    }
+    window.location.assign("/");
   };
 
   const initials = formatDisplayInitials(user);

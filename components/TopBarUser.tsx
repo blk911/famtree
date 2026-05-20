@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import type { User as PrismaUser } from "@prisma/client";
 import { formatAdminTopBarLabel, formatDisplayInitials } from "@/lib/user/display-name";
 
@@ -9,14 +8,16 @@ interface Props {
 }
 
 export function TopBarUser({ user }: Props) {
-  const router = useRouter();
   const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
   const isAdmin = user.role === "founder" || user.role === "admin";
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
-    router.refresh();
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    } catch {
+      /* still leave the app shell */
+    }
+    window.location.assign("/");
   };
 
   return (

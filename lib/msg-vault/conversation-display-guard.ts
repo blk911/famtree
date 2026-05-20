@@ -57,17 +57,18 @@ export function classifyStaleConversation(
   currentUserId: string,
   trustUnitMap?: Map<string, TrustUnitLike>,
 ): StaleConversationReason | null {
-  if (!conv.lastMessageAt) {
-    return "no_messages";
-  }
-
   const active = activeParticipants(conv);
   const others = otherActiveParticipants(conv, currentUserId);
 
   if (conv.kind === MsgConversationKind.DIRECT) {
     if (active.length <= 1) return "solo_participant";
     if (others.length === 0) return "missing_other_participant";
+    // Empty direct chats are valid — users open them from the People list before the first message.
     return null;
+  }
+
+  if (!conv.lastMessageAt) {
+    return "no_messages";
   }
 
   const tuId = conv.trustUnitId;

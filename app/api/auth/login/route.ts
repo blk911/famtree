@@ -1,6 +1,6 @@
 // app/api/auth/login/route.ts
 
-import { withApiTrace } from "@/lib/trace";
+import { withApiTraceLite } from "@/lib/trace";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { verifyPassword, setSessionCookie } from "@/lib/auth";
@@ -28,7 +28,7 @@ const LOGIN_USER_SELECT = {
 } as const;
 
 export async function POST(req: NextRequest) {
-  return withApiTrace(req, "/api/auth/login", async (req: NextRequest) => {
+  return withApiTraceLite(req, "/api/auth/login", async (req: NextRequest) => {
 
   try {
     const body = await req.json();

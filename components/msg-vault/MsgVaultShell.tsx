@@ -117,7 +117,6 @@ export function MsgVaultShell({
   }, [loadConversations, loadNotices]);
 
   useEffect(() => {
-    if (tab !== "chats") return;
     let cancelled = false;
     setLoadingContacts(true);
     void (async () => {
@@ -133,7 +132,7 @@ export function MsgVaultShell({
     return () => {
       cancelled = true;
     };
-  }, [tab]);
+  }, []);
 
   const visibleConversations = useMemo(
     () => filterVisibleConversations(conversations, currentUserId, trustUnits),
@@ -151,16 +150,16 @@ export function MsgVaultShell({
   );
 
   useEffect(() => {
-    if (!selectedId) return;
-    if (!visibleConversations.some((c) => c.id === selectedId)) {
+    if (!selectedId || loadingMsgs) return;
+    if (!conversations.some((c) => c.id === selectedId)) {
       setSelectedId(null);
       setMessages([]);
     }
-  }, [selectedId, visibleConversations]);
+  }, [selectedId, conversations, loadingMsgs]);
 
   const selectedConversation = useMemo(
-    () => visibleConversations.find((c) => c.id === selectedId) ?? null,
-    [visibleConversations, selectedId],
+    () => (selectedId ? conversations.find((c) => c.id === selectedId) ?? null : null),
+    [conversations, selectedId],
   );
 
   const selectConversation = useCallback(async (id: string) => {
@@ -178,9 +177,19 @@ export function MsgVaultShell({
         fetchMessages(id, undefined, { limit: 100 }),
       ]);
       if (loadSeq !== conversationLoadSeqRef.current) return;
-      setConversations((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, ...detail.conversation, participants: detail.participants } : c)),
-      );
+      setConversations((prev) => {
+        const merged = {
+          ...detail.conversation,
+          participants: detail.participants,
+        };
+        const idx = prev.findIndex((c) => c.id === id);
+        if (idx >= 0) {
+          const next = [...prev];
+          next[idx] = { ...next[idx], ...merged };
+          return next;
+        }
+        return [merged, ...prev];
+      });
       setMessages(msgPage.items);
       setParticipants(detail.participants);
       setOverlay(detail.governanceOverlay);
