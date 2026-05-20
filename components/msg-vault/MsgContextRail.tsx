@@ -52,7 +52,7 @@ export function MsgContextRail({
   }
 
   if (!conversation) {
-    return <DefaultContextRail shellMode={shellMode} />;
+    return null;
   }
 
   const isDirect = conversation.kind === MsgConversationKind.DIRECT;
@@ -83,7 +83,6 @@ export function MsgContextRail({
           privateThreadsEnabled={privateThreadsEnabled}
         />
       )}
-      <FamilySafeHint shellMode={shellMode} />
     </div>
   );
 }
@@ -455,55 +454,7 @@ function NoticeContextRail({
           </Link>
         )}
       </ContextRailSection>
-      <FamilySafeHint shellMode={shellMode} />
     </div>
   );
 }
 
-function DefaultContextRail({ shellMode }: { shellMode: FamilySafeShellMode }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <ContextRailSection
-        title="Governance context"
-        icon={<Shield style={{ width: 16, height: 16, color: "#6366f1" }} />}
-      >
-        <p style={{ margin: 0, fontSize: 13, color: "#78716c", lineHeight: 1.5 }}>
-          Select a conversation to see participants, trust context, and why you can participate.
-          Msg Vault never offers open DMs or public discovery.
-        </p>
-      </ContextRailSection>
-      <FamilySafeHint shellMode={shellMode} />
-    </div>
-  );
-}
-
-function FamilySafeHint({ shellMode }: { shellMode: FamilySafeShellMode }) {
-  return (
-    <div
-      style={{
-        background: "#f5f3ff",
-        borderRadius: 12,
-        border: "1px solid #e9d5ff",
-        padding: "14px 16px",
-        fontSize: 12,
-        color: "#5b21b6",
-        lineHeight: 1.5,
-      }}
-    >
-      {shellMode === "child" ? (
-        <>
-          Messages here stay within approved family and trust relationships. Ask a guardian if you
-          are unsure who you can talk to.
-        </>
-      ) : (
-        <>
-          Governed communication only — no stranger search, no open inbox. Manage policies in{" "}
-          <Link href="/aihsafe" style={{ color: "#4f46e5", fontWeight: 600 }}>
-            Family Safe
-          </Link>
-          .
-        </>
-      )}
-    </div>
-  );
-}

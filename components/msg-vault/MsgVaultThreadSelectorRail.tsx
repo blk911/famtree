@@ -4,6 +4,7 @@ import { MessageCirclePlus } from "lucide-react";
 import { ThreadSelectorList } from "@/components/vault/ThreadSelectorList";
 import { ThreadSelectorRow } from "@/components/vault/ThreadSelectorRow";
 import { EmptyThreadState } from "@/components/vault/EmptyThreadState";
+import { conversationUnreadCount } from "@/components/vault/conversation-unread";
 import { conversationLabel } from "@/lib/msg-vault/display";
 import type { MsgConversationDTO } from "@/types/msg-vault";
 import { MsgConversationKind } from "@/types/msg-vault";
@@ -87,7 +88,7 @@ export function MsgVaultThreadSelectorRail({
           Loading…
         </p>
       ) : filtered.length === 0 ? (
-        <EmptyThreadState variant="pick" />
+        <EmptyThreadState variant={kindFilter === "direct" ? "no-chats" : "no-threads"} />
       ) : (
         <ThreadSelectorList>
           {filtered.map((conv) => {
@@ -104,7 +105,7 @@ export function MsgVaultThreadSelectorRail({
                 lastName={lastName}
                 photoUrl={user?.photoUrl ?? null}
                 active={conv.id === selectedId}
-                unread={0}
+                unread={conversationUnreadCount(conv, currentUserId)}
                 onClick={() => onSelect(conv.id)}
                 title={`Open ${label}`}
               />

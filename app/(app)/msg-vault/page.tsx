@@ -23,7 +23,6 @@ export default async function MsgVaultPage() {
         currentUserId={user.id}
         shellMode={shellMode}
         firstName={user.firstName}
-        lastName={user.lastName}
         trustUnits={trustUnits.map((unit) => ({
           id: unit.id,
           members: unit.members.map((m) => ({ user: { id: m.user.id } })),

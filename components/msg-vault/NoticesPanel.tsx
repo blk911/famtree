@@ -54,9 +54,7 @@ export function NoticesPanel({
           No notices right now
         </p>
         <p style={{ margin: "8px auto 0", fontSize: 13, color: "#78716c", maxWidth: 320, lineHeight: 1.5 }}>
-          {shellMode === "child"
-            ? "When something needs your attention or guardian approval, it will show up here."
-            : "Approvals, policy updates, and governance events appear here when they need your attention."}
+          Notices will appear here when they need your attention.
         </p>
       </div>
     );

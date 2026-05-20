@@ -1,15 +1,17 @@
-export type EmptyThreadVariant = "pick" | "no-messages" | "no-threads";
+export type EmptyThreadVariant = "pick" | "no-messages" | "no-chats" | "no-threads";
 
 const COPY: Record<EmptyThreadVariant, { title: string; body?: string }> = {
   pick: {
-    title: "Select someone from the right to start a trusted conversation.",
+    title: "Select a conversation.",
   },
   "no-messages": {
-    title: "No private messages yet.",
+    title: "No messages in this conversation yet.",
+  },
+  "no-chats": {
+    title: "No trusted conversations yet.",
   },
   "no-threads": {
     title: "No private threads yet.",
-    body: "Start from Msg Vault or open a trusted space.",
   },
 };
 
