@@ -21,8 +21,10 @@ import {
   roleForInviteRegistration,
   validateInviteAgeBracketMatchesTier,
   validateTrustedAdultInviteeAge,
+  validateAdultChildInviteeAge,
   validateBusinessInviteShape,
 } from "@/lib/aihsafe/invites/inviteRegisterPolicy";
+import { inferInviteIntent } from "@/types/aihsafe/invite-intent";
 import { validateInviteIntentRouting } from "@/lib/aihsafe/invites/routeByIntent";
 import { validateRegistrationAgainstInvite } from "@/lib/aihsafe/invites/validateRegisterInvite";
 import { resolvePolicyProfile } from "@/lib/aihsafe/policy";
@@ -176,6 +178,49 @@ async function main() {
     "minor DOB rejected",
   );
 
+  const adultChildInvite = mockInvite({
+    inviteIntent:       InviteIntent.ADULT_CHILD,
+    inviteeAgeBracket:  "adult",
+    stewardDeclaration: false,
+    relationship:       "child",
+    relationshipKind:   "adult_child",
+  });
+  const adultChildDob = new Date("2000-05-01");
+  record(
+    "intent.adultChild.adultDob",
+    validateAdultChildInviteeAge(adultChildInvite, adultChildDob).ok,
+    deriveAgeTier(adultChildDob),
+  );
+  record(
+    "intent.adultChild.minorRejected",
+    !validateAdultChildInviteeAge(adultChildInvite, new Date("2015-01-01")).ok,
+    "teen DOB rejected for adult_child",
+  );
+  record(
+    "intent.adultChild.infer",
+    inferInviteIntent({
+      relationship:       "child",
+      inviteeAgeBracket:  "adult",
+      stewardDeclaration: false,
+    }) === InviteIntent.ADULT_CHILD,
+    "child + adult bracket → adult_child",
+  );
+  record(
+    "intent.adultChild.shell",
+    deriveShellMode({ role: "member", dateOfBirth: adultChildDob }) === "member",
+    "adult child → member shell (Msg Rules)",
+  );
+  record(
+    "intent.adultChild.tabLabel",
+    settingsTabLabel("member") === "Msg Rules",
+    settingsTabLabel("member"),
+  );
+  record(
+    "policy.adultChild.tuPending.skip",
+    !shouldResolveTrustUnitPendingOnRegister(InviteIntent.ADULT_CHILD),
+    "no auto sponsor TU slot",
+  );
+
   // Route validation
   record(
     "route.child.noSteward",
@@ -207,6 +252,23 @@ async function main() {
       ),
     ),
     "BUSINESS_STEWARD_NOT_ALLOWED",
+  );
+
+  record(
+    "route.adultChild.stewardBlocked",
+    expectThrow(() =>
+      validateInviteIntentRouting(
+        {
+          sender:              { id: "s" } as never,
+          recipientEmail:      "a@b.c",
+          inviteIntent:        InviteIntent.ADULT_CHILD,
+          inviteeAgeBracket:   "adult",
+          stewardDeclaration:  true,
+        },
+        InviteIntent.ADULT_CHILD,
+      ),
+    ),
+    "ADULT_CHILD_STEWARD_NOT_ALLOWED",
   );
 
   // Register validation

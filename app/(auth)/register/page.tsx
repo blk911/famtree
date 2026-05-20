@@ -14,6 +14,7 @@ function RegisterForm() {
   const prefillEmail = searchParams.get("email") ?? "";
   const [requiresDob, setRequiresDob] = useState(false);
   const [minorInvite, setMinorInvite] = useState(false);
+  const [adultChildInvite, setAdultChildInvite] = useState(false);
 
   const [form, setForm] = useState({
     firstName: "",
@@ -35,6 +36,7 @@ function RegisterForm() {
       .then((data) => {
         if (data.requiresDateOfBirth) setRequiresDob(true);
         if (data.isMinorInvite) setMinorInvite(true);
+        if (data.isAdultChildInvite) setAdultChildInvite(true);
       })
       .catch(() => undefined);
   }, [inviteToken]);
@@ -65,9 +67,13 @@ function RegisterForm() {
         ? `${dob.year}-${dob.month.padStart(2, "0")}-${dob.day.padStart(2, "0")}`
         : undefined;
 
-    if ((requiresDob || minorInvite) && !dobString) {
+    if ((requiresDob || minorInvite || adultChildInvite) && !dobString) {
       setLoading(false);
-      setError("Date of birth is required for this family invite so we can apply the right Boundaries.");
+      setError(
+        minorInvite
+          ? "Date of birth is required for this family invite so we can apply the right Boundaries."
+          : "Date of birth is required for this family invite so we can confirm you are 18 or older.",
+      );
       return;
     }
 
@@ -127,7 +133,9 @@ function RegisterForm() {
           {inviteToken
             ? minorInvite
               ? "Create your account to complete your invitation. Children and teens join with Boundaries on by default."
-              : "Create your account to complete your invitation"
+              : adultChildInvite
+                ? "Create your account to join as an adult family member — no child Boundaries."
+                : "Create your account to complete your invitation"
             : "You'll be the founding member"}
         </p>
       </div>

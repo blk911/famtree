@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db/prisma";
 import {
   requiresDateOfBirthAtRegister,
   isMinorInviteIntent,
+  isAdultChildInviteIntent,
 } from "@/types/aihsafe/invite-intent";
 import { resolveInviteIntentFromRow } from "@/lib/aihsafe/invites/invite-fields";
 import { z } from "zod";
@@ -32,6 +33,7 @@ const { params } = routeCtx;
       inviteIntent: intent,
       requiresDateOfBirth: requiresDateOfBirthAtRegister(intent),
       isMinorInvite: isMinorInviteIntent(intent),
+      isAdultChildInvite: isAdultChildInviteIntent(intent),
     });
   }
 

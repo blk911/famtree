@@ -400,7 +400,7 @@ model Invite {
   relationship   String?
 
   // Agent 73 — invite intent routing (see types/aihsafe/invite-intent.ts)
-  inviteIntent          String?   // adult_friend | family_adult | child | teen | trusted_adult | business_member | business_admin
+  inviteIntent          String?   // adult_friend | family_adult | adult_child | child | teen | trusted_adult | business_member | business_admin
   relationshipKind      String?   // normalized edge for graph/governance
   inviteeAgeBracket     String?   // child | teen | adult | unknown
   stewardDeclaration    Boolean   @default(false)

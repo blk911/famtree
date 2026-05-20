@@ -3,6 +3,8 @@
 export const InviteIntent = {
   ADULT_FRIEND:     "adult_friend",
   FAMILY_ADULT:     "family_adult",
+  /** Son/daughter or family member 18+ — family circle, not Boundaries / not friend sponsor. */
+  ADULT_CHILD:      "adult_child",
   CHILD:            "child",
   TEEN:             "teen",
   TRUSTED_ADULT:    "trusted_adult",
@@ -37,6 +39,19 @@ export function isMinorInviteIntent(intent: string | null | undefined): boolean 
   return intent != null && (MINOR_INTENTS as readonly string[]).includes(intent);
 }
 
+export function isAdultChildInviteIntent(intent: string | null | undefined): boolean {
+  return intent === InviteIntent.ADULT_CHILD;
+}
+
+/** Family participants (not friends/business) — share family-unit semantics. */
+export function isFamilyParticipantIntent(intent: string | null | undefined): boolean {
+  return (
+    intent === InviteIntent.FAMILY_ADULT ||
+    intent === InviteIntent.ADULT_CHILD ||
+    isMinorInviteIntent(intent)
+  );
+}
+
 export function isBusinessInviteIntent(intent: string | null | undefined): boolean {
   return intent != null && (BUSINESS_INTENTS as readonly string[]).includes(intent);
 }
@@ -46,7 +61,7 @@ export function requiresStewardDeclaration(intent: string | null | undefined): b
 }
 
 export function requiresDateOfBirthAtRegister(intent: string | null | undefined): boolean {
-  return isMinorInviteIntent(intent);
+  return isMinorInviteIntent(intent) || isAdultChildInviteIntent(intent);
 }
 
 /** Sponsor-only intents — no guardian link or family steward side effects. */
@@ -59,6 +74,8 @@ export function defaultRelationshipKind(intent: InviteIntent): string {
     case InviteIntent.CHILD:
     case InviteIntent.TEEN:
       return "family_minor";
+    case InviteIntent.ADULT_CHILD:
+      return "adult_child";
     case InviteIntent.TRUSTED_ADULT:
       return "trusted_adult";
     case InviteIntent.BUSINESS_MEMBER:
@@ -87,6 +104,11 @@ export function inferInviteIntent(opts: {
   }
   if (bracket === InviteeAgeBracket.TEEN && opts.stewardDeclaration) {
     return InviteIntent.TEEN;
+  }
+  if (bracket === InviteeAgeBracket.ADULT) {
+    if (opts.relationship === "child" || opts.relationship === "parent") {
+      return InviteIntent.ADULT_CHILD;
+    }
   }
   if (opts.relationship === "parent" && opts.stewardDeclaration) {
     return InviteIntent.CHILD;

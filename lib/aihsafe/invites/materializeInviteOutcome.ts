@@ -6,6 +6,7 @@ import { deriveAgeTier } from "@/lib/aihsafe/governance";
 import { AgeTier, isMinorTier } from "@/types/aihsafe/age-tiers";
 import {
   InviteIntent,
+  isAdultChildInviteIntent,
   isBusinessInviteIntent,
   isMinorInviteIntent,
   isSponsorOnlyIntent,
@@ -118,8 +119,9 @@ async function upsertGuardianLink(
 
 async function attachToFamilyUnit(
   stewardUserId: string,
-  childUserId: string,
+  memberUserId: string,
   familyUnitId: string | null,
+  memberRole: "child" | "adult" = "child",
 ): Promise<void> {
   let unitId = familyUnitId;
 
@@ -165,10 +167,10 @@ async function attachToFamilyUnit(
 
   await prisma.aihFamilyUnitMember.upsert({
     where: {
-      familyUnitId_userId: { familyUnitId: unitId, userId: childUserId },
+      familyUnitId_userId: { familyUnitId: unitId, userId: memberUserId },
     },
-    create: { familyUnitId: unitId, userId: childUserId, role: "child" },
-    update: { exitedAt: null },
+    create: { familyUnitId: unitId, userId: memberUserId, role: memberRole },
+    update: { exitedAt: null, role: memberRole },
   });
 }
 
@@ -245,6 +247,25 @@ export async function materializeInviteOutcome(
         role:         "adult",
       },
       update: { exitedAt: null },
+    });
+    return;
+  }
+
+  if (isAdultChildInviteIntent(intent)) {
+    const tier = deriveAgeTier(dateOfBirth);
+    if (isMinorTier(tier)) {
+      console.warn("[materializeInviteOutcome] adult_child intent but minor age tier", {
+        userId,
+        inviteId: invite.id,
+        tier,
+      });
+      return;
+    }
+    const sponsorId = invite.sponsorUserId ?? invite.senderId;
+    await attachToFamilyUnit(sponsorId, userId, invite.targetFamilyUnitId, "adult");
+    await prisma.profile.update({
+      where: { userId },
+      data:  { familyRole: "child" },
     });
     return;
   }

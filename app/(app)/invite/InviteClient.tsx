@@ -9,15 +9,19 @@ import { Mail, Send, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, X, Ban
 import TrustUnitModal from "@/components/invite/TrustUnitModal";
 import {
   type InviteKind,
+  type FamilyYouthAgeGroup,
   INVITE_KINDS,
   STEWARD_DECLARATION_LABEL,
   MINOR_BOUNDARIES_NOTE,
+  ADULT_CHILD_NOTE,
   BUSINESS_WORKSPACE_NOTE,
+  FAMILY_YOUTH_AGE_GROUPS,
   inviteEmailSubject,
   inviteKindLabel,
   confirmChecklist,
   previewBodyLine,
   inviteIntentForKind,
+  inviteeAgeBracketForYouth,
   defaultRelationshipForKind,
 } from "@/components/invite/inviteUxCopy";
 
@@ -165,6 +169,7 @@ function ConfirmModal({
   recipientEmail,
   relationship,
   inviteKind,
+  youthAge,
   sender,
   onConfirm,
   onCancel,
@@ -174,6 +179,7 @@ function ConfirmModal({
   recipientEmail: string;
   relationship: string;
   inviteKind: InviteKind;
+  youthAge?: FamilyYouthAgeGroup;
   sender: Me;
   onConfirm: () => void;
   onCancel: () => void;
@@ -237,7 +243,7 @@ function ConfirmModal({
 
           {/* Checklist */}
           <div style={{ background:"#f0fdf4", borderRadius:"10px", padding:"12px 14px", marginBottom:"20px", border:"1px solid #bbf7d0" }}>
-            {confirmChecklist(inviteKind).map((line, i, arr) => (
+            {confirmChecklist(inviteKind, youthAge).map((line, i, arr) => (
               <div key={i} style={{ display:"flex", gap:"8px", marginBottom: i < arr.length - 1 ? "5px" : 0 }}>
                 <span style={{ fontSize:"12px", color:"#16a34a", fontWeight:700 }}>✓</span>
                 <span style={{ fontSize:"13px", color:"#166534" }}>{line}</span>
@@ -273,7 +279,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   const [recipientEmail,   setRecipientEmail]   = useState("");
   const [relationship,     setRelationship]     = useState("");
   const [inviteKind,       setInviteKind]       = useState<InviteKind>("friend");
-  const [minorBracket,     setMinorBracket]     = useState<"child" | "teen">("child");
+  const [youthAge,         setYouthAge]         = useState<FamilyYouthAgeGroup>("under_13");
   const [stewardDeclaration, setStewardDeclaration] = useState(false);
   const [emailError,       setEmailError]       = useState("");
   const [showModal,        setShowModal]        = useState(false);
@@ -298,8 +304,8 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   const hasEmail      = recipientEmail.includes("@");
   const canSend       =
     hasEmail &&
-    (inviteKind === "minor"
-      ? stewardDeclaration
+    (inviteKind === "family_youth"
+      ? youthAge === "over_18" || stewardDeclaration
       : inviteKind === "family"
         ? !!relationship
         : true);
@@ -366,7 +372,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
       setEmailError("Please choose how they are related to you (for example parent, sibling, or spouse).");
       return;
     }
-    if (inviteKind === "minor" && !stewardDeclaration) {
+    if (inviteKind === "family_youth" && youthAge !== "over_18" && !stewardDeclaration) {
       setEmailError(STEWARD_DECLARATION_LABEL);
       return;
     }
@@ -451,12 +457,15 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         body: JSON.stringify({
           recipientEmail,
           relationship: defaultRelationshipForKind(inviteKind, relationship),
-          inviteIntent: inviteIntentForKind(inviteKind, { relationship, minorBracket }),
+          inviteIntent: inviteIntentForKind(inviteKind, { relationship, youthAge }),
           inviteeAgeBracket:
-            inviteKind === "minor"
-              ? minorBracket
+            inviteKind === "family_youth"
+              ? inviteeAgeBracketForYouth(youthAge)
               : "adult",
-          stewardDeclaration: inviteKind === "minor" ? stewardDeclaration : false,
+          stewardDeclaration:
+            inviteKind === "family_youth" && youthAge !== "over_18"
+              ? stewardDeclaration
+              : false,
         }),
       });
 
@@ -602,6 +611,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
           recipientEmail={recipientEmail}
           relationship={relationship}
           inviteKind={inviteKind}
+          youthAge={inviteKind === "family_youth" ? youthAge : undefined}
           sender={me}
           onConfirm={handleConfirmSend}
           onCancel={() => setShowModal(false)}
@@ -805,41 +815,52 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
                       {kindMeta.description}
                     </p>
                   )}
-                  {inviteKind === "minor" && (
+                  {inviteKind === "family_youth" && (
                     <div style={{ background:"#fffbeb", border:"1px solid #fde68a", borderRadius:"10px", padding:"12px 14px", marginBottom:"12px" }}>
-                      <p style={{ fontSize:"12px", color:"#92400e", margin:"0 0 10px", lineHeight:1.5 }}>
-                        {MINOR_BOUNDARIES_NOTE}
-                      </p>
                       <p style={{ fontSize:"12px", fontWeight:700, color:"#78350f", margin:"0 0 8px" }}>Age group</p>
-                      <div style={{ display:"flex", gap:"6px", marginBottom:"12px" }}>
-                        {(["child", "teen"] as const).map((b) => (
+                      <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", marginBottom:"12px" }}>
+                        {FAMILY_YOUTH_AGE_GROUPS.map((g) => (
                           <button
-                            key={b}
+                            key={g.id}
                             type="button"
-                            onClick={() => setMinorBracket(b)}
+                            onClick={() => {
+                              setYouthAge(g.id);
+                              if (g.id === "over_18") setStewardDeclaration(false);
+                            }}
                             style={{
                               padding: "4px 12px",
                               borderRadius: "999px",
-                              border: minorBracket === b ? "1px solid #7c3aed" : "1px solid #e7e5e4",
-                              background: minorBracket === b ? "#ede9fe" : "white",
+                              border: youthAge === g.id ? "1px solid #7c3aed" : "1px solid #e7e5e4",
+                              background: youthAge === g.id ? "#ede9fe" : "white",
                               fontSize: "12px",
                               fontWeight: 700,
                               cursor: "pointer",
                             }}
                           >
-                            {b === "child" ? "Under 13" : "13–17"}
+                            {g.label}
                           </button>
                         ))}
                       </div>
-                      <label style={{ display:"flex", gap:"8px", alignItems:"flex-start", cursor:"pointer", fontSize:"13px", color:"#44403c", lineHeight:1.5 }}>
-                        <input
-                          type="checkbox"
-                          checked={stewardDeclaration}
-                          onChange={(e) => setStewardDeclaration(e.target.checked)}
-                          style={{ marginTop:"3px" }}
-                        />
-                        <span>{STEWARD_DECLARATION_LABEL}</span>
-                      </label>
+                      {youthAge === "over_18" ? (
+                        <p style={{ fontSize:"12px", color:"#57534e", margin:0, lineHeight:1.5 }}>
+                          {ADULT_CHILD_NOTE}
+                        </p>
+                      ) : (
+                        <>
+                          <p style={{ fontSize:"12px", color:"#92400e", margin:"0 0 10px", lineHeight:1.5 }}>
+                            {MINOR_BOUNDARIES_NOTE}
+                          </p>
+                          <label style={{ display:"flex", gap:"8px", alignItems:"flex-start", cursor:"pointer", fontSize:"13px", color:"#44403c", lineHeight:1.5 }}>
+                            <input
+                              type="checkbox"
+                              checked={stewardDeclaration}
+                              onChange={(e) => setStewardDeclaration(e.target.checked)}
+                              style={{ marginTop:"3px" }}
+                            />
+                            <span>{STEWARD_DECLARATION_LABEL}</span>
+                          </label>
+                        </>
+                      )}
                     </div>
                   )}
                   {inviteKind === "business" && (
@@ -859,7 +880,11 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
               {/* Email body */}
               <div style={{ background:"white", padding:"28px 24px", textAlign:"center" }}>
                 <p style={{ fontSize:"15px", fontWeight:600, color:"#1e1b4b", margin:"0 0 4px" }}>
-                  {previewBodyLine(inviteKind, recipientName ? recipientName.split(" ")[0] : undefined)}
+                  {previewBodyLine(
+                    inviteKind,
+                    recipientName ? recipientName.split(" ")[0] : undefined,
+                    inviteKind === "family_youth" ? youthAge : undefined,
+                  )}
                 </p>
                 <p style={{ fontSize:"13px", color:"#6b7280", margin:"0 0 22px", lineHeight:1.6 }}>
                   Can you identify who invited you? Your invite email includes your photo only — not your name.
@@ -905,7 +930,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
             <div style={{ background: "#faf5ff", borderRadius: "16px", padding: "24px 22px", border: "1px solid #ede9fe" }}>
               <p style={{ fontSize:"13px", fontWeight:800, color:"#7c3aed", textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 14px" }}>How it works</p>
               {[
-                { title:"Choose who you're inviting",     desc:"Friend, family member, child or teen, trusted adult, or work colleague — each path works differently." },
+                { title:"Choose who you're inviting",     desc:"Friend, family member, child/teen/adult child, trusted adult, or work colleague — each path works differently." },
                 { title:"They receive your photo only",  desc:"Your photo is sent but NOT your name — they must identify you." },
                 { title:"They type your name to unlock", desc:"3 wrong guesses and the invite expires automatically." },
                 { title:"They create their account",     desc:"They join with the right connection for the invite type you chose." },

@@ -7,6 +7,7 @@ import {
   InviteIntent,
   InviteeAgeBracket,
   inferInviteIntent,
+  isAdultChildInviteIntent,
   isBusinessInviteIntent,
   isMinorInviteIntent,
   requiresStewardDeclaration,
@@ -88,6 +89,22 @@ export function validateInviteIntentRouting(input: RouteInviteByIntentInput, int
     }
     if (intent === InviteIntent.TEEN && bracket === InviteeAgeBracket.CHILD) {
       throw new InviteRoutingError("Invite intent teen does not match child age bracket.", "INTENT_BRACKET_MISMATCH");
+    }
+  }
+
+  if (isAdultChildInviteIntent(intent)) {
+    if (input.stewardDeclaration) {
+      throw new InviteRoutingError(
+        "Adult family members (18+) do not use a steward declaration. Choose Under 13 or 13–17 for governed accounts.",
+        "ADULT_CHILD_STEWARD_NOT_ALLOWED",
+      );
+    }
+    const bracket = input.inviteeAgeBracket;
+    if (bracket && bracket !== InviteeAgeBracket.ADULT) {
+      throw new InviteRoutingError(
+        "Adult child invites must use the 18+ age group.",
+        "INVALID_AGE_BRACKET",
+      );
     }
   }
 }

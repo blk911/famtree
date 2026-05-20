@@ -6,6 +6,7 @@ import { AgeTier, isMinorTier } from "@/types/aihsafe/age-tiers";
 import {
   InviteIntent,
   InviteeAgeBracket,
+  isAdultChildInviteIntent,
   isBusinessInviteIntent,
   isMinorInviteIntent,
   isSponsorOnlyIntent,
@@ -109,6 +110,36 @@ export function validateBusinessInviteShape(
       ok:      false,
       code:    "INVALID_BUSINESS_INVITE",
       message: "Business invites cannot include family steward authority.",
+    };
+  }
+  return { ok: true };
+}
+
+export function validateAdultChildInviteeAge(
+  invite: Invite,
+  dateOfBirth: Date | null,
+): { ok: true } | { ok: false; code: string; message: string } {
+  if (!isAdultChildInviteIntent(resolveInviteIntentFromRow(invite))) return { ok: true };
+  if (!dateOfBirth) {
+    return {
+      ok:      false,
+      code:    "DOB_REQUIRED",
+      message: "Date of birth is required so we can confirm an adult family account (18+).",
+    };
+  }
+  if (isMinorTier(deriveAgeTier(dateOfBirth))) {
+    return {
+      ok:      false,
+      code:    "ADULT_CHILD_MUST_BE_ADULT",
+      message:
+        "This invite is for an adult family member (18+). The date of birth entered indicates a child or teen account — ask your inviter to send the correct invite.",
+    };
+  }
+  if (invite.stewardDeclaration) {
+    return {
+      ok:      false,
+      code:    "INVALID_ADULT_CHILD_INVITE",
+      message: "Adult family invites do not use steward authority over the invitee.",
     };
   }
   return { ok: true };

@@ -8,6 +8,7 @@ import {
 } from "@/types/aihsafe/invite-intent";
 import { resolveInviteIntentFromRow } from "@/lib/aihsafe/invites/invite-fields";
 import {
+  validateAdultChildInviteeAge,
   validateBusinessInviteShape,
   validateInviteAgeBracketMatchesTier,
   validateTrustedAdultInviteeAge,
@@ -28,7 +29,9 @@ export function validateRegistrationAgainstInvite(
 
   if (requiresDateOfBirthAtRegister(intent) && !dateOfBirth) {
     throw new InviteRegisterValidationError(
-      "Date of birth is required for this family invite so we can apply the right Boundaries.",
+      isMinorInviteIntent(intent)
+        ? "Date of birth is required for this family invite so we can apply the right Boundaries."
+        : "Date of birth is required for this family invite so we can confirm an adult family account (18+).",
       "DOB_REQUIRED",
     );
   }
@@ -41,6 +44,11 @@ export function validateRegistrationAgainstInvite(
   const trustedCheck = validateTrustedAdultInviteeAge(invite, dateOfBirth);
   if (!trustedCheck.ok) {
     throw new InviteRegisterValidationError(trustedCheck.message, trustedCheck.code);
+  }
+
+  const adultChildCheck = validateAdultChildInviteeAge(invite, dateOfBirth);
+  if (!adultChildCheck.ok) {
+    throw new InviteRegisterValidationError(adultChildCheck.message, adultChildCheck.code);
   }
 
   if (isMinorInviteIntent(intent)) {
