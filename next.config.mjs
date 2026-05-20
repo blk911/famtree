@@ -1,5 +1,8 @@
 ﻿/** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_ADMIN_TOOLS_FEATURES: "member-video-preview-v1",
+  },
   async redirects() {
     return [{ source: "/admin/studio", destination: "/admin/studios", permanent: false }];
   },
@@ -8,6 +11,10 @@ const nextConfig = {
     /** Route handlers still follow platform limits; this raises Server Actions caps if used later. */
     serverActions: {
       bodySizeLimit: "80mb",
+    },
+    /** Keep large /public/uploads assets out of serverless traces (Vercel 300MB limit). */
+    outputFileTracingExcludes: {
+      "*": ["public/uploads/**"],
     },
   },
   images: {

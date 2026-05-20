@@ -1,5 +1,6 @@
 import type { OpsLine } from "@/lib/admin/opsCatalog";
 import type { RuntimeFoundationSnapshot } from "@/lib/admin/foundationSnapshot";
+import { deployIncludesAdminVideoPreview } from "@/lib/admin/buildMarkers";
 
 const card = {
   background: "white",
@@ -56,6 +57,7 @@ export function AdminToolsFoundation({
     : "(unset — use VERCEL_GIT_COMMIT_SHA / CI_SHAs on hosted builds)";
 
   const deployUrl = snapshot.vercelUrl ? `https://${snapshot.vercelUrl}` : "—";
+  const hasVideoPreview = deployIncludesAdminVideoPreview(snapshot.vercelGitCommitSha);
 
   const svcBlocks: OpsLine[] = [
     {
@@ -68,8 +70,10 @@ export function AdminToolsFoundation({
     {
       title: "Deployment / Git",
       when: "Compare laptop vs hosted builds.",
-      what: `Vercel env: ${snapshot.vercelEnv ?? "—"} · ref: ${snapshot.vercelGitCommitRef ?? "—"} · SHA: ${shaDisplay}`,
-      why: "Trace UI behavior to a commit.",
+      what: `Vercel env: ${snapshot.vercelEnv ?? "—"} · ref: ${snapshot.vercelGitCommitRef ?? "—"} · SHA: ${shaDisplay}${hasVideoPreview ? " · intro preview ✓" : " · intro preview missing (redeploy main)"}`,
+      why: hasVideoPreview
+        ? "Trace UI behavior to a commit."
+        : "Hosted build is behind — member intro preview card and recent fixes may not be live.",
       where: `Deploy URL: ${deployUrl} · full SHA from env VERCEL_GIT_COMMIT_SHA`,
     },
     {
