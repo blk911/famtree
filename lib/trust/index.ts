@@ -3,6 +3,7 @@ import { TrustApprovalStatus, TrustUnitRequestStatus } from "@prisma/client";
 import { buildTrustAdjacency } from "./adjacency";
 import { normalizeInviteEmail } from "@/lib/invite";
 import { maskInviteEmail } from "./tuProposal";
+import { repairStalePendingTrustProposals } from "./repairPendingProposals";
 import { filterHumanTrustEligibleUserIds, isHumanTrustEligible, loadHumanEligibleUserIdSet } from "./isHumanTrustEligible";
 
 export {
@@ -130,7 +131,12 @@ export type PendingTrustRequestMember =
       };
     }
   | {
-      pendingInvite: { id: string; recipientEmail: string; status: string };
+      pendingInvite: {
+        id: string;
+        recipientEmail: string;
+        recipientEmailMasked: string;
+        status: string;
+      };
       approvalStatus: "WAITING_ON_JOIN";
     };
 
@@ -178,6 +184,24 @@ async function loadPendingTrustRequestRowsForUser(viewerId: string) {
   });
 }
 
+/** Site-wide cleanup — fire-and-forget before loading viewer's pending list. */
+async function repairPendingTrustProposalsBestEffort(): Promise<void> {
+  try {
+    const result = await repairStalePendingTrustProposals({ dryRun: false });
+    if (result.issues.length > 0) {
+      console.warn("[trust] repairStalePendingTrustProposals", {
+        issues: result.issues.length,
+        slotsRemoved: result.slotsRemoved,
+        requestsCancelled: result.requestsCancelled,
+        invitesExpired: result.invitesExpired,
+        invitesPromoted: result.invitesPromoted,
+      });
+    }
+  } catch (err) {
+    console.error("[trust] repairStalePendingTrustProposals failed", err);
+  }
+}
+
 export async function getPendingTrustRequests(userId: string): Promise<Array<{
   id: string;
   createdAt: Date;
@@ -191,6 +215,8 @@ export async function getPendingTrustRequests(userId: string): Promise<Array<{
   members: PendingTrustRequestMember[];
   approvals: unknown[];
 }>> {
+  await repairPendingTrustProposalsBestEffort();
+
   let requests = await loadPendingTrustRequestRowsForUser(userId);
 
   const healApprovals: Array<{ requestId: string; userId: string; status: TrustApprovalStatus }> = [];
@@ -249,7 +275,8 @@ export async function getPendingTrustRequests(userId: string): Promise<Array<{
     const pendingRows: PendingTrustRequestMember[] = req.pendingInviteSlots.map((slot) => ({
       pendingInvite: {
         id: slot.invite.id,
-        recipientEmail: maskInviteEmail(slot.invite.recipientEmail),
+        recipientEmail: slot.invite.recipientEmail,
+        recipientEmailMasked: maskInviteEmail(slot.invite.recipientEmail),
         status: slot.invite.status,
       },
       approvalStatus: "WAITING_ON_JOIN",
@@ -275,13 +302,21 @@ export type TrustRequestMemberForClient = {
 };
 
 /** Flatten server-side TU member union for dashboard / family-units client components. */
-export function trustRequestMembersForClient(members: PendingTrustRequestMember[]): TrustRequestMemberForClient[] {
+export function trustRequestMembersForClient(
+  members: PendingTrustRequestMember[],
+  opts?: { viewerUserId?: string; createdById?: string },
+): TrustRequestMemberForClient[] {
+  const viewerIsCreator =
+    !!opts?.viewerUserId && !!opts?.createdById && opts.viewerUserId === opts.createdById;
   const out: TrustRequestMemberForClient[] = [];
   for (const m of members) {
     if ("pendingInvite" in m) {
+      const label = viewerIsCreator
+        ? m.pendingInvite.recipientEmail
+        : m.pendingInvite.recipientEmailMasked;
       out.push({
         id: `pending:${m.pendingInvite.id}`,
-        firstName: m.pendingInvite.recipientEmail,
+        firstName: label,
         lastName: "",
         photoUrl: null,
         approvalStatus: m.approvalStatus,
@@ -309,6 +344,7 @@ export function serializeTrustGateRequests(
     createdBy: { id: string; firstName: string; lastName: string; email: string; photoUrl: string | null };
     members: PendingTrustRequestMember[];
   }>,
+  viewerUserId?: string,
 ) {
   return trustRequests.map((r) => ({
     id: r.id,
@@ -319,7 +355,10 @@ export function serializeTrustGateRequests(
       lastName: r.createdBy.lastName,
       photoUrl: r.createdBy.photoUrl,
     },
-    members: trustRequestMembersForClient(r.members),
+    members: trustRequestMembersForClient(r.members, {
+      viewerUserId,
+      createdById: r.createdBy.id,
+    }),
   }));
 }
 

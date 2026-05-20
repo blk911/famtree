@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { logActivity } from "@/lib/activity/log";
+import { declineUnderfilledTrustRequestsAfterInviteRemoved } from "@/lib/trust/tuProposal";
 
 const isAdmin = (role: string) => role === "founder" || role === "admin";
 
@@ -25,8 +26,15 @@ const { params } = routeCtx;
       return NextResponse.json({ error: "Only pending invites can be cancelled" }, { status: 400 });
     }
 
-    // Hard delete — clears from all views; same email can be re-invited fresh
-    await prisma.invite.delete({ where: { id: params.id } });
+    const inviteId = params.id;
+    const tuRequestIds = (
+      await prisma.trustUnitRequestPendingInvite.findMany({
+        where: { inviteId },
+        select: { requestId: true },
+      })
+    ).map((s) => s.requestId);
+    await prisma.invite.delete({ where: { id: inviteId } });
+    await declineUnderfilledTrustRequestsAfterInviteRemoved(tuRequestIds);
 
     await logActivity({
       actorId:   user.id,
@@ -58,7 +66,15 @@ const { params } = routeCtx;
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await prisma.invite.delete({ where: { id: params.id } });
+    const inviteId = params.id;
+    const tuRequestIds = (
+      await prisma.trustUnitRequestPendingInvite.findMany({
+        where: { inviteId },
+        select: { requestId: true },
+      })
+    ).map((s) => s.requestId);
+    await prisma.invite.delete({ where: { id: inviteId } });
+    await declineUnderfilledTrustRequestsAfterInviteRemoved(tuRequestIds);
 
     await logActivity({
       actorId:   user.id,

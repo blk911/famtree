@@ -35,6 +35,7 @@ export function TrustRequestCard({
 
   const currentMember = members.find((member) => member.id === currentUserId);
   const currentUserApproved = currentMember?.approvalStatus === "APPROVED";
+  const viewerIsCreator = request.createdBy.id === currentUserId;
 
   const respond = async (action: "ACCEPT" | "DECLINE") => {
     setLoading(action);
@@ -98,7 +99,7 @@ export function TrustRequestCard({
                   </span>
                 )}
                 <div style={{fontSize:"12px",fontWeight:700,color:"#1c1917",marginTop:"7px",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                  {pendingSlot ? "Invite" : member.firstName}
+                  {pendingSlot ? (viewerIsCreator ? "Pending invite" : "Invite") : member.firstName}
                 </div>
                 {pendingSlot ? (
                   <div style={{fontSize:"9px",fontWeight:600,color:"#92400e",marginTop:"2px",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis"}} title={member.firstName}>

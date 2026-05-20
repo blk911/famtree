@@ -13,7 +13,6 @@ import {
 import { INVITE_INTENTS, INVITEE_AGE_BRACKETS } from "@/types/aihsafe/invite-intent";
 import { sendInviteEmail } from "@/lib/email";
 import { prisma } from "@/lib/db/prisma";
-import { tryAutoTrustUnitAfterInvite } from "@/lib/trust/tuProposal";
 import { enrichInvitesWithRegisteredAccounts, listSentInvitesForSender } from "@/lib/invite/sentForSender";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
@@ -123,7 +122,6 @@ export async function POST(req: NextRequest) {
     }
 
     let invite;
-    let allowAutoTrustUnit = true;
     try {
       const routed = await routeInviteByIntent({
         sender:              user,
@@ -134,9 +132,9 @@ export async function POST(req: NextRequest) {
         stewardDeclaration:  stewardDeclaration ?? false,
         targetTrustUnitId:   targetTrustUnitId ?? null,
         targetFamilyUnitId:  targetFamilyUnitId ?? null,
+        allowAutoTrustUnit:  false,
       });
       invite = routed.invite;
-      allowAutoTrustUnit = routed.allowAutoTrustUnit;
     } catch (err) {
       if (err instanceof InviteRoutingError) {
         return NextResponse.json(
@@ -145,15 +143,6 @@ export async function POST(req: NextRequest) {
         );
       }
       throw err;
-    }
-
-    /* Proposal must not depend on email delivery — dev/staging often 502 on RESEND while invite row exists */
-    if (allowAutoTrustUnit) {
-      try {
-        await tryAutoTrustUnitAfterInvite(user.id, invite.id);
-      } catch (tuErr) {
-        console.error("[invite] tryAutoTrustUnitAfterInvite", tuErr);
-      }
     }
 
     try {

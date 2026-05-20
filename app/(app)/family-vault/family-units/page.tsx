@@ -53,7 +53,10 @@ export default async function FamilyUnitsPage() {
     id: r.id,
     createdAt: r.createdAt.toISOString(),
     createdBy: r.createdBy,
-    members: trustRequestMembersForClient(r.members),
+    members: trustRequestMembersForClient(r.members, {
+      viewerUserId: user.id,
+      createdById: r.createdBy.id,
+    }),
   }));
 
   const hasPendingTu = serializedPendingTu.length > 0;

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import { TrustApprovalStatus } from "@prisma/client";
+import { TrustApprovalStatus, TrustUnitRequestStatus } from "@prisma/client";
 import { buildTrustAdjacency, pickNeighborForAutoTrustUnit } from "./adjacency";
 import { isHumanTrustEligible } from "@/lib/trust/isHumanTrustEligible";
 
@@ -71,9 +71,11 @@ export async function tryAutoTrustUnitAfterInvite(senderId: string, inviteId: st
 
   const sender = await prisma.user.findUnique({
     where: { id: senderId },
-    select: { role: true, email: true },
+    select: { role: true, email: true, photoUrl: true },
   });
   if (!sender || !isHumanTrustEligible({ role: sender.role, email: sender.email })) return null;
+  /** Identity challenge requires sponsor photo — skip auto-TU when invitee cannot verify. */
+  if (!sender.photoUrl?.trim()) return null;
 
   const adjacency = await buildTrustAdjacency();
   const blk = await pickNeighborForAutoTrustUnit(senderId, adjacency);
@@ -90,6 +92,40 @@ export async function tryAutoTrustUnitAfterInvite(senderId: string, inviteId: st
     console.error("[trust] tryAutoTrustUnitAfterInvite", e);
     return null;
   }
+}
+
+/** Decline a PENDING TU proposal when it has fewer than 3 participants (members + pending slots). */
+export async function declineTrustRequestIfUnderfilled(requestId: string): Promise<boolean> {
+  const req = await prisma.trustUnitRequest.findUnique({
+    where: { id: requestId },
+    include: { members: true, pendingInviteSlots: true },
+  });
+  if (!req || req.status !== "PENDING") return false;
+  const total = req.members.length + req.pendingInviteSlots.length;
+  if (total >= 3) return false;
+
+  await prisma.$transaction([
+    prisma.trustUnitApproval.updateMany({
+      where: { requestId },
+      data: { status: TrustApprovalStatus.DECLINED },
+    }),
+    prisma.trustUnitRequest.update({
+      where: { id: requestId },
+      data: { status: TrustUnitRequestStatus.DECLINED },
+    }),
+  ]);
+  return true;
+}
+
+/** Call after invite delete — pass requestIds captured before delete (slots cascade away). */
+export async function declineUnderfilledTrustRequestsAfterInviteRemoved(
+  requestIds: string[],
+): Promise<string[]> {
+  const declined: string[] = [];
+  for (const requestId of requestIds) {
+    if (await declineTrustRequestIfUnderfilled(requestId)) declined.push(requestId);
+  }
+  return declined;
 }
 
 /** When an invite becomes REGISTERED, promote pending TU slots into real members + pending approvals. */

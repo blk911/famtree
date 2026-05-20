@@ -165,7 +165,7 @@ export default async function DashboardPage() {
     getVaultNotificationCount(user.id),
   ]);
 
-  const serializedTrustRequests = serializeTrustGateRequests(trustRequests);
+  const serializedTrustRequests = serializeTrustGateRequests(trustRequests, user.id);
 
   const composerSpaces = composerSpacesRows.map((r) => r.space);
 

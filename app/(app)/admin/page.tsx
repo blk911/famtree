@@ -59,7 +59,7 @@ export default async function AdminPage() {
     { label:"Waitlist", value:waitlistCount, color:"#f43f5e", hint:"People waiting for an invite" },
   ];
 
-  const serializedTrustGate = serializeTrustGateRequests(pendingTrustRequests);
+  const serializedTrustGate = serializeTrustGateRequests(pendingTrustRequests, user.id);
 
   const dbHost = getDatabaseHostHint();
 
