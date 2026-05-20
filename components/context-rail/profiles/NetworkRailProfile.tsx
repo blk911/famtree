@@ -4,6 +4,11 @@ import { useRouter } from "next/navigation";
 import { ContextRailSection } from "../ContextRailSection";
 import { ContextRailMemberList } from "../ContextRailMemberList";
 import { ContextRailQuickActions } from "../ContextRailQuickActions";
+import { ContextRailTrustCirclesSection } from "../ContextRailTrustCirclesSection";
+import {
+  countDraftTrustUnits,
+  getActiveTrustUnits,
+} from "@/lib/trust/display";
 import type { NetworkRailProps } from "../types";
 
 export function NetworkRailProfile({
@@ -14,6 +19,8 @@ export function NetworkRailProfile({
   currentUserId,
 }: NetworkRailProps) {
   const router = useRouter();
+  const activeTrustUnits = getActiveTrustUnits(trustUnits, currentUserId);
+  const draftTrustCount = countDraftTrustUnits(trustUnits, currentUserId);
 
   const members = flat.slice(0, 8).map((n) => {
     const m = n.member;
@@ -41,18 +48,15 @@ export function NetworkRailProfile({
         />
       </ContextRailSection>
 
-      {trustUnits.length > 0 && (
-        <ContextRailSection title="Trust circles" count={trustUnits.length}>
-          <ul style={{ margin: 0, padding: 0, listStyle: "none", fontSize: 11, color: "#57534e" }}>
-            {trustUnits.slice(0, 5).map((unit) => (
-              <li key={unit.id} style={{ padding: "4px 0", borderBottom: "1px solid #f5f4f0" }}>
-                🤝 {unit.members.map((m) => m.user.firstName).join(", ")}
-                <span style={{ color: "#a8a29e" }}> ({unit.members.length})</span>
-              </li>
-            ))}
-          </ul>
-        </ContextRailSection>
-      )}
+      <ContextRailTrustCirclesSection
+        activeUnits={activeTrustUnits.slice(0, 5).map((unit) => ({
+          id: unit.id,
+          label: unit.members.map((m) => m.user.firstName).join(", "),
+          memberCount: unit.members.length,
+        }))}
+        draftCount={draftTrustCount}
+        showDraftInRail={activeTrustUnits.length === 0 && draftTrustCount > 0}
+      />
 
       {pendingInvites.length > 0 && (
         <ContextRailSection title="Pending invites" count={pendingInvites.length} href="/invite">

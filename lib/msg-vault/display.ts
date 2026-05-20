@@ -7,10 +7,14 @@ export function conversationLabel(
 ): string {
   if (conv.title?.trim()) return conv.title.trim();
   if (conv.kind === MsgConversationKind.DIRECT) {
-    const other = conv.participants?.find((p) => p.userId !== currentUserId);
+    const other = conv.participants?.find(
+      (p) => p.userId !== currentUserId && p.status === "ACTIVE",
+    );
     if (other?.user) {
       return `${other.user.firstName} ${other.user.lastName}`.trim();
     }
+    const names = participantNames(conv.participants, currentUserId);
+    if (names) return names;
     return "Direct chat";
   }
   if (conv.kind === MsgConversationKind.SPACE_THREAD) return "Space thread";

@@ -89,12 +89,12 @@ export function VaultHeroSection({
 
   return (
     <section
+      className="vault-hero-section"
       style={{
         position:     "relative",
         minHeight:    heroMinH,
         borderRadius: "24px",
         overflow:     "hidden",
-        marginBottom: 12,
         border:       "1px solid rgba(255,255,255,0.55)",
         boxShadow:    "0 18px 40px rgba(28,25,23,0.10)",
         background: coverUrl

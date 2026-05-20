@@ -9,6 +9,11 @@ import { ThreadSelectorRow } from "@/components/vault/ThreadSelectorRow";
 import { ThreadSelectorList } from "@/components/vault/ThreadSelectorList";
 import { ContextRailSection } from "../ContextRailSection";
 import { ContextRailMemberList } from "../ContextRailMemberList";
+import { ContextRailTrustCirclesSection } from "../ContextRailTrustCirclesSection";
+import {
+  countDraftTrustUnits,
+  getActiveTrustUnits,
+} from "@/lib/trust/display";
 import type { DashboardRailProps } from "../types";
 
 export function DashboardRailProfile({
@@ -49,6 +54,8 @@ export function DashboardRailProfile({
   ];
 
   const vaultConversationCount = directConversations.length + threadConversations.length;
+  const activeTrustUnits = getActiveTrustUnits(trustUnits, currentUserId);
+  const draftTrustCount = countDraftTrustUnits(trustUnits, currentUserId);
 
   return (
     <>
@@ -128,28 +135,38 @@ export function DashboardRailProfile({
         )}
       </ContextRailSection>
 
-      {trustUnits.length > 0 && (
-        <ContextRailSection title="Trust Units" count={trustUnits.length} href="/tree">
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {trustUnits.slice(0, 4).map((unit) => {
-              const tuActive = isTrustUnitActive(unit.id);
-              const tuLabel = unit.members.map((m) => m.user.firstName).join(" · ");
-              return (
-                <div key={unit.id} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <button
-                    type="button"
-                    onClick={() => void openTrustUnit(unit)}
-                    title="Open Trust Unit group thread"
-                    className={`thread-selector-tu${tuActive ? " thread-selector-tu--active" : ""}`}
-                  >
-                    <span>🤝 {tuLabel}</span>
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </ContextRailSection>
-      )}
+      <ContextRailTrustCirclesSection
+        title="Trust circles"
+        href="/tree"
+        activeUnits={activeTrustUnits.slice(0, 4).map((unit) => ({
+          id: unit.id,
+          label: unit.members.map((m) => m.user.firstName).join(" · "),
+          memberCount: unit.members.length,
+        }))}
+        draftCount={draftTrustCount}
+        rows={
+          activeTrustUnits.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {activeTrustUnits.slice(0, 4).map((unit) => {
+                const tuActive = isTrustUnitActive(unit.id);
+                const tuLabel = unit.members.map((m) => m.user.firstName).join(" · ");
+                return (
+                  <div key={unit.id} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <button
+                      type="button"
+                      onClick={() => void openTrustUnit(unit)}
+                      title="Open Trust Unit group thread"
+                      className={`thread-selector-tu${tuActive ? " thread-selector-tu--active" : ""}`}
+                    >
+                      <span>🤝 {tuLabel}</span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : undefined
+        }
+      />
 
       <ContextRailSection title="Msg Vault" href="/msg-vault">
         <p style={{ fontSize: 11, color: "#78716c", margin: 0, lineHeight: 1.45 }}>

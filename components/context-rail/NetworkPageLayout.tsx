@@ -13,7 +13,7 @@ export function NetworkPageLayout({
   rail: NetworkRailProps;
 }) {
   return (
-    <div className="dashboard-body thread-hub-grid">
+    <div className="app-page-body dashboard-body thread-hub-grid">
       <div className="dashboard-body__main thread-hub-grid__main">{children}</div>
       <div className="dashboard-body__rail thread-hub-grid__rail">
         <ContextRail mode="network">

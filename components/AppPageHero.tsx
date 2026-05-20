@@ -14,7 +14,7 @@ type HeroUser = {
 
 const HERO_COPY: Array<{ match: (path: string) => boolean; title: string; subtitle: string; hidden?: true }> = [
   { match: (path) => path === "/aihsafe" || path.startsWith("/aihsafe/"), title: "", subtitle: "", hidden: true },
-  { match: (path) => path === "/msg-vault" || path.startsWith("/msg-vault/"), title: "", subtitle: "", hidden: true },
+  { match: (path) => path === "/msg-vault" || path.startsWith("/msg-vault/"), title: "Msg Vault", subtitle: "Governed chats and threads" },
   { match: (path) => path === "/admin/studios" || path.startsWith("/admin/studios/"), title: "AIH Studios", subtitle: "Studio management and directory" },
   { match: (path) => path === "/admin/tools", title: "Tools & foundation", subtitle: "Scripts, services, and ops reference for admins" },
   { match: (path) => path === "/admin", title: "Admin", subtitle: "AMIHUMAN.NET control center" },
@@ -24,7 +24,8 @@ const HERO_COPY: Array<{ match: (path: string) => boolean; title: string; subtit
   { match: (path) => path === "/family-vault/family-units", title: "Units", subtitle: "Bonds and trust units — jump into each conversation" },
   { match: (path) => path === "/profile", title: "My Posts", subtitle: "Your profile, photos, and timeline" },
   { match: (path) => path.startsWith("/profile/"), title: "Member Profile", subtitle: "View this family member's profile" },
-  { match: (path) => path === "/tree", title: "Family Tree", subtitle: "Your invite tree and Trust Units" },
+  { match: (path) => path === "/tree" || path.startsWith("/tree/"), title: "My Network", subtitle: "People and trust circles in your tree" },
+  { match: (path) => path === "/family-vault/family-units", title: "Units", subtitle: "Trust circles forming and sponsor bonds" },
   { match: (path) => path === "/invite", title: "Invite", subtitle: "Invite someone you love into the tree" },
   { match: (path) => path === "/settings", title: "Settings", subtitle: "Manage your account and privacy preferences" },
 ];
@@ -49,7 +50,7 @@ export function AppPageHero({ user, coverUrl }: { user: HeroUser; coverUrl: stri
 
   return (
     <section
-      className={inviteCompact ? "app-page-hero--invite" : undefined}
+      className={`app-page-hero${inviteCompact ? " app-page-hero--invite" : ""}`}
       style={{
         position:"relative",
         minHeight: heroMinH,

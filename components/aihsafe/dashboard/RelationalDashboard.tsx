@@ -19,6 +19,7 @@ import { InvitePanel }        from "@/components/aihsafe/invite/InvitePanel";
 import { SectionHeader }      from "@/components/aihsafe/common/SectionHeader";
 
 import type { FamilyUnitDTO, TrustUnitDTO, ApprovalRequestDTO } from "@/types/aihsafe/dto";
+import { getActiveTrustUnits } from "@/lib/trust/display";
 
 type ModalKind = "family" | "space" | "invite" | null;
 
@@ -76,8 +77,9 @@ export function RelationalDashboard({ currentUserId }: Props) {
         {/* Hero bar */}
         <HeroBar
           familyCount={familyUnits.length}
-          spaceCount={trustUnits.filter(u =>
-            u.members.some(m => m.userId === currentUserId && !m.exitedAt)
+          spaceCount={getActiveTrustUnits(
+            trustUnits.filter(u => u.members.some(m => m.userId === currentUserId && !m.exitedAt)),
+            currentUserId,
           ).length}
           pendingCount={pendingApprovals.length}
           onPendingClick={() => {

@@ -329,7 +329,7 @@ export function TreeList({
   items,
   currentUserId,
   initialPrefs = {},
-  privacyNote = "full",
+  privacyNote = "none",
 }: {
   items: FlatNode[];
   currentUserId: string | undefined;

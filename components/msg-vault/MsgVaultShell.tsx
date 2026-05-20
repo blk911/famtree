@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Lock } from "lucide-react";
 import type { FamilySafeShellMode } from "@/components/aihsafe/roles/shellMode";
 import { MsgVaultTabs, type MsgVaultTabId } from "@/components/msg-vault/MsgVaultTabs";
 import { MsgVaultThreadSelectorRail } from "@/components/msg-vault/MsgVaultThreadSelectorRail";
@@ -31,6 +30,8 @@ import type {
 } from "@/types/msg-vault";
 import { MsgConversationKind } from "@/types/msg-vault";
 import { prependVaultMessage } from "@/components/vault/vault-message-order";
+import { filterVisibleConversations } from "@/lib/msg-vault/conversation-display-guard";
+import type { TrustUnitRowForGuard } from "@/lib/msg-vault/conversation-display-guard";
 
 const card: React.CSSProperties = {
   background:   "#fff",
@@ -45,9 +46,16 @@ interface Props {
   shellMode: FamilySafeShellMode;
   firstName: string;
   lastName: string;
+  trustUnits?: TrustUnitRowForGuard[];
 }
 
-export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }: Props) {
+export function MsgVaultShell({
+  currentUserId,
+  shellMode,
+  firstName,
+  lastName,
+  trustUnits = [],
+}: Props) {
   const searchParams = useSearchParams();
   const deepLinkPeerId = searchParams.get("peer")?.trim() || null;
   const deepLinkHandledRef = useRef(false);
@@ -115,9 +123,22 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
     loadNotices();
   }, [loadConversations, loadNotices]);
 
+  const visibleConversations = useMemo(
+    () => filterVisibleConversations(conversations, currentUserId, trustUnits),
+    [conversations, currentUserId, trustUnits],
+  );
+
+  useEffect(() => {
+    if (!selectedId) return;
+    if (!visibleConversations.some((c) => c.id === selectedId)) {
+      setSelectedId(null);
+      setMessages([]);
+    }
+  }, [selectedId, visibleConversations]);
+
   const selectedConversation = useMemo(
-    () => conversations.find((c) => c.id === selectedId) ?? null,
-    [conversations, selectedId],
+    () => visibleConversations.find((c) => c.id === selectedId) ?? null,
+    [visibleConversations, selectedId],
   );
 
   const selectConversation = useCallback(async (id: string) => {
@@ -184,7 +205,7 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
     if (loadingConvs || deepLinkHandledRef.current) return;
 
     const match = findDirectConversationByPeer(
-      conversations,
+      visibleConversations,
       currentUserId,
       deepLinkPeerId,
     );
@@ -211,7 +232,7 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
       }
     })();
   }, [
-    conversations,
+    visibleConversations,
     currentUserId,
     deepLinkPeerId,
     loadingConvs,
@@ -224,8 +245,12 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
     [notices, selectedNoticeId],
   );
 
-  const directCount = conversations.filter((c) => c.kind === MsgConversationKind.DIRECT).length;
-  const threadCount = conversations.filter((c) => c.kind !== MsgConversationKind.DIRECT).length;
+  const directCount = visibleConversations.filter(
+    (c) => c.kind === MsgConversationKind.DIRECT,
+  ).length;
+  const threadCount = visibleConversations.filter(
+    (c) => c.kind !== MsgConversationKind.DIRECT,
+  ).length;
 
   const kindFilter: "direct" | "thread" =
     tab === "chats" ? "direct" : "thread";
@@ -244,50 +269,7 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
   const showMessaging = tab === "chats" || tab === "threads";
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Hero */}
-      <header
-        style={{
-          marginBottom: 20,
-          padding:      "24px 28px",
-          borderRadius: 18,
-          background:   "linear-gradient(135deg,#1a1a2e 0%,#312e81 55%,#4c1d95 100%)",
-          color:        "white",
-          boxShadow:    "0 4px 20px rgba(49,46,129,0.25)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-          <div
-            style={{
-              width:          44,
-              height:         44,
-              borderRadius:   12,
-              background:     "rgba(255,255,255,0.12)",
-              display:        "flex",
-              alignItems:     "center",
-              justifyContent: "center",
-              flexShrink:     0,
-            }}
-          >
-            <Lock style={{ width: 22, height: 22 }} />
-          </div>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em" }}>
-              Msg Vault
-            </h1>
-            <p style={{ margin: "6px 0 0", fontSize: 14, opacity: 0.88, lineHeight: 1.45 }}>
-              Governed communication for {firstName} — relationship-scoped chats and threads only.
-              No open DMs. No stranger discovery.
-            </p>
-            {unreadNotices > 0 && (
-              <p style={{ margin: "10px 0 0", fontSize: 12, fontWeight: 600, color: "#fde68a" }}>
-                {unreadNotices} unread notice{unreadNotices === 1 ? "" : "s"}
-              </p>
-            )}
-          </div>
-        </div>
-      </header>
-
+    <div className="app-page-shell--msg-vault">
       <MsgVaultTabs
         active={tab}
         onChange={setTab}
@@ -320,11 +302,11 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
             <Stat label="Threads" value={threadCount} onClick={() => setTab("threads")} />
             <Stat label="Unread notices" value={unreadNotices} onClick={() => setTab("notices")} />
           </div>
-          <p style={{ margin: "20px 0 0", fontSize: 13, color: "#78716c", lineHeight: 1.55 }}>
-            {shellMode === "child"
-              ? "You can message people your family trusts. If something needs a parent’s OK, you’ll see it under Notices."
-              : "Start a chat from My Network or a trust unit — conversations only appear when a governed relationship already exists."}
-          </p>
+          {shellMode === "child" && (
+            <p style={{ margin: "16px 0 0", fontSize: 13, color: "#78716c", lineHeight: 1.55 }}>
+              If something needs a parent&apos;s OK, check Notices.
+            </p>
+          )}
         </div>
       )}
 
@@ -371,7 +353,7 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
             <ContextRail mode="vault">
             <VaultRailSlot>
             <MsgVaultThreadSelectorRail
-              conversations={conversations}
+              conversations={visibleConversations}
               currentUserId={currentUserId}
               selectedId={selectedId}
               kindFilter={kindFilter}

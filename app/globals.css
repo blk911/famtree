@@ -119,6 +119,37 @@
   margin: 0 auto;
 }
 
+/* ── App page shell (Agent 81) — Dashboard is the spacing reference ─────── */
+.app-page-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+}
+.app-page-shell--family-safe {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 48px;
+  box-sizing: border-box;
+}
+.app-page-shell--msg-vault {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+/* Vault / Family Safe in-page heroes align with AppPageHero bottom rhythm */
+.vault-hero-section {
+  margin-bottom: 30px;
+}
 /* ── Feed tabs: horizontally scrollable on mobile ────────────────────────── */
 .feed-tabs-bar {
   overflow-x: auto;
@@ -429,7 +460,7 @@
   gap: 10px;
 }
 .aihsafe-context-layout {
-  margin-top: 4px;
+  margin-top: 0;
 }
 @media (max-width: 860px) {
   .dashboard-body,

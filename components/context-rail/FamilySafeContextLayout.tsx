@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import type { TrustUnitDTO } from "@/types/aihsafe/dto";
 import type { FamilySafeShellMode } from "@/components/aihsafe/roles/shellMode";
 import { canEditFamilyGovernance, settingsTabLabel } from "@/components/aihsafe/roles/governanceView";
+import { getActiveTrustUnits } from "@/lib/trust/display";
 import { ContextRail } from "./ContextRail";
 import { GovernanceRailProfile } from "./profiles/GovernanceRailProfile";
 import type { ContextRailMember } from "./types";
@@ -37,10 +38,15 @@ export function FamilySafeContextLayout({
   onTabChange: (tab: TabId) => void;
   onInvite: () => void;
 }) {
+  const activeTrustUnits = useMemo(
+    () => getActiveTrustUnits(trustUnits, currentUserId),
+    [trustUnits, currentUserId],
+  );
+
   const members = useMemo(() => {
     const seen = new Set<string>();
     const out: ContextRailMember[] = [];
-    for (const tu of trustUnits) {
+    for (const tu of activeTrustUnits) {
       for (const m of tu.members) {
         if (m.exitedAt || seen.has(m.userId)) continue;
         seen.add(m.userId);
@@ -54,12 +60,12 @@ export function FamilySafeContextLayout({
       }
     }
     return out;
-  }, [trustUnits]);
+  }, [activeTrustUnits]);
 
   const settingsLabel = settingsTabLabel(shellMode);
 
   return (
-    <div className="thread-hub-grid aihsafe-context-layout">
+    <div className="app-page-body thread-hub-grid aihsafe-context-layout">
       <div className="thread-hub-grid__main">{children}</div>
       <div className="thread-hub-grid__rail">
         <ContextRail mode="governance">

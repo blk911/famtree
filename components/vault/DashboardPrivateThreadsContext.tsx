@@ -19,6 +19,7 @@ import type { MsgConversationDTO, MsgMessageDTO } from "@/types/msg-vault";
 import { MsgConversationKind } from "@/types/msg-vault";
 import { makeDirectConversationKey } from "@/lib/msg-vault/directKey";
 import { conversationUnreadCount } from "@/components/vault/conversation-unread";
+import { filterVisibleConversations } from "@/lib/msg-vault/conversation-display-guard";
 
 type TrustUnitRow = {
   id: string;
@@ -90,6 +91,18 @@ export function DashboardPrivateThreadsProvider({
     void refreshConversations();
   }, [refreshConversations]);
 
+  const visibleConversations = useMemo(
+    () => filterVisibleConversations(conversations, currentUserId, trustUnits),
+    [conversations, currentUserId, trustUnits],
+  );
+
+  useEffect(() => {
+    if (!activeConversationId) return;
+    if (!visibleConversations.some((c) => c.id === activeConversationId)) {
+      setActiveConversationId(null);
+    }
+  }, [activeConversationId, visibleConversations]);
+
   const mergeConversation = useCallback((conv: MsgConversationDTO) => {
     setConversations((prev) => {
       const idx = prev.findIndex((c) => c.id === conv.id);
@@ -115,28 +128,28 @@ export function DashboardPrivateThreadsProvider({
     (peerUserId: string) => {
       const key = makeDirectConversationKey(currentUserId, peerUserId);
       return (
-        conversations.find(
+        visibleConversations.find(
           (c) => c.kind === MsgConversationKind.DIRECT && c.directKey === key,
         ) ??
-        conversations.find(
+        visibleConversations.find(
           (c) =>
             c.kind === MsgConversationKind.DIRECT &&
             c.participants?.some((p) => p.userId === peerUserId),
         )
       );
     },
-    [conversations, currentUserId],
+    [visibleConversations, currentUserId],
   );
 
   const findThreadForUnit = useCallback(
     (trustUnitId: string) =>
-      conversations.find(
+      visibleConversations.find(
         (c) =>
           c.trustUnitId === trustUnitId &&
           (c.kind === MsgConversationKind.THREAD ||
             c.kind === MsgConversationKind.SPACE_THREAD),
       ),
-    [conversations],
+    [visibleConversations],
   );
 
   const openDirectPeer = useCallback(
@@ -192,18 +205,18 @@ export function DashboardPrivateThreadsProvider({
   );
 
   const directConversations = useMemo(
-    () => conversations.filter((c) => c.kind === MsgConversationKind.DIRECT),
-    [conversations],
+    () => visibleConversations.filter((c) => c.kind === MsgConversationKind.DIRECT),
+    [visibleConversations],
   );
 
   const threadConversations = useMemo(
-    () => conversations.filter((c) => c.kind !== MsgConversationKind.DIRECT),
-    [conversations],
+    () => visibleConversations.filter((c) => c.kind !== MsgConversationKind.DIRECT),
+    [visibleConversations],
   );
 
   const activeConversation = useMemo(
-    () => conversations.find((c) => c.id === activeConversationId) ?? null,
-    [conversations, activeConversationId],
+    () => visibleConversations.find((c) => c.id === activeConversationId) ?? null,
+    [visibleConversations, activeConversationId],
   );
 
   const isDirectPeerActive = useCallback(
@@ -242,7 +255,7 @@ export function DashboardPrivateThreadsProvider({
 
   const value = useMemo(
     (): Ctx => ({
-      conversations,
+      conversations: visibleConversations,
       directConversations,
       threadConversations,
       loading,
@@ -259,7 +272,7 @@ export function DashboardPrivateThreadsProvider({
       unreadForConversation,
     }),
     [
-      conversations,
+      visibleConversations,
       directConversations,
       threadConversations,
       loading,

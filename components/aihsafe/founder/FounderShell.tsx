@@ -34,6 +34,7 @@ import { PeopleTab } from "@/components/aihsafe/people/PeopleTab";
 import { ChildEscalationStatus } from "@/components/aihsafe/child/ChildEscalationStatus";
 import { VaultHeroSection, VaultHeroToolbar, type VaultHeroUser } from "@/components/aihsafe/founder/VaultHero";
 import { FamilySafeContextLayout } from "@/components/context-rail/FamilySafeContextLayout";
+import { getActiveTrustUnits } from "@/lib/trust/display";
 
 import type {
   FamilyUnitDTO,
@@ -255,8 +256,8 @@ export function FounderShell({
   // ── Derived counts ──────────────────────────────────────────────────────────
   const pendingApprovals  = approvals.filter((a) => a.state === "pending");
   const pendingInvites    = invites.filter((i) => i.status === "PENDING");
-  const mySpaces          = trustUnits.filter((u) =>
-    u.members.some((m) => m.userId === currentUserId && !m.exitedAt)
+  const mySpaces          = getActiveTrustUnits(trustUnits, currentUserId).filter((u) =>
+    u.members.some((m) => m.userId === currentUserId && !m.exitedAt),
   );
   const trustedAdultCount = guardianLinks.filter((l) => !l.revokedAt).length;
   const membershipCount   = mySpaces.reduce(
@@ -278,8 +279,7 @@ export function FounderShell({
   }, [visibleTabs, activeTab, shellMode]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#fafaf9", padding: "24px 20px 64px", boxSizing: "border-box" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+    <div className="app-page-shell--family-safe">
 
         {/* ════════════════════════════════════════════════════════
             HERO — varies by shellMode
@@ -293,7 +293,7 @@ export function FounderShell({
               coverUrl={heroCoverUrl ?? null}
               heroUser={heroUser}
               title="Trusted Private Spaces"
-              description="Protected circles for family, business, and private groups."
+              description="Governed circles for family and trusted groups."
               spacesCount={mySpaces.length}
               membersCount={membershipCount}
               loading={loading}
@@ -316,7 +316,7 @@ export function FounderShell({
               coverUrl={heroCoverUrl ?? null}
               heroUser={null}
               title="Trusted Private Spaces"
-              description="Your family shares here inside protected circles — only people they approve can see what you post."
+              description="Protected circles your family approves for you."
               spacesCount={0}
               membersCount={0}
               loading={false}
@@ -609,8 +609,6 @@ export function FounderShell({
         </TabPanel>
 
         </FamilySafeContextLayout>
-
-      </div>
 
       {/* Quick-create modal */}
       {modal && (

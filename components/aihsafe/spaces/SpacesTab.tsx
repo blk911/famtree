@@ -10,6 +10,12 @@ import type {
   InviteDTO,
 } from "@/types/aihsafe/dto";
 import type { FamilySafeShellMode } from "@/components/aihsafe/founder/FounderShell";
+import {
+  countDraftTrustUnits,
+  getActiveTrustUnits,
+  TRUST_CIRCLES_EMPTY_HINT,
+  TRUST_CIRCLES_EMPTY_TITLE,
+} from "@/lib/trust/display";
 
 // ─── Data limitation note ──────────────────────────────────────────────────────
 // TrustUnitMember.role is always "member" (Phase 4 schema gap; see service-boundaries.md).
@@ -195,6 +201,8 @@ export function SpacesTab({
   const myTrustUnits = trustUnits.filter(u =>
     u.members.some(m => m.userId === currentUserId && !m.exitedAt)
   );
+  const activeTrustUnits = getActiveTrustUnits(myTrustUnits, currentUserId);
+  const draftTrustCount = countDraftTrustUnits(myTrustUnits, currentUserId);
 
   // ── Family units for current user ─────────────────────────────────────────
   const myFamilyUnits = familyUnits.filter(u =>
@@ -217,7 +225,7 @@ export function SpacesTab({
         kind:        "family",
         memberCount: u.members.filter(m => !m.exitedAt).length,
       })),
-      ...myTrustUnits.map(u => ({
+      ...activeTrustUnits.map(u => ({
         id:              u.id,
         name:            u.name,
         kind:            u.kind,
@@ -264,7 +272,7 @@ export function SpacesTab({
   // ─────────────────────────────────────────────────────────────────────────
 
   const canCreate = shellMode === "founder";
-  const totalSpaces = myFamilyUnits.length + myTrustUnits.length;
+  const totalSpaces = myFamilyUnits.length + activeTrustUnits.length;
 
   return (
     <div style={{ maxWidth: 760 }}>
@@ -331,9 +339,13 @@ export function SpacesTab({
       <SpacesSection
         icon="🤝"
         title="Trusted Spaces"
-        count={myTrustUnits.length}
+        count={activeTrustUnits.length}
         action={canCreate ? newBtn(onCreateSpace) : undefined}
-        emptyText="No trusted spaces yet."
+        emptyText={
+          draftTrustCount > 0
+            ? `${TRUST_CIRCLES_EMPTY_TITLE} ${TRUST_CIRCLES_EMPTY_HINT}`
+            : TRUST_CIRCLES_EMPTY_TITLE
+        }
         emptyAction={
           canCreate
             ? emptyCreateBtn("+ Create Trusted Space", onCreateSpace)
@@ -343,7 +355,7 @@ export function SpacesTab({
         {loading ? (
           <LoadingSkeleton />
         ) : (
-          myTrustUnits.map(u => {
+          activeTrustUnits.map(u => {
             const activeCount  = u.members.filter(m => !m.exitedAt).length;
             const myMembership = u.members.find(m => m.userId === currentUserId && !m.exitedAt);
 
@@ -374,6 +386,24 @@ export function SpacesTab({
           })
         )}
       </SpacesSection>
+
+      {!loading && draftTrustCount > 0 && (
+        <p
+          style={{
+            fontSize:     12,
+            color:        "#78716c",
+            margin:       "0 0 16px",
+            lineHeight:   1.45,
+            padding:      "10px 12px",
+            background:   "#fafaf9",
+            borderRadius: 10,
+            border:       "1px solid #e7e5e4",
+          }}
+        >
+          <strong style={{ color: "#57534e" }}>Draft — setup needed</strong>
+          {draftTrustCount > 1 ? ` (${draftTrustCount} spaces)` : ""}. {TRUST_CIRCLES_EMPTY_HINT}
+        </p>
+      )}
 
       {/* ── Pending Invites ─────────────────────────────────────────────── */}
       {(pendingInvites.length > 0 || canCreate) && (

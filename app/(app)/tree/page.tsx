@@ -6,8 +6,8 @@ import { redirect } from "next/navigation";
 import { loadTreeViewPrefsSafe, loadTrustUnitsSafe } from "@/lib/tree/safe-data";
 import { TreePine } from "lucide-react";
 import { TreeList, type FlatNode } from "@/components/TreeList";
-import { TrustUnitCard } from "@/components/tree/TrustUnitCard";
 import { TreePageClient } from "@/components/network/TreePageClient";
+import { TrustCirclesPageSection } from "@/components/trust/TrustCirclesPageSection";
 import { listSentInvitesForSender } from "@/lib/invite/sentForSender";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -168,15 +168,9 @@ export default async function TreePage() {
   if (flat.length === 0) {
     return (
       <TreePageClient rail={railProps}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          {trustUnits.length > 0 && (
-            <div className="space-y-3">
-              {trustUnits.map((unit: { id: string }) => (
-                <TrustUnitCard key={unit.id} unit={unit as never} />
-              ))}
-            </div>
-          )}
-          <div style={{ textAlign: "center", padding: "64px 0", color: "#a8a29e", fontSize: "14px" }}>
+        <div className="app-page-body">
+          <TrustCirclesPageSection trustUnits={trustUnits as never} currentUserId={currentUser.id} />
+          <div style={{ textAlign: "center", padding: "48px 0", color: "#a8a29e", fontSize: "14px" }}>
             <TreePine style={{ width: 40, height: 40, margin: "0 auto 12px", color: "#d6d3d1" }} />
             <p>No members yet — invite your family!</p>
           </div>
@@ -187,16 +181,14 @@ export default async function TreePage() {
 
   return (
     <TreePageClient rail={railProps}>
-      <div className="space-y-6">
-        <TreeList items={flat} currentUserId={currentUser.id} initialPrefs={treePrefsInitial} />
-        {trustUnits.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-lg font-semibold">Trust Units</h2>
-            {trustUnits.map((unit: { id: string }) => (
-              <TrustUnitCard key={unit.id} unit={unit as never} />
-            ))}
-          </div>
-        )}
+      <div className="app-page-body">
+        <TreeList
+          items={flat}
+          currentUserId={currentUser.id}
+          initialPrefs={treePrefsInitial}
+          privacyNote="none"
+        />
+        <TrustCirclesPageSection trustUnits={trustUnits as never} currentUserId={currentUser.id} />
       </div>
     </TreePageClient>
   );

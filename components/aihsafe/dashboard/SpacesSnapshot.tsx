@@ -2,6 +2,12 @@
 
 import { SectionHeader } from "@/components/aihsafe/common/SectionHeader";
 import type { TrustUnitDTO } from "@/types/aihsafe/dto";
+import {
+  countDraftTrustUnits,
+  getActiveTrustUnits,
+  TRUST_CIRCLES_EMPTY_HINT,
+  TRUST_CIRCLES_EMPTY_TITLE,
+} from "@/lib/trust/display";
 
 const KIND_COLORS: Record<string, string> = {
   family:   "#0f3460",
@@ -39,6 +45,8 @@ export function SpacesSnapshot({ units, currentUserId, loading, onCreateClick }:
   const myUnits = units.filter(u =>
     u.members.some(m => m.userId === currentUserId && !m.exitedAt)
   );
+  const activeUnits = getActiveTrustUnits(myUnits, currentUserId);
+  const draftCount = countDraftTrustUnits(myUnits, currentUserId);
 
   return (
     <div
@@ -63,10 +71,13 @@ export function SpacesSnapshot({ units, currentUserId, loading, onCreateClick }:
         <p style={{ fontSize: 13, color: "#a8a29e", margin: 0 }}>Loading…</p>
       )}
 
-      {!loading && myUnits.length === 0 && (
+      {!loading && activeUnits.length === 0 && (
         <div style={{ textAlign: "center", padding: "18px 0" }}>
-          <p style={{ fontSize: 13, color: "#a8a29e", margin: "0 0 10px" }}>
-            No trusted spaces yet.
+          <p style={{ fontSize: 13, color: "#a8a29e", margin: "0 0 6px", fontWeight: 600 }}>
+            {TRUST_CIRCLES_EMPTY_TITLE}
+          </p>
+          <p style={{ fontSize: 12, color: "#a8a29e", margin: "0 0 10px", lineHeight: 1.45 }}>
+            {TRUST_CIRCLES_EMPTY_HINT}
           </p>
           <button type="button" style={{ ...addBtn, border: "1px dashed #d6d3d1" }} onClick={onCreateClick}>
             + Create your first space
@@ -74,7 +85,7 @@ export function SpacesSnapshot({ units, currentUserId, loading, onCreateClick }:
         </div>
       )}
 
-      {!loading && myUnits.map(u => {
+      {!loading && activeUnits.map(u => {
         const activeMembers = u.members.filter(m => !m.exitedAt).length;
         const color = KIND_COLORS[u.kind] ?? "#44403c";
         const icon  = KIND_ICONS[u.kind]  ?? "◆";

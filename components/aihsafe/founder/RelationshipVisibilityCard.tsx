@@ -1,6 +1,7 @@
 "use client";
 
 import type { FamilyUnitDTO, TrustUnitDTO } from "@/types/aihsafe/dto";
+import { getActiveTrustUnits } from "@/lib/trust/display";
 
 interface Props {
   familyUnits:   FamilyUnitDTO[];
@@ -9,8 +10,9 @@ interface Props {
 }
 
 export function RelationshipVisibilityCard({ familyUnits, trustUnits, currentUserId }: Props) {
-  const mySpaces = trustUnits.filter(u =>
-    u.members.some(m => m.userId === currentUserId && !m.exitedAt)
+  const mySpaces = getActiveTrustUnits(
+    trustUnits.filter(u => u.members.some(m => m.userId === currentUserId && !m.exitedAt)),
+    currentUserId,
   );
 
   const circles: { icon: string; label: string; kind: "family" | "space" }[] = [
@@ -44,35 +46,8 @@ export function RelationshipVisibilityCard({ familyUnits, trustUnits, currentUse
           Relationship Visibility
         </h2>
         <p style={{ margin: 0, fontSize: 13, color: "#44403c", lineHeight: 1.5 }}>
-          Members can see each other inside shared spaces. Privacy is enforced by circle membership, not public discovery.
+          Visibility follows circle membership — not public discovery.
         </p>
-      </div>
-
-      {/* How it works */}
-      <div
-        style={{
-          background:   "#fafaf9",
-          borderRadius: 12,
-          border:       "1px solid #e7e5e4",
-          padding:      "14px 16px",
-          marginBottom: 14,
-        }}
-      >
-        <div style={{ fontWeight: 700, fontSize: 13, color: "#1c1917", marginBottom: 10 }}>
-          Why someone can see you in a space:
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {[
-            { icon: "✓", text: "You are both members of the same trusted space" },
-            { icon: "✓", text: "You are in the same family group" },
-            { icon: "✓", text: "A guardian has approved the connection" },
-          ].map(item => (
-            <div key={item.text} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-              <span style={{ color: "#059669", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{item.icon}</span>
-              <span style={{ fontSize: 13, color: "#44403c", lineHeight: 1.4 }}>{item.text}</span>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Current circles */}
@@ -117,20 +92,6 @@ export function RelationshipVisibilityCard({ familyUnits, trustUnits, currentUse
           No circles yet. Create a family group or trusted space to establish visibility boundaries.
         </p>
       )}
-
-      {/* Visibility principle */}
-      <div
-        style={{
-          marginTop:    14,
-          paddingTop:   14,
-          borderTop:    "1px solid #f5f5f4",
-          fontSize:     12,
-          color:        "#a8a29e",
-          lineHeight:   1.5,
-        }}
-      >
-        <strong style={{ color: "#78716c" }}>Privacy by default.</strong> People outside your circles cannot find or see your family network. No open discovery.
-      </div>
     </div>
   );
 }

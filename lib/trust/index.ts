@@ -6,6 +6,20 @@ import { maskInviteEmail } from "./tuProposal";
 import { filterHumanTrustEligibleUserIds, isHumanTrustEligible, loadHumanEligibleUserIdSet } from "./isHumanTrustEligible";
 
 export {
+  TRUST_CIRCLES_EMPTY_HINT,
+  TRUST_CIRCLES_EMPTY_TITLE,
+  countDraftTrustUnits,
+  getActiveMemberUserIds,
+  getActiveTrustUnits,
+  getDraftTrustUnits,
+  getDraftTrustUnitsForDisplay,
+  isSelfOnlyTrustUnit,
+  partitionTrustUnits,
+  trustUnitMemberUserId,
+} from "./display";
+export type { TrustUnitLike, TrustUnitMemberLike } from "./display";
+
+export {
   ADMIN_HUMAN_TRUST_MESSAGE,
   isHumanTrustEligible,
   isHumanTrustEligibleActor,

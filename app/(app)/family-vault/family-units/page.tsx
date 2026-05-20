@@ -3,12 +3,18 @@ import { getCurrentUser } from "@/lib/auth";
 import { BondFamilyRow } from "@/components/family-vault/BondFamilyRow";
 import { FamilyUnitsTrustCard } from "@/components/family-vault/FamilyUnitsTrustCard";
 import { PendingTrustUnitLineCard } from "@/components/family-vault/PendingTrustUnitLineCard";
+import { DraftTrustCirclesBanner } from "@/components/trust/DraftTrustCirclesBanner";
 import {
   loadTrustUnitsSafe,
   loadBondDetailsSafe,
   loadPendingTrustRequestsSafe,
 } from "@/lib/tree/safe-data";
 import { trustRequestMembersForClient, type PendingTrustRequestMember } from "@/lib/trust";
+import {
+  countDraftTrustUnits,
+  getActiveTrustUnits,
+  type TrustUnitLike,
+} from "@/lib/trust/display";
 
 export default async function FamilyUnitsPage() {
   const user = await getCurrentUser();
@@ -19,6 +25,12 @@ export default async function FamilyUnitsPage() {
     loadBondDetailsSafe(user.id),
     loadPendingTrustRequestsSafe(user.id),
   ]);
+
+  const activeUnitIds = new Set(
+    getActiveTrustUnits(trustUnits as TrustUnitLike[], user.id).map((u) => u.id),
+  );
+  const activeTrustUnits = trustUnits.filter((u) => activeUnitIds.has(u.id));
+  const draftTrustCount = countDraftTrustUnits(trustUnits as TrustUnitLike[], user.id);
 
   const currentMini = {
     id: user.id,
@@ -45,25 +57,16 @@ export default async function FamilyUnitsPage() {
   }));
 
   const hasPendingTu = serializedPendingTu.length > 0;
-  const hasLiveTu = trustUnits.length > 0;
+  const hasLiveTu = activeTrustUnits.length > 0;
   const hasBonds = bondDetails.length > 0;
 
   return (
-    <div className="content-col space-y-10 pb-10">
-      <p className="rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-sm text-stone-600 leading-snug">
-        <strong className="text-stone-900">Invite-only:</strong> every member has a{" "}
-        <strong className="text-stone-900">sponsor</strong> downhill connection from whoever invited them.{" "}
-        <strong className="text-stone-900">Bonds</strong> capture those sponsor links;{" "}
-        <strong className="text-stone-900">trust units</strong> form when aligned members agree to a shared unit on top.
-        Messages open in <span className="font-medium text-stone-800">Private Feed</span>.
-      </p>
-
+    <div className="app-page-body">
       <section className="space-y-3">
         <h2 className="text-lg font-bold tracking-tight text-stone-900">Trust units forming</h2>
         {!hasPendingTu ? (
-          <p className="text-sm text-stone-500">
-            Nothing pending. When an invite surfaces a triangle your group can form, everyone gets a dashboard modal to
-            accept or hold.
+          <p className="text-sm text-stone-500 m-0">
+            No proposals right now. When your group can form a circle, you&apos;ll see it here and on the dashboard.
           </p>
         ) : (
           <div className="flex max-w-2xl flex-col gap-2">
@@ -75,15 +78,14 @@ export default async function FamilyUnitsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-bold tracking-tight text-stone-900">Trust units (live)</h2>
-        {!hasLiveTu ? (
-          <p className="text-sm text-stone-500">
-            No active trust unit yet. When everyone accepts a proposal, it appears here with the sponsor noted on the
-            collapsed row where available.
+        <h2 className="text-lg font-bold tracking-tight text-stone-900">Trust circles</h2>
+        {!hasLiveTu && draftTrustCount === 0 ? (
+          <p className="text-sm text-stone-500 m-0">
+            No active trust circles yet. Invite someone or accept a proposal to get started.
           </p>
         ) : (
           <div className="flex max-w-2xl flex-col gap-2">
-            {trustUnits.map((unit) => (
+            {activeTrustUnits.map((unit) => (
               <FamilyUnitsTrustCard
                 key={unit.id}
                 unit={{
@@ -93,6 +95,7 @@ export default async function FamilyUnitsPage() {
                 }}
               />
             ))}
+            {draftTrustCount > 0 && <DraftTrustCirclesBanner draftCount={draftTrustCount} />}
           </div>
         )}
       </section>
@@ -100,9 +103,8 @@ export default async function FamilyUnitsPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-bold tracking-tight text-stone-900">Bonds</h2>
         {!hasBonds ? (
-          <p className="text-sm text-stone-500">
-            No accepted bonds yet. Invite registration creates a sponsor bond automatically when you join through an
-            invite.
+          <p className="text-sm text-stone-500 m-0">
+            No sponsor bonds yet. They appear when someone joins through your invite.
           </p>
         ) : (
           <div className="flex max-w-2xl flex-col gap-2">

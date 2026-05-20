@@ -21,6 +21,8 @@
     "trust:scrub-admin": "tsx scripts/scrub-admin-trust-contamination.ts",
     "migrate:private-posts": "tsx scripts/msg-vault/migrate-legacy-private-posts.ts",
     "migrate:private-posts:apply": "tsx scripts/msg-vault/migrate-legacy-private-posts.ts --apply",
+    "msg-vault:cleanup-stale": "tsx scripts/msg-vault/cleanup-stale-conversations.ts",
+    "msg-vault:cleanup-stale:apply": "tsx scripts/msg-vault/cleanup-stale-conversations.ts --apply",
     "seed:aihsafe-scenarios": "tsx scripts/aihsafe/seed-relationship-scenarios.ts",
     "seed:aihsafe-scenarios:apply": "tsx scripts/aihsafe/seed-relationship-scenarios.ts --apply",
     "verify:aihsafe-scenarios": "tsx scripts/aihsafe/verify-relationship-scenarios.ts",
