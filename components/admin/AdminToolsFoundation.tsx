@@ -57,7 +57,7 @@ export function AdminToolsFoundation({
     : "(unset — use VERCEL_GIT_COMMIT_SHA / CI_SHAs on hosted builds)";
 
   const deployUrl = snapshot.vercelUrl ? `https://${snapshot.vercelUrl}` : "—";
-  const hasVideoPreview = deployIncludesAdminVideoPreview(snapshot.vercelGitCommitSha);
+  const hasVideoPreview = deployIncludesAdminVideoPreview();
 
   const svcBlocks: OpsLine[] = [
     {
