@@ -62,6 +62,11 @@
     min-height: 102px !important;
     gap: 14px !important;
   }
+  .app-page-hero--invite .app-hero-title {
+    font-size: 22px !important;
+    line-height: 1.15;
+    max-width: 12em;
+  }
 }
 
 /* ── Admin stats cards: 3-col → 1-col ───────────────────────────────────── */
@@ -93,6 +98,43 @@
 }
 
 /* ── Invite page: 2-col grid → 1-col ────────────────────────────────────── */
+.invite-compose-reveal {
+  animation: inviteComposeReveal 0.24s ease;
+}
+@keyframes inviteComposeReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.invite-sent-toast {
+  position: fixed;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  border: 1px solid #86efac;
+  box-shadow: 0 12px 32px rgba(22, 101, 52, 0.18);
+  font-size: 14px;
+  color: #166534;
+  max-width: min(92vw, 420px);
+  pointer-events: none;
+}
+.invite-sent-toast strong {
+  font-weight: 800;
+  color: #14532d;
+}
+
 .invite-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;

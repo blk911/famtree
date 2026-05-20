@@ -1,5 +1,8 @@
 // User-facing invite flow copy (Agent 75 + Agent 77 adult child).
 
+/** Compose + page hero heading */
+export const WHO_ARE_YOU_INVITING_HEADING = "Who Are You Inviting?";
+
 export type InviteKind = "friend" | "family" | "family_youth" | "trusted_adult" | "business";
 
 /** Age path within Child / teen / adult child invite. */
@@ -12,31 +15,31 @@ export const INVITE_KINDS: {
 }[] = [
   {
     id:          "friend",
-    label:       "Friend / trusted contact",
+    label:       "Friend / Trusted Contact",
     description:
       "Someone you trust who joins as your contact. They will not manage children or family settings for you.",
   },
   {
     id:          "family",
-    label:       "Family member",
+    label:       "Family Member",
     description:
       "An adult in your family network (sibling, spouse, cousin, etc.). You stay connected as their sponsor; this does not give them control over children.",
   },
   {
     id:          "family_youth",
-    label:       "Child / teen / adult child",
+    label:       "Child / Teen / Adult Child",
     description:
       "A son, daughter, or young family member. Under 18 joins with Boundaries; 18+ joins as an adult family member without child Boundaries.",
   },
   {
     id:          "trusted_adult",
-    label:       "Trusted adult",
+    label:       "Trusted Adult",
     description:
       "An adult you authorize to support your family (for example a coach or relative). They do not become your family’s account owner.",
   },
   {
     id:          "business",
-    label:       "Work / business member",
+    label:       "Work / Business Member",
     description:
       "Work members join a workspace relationship, not a family role. They will not manage family Boundaries or children.",
   },

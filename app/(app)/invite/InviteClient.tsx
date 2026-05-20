@@ -11,6 +11,7 @@ import {
   type InviteKind,
   type FamilyYouthAgeGroup,
   INVITE_KINDS,
+  WHO_ARE_YOU_INVITING_HEADING,
   STEWARD_DECLARATION_LABEL,
   MINOR_BOUNDARIES_NOTE,
   ADULT_CHILD_NOTE,
@@ -270,6 +271,37 @@ function ConfirmModal({
   return createPortal(modal, document.body);
 }
 
+function InviteSentToast({ inviteeName }: { inviteeName: string }) {
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div className="invite-sent-toast" role="status" aria-live="polite">
+      <CheckCircle style={{ width: 20, height: 20, flexShrink: 0, color: "#16a34a" }} />
+      <span>
+        Invite sent to <strong>{inviteeName}</strong>
+      </span>
+    </div>,
+    document.body,
+  );
+}
+
+function resetInviteCompose(setters: {
+  setRecipientName: (v: string) => void;
+  setRecipientEmail: (v: string) => void;
+  setRelationship: (v: string) => void;
+  setInviteKind: (v: InviteKind | null) => void;
+  setYouthAge: (v: FamilyYouthAgeGroup) => void;
+  setStewardDeclaration: (v: boolean) => void;
+  setEmailError: (v: string) => void;
+}) {
+  setters.setRecipientName("");
+  setters.setRecipientEmail("");
+  setters.setRelationship("");
+  setters.setInviteKind(null);
+  setters.setYouthAge("under_13");
+  setters.setStewardDeclaration(false);
+  setters.setEmailError("");
+}
+
 // ── Main client component ─────────────────────────────────────────────────────
 
 export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?: boolean }) {
@@ -278,7 +310,8 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   const [recipientName,    setRecipientName]    = useState("");
   const [recipientEmail,   setRecipientEmail]   = useState("");
   const [relationship,     setRelationship]     = useState("");
-  const [inviteKind,       setInviteKind]       = useState<InviteKind>("friend");
+  const [inviteKind,       setInviteKind]       = useState<InviteKind | null>(null);
+  const [successToast,     setSuccessToast]     = useState<string | null>(null);
   const [youthAge,         setYouthAge]         = useState<FamilyYouthAgeGroup>("under_13");
   const [stewardDeclaration, setStewardDeclaration] = useState(false);
   const [emailError,       setEmailError]       = useState("");
@@ -302,7 +335,9 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
 
   // ── derived values — computed BEFORE any handler that references them ──
   const hasEmail      = recipientEmail.includes("@");
+  const kindSelected  = inviteKind !== null;
   const canSend       =
+    kindSelected &&
     hasEmail &&
     (inviteKind === "family_youth"
       ? youthAge === "over_18" || stewardDeclaration
@@ -310,8 +345,8 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         ? !!relationship
         : true);
   const senderInitials = `${me.firstName[0]}${me.lastName[0]}`.toUpperCase();
-  const subject       = inviteEmailSubject(inviteKind);
-  const kindMeta      = INVITE_KINDS.find((k) => k.id === inviteKind);
+  const subject       = inviteKind ? inviteEmailSubject(inviteKind) : "Select invite type below";
+  const kindMeta      = inviteKind ? INVITE_KINDS.find((k) => k.id === inviteKind) : undefined;
   const pendingCount  = invites.filter((i) => i.status === "PENDING").length;
   const joinedCount = invites.filter((i) => i.status === "REGISTERED").length;
 
@@ -345,6 +380,12 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
 
   useEffect(() => { loadInvites(); }, []);
 
+  useEffect(() => {
+    if (!successToast) return;
+    const t = window.setTimeout(() => setSuccessToast(null), 2000);
+    return () => window.clearTimeout(t);
+  }, [successToast]);
+
   const handleCancel = async (id: string) => {
     setActioning(id);
     const res = await fetch(`/api/invite/manage/${id}`, { method: "PATCH", credentials: "include" });
@@ -364,6 +405,10 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   };
 
   const handleReviewClick = async () => {
+    if (!inviteKind) {
+      setEmailError("Choose who you're inviting first.");
+      return;
+    }
     if (!hasEmail) {
       setEmailError("Please enter a valid email address first.");
       return;
@@ -446,6 +491,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   };
 
   const handleConfirmSend = async () => {
+    if (!inviteKind) return;
     setSending(true);
     setSendResult(null);
     try {
@@ -491,14 +537,16 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
 
       if (res.ok) {
         const inviteeName = recipientName.trim() || recipientEmail;
-        setSendResult({ type: "success", msg: "Invite sent", inviteeName });
-        setRecipientName("");
-        setRecipientEmail("");
-        setRelationship("");
-        setStewardDeclaration(false);
-        setInviteKind("friend");
-        setRelationship("");
-        setEmailError("");
+        setSuccessToast(inviteeName);
+        resetInviteCompose({
+          setRecipientName,
+          setRecipientEmail,
+          setRelationship,
+          setInviteKind,
+          setYouthAge,
+          setStewardDeclaration,
+          setEmailError,
+        });
       } else if (res.status === 502 && data.inviteId) {
         console.warn("[amihuman] POST /api/invite email path failed (invite saved)", {
           status: res.status,
@@ -511,11 +559,15 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
             "Invite saved but email failed — check RESEND. The invite appears below.",
           ...(postTrace ? { traceRef: postTrace } : {}),
         });
-        setRecipientName("");
-        setRecipientEmail("");
-        setRelationship("");
-        setStewardDeclaration(false);
-        setEmailError("");
+        resetInviteCompose({
+          setRecipientName,
+          setRecipientEmail,
+          setRelationship,
+          setInviteKind,
+          setYouthAge,
+          setStewardDeclaration,
+          setEmailError,
+        });
       } else {
         console.warn("[amihuman] POST /api/invite failed — paste supportRef in Vercel Logs search", {
           status: res.status,
@@ -605,7 +657,9 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
   return (
     <>
       {/* Modal portalled to body so it's never clipped */}
-      {showModal && (
+      {successToast && <InviteSentToast inviteeName={successToast} />}
+
+      {showModal && inviteKind && (
         <ConfirmModal
           recipientName={recipientName}
           recipientEmail={recipientEmail}
@@ -693,7 +747,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
               letterSpacing: "-0.02em",
             }}
           >
-            🔒 Privacy by design
+            🔒 Privacy By Design
           </p>
           <p style={{ fontSize: 13, color: "#57534e", margin: 0, lineHeight: 1.6 }}>
             Your invite works through recognition and trust. Your name is never revealed in the invite email — only
@@ -707,13 +761,6 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
 
           {/* LEFT: compose-as-preview */}
           <div>
-            {sendResult?.type === "success" && (
-              <p className="text-base mt-1 mb-0">
-                <span className="font-semibold">
-                  Invite sent to {sendResult.inviteeName || sendResult.msg}
-                </span>
-              </p>
-            )}
             {sendResult?.type === "error" && (
               <div style={{ padding:"12px 14px", borderRadius:"10px", fontSize:"14px", marginBottom:"14px", background:"#fef2f2", borderLeft:"4px solid #dc2626", color:"#dc2626" }}>
                 <div>{sendResult.msg}</div>
@@ -777,12 +824,12 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
 
                 <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid #ede9fe", padding:"10px 18px" }}>
                   <span style={{ fontSize:"13px", fontWeight:700, color:"#374151", minWidth:58, flexShrink:0 }}>Subject:</span>
-                  <span style={{ fontSize:"13px", color:"#374151" }}>{subject}</span>
+                  <span style={{ fontSize:"13px", color: kindSelected ? "#374151" : "#a8a29e", fontStyle: kindSelected ? "normal" : "italic" }}>{subject}</span>
                 </div>
 
                 <div style={{ borderTop:"1px solid #ede9fe", padding:"14px 18px" }}>
                   <p style={{ fontSize:"13px", fontWeight:700, color:"#374151", margin:"0 0 10px" }}>
-                    Who are you inviting?
+                    {WHO_ARE_YOU_INVITING_HEADING}
                   </p>
                   <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"12px" }}>
                     {INVITE_KINDS.map((opt) => (
@@ -804,12 +851,24 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
                           fontSize: "12px",
                           fontWeight: 700,
                           cursor: "pointer",
+                          textTransform: "none",
                         }}
                       >
                         {opt.label}
                       </button>
                     ))}
                   </div>
+                  {!kindSelected && (
+                    <p style={{ fontSize:"12px", color:"#a8a29e", margin:0, lineHeight:1.45 }}>
+                      Select an invite type to open the preview and send.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {kindSelected && inviteKind && (
+                <div className="invite-compose-reveal">
+                  <div style={{ background:"#f8f7ff", borderBottom:"1px solid #ede9fe", padding:"14px 18px" }}>
                   {kindMeta && (
                     <p style={{ fontSize:"12px", color:"#57534e", margin:"0 0 12px", lineHeight:1.55 }}>
                       {kindMeta.description}
@@ -817,7 +876,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
                   )}
                   {inviteKind === "family_youth" && (
                     <div style={{ background:"#fffbeb", border:"1px solid #fde68a", borderRadius:"10px", padding:"12px 14px", marginBottom:"12px" }}>
-                      <p style={{ fontSize:"12px", fontWeight:700, color:"#78350f", margin:"0 0 8px" }}>Age group</p>
+                      <p style={{ fontSize:"12px", fontWeight:700, color:"#78350f", margin:"0 0 8px" }}>Age Group</p>
                       <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", marginBottom:"12px" }}>
                         {FAMILY_YOUTH_AGE_GROUPS.map((g) => (
                           <button
@@ -835,6 +894,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
                               fontSize: "12px",
                               fontWeight: 700,
                               cursor: "pointer",
+                              textTransform: "none",
                             }}
                           >
                             {g.label}
@@ -870,12 +930,11 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
                   )}
                   {inviteKind === "family" && (
                     <div style={{ display:"flex", alignItems:"center", gap:"8px", flexWrap:"wrap" }}>
-                      <span style={{ fontSize:"12px", fontWeight:700, color:"#57534e" }}>How are you related?</span>
+                      <span style={{ fontSize:"12px", fontWeight:700, color:"#57534e" }}>How Are You Related?</span>
                       <RelationshipPicker value={relationship} onChange={setRelationship} />
                     </div>
                   )}
-                </div>
-              </div>
+                  </div>
 
               {/* Email body */}
               <div style={{ background:"white", padding:"28px 24px", textAlign:"center" }}>
@@ -922,18 +981,20 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
                   {sending ? "Checking…" : "Review & Send Invite →"}
                 </button>
               </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* RIGHT: How it works */}
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             <div style={{ background: "#faf5ff", borderRadius: "16px", padding: "24px 22px", border: "1px solid #ede9fe" }}>
-              <p style={{ fontSize:"13px", fontWeight:800, color:"#7c3aed", textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 14px" }}>How it works</p>
+              <p style={{ fontSize:"13px", fontWeight:800, color:"#7c3aed", letterSpacing:"0.04em", margin:"0 0 14px" }}>How It Works</p>
               {[
-                { title:"Choose who you're inviting",     desc:"Friend, family member, child/teen/adult child, trusted adult, or work colleague — each path works differently." },
-                { title:"They receive your photo only",  desc:"Your photo is sent but NOT your name — they must identify you." },
-                { title:"They type your name to unlock", desc:"3 wrong guesses and the invite expires automatically." },
-                { title:"They create their account",     desc:"They join with the right connection for the invite type you chose." },
+                { title:"Choose Who You're Inviting",     desc:"Friend, family member, child/teen/adult child, trusted adult, or work colleague — each path works differently." },
+                { title:"They Receive Your Photo Only",  desc:"Your photo is sent but NOT your name — they must identify you." },
+                { title:"They Type Your Name to Unlock", desc:"3 wrong guesses and the invite expires automatically." },
+                { title:"They Create Their Account",     desc:"They join with the right connection for the invite type you chose." },
               ].map((step, i) => (
                 <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:"14px", marginBottom: i < 3 ? "14px" : 0 }}>
                   <span style={{ width:28, height:28, borderRadius:"50%", flexShrink:0, background:"linear-gradient(135deg,#7c3aed,#c026d3)", color:"white", fontSize:"13px", fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center" }}>{i + 1}</span>
@@ -956,7 +1017,7 @@ export default function InviteClient({ me, isAdmin = false }: { me: Me; isAdmin?
         <div>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"12px" }}>
             <div>
-              <h2 style={{ fontSize:"18px", fontWeight:700, color:"#1c1917", margin:0 }}>Sent invites</h2>
+              <h2 style={{ fontSize:"18px", fontWeight:700, color:"#1c1917", margin:0 }}>Sent Invites</h2>
               <p style={{ fontSize:"13px", color:"#78716c", marginTop:"3px" }}>{pendingCount} pending · {joinedCount} joined</p>
             </div>
             <button onClick={loadInvites} disabled={loadingInvites} style={{ display:"flex", alignItems:"center", gap:"6px", padding:"8px 14px", border:"1px solid #e7e5e4", borderRadius:"10px", background:"white", cursor:"pointer", fontSize:"13px", fontWeight:600, color:"#78716c" }}>

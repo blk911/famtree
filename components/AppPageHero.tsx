@@ -26,7 +26,7 @@ const HERO_COPY: Array<{ match: (path: string) => boolean; title: string; subtit
   { match: (path) => path.startsWith("/profile/"), title: "Member Profile", subtitle: "View this family member's profile" },
   { match: (path) => path === "/tree" || path.startsWith("/tree/"), title: "My Network", subtitle: "People and trust circles in your tree" },
   { match: (path) => path === "/family-vault/family-units", title: "Units", subtitle: "Trust circles forming and sponsor bonds" },
-  { match: (path) => path === "/invite", title: "Invite", subtitle: "Invite someone you love into the tree" },
+  { match: (path) => path === "/invite", title: "Who Are You Inviting?", subtitle: "Invite someone you trust into your network" },
   { match: (path) => path === "/settings", title: "Settings", subtitle: "Manage your account and privacy preferences" },
 ];
 
