@@ -7,6 +7,7 @@ import { getRuntimeFoundationSnapshot } from "@/lib/admin/foundationSnapshot";
 import { ADMIN_SCRIPT_OPS, ADMIN_TOOL_OPS } from "@/lib/admin/opsCatalog";
 import { AdminToolsFoundation } from "@/components/admin/AdminToolsFoundation";
 import { MemberVideoMessageRepository } from "@/components/admin/MemberVideoMessageRepository";
+import { MemberVideoCurrentPreview } from "@/components/admin/MemberVideoCurrentPreview";
 
 const card = {
   background: "white",
@@ -71,6 +72,8 @@ export default async function AdminToolsPage() {
       </div>
 
       <MemberVideoMessageRepository />
+
+      <MemberVideoCurrentPreview />
 
       <AdminToolsFoundation
         snapshot={snapshot}
