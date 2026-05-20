@@ -7,6 +7,8 @@ import { loadTreeViewPrefsSafe, loadTrustUnitsSafe } from "@/lib/tree/safe-data"
 import { TreePine } from "lucide-react";
 import { TreeList, type FlatNode } from "@/components/TreeList";
 import { TrustUnitCard } from "@/components/tree/TrustUnitCard";
+import { TreePageClient } from "@/components/network/TreePageClient";
+import { listSentInvitesForSender } from "@/lib/invite/sentForSender";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -117,7 +119,7 @@ export default async function TreePage() {
   const currentUser = await getCurrentUser();
   if (!currentUser) redirect("/login");
 
-  const [members, invites, trustUnits, treeViewPrefs] = await Promise.all([
+  const [members, invites, trustUnits, treeViewPrefs, sentInvites] = await Promise.all([
     prisma.user.findMany({
       select: {
         id: true,
@@ -139,7 +141,12 @@ export default async function TreePage() {
     }),
     loadTrustUnitsSafe(currentUser.id),
     loadTreeViewPrefsSafe(currentUser.id),
+    listSentInvitesForSender(currentUser.id),
   ]);
+
+  const pendingInvites = sentInvites
+    .filter((i) => i.status === "PENDING")
+    .map((i) => ({ id: i.id, recipientEmail: i.recipientEmail }));
 
   const roots = buildTree(members, invites, currentUser.id);
   const flat = flattenTreeByParentThread(roots);
@@ -147,31 +154,50 @@ export default async function TreePage() {
     treeViewPrefs.map((p) => [p.targetId, { muted: p.muted, hidden: p.hidden }]),
   );
 
+  const railProps = {
+    flat,
+    totalMembers: flat.length,
+    trustUnits: trustUnits.map((unit: {
+      id: string;
+      members: Array<{ user: { id: string; firstName: string; lastName: string; photoUrl: string | null } }>;
+    }) => ({ id: unit.id, members: unit.members })),
+    pendingInvites,
+    currentUserId: currentUser.id,
+  };
+
   if (flat.length === 0) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        {trustUnits.length > 0 && (
-          <div className="space-y-3">
-            {trustUnits.map((unit: any) => <TrustUnitCard key={unit.id} unit={unit} />)}
+      <TreePageClient rail={railProps}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          {trustUnits.length > 0 && (
+            <div className="space-y-3">
+              {trustUnits.map((unit: { id: string }) => (
+                <TrustUnitCard key={unit.id} unit={unit as never} />
+              ))}
+            </div>
+          )}
+          <div style={{ textAlign: "center", padding: "64px 0", color: "#a8a29e", fontSize: "14px" }}>
+            <TreePine style={{ width: 40, height: 40, margin: "0 auto 12px", color: "#d6d3d1" }} />
+            <p>No members yet — invite your family!</p>
           </div>
-        )}
-        <div style={{ textAlign: "center", padding: "64px 0", color: "#a8a29e", fontSize: "14px" }}>
-          <TreePine style={{ width: 40, height: 40, margin: "0 auto 12px", color: "#d6d3d1" }} />
-          <p>No members yet — invite your family!</p>
         </div>
-      </div>
+      </TreePageClient>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <TreeList items={flat} currentUserId={currentUser.id} initialPrefs={treePrefsInitial} />
-      {trustUnits.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Trust Units</h2>
-          {trustUnits.map((unit: any) => <TrustUnitCard key={unit.id} unit={unit} />)}
-        </div>
-      )}
-    </div>
+    <TreePageClient rail={railProps}>
+      <div className="space-y-6">
+        <TreeList items={flat} currentUserId={currentUser.id} initialPrefs={treePrefsInitial} />
+        {trustUnits.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold">Trust Units</h2>
+            {trustUnits.map((unit: { id: string }) => (
+              <TrustUnitCard key={unit.id} unit={unit as never} />
+            ))}
+          </div>
+        )}
+      </div>
+    </TreePageClient>
   );
 }

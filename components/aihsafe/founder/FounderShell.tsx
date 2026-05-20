@@ -33,6 +33,7 @@ import {
 import { PeopleTab } from "@/components/aihsafe/people/PeopleTab";
 import { ChildEscalationStatus } from "@/components/aihsafe/child/ChildEscalationStatus";
 import { VaultHeroSection, VaultHeroToolbar, type VaultHeroUser } from "@/components/aihsafe/founder/VaultHero";
+import { FamilySafeContextLayout } from "@/components/context-rail/FamilySafeContextLayout";
 
 import type {
   FamilyUnitDTO,
@@ -344,9 +345,19 @@ export function FounderShell({
           badges={pendingCount > 0 ? { approvals: pendingCount } : undefined}
         />
 
-        {/* ════════════════════════════════════════════════════════
-            TAB PANELS
-            ════════════════════════════════════════════════════════ */}
+        <FamilySafeContextLayout
+          currentUserId={currentUserId}
+          shellMode={shellMode}
+          systemRole={heroUser?.role ?? "member"}
+          isGuardian={isGuardian}
+          trustUnits={trustUnits}
+          pendingApprovalCount={pendingApprovals.length}
+          pendingInviteCount={pendingInvites.length}
+          spaceCount={mySpaces.length}
+          trustedAdultCount={trustedAdultCount}
+          onTabChange={setActiveTab}
+          onInvite={() => setModal("invite")}
+        >
 
         {/* ── OVERVIEW ──────────────────────────────────────────── */}
         <TabPanel id="overview" activeTab={activeTab}>
@@ -596,6 +607,8 @@ export function FounderShell({
             )}
           </div>
         </TabPanel>
+
+        </FamilySafeContextLayout>
 
       </div>
 

@@ -415,6 +415,22 @@
 .thread-hub-grid--vault {
   min-height: 480px;
 }
+
+/* ── Shared contextual right rail (Agent 78) ─────────────────────────────── */
+.context-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.context-rail-vault-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.aihsafe-context-layout {
+  margin-top: 4px;
+}
 @media (max-width: 860px) {
   .dashboard-body,
   .thread-hub-grid {

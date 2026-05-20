@@ -9,6 +9,7 @@ import { MsgVaultThreadSelectorRail } from "@/components/msg-vault/MsgVaultThrea
 import { ConversationPanel } from "@/components/msg-vault/ConversationPanel";
 import { NoticesPanel } from "@/components/msg-vault/NoticesPanel";
 import { MsgContextRail } from "@/components/msg-vault/MsgContextRail";
+import { ContextRail, VaultRailSlot } from "@/components/context-rail";
 import { StartChatModal } from "@/components/msg-vault/StartChatModal";
 import {
   fetchConversationDetail,
@@ -365,8 +366,10 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
 
           <div
             className="thread-hub-grid__rail"
-            style={{ display: "flex", flexDirection: "column", gap: 12, minHeight: 480 }}
+            style={{ minHeight: 480 }}
           >
+            <ContextRail mode="vault">
+            <VaultRailSlot>
             <MsgVaultThreadSelectorRail
               conversations={conversations}
               currentUserId={currentUserId}
@@ -392,6 +395,8 @@ export function MsgVaultShell({ currentUserId, shellMode, firstName, lastName }:
               shellMode={shellMode}
               loading={loadingMsgs && !!selectedId}
             />
+            </VaultRailSlot>
+            </ContextRail>
           </div>
         </div>
       )}
@@ -445,6 +450,8 @@ function NoticesRailPane({
 }) {
   return (
     <div className="msg-vault-grid__rail" style={{ minHeight: 480 }}>
+      <ContextRail mode="vault">
+      <VaultRailSlot>
       <MsgContextRail
         conversation={null}
         participants={[]}
@@ -456,6 +463,8 @@ function NoticesRailPane({
         selectedNotice={selectedNotice}
         shellMode={shellMode}
       />
+      </VaultRailSlot>
+      </ContextRail>
     </div>
   );
 }
