@@ -35,7 +35,7 @@ async function main() {
         data: {
           title: "Welcome from your family steward",
           caption: "Watch Once",
-          notes: "45s HeyGen intro · admin-site-wide-intro.mp4",
+          notes: "HeyGen intro v1 · admin site wide vid 1 → admin-site-wide-intro.mp4",
           isEnabled: true,
         },
       })
@@ -45,7 +45,7 @@ async function main() {
           title: "Welcome from your family steward",
           caption: "Watch Once",
           videoUrl: VIDEO_PATH,
-          notes: "45s HeyGen intro · admin-site-wide-intro.mp4",
+          notes: "HeyGen intro v1 · admin site wide vid 1 → admin-site-wide-intro.mp4",
           isEnabled: true,
           createdById: founder.id,
         },

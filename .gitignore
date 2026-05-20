@@ -38,6 +38,8 @@ public/uploads/*
 !public/uploads/Testimony 4.mp4
 # Marketing home hero (`HomeClient.tsx`)
 !public/uploads/Index bkgrn 4.jpg
+# Member dashboard watch-once intro (`scripts/seed-member-intro-video.ts`)
+!public/uploads/admin-site-wide-intro.mp4
 
 # ── Logs ─────────────────────────────────────────────────────
 *.log
