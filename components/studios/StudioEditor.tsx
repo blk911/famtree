@@ -5,7 +5,7 @@ import type { StudioBuilderNavMode } from "@/lib/studios/builderNavMode";
 export type StudioEditorMode = "template-start";
 
 /**
- * Canonical studio builder shell — `/studios/start` loads normalized fitness starter props.
+ * Canonical studio builder shell — `/studios/start` loads normalized neutral template props.
  * Template sources: `lib/studio/templates/*` + `docs/studio-templates.md`.
  */
 export function StudioEditor({

@@ -94,7 +94,7 @@ export function DashboardMemberLayout({
   const handleTabChange = useCallback((next: DashboardTabId) => setTab(next), []);
 
   return (
-    <div className="dashboard-member-stack">
+    <div className="flex w-full min-w-0 flex-col gap-4">
       <DashboardActivityCtaStrip
         activeTab={tab}
         onSelectTab={handleTabChange}

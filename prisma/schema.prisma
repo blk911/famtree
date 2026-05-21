@@ -75,6 +75,7 @@ model User {
   idleTimeoutMinutes Int @default(5)
 
   studiosOwned Studio[]
+  studioBuilderDrafts StudioBuilderDraft[]
 
   // AIH Safe — back-relations (added by Agent 3)
   aihFamilyUnitsCreated      AihFamilyUnit[]            @relation("AihFamilyUnitCreatedBy")
@@ -114,8 +115,68 @@ model Studio {
 
   tiers StudioServiceTier[]
   voiceProfile StudioVoiceProfile?
+  publishedFromDraft StudioBuilderDraft?
+  accessRequests StudioAccessRequest[]
 
   @@map("studios")
+}
+
+/// Public request-access intents for published studios (Agent 101).
+model StudioAccessRequest {
+  id              String   @id @default(cuid())
+  studioId        String
+  studio          Studio   @relation(fields: [studioId], references: [id], onDelete: Cascade)
+  requesterName   String
+  requesterEmail  String
+  note            String?  @db.Text
+  relationship    String?
+  status          String   @default("pending") // pending | invited | declined
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([studioId, status])
+  @@map("studio_access_requests")
+}
+
+/// Studio Builder — draft session (Agent 94). Presentation JSON in `content`; sources in child rows.
+model StudioBuilderDraft {
+  id                String   @id @default(cuid())
+  ownerUserId       String
+  owner             User     @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  templateType      String
+  status            String   @default("draft") // draft | reviewed | published
+  builderStep       String   @default("choose_template")
+  content           Json     @default("{}")
+  version           Int      @default(1)
+  linkedSpaceId     String?
+  publishedStudioId String?  @unique
+  publishedStudio   Studio?  @relation(fields: [publishedStudioId], references: [id], onDelete: SetNull)
+  sources           StudioBuilderSource[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([ownerUserId, status])
+  @@map("studio_builder_drafts")
+}
+
+/// Public link sources attached to a builder draft (no credentials).
+model StudioBuilderSource {
+  id                   String   @id @default(cuid())
+  draftId              String
+  draft                StudioBuilderDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  sourceType           String
+  url                  String?
+  label                String?
+  userNotes            String?  @db.Text
+  status               String   @default("pending")
+  extractedAt          DateTime?
+  extractionConfidence Float?
+  extractedData        Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([draftId])
+  @@map("studio_builder_sources")
 }
 
 model StudioVoiceProfile {

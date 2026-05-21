@@ -97,3 +97,5 @@ Public /studios/[slug]
 - [studio-creation-flow.md](./studio-creation-flow.md)
 - [studio-aih-boundary-map.md](./studio-aih-boundary-map.md)
 - [agent-92-published-spaces-architecture-report.md](./agent-92-published-spaces-architecture-report.md)
+- [studio-builder-flow.md](./studio-builder-flow.md) — Agent 93 intake wizard (target)
+- [agent-93-builder-intake-architecture-report.md](./agent-93-builder-intake-architecture-report.md)

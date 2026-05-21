@@ -18,6 +18,22 @@ import type {
   InviteDTO,
   TrustUnitDTO,
 } from "@/types/aihsafe/dto";
+import {
+  AihsafeOverview,
+  AihsafeOverviewActionChip,
+  AihsafeOverviewActions,
+  AihsafeOverviewEmpty,
+  AihsafeOverviewHint,
+  AihsafeOverviewLinkBtn,
+  AihsafeOverviewList,
+  AihsafeOverviewMeta,
+  AihsafeOverviewPeople,
+  AihsafeOverviewPeopleItem,
+  AihsafeOverviewRow,
+  AihsafeOverviewSection,
+  AihsafeOverviewSectionLink,
+  AihsafeOverviewTwoCol,
+} from "@/components/ui/aihsafe";
 import type { FamilySafeShellMode } from "@/components/aihsafe/roles/shellMode";
 
 export type OverviewHQProps = {
@@ -132,59 +148,55 @@ export function OverviewOperationalHQ({
 
   if (shellMode === "child") {
     return (
-      <div className="aihsafe-overview">
+      <AihsafeOverview>
         <OverviewCommandCard
           pendingApprovalCount={childPendingCount}
           pendingInviteCount={0}
           loading={loading}
           onReviewApprovals={() => onTabChange("activity")}
         />
-        <section className="aihsafe-overview__section">
+        <AihsafeOverviewSection>
           <SectionHeader title="Your approved spaces" />
           {loading ? (
-            <p className="aihsafe-overview__empty">Loading…</p>
+            <AihsafeOverviewEmpty>Loading…</AihsafeOverviewEmpty>
           ) : mySpaces.length === 0 ? (
-            <p className="aihsafe-overview__empty">
+            <AihsafeOverviewEmpty>
               No active spaces yet. Ask your family steward to add you to a trusted space.
-            </p>
+            </AihsafeOverviewEmpty>
           ) : (
-            <ul className="aihsafe-overview__list">
+            <AihsafeOverviewList>
               {mySpaces.map((tu) => (
                 <li key={tu.id}>
-                  <button
-                    type="button"
-                    className="aihsafe-overview__row"
-                    onClick={() => onTabChange("spaces")}
-                  >
+                  <AihsafeOverviewRow type="button" onClick={() => onTabChange("spaces")}>
                     <span>🤝 {trustSpaceLabel(tu)}</span>
-                    <span className="aihsafe-overview__meta">{memberCount(tu)} members</span>
-                  </button>
+                    <AihsafeOverviewMeta>{memberCount(tu)} members</AihsafeOverviewMeta>
+                  </AihsafeOverviewRow>
                 </li>
               ))}
-            </ul>
+            </AihsafeOverviewList>
           )}
-        </section>
-        <section className="aihsafe-overview__section">
+        </AihsafeOverviewSection>
+        <AihsafeOverviewSection>
           <SectionHeader title="Boundaries" />
-          <p className="aihsafe-overview__hint">
+          <AihsafeOverviewHint>
             Your family steward sets Msg Rules and boundaries. View them under the Boundaries tab.
-          </p>
-          <button type="button" className="aihsafe-overview__link-btn" onClick={() => onTabChange("settings")}>
+          </AihsafeOverviewHint>
+          <AihsafeOverviewLinkBtn onClick={() => onTabChange("settings")}>
             View Boundaries →
-          </button>
-        </section>
-        <section className="aihsafe-overview__section">
+          </AihsafeOverviewLinkBtn>
+        </AihsafeOverviewSection>
+        <AihsafeOverviewSection>
           <SectionHeader title="Your requests" />
           <ChildEscalationStatus />
-        </section>
-      </div>
+        </AihsafeOverviewSection>
+      </AihsafeOverview>
     );
   }
 
   return (
-    <div className="aihsafe-overview">
+    <AihsafeOverview>
       {showApprovalsAttention && (
-        <div className="aihsafe-overview__attention-wrap">
+        <div className="mb-1">
           <OverviewCommandCard
             pendingApprovalCount={pendingApprovals.length}
             pendingInviteCount={pendingInvites.length}
@@ -192,7 +204,7 @@ export function OverviewOperationalHQ({
             onReviewApprovals={() => onTabChange("approvals")}
           />
           {!loading && attentionExtras.length > 0 && (
-            <p className="aihsafe-overview__attention-extra">{attentionExtras.join(" · ")}</p>
+            <p className="-mt-1.5 mb-2.5 text-xs leading-snug text-stone-500">{attentionExtras.join(" · ")}</p>
           )}
         </div>
       )}
@@ -206,23 +218,23 @@ export function OverviewOperationalHQ({
         />
       )}
 
-      <section className="aihsafe-overview__section">
+      <AihsafeOverviewSection>
         <SectionHeader
           title="Active spaces"
           action={
-            <button type="button" className="aihsafe-overview__section-link" onClick={() => onTabChange("spaces")}>
+            <AihsafeOverviewSectionLink onClick={() => onTabChange("spaces")}>
               All spaces →
-            </button>
+            </AihsafeOverviewSectionLink>
           }
         />
         {loading ? (
-          <p className="aihsafe-overview__empty">Loading…</p>
+          <AihsafeOverviewEmpty>Loading…</AihsafeOverviewEmpty>
         ) : activeSpaces.length === 0 ? (
-          <p className="aihsafe-overview__empty">
+          <AihsafeOverviewEmpty>
             No active spaces yet. Invite someone or create a trusted space.
-          </p>
+          </AihsafeOverviewEmpty>
         ) : (
-          <ul className="aihsafe-overview__list">
+          <AihsafeOverviewList>
             {activeSpaces.slice(0, 6).map((row) => {
               const name =
                 row.kind === "trust"
@@ -235,81 +247,77 @@ export function OverviewOperationalHQ({
                   : (row.unit as FamilyUnitDTO).createdAt;
               return (
                 <li key={row.key}>
-                  <button
-                    type="button"
-                    className="aihsafe-overview__row"
-                    onClick={() => onTabChange("spaces")}
-                  >
+                  <AihsafeOverviewRow type="button" onClick={() => onTabChange("spaces")}>
                     <span>
                       {row.kind === "trust" ? "🤝" : "🏠"} {name}
                     </span>
-                    <span className="aihsafe-overview__meta">
+                    <AihsafeOverviewMeta>
                       {count} {count === 1 ? "member" : "members"}
                       {lastAt ? ` · ${formatShortDate(lastAt)}` : ""}
-                    </span>
-                  </button>
+                    </AihsafeOverviewMeta>
+                  </AihsafeOverviewRow>
                 </li>
               );
             })}
-          </ul>
+          </AihsafeOverviewList>
         )}
-      </section>
+      </AihsafeOverviewSection>
 
-      <div className="aihsafe-overview__two-col">
-        <section className="aihsafe-overview__section">
+      <AihsafeOverviewTwoCol>
+        <AihsafeOverviewSection>
           <SectionHeader
             title="People snapshot"
             action={
-              <button type="button" className="aihsafe-overview__section-link" onClick={() => onTabChange("members")}>
+              <AihsafeOverviewSectionLink onClick={() => onTabChange("members")}>
                 All people →
-              </button>
+              </AihsafeOverviewSectionLink>
             }
           />
           {loading ? (
-            <p className="aihsafe-overview__empty">Loading…</p>
+            <AihsafeOverviewEmpty>Loading…</AihsafeOverviewEmpty>
           ) : (
             <PeopleSnapshotBlock people={people} shellMode={shellMode} onInvite={onInvite} />
           )}
-        </section>
+        </AihsafeOverviewSection>
 
-        <section className="aihsafe-overview__section">
+        <AihsafeOverviewSection>
           <SectionHeader
             title="Recent governed activity"
             action={
-              <button type="button" className="aihsafe-overview__section-link" onClick={() => onTabChange("activity")}>
+              <AihsafeOverviewSectionLink onClick={() => onTabChange("activity")}>
                 Activity →
-              </button>
+              </AihsafeOverviewSectionLink>
             }
           />
           {governedEvents.length === 0 ? (
-            <p className="aihsafe-overview__empty">No recent governed activity yet.</p>
+            <AihsafeOverviewEmpty>No recent governed activity yet.</AihsafeOverviewEmpty>
           ) : (
             governedEvents.map((ev) => (
               <CompactActivityItem key={ev.id} icon={ev.icon} label={ev.label} time={ev.time} />
             ))
           )}
-        </section>
-      </div>
+        </AihsafeOverviewSection>
+      </AihsafeOverviewTwoCol>
 
-      <section className="aihsafe-overview__section">
+      <AihsafeOverviewSection>
         <SectionHeader title="Suggested actions" />
-        <div className="aihsafe-overview__actions">
+        <AihsafeOverviewActions>
           {suggestedActions.map((a) => (
-            <button key={a.label} type="button" className="aihsafe-overview__action-chip" onClick={a.onClick}>
+            <AihsafeOverviewActionChip key={a.label} onClick={a.onClick}>
               <span>{a.icon}</span>
               <span>{a.label}</span>
-            </button>
+            </AihsafeOverviewActionChip>
           ))}
-          <Link href="/msg-vault" className="aihsafe-overview__action-chip aihsafe-overview__action-chip--link">
+          <AihsafeOverviewActionChip link href="/msg-vault">
             <span>💬</span>
             <span>
               Open Msg Vault
               {unreadNotices > 0 ? ` (${unreadNotices})` : ""}
             </span>
-          </Link>
-        </div>
-      </section>
-    </div>
+          </AihsafeOverviewActionChip>
+        </AihsafeOverviewActions>
+      </AihsafeOverviewSection>
+    </AihsafeOverview>
   );
 }
 
@@ -331,18 +339,18 @@ function PeopleSnapshotBlock({
   if (total === 0) {
     return (
       <>
-        <p className="aihsafe-overview__empty">Invite your first trusted person.</p>
+        <AihsafeOverviewEmpty>Invite your first trusted person.</AihsafeOverviewEmpty>
         {shellMode === "founder" && (
-          <button type="button" className="aihsafe-overview__link-btn" onClick={onInvite}>
+          <AihsafeOverviewLinkBtn onClick={onInvite}>
             Invite someone →
-          </button>
+          </AihsafeOverviewLinkBtn>
         )}
       </>
     );
   }
 
   return (
-    <ul className="aihsafe-overview__people">
+    <AihsafeOverviewPeople>
       {people.steward && (
         <li>
           <strong>{people.steward.name}</strong>
@@ -367,7 +375,7 @@ function PeopleSnapshotBlock({
           <span>{p.detail}</span>
         </li>
       ))}
-    </ul>
+    </AihsafeOverviewPeople>
   );
 }
 

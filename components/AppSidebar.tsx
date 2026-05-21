@@ -11,6 +11,13 @@ import { useState, useEffect } from "react";
 import type { User as PrismaUser } from "@prisma/client";
 import { getCurrentUserStudioHref, isStudiosPrimaryNavActive } from "@/lib/studios/getCurrentUserStudioHref";
 import { formatDisplayInitials, formatDisplayName } from "@/lib/user/display-name";
+import {
+  SidebarFooter,
+  SidebarLogoutButton,
+  SidebarNav,
+  SidebarShell,
+  SidebarVaultBadge,
+} from "@/components/ui/app-chrome";
 
 interface Props { user: PrismaUser; open?: boolean; vaultNotificationCount?: number; }
 
@@ -90,15 +97,7 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
   });
 
   return (
-    <aside
-      className={`app-sidebar${open ? " sidebar-open" : ""}`}
-      style={{
-        position:"fixed", left:0, top:0, height:"100%", width:"260px",
-        background:"linear-gradient(180deg,#1a1a2e 0%,#16213e 55%,#0f3460 100%)",
-        display:"flex", flexDirection:"column", zIndex:40,
-        boxShadow:"4px 0 24px rgba(0,0,0,0.18)",
-      }}
-    >
+    <SidebarShell open={open}>
 
       {/* Brand */}
       <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
@@ -110,7 +109,7 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
       </div>
 
       {/* Navigation */}
-      <nav style={{flex:1,padding:"14px 10px",overflowY:"auto"}}>
+      <SidebarNav>
 
         {/* Dashboard — plain link for everyone; admins go to /admin */}
         <Link
@@ -284,10 +283,9 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
           AIH Studios
         </Link>
 
-      </nav>
+      </SidebarNav>
 
-      {/* Logout + user footer */}
-      <div style={{padding:"10px 10px 18px",borderTop:"1px solid rgba(255,255,255,0.08)"}}>
+      <SidebarFooter>
         <div style={{display:"flex",alignItems:"center",gap:"10px",padding:"10px 12px",borderRadius:"12px",background:"rgba(255,255,255,0.07)"}}>
           <div style={{width:"40px",height:"40px",borderRadius:"50%",overflow:"hidden",background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"2px solid rgba(255,255,255,0.2)"}}>
             {user.photoUrl
@@ -304,16 +302,11 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
             </div>
           </div>
         </div>
-        <button onClick={handleLogout} style={{
-          width:"100%",marginTop:"8px",padding:"10px 12px",
-          background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.08)",
-          borderRadius:"12px",cursor:"pointer",color:"rgba(255,255,255,0.78)",
-          display:"flex",alignItems:"center",gap:"12px",fontSize:"14px",fontWeight:600,
-        }}>
-          <LogOut style={{width:"16px",height:"16px",flexShrink:0}} />
+        <SidebarLogoutButton onClick={handleLogout}>
+          <LogOut className="h-4 w-4 shrink-0" />
           Log Out
-        </button>
-      </div>
-    </aside>
+        </SidebarLogoutButton>
+      </SidebarFooter>
+    </SidebarShell>
   );
 }

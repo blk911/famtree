@@ -10,6 +10,7 @@ import { ContextRail } from "./ContextRail";
 import { GovernanceRailProfile } from "./profiles/GovernanceRailProfile";
 import type { ContextRailMember } from "./types";
 import type { TabId } from "@/components/aihsafe/navigation/FamilySafeTabs";
+import { HubGrid, HubGridMain, HubGridRail } from "@/components/ui/hub-grid";
 
 export function FamilySafeContextLayout({
   children,
@@ -73,9 +74,10 @@ export function FamilySafeContextLayout({
   const settingsLabel = settingsTabLabel(shellMode);
 
   return (
-    <div className="app-page-body thread-hub-grid aihsafe-context-layout">
-      <div className="thread-hub-grid__main">{children}</div>
-      <div className="thread-hub-grid__rail">
+    <div className="app-page-body flex w-full flex-col gap-5">
+      <HubGrid>
+        <HubGridMain>{children}</HubGridMain>
+        <HubGridRail>
         <ContextRail mode="governance">
           <GovernanceRailProfile
             currentUserId={currentUserId}
@@ -99,7 +101,8 @@ export function FamilySafeContextLayout({
             onInvite={onInvite}
           />
         </ContextRail>
-      </div>
+        </HubGridRail>
+      </HubGrid>
     </div>
   );
 }

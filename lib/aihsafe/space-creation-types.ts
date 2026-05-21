@@ -23,5 +23,5 @@ export const SPACE_PLATFORM_CREATION_OPTIONS = [
   { id: "client_network",    label: "Client Network",    wired: false, mapsTo: "BUSINESS" },
   { id: "learning_space",    label: "Learning Space",    wired: false, mapsTo: "CLUB" },
   { id: "executive_room",    label: "Executive Room",    wired: false, mapsTo: "PRIVATE" },
-  { id: "published_studio",  label: "Published Studio", wired: "bridge", href: "/studios/start" },
+  { id: "published_studio",  label: "Published Studio", wired: "bridge", href: "/studios/create" },
 ] as const;

@@ -3,6 +3,11 @@
 import { MessageCircle } from "lucide-react";
 import { MemberAvatar } from "@/components/vault/MemberAvatar";
 import { ThreadStatusDot } from "@/components/vault/ThreadStatusDot";
+import {
+  ThreadSelectorRow as UiThreadSelectorRow,
+  ThreadSelectorRowActions,
+  ThreadSelectorRowLabel,
+} from "@/components/ui/thread";
 
 export function ThreadSelectorRow({
   label,
@@ -15,6 +20,7 @@ export function ThreadSelectorRow({
   onClick,
   title,
   showChatIcon = true,
+  compact,
 }: {
   label: string;
   firstName: string;
@@ -26,26 +32,27 @@ export function ThreadSelectorRow({
   onClick: () => void;
   title: string;
   showChatIcon?: boolean;
+  compact?: boolean;
 }) {
   return (
-    <button
-      type="button"
+    <UiThreadSelectorRow
       disabled={disabled}
       onClick={onClick}
       title={title}
-      className={`thread-selector-row${active ? " thread-selector-row--active" : ""}`}
+      active={active}
+      compact={compact}
     >
       <MemberAvatar firstName={firstName} lastName={lastName} photoUrl={photoUrl} />
-      <span className="thread-selector-row__label">{label}</span>
+      <ThreadSelectorRowLabel>{label}</ThreadSelectorRowLabel>
       {!disabled && showChatIcon && (
-        <span className="thread-selector-row__actions">
+        <ThreadSelectorRowActions>
           <MessageCircle
             aria-hidden
-            style={{ width: 13, height: 13, color: "#818cf8", opacity: 0.9, flexShrink: 0 }}
+            className="h-3.5 w-3.5 shrink-0 text-indigo-400 opacity-90"
           />
           <ThreadStatusDot unread={unread} />
-        </span>
+        </ThreadSelectorRowActions>
       )}
-    </button>
+    </UiThreadSelectorRow>
   );
 }

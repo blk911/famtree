@@ -55,7 +55,7 @@ export function MsgVaultThreadSelectorRail({
           margin: "0 6px 10px",
         }}
       >
-        <p className="thread-selector-list__title" style={{ margin: 0 }}>
+        <p className="m-0 text-[11px] font-bold uppercase tracking-wide text-[var(--muted)]">
           {title}
         </p>
         {kindFilter === "direct" && onStartChat ? (

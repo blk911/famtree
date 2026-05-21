@@ -11,6 +11,7 @@ import {
 import { DashboardContextRail } from "@/components/dashboard/DashboardContextRail";
 import { DashboardPrivateThreadsProvider } from "@/components/vault/DashboardPrivateThreadsContext";
 import type { SerializedDashboardPost } from "@/components/dashboard/DashboardPostsPanel";
+import { HubGrid, HubGridMainColumn, HubGridRail } from "@/components/ui/hub-grid";
 
 type ComposerSpace = {
   id: string;
@@ -100,8 +101,8 @@ export function DashboardHubColumns({
       trustUnits={trustUnits}
       onPrivateTabSelect={handlePrivateTabSelect}
     >
-      <div className="dashboard-body thread-hub-grid">
-        <div className="dashboard-body__main thread-hub-grid__main" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <HubGrid>
+        <HubGridMainColumn>
           <DashboardTrustUnitGate
             initialRequests={initialRequests}
             currentUserId={currentUserId}
@@ -124,8 +125,8 @@ export function DashboardHubColumns({
             bondPeers={bondPeers}
             vaultNotificationCount={vaultNotificationCount}
           />
-        </div>
-        <div className="dashboard-body__rail thread-hub-grid__rail">
+        </HubGridMainColumn>
+        <HubGridRail>
           <DashboardContextRail
             flat={flat}
             totalMembers={totalMembers}
@@ -133,8 +134,8 @@ export function DashboardHubColumns({
             bondPeers={bondPeers}
             currentUserId={currentUserId}
           />
-        </div>
-      </div>
+        </HubGridRail>
+      </HubGrid>
     </DashboardPrivateThreadsProvider>
   );
 }

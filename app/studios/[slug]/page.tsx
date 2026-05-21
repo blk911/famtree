@@ -4,7 +4,10 @@ import { TrainerStudioShell } from "@/components/studios/trainer/TrainerStudioSh
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
 import { liveStoryFromProvider } from "@/lib/studio/studioDraft";
 import { MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
+import { getCurrentUser } from "@/lib/auth";
 import { resolveStudioPage } from "@/lib/studios/resolveStudioPage";
+import { resolveStudioMemberAccess } from "@/lib/studios/studioMemberAccess";
+import { PublishedStudioExtras } from "@/components/studios/PublishedStudioExtras";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 
 type Props = { params: { slug: string } };
@@ -53,7 +56,18 @@ export default async function TrainerStudioPage({ params }: Props) {
 
   if (!resolved) notFound();
 
-  const { provider, offers } = resolved;
+  const { provider, offers, ownerUserId, publishedContent, trustUnitId } = resolved;
+  const viewer = await getCurrentUser();
+  const studioDbId = provider.studioId ?? provider.id.replace(/^db_/, "");
+  const access =
+    ownerUserId && publishedContent
+      ? await resolveStudioMemberAccess(
+          studioDbId,
+          ownerUserId,
+          trustUnitId ?? null,
+          viewer?.id ?? null,
+        )
+      : { isOwner: viewer?.id === ownerUserId, isMember: false, trustUnitId: null };
 
   return (
     <>
@@ -63,6 +77,16 @@ export default async function TrainerStudioPage({ params }: Props) {
         offers={offers}
         liveStoryIntro={liveStoryFromProvider(provider)}
       />
+      {publishedContent && provider.studioId ? (
+        <PublishedStudioExtras
+          slug={params.slug}
+          content={publishedContent}
+          isAuthenticated={Boolean(viewer)}
+          isMember={access.isMember}
+          isOwner={access.isOwner}
+          trustUnitId={access.trustUnitId}
+        />
+      ) : null}
       <StudiosFooter />
     </>
   );

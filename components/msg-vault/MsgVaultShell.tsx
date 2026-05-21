@@ -8,6 +8,18 @@ import { MsgVaultLeftNav } from "@/components/msg-vault/MsgVaultLeftNav";
 import { ConversationPanel } from "@/components/msg-vault/ConversationPanel";
 import { NoticeDetailPanel } from "@/components/msg-vault/NoticeDetailPanel";
 import { MsgVaultContextRail } from "@/components/msg-vault/rail/MsgVaultContextRail";
+import {
+  MsgVaultOverviewCenter,
+  MsgVaultOverviewSub,
+  MsgVaultOverviewTitle,
+  MsgVaultSummaryCount,
+  MsgVaultSummaryList,
+  MsgVaultSummaryRow,
+  MsgVaultWorkspace,
+  MsgVaultWorkspaceContext,
+  MsgVaultWorkspaceMain,
+  MsgVaultWorkspaceNav,
+} from "@/components/ui/msg-vault";
 import { StartChatModal } from "@/components/msg-vault/StartChatModal";
 import {
   fetchAllowedChatContacts,
@@ -357,8 +369,8 @@ export function MsgVaultShell({
         </p>
       )}
 
-      <div className="msg-vault-workspace">
-        <div className="msg-vault-workspace__nav">
+      <MsgVaultWorkspace>
+        <MsgVaultWorkspaceNav>
           <MsgVaultLeftNav
             tab={tab}
             onTabChange={setTab}
@@ -381,46 +393,34 @@ export function MsgVaultShell({
             onStartChat={() => setStartChatOpen(true)}
             onNoticeSelect={setSelectedNoticeId}
           />
-        </div>
+        </MsgVaultWorkspaceNav>
 
-        <div className="msg-vault-workspace__main">
+        <MsgVaultWorkspaceMain>
           {tab === "overview" && (
-            <div className="msg-vault-overview-center">
-              <h2 className="msg-vault-overview-center__title">Welcome back, {firstName}</h2>
-              <p className="msg-vault-overview-center__sub">Governed messaging workspace</p>
-              <ul className="msg-vault-summary-rows">
+            <MsgVaultOverviewCenter>
+              <MsgVaultOverviewTitle>Welcome back, {firstName}</MsgVaultOverviewTitle>
+              <MsgVaultOverviewSub>Governed messaging workspace</MsgVaultOverviewSub>
+              <MsgVaultSummaryList>
                 <li>
-                  <button
-                    type="button"
-                    className="msg-vault-summary-row"
-                    onClick={() => setTab("chats")}
-                  >
+                  <MsgVaultSummaryRow onClick={() => setTab("chats")}>
                     <span>Direct chats</span>
-                    <span className="msg-vault-summary-row__count">{directConversations.length}</span>
-                  </button>
+                    <MsgVaultSummaryCount>{directConversations.length}</MsgVaultSummaryCount>
+                  </MsgVaultSummaryRow>
                 </li>
                 <li>
-                  <button
-                    type="button"
-                    className="msg-vault-summary-row"
-                    onClick={() => setTab("threads")}
-                  >
+                  <MsgVaultSummaryRow onClick={() => setTab("threads")}>
                     <span>Threads</span>
-                    <span className="msg-vault-summary-row__count">{threadConversations.length}</span>
-                  </button>
+                    <MsgVaultSummaryCount>{threadConversations.length}</MsgVaultSummaryCount>
+                  </MsgVaultSummaryRow>
                 </li>
                 <li>
-                  <button
-                    type="button"
-                    className="msg-vault-summary-row"
-                    onClick={() => setTab("notices")}
-                  >
+                  <MsgVaultSummaryRow onClick={() => setTab("notices")}>
                     <span>Notices</span>
-                    <span className="msg-vault-summary-row__count">{unreadNotices}</span>
-                  </button>
+                    <MsgVaultSummaryCount>{unreadNotices}</MsgVaultSummaryCount>
+                  </MsgVaultSummaryRow>
                 </li>
-              </ul>
-            </div>
+              </MsgVaultSummaryList>
+            </MsgVaultOverviewCenter>
           )}
 
           {tab === "chats" || tab === "threads" ? (
@@ -440,12 +440,12 @@ export function MsgVaultShell({
               onRead={handleNoticeRead}
             />
           )}
-        </div>
+        </MsgVaultWorkspaceMain>
 
-        <div className="msg-vault-workspace__context">
+        <MsgVaultWorkspaceContext>
           <MsgVaultContextRail {...contextRailProps} />
-        </div>
-      </div>
+        </MsgVaultWorkspaceContext>
+      </MsgVaultWorkspace>
 
       <StartChatModal
         open={startChatOpen}

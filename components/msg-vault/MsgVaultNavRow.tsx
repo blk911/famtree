@@ -1,5 +1,7 @@
 "use client";
 
+import { MsgVaultNavCount, MsgVaultNavRowButton } from "@/components/ui/msg-vault";
+
 export function MsgVaultNavRow({
   label,
   count,
@@ -14,15 +16,9 @@ export function MsgVaultNavRow({
   urgent?: boolean;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`msg-vault-nav-row${active ? " msg-vault-nav-row--active" : ""}${urgent ? " msg-vault-nav-row--urgent" : ""}`}
-    >
-      <span className="msg-vault-nav-row__label">{label}</span>
-      {count !== undefined && (
-        <span className="msg-vault-nav-row__count">{count}</span>
-      )}
-    </button>
+    <MsgVaultNavRowButton active={active} urgent={urgent} onClick={onClick}>
+      <span>{label}</span>
+      {count !== undefined && <MsgVaultNavCount>{count}</MsgVaultNavCount>}
+    </MsgVaultNavRowButton>
   );
 }
