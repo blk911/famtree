@@ -23,6 +23,13 @@ import {
   createFlowPrimaryBtn,
   createFlowSecondaryBtn,
 } from "@/components/aihsafe/spaces/CreateFlowSteps";
+import {
+  AihsafeCreateFlowReview,
+  AihsafeCreateFlowType,
+  AihsafeCreateFlowTypeGrid,
+  AihsafeCreateFlowTypeHint,
+  AihsafeCreateFlowTypeLabel,
+} from "@/components/ui/aihsafe";
 
 const TOTAL_STEPS = 4;
 
@@ -154,19 +161,19 @@ export function TrustedSpaceCreateFlow({
           </>
         }
       >
-        <div className="aihsafe-create-flow__type-grid">
+        <AihsafeCreateFlowTypeGrid>
           {TRUSTED_SPACE_CREATION_TYPES.map((t) => (
-            <button
+            <AihsafeCreateFlowType
               key={t.id}
               type="button"
-              className={`aihsafe-create-flow__type${typeId === t.id ? " aihsafe-create-flow__type--on" : ""}`}
+              on={typeId === t.id}
               onClick={() => setTypeId(t.id)}
             >
-              <span className="aihsafe-create-flow__type-label">{t.label}</span>
-              <span className="aihsafe-create-flow__type-hint">{t.hint}</span>
-            </button>
+              <AihsafeCreateFlowTypeLabel>{t.label}</AihsafeCreateFlowTypeLabel>
+              <AihsafeCreateFlowTypeHint>{t.hint}</AihsafeCreateFlowTypeHint>
+            </AihsafeCreateFlowType>
           ))}
-        </div>
+        </AihsafeCreateFlowTypeGrid>
       </CreateFlowSteps>
     );
   }
@@ -263,7 +270,7 @@ export function TrustedSpaceCreateFlow({
         </>
       }
     >
-      <dl className="aihsafe-create-flow__review">
+      <AihsafeCreateFlowReview>
         <div>
           <dt>Name</dt>
           <dd>{name.trim()}</dd>
@@ -285,7 +292,7 @@ export function TrustedSpaceCreateFlow({
                   .join(" · ")}
           </dd>
         </div>
-      </dl>
+      </AihsafeCreateFlowReview>
       {notice && <DecisionNotice result={notice} onDismiss={() => setNotice(null)} />}
     </CreateFlowSteps>
   );

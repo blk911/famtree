@@ -2,6 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EmptyThreadState } from "@/components/vault/EmptyThreadState";
+import {
+  ThreadActiveHeader,
+  ThreadActivePanel,
+  ThreadActiveTitle,
+  ThreadBadge,
+} from "@/components/ui/thread";
 import { useDashboardPrivateThreads } from "@/components/vault/DashboardPrivateThreadsContext";
 import { MessageComposer } from "@/components/msg-vault/MessageComposer";
 import { VaultInlineError } from "@/components/vault/VaultInlineError";
@@ -175,17 +181,15 @@ export function DashboardPrivateThreadCenter({
         : "Thread";
 
   return (
-    <div className="thread-active-panel">
-      <header className="thread-active-panel__header">
-        <h3 className="thread-active-panel__title">{title}</h3>
-        <span
-          className={`thread-active-panel__badge thread-active-panel__badge--${
-            activeConversation.kind === MsgConversationKind.DIRECT ? "direct" : "tu"
-          }`}
+    <ThreadActivePanel>
+      <ThreadActiveHeader>
+        <ThreadActiveTitle>{title}</ThreadActiveTitle>
+        <ThreadBadge
+          kind={activeConversation.kind === MsgConversationKind.DIRECT ? "direct" : "tu"}
         >
           {badge}
-        </span>
-      </header>
+        </ThreadBadge>
+      </ThreadActiveHeader>
 
       {(conversationsError || messagesError) && (
         <VaultInlineError
@@ -263,6 +267,6 @@ export function DashboardPrivateThreadCenter({
         disabled={closed}
         onSent={handleMessageSent}
       />
-    </div>
+    </ThreadActivePanel>
   );
 }

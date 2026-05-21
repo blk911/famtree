@@ -1,3 +1,5 @@
+import { ThreadMemberAvatar } from "@/components/ui/thread";
+
 export function MemberAvatar({
   firstName,
   lastName,
@@ -10,15 +12,12 @@ export function MemberAvatar({
   size?: number;
 }) {
   return (
-    <div
-      className="thread-selector-avatar"
-      style={{ width: size, height: size, fontSize: size <= 24 ? 9 : 10 }}
-    >
+    <ThreadMemberAvatar style={{ width: size, height: size, fontSize: size <= 24 ? 9 : 10 }}>
       {photoUrl ? (
-        <img src={photoUrl} alt="" />
+        <img src={photoUrl} alt="" className="block h-full w-full max-w-none object-cover" />
       ) : (
         `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase()
       )}
-    </div>
+    </ThreadMemberAvatar>
   );
 }

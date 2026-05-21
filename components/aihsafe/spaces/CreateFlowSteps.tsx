@@ -1,6 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
+import {
+  AihsafeCreateFlow,
+  AihsafeCreateFlowDot,
+  AihsafeCreateFlowFooter,
+  AihsafeCreateFlowProgress,
+  AihsafeCreateFlowStepLabel,
+  AihsafeCreateFlowTitle,
+} from "@/components/ui/aihsafe";
 
 export function CreateFlowSteps({
   step,
@@ -16,22 +24,19 @@ export function CreateFlowSteps({
   footer: ReactNode;
 }) {
   return (
-    <div className="aihsafe-create-flow">
-      <div className="aihsafe-create-flow__progress" aria-hidden="true">
+    <AihsafeCreateFlow>
+      <AihsafeCreateFlowProgress aria-hidden="true">
         {Array.from({ length: total }, (_, i) => (
-          <span
-            key={i}
-            className={`aihsafe-create-flow__dot${i + 1 <= step ? " aihsafe-create-flow__dot--on" : ""}`}
-          />
+          <AihsafeCreateFlowDot key={i} on={i + 1 <= step} />
         ))}
-      </div>
-      <p className="aihsafe-create-flow__step-label">
+      </AihsafeCreateFlowProgress>
+      <AihsafeCreateFlowStepLabel>
         Step {step} of {total}
-      </p>
-      <h3 className="aihsafe-create-flow__title">{title}</h3>
-      <div className="aihsafe-create-flow__body">{children}</div>
-      <div className="aihsafe-create-flow__footer">{footer}</div>
-    </div>
+      </AihsafeCreateFlowStepLabel>
+      <AihsafeCreateFlowTitle>{title}</AihsafeCreateFlowTitle>
+      <div>{children}</div>
+      <AihsafeCreateFlowFooter>{footer}</AihsafeCreateFlowFooter>
+    </AihsafeCreateFlow>
   );
 }
 

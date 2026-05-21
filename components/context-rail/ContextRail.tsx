@@ -12,7 +12,7 @@ const MODE_LABELS: Record<ContextRailProps["mode"], string> = {
 export function ContextRail({ mode, children, className }: ContextRailProps) {
   return (
     <aside
-      className={`context-rail context-rail--${mode}${className ? ` ${className}` : ""}`}
+      className={`flex w-full flex-col gap-2.5${className ? ` ${className}` : ""}`}
       aria-label={MODE_LABELS[mode]}
       data-context-rail-mode={mode}
     >

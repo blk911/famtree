@@ -23,6 +23,7 @@ import {
   PUBLISHED_STUDIO_EDITOR_HREF,
   PUBLISHED_STUDIO_SPACES_INTRO,
 } from "@/lib/studios/publishedSpaceBridge";
+import { AihsafeSpacesAllEmpty, AihsafeSpacesCta, AihsafeSpacesDraftNote } from "@/components/ui/aihsafe";
 
 interface Props {
   currentUserId: string;
@@ -40,21 +41,17 @@ interface Props {
 
 function sectionCta(label: string, onClick: () => void, accent = false) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={accent ? "aihsafe-spaces-cta aihsafe-spaces-cta--primary" : "aihsafe-spaces-cta"}
-    >
+    <AihsafeSpacesCta primary={accent} onClick={onClick}>
       {label}
-    </button>
+    </AihsafeSpacesCta>
   );
 }
 
 function emptyCta(label: string, onClick: () => void) {
   return (
-    <button type="button" onClick={onClick} className="aihsafe-spaces-cta aihsafe-spaces-cta--empty">
+    <AihsafeSpacesCta empty onClick={onClick}>
       {label}
-    </button>
+    </AihsafeSpacesCta>
   );
 }
 
@@ -257,17 +254,17 @@ export function SpacesTab({
           title="Published Studios"
           count={0}
           action={
-            <Link href={PUBLISHED_STUDIO_EDITOR_HREF} className="aihsafe-spaces-cta aihsafe-spaces-cta--primary">
+            <AihsafeSpacesCta primary href={PUBLISHED_STUDIO_EDITOR_HREF}>
               {PUBLISHED_STUDIO_CREATE_CTA}
-            </Link>
+            </AihsafeSpacesCta>
           }
         >
           <p style={{ fontSize: 13, color: "#57534e", lineHeight: 1.5, margin: "0 0 14px", maxWidth: 520 }}>
             {PUBLISHED_STUDIO_SPACES_INTRO}
           </p>
-          <Link href={PUBLISHED_STUDIO_EDITOR_HREF} className="aihsafe-spaces-cta aihsafe-spaces-cta--empty">
+          <AihsafeSpacesCta empty href={PUBLISHED_STUDIO_EDITOR_HREF}>
             {PUBLISHED_STUDIO_CREATE_CTA}
-          </Link>
+          </AihsafeSpacesCta>
         </SpacesSection>
       ) : null}
 
@@ -351,10 +348,10 @@ export function SpacesTab({
       </SpacesSection>
 
       {!loading && draftTrustCount > 0 && (
-        <p className="aihsafe-spaces-draft-note">
+        <AihsafeSpacesDraftNote>
           <strong>Draft — setup needed</strong>
           {draftTrustCount > 1 ? ` (${draftTrustCount} spaces)` : ""}. {TRUST_CIRCLES_EMPTY_SUBHINT}
-        </p>
+        </AihsafeSpacesDraftNote>
       )}
 
       {(pendingInvites.length > 0 || canCreate) && (
@@ -377,7 +374,7 @@ export function SpacesTab({
       )}
 
       {!loading && totalSpaces === 0 && pendingInvites.length === 0 && (
-        <div className="aihsafe-spaces-all-empty">
+        <AihsafeSpacesAllEmpty>
           <div style={{ fontSize: 40, marginBottom: 12 }} aria-hidden="true">🌱</div>
           <p style={{ fontWeight: 700, fontSize: 15, color: "#1c1917", margin: "0 0 6px" }}>
             {TRUST_CIRCLES_EMPTY_TITLE}
@@ -391,7 +388,7 @@ export function SpacesTab({
               {emptyCta("+ Family Group", onCreateFamily)}
             </div>
           )}
-        </div>
+        </AihsafeSpacesAllEmpty>
       )}
     </div>
   );

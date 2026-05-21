@@ -48,9 +48,18 @@ npm run check:globals-css
 
 Fails if removed selectors (e.g. `.dashboard-activity-cta`) reappear in `globals.css`.
 
-## Migration order (remaining debt)
+## Migration status
 
-1. Dashboard private threads / rail (`globals.css` `.dashboard-private-*`)
-2. Msg Vault shell (`.msg-vault-*`, `.thread-*`)
-3. AIH Safe (`.aihsafe-*`)
-4. Inline styles in `AppShell` / heroes → `ui/*` + Tailwind
+| Phase | Status |
+|-------|--------|
+| LT-1 Dashboard CTA strip | Done — `CtaCard` |
+| LT-2 Hub grid + dead dashboard-private CSS | Done — `HubGrid` |
+| LT-3 Msg Vault + thread | Done — `ui/thread`, `ui/msg-vault` |
+| LT-4 Family Safe | Done — `ui/aihsafe` |
+| LT-5 App shell (main/top bar/banner/sidebar chrome) | Done — `ui/app-chrome` |
+
+## Remaining debt
+
+1. `AppSidebar` `linkStyle` objects → `SidebarNavLink` / `SidebarSubNavLink`
+2. Invite/admin responsive layout classes (keep in globals as shell)
+3. Occasional inline `style={{}}` in feature panels (geometry-only OK)

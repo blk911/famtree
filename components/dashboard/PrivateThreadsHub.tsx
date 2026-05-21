@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { FlatNode } from "@/components/TreeList";
 import { DashboardContextRail } from "@/components/dashboard/DashboardContextRail";
+import { HubGrid, HubGridMain, HubGridRail } from "@/components/ui/hub-grid";
 import { DashboardPrivateThreadCenter } from "@/components/dashboard/DashboardPrivateThreadCenter";
 import type { SerializedDashboardPost } from "@/components/dashboard/DashboardPostsPanel";
 import {
@@ -55,11 +56,11 @@ function PrivateThreadsHubInner({
   }, [initialPeerId, initialUnitId, currentUserId, trustUnits, openDirectPeer, openTrustUnit]);
 
   return (
-    <div className="thread-hub-grid">
-      <div className="thread-hub-grid__main">
+    <HubGrid>
+      <HubGridMain>
         <DashboardPrivateThreadCenter currentUserId={currentUserId} />
-      </div>
-      <div className="thread-hub-grid__rail">
+      </HubGridMain>
+      <HubGridRail>
         <DashboardContextRail
           flat={flat}
           totalMembers={totalMembers}
@@ -67,8 +68,8 @@ function PrivateThreadsHubInner({
           bondPeers={bondPeers}
           currentUserId={currentUserId}
         />
-      </div>
-    </div>
+      </HubGridRail>
+    </HubGrid>
   );
 }
 

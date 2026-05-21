@@ -17,6 +17,7 @@ import {
   createFlowPrimaryBtn,
   createFlowSecondaryBtn,
 } from "@/components/aihsafe/spaces/CreateFlowSteps";
+import { AihsafeCreateFlowReview } from "@/components/ui/aihsafe";
 
 const TOTAL_STEPS = 3;
 
@@ -204,7 +205,7 @@ export function FamilyGroupCreateFlow({
         </>
       }
     >
-      <dl className="aihsafe-create-flow__review">
+      <AihsafeCreateFlowReview>
         <div>
           <dt>Name</dt>
           <dd>{name.trim()}</dd>
@@ -222,7 +223,7 @@ export function FamilyGroupCreateFlow({
                   .join(" · ")}
           </dd>
         </div>
-      </dl>
+      </AihsafeCreateFlowReview>
       {notice && <DecisionNotice result={notice} onDismiss={() => setNotice(null)} />}
     </CreateFlowSteps>
   );

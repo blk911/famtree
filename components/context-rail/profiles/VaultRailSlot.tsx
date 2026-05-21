@@ -7,5 +7,5 @@ import type { ReactNode } from "react";
  * Does not replace vault selection model (Agent 78 scope).
  */
 export function VaultRailSlot({ children }: { children: ReactNode }) {
-  return <div className="context-rail-vault-slot">{children}</div>;
+  return <div className="flex flex-col gap-2.5">{children}</div>;
 }

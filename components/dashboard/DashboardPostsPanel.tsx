@@ -113,7 +113,7 @@ export function DashboardPostsPanel({
         <EmptyPosts variant={variant} emptyMineHint={emptyMineHint} />
       ) : (
         <div
-          className="dashboard-inline-feed space-y-4"
+          className="dashboard-inline-feed space-y-4 [&_img]:max-w-full [&_img]:h-auto [&_video]:max-w-full [&_video]:h-auto"
           style={{ display: "flex", flexDirection: "column", gap: 16 }}
         >
           {items.map((post) => (

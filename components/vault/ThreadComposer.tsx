@@ -2,6 +2,13 @@
 
 import type { ReactNode } from "react";
 import { Send } from "lucide-react";
+import {
+  ThreadComposerFooter,
+  ThreadComposerInput,
+  ThreadComposerSend,
+  ThreadComposerShell,
+  ThreadComposerError,
+} from "@/components/ui/thread";
 
 export function ThreadComposer({
   value,
@@ -29,30 +36,25 @@ export function ThreadComposer({
     : undefined;
 
   return (
-    <div className="thread-composer" style={shellStyle}>
-      {error ? (
-        <p className="thread-composer__error">{error}</p>
-      ) : null}
-      <textarea
+    <ThreadComposerShell style={shellStyle}>
+      {error ? <ThreadComposerError>{error}</ThreadComposerError> : null}
+      <ThreadComposerInput
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={3}
         disabled={disabled || submitting}
-        className="thread-composer__input"
       />
-      <div className="thread-composer__footer">
+      <ThreadComposerFooter>
         {footer ?? <span />}
-        <button
-          type="button"
+        <ThreadComposerSend
           onClick={onSubmit}
           disabled={disabled || submitting || !value.trim()}
-          className="thread-composer__send"
         >
           <Send className="h-3.5 w-3.5" />
           {submitting ? "Sending…" : "Send"}
-        </button>
-      </div>
-    </div>
+        </ThreadComposerSend>
+      </ThreadComposerFooter>
+    </ThreadComposerShell>
   );
 }

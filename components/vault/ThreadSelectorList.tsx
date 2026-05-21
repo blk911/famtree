@@ -1,21 +1,11 @@
-"use client";
-
-import type { ReactNode } from "react";
+import { ThreadSelectorList as UiThreadSelectorList } from "@/components/ui/thread";
 
 export function ThreadSelectorList({
   title,
   children,
-  footer,
 }: {
   title?: string;
-  children: ReactNode;
-  footer?: ReactNode;
+  children: React.ReactNode;
 }) {
-  return (
-    <div className="thread-selector-list">
-      {title ? <p className="thread-selector-list__title">{title}</p> : null}
-      <div className="thread-selector-list__items">{children}</div>
-      {footer}
-    </div>
-  );
+  return <UiThreadSelectorList title={title}>{children}</UiThreadSelectorList>;
 }

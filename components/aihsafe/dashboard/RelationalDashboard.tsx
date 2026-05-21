@@ -20,6 +20,7 @@ import { SectionHeader }      from "@/components/aihsafe/common/SectionHeader";
 
 import type { FamilyUnitDTO, TrustUnitDTO, ApprovalRequestDTO } from "@/types/aihsafe/dto";
 import { getActiveTrustUnits } from "@/lib/trust/display";
+import { AihsafeGrid } from "@/components/ui/aihsafe";
 
 type ModalKind = "family" | "space" | "invite" | null;
 
@@ -89,15 +90,7 @@ export function RelationalDashboard({ currentUserId }: Props) {
         />
 
         {/* 2-column grid */}
-        <div
-          style={{
-            display:             "grid",
-            gridTemplateColumns: "minmax(0,1fr) minmax(0,380px)",
-            gap:                 20,
-            alignItems:          "start",
-          }}
-          className="aihsafe-grid"
-        >
+        <AihsafeGrid>
           {/* LEFT — family snapshot + spaces + memberships */}
           <div>
             <FamilySnapshot
@@ -137,7 +130,7 @@ export function RelationalDashboard({ currentUserId }: Props) {
               onCreateSpaceClick={() => setModal("space")}
             />
           </div>
-        </div>
+        </AihsafeGrid>
 
         {/* Activity timeline */}
         <ActivityFeed />

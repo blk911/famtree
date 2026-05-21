@@ -15,6 +15,7 @@ import {
   getActiveTrustUnits,
 } from "@/lib/trust/display";
 import type { DashboardRailProps } from "../types";
+import { ThreadTrustUnitButton } from "@/components/ui/thread";
 
 export function DashboardRailProfile({
   flat,
@@ -152,14 +153,14 @@ export function DashboardRailProfile({
                 const tuLabel = unit.members.map((m) => m.user.firstName).join(" · ");
                 return (
                   <div key={unit.id} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    <button
+                    <ThreadTrustUnitButton
                       type="button"
+                      active={tuActive}
                       onClick={() => void openTrustUnit(unit)}
                       title="Open Trust Unit group thread"
-                      className={`thread-selector-tu${tuActive ? " thread-selector-tu--active" : ""}`}
                     >
                       <span>🤝 {tuLabel}</span>
-                    </button>
+                    </ThreadTrustUnitButton>
                   </div>
                 );
               })}

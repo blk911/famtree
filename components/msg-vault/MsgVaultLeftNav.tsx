@@ -2,6 +2,22 @@
 
 import type { MsgVaultTabId } from "@/components/msg-vault/MsgVaultTabs";
 import { MsgVaultNavRow } from "@/components/msg-vault/MsgVaultNavRow";
+import {
+  MsgVaultLeftNavBody,
+  MsgVaultLeftNavShell,
+  MsgVaultLeftNavTabs,
+  MsgVaultNavAction,
+  MsgVaultNavEmpty,
+  MsgVaultNavSectionLabel,
+  MsgVaultNavTab,
+  MsgVaultTabBadge,
+  MsgVaultTabCount,
+} from "@/components/ui/msg-vault";
+import {
+  ThreadSelectorRow as UiThreadSelectorRow,
+  ThreadSelectorRowLabel,
+  ThreadUnreadDot,
+} from "@/components/ui/thread";
 import { ThreadSelectorList } from "@/components/vault/ThreadSelectorList";
 import { ThreadSelectorRow } from "@/components/vault/ThreadSelectorRow";
 import { conversationUnreadCount } from "@/components/vault/conversation-unread";
@@ -74,36 +90,33 @@ export function MsgVaultLeftNav({
   onNoticeSelect: (id: string) => void;
 }) {
   return (
-    <div className="msg-vault-left-nav">
-      <nav className="msg-vault-left-nav__tabs" role="tablist" aria-label="Msg Vault sections">
+    <MsgVaultLeftNavShell>
+      <MsgVaultLeftNavTabs aria-label="Msg Vault sections">
         {NAV_TABS.map(({ id, label }) => {
           const active = tab === id;
           const count = tabCount(id, directCount, threadCount, notices.length);
           const badge = badges?.[id];
           return (
-            <button
+            <MsgVaultNavTab
               key={id}
-              type="button"
               role="tab"
               aria-selected={active}
               onClick={() => onTabChange(id)}
-              className={`msg-vault-left-nav__tab${active ? " msg-vault-left-nav__tab--active" : ""}`}
+              active={active}
             >
               <span>
                 {label}
-                {count !== undefined && (
-                  <span className="msg-vault-left-nav__tab-count"> ({count})</span>
-                )}
+                {count !== undefined && <MsgVaultTabCount> ({count})</MsgVaultTabCount>}
               </span>
               {badge !== undefined && badge > 0 && id === "notices" && (
-                <span className="msg-vault-left-nav__badge">{badge > 99 ? "99+" : badge}</span>
+                <MsgVaultTabBadge>{badge > 99 ? "99+" : badge}</MsgVaultTabBadge>
               )}
-            </button>
+            </MsgVaultNavTab>
           );
         })}
-      </nav>
+      </MsgVaultLeftNavTabs>
 
-      <div className="msg-vault-left-nav__body">
+      <MsgVaultLeftNavBody>
         {tab === "overview" && (
           <OverviewNavBody
             directCount={directCount}
@@ -142,8 +155,8 @@ export function MsgVaultLeftNav({
             onSelect={onNoticeSelect}
           />
         )}
-      </div>
-    </div>
+      </MsgVaultLeftNavBody>
+    </MsgVaultLeftNavShell>
   );
 }
 
@@ -211,14 +224,12 @@ function ChatsNavBody({
 
   return (
     <>
-      <p className="msg-vault-nav-section-label">People</p>
-      <button type="button" className="msg-vault-nav-action" onClick={onStartChat}>
-        + New chat
-      </button>
+      <MsgVaultNavSectionLabel>People</MsgVaultNavSectionLabel>
+      <MsgVaultNavAction onClick={onStartChat}>+ New chat</MsgVaultNavAction>
       {loading ? (
-        <p className="msg-vault-nav-empty">Loading…</p>
+        <MsgVaultNavEmpty>Loading…</MsgVaultNavEmpty>
       ) : contacts.length === 0 ? (
-        <p className="msg-vault-nav-empty">No trusted conversations yet.</p>
+        <MsgVaultNavEmpty>No trusted conversations yet.</MsgVaultNavEmpty>
       ) : (
         <ThreadSelectorList>
           {rows.map((row) => (
@@ -231,6 +242,7 @@ function ChatsNavBody({
               active={row.isActive}
               unread={row.unread}
               showChatIcon={false}
+              compact
               onClick={() => onOpenContact(row.userId, row.existingConversationId)}
               title={`Chat with ${row.firstName}`}
             />
@@ -256,11 +268,11 @@ function ThreadsNavBody({
 }) {
   return (
     <>
-      <p className="msg-vault-nav-section-label">Threads</p>
+      <MsgVaultNavSectionLabel>Threads</MsgVaultNavSectionLabel>
       {loading ? (
-        <p className="msg-vault-nav-empty">Loading…</p>
+        <MsgVaultNavEmpty>Loading…</MsgVaultNavEmpty>
       ) : threadConversations.length === 0 ? (
-        <p className="msg-vault-nav-empty">No private threads yet.</p>
+        <MsgVaultNavEmpty>No private threads yet.</MsgVaultNavEmpty>
       ) : (
         <ThreadSelectorList>
           {threadConversations.map((conv) => {
@@ -275,6 +287,7 @@ function ThreadsNavBody({
                 active={conv.id === selectedConversationId}
                 unread={conversationUnreadCount(conv, currentUserId)}
                 showChatIcon={false}
+                compact
                 onClick={() => onSelect(conv.id)}
                 title={`Open ${label}`}
               />
@@ -298,10 +311,10 @@ function NoticesNavBody({
   onSelect: (id: string) => void;
 }) {
   if (loading) {
-    return <p className="msg-vault-nav-empty">Loading…</p>;
+    return <MsgVaultNavEmpty>Loading…</MsgVaultNavEmpty>;
   }
   if (notices.length === 0) {
-    return <p className="msg-vault-nav-empty">No notices.</p>;
+    return <MsgVaultNavEmpty>No notices.</MsgVaultNavEmpty>;
   }
 
   return (
@@ -311,22 +324,22 @@ function NoticesNavBody({
         const action = noticeRequiresAction(n.kind);
         const active = n.id === selectedNoticeId;
         return (
-          <button
+          <UiThreadSelectorRow
             key={n.id}
             type="button"
             onClick={() => onSelect(n.id)}
-            className={`thread-selector-row${active ? " thread-selector-row--active" : ""}`}
-            style={{ width: "100%", fontFamily: "inherit" }}
+            active={active}
+            compact
             title={n.title}
           >
-            <span className="thread-selector-row__label" style={{ flex: 1, textAlign: "left" }}>
-              {unread && <span className="thread-selector-unread-dot" style={{ marginRight: 6 }} />}
+            <ThreadSelectorRowLabel className="flex-1 text-left">
+              {unread && <ThreadUnreadDot className="mr-1.5 inline-block" />}
               {n.title}
-            </span>
+            </ThreadSelectorRowLabel>
             <span style={{ fontSize: 10, color: "#a8a29e", flexShrink: 0 }}>
               {action ? "!" : formatRelativeTime(n.createdAt)}
             </span>
-          </button>
+          </UiThreadSelectorRow>
         );
       })}
     </ThreadSelectorList>

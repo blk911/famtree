@@ -11,11 +11,25 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const globalsPath = path.join(root, "app", "globals.css");
 const css = readFileSync(globalsPath, "utf8");
 
-/** Selectors removed in LT styling foundation — must never reappear. */
 const FORBIDDEN_SELECTOR_PATTERNS = [
   /\.dashboard-activity-cta\b/,
   /\.dashboard-activity-cta__/,
   /\.dashboard-member-stack\b/,
+  /\.dashboard-private-thread/,
+  /\.dashboard-body\b/,
+  /\.thread-hub-grid/,
+  /\.thread-selector-row\b/,
+  /\.thread-empty-state/,
+  /\.thread-active-panel/,
+  /\.thread-composer/,
+  /\.msg-vault-workspace/,
+  /\.msg-vault-left-nav/,
+  /\.msg-vault-nav-row/,
+  /\.aihsafe-tabs-bar/,
+  /\.aihsafe-tab\b/,
+  /\.aihsafe-overview/,
+  /\.aihsafe-spaces-cta/,
+  /\.aihsafe-create-flow/,
 ];
 
 const violations = [];
