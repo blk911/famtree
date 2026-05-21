@@ -77,3 +77,10 @@ Creator is **Space steward** (founder or adult with create permission). They bec
 | Public | `/studios/[slug]` when published |
 | Member | Msg Vault threads scoped to Space; Family Safe activity |
 | Steward | Space settings, invite management, studio edit (future unified) |
+
+---
+
+## Related docs
+
+- [studio-builder-flow.md](./studio-builder-flow.md) — Agent 93 five-step builder (target)
+- [agent-93-builder-intake-architecture-report.md](./agent-93-builder-intake-architecture-report.md)

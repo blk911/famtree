@@ -21,12 +21,20 @@ export function getCurrentUserStudioHref(user: StudioNavUserInput | null | undef
   const ownedSlug = user.studiosOwned?.[0]?.slug?.trim();
   if (ownedSlug) return `/studios/${ownedSlug}`;
 
-  return "/studios/start";
+  return "/studios";
 }
 
 export function isStudiosPrimaryNavActive(pathname: string, href: string): boolean {
   if (pathname === href) return true;
   if (href.startsWith("/studios/") && href !== "/studios/start" && pathname.startsWith(`${href}/`)) return true;
+  if (
+    href === "/studios" &&
+    (pathname === "/studios" ||
+      pathname === "/studios/create" ||
+      pathname.startsWith("/studios/create/"))
+  ) {
+    return true;
+  }
   if (
     href === "/studios/start" &&
     (pathname === "/studios/start" ||

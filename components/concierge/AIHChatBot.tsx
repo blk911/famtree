@@ -525,16 +525,20 @@ export function AIHChatBot() {
         </div>
       )}
 
-      <style>{`
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes aihPulse {
           0%, 100% { opacity: 0.35; }
           50% { opacity: 0.9; }
         }
         .aih-dots::after {
-          content: "…";
+          content: "\\2026";
           animation: aihPulse 1.2s ease-in-out infinite;
         }
-      `}</style>
+      `,
+        }}
+      />
     </>
   );
 }

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { MOCK_TESTIMONIALS, MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
+import { StudiosMemberCreateCta } from "@/components/studios/StudiosMemberCreateCta";
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 import type { LucideIcon } from "lucide-react";
@@ -374,7 +375,13 @@ const BENEFITS: BenefitDef[] = [
   },
 ];
 
-export function StudiosLanding() {
+export function StudiosLanding({
+  isAuthenticated = false,
+  continueDraftId = null,
+}: {
+  isAuthenticated?: boolean;
+  continueDraftId?: string | null;
+}) {
   const [openBenefitId, setOpenBenefitId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -428,6 +435,16 @@ export function StudiosLanding() {
           }
         }
       `}</style>
+      {isAuthenticated ? (
+        <div style={{ padding: "12px 20px 0", maxWidth: "1000px", margin: "0 auto" }}>
+          <StudiosMemberCreateCta
+            isAuthenticated={isAuthenticated}
+            continueDraftId={continueDraftId}
+            variant="banner"
+          />
+        </div>
+      ) : null}
+
       {/* ── Fold 1 — tight hero ───────────────────────────────────────────── */}
       <section
         style={{
@@ -510,6 +527,13 @@ export function StudiosLanding() {
             </p>
 
             <div className="studios-hero-ctas" style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+              {isAuthenticated ? (
+                <StudiosMemberCreateCta
+                  isAuthenticated={isAuthenticated}
+                  continueDraftId={continueDraftId}
+                  variant="hero"
+                />
+              ) : null}
               <Link
                 href="/studios/start"
                 style={{

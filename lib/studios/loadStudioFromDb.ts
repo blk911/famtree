@@ -2,11 +2,19 @@
 // Maps Prisma Studio + tiers → marketing Provider / StudioOffer shapes.
 
 import { prisma } from "@/lib/db/prisma";
+import { loadPublishedStudioContent } from "@/lib/studios/loadPublishedStudioContent";
 import type { OfferPackageType, Provider, ProviderCategory, StudioOffer } from "@/types/studios";
+import type { StudioDraftContentDTO } from "@/types/studios/builder";
 
 export async function loadStudioPageFromDb(
   slug: string,
-): Promise<{ provider: Provider; offers: StudioOffer[]; ownerUserId: string } | null> {
+): Promise<{
+  provider: Provider;
+  offers: StudioOffer[];
+  ownerUserId: string;
+  publishedContent?: StudioDraftContentDTO;
+  trustUnitId?: string | null;
+} | null> {
   const studio = await prisma.studio.findUnique({
     where: { slug },
     include: {
@@ -69,5 +77,17 @@ export async function loadStudioPageFromDb(
     };
   });
 
-  return { provider, offers, ownerUserId: studio.ownerId };
+  const published = await loadPublishedStudioContent(studio.id);
+
+  return {
+    provider: {
+      ...provider,
+      displayName: published?.content.identity.name ?? provider.displayName,
+      bio: published?.content.hero.subcopy[0] ?? provider.bio,
+    },
+    offers,
+    ownerUserId: studio.ownerId,
+    publishedContent: published?.content,
+    trustUnitId: published?.trustUnitId ?? null,
+  };
 }
