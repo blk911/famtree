@@ -9,21 +9,18 @@ export type StudioNavUserInput = {
 };
 
 /**
- * Authenticated app shell: send owners to their public studio URL when we can resolve a slug.
- * No slug → onboarding-style entry (`/studios/start`).
- * Not used for anonymous visitors (they use `/studios` directly).
+ * Authenticated app shell: send users to their **owned** published studio when one exists.
+ * Otherwise `/studios/start` (neutral template builder).
+ *
+ * `tenantId` is not used for routing — it was conflating demo personas (e.g. deb-dazzle) with
+ * members who were wired for modeling. Only `studios.ownerId` determines a live public slug.
  */
 export function getCurrentUserStudioHref(user: StudioNavUserInput | null | undefined): string {
   if (!user) return "/studios";
 
   const ownedSlug = user.studiosOwned?.[0]?.slug?.trim();
-  const slug =
-    (user.studioSlug && String(user.studioSlug).trim()) ||
-    (user.tenantId && String(user.tenantId).trim()) ||
-    (user.studioId && String(user.studioId).trim()) ||
-    (ownedSlug && ownedSlug);
+  if (ownedSlug) return `/studios/${ownedSlug}`;
 
-  if (slug) return `/studios/${slug}`;
   return "/studios/start";
 }
 

@@ -17,6 +17,7 @@
     "openapi:inject": "node scripts/inject-api-trace.mjs",
     "fuzz": "node scripts/run-fuzz.mjs",
     "seed:deb": "ts-node --project scripts/tsconfig.json scripts/seedDeb.ts",
+    "studios:disconnect-user": "tsx scripts/disconnect-user-studio-binding.ts",
     "bonds:scan": "tsx scripts/scan-sponsor-bonds.ts",
     "bonds:fix": "tsx scripts/scan-sponsor-bonds.ts --fix",
     "trust:scrub-admin": "tsx scripts/scrub-admin-trust-contamination.ts",

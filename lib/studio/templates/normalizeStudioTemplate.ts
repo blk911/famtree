@@ -11,7 +11,7 @@ export type NormalizableStudioTemplate = FitnessStudioTemplate | NeutralStudioTe
 
 function draftStorageKeyForTemplate(templateId: string): string {
   if (templateId === "fitness-starter-v1") return "amih_studios_fitness_starter_draft_v1";
-  if (templateId === "neutral-base-v1") return "amih_studios_neutral_base_draft_v1";
+  if (templateId === "neutral-base-v1") return "amih_studios_neutral_base_draft_v2";
   const slug = templateId.replace(/[^a-zA-Z0-9]+/g, "_");
   return `amih_studios_${slug}_draft_v1`;
 }
