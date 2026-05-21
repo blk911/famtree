@@ -4,6 +4,14 @@ import type { ElementType } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail, ShieldCheck, Users } from "lucide-react";
 import type { DashboardTabId } from "@/components/dashboard/DashboardVaultTabs";
+import {
+  CtaCard,
+  CtaCardAction,
+  CtaCardGrid,
+  CtaCardIcon,
+  CtaCardLabel,
+  CtaCardStatus,
+} from "@/components/ui/cta-card";
 
 export type DashboardCtaTarget = DashboardTabId | "msg-vault";
 
@@ -90,34 +98,28 @@ export function DashboardActivityCtaStrip({
   }
 
   return (
-    <div className="dashboard-activity-cta-grid" role="group" aria-label="Dashboard activity">
+    <CtaCardGrid role="group" aria-label="Dashboard activity">
       {cards.map(({ target, label, Icon, status, action, urgent }) => {
         const isActive = target !== "msg-vault" && activeTab === target;
         return (
-          <button
+          <CtaCard
             key={target}
-            type="button"
+            urgent={urgent}
+            active={isActive}
             onClick={() => handleSelect(target)}
-            className={`dashboard-activity-cta${urgent ? " dashboard-activity-cta--urgent" : ""}${
-              isActive ? " dashboard-activity-cta--active" : ""
-            }`}
             aria-current={isActive ? "true" : undefined}
           >
-            <span className="dashboard-activity-cta__icon" aria-hidden>
-              <Icon style={{ width: 16, height: 16 }} />
-            </span>
-            <span className="dashboard-activity-cta__label">{label}</span>
-            <span
-              className={`dashboard-activity-cta__status${
-                urgent ? " dashboard-activity-cta__status--urgent" : ""
-              }`}
-            >
+            <CtaCardIcon>
+              <Icon className="h-4 w-4" />
+            </CtaCardIcon>
+            <CtaCardLabel>{label}</CtaCardLabel>
+            <CtaCardStatus urgent={urgent} active={isActive}>
               {status}
-            </span>
-            <span className="dashboard-activity-cta__action">{action}</span>
-          </button>
+            </CtaCardStatus>
+            <CtaCardAction>{action}</CtaCardAction>
+          </CtaCard>
         );
       })}
-    </div>
+    </CtaCardGrid>
   );
 }
