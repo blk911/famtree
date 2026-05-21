@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { hydrateNormalizedStudioFromProfile } from "@/lib/studio/hydrateStudioFromProfile";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
+import { StudiosSpacesPoweredNote } from "@/components/studios/StudiosSpacesPoweredNote";
 import { StudioEditor } from "@/components/studios/StudioEditor";
 import { cloneNeutralStudioTemplate } from "@/lib/studio/templates/cloneStudioTemplate";
 import { normalizeStudioTemplate } from "@/lib/studio/templates/normalizeStudioTemplate";
@@ -11,7 +12,7 @@ import { parseStudioBuilderNavModeFromSearchParams } from "@/lib/studios/builder
 export const metadata: Metadata = {
   title: "Start your studio — AIH Studios",
   description:
-    "Neutral personal-services starter — hero & contact pre-filled from your AMIHUMAN.NET profile when you are signed in.",
+    "Trusted private spaces for real communities — hero and contact pre-filled from your AMIHUMAN.NET profile when you are signed in.",
 };
 
 /** `/studios/start` loads the neutral base envelope + optional profile hydration. See docs/studio-templates.md. */
@@ -38,6 +39,9 @@ export default async function StudiosStartPage({
 
   return (
     <>
+      <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-6">
+        <StudiosSpacesPoweredNote />
+      </div>
       <StudioEditor
         initialStudio={initialStudio}
         mode="template-start"

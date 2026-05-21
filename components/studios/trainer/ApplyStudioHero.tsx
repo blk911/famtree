@@ -12,8 +12,9 @@ import { STUDIOS_INK, STUDIOS_LINE } from "@/lib/studios/visual";
 import type { StudioBuilderNavMode } from "@/components/studios/StudioBuilderNavModeContext";
 import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
-import { StudioHeroIntroColumn } from "./StudioHeroIntroColumn";
-import { StudioHeroHaileyTestimonial } from "./StudioHeroHaileyTestimonial";
+import { heroOsCardById } from "@/lib/studios/communityOsHeroCopy";
+import { StudioHeroPlatformCard } from "./StudioHeroPlatformCard";
+import { StudioHeroTriad } from "./StudioHeroTriad";
 
 const DEFAULT_DRAFT_STORAGE_KEY = "amih_studios_apply_hero_v1";
 
@@ -202,11 +203,17 @@ export function ApplyStudioHero({
   initialIntro,
   foldImageUrl,
   setStudioNavMode,
+  communityDescription: _communityDescription,
+  categoryLabel: _categoryLabel,
+  serviceType: _serviceType,
 }: {
   initialHero: ApplyStudioHeroFields;
   displayName: string;
   imageUrl?: string | null;
   accent: string;
+  communityDescription?: string;
+  categoryLabel?: string;
+  serviceType?: string;
   previewSlug?: string | null;
   onHeroCommit?: (next: ApplyStudioHeroFields) => void;
   draftStorageKey?: string;
@@ -217,6 +224,11 @@ export function ApplyStudioHero({
   setStudioNavMode: (mode: StudioBuilderNavMode) => void;
 }) {
   void _previewSlug;
+  void _communityDescription;
+  void _categoryLabel;
+  void _serviceType;
+  void initialIntro;
+  void foldImageUrl;
   const heroStorageKey = draftStorageKey;
   const [hero, setHero] = useState<ApplyStudioHeroFields>(() =>
     normalizeHeroForSave(sanitizeApplyStudioHeroFields(initialHero)),
@@ -359,7 +371,7 @@ export function ApplyStudioHero({
                   : "bg-amber-100 text-amber-950 ring-1 ring-amber-200/80"
               }`}
             >
-              {studioViewMode === "published" ? "Published listing" : "Preview"}
+              {studioViewMode === "published" ? "Published studio" : "Studio preview"}
             </span>
           </div>
 
@@ -368,62 +380,7 @@ export function ApplyStudioHero({
               className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_8px_30px_-10px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.02]"
               style={{ borderColor: STUDIOS_LINE }}
             >
-              <div className="grid grid-cols-1 md:grid-cols-[35%_30%_35%] md:items-start">
-                <div className="flex flex-col items-start justify-start border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:px-6 md:py-6 md:pb-6 md:pr-6 md:pt-6">
-                  <div className="relative w-full max-w-[240px]">
-                    <TrainerPhoto
-                      displayName={displayName}
-                      imageUrl={imageUrl}
-                      accent={accent}
-                      compact
-                      tileMaxWidth={240}
-                    />
-                    <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/[0.06]" />
-                  </div>
-                  <div className="mt-4 flex w-full max-w-[280px] flex-col gap-2.5 text-left">
-                    <h1
-                      id="studio-public-heading"
-                      className="text-[1.5rem] font-bold leading-tight tracking-tight text-stone-900 md:text-[1.85rem]"
-                      style={{ color: STUDIOS_INK }}
-                    >
-                      {hero.businessName?.trim() || "Studio"}
-                    </h1>
-
-                    {hero.fullName?.trim() ? (
-                      <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
-                        <User className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
-                        <span>{hero.fullName.trim()}</span>
-                      </div>
-                    ) : null}
-
-                    <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
-                      <Mail className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
-                      <span className="min-w-0 break-words">{hero.email?.trim() || "—"}</span>
-                    </div>
-                    <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
-                      <Phone className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
-                      <span className="min-w-0">{hero.phone?.trim() || "—"}</span>
-                    </div>
-                    <div className="flex items-start gap-2.5 text-[15px] leading-snug text-stone-600">
-                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" strokeWidth={2} aria-hidden />
-                      <span className="min-w-0">{hero.physicalAddress?.trim() || "—"}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="min-h-0 min-w-0 border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
-                  <StudioHeroIntroColumn
-                    initialIntro={initialIntro}
-                    draftStorageKey={draftStorageKey ?? DEFAULT_DRAFT_STORAGE_KEY}
-                    foldImageUrl={foldImageUrl}
-                    showEditChrome={false}
-                  />
-                </div>
-
-                <div className="min-w-0 border-t border-black/[0.06] px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
-                  <StudioHeroHaileyTestimonial foldImageUrl={foldImageUrl} />
-                </div>
-              </div>
+              <StudioHeroTriad />
             </div>
           </section>
         </div>
@@ -456,7 +413,7 @@ export function ApplyStudioHero({
           className={`mt-3 overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_10px_36px_-12px_rgba(0,0,0,0.1)] ring-1 ring-black/[0.02] ${studioViewMode === "edit" ? "scroll-mt-24" : ""}`}
           style={{ borderColor: STUDIOS_LINE }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-[35%_30%_35%] md:items-start">
+          <div className="grid grid-cols-1 md:grid-cols-[35%_32.5%_32.5%] md:items-stretch">
             <div className="flex flex-col items-start justify-start border-b border-black/[0.06] bg-gradient-to-b from-stone-50/80 to-white px-5 pb-5 pt-5 md:border-b-0 md:border-r md:px-6 md:py-6 md:pb-6 md:pr-6 md:pt-6">
               <div className="relative w-full max-w-[240px]">
                 <TrainerPhoto
@@ -480,7 +437,9 @@ export function ApplyStudioHero({
                 Profile photo from Settings.
               </p>
 
-              <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.14em] text-stone-500">Studio profile</p>
+              <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.14em] text-stone-500">
+                Private Studio Network · setup
+              </p>
               <span id="hero-contact-heading" className="sr-only">
                 Hero and contact — edit each field and confirm to publish
               </span>
@@ -583,17 +542,12 @@ export function ApplyStudioHero({
               ) : null}
             </div>
 
-            <div className="min-h-0 min-w-0 border-b border-black/[0.06] px-5 pb-5 pt-5 md:border-b-0 md:border-r md:border-black/[0.06] md:px-6 md:py-6 md:pb-6 md:pt-6">
-              <StudioHeroIntroColumn
-                initialIntro={initialIntro}
-                draftStorageKey={draftStorageKey ?? DEFAULT_DRAFT_STORAGE_KEY}
-                foldImageUrl={foldImageUrl}
-                showEditChrome={studioViewMode === "edit"}
-              />
+            <div className="min-h-0 min-w-0 border-b border-black/[0.06] px-5 py-5 md:border-b-0 md:border-r md:px-6 md:py-6">
+              <StudioHeroPlatformCard card={heroOsCardById("client-network")} />
             </div>
 
-            <div className="min-w-0 border-t border-black/[0.06] px-4 py-4 sm:px-5 sm:py-5 md:border-t-0 md:border-l md:border-black/[0.06] md:px-5 md:py-6 lg:px-6">
-              <StudioHeroHaileyTestimonial foldImageUrl={foldImageUrl} />
+            <div className="min-h-0 min-w-0 px-5 py-5 md:px-6 md:py-6">
+              <StudioHeroPlatformCard card={heroOsCardById("family-learning")} />
             </div>
           </div>
         </div>

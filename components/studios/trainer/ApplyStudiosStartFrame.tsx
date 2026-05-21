@@ -14,6 +14,7 @@ export function ApplyStudiosStartFrame({
   initialIntro,
   foldImageUrl,
   provider,
+  categoryLabel,
   accent,
   editorPreviewSlug = null,
   draftStorageKey,
@@ -23,7 +24,8 @@ export function ApplyStudiosStartFrame({
   initialHero: ApplyStudioHeroFields;
   initialIntro: ApplyStudioIntro;
   foldImageUrl: string;
-  provider: Pick<Provider, "displayName" | "imageUrl">;
+  provider: Pick<Provider, "displayName" | "imageUrl" | "bio" | "serviceType" | "category">;
+  categoryLabel: string;
   accent: string;
   editorPreviewSlug?: string | null;
   draftStorageKey?: string;
@@ -85,6 +87,9 @@ export function ApplyStudiosStartFrame({
           foldImageUrl={foldImageUrl}
           displayName={provider.displayName}
           imageUrl={provider.imageUrl}
+          communityDescription={provider.bio ?? undefined}
+          categoryLabel={categoryLabel}
+          serviceType={provider.serviceType}
           accent={accent}
           previewSlug={editorPreviewSlug}
           draftStorageKey={draftStorageKey}

@@ -3,6 +3,25 @@
  * Whitelist filenames in `.gitignore` when committing binaries.
  */
 
+function uploadsVideoPaths(filename: string) {
+  const expectedFileHint = `public/uploads/${filename}`;
+  const videoSrc = `/uploads/${filename.replace(/ /g, "%20")}`;
+  const thumbSrc = `${videoSrc}#t=0.001`;
+  return { expectedFileHint, videoSrc, thumbSrc } as const;
+}
+
+/** Hero triad card 1 — Private Studio Network intro. */
+export const HERO_PSN_INTRO_FILENAME = "Private_Studio_Network_Intro 1.mp4";
+export const HERO_PSN_INTRO = uploadsVideoPaths(HERO_PSN_INTRO_FILENAME);
+
+/** Hero triad card 2 — Private Client Network (business relationships). */
+export const HERO_PSN_BUSINESS_FILENAME = "Private_Studio_Network_buasiness 1.mp4";
+export const HERO_PSN_BUSINESS = uploadsVideoPaths(HERO_PSN_BUSINESS_FILENAME);
+
+/** Hero triad card 3 — Family & Learning Spaces (education). */
+export const HERO_PSN_EDUCATION_FILENAME = "Private_Studio_Network_Education 1.mp4";
+export const HERO_PSN_EDUCATION = uploadsVideoPaths(HERO_PSN_EDUCATION_FILENAME);
+
 /** Filename only — must match disk exactly under `public/uploads/`. */
 export const STUDIO_INTRO_VIDEO_FILENAME =
   "Studios_Relationship-Based_Business_720p_caption.mp4";

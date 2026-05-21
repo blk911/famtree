@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import { SpaceCard }             from "@/components/aihsafe/spaces/SpaceCard";
 import { SpacesSection }         from "@/components/aihsafe/spaces/SpacesSection";
 import { exitMembership }        from "@/components/aihsafe/common/apiClient";
@@ -17,6 +18,11 @@ import {
   TRUST_CIRCLES_EMPTY_SUBHINT,
   TRUST_CIRCLES_EMPTY_TITLE,
 } from "@/lib/trust/display";
+import {
+  PUBLISHED_STUDIO_CREATE_CTA,
+  PUBLISHED_STUDIO_EDITOR_HREF,
+  PUBLISHED_STUDIO_SPACES_INTRO,
+} from "@/lib/studios/publishedSpaceBridge";
 
 interface Props {
   currentUserId: string;
@@ -245,6 +251,26 @@ export function SpacesTab({
 
   return (
     <div style={{ maxWidth: 760 }}>
+      {canCreate ? (
+        <SpacesSection
+          icon="✨"
+          title="Published Studios"
+          count={0}
+          action={
+            <Link href={PUBLISHED_STUDIO_EDITOR_HREF} className="aihsafe-spaces-cta aihsafe-spaces-cta--primary">
+              {PUBLISHED_STUDIO_CREATE_CTA}
+            </Link>
+          }
+        >
+          <p style={{ fontSize: 13, color: "#57534e", lineHeight: 1.5, margin: "0 0 14px", maxWidth: 520 }}>
+            {PUBLISHED_STUDIO_SPACES_INTRO}
+          </p>
+          <Link href={PUBLISHED_STUDIO_EDITOR_HREF} className="aihsafe-spaces-cta aihsafe-spaces-cta--empty">
+            {PUBLISHED_STUDIO_CREATE_CTA}
+          </Link>
+        </SpacesSection>
+      ) : null}
+
       <SpacesSection
         icon="🏠"
         title="Family Groups"

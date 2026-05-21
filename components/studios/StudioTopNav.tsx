@@ -20,8 +20,8 @@ const BUILDER_NAV: readonly { href: string; label: string }[] = [
 const BUSINESS_NAV: readonly { href: string; label: string }[] = [
   { href: "#about", label: "ABOUT" },
   { href: "#services", label: "SERVICES" },
-  { href: "#lessons", label: "PERFORMANCE" },
-  { href: "#svc-inquiry", label: "SVC INQUIRY" },
+  { href: "#why-studios", label: "WHY STUDIOS" },
+  { href: "#how-studios-work", label: "HOW IT WORKS" },
   { href: "#location", label: "LOCATION" },
   { href: "#contact", label: "CONTACT" },
 ];

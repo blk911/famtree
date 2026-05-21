@@ -1,6 +1,5 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import type { Provider, ProviderCategory, StudioOffer } from "@/types/studios";
@@ -8,14 +7,14 @@ import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import type { ApplyStudioHeroFields, ApplyStudioIntro } from "@/lib/studios/applyPreview";
 import type { StudioBuilderNavMode } from "@/lib/studios/builderNavMode";
 import type { StudioInstagramProofCard } from "@/lib/studios/studioProofCard";
+import { LOCAL_PRESENCE_SECTION, START_CONTACT_SECTION_COPY } from "@/lib/studios/communityPlatformCopy";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 import { StudioTopNav } from "@/components/studios/StudioTopNav";
 import { TrainerPhoto } from "./TrainerPhoto";
 import { TrainerOfferCards } from "./TrainerOfferCards";
-import { StudioTrainingCards } from "./StudioTrainingCards";
 import { ApplyStudiosStartFrame } from "./ApplyStudiosStartFrame";
-import { StudioProofCardsSection } from "@/components/studios/StudioProofCardsSection";
-import { useStudioProofCardsDraft } from "@/components/studios/useStudioProofCardsDraft";
+import { StudioHowStudiosWorkSection } from "./StudioHowStudiosWorkSection";
+import { StudioWhyStudiosSection } from "./StudioWhyStudiosSection";
 
 const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
   trainer: "#c9a66b",
@@ -36,17 +35,17 @@ const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
 const NAV_LIVE = [
   { href: "#about", label: "About" },
   { href: "#services", label: "Services" },
-  { href: "#lessons", label: "Performance" },
-  { href: "#svc-inquiry", label: "Svc inquiry" },
+  { href: "#why-studios", label: "Why Studios" },
+  { href: "#how-studios-work", label: "How it works" },
   { href: "#location", label: "Location" },
   { href: "#contact", label: "Contact" },
 ] as const;
 
 type ShellVariant = "live" | "start";
 
-/** Ambient training photography — decorative video placeholder only (Unsplash). */
-const TRAINING_FOLD_IMG =
-  "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=1400&q=75";
+/** Ambient community photography — decorative video placeholder only (Unsplash). */
+const COMMUNITY_FOLD_IMG =
+  "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=75";
 
 /** OpenStreetMap embed (Denver area) — placeholder until studio address geocoding is wired. */
 const STUDIO_PREVIEW_MAP_EMBED =
@@ -135,17 +134,11 @@ function StudioPageMainColumns({
   variant,
   provider,
   offers,
-  studioSurface = "member",
-  proofCards,
-  setProofCards,
 }: {
   nav?: readonly { readonly href: string; readonly label: string }[];
   variant: ShellVariant;
   provider: Provider;
   offers: StudioOffer[];
-  studioSurface?: "member" | "admin";
-  proofCards?: StudioInstagramProofCard[];
-  setProofCards?: Dispatch<SetStateAction<StudioInstagramProofCard[]>>;
 }) {
   if (variant === "start") {
     return (
@@ -158,31 +151,9 @@ function StudioPageMainColumns({
       >
         <div className="mx-auto max-w-[1200px] px-6 pb-[72px] pt-10 md:pt-12">
           <div style={{ minWidth: 0 }}>
-            <section id="lessons" className="scroll-mt-24" style={{ marginBottom: "40px" }}>
-              <h2
-                style={{
-                  fontSize: "clamp(22px, 3vw, 28px)",
-                  fontWeight: 700,
-                  color: STUDIOS_INK,
-                  margin: "0 0 8px",
-                  letterSpacing: "-0.3px",
-                }}
-              >
-                Performance & Longevity
-              </h2>
-              <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: "0 0 24px", lineHeight: 1.5 }}>
-                Choose a training focus, then explore sessions, coaching, and video support built around how you move.
-              </p>
-              <StudioTrainingCards className="mt-2" />
-            </section>
+            <StudioWhyStudiosSection />
 
-            {proofCards != null && setProofCards != null ? (
-              <StudioProofCardsSection
-                studioSurface={studioSurface}
-                proofCards={proofCards}
-                setProofCards={setProofCards}
-              />
-            ) : null}
+            <StudioHowStudiosWorkSection />
 
             <section id="location" className="scroll-mt-24" style={{ marginBottom: "32px" }}>
               <h2
@@ -194,11 +165,11 @@ function StudioPageMainColumns({
                   letterSpacing: "-0.3px",
                 }}
               >
-                Location
+                {LOCAL_PRESENCE_SECTION.title}
               </h2>
               <LocationContactSection
                 provider={provider}
-                description="Your real service area and map preview appear here after your studio is published."
+                description={LOCAL_PRESENCE_SECTION.description}
                 showMap
               />
             </section>
@@ -216,7 +187,7 @@ function StudioPageMainColumns({
                 Contact
               </h2>
               <p style={{ fontSize: "15px", color: STUDIOS_MUTED, margin: 0, lineHeight: 1.55 }}>
-                Clients reach you through service requests and the contact details on your published page.
+                {START_CONTACT_SECTION_COPY}
               </p>
             </section>
           </div>
@@ -273,11 +244,11 @@ function StudioPageMainColumns({
               letterSpacing: "-0.3px",
             }}
           >
-            Location
+            {LOCAL_PRESENCE_SECTION.title}
           </h2>
           <LocationContactSection
             provider={provider}
-            description="Trainings and sessions are booked through AIH Studios — map reflects your listed service area."
+            description="Members know where your community operates and connects — map reflects your listed service area."
             showMap
           />
         </section>
@@ -338,15 +309,14 @@ export function TrainerStudioShell({
   const categoryLabel =
     PROVIDER_CATEGORY_LABELS[provider.category] ?? String(provider.category ?? "Studio");
   const subtitle = [provider.serviceType, categoryLabel, provider.locationLabel].filter(Boolean).join(" · ");
-  const eyebrow = variant === "start" ? "Start your studio" : "AIH Studios provider";
+  const eyebrow =
+    variant === "start" ? "Trusted private spaces for real communities" : "AIH Studios community";
 
   const applyHero = variant === "start" && applyTemplate ? applyTemplate.hero : null;
   const applyIntro = variant === "start" && applyTemplate ? applyTemplate.intro : null;
 
-  const seedProof = variant === "start" ? initialProofCards : [];
-  const proofStorageKey =
-    variant === "start" && draftStorageKey ? `${draftStorageKey}_proof_v6` : null;
-  const [proofCards, setProofCards] = useStudioProofCardsDraft(seedProof, proofStorageKey);
+  void initialProofCards;
+  void studioSurface;
 
   return (
     <>
@@ -354,21 +324,21 @@ export function TrainerStudioShell({
         <ApplyStudiosStartFrame
           initialHero={applyHero}
           initialIntro={applyIntro}
-          foldImageUrl={TRAINING_FOLD_IMG}
-          provider={{ displayName: provider.displayName ?? "Studio", imageUrl: provider.imageUrl }}
+          foldImageUrl={COMMUNITY_FOLD_IMG}
+          provider={{
+            displayName: provider.displayName ?? "Studio",
+            imageUrl: provider.imageUrl,
+            bio: provider.bio,
+            serviceType: provider.serviceType,
+            category: provider.category,
+          }}
+          categoryLabel={categoryLabel}
           accent={accent}
           editorPreviewSlug={editorPreviewSlug}
           draftStorageKey={draftStorageKey}
           initialNavMode={initialBuilderNavMode}
         >
-          <StudioPageMainColumns
-            variant="start"
-            provider={provider}
-            offers={safeOffers}
-            studioSurface={studioSurface}
-            proofCards={proofCards}
-            setProofCards={setProofCards}
-          />
+          <StudioPageMainColumns variant="start" provider={provider} offers={safeOffers} />
         </ApplyStudiosStartFrame>
       ) : (
         <>

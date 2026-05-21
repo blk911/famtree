@@ -1,0 +1,15 @@
+/**
+ * Agent 92 — copy + links bridging Studios (published layer) to AIH Spaces (governed core).
+ * No parallel invite/message systems; Studios routes into existing AIH flows.
+ */
+
+export const PUBLISHED_STUDIO_SPACES_INTRO =
+  "Published Studios are the branded public face of a governed Space — membership, messaging, and invites stay on AIH.";
+
+export const PUBLISHED_STUDIO_CREATE_CTA = "Create Published Studio";
+
+/** Editor until `/spaces/[spaceId]/studio/edit` ships. */
+export const PUBLISHED_STUDIO_EDITOR_HREF = "/studios/start";
+
+/** Public preview surface (slug). */
+export const PUBLISHED_STUDIO_PUBLIC_PATH = "/studios/[slug]";

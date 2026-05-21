@@ -31,6 +31,10 @@ public/uploads/*
 !public/uploads/Studios_Relationship-Based_Business_720p_caption.mp4
 # Right-column hero clip (referenced by lib/studios/studioIntroVideo.ts)
 !public/uploads/studio_3.mp4
+# Hero triad — Private Studio Network lenses (lib/studios/studioIntroVideo.ts)
+!public/uploads/Private_Studio_Network_Intro 1.mp4
+!public/uploads/Private_Studio_Network_buasiness 1.mp4
+!public/uploads/Private_Studio_Network_Education 1.mp4
 # Private Client Feedback — proof card clips
 !public/uploads/Testimony 1.mp4
 !public/uploads/Testimony 2.mp4

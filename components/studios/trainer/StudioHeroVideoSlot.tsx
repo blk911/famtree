@@ -16,6 +16,8 @@ type Props = {
   expectedFileHint: string;
   thumbPlayAriaLabel: string;
   cinemaAriaLabel: string;
+  /** Fill hero triad column width (default max 280px). */
+  fitParentWidth?: boolean;
 };
 
 /** Hero cinema clip: thumbnail + tap opens fullscreen modal (shared owner + testimonial flows). */
@@ -30,6 +32,7 @@ export function StudioHeroVideoSlot({
   expectedFileHint,
   thumbPlayAriaLabel,
   cinemaAriaLabel,
+  fitParentWidth = false,
 }: Props) {
   const modalTitleId = useId();
   const [cinemaOpen, setCinemaOpen] = useState(false);
@@ -93,7 +96,7 @@ export function StudioHeroVideoSlot({
   return (
     <>
       <div
-        className="relative w-full max-w-[280px] overflow-hidden rounded-3xl border bg-black"
+        className={`relative w-full overflow-hidden rounded-3xl border bg-black ${fitParentWidth ? "max-w-none" : "max-w-[280px]"}`}
         style={{
           aspectRatio: "16 / 15",
           borderColor: STUDIOS_LINE,

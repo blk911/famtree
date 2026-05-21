@@ -1,5 +1,6 @@
 "use client";
 
+import { RIGHT_HERO_VIDEO } from "@/lib/studios/communityPlatformCopy";
 import {
   HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_SRC,
   HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_THUMB_SRC,
@@ -7,7 +8,7 @@ import {
 } from "@/lib/studios/studioIntroVideo";
 import { StudioHeroVideoSlot } from "./StudioHeroVideoSlot";
 
-/** Right-column hero clip — private-network Studios story (cinema same as owner intro). */
+/** Right-column hero clip — why private communities matter (emotional / philosophical). */
 export function StudioHeroHaileyTestimonial({ foldImageUrl }: { foldImageUrl: string }) {
   return (
     <div className="relative flex min-h-0 w-full max-w-[280px] flex-col scroll-mt-24">
@@ -15,16 +16,14 @@ export function StudioHeroHaileyTestimonial({ foldImageUrl }: { foldImageUrl: st
         videoSrc={HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_SRC}
         thumbSrc={HAILEY_COMMUNITY_TESTIMONIAL_VIDEO_THUMB_SRC}
         foldImageUrl={foldImageUrl}
-        modalTitle="Private network in Studios"
-        overlayPrimary="Tap › · Your private network"
-        overlaySecondary="Studios · community lens"
+        modalTitle={RIGHT_HERO_VIDEO.modalTitle}
+        overlayPrimary={RIGHT_HERO_VIDEO.overlayPrimary}
+        overlaySecondary={RIGHT_HERO_VIDEO.overlaySecondary}
         expectedFileHint={STUDIOS_COMMUNITY_CLIP_EXPECTED_PATH}
-        thumbPlayAriaLabel="Play private network in Studios clip"
-        cinemaAriaLabel="Private network in Studios video playback"
+        thumbPlayAriaLabel={RIGHT_HERO_VIDEO.thumbPlayAriaLabel}
+        cinemaAriaLabel={RIGHT_HERO_VIDEO.cinemaAriaLabel}
       />
-      <p className="mt-3 max-w-[280px] text-[11px] leading-snug text-stone-500">
-        Community lens — shares how training lands for a real client.
-      </p>
+      <p className="mt-3 max-w-[280px] text-[11px] leading-snug text-stone-500">{RIGHT_HERO_VIDEO.footer}</p>
     </div>
   );
 }
