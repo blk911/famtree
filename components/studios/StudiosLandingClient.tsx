@@ -1,19 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   ArrowRight,
   ChevronRight,
   Cpu,
   Heart,
-  Play,
   ShieldCheck,
   Sparkles,
   Users,
   X,
 } from "lucide-react";
+import { StudioStackCards } from "@/components/studios/landing/StudioStackCards";
 import { MOCK_TESTIMONIALS, MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
 import { StudiosMemberCreateCta } from "@/components/studios/StudiosMemberCreateCta";
@@ -25,289 +25,6 @@ const ink = STUDIOS_INK;
 const muted = STUDIOS_MUTED;
 const line = STUDIOS_LINE;
 const cardShadow = STUDIOS_CARD_SHADOW;
-
-/** Default Studios landing hero — `/public/uploads/studio_landing_1.mp4`. Override with NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC if needed. */
-const STUDIOS_HERO_VIDEO_SRC =
-  typeof process.env.NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC === "string" &&
-  process.env.NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC.trim().length > 0
-    ? process.env.NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC.trim()
-    : "/uploads/studio_landing_1.mp4";
-
-function StudiosHeroVideo() {
-  const [cinemaOpen, setCinemaOpen] = useState(false);
-  const cinemaVideoRef = useRef<HTMLVideoElement>(null);
-  const floatShadow =
-    "0 28px 56px rgba(38, 38, 38, 0.14), 0 12px 28px rgba(38, 38, 38, 0.08), 0 2px 8px rgba(38, 38, 38, 0.04)";
-
-  function closeCinema() {
-    cinemaVideoRef.current?.pause();
-    setCinemaOpen(false);
-  }
-
-  useEffect(() => {
-    if (!cinemaOpen) return;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeCinema();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [cinemaOpen]);
-
-  useEffect(() => {
-    if (!cinemaOpen) return;
-    const v = cinemaVideoRef.current;
-    if (!v) return;
-    const arm = () => {
-      v.muted = false;
-      v.volume = 1;
-      void v.play().catch(() => {});
-    };
-    if (v.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) arm();
-    else {
-      v.addEventListener("canplay", arm, { once: true });
-      return () => v.removeEventListener("canplay", arm);
-    }
-  }, [cinemaOpen]);
-
-  if (STUDIOS_HERO_VIDEO_SRC) {
-    return (
-      <>
-        <div
-          style={{
-            position: "relative",
-            borderRadius: "22px",
-            boxShadow: floatShadow,
-            transform: "rotate(-1.25deg)",
-            transformOrigin: "center center",
-          }}
-        >
-          <button
-            type="button"
-            aria-haspopup="dialog"
-            aria-expanded={cinemaOpen}
-            aria-label="Open studios film in fullscreen viewer"
-            onClick={() => setCinemaOpen(true)}
-            style={{
-              position: "relative",
-              width: "100%",
-              aspectRatio: "16 / 10",
-              borderRadius: "22px",
-              border: "none",
-              padding: 0,
-              cursor: "pointer",
-              overflow: "hidden",
-              display: "block",
-              background:
-                "linear-gradient(145deg, rgba(20, 18, 16, 0.92) 0%, rgba(45, 42, 38, 0.88) 42%, rgba(184, 149, 108, 0.35) 100%)",
-            }}
-          >
-            <div
-              aria-hidden
-              style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "radial-gradient(ellipse 90% 80% at 40% 30%, rgba(212, 165, 116, 0.28), transparent 55%), radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.06), transparent 45%)",
-                opacity: 1,
-              }}
-            />
-            <div
-              style={{
-                position: "relative",
-                zIndex: 2,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "12px",
-                padding: "20px",
-              }}
-            >
-              <span
-                style={{
-                  width: "72px",
-                  height: "72px",
-                  borderRadius: "50%",
-                  background: "rgba(255, 255, 255, 0.95)",
-                  boxShadow: "0 12px 36px rgba(0, 0, 0, 0.35)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  border: "3px solid rgba(255, 255, 255, 0.45)",
-                }}
-              >
-                <Play style={{ width: 32, height: 32, color: "#141416", marginLeft: "4px" }} strokeWidth={2} fill="currentColor" />
-              </span>
-              <span
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: "rgba(245, 242, 234, 0.92)",
-                  textShadow: "0 1px 3px rgba(0, 0, 0, 0.45)",
-                }}
-              >
-                Watch the film
-              </span>
-            </div>
-          </button>
-        </div>
-
-        {cinemaOpen &&
-          typeof document !== "undefined" &&
-          createPortal(
-            <div
-              role="presentation"
-              style={{
-                position: "fixed",
-                inset: 0,
-                zIndex: 400,
-                background: "rgba(12, 10, 8, 0.82)",
-                backdropFilter: "blur(10px)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "16px",
-              }}
-              onClick={(e) => {
-                if (e.target === e.currentTarget) closeCinema();
-              }}
-            >
-              <div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="studios-landing-hero-video-title"
-                style={{
-                  width: "100%",
-                  maxWidth: "min(960px, calc(100vw - 32px))",
-                  borderRadius: "18px",
-                  overflow: "hidden",
-                  background: "#0c0a08",
-                  border: "1px solid rgba(255, 255, 255, 0.12)",
-                  boxShadow: "0 28px 90px rgba(0, 0, 0, 0.55)",
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "12px",
-                    padding: "12px 16px",
-                    borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-                    background: "linear-gradient(90deg, #141210, #1f1c18)",
-                  }}
-                >
-                  <p
-                    id="studios-landing-hero-video-title"
-                    style={{
-                      margin: 0,
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      letterSpacing: "0.14em",
-                      textTransform: "uppercase",
-                      color: "rgba(245, 242, 234, 0.95)",
-                    }}
-                  >
-                    AIH Studios — film
-                  </p>
-                  <button
-                    type="button"
-                    aria-label="Close video"
-                    onClick={closeCinema}
-                    style={{
-                      border: "1px solid rgba(255, 255, 255, 0.18)",
-                      borderRadius: "50%",
-                      width: "40px",
-                      height: "40px",
-                      background: "rgba(255, 255, 255, 0.08)",
-                      color: "#f5f2ea",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <X style={{ width: 20, height: 20 }} />
-                  </button>
-                </div>
-                <div style={{ background: "#000" }}>
-                  <video
-                    ref={cinemaVideoRef}
-                    src={STUDIOS_HERO_VIDEO_SRC}
-                    controls
-                    playsInline
-                    muted={false}
-                    preload="auto"
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      maxHeight: "min(72vh, 720px)",
-                      objectFit: "contain",
-                    }}
-                    onLoadedMetadata={(e) => {
-                      const v = e.currentTarget;
-                      v.muted = false;
-                      v.volume = 1;
-                      void v.play().catch(() => {});
-                    }}
-                  />
-                  <p
-                    style={{
-                      margin: 0,
-                      padding: "10px 14px",
-                      fontSize: "10px",
-                      textAlign: "center",
-                      color: "rgba(245, 242, 234, 0.45)",
-                      borderTop: "1px solid rgba(255, 255, 255, 0.06)",
-                      background: "#0c0a08",
-                    }}
-                  >
-                    Sound on · use controls for volume
-                  </p>
-                </div>
-              </div>
-            </div>,
-            document.body,
-          )}
-      </>
-    );
-  }
-
-  return (
-    <div
-      style={{
-        position: "relative",
-        aspectRatio: "16 / 10",
-        borderRadius: "22px",
-        overflow: "hidden",
-        boxShadow: floatShadow,
-        transform: "rotate(-1.25deg)",
-        transformOrigin: "center center",
-        background:
-          "linear-gradient(145deg, rgba(184, 149, 108, 0.18) 0%, rgba(255, 255, 255, 0.55) 42%, rgba(239, 233, 223, 0.65) 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px",
-        textAlign: "center",
-      }}
-    >
-      <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: muted, lineHeight: 1.5, maxWidth: "280px" }}>
-        Hero video goes here — add your file under{" "}
-        <code style={{ fontSize: "11px", color: ink }}>/public/uploads/</code> and set{" "}
-        <code style={{ fontSize: "11px", color: ink }}>NEXT_PUBLIC_STUDIOS_HERO_VIDEO_SRC</code>.
-      </p>
-    </div>
-  );
-}
 
 type BenefitDef = {
   id: string;
@@ -428,7 +145,7 @@ export function StudiosLanding({
           }
           .studios-hero-badge-row { justify-content: flex-start !important; }
           .studios-hero-ctas { justify-content: flex-start !important; }
-          .studios-hero-video-col {
+          .studios-hero-stack-col {
             justify-self: end;
             width: 100%;
             max-width: 420px;
@@ -553,6 +270,24 @@ export function StudiosLanding({
                 Start your studio <ArrowRight style={{ width: "15px", height: "15px" }} />
               </Link>
               <Link
+                href="/studios/gap-u"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "12px 22px",
+                  borderRadius: "999px",
+                  background: "#fdf2f8",
+                  color: "#9d174d",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  border: "1px solid rgba(157, 23, 77, 0.2)",
+                }}
+              >
+                Explore Gap U <ArrowRight style={{ width: "15px", height: "15px" }} />
+              </Link>
+              <Link
                 href="#studios-live"
                 style={{
                   display: "inline-flex",
@@ -573,8 +308,8 @@ export function StudiosLanding({
             </div>
           </div>
 
-          <div className="studios-hero-video-col">
-            <StudiosHeroVideo />
+          <div className="studios-hero-stack-col">
+            <StudioStackCards />
           </div>
         </div>
       </section>
@@ -709,6 +444,44 @@ export function StudiosLanding({
                 marginBottom: "32px",
               }}
             >
+              <Link
+                className="studios-lp-studio-card"
+                href="/studios/gap-u"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  padding: "16px",
+                  borderRadius: "14px",
+                  background: "linear-gradient(165deg, #fdf2f8 0%, #fff 60%)",
+                  border: "1px solid rgba(157, 23, 77, 0.18)",
+                  boxShadow: cardShadow,
+                  textDecoration: "none",
+                  color: ink,
+                  transition: "transform 0.12s ease",
+                  gridColumn: "1 / -1",
+                  maxWidth: "100%",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: "#9d174d",
+                  }}
+                >
+                  Flagship live Studio
+                </span>
+                <span style={{ fontSize: "16px", fontWeight: 800 }}>Gap U Learning Lab</span>
+                <span style={{ fontSize: "12px", color: muted, lineHeight: 1.45 }}>
+                  Future learning · homeschool pods · invention labs — invite-only, not a public feed.
+                </span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "13px", fontWeight: 700, marginTop: "4px", color: "#9d174d" }}>
+                  Explore Gap U <ChevronRight style={{ width: "14px", height: "14px" }} />
+                </span>
+              </Link>
               {MOCK_PROVIDERS.filter((p) => p.active).map((p) => (
                 <Link
                   key={p.id}

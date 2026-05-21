@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { withApiTrace } from "@/lib/trace";
+import { GAP_U_SLUG } from "@/lib/studios/gapu";
 
 const bodySchema = z.object({
   name: z.string().min(1).max(120),
@@ -23,6 +24,13 @@ export async function POST(req: NextRequest, context: RouteContext) {
         select: { id: true, ownerId: true, publishedFromDraft: { select: { templateType: true } } },
       });
       if (!studio) {
+        if (slug === GAP_U_SLUG) {
+          return NextResponse.json({
+            ok: true,
+            message:
+              "Request received for Gap U. A steward will review your note — guardian rules apply for students. (Flagship preview: persist studio row to store in database.)",
+          });
+        }
         return NextResponse.json({ error: "Studio not found" }, { status: 404 });
       }
 
