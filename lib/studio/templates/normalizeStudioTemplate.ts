@@ -137,7 +137,7 @@ export function normalizeStudioTemplate(envelope: NormalizableStudioTemplate): N
 
   const introBullets = [...d.introBullets].map((b) => safeStr(b)).filter(Boolean);
   const intro: ApplyStudioIntro = {
-    title: safeStr(d.introTitle) || "Why book with us",
+    title: safeStr(d.introTitle) || "How Studios works",
     bullets:
       introBullets.length > 0
         ? introBullets

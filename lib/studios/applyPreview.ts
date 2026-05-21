@@ -48,11 +48,11 @@ export type ApplyStudioIntro = {
 };
 
 export const APPLY_INTRO_PLACEHOLDER: ApplyStudioIntro = {
-  title: "Why train with us",
+  title: "How Studios works",
   bullets: [
-    "• Structured training — no guesswork",
-    "• Clear progression - every session",
-    "• Strength, conditioning, and recovery",
+    "Private member network — updates, events, and videos in one place.",
+    "Focused communication without ads, strangers, or algorithm feeds.",
+    "Organize groups, schedules, and resources — publish once.",
   ],
 };
 

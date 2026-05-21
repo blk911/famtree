@@ -8,6 +8,7 @@ import {
   STUDIO_INTRO_VIDEO_SRC,
   STUDIO_INTRO_VIDEO_THUMB_SRC,
 } from "@/lib/studios/studioIntroVideo";
+import { CENTER_HERO_VIDEO } from "@/lib/studios/communityPlatformCopy";
 import { STUDIOS_INK } from "@/lib/studios/visual";
 import { StudioHeroVideoSlot } from "./StudioHeroVideoSlot";
 
@@ -30,7 +31,7 @@ export function StudioHeroIntroColumn({
   showEditChrome: boolean;
 }) {
   /** Bump suffix when default intro copy changes so stale drafts don’t mask server placeholders. */
-  const storageKey = `${draftStorageKey}_intro_v4`;
+  const storageKey = `${draftStorageKey}_intro_v5`;
   const [intro, setIntro] = useState<ApplyStudioIntro>(initialIntro);
   const [editStoryModalOpen, setEditStoryModalOpen] = useState(false);
   const [titleDraft, setTitleDraft] = useState(initialIntro.title);
@@ -101,13 +102,13 @@ export function StudioHeroIntroColumn({
           videoSrc={STUDIO_INTRO_VIDEO_SRC}
           thumbSrc={STUDIO_INTRO_VIDEO_THUMB_SRC}
           foldImageUrl={foldImageUrl}
-          modalTitle="Studio intro"
-          overlayPrimary="Tap › · Watch intro"
-          overlaySecondary="Jenny says when you&apos;re ready…"
-          badgeLabel={showEditChrome ? "Hero clip" : null}
+          modalTitle={CENTER_HERO_VIDEO.modalTitle}
+          overlayPrimary={CENTER_HERO_VIDEO.overlayPrimary}
+          overlaySecondary={CENTER_HERO_VIDEO.overlaySecondary}
+          badgeLabel={showEditChrome ? "Platform overview" : null}
           expectedFileHint={STUDIO_INTRO_VIDEO_EXPECTED_PATH}
-          thumbPlayAriaLabel="Play studio intro video full screen"
-          cinemaAriaLabel="Studio intro video playback"
+          thumbPlayAriaLabel={CENTER_HERO_VIDEO.thumbPlayAriaLabel}
+          cinemaAriaLabel={CENTER_HERO_VIDEO.cinemaAriaLabel}
         />
 
         <div className="mt-3 max-w-[280px] space-y-1">
@@ -134,7 +135,7 @@ export function StudioHeroIntroColumn({
         >
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-black/[0.08] bg-white p-6 shadow-2xl ring-1 ring-black/[0.04]">
             <h3 id="studio-intro-modal-title" className="text-lg font-bold text-stone-900">
-              Edit intro story
+              Edit platform story
             </h3>
             <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-stone-500">Title — reference (not shown on card)</p>
             <p className="mt-1 rounded-lg bg-stone-50 px-3 py-2 text-sm text-stone-700">{intro.title}</p>
