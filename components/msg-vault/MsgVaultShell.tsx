@@ -3,23 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { FamilySafeShellMode } from "@/components/aihsafe/roles/shellMode";
-import type { MsgVaultTabId } from "@/components/msg-vault/MsgVaultTabs";
-import { MsgVaultLeftNav } from "@/components/msg-vault/MsgVaultLeftNav";
+import { CommunicationShell } from "@/components/msg-vault/layout/CommunicationShell";
+import { CommunicationStatusBar } from "@/components/msg-vault/layout/CommunicationStatusBar";
+import { ConversationListPanel } from "@/components/msg-vault/layout/ConversationListPanel";
 import { ConversationPanel } from "@/components/msg-vault/ConversationPanel";
 import { NoticeDetailPanel } from "@/components/msg-vault/NoticeDetailPanel";
 import { MsgVaultContextRail } from "@/components/msg-vault/rail/MsgVaultContextRail";
-import {
-  MsgVaultOverviewCenter,
-  MsgVaultOverviewSub,
-  MsgVaultOverviewTitle,
-  MsgVaultSummaryCount,
-  MsgVaultSummaryList,
-  MsgVaultSummaryRow,
-  MsgVaultWorkspace,
-  MsgVaultWorkspaceContext,
-  MsgVaultWorkspaceMain,
-  MsgVaultWorkspaceNav,
-} from "@/components/ui/msg-vault";
+import type { MsgVaultTabId } from "@/components/msg-vault/MsgVaultTabs";
+import { normalizeMsgVaultTab } from "@/components/msg-vault/MsgVaultTabs";
 import { StartChatModal } from "@/components/msg-vault/StartChatModal";
 import {
   fetchAllowedChatContacts,
@@ -56,26 +47,18 @@ interface Props {
 export function MsgVaultShell({
   currentUserId,
   shellMode,
-  firstName,
+  firstName: _firstName,
   trustUnits = [],
 }: Props) {
+  void _firstName;
   const searchParams = useSearchParams();
   const deepLinkPeerId = searchParams.get("peer")?.trim() || null;
   const deepLinkHandledRef = useRef(false);
   const conversationLoadSeqRef = useRef(0);
 
-  const initialTab = searchParams.get("tab");
-  const [tab, setTab] = useState<MsgVaultTabId>(() => {
-    if (
-      initialTab === "chats" ||
-      initialTab === "threads" ||
-      initialTab === "notices" ||
-      initialTab === "overview"
-    ) {
-      return initialTab;
-    }
-    return deepLinkPeerId ? "chats" : "overview";
-  });
+  const [tab, setTab] = useState<MsgVaultTabId>(() =>
+    normalizeMsgVaultTab(searchParams.get("tab")),
+  );
   const [conversations, setConversations] = useState<MsgConversationDTO[]>([]);
   const [contacts, setContacts] = useState<AllowedChatContact[]>([]);
   const [loadingContacts, setLoadingContacts] = useState(false);
@@ -351,82 +334,52 @@ export function MsgVaultShell({
     loadingContext: loadingMsgs && !!selectedId,
   };
 
+  const listLoading =
+    tab === "notices" ? loadingNotices : loadingConvs || (tab === "chats" && loadingContacts);
+
   return (
     <div className="app-page-shell--msg-vault">
-      {error && (
-        <p
-          style={{
-            margin:       "0 0 12px",
-            padding:      "10px 14px",
-            borderRadius: 10,
-            background:   "#fef2f2",
-            border:       "1px solid #fecaca",
-            color:        "#b91c1c",
-            fontSize:     13,
-          }}
-        >
+      {error ? (
+        <p className="m-0 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700">
           {error}
         </p>
-      )}
+      ) : null}
 
-      <MsgVaultWorkspace>
-        <MsgVaultWorkspaceNav>
-          <MsgVaultLeftNav
-            tab={tab}
-            onTabChange={setTab}
-            badges={{ notices: unreadNotices }}
-            directCount={directConversations.length}
+      <CommunicationShell
+        statusBar={
+          <CommunicationStatusBar
+            active={tab}
+            onChange={setTab}
+            chatCount={directConversations.length}
             threadCount={threadConversations.length}
-            unreadNotices={unreadNotices}
-            contacts={contacts}
+            noticeCount={unreadNotices}
+          />
+        }
+        list={
+          <ConversationListPanel
+            filter={tab}
+            currentUserId={currentUserId}
             directConversations={directConversations}
             threadConversations={threadConversations}
+            contacts={contacts}
             notices={notices}
-            currentUserId={currentUserId}
             selectedConversationId={selectedId}
             selectedNoticeId={selectedNoticeId}
-            loadingConvs={loadingConvs}
-            loadingContacts={loadingContacts}
-            loadingNotices={loadingNotices}
+            loading={listLoading}
             onSelectConversation={(id) => void selectConversation(id)}
             onOpenContact={(userId, existingId) => void handleOpenContact(userId, existingId)}
+            onSelectNotice={setSelectedNoticeId}
             onStartChat={() => setStartChatOpen(true)}
-            onNoticeSelect={setSelectedNoticeId}
           />
-        </MsgVaultWorkspaceNav>
-
-        <MsgVaultWorkspaceMain>
-          {tab === "overview" && (
-            <MsgVaultOverviewCenter>
-              <MsgVaultOverviewTitle>Welcome back, {firstName}</MsgVaultOverviewTitle>
-              <MsgVaultOverviewSub>Governed messaging workspace</MsgVaultOverviewSub>
-              <p className="m-0 mb-3 text-[12px] leading-snug text-stone-500">
-                Use the section tabs in the left column, or open a row below.
-              </p>
-              <MsgVaultSummaryList>
-                <li>
-                  <MsgVaultSummaryRow onClick={() => setTab("chats")}>
-                    <span>Direct chats</span>
-                    <MsgVaultSummaryCount>{directConversations.length}</MsgVaultSummaryCount>
-                  </MsgVaultSummaryRow>
-                </li>
-                <li>
-                  <MsgVaultSummaryRow onClick={() => setTab("threads")}>
-                    <span>Threads</span>
-                    <MsgVaultSummaryCount>{threadConversations.length}</MsgVaultSummaryCount>
-                  </MsgVaultSummaryRow>
-                </li>
-                <li>
-                  <MsgVaultSummaryRow onClick={() => setTab("notices")}>
-                    <span>Notices</span>
-                    <MsgVaultSummaryCount>{unreadNotices}</MsgVaultSummaryCount>
-                  </MsgVaultSummaryRow>
-                </li>
-              </MsgVaultSummaryList>
-            </MsgVaultOverviewCenter>
-          )}
-
-          {tab === "chats" || tab === "threads" ? (
+        }
+        main={
+          tab === "notices" ? (
+            <NoticeDetailPanel
+              notice={selectedNotice}
+              loading={loadingNotices}
+              onRead={handleNoticeRead}
+            />
+          ) : (
             <ConversationPanel
               conversation={selectedConversation}
               messages={messages}
@@ -434,21 +387,10 @@ export function MsgVaultShell({
               loading={loadingMsgs}
               onMessageSent={handleMessageSent}
             />
-          ) : null}
-
-          {tab === "notices" && (
-            <NoticeDetailPanel
-              notice={selectedNotice}
-              loading={loadingNotices}
-              onRead={handleNoticeRead}
-            />
-          )}
-        </MsgVaultWorkspaceMain>
-
-        <MsgVaultWorkspaceContext>
-          <MsgVaultContextRail {...contextRailProps} />
-        </MsgVaultWorkspaceContext>
-      </MsgVaultWorkspace>
+          )
+        }
+        context={<MsgVaultContextRail {...contextRailProps} />}
+      />
 
       <StartChatModal
         open={startChatOpen}

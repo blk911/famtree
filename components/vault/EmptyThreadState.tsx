@@ -3,10 +3,10 @@ import { ThreadEmptyState as UiThreadEmptyState } from "@/components/ui/thread";
 export type EmptyThreadVariant = "pick" | "no-messages" | "no-chats" | "no-threads";
 
 const COPY: Record<EmptyThreadVariant, { title: string; body?: string }> = {
-  pick: { title: "Select a conversation." },
-  "no-messages": { title: "No messages in this conversation yet." },
-  "no-chats": { title: "No trusted conversations yet." },
-  "no-threads": { title: "No private threads yet." },
+  pick: { title: "Select a chat to begin." },
+  "no-messages": { title: "No messages yet. Say hello." },
+  "no-chats": { title: "No conversations yet." },
+  "no-threads": { title: "No conversations yet." },
 };
 
 export function EmptyThreadState({

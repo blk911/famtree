@@ -2,15 +2,16 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { forwardRef, type ButtonHTMLAttributes, type HTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-export function MsgVaultWorkspace({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+/* ── Agent 107 — IG / iMessage communication shell ─────────────────────── */
+
+export function CommunicationGrid({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "grid w-full min-h-[480px] items-stretch gap-2.5",
+        "grid w-full min-h-[min(72vh,640px)] items-stretch gap-2",
         "grid-cols-1",
-        /* Fixed side tracks — minmax(0, Npx) let the nav column collapse to 0 under pressure (LT regression). */
-        "min-[861px]:grid-cols-[172px_minmax(0,1fr)_188px]",
-        "max-[1024px]:min-[861px]:grid-cols-[160px_minmax(0,1fr)_176px]",
+        "min-[861px]:grid-cols-[minmax(240px,280px)_minmax(0,1fr)_minmax(200px,220px)]",
+        "max-[1024px]:min-[861px]:grid-cols-[minmax(220px,260px)_minmax(0,1fr)_minmax(188px,200px)]",
         className,
       )}
       {...props}
@@ -20,11 +21,19 @@ export function MsgVaultWorkspace({ className, children, ...props }: HTMLAttribu
   );
 }
 
-export function MsgVaultWorkspaceNav({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+export function CommunicationListColumn({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("min-w-0 shrink-0 max-[860px]:order-1", className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+export function CommunicationMainPane({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "min-w-0 shrink-0 max-[860px]:order-1 min-[861px]:w-[172px] max-[1024px]:min-[861px]:w-[160px]",
+        "flex min-h-[min(60vh,520px)] min-w-0 flex-col overflow-hidden rounded-xl border border-stone-200/90 bg-white shadow-sm max-[860px]:order-3",
         className,
       )}
       {...props}
@@ -34,11 +43,12 @@ export function MsgVaultWorkspaceNav({ className, children, ...props }: HTMLAttr
   );
 }
 
-export function MsgVaultWorkspaceMain({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+export function CommunicationContextPane({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "flex min-h-[480px] min-w-0 flex-col overflow-hidden rounded-2xl border border-stone-300 bg-white shadow-[0_2px_14px_rgba(0,0,0,0.06)] max-[860px]:order-3 max-[860px]:min-h-[360px]",
+        "min-w-0 shrink-0 max-[860px]:order-2",
+        "[&_.context-rail]:gap-1 [&_.context-rail-section]:rounded-lg [&_.context-rail-section]:border [&_.context-rail-section]:border-stone-100 [&_.context-rail-section]:bg-white [&_.context-rail-section]:p-2 [&_.context-rail-section]:shadow-none",
         className,
       )}
       {...props}
@@ -48,155 +58,56 @@ export function MsgVaultWorkspaceMain({ className, children, ...props }: HTMLAtt
   );
 }
 
-export function MsgVaultWorkspaceContext({
-  className,
-  children,
-  ...props
-}: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn(
-        "min-w-0 shrink-0 max-[860px]:order-2 min-[861px]:w-[188px] max-[1024px]:min-[861px]:w-[176px]",
-        "[&_.context-rail]:gap-1.5 [&_.context-rail-section]:rounded-[10px] [&_.context-rail-section]:border [&_.context-rail-section]:border-[#f0efee] [&_.context-rail-section]:bg-[var(--surface)] [&_.context-rail-section]:p-[9px_11px] [&_.context-rail-section]:shadow-none",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
-
-export function MsgVaultLeftNavShell({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn(
-        "flex max-h-[min(72vh,640px)] min-h-[480px] flex-col overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface)] max-[860px]:max-h-[240px] max-[860px]:min-h-0",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
-
-export function MsgVaultLeftNavTabs({ className, children, ...props }: HTMLAttributes<HTMLElement>) {
-  return (
-    <nav
-      className={cn("shrink-0 border-b border-[var(--border-subtle)] px-1.5 pt-1.5 pb-1", className)}
-      {...props}
-    />
-  );
-}
-
-export function MsgVaultLeftNavBody({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex-1 overflow-y-auto px-1 py-2", className)} {...props} />;
-}
-
-const navTabVariants = cva(
-  "mb-px flex w-full items-center justify-between rounded-lg border-0 bg-transparent px-2 py-1.5 text-left text-[11px] font-medium text-[var(--muted)] cursor-pointer font-inherit",
+const statusPillVariants = cva(
+  "inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-tight transition font-inherit",
   {
     variants: {
       active: {
-        true: "bg-indigo-50 font-semibold text-[var(--ink)] [&_.msg-vault-tab-count]:text-[var(--accent)]",
-        false: "hover:bg-stone-100 hover:text-[var(--ink)]",
+        true: "border-stone-800 bg-stone-900 text-white",
+        false: "border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:bg-stone-50",
       },
     },
     defaultVariants: { active: false },
   },
 );
 
-export const MsgVaultNavTab = forwardRef<
+export const CommunicationStatusPill = forwardRef<
   HTMLButtonElement,
-  ButtonHTMLAttributes<HTMLButtonElement> & VariantProps<typeof navTabVariants>
->(({ className, active, ...props }, ref) => (
-  <button ref={ref} type="button" className={cn(navTabVariants({ active }), className)} {...props} />
+  ButtonHTMLAttributes<HTMLButtonElement> & VariantProps<typeof statusPillVariants>
+>(({ className, active, type = "button", ...props }, ref) => (
+  <button ref={ref} type={type} className={cn(statusPillVariants({ active }), className)} {...props} />
 ));
-MsgVaultNavTab.displayName = "MsgVaultNavTab";
+CommunicationStatusPill.displayName = "CommunicationStatusPill";
 
-export function MsgVaultTabCount({ className, ...props }: HTMLAttributes<HTMLSpanElement>) {
+export function CommunicationListPane({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <span className={cn("msg-vault-tab-count text-[10px] font-semibold text-stone-400", className)} {...props} />
-  );
-}
-
-export function MsgVaultTabBadge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-violet-600 px-1 text-[9px] font-bold text-white">
-      {children}
-    </span>
-  );
-}
-
-const navRowVariants = cva(
-  "mb-px flex w-full items-center justify-between rounded-lg border-0 bg-transparent px-2 py-1.5 text-left text-xs font-medium text-[var(--muted-body)] cursor-pointer font-inherit",
-  {
-    variants: {
-      active: { true: "bg-indigo-50 font-semibold text-[var(--ink)]", false: "hover:bg-stone-100 hover:text-[var(--ink)]" },
-      urgent: { true: "[&_.msg-vault-nav-count]:font-bold [&_.msg-vault-nav-count]:text-[var(--urgent)]", false: "" },
-    },
-    defaultVariants: { active: false, urgent: false },
-  },
-);
-
-export const MsgVaultNavRowButton = forwardRef<
-  HTMLButtonElement,
-  ButtonHTMLAttributes<HTMLButtonElement> & VariantProps<typeof navRowVariants>
->(({ className, active, urgent, ...props }, ref) => (
-  <button ref={ref} type="button" className={cn(navRowVariants({ active, urgent }), className)} {...props} />
-));
-MsgVaultNavRowButton.displayName = "MsgVaultNavRowButton";
-
-export function MsgVaultNavCount({ className, ...props }: HTMLAttributes<HTMLSpanElement>) {
-  return (
-    <span className={cn("msg-vault-nav-count shrink-0 text-[11px] font-semibold text-stone-400", className)} {...props} />
-  );
-}
-
-export function MsgVaultNavSectionLabel({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return (
-    <p
-      className={cn("mx-2 mb-1 mt-2 text-[10px] font-bold uppercase tracking-wide text-stone-400", className)}
-      {...props}
-    />
-  );
-}
-
-export function MsgVaultNavAction({ className, ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      type="button"
+    <div
       className={cn(
-        "cursor-pointer border-0 bg-transparent px-2 pb-1.5 font-inherit text-[10px] font-bold text-[var(--accent)]",
+        "flex max-h-[min(72vh,640px)] min-h-[min(60vh,520px)] flex-col overflow-hidden rounded-xl border border-stone-200/90 bg-white shadow-sm max-[860px]:max-h-[280px] max-[860px]:min-h-0",
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+    </div>
   );
 }
 
-export function MsgVaultNavEmpty({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("mx-2 my-1 text-[11px] leading-snug text-stone-400", className)} {...props} />;
+export function CommunicationListHeader({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-between gap-2 border-b border-stone-100 px-2.5 py-2",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
 }
 
-export function MsgVaultOverviewCenter({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex-1 px-5 py-5", className)} {...props}>{children}</div>;
-}
-
-export function MsgVaultOverviewTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cn("m-0 mb-1 text-base font-semibold text-[var(--ink)]", className)} {...props} />;
-}
-
-export function MsgVaultOverviewSub({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("m-0 text-xs text-[var(--muted)]", className)} {...props} />;
-}
-
-export function MsgVaultSummaryList({ className, children, ...props }: HTMLAttributes<HTMLUListElement>) {
-  return <ul className={cn("m-3 mt-3 list-none p-0", className)} {...props}>{children}</ul>;
-}
-
-export const MsgVaultSummaryRow = forwardRef<
+export const CommunicationListNewAction = forwardRef<
   HTMLButtonElement,
   ButtonHTMLAttributes<HTMLButtonElement>
 >(({ className, ...props }, ref) => (
@@ -204,23 +115,72 @@ export const MsgVaultSummaryRow = forwardRef<
     ref={ref}
     type="button"
     className={cn(
-      "flex w-full cursor-pointer items-center justify-between rounded-lg border-0 border-b border-stone-100 bg-transparent px-1 py-2.5 text-left font-inherit text-[13px] text-stone-700 transition hover:bg-indigo-50/80 hover:text-[var(--ink)]",
+      "cursor-pointer rounded-md border-0 bg-indigo-50 px-2 py-0.5 font-inherit text-[10px] font-bold text-indigo-700 hover:bg-indigo-100",
       className,
     )}
     {...props}
   />
 ));
-MsgVaultSummaryRow.displayName = "MsgVaultSummaryRow";
+CommunicationListNewAction.displayName = "CommunicationListNewAction";
 
-export function MsgVaultSummaryCount({ className, ...props }: HTMLAttributes<HTMLSpanElement>) {
-  return <span className={cn("text-xs font-semibold text-[var(--muted)]", className)} {...props} />;
+export function CommunicationListScroll({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("flex-1 overflow-y-auto px-1 py-1", className)} {...props}>
+      <div className="flex flex-col gap-0.5">{children}</div>
+    </div>
+  );
 }
 
-export function MsgVaultNoticesGrid({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+export function CommunicationListEmpty({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p className={cn("px-2.5 py-6 text-center text-[12px] text-stone-400", className)} {...props} />
+  );
+}
+
+const listRowVariants = cva(
+  "flex w-full items-center gap-2.5 rounded-lg border border-transparent bg-transparent px-2 py-2 text-left transition",
+  {
+    variants: {
+      active: {
+        true: "border-indigo-200/80 bg-indigo-50/90",
+        false: "hover:bg-stone-50",
+      },
+    },
+    defaultVariants: { active: false },
+  },
+);
+
+export const CommunicationListRow = forwardRef<
+  HTMLButtonElement,
+  ButtonHTMLAttributes<HTMLButtonElement> & VariantProps<typeof listRowVariants>
+>(({ className, active, type = "button", ...props }, ref) => (
+  <button ref={ref} type={type} className={cn(listRowVariants({ active }), className)} {...props} />
+));
+CommunicationListRow.displayName = "CommunicationListRow";
+
+export function CommunicationCenterEmpty({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "grid items-start gap-4 max-[860px]:grid-cols-1 min-[861px]:grid-cols-[minmax(0,1fr)_minmax(0,232px)]",
+        "flex flex-1 flex-col items-center justify-center px-6 py-10 text-center",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function CommunicationCenterEmptyTitle({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p className={cn("m-0 text-[15px] font-medium text-stone-600", className)} {...props} />
+  );
+}
+
+export function CommunicationThreadHeader({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn(
+        "shrink-0 border-b border-stone-100 bg-white px-3 py-2.5",
         className,
       )}
       {...props}
@@ -230,10 +190,40 @@ export function MsgVaultNoticesGrid({ className, children, ...props }: HTMLAttri
   );
 }
 
-export function MsgVaultNoticesList({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("min-w-0 max-[860px]:order-2", className)} {...props}>{children}</div>;
+export function CommunicationThreadTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+  return <h2 className={cn("m-0 text-[15px] font-semibold text-stone-900", className)} {...props} />;
 }
 
-export function MsgVaultNoticesRail({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("min-w-0 max-[860px]:order-1", className)} {...props}>{children}</div>;
+export function CommunicationMessageFeed({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn("flex-1 overflow-y-auto bg-stone-50/80 px-3 py-2", className)}
+      {...props}
+    >
+      {children}
+    </div>
+  );
 }
+
+export function CommunicationComposerWrap({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("shrink-0 border-t border-stone-100 bg-white", className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+export function CommunicationAttachHint({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p
+      className={cn("m-0 border-t border-stone-50 px-3 py-1 text-[10px] text-stone-400", className)}
+      {...props}
+    />
+  );
+}
+
+/* Legacy aliases — dashboard-era names; prefer Communication* exports (Agent 107). */
+export const MsgVaultWorkspace = CommunicationGrid;
+export const MsgVaultWorkspaceNav = CommunicationListColumn;
+export const MsgVaultWorkspaceMain = CommunicationMainPane;
+export const MsgVaultWorkspaceContext = CommunicationContextPane;

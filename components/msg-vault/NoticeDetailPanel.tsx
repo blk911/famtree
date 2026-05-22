@@ -18,22 +18,14 @@ export function NoticeDetailPanel({
 }) {
   if (loading) {
     return (
-      <div style={{ padding: 32, fontSize: 13, color: "#a8a29e" }}>Loading notices…</div>
+      <p className="flex-1 py-8 text-center text-[12px] text-stone-400">Loading notices…</p>
     );
   }
 
   if (!notice) {
     return (
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 32,
-        }}
-      >
-        <p style={{ margin: 0, fontSize: 14, color: "#78716c" }}>Select a notice.</p>
+      <div className="flex flex-1 items-center justify-center px-6 py-10">
+        <p className="m-0 text-[15px] font-medium text-stone-500">Select a notice.</p>
       </div>
     );
   }

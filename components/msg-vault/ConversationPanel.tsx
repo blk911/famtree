@@ -4,7 +4,15 @@ import { useEffect, useRef } from "react";
 import type { MsgConversationDTO, MsgMessageDTO } from "@/types/msg-vault";
 import { conversationLabel } from "@/lib/msg-vault/display";
 import { MessageComposer } from "@/components/msg-vault/MessageComposer";
-import { EmptyThreadState } from "@/components/vault/EmptyThreadState";
+import {
+  CommunicationAttachHint,
+  CommunicationCenterEmpty,
+  CommunicationCenterEmptyTitle,
+  CommunicationComposerWrap,
+  CommunicationMessageFeed,
+  CommunicationThreadHeader,
+  CommunicationThreadTitle,
+} from "@/components/ui/msg-vault";
 import { sortMessagesChronological } from "@/components/vault/vault-message-order";
 
 interface Props {
@@ -30,9 +38,9 @@ export function ConversationPanel({
 
   if (!conversation) {
     return (
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
-        <EmptyThreadState variant="pick" />
-      </div>
+      <CommunicationCenterEmpty>
+        <CommunicationCenterEmptyTitle>Select a chat to begin.</CommunicationCenterEmptyTitle>
+      </CommunicationCenterEmpty>
     );
   }
 
@@ -45,63 +53,43 @@ export function ConversationPanel({
   const ordered = sortMessagesChronological(messages);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 360 }}>
-      <div
-        style={{
-          padding:      "14px 18px",
-          borderBottom: "1px solid #ece9e3",
-          background:   "#fff",
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#1c1917" }}>{title}</h2>
-        {closed && (
-          <p style={{ margin: "6px 0 0", fontSize: 12, color: "#b45309" }}>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <CommunicationThreadHeader>
+        <CommunicationThreadTitle>{title}</CommunicationThreadTitle>
+        {closed ? (
+          <p className="m-0 mt-1 text-[11px] font-medium text-amber-800">
             This conversation is {conversation.status.toLowerCase().replace("_", " ")}.
           </p>
-        )}
-      </div>
+        ) : null}
+      </CommunicationThreadHeader>
 
-      <div
-        style={{
-          flex:     1,
-          overflow: "auto",
-          padding:  16,
-          background: "#fafaf9",
-        }}
-      >
+      <CommunicationMessageFeed>
         {loading ? (
-          <p style={{ padding: 20, fontSize: 13, color: "#a8a29e" }}>Loading messages…</p>
+          <p className="py-4 text-center text-[12px] text-stone-400">Loading messages…</p>
         ) : ordered.length === 0 ? (
-          <EmptyThreadState variant="no-messages" />
+          <p className="py-8 text-center text-[13px] text-stone-500">
+            No messages yet. Say hello.
+          </p>
         ) : (
           ordered.map((msg) => {
             const mine = msg.authorId === currentUserId;
             return (
               <div
                 key={msg.id}
-                style={{
-                  display:        "flex",
-                  justifyContent: mine ? "flex-end" : "flex-start",
-                  marginBottom:   10,
-                }}
+                className={`mb-2 flex ${mine ? "justify-end" : "justify-start"}`}
               >
-                <div style={{ maxWidth: "85%", display: "flex", flexDirection: "column", gap: 4 }}>
-                  {!mine && msg.author && (
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "#78716c" }}>
+                <div className={`flex max-w-[85%] flex-col gap-0.5 ${mine ? "items-end" : "items-start"}`}>
+                  {!mine && msg.author ? (
+                    <span className="px-1 text-[10px] font-semibold text-stone-500">
                       {msg.author.firstName} {msg.author.lastName}
                     </span>
-                  )}
+                  ) : null}
                   <div
-                    style={{
-                      padding:      "10px 14px",
-                      borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-                      background:   mine ? "#6366f1" : "#f5f4f0",
-                      color:        mine ? "white" : "#1c1917",
-                      fontSize:     14,
-                      lineHeight:   1.45,
-                      whiteSpace:   "pre-wrap",
-                      wordBreak:    "break-word",
-                    }}
+                    className={`px-3 py-2 text-[14px] leading-snug break-words whitespace-pre-wrap ${
+                      mine
+                        ? "rounded-2xl rounded-br-md bg-indigo-600 text-white"
+                        : "rounded-2xl rounded-bl-md bg-white text-stone-900 shadow-sm ring-1 ring-stone-200/80"
+                    }`}
                   >
                     {msg.bodyText}
                   </div>
@@ -111,13 +99,16 @@ export function ConversationPanel({
           })
         )}
         <div ref={bottomRef} />
-      </div>
+      </CommunicationMessageFeed>
 
-      <MessageComposer
-        conversationId={conversation.id}
-        disabled={closed}
-        onSent={onMessageSent}
-      />
+      <CommunicationComposerWrap>
+        <MessageComposer
+          conversationId={conversation.id}
+          disabled={closed}
+          onSent={onMessageSent}
+        />
+        <CommunicationAttachHint>Photos and files — coming soon</CommunicationAttachHint>
+      </CommunicationComposerWrap>
     </div>
   );
 }

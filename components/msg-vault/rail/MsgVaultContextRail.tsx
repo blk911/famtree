@@ -54,10 +54,6 @@ export function MsgVaultContextRail(props: MsgVaultContextRailProps) {
 
   return (
     <ContextRail mode="vault">
-      {tab === "overview" && (
-        <OverviewContextRail trustUnits={trustUnits} currentUserId={currentUserId} />
-      )}
-
       {tab === "notices" && <NoticeGovernanceRail notice={selectedNotice} />}
 
       {(tab === "chats" || tab === "threads") && (
@@ -76,7 +72,7 @@ export function MsgVaultContextRail(props: MsgVaultContextRailProps) {
               loading={loadingContext}
             />
           ) : (
-            <IdleContextRail tab={tab} />
+            <IdlePeopleRail trustUnits={trustUnits} currentUserId={currentUserId} tab={tab} />
           )}
         </>
       )}
@@ -84,55 +80,55 @@ export function MsgVaultContextRail(props: MsgVaultContextRailProps) {
   );
 }
 
-function OverviewContextRail({
+function IdlePeopleRail({
   trustUnits,
   currentUserId,
+  tab,
 }: {
   trustUnits: TrustUnitRowForGuard[];
   currentUserId: string;
+  tab: "chats" | "threads";
 }) {
   const activeSpaces = getActiveTrustUnits(trustUnits, currentUserId);
-  if (activeSpaces.length === 0) {
-    return (
-      <ContextRailSection title="Context">
-        <p style={{ margin: 0, fontSize: 11, color: "#a8a29e", lineHeight: 1.45 }}>
-          Select a section to open a conversation.
+
+  return (
+    <>
+      <ContextRailSection title="People">
+        <p className="m-0 text-[11px] leading-snug text-stone-500">
+          {tab === "chats"
+            ? "Pick a chat to see members and trust context."
+            : "Pick a thread to see members and trust context."}
         </p>
       </ContextRailSection>
-    );
-  }
-
-  return (
-    <ContextRailSection title="Trust spaces" count={activeSpaces.length}>
-      <ul style={{ margin: 0, padding: 0, listStyle: "none", fontSize: 11, color: "#57534e" }}>
-        {activeSpaces.slice(0, 5).map((tu) => (
-          <li key={tu.id} style={{ padding: "3px 0" }}>
-            {tu.members
-              .map((m) => (m as { user?: { firstName: string } }).user?.firstName)
-              .filter(Boolean)
-              .join(", ")}
-          </li>
-        ))}
-      </ul>
-    </ContextRailSection>
-  );
-}
-
-function IdleContextRail({ tab }: { tab: "chats" | "threads" }) {
-  return (
-    <ContextRailSection title="Context">
-      <p style={{ margin: 0, fontSize: 11, color: "#a8a29e", lineHeight: 1.45 }}>
-        {tab === "chats" ? "Select a conversation." : "Select a thread."}
-      </p>
-    </ContextRailSection>
+      {activeSpaces.length > 0 ? (
+        <ContextRailSection title="Trust spaces" count={activeSpaces.length}>
+          <ul className="m-0 list-none p-0 text-[11px] text-stone-600">
+            {activeSpaces.slice(0, 4).map((tu) => (
+              <li key={tu.id} className="py-0.5">
+                {tu.members
+                  .map((m) => (m as { user?: { firstName: string } }).user?.firstName)
+                  .filter(Boolean)
+                  .join(", ")}
+              </li>
+            ))}
+          </ul>
+          <Link
+            href="/aihsafe"
+            className="mt-2 inline-block text-[10px] font-semibold text-indigo-600 hover:underline"
+          >
+            Family Safe →
+          </Link>
+        </ContextRailSection>
+      ) : null}
+    </>
   );
 }
 
 function NoticeGovernanceRail({ notice }: { notice: VaultNoticeItem | null }) {
   if (!notice) {
     return (
-      <ContextRailSection title="Context">
-        <p style={{ margin: 0, fontSize: 11, color: "#a8a29e" }}>Select a notice.</p>
+      <ContextRailSection title="Governance">
+        <p className="m-0 text-[11px] text-stone-500">Select a notice.</p>
       </ContextRailSection>
     );
   }
@@ -141,70 +137,43 @@ function NoticeGovernanceRail({ notice }: { notice: VaultNoticeItem | null }) {
   const actionRequired = noticeRequiresAction(notice.kind);
 
   return (
-    <>
-      <ContextRailSection
-        title="Governance"
-        icon={<Bell style={{ width: 14, height: 14, color: "#7c3aed" }} />}
-      >
-        {actionRequired && (
-          <p
-            style={{
-              margin: "0 0 8px",
-              fontSize: 11,
-              fontWeight: 600,
-              color: "#b45309",
-              lineHeight: 1.4,
-            }}
-          >
-            Approval may be required.
-          </p>
-        )}
-        <ContextRailMetaList
-          items={[
-            { label: "Kind", value: notice.kind.replace(/_/g, " ").toLowerCase() },
-            { label: "Source", value: notice.source },
-            { label: "When", value: formatRelativeTime(notice.createdAt) },
-            { label: "Status", value: unread ? "Unread" : "Read" },
-            ...(notice.approvalRequestId
-              ? [{ label: "Approval", value: `Request ${notice.approvalRequestId.slice(0, 8)}…` }]
-              : []),
-            ...(notice.conversationId
-              ? [{ label: "Conversation", value: "Linked" }]
-              : []),
-            ...(notice.trustUnitId ? [{ label: "Trust unit", value: "Linked" }] : []),
-          ]}
-        />
-        {notice.contextLines.length > 0 && (
-          <ul
-            style={{
-              margin: "8px 0 0",
-              padding: 0,
-              listStyle: "none",
-              fontSize: 11,
-              color: "#57534e",
-              lineHeight: 1.45,
-            }}
-          >
-            {notice.contextLines.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-        )}
-        {notice.href && (
-          <Link
-            href={notice.href}
-            style={{
-              display: "inline-block",
-              marginTop: 10,
-              fontSize: 11,
-              fontWeight: 600,
-              color: "#6366f1",
-            }}
-          >
-            Open approval →
-          </Link>
-        )}
-      </ContextRailSection>
-    </>
+    <ContextRailSection
+      title="Governance"
+      icon={<Bell className="h-3.5 w-3.5 text-violet-600" />}
+    >
+      {actionRequired ? (
+        <p className="m-0 mb-2 text-[11px] font-semibold text-amber-800 leading-snug">
+          Approval may be required.
+        </p>
+      ) : null}
+      <ContextRailMetaList
+        items={[
+          { label: "Kind", value: notice.kind.replace(/_/g, " ").toLowerCase() },
+          { label: "Source", value: notice.source },
+          { label: "When", value: formatRelativeTime(notice.createdAt) },
+          { label: "Status", value: unread ? "Unread" : "Read" },
+          ...(notice.approvalRequestId
+            ? [{ label: "Approval", value: `Request ${notice.approvalRequestId.slice(0, 8)}…` }]
+            : []),
+          ...(notice.conversationId ? [{ label: "Chat", value: "Linked" }] : []),
+          ...(notice.trustUnitId ? [{ label: "Trust space", value: "Linked" }] : []),
+        ]}
+      />
+      {notice.contextLines.length > 0 ? (
+        <ul className="m-2 mb-0 list-none p-0 text-[11px] leading-snug text-stone-600">
+          {notice.contextLines.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      ) : null}
+      {notice.href ? (
+        <Link
+          href={notice.href}
+          className="mt-2 inline-block text-[11px] font-semibold text-indigo-600 hover:underline"
+        >
+          Open approval →
+        </Link>
+      ) : null}
+    </ContextRailSection>
   );
 }
