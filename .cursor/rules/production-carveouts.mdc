@@ -1,0 +1,37 @@
+---
+description: Production deploy rhythm, carve-out zones (TaiKos, security), site-wide gates before prod scripts/build.
+alwaysApply: true
+---
+
+# Production deploy and carve-outs (AMIHUMAN.NET)
+
+The live `.net` site is real production (>10 MAU baseline). Routine code changes normally ship quickly after sanity checks—the default is **intent to commit + push** once the patch is coherent.
+
+---
+
+## Carve-outs (blocked from prod push until cleared)
+
+Treat each carve-out row as needing **staging or local parity**, **automated checks where present**, **targeted manual pass**, internal **dogfooding**, and **explicit approval** (“ship TaiKos to prod”) from the repo owner—not “drive-by” merges.
+
+| Scope | Before prod-bound push |
+|--------|-------------------------|
+| **TaiKos** — security-heavy work (trust boundaries, auth/session hardening, crypto, tenancy isolation, CSP/middleware security, sensitive data paths) | Full test cycle + eat dogfood on a realistic account + verbal/written okay to prod. |
+
+**Extending carve-outs**
+
+- Add rows here whenever a subsystem needs stricter-than-default shipping rules.
+- When a carve-out maps to folders, add or update a **second** Cursor rule scoped with `globs` (narrow file patterns) pointing back to those rows so agents see constraints when touching that code.
+
+---
+
+## Site-wide and build-critical (plan before merging)
+
+Treat as **architecture review first**, not “landing under the radar”: global shell, Tailwind/globals, root `layout`, auth/session middleware, Prisma/schema migrations touching sensitive models, CSP or security headers, major dependency bumps, **`next`/build toolchain** changes—and **new third‑party scripts, pixels, tags, or site-wide loaders**.
+
+For these: reconcile impact **before** the change sits on main / before a CI build that publishes to `.net`.
+
+---
+
+## Default vs carve-out ambiguity
+
+When unsure whether a touch is routine or affects trust boundaries/site-wide UX: **assume carve-out**, ask the user once, document the ruling in this file if it establishes a precedent.
