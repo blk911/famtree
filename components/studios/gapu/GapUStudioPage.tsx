@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import type { GapUStudioLiveContent } from "@/lib/studios/gapu/types";
+import { GAP_U_ROADMAP } from "@/lib/studios/gapu/gapuRoadmapData";
+import { GAP_U_SURFACE_CSS } from "@/lib/studios/gapu/gapuSurfaceCss";
 import { GapUAccessBar } from "@/components/studios/gapu/GapUAccessBar";
 
 type Props = {
@@ -22,92 +24,14 @@ function formatDate(iso: string) {
 }
 
 export function GapUStudioPage({ content, isAuthenticated }: Props) {
-  const { hero, whyPrivate, sections, announcements, events, resources } = content;
+  const { hero, whyPrivate, pathways, roadmapPreview, announcements, events, resources } =
+    content;
+
+  const previewPhases = GAP_U_ROADMAP.phases.slice(0, 3);
 
   return (
     <>
-      <style>{`
-        .gapu-page { max-width: 960px; margin: 0 auto; padding: 0 20px 48px; }
-        .gapu-hero {
-          padding: clamp(32px, 5vw, 48px) 0 28px;
-          text-align: center;
-        }
-        .gapu-eyebrow {
-          font-size: 11px; font-weight: 800; letter-spacing: 0.12em;
-          text-transform: uppercase; color: #9d174d; margin: 0 0 12px;
-        }
-        .gapu-headline {
-          font-size: clamp(28px, 4vw, 40px); font-weight: 800; color: #1c1917;
-          letter-spacing: -0.03em; line-height: 1.1; margin: 0 0 14px;
-        }
-        .gapu-sub { font-size: 16px; line-height: 1.55; color: #57534e; max-width: 640px; margin: 0 auto 20px; }
-        .gapu-pillars {
-          display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-        }
-        .gapu-pillar {
-          padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700;
-          background: #fdf2f8; color: #9d174d; border: 1px solid rgba(157, 23, 77, 0.15);
-        }
-        .gapu-section-title {
-          font-size: 22px; font-weight: 800; color: #1c1917; margin: 0 0 20px;
-          letter-spacing: -0.02em;
-        }
-        .gapu-grid {
-          display: grid; gap: 14px;
-          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        }
-        .gapu-card {
-          padding: 18px; border-radius: 18px; background: rgba(255,255,255,0.92);
-          border: 1px solid rgba(28,25,23,0.08);
-          box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-        }
-        .gapu-card h3 { margin: 0 0 8px; font-size: 16px; font-weight: 800; color: #1c1917; }
-        .gapu-card p { margin: 0; font-size: 14px; line-height: 1.5; color: #57534e; }
-        .gapu-card ul { margin: 10px 0 0; padding-left: 18px; font-size: 13px; color: #78716c; }
-        .gapu-why {
-          margin: 36px 0; padding: 28px 24px; border-radius: 22px;
-          background: linear-gradient(165deg, #fdf2f8 0%, #fafaf9 55%, #f5f2ea 100%);
-          border: 1px solid rgba(157, 23, 77, 0.12);
-        }
-        .gapu-why-point { margin-bottom: 16px; }
-        .gapu-why-point h4 { margin: 0 0 4px; font-size: 15px; font-weight: 800; color: #44403c; }
-        .gapu-why-point p { margin: 0; font-size: 14px; color: #57534e; line-height: 1.5; }
-        .gapu-list-item {
-          padding: 14px 16px; border-radius: 14px; background: #fff;
-          border: 1px solid rgba(28,25,23,0.06); margin-bottom: 10px;
-        }
-        .gapu-list-meta { font-size: 11px; font-weight: 700; color: #a8a29e; text-transform: uppercase; letter-spacing: 0.06em; }
-        .gapu-live-badge {
-          display: inline-block; margin-bottom: 24px; padding: 4px 10px; border-radius: 8px;
-          font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
-          background: #ecfdf5; color: #047857;
-        }
-        .gapu-access-bar {
-          display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
-          padding: 20px; border-radius: 18px; background: rgba(28,25,23,0.04);
-          border: 1px solid rgba(28,25,23,0.08); margin-top: 32px;
-        }
-        .gapu-access-label { margin: 0; font-size: 13px; font-weight: 700; color: #44403c; }
-        .gapu-access-desc { margin: 6px 0 0; font-size: 13px; color: #78716c; max-width: 480px; }
-        .gapu-btn {
-          display: inline-flex; align-items: center; justify-content: center;
-          padding: 11px 18px; border-radius: 12px; font-size: 13px; font-weight: 700;
-          text-decoration: none; border: none; cursor: pointer;
-        }
-        .gapu-btn-primary { background: #9d174d; color: #fff; }
-        .gapu-access-hint { width: 100%; margin: 8px 0 0; font-size: 12px; color: #78716c; }
-        .gapu-access-status { text-align: center; font-size: 13px; color: #57534e; margin-top: 12px; }
-        .gapu-modal-backdrop {
-          position: fixed; inset: 0; z-index: 400; background: rgba(0,0,0,0.45);
-          display: flex; align-items: center; justify-content: center; padding: 16px;
-        }
-        .gapu-modal {
-          width: min(420px, 100%); padding: 22px; border-radius: 18px; background: #fff;
-        }
-        .gapu-modal-title { margin: 0 0 8px; font-size: 18px; font-weight: 800; }
-        .gapu-modal-sub { margin: 0 0 16px; font-size: 13px; color: #78716c; line-height: 1.45; }
-        .gapu-back { display: inline-flex; margin-bottom: 16px; font-size: 13px; font-weight: 600; color: #57534e; text-decoration: none; }
-      `}</style>
+      <style>{GAP_U_SURFACE_CSS}</style>
 
       <div className="gapu-page">
         <Link href="/studios" className="gapu-back">
@@ -123,14 +47,32 @@ export function GapUStudioPage({ content, isAuthenticated }: Props) {
               {line}
             </p>
           ))}
-          <div className="gapu-pillars">
-            {hero.pillars.map((p) => (
-              <span key={p} className="gapu-pillar">
-                {p}
-              </span>
+        </header>
+
+        <section aria-labelledby="gapu-pathways">
+          <h2 id="gapu-pathways" className="gapu-section-title">
+            Three pathways in one trusted Studio
+          </h2>
+          <div className="gapu-pathway-grid">
+            {pathways.map((path) => (
+              <article key={path.id} className="gapu-pathway-card">
+                <p className="gapu-pathway-badge">{path.pillarLabel}</p>
+                <h3 className="gapu-pathway-title">{path.title}</h3>
+                <p className="gapu-pathway-lede">{path.lede}</p>
+                <ul style={{ margin: "0 0 14px", paddingLeft: "18px", fontSize: 13, color: "#78716c" }}>
+                  {path.bullets.map((b) => (
+                    <li key={b} style={{ marginBottom: 6 }}>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+                <Link href={path.href} className="gapu-pathway-cta">
+                  {path.ctaLabel}
+                </Link>
+              </article>
             ))}
           </div>
-        </header>
+        </section>
 
         <section className="gapu-why" aria-labelledby="gapu-why-title">
           <h2 id="gapu-why-title" className="gapu-section-title">
@@ -145,29 +87,49 @@ export function GapUStudioPage({ content, isAuthenticated }: Props) {
           ))}
         </section>
 
-        <section aria-labelledby="gapu-core-sections">
-          <h2 id="gapu-core-sections" className="gapu-section-title">
-            Inside Gap U
+        <section aria-labelledby="gapu-roadmap-preview">
+          <h2 id="gapu-roadmap-preview" className="gapu-section-title">
+            {roadmapPreview.title}
           </h2>
-          <div className="gapu-grid">
-            {sections.map((s) => (
-              <article key={s.id} className="gapu-card" id={s.id}>
-                <h3>{s.title}</h3>
-                <p>{s.description}</p>
-                {s.bullets?.length ? (
-                  <ul>
-                    {s.bullets.map((b) => (
-                      <li key={b}>{b}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </article>
+          <p className="gapu-roadmap-muted">{roadmapPreview.intro}</p>
+
+          <div style={{ marginBottom: 18 }}>
+            {previewPhases.map((phase) => (
+              <div key={phase.id} className="gapu-roadmap-phase">
+                <h3>{phase.title}</h3>
+                <p className="gapu-roadmap-phase-summary">{phase.summary}</p>
+                {phase.units.slice(0, 2).map((unit) => (
+                  <div key={unit.title} className="gapu-roadmap-unit">
+                    <h4>{unit.title}</h4>
+                    <p>{unit.detail}</p>
+                  </div>
+                ))}
+              </div>
             ))}
+          </div>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+            <Link href="/studios/gap-u/roadmap" className="gapu-pathway-cta">
+              Open full roadmap
+            </Link>
+            <Link href="/studios/gap-u/program" className="gapu-btn gapu-btn-ghost">
+              Gap U pillar detail
+            </Link>
           </div>
         </section>
 
-        <section style={{ marginTop: 36 }} aria-labelledby="gapu-announcements">
-          <h2 id="gapu-announcements" className="gapu-section-title">
+        <section style={{ marginTop: 40 }} aria-labelledby="gapu-pulse-title">
+          <h2 id="gapu-pulse-title" className="gapu-section-title">
+            Signals inside the live Studio
+          </h2>
+          <p style={{ margin: "-8px 0 16px", fontSize: 14, color: "#78716c", lineHeight: 1.5 }}>
+            Steward notices, RSVP blocks, and field notes stay private to invites — this is illustrative mock data until feeds
+            connect to CMS.
+          </p>
+        </section>
+
+        <section aria-labelledby="gapu-announcements">
+          <h2 id="gapu-announcements" className="gapu-section-title" style={{ fontSize: "18px" }}>
             Announcements
           </h2>
           {announcements.map((a) => (
@@ -181,8 +143,8 @@ export function GapUStudioPage({ content, isAuthenticated }: Props) {
           ))}
         </section>
 
-        <section style={{ marginTop: 36 }} aria-labelledby="gapu-events">
-          <h2 id="gapu-events" className="gapu-section-title">
+        <section style={{ marginTop: 28 }} aria-labelledby="gapu-events">
+          <h2 id="gapu-events" className="gapu-section-title" style={{ fontSize: "18px" }}>
             Events & workshops
           </h2>
           {events.map((e) => (
@@ -197,8 +159,8 @@ export function GapUStudioPage({ content, isAuthenticated }: Props) {
           ))}
         </section>
 
-        <section style={{ marginTop: 36 }} aria-labelledby="gapu-resources">
-          <h2 id="gapu-resources" className="gapu-section-title">
+        <section style={{ marginTop: 28 }} aria-labelledby="gapu-resources">
+          <h2 id="gapu-resources" className="gapu-section-title" style={{ fontSize: "18px" }}>
             Resource vault
           </h2>
           <div className="gapu-grid">

@@ -25,22 +25,67 @@ export const GAP_U_PROVIDER: Provider = {
 /** Replace this object via CMS/API — keep shape stable. */
 export const GAP_U_LIVE_CONTENT: GapUStudioLiveContent = {
   source: "mock",
-  version: 1,
-  updatedAt: "2026-05-19T00:00:00.000Z",
+  version: 2,
+  updatedAt: "2026-05-22T00:00:00.000Z",
   hero: {
-    eyebrow: "Flagship live Studio · invite-only",
-    headline: "Gap U — where future learning happens in private",
+    eyebrow: "AIH Studios · future learning flagship",
+    headline: "The next generation will not learn in public feeds.",
     subcopy: [
-      "Homeschool pods, catch-up tutoring, robotics, and invention labs — coordinated in one trusted Studio, not a public social feed.",
-      "Human guides. Family alignment. Direct parent–tutor connection.",
-    ],
-    pillars: [
-      "Future learning",
-      "Private community",
-      "Human-guided learning",
-      "Invention + tutoring + labs",
+      "Private learning communities, human mentors, invention labs, and real-world guidance — coordinated in trusted spaces.",
     ],
   },
+  roadmapPreview: {
+    title: "Gap U roadmap preview",
+    intro:
+      "A four-phase arc (discover → direct → execute → obstacle literacy) distilled from archived MLP curriculum materials. Full detail lives on the roadmap page.",
+  },
+  pathways: [
+    {
+      id: "family-led-learning",
+      pillarLabel: "Pillar 1",
+      title: "Family-led learning",
+      lede:
+        "Small private cohorts anchored in household intent — not algorithmic timelines. Parents coordinate, tutors collaborate, learners stay grounded.",
+      bullets: [
+        "Homeschool pods sized for accountability",
+        "Parent coordination built into the Studio rhythm",
+        "Trusted tutors inside governed spaces — not open listings",
+        "Safe private venues for minors and mentors",
+      ],
+      ctaLabel: "Build a private learning pod",
+      href: "/studios/gap-u/family-led-learning",
+    },
+    {
+      id: "business-tracks",
+      pillarLabel: "Pillar 2",
+      title: "Real-world business tracks",
+      lede:
+        "Knowledge from operators on the ground: trades, founders, local businesses — structured so apprentices can ingest context and ask sharper questions.",
+      bullets: [
+        "Operator transcripts and teardown patterns",
+        "Business ingestion drills + disciplined answer hygiene",
+        "Trades · founders · local business rotations",
+        "Mentored reality checks instead of syllabus cosplay",
+      ],
+      ctaLabel: "Explore business tracks",
+      href: "/studios/gap-u/business-tracks",
+    },
+    {
+      id: "gap-u-program",
+      pillarLabel: "Pillar 3",
+      title: "Gap U",
+      lede:
+        "High-school graduation is a milestone, not a finish line — this pillar maps a multi-year capability stack: tooling, fabrication, reasoning, compassion.",
+      bullets: [
+        "Six-year capability roadmap (skills + stewardship)",
+        "Invention labs with safety and publishing norms",
+        "AI + tool literacy with human judgment gates",
+        "Engineering · business · systems thinking as one weave",
+      ],
+      ctaLabel: "Enter Gap U",
+      href: "/studios/gap-u/program",
+    },
+  ],
   whyPrivate: {
     title: "Why private learning spaces matter",
     intro:
@@ -68,64 +113,6 @@ export const GAP_U_LIVE_CONTENT: GapUStudioLiveContent = {
       },
     ],
   },
-  sections: [
-    {
-      id: "learning-pods",
-      title: "Learning Pods",
-      description:
-        "Small cohorts by age band and subject — math recovery, writing studio, science inquiry. Pods stay private to invited families.",
-      bullets: ["3–8 learners per pod", "Weekly rhythm + steward check-in", "Parent visibility by default"],
-    },
-    {
-      id: "catch-up-labs",
-      title: "Catch-Up Labs",
-      description:
-        "Short intensive blocks for students who need momentum — skills gaps, executive function, and confidence rebuilds.",
-      bullets: ["Diagnostic intake (invite-only)", "6-week sprint plans", "Tutor notes shared with parents"],
-    },
-    {
-      id: "robotics-ai",
-      title: "Robotics & AI",
-      description:
-        "Hands-on invention tracks: build, code, test. AI literacy taught as toolcraft — ethics and human judgment first.",
-      bullets: ["Beginner → competition pathways", "Mentor office hours", "Showcase nights for members"],
-    },
-    {
-      id: "parent-coordination",
-      title: "Parent Coordination",
-      description:
-        "Household calendars, carpool threads, and consent-aware announcements — one channel instead of five group texts.",
-      bullets: ["Guardian-friendly defaults", "No public parent directory", "Steward-approved broadcasts"],
-    },
-    {
-      id: "tutor-access",
-      title: "Private Tutor Access",
-      description:
-        "Vetted tutors and instructors with governed messaging — not an open marketplace listing phone numbers on the internet.",
-      bullets: ["Invite-only tutor roster", "Session notes in Resource Vault", "Request access → steward review"],
-    },
-    {
-      id: "events-workshops",
-      title: "Events & Workshops",
-      description:
-        "Member workshops: college essay labs, financial aid nights, maker Saturdays. Public never sees member-only details.",
-      bullets: ["RSVP inside Studio", "Recording links for members", "Volunteer sign-ups scoped to Space"],
-    },
-    {
-      id: "resource-vault",
-      title: "Resource Vault",
-      description:
-        "Curriculum guides, lab safety checklists, and tutor playbooks — versioned for the cohort you belong to.",
-      bullets: ["PDF + video refs", "No open downloads", "Updated when stewards publish"],
-    },
-    {
-      id: "announcements",
-      title: "Announcements",
-      description:
-        "Steward broadcasts: weather closures, lab schedule shifts, and milestone celebrations — read when you're ready.",
-      bullets: ["Pinned important items", "No push-notification spam", "Archive stays searchable"],
-    },
-  ],
   announcements: [
     {
       id: "ann-1",

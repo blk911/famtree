@@ -42,10 +42,10 @@ export function GapUAccessBar({ isAuthenticated, isMember = false }: Props) {
     <>
       <div className="gapu-access-bar">
         <div>
-          <p className="gapu-access-label">Invite-only · trusted access</p>
+          <p className="gapu-access-label">Live Studio · invite-only</p>
           <p className="gapu-access-desc">
-            Gap U is a living private Studio — not an open forum or public social feed. Members join
-            through steward review and AIH invite rules.
+            Stewarded Space for pods, mentors, labs, and field notes — not a public timeline. Request trusted access once you are
+            ready to collaborate inside AIH norms.
           </p>
         </div>
         {isMember ? (
