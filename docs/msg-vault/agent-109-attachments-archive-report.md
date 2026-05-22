@@ -1,13 +1,67 @@
 # Agent 109 — Msg Vault attachments + archive report
 
 **Branch:** `msgvault-agent-109-attachments-archive`  
-**Date:** 2026-05-22
+**Date:** 2026-05-22  
+**Implementation commit:** `1f511d6` (`feat(msg-vault): Agent 109 archive chats + governed attachments`)
 
 ---
 
 ## Summary
 
 Adds **per-member chat archive** (hide from active list, no delete) and **governed message attachments** (image / MP4 video / PDF) to Msg Vault without redesigning the Agent 107 shell.
+
+---
+
+## Mission conformance (traceability vs Agent 109 spec)
+
+### Core rules — Do / Don’t
+
+| Rule | Evidence |
+|------|----------|
+| Chats persist by default | No delete-message or conversation-delete endpoints added; archive only toggles viewer `archivedAt`. |
+| Archive replaces “end chat” | **Archive chat** / **Resume chat** in header overflow (`ConversationThreadActions`); no separate “end” flow that removes threads. |
+| Active list clean | `MsgVaultShell` splits `directConversations` vs `archivedDirectConversations`; archived only under **Archived** accordion. |
+| Archived accessible | Selecting archived conversation loads messages; composer disabled until **Resume**. |
+| Attachments governed | `resolveVaultAttachment` + existing `requireActiveParticipant` / `assertCanSendMessage`; uploads go through `uploadFile(..., "msg-vault")`. |
+| No public DM | Msg Vault unchanged re: eligibility (trust/direct key); no inbox broadening introduced. |
+
+| Do NOT | Respect |
+|---------|---------|
+| Delete existing messages | Not implemented (`removeMessage` unchanged for this epic). |
+| Disappearing chats | Not implemented. |
+| Open/public inboxes | Not implemented. |
+| Redesign whole shell | Uses existing `Communication*` / list/center/context layout (Agent 107). |
+| Alter TrustUnit governance | No edits to TU graph/policy core; Msg Vault consumes existing pathways. |
+
+### Part 1 — Archive chat model
+
+| Spec item | Implemented |
+|-----------|--------------|
+| Archive / Resume action (header overflow `…`) | `ConversationThreadActions` → `PATCH` archive/resume via `archiveVaultConversation` / `resumeVaultConversation`. Extra **Resume chat** banner in `ConversationPanel` when viewer archived. |
+| Active rail: active only | Messages-based left rail excludes `archivedForViewer`; contacts row preserved. |
+| **ARCHIVED (count)**, collapsed by default | `ArchivedChatsSection` with chevron toggle; collapsed initial state. |
+| Compact rows: avatar, name, last activity | `ConversationListRow` for archived slice; trailing preview column = formatted last-activity date. Optional **msg count** — not wired (aggregate gap). |
+| Open archived → Resume returns to active | Resume clears `archivedAt`; list state refresh via `MsgVaultShell` `onConversationUpdated`. |
+| Lightweight persistent state, no hard delete | `AihMsgParticipant.archivedAt` only. |
+
+### Part 2 — Attachments
+
+| Spec item | Implemented |
+|-----------|-------------|
+| Image + paperclip, left of send row | `MessageComposer` `ThreadComposer` `footer`: `ImageIcon` + `Paperclip`; hidden `<input accept=…>` |
+| JPG, PNG, WebP, MP4, PDF | Accepted in `MSG_VAULT_ATTACHMENT_ACCEPT` + `resolveVaultAttachment`. **DOC/DOCX** — intentionally **PDF-only** documents in v1 (see gaps). |
+| Message rendering | `MessageAttachmentBubble`: image preview, `<video>` for video, compact link card for docs. |
+| Governance | Same participant + `assertCanSendMessage` as text sends; blocked sends still audited where existing. |
+| Upload states — uploading / failed / sent | **Uploading:** pending strip `"Uploading…"` + Send label `"Sending…"`. **Failed:** `MsgVaultApiError` / validation → `ThreadComposer` error banner; pending file retained. **Sent:** success clears composer and message renders in thread (no ghost bubble row). |
+| Empty state | No attachment strip unless `pendingFile` set; composer unchanged. |
+
+### Parts 3–5 + report
+
+| Part | Implemented |
+|------|----------------|
+| **3 UI cleanup** | `MsgContextRail` trimmed to meta + participants; center dominates; archived section compressed vs active rows. |
+| **4 Data** | `archivedAt`; `attachments` JSON array on messages; minimal Prisma surface. |
+| **5 Validation** | `npm run typecheck` ✅ · `next build` ✅ (rerun locally after changes). Manual QA checklist below remains for human signer. |
 
 ---
 
