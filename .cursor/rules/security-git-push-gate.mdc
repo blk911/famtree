@@ -1,0 +1,47 @@
+---
+description: Before git commit/push, prompt the user for explicit review when security-critical or sensitive paths are in scope (anti–stream-of-consciousness ship).
+alwaysApply: true
+---
+
+# Security & critical data — git commit / push gate
+
+The maintainer often commits/pushes quickly while coding. **Agents must add friction** on sensitive work so shipping is intentional.
+
+## When this rule applies
+
+Before running **`git commit`**, **`git push`**, or a combined flow that ends in either (including after **`git add`** with a broad scope like **`.`**), check the **files that would be included** (staged set, or paths the user asked to add).
+
+If **any** path matches a **trigger** below → **do not** run `git commit` or `git push` in that same turn until Step 2 is done.
+
+### Triggers (non-exhaustive — err on the side of prompting)
+
+- **`never0/`** or path segments **`never0`**, **`sec/`**, **`security/`** (repo-specific security sandboxes)
+- **Secrets & config:** `.env`, `.env.*`, `*.pem`, `*service-account*`, credential JSON, API key material
+- **Auth & session:** `lib/auth/**`, `middleware.ts`, session/cookie/JWT helpers, OAuth callback routes
+- **Trust / governance:** `lib/trust/**`, `lib/aihsafe/**`, msg-vault **governance overlays**, moderation/admin delete/export of user data
+- **Database sensitivity:** `prisma/schema.prisma`, `prisma/migrations/**` when they relate to users, sessions, roles, invitations, vault/messages
+- **Destructive / PII-heavy scripts:** `scripts/**` that delete accounts, purge data, migrate production, bulk export
+- **`TaiKos`** or any carve-out documented in **`production-carveouts.mdc`**
+
+Also prompt if the user asks for **commit/push** but the diff is **large or high-churn** (e.g. 15+ files) **and** any trigger appears—even once.
+
+## Step 2 — required prompt (blocking)
+
+Reply in chat **first**, with:
+
+1. **Heading:** “Security-sensitive changes included — review before git”  
+2. **Bullet list:** each triggering file or directory + **one plain-language line** on what risk it poses (secrets? auth? schema? deletes?).  
+3. **Explicit questions:**  
+   - “Proceed with **`git commit`** using this message / these paths? (**yes/no**)”  
+   - If push was requested or implied: “Proceed with **`git push`** to **which remote branch**? (**yes/no**)”  
+4. Wait for **`yes`** (or narrowed scope) **before** running git write/network commands affected by those answers.
+
+If the user answers **no** or wants to shrink scope → help **`git restore --staged`** / partial **`git add`** and re-scan.
+
+## If nothing triggers
+
+Routine UI/product-only changes may proceed **without** this extra prompt unless the user or **`production-carveouts`** says otherwise.
+
+## Cross-reference
+
+Production rhythm and carve-outs: **`production-carveouts.mdc`**.

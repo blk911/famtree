@@ -35,3 +35,9 @@ For these: reconcile impact **before** the change sits on main / before a CI bui
 ## Default vs carve-out ambiguity
 
 When unsure whether a touch is routine or affects trust boundaries/site-wide UX: **assume carve-out**, ask the user once, document the ruling in this file if it establishes a precedent.
+
+---
+
+## Agent: commit / push friction
+
+For **security-critical or sensitive files** (incl. **never0**, auth, Prisma user/session changes, destructive scripts), agents must follow **`security-git-push-gate.mdc`**—**prompt for explicit yes/no** before `git commit` / `git push`, not auto-ship on stream-of-consciousness requests.
