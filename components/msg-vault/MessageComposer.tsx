@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ThreadComposer } from "@/components/vault/ThreadComposer";
 import { sendVaultMessage, MsgVaultApiError } from "@/lib/msg-vault/api-client";
+import { MSG_VAULT } from "@/lib/product/communication-copy";
 import type { MsgMessageDTO } from "@/types/msg-vault";
 
 interface Props {
@@ -27,7 +28,7 @@ export function MessageComposer({ conversationId, disabled, onSent }: Props) {
       setBody("");
       onSent(message);
     } catch (err) {
-      setError(err instanceof MsgVaultApiError ? err.message : "Could not send message.");
+      setError(err instanceof MsgVaultApiError ? err.message : MSG_VAULT.composerSendError);
     } finally {
       setSending(false);
     }
@@ -39,7 +40,7 @@ export function MessageComposer({ conversationId, disabled, onSent }: Props) {
         value={body}
         onChange={setBody}
         onSubmit={handleSubmit}
-        placeholder={disabled ? "This conversation is closed." : "Write a governed message…"}
+        placeholder={disabled ? MSG_VAULT.composerClosed : MSG_VAULT.composerPlaceholder}
         submitting={sending}
         disabled={disabled}
         error={error}

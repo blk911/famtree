@@ -13,6 +13,7 @@ import {
   vaultSpaceTypeHeaderLabel,
   vaultSpaceTypeShortLabel,
 } from "@/lib/aihsafe/vault-space";
+import { SPACES } from "@/lib/product/communication-copy";
 
 // ─── Category chip (child PostComposer) ───────────────────────────────────────
 
@@ -235,10 +236,10 @@ export function PostComposer({
         onChange={(e) => setBody(e.target.value)}
         placeholder={
           selectedSpace
-            ? `Share something in ${vaultSpaceTypeHeaderLabel(selectedSpace.vaultSpaceType)}…`
+            ? SPACES.postPlaceholder(vaultSpaceTypeHeaderLabel(selectedSpace.vaultSpaceType))
             : viewerMode === "child"
-              ? "Visible only to you — select an approved space above to share."
-              : "Visible only to you — select a space above to share with others."
+              ? "Visible only to you — select an approved space above to post an update."
+              : SPACES.postPlaceholderNoSpace
         }
         rows={3}
         disabled={submitting}

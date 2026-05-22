@@ -9,7 +9,7 @@ import { MsgConversationKind } from "@/types/msg-vault";
 export function conversationKindLabel(kind: MsgConversationDTO["kind"]): string {
   switch (kind) {
     case MsgConversationKind.DIRECT:
-      return "Direct chat";
+      return "Chat";
     case MsgConversationKind.THREAD:
       return "Trust thread";
     case MsgConversationKind.SPACE_THREAD:
@@ -17,7 +17,7 @@ export function conversationKindLabel(kind: MsgConversationDTO["kind"]): string 
     case MsgConversationKind.NOTICE_THREAD:
       return "Notice thread";
     default:
-      return "Conversation";
+      return "Chat";
   }
 }
 

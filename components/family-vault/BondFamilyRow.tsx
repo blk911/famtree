@@ -89,7 +89,7 @@ export function BondFamilyRow({
         <div className="flex items-center border-l border-stone-100 px-2">
           <Link
             href={href}
-            title="Open private conversation"
+            title="Open private chat"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-blue-700 hover:bg-stone-100"
           >
             <MessageCircle className="h-4 w-4" />

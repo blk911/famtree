@@ -19,6 +19,7 @@ import { conversationLabel, formatRelativeTime } from "@/lib/msg-vault/display";
 import { noticeRequiresAction } from "@/lib/msg-vault/context/rail";
 import type { AllowedChatContact, VaultNoticeItem } from "@/lib/msg-vault/api-client";
 import type { MsgConversationDTO } from "@/types/msg-vault";
+import { MSG_VAULT } from "@/lib/product/communication-copy";
 import { MsgConversationKind, MsgNoticeStatus } from "@/types/msg-vault";
 
 function sortByActivity(conversations: MsgConversationDTO[]): MsgConversationDTO[] {
@@ -132,7 +133,7 @@ function ChatsList({
   );
 
   if (conversations.length === 0 && contactOnly.length === 0) {
-    return <CommunicationListEmpty>No conversations yet.</CommunicationListEmpty>;
+    return <CommunicationListEmpty>{MSG_VAULT.emptyChats}</CommunicationListEmpty>;
   }
 
   return (
@@ -164,7 +165,7 @@ function ChatsList({
         <ConversationListRow
           key={c.userId}
           title={`${c.firstName} ${c.lastName}`.trim()}
-          preview="Start chat"
+          preview={MSG_VAULT.startChatPreview}
           firstName={c.firstName}
           lastName={c.lastName}
           photoUrl={c.photoUrl}
@@ -189,7 +190,7 @@ function ThreadsList({
   onSelect: (id: string) => void;
 }) {
   if (conversations.length === 0) {
-    return <CommunicationListEmpty>No conversations yet.</CommunicationListEmpty>;
+    return <CommunicationListEmpty>{MSG_VAULT.emptyThreads}</CommunicationListEmpty>;
   }
 
   return (
@@ -227,7 +228,7 @@ function NoticesList({
   onSelect: (id: string) => void;
 }) {
   if (notices.length === 0) {
-    return <CommunicationListEmpty>No notices.</CommunicationListEmpty>;
+    return <CommunicationListEmpty>{MSG_VAULT.emptyNotices}</CommunicationListEmpty>;
   }
 
   return (

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { MsgConversationDTO, MsgMessageDTO } from "@/types/msg-vault";
 import { conversationLabel } from "@/lib/msg-vault/display";
+import { MSG_VAULT } from "@/lib/product/communication-copy";
 import { MessageComposer } from "@/components/msg-vault/MessageComposer";
 import {
   CommunicationAttachHint,
@@ -39,7 +40,7 @@ export function ConversationPanel({
   if (!conversation) {
     return (
       <CommunicationCenterEmpty>
-        <CommunicationCenterEmptyTitle>Select a chat to begin.</CommunicationCenterEmptyTitle>
+        <CommunicationCenterEmptyTitle>{MSG_VAULT.selectChat}</CommunicationCenterEmptyTitle>
       </CommunicationCenterEmpty>
     );
   }
@@ -58,7 +59,7 @@ export function ConversationPanel({
         <CommunicationThreadTitle>{title}</CommunicationThreadTitle>
         {closed ? (
           <p className="m-0 mt-1 text-[11px] font-medium text-amber-800">
-            This conversation is {conversation.status.toLowerCase().replace("_", " ")}.
+            This chat is {conversation.status.toLowerCase().replace("_", " ")}.
           </p>
         ) : null}
       </CommunicationThreadHeader>
@@ -107,7 +108,7 @@ export function ConversationPanel({
           disabled={closed}
           onSent={onMessageSent}
         />
-        <CommunicationAttachHint>Photos and files — coming soon</CommunicationAttachHint>
+        <CommunicationAttachHint>{MSG_VAULT.attachHint}</CommunicationAttachHint>
       </CommunicationComposerWrap>
     </div>
   );

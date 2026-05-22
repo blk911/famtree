@@ -248,7 +248,7 @@ export function MsgVaultShell({
         setError(
           err instanceof MsgVaultApiError
             ? err.message
-            : "Could not open a governed chat for this person.",
+            : "Could not open chat for this person.",
         );
       }
     },
@@ -281,7 +281,7 @@ export function MsgVaultShell({
         setError(
           err instanceof MsgVaultApiError
             ? err.message
-            : "Could not open a governed chat for this person.",
+            : "Could not open chat for this person.",
         );
         setStartChatOpen(true);
       }

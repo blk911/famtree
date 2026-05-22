@@ -277,7 +277,7 @@ function ThreadContextRail({
                   ]
                 : []),
               {
-                label: "Private threads",
+                label: "Threads",
                 value: privateThreadsEnabled
                   ? "Enabled on this network"
                   : "Disabled by network settings",

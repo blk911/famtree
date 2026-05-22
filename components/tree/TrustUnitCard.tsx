@@ -60,7 +60,7 @@ export function TrustUnitCard({ unit }: { unit: TrustUnit }) {
         </button>
         <Link
           href={`/family-vault/private?unit=${unit.id}`}
-          title="Open private TU conversation"
+          title="Open group thread"
           style={{
             width:"34px",height:"34px",borderRadius:"999px",border:"1px solid #e7e5e4",
             display:"flex",alignItems:"center",justifyContent:"center",color:"#7c3aed",

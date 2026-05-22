@@ -16,6 +16,7 @@ import {
 } from "@/lib/trust/display";
 import type { DashboardRailProps } from "../types";
 import { ThreadTrustUnitButton } from "@/components/ui/thread";
+import { DASHBOARD, MSG_VAULT } from "@/lib/product/communication-copy";
 
 export function DashboardRailProfile({
   flat,
@@ -54,21 +55,22 @@ export function DashboardRailProfile({
     ...extraBondPeers,
   ];
 
-  const vaultConversationCount = directConversations.length + threadConversations.length;
+  const directChatCount = directConversations.length;
+  const threadCount = threadConversations.length;
   const activeTrustUnits = getActiveTrustUnits(trustUnits, currentUserId);
   const draftTrustCount = countDraftTrustUnits(trustUnits, currentUserId);
 
   return (
     <>
-      <ContextRailSection title="Private Threads" count={vaultConversationCount} href="/msg-vault">
+      <ContextRailSection title={DASHBOARD.railPrivateChats} count={directChatCount} href="/msg-vault">
         {error ? (
           <VaultInlineError message={error} onRetry={() => void refreshConversations()} />
         ) : null}
         {loading ? (
-          <p style={{ fontSize: 11, color: "#a8a29e", margin: 0 }}>Loading conversations…</p>
-        ) : vaultConversationCount === 0 ? (
+          <p style={{ fontSize: 11, color: "#a8a29e", margin: 0 }}>{DASHBOARD.railLoadingChats}</p>
+        ) : directChatCount === 0 ? (
           <p style={{ fontSize: 11, color: "#78716c", margin: 0, lineHeight: 1.45 }}>
-            No private threads yet. Start from Msg Vault or pick someone below.
+            {DASHBOARD.railNoChats}
           </p>
         ) : (
           <ThreadSelectorList>
@@ -86,10 +88,23 @@ export function DashboardRailProfile({
                   active={conv.id === activeConversationId}
                   unread={unreadForConversation(conv)}
                   onClick={() => selectConversation(conv.id)}
-                  title={`Open ${label}`}
+                  title={`Open chat with ${label}`}
                 />
               );
             })}
+          </ThreadSelectorList>
+        )}
+      </ContextRailSection>
+
+      <ContextRailSection title={MSG_VAULT.statusThreads} count={threadCount} href="/msg-vault?tab=threads">
+        {loading ? (
+          <p style={{ fontSize: 11, color: "#a8a29e", margin: 0 }}>{DASHBOARD.railLoadingChats}</p>
+        ) : threadCount === 0 ? (
+          <p style={{ fontSize: 11, color: "#78716c", margin: 0, lineHeight: 1.45 }}>
+            {MSG_VAULT.emptyThreads} Open Msg Vault for group threads.
+          </p>
+        ) : (
+          <ThreadSelectorList>
             {threadConversations.map((conv) => {
               const label = conversationLabel(conv, currentUserId);
               const isTu = conv.kind === MsgConversationKind.THREAD && conv.trustUnitId;
@@ -103,7 +118,7 @@ export function DashboardRailProfile({
                   active={conv.id === activeConversationId}
                   unread={unreadForConversation(conv)}
                   onClick={() => selectConversation(conv.id)}
-                  title={`Open ${label}`}
+                  title={`Open thread: ${label}`}
                 />
               );
             })}
@@ -171,7 +186,7 @@ export function DashboardRailProfile({
 
       <ContextRailSection title="Msg Vault" href="/msg-vault">
         <p style={{ fontSize: 11, color: "#78716c", margin: 0, lineHeight: 1.45 }}>
-          Governed chats and threads with relationship checks.
+          {MSG_VAULT.heroSubtitle}. Relationship checks apply before you can message.
         </p>
       </ContextRailSection>
     </>

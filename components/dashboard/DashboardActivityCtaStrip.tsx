@@ -4,6 +4,7 @@ import type { ElementType } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail, ShieldCheck, Users } from "lucide-react";
 import type { DashboardTabId } from "@/components/dashboard/DashboardVaultTabs";
+import { DASHBOARD } from "@/lib/product/communication-copy";
 import {
   CtaCard,
   CtaCardAction,
@@ -47,10 +48,10 @@ function buildCards(signals: DashboardActivitySignals): CardConfig[] {
   return [
     {
       target: "posts",
-      label: "Posts",
+      label: DASHBOARD.tabPosts,
       Icon: Users,
       status: newPostsCount > 0 ? `${newPostsCount} new` : "All caught up",
-      action: "See network activity",
+      action: DASHBOARD.ctaPostsAction,
       urgent: newPostsCount > 0,
     },
     {
@@ -75,7 +76,7 @@ function buildCards(signals: DashboardActivitySignals): CardConfig[] {
       Icon: ShieldCheck,
       status: vaultNotificationCount > 0 ? "Needs review" : "All clear",
       action:
-        vaultNotificationCount > 0 ? "Check governance notices" : "Open governed messages",
+        vaultNotificationCount > 0 ? DASHBOARD.ctaMsgVaultNotices : DASHBOARD.ctaMsgVaultAction,
       urgent: vaultNotificationCount > 0,
     },
   ];

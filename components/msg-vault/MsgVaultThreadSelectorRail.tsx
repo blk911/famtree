@@ -62,7 +62,7 @@ export function MsgVaultThreadSelectorRail({
           <button
             type="button"
             onClick={onStartChat}
-            title="Start a governed chat"
+            title="Start a chat"
             style={{
               display: "inline-flex",
               alignItems: "center",

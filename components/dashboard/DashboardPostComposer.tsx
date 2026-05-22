@@ -10,6 +10,7 @@ import {
   MAX_VIDEO_UPLOAD_BYTES,
 } from "@/lib/media/upload-limits";
 import { preparePostMediaForSubmit } from "@/lib/posts/upload-post-media-client";
+import { DASHBOARD } from "@/lib/product/communication-copy";
 
 type SpaceOption = { id: string; kind: "BUSINESS" | "CLUB" | "CHURCH"; name: string | null };
 
@@ -259,7 +260,7 @@ export function DashboardPostComposer({
         value={body}
         onChange={(ev) => setBody(ev.target.value)}
         rows={2}
-        placeholder="Write a short update…"
+        placeholder={DASHBOARD.postComposerPlaceholder}
         style={{
           width: "100%",
           boxSizing: "border-box",

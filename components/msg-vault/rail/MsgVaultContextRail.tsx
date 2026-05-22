@@ -10,6 +10,7 @@ import { noticeRequiresAction } from "@/lib/msg-vault/context/rail";
 import { formatRelativeTime } from "@/lib/msg-vault/display";
 import { getActiveTrustUnits } from "@/lib/trust/display";
 import type { TrustUnitRowForGuard } from "@/lib/msg-vault/conversation-display-guard";
+import { MSG_VAULT } from "@/lib/product/communication-copy";
 import type {
   GovernanceOverlayDTO,
   MsgConversationDTO,
@@ -95,9 +96,7 @@ function IdlePeopleRail({
     <>
       <ContextRailSection title="People">
         <p className="m-0 text-[11px] leading-snug text-stone-500">
-          {tab === "chats"
-            ? "Pick a chat to see members and trust context."
-            : "Pick a thread to see members and trust context."}
+          {tab === "chats" ? MSG_VAULT.contextPickChat : MSG_VAULT.contextPickThread}
         </p>
       </ContextRailSection>
       {activeSpaces.length > 0 ? (
@@ -128,7 +127,7 @@ function NoticeGovernanceRail({ notice }: { notice: VaultNoticeItem | null }) {
   if (!notice) {
     return (
       <ContextRailSection title="Governance">
-        <p className="m-0 text-[11px] text-stone-500">Select a notice.</p>
+        <p className="m-0 text-[11px] text-stone-500">{MSG_VAULT.selectNotice}</p>
       </ContextRailSection>
     );
   }

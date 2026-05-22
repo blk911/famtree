@@ -19,6 +19,7 @@ import { conversationLabel } from "@/lib/msg-vault/display";
 import { fetchMessages, MsgVaultApiError } from "@/lib/msg-vault/api-client";
 import type { MsgMessageDTO } from "@/types/msg-vault";
 import { MsgConversationKind } from "@/types/msg-vault";
+import { DASHBOARD } from "@/lib/product/communication-copy";
 
 type Props = {
   currentUserId: string;
@@ -41,7 +42,7 @@ export function DashboardPrivateThreadCenter({
   onActiveDirectPeerChange,
 }: Props) {
   const {
-    conversations,
+    directConversations,
     loading: conversationsLoading,
     error: conversationsError,
     activeConversationId,
@@ -57,8 +58,8 @@ export function DashboardPrivateThreadCenter({
   const messagesLoadSeqRef = useRef(0);
 
   const activeConversation = useMemo(
-    () => conversations.find((c) => c.id === activeConversationId) ?? null,
-    [conversations, activeConversationId],
+    () => directConversations.find((c) => c.id === activeConversationId) ?? null,
+    [directConversations, activeConversationId],
   );
 
   const loadMessages = useCallback(async (conversationId: string) => {
@@ -137,23 +138,23 @@ export function DashboardPrivateThreadCenter({
     [recordMessageSent],
   );
 
-  if (conversationsLoading && conversations.length === 0) {
+  if (conversationsLoading && directConversations.length === 0) {
     return (
-      <p style={{ fontSize: 13, color: "#a8a29e", margin: 0 }}>Loading private threads…</p>
+      <p style={{ fontSize: 13, color: "#a8a29e", margin: 0 }}>{DASHBOARD.loadingChats}</p>
     );
   }
 
-  if (!conversationsLoading && conversationsError && conversations.length === 0) {
+  if (!conversationsLoading && conversationsError && directConversations.length === 0) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <VaultInlineError message={conversationsError} onRetry={() => void refreshConversations()} />
-        <EmptyThreadState variant="no-threads" />
+        <EmptyThreadState variant="no-chats" />
       </div>
     );
   }
 
-  if (!conversationsLoading && conversations.length === 0) {
-    return <EmptyThreadState variant="no-threads" />;
+  if (!conversationsLoading && directConversations.length === 0) {
+    return <EmptyThreadState variant="no-chats" />;
   }
 
   if (!activeConversationId || !activeConversation) {
@@ -173,12 +174,7 @@ export function DashboardPrivateThreadCenter({
     activeConversation.status === "LOCKED" ||
     activeConversation.status === "PENDING_APPROVAL";
 
-  const badge =
-    activeConversation.kind === MsgConversationKind.DIRECT
-      ? "Direct"
-      : activeConversation.trustUnitId
-        ? "Trust Unit"
-        : "Thread";
+  const badge = "Chat";
 
   return (
     <ThreadActivePanel>
@@ -204,7 +200,7 @@ export function DashboardPrivateThreadCenter({
 
       {closed && (
         <p style={{ fontSize: 12, color: "#b45309", margin: "0 0 8px" }}>
-          This conversation is {activeConversation.status.toLowerCase().replace("_", " ")}.
+          This chat is {activeConversation.status.toLowerCase().replace("_", " ")}.
         </p>
       )}
 

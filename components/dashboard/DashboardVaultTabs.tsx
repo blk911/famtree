@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Users, Lock, User, Mail, ShieldCheck } from "lucide-react";
 import { DashboardPrivateThreadCenter } from "@/components/dashboard/DashboardPrivateThreadCenter";
+import { DASHBOARD } from "@/lib/product/communication-copy";
 import {
   DashboardPostsPanel,
   type SerializedDashboardPost,
@@ -159,7 +160,7 @@ export function DashboardVaultTabs({
     { id: "posts", label: "Posts", Icon: Users, badge: newPostsCount > 0 ? newPostsCount : undefined },
     {
       id: "pvt-feeds",
-      label: "Private Threads",
+      label: DASHBOARD.tabPrivateChats,
       Icon: Lock,
       badge: newCommentsCount > 0 ? newCommentsCount : undefined,
     },
@@ -274,7 +275,7 @@ export function DashboardVaultTabs({
 
         {tab === "pvt-feeds" && (
           <div>
-            <PanelTitle>Private Threads</PanelTitle>
+            <PanelTitle>{DASHBOARD.panelPrivateChats}</PanelTitle>
             <DashboardPrivateThreadCenter
               key="dashboard-private-feed"
               currentUserId={currentUserId}

@@ -1,12 +1,13 @@
 import { ThreadEmptyState as UiThreadEmptyState } from "@/components/ui/thread";
+import { MSG_VAULT } from "@/lib/product/communication-copy";
 
 export type EmptyThreadVariant = "pick" | "no-messages" | "no-chats" | "no-threads";
 
 const COPY: Record<EmptyThreadVariant, { title: string; body?: string }> = {
-  pick: { title: "Select a chat to begin." },
+  pick: { title: MSG_VAULT.selectChat },
   "no-messages": { title: "No messages yet. Say hello." },
-  "no-chats": { title: "No conversations yet." },
-  "no-threads": { title: "No conversations yet." },
+  "no-chats": { title: MSG_VAULT.emptyChats },
+  "no-threads": { title: MSG_VAULT.emptyThreads },
 };
 
 export function EmptyThreadState({
