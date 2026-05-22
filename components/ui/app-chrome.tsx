@@ -42,7 +42,7 @@ AppMenuButton.displayName = "AppMenuButton";
 
 export function AppContentWrap({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("app-content-pad mx-auto max-w-[900px]", className)} {...props}>
+    <div className={cn("app-content-pad mx-auto max-w-[900px] min-[861px]:max-w-[1040px]", className)} {...props}>
       {children}
     </div>
   );

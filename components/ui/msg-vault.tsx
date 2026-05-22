@@ -7,9 +7,10 @@ export function MsgVaultWorkspace({ className, children, ...props }: HTMLAttribu
     <div
       className={cn(
         "grid w-full min-h-[480px] items-stretch gap-2.5",
-        "grid-cols-1 max-[860px]:grid-cols-1",
-        "min-[861px]:grid-cols-[minmax(0,172px)_minmax(0,2.4fr)_minmax(0,188px)]",
-        "max-[1024px]:min-[861px]:grid-cols-[minmax(0,160px)_minmax(0,2fr)_minmax(0,176px)]",
+        "grid-cols-1",
+        /* Fixed side tracks — minmax(0, Npx) let the nav column collapse to 0 under pressure (LT regression). */
+        "min-[861px]:grid-cols-[172px_minmax(0,1fr)_188px]",
+        "max-[1024px]:min-[861px]:grid-cols-[160px_minmax(0,1fr)_176px]",
         className,
       )}
       {...props}
@@ -21,7 +22,13 @@ export function MsgVaultWorkspace({ className, children, ...props }: HTMLAttribu
 
 export function MsgVaultWorkspaceNav({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("min-w-0 max-[860px]:order-1", className)} {...props}>
+    <div
+      className={cn(
+        "min-w-0 shrink-0 max-[860px]:order-1 min-[861px]:w-[172px] max-[1024px]:min-[861px]:w-[160px]",
+        className,
+      )}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -49,7 +56,8 @@ export function MsgVaultWorkspaceContext({
   return (
     <div
       className={cn(
-        "min-w-0 max-[860px]:order-2 [&_.context-rail]:gap-1.5 [&_.context-rail-section]:rounded-[10px] [&_.context-rail-section]:border [&_.context-rail-section]:border-[#f0efee] [&_.context-rail-section]:bg-[var(--surface)] [&_.context-rail-section]:p-[9px_11px] [&_.context-rail-section]:shadow-none",
+        "min-w-0 shrink-0 max-[860px]:order-2 min-[861px]:w-[188px] max-[1024px]:min-[861px]:w-[176px]",
+        "[&_.context-rail]:gap-1.5 [&_.context-rail-section]:rounded-[10px] [&_.context-rail-section]:border [&_.context-rail-section]:border-[#f0efee] [&_.context-rail-section]:bg-[var(--surface)] [&_.context-rail-section]:p-[9px_11px] [&_.context-rail-section]:shadow-none",
         className,
       )}
       {...props}
@@ -196,7 +204,7 @@ export const MsgVaultSummaryRow = forwardRef<
     ref={ref}
     type="button"
     className={cn(
-      "flex w-full cursor-pointer items-center justify-between border-0 border-b border-stone-100 bg-transparent py-2.5 text-left font-inherit text-[13px] text-stone-700 hover:text-[var(--ink)]",
+      "flex w-full cursor-pointer items-center justify-between rounded-lg border-0 border-b border-stone-100 bg-transparent px-1 py-2.5 text-left font-inherit text-[13px] text-stone-700 transition hover:bg-indigo-50/80 hover:text-[var(--ink)]",
       className,
     )}
     {...props}

@@ -400,6 +400,9 @@ export function MsgVaultShell({
             <MsgVaultOverviewCenter>
               <MsgVaultOverviewTitle>Welcome back, {firstName}</MsgVaultOverviewTitle>
               <MsgVaultOverviewSub>Governed messaging workspace</MsgVaultOverviewSub>
+              <p className="m-0 mb-3 text-[12px] leading-snug text-stone-500">
+                Use the section tabs in the left column, or open a row below.
+              </p>
               <MsgVaultSummaryList>
                 <li>
                   <MsgVaultSummaryRow onClick={() => setTab("chats")}>
