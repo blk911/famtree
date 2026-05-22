@@ -69,6 +69,8 @@ export interface MsgConversationDTO {
   createdAt: string;
   updatedAt: string;
   participants?: MsgParticipantDTO[];
+  /** True when the current viewer has archived this chat (per-participant, Agent 109). */
+  archivedForViewer?: boolean;
 }
 
 /** Input for creating a governed group / trust-unit thread (Agent 50+). */

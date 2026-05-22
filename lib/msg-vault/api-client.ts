@@ -130,6 +130,49 @@ export async function sendVaultMessage(
   return data.message;
 }
 
+export async function sendVaultMessageWithFile(
+  conversationId: string,
+  file: File,
+  bodyText?: string,
+): Promise<MsgMessageDTO> {
+  const form = new FormData();
+  form.append("file", file);
+  if (bodyText?.trim()) form.append("bodyText", bodyText.trim());
+  const data = await parseEnvelope<{ message: MsgMessageDTO }>(
+    await fetch(`/api/msg-vault/conversations/${conversationId}/messages`, {
+      method: "POST",
+      body: form,
+    }),
+  );
+  return data.message;
+}
+
+export async function archiveVaultConversation(
+  conversationId: string,
+): Promise<MsgConversationDTO> {
+  const data = await parseEnvelope<{ conversation: MsgConversationDTO }>(
+    await fetch(`/api/msg-vault/conversations/${conversationId}`, {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ action: "archive" }),
+    }),
+  );
+  return data.conversation;
+}
+
+export async function resumeVaultConversation(
+  conversationId: string,
+): Promise<MsgConversationDTO> {
+  const data = await parseEnvelope<{ conversation: MsgConversationDTO }>(
+    await fetch(`/api/msg-vault/conversations/${conversationId}`, {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ action: "resume" }),
+    }),
+  );
+  return data.conversation;
+}
+
 export interface VaultNoticeItem extends MsgNoticeDTO {
   source: "persisted" | "approval" | "invite" | "audit";
   sourceId: string;

@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import type { MsgVaultTabId } from "@/components/msg-vault/MsgVaultTabs";
 import { ConversationListRow } from "@/components/msg-vault/layout/ConversationListRow";
 import {
@@ -38,6 +40,7 @@ export function ConversationListPanel({
   filter,
   currentUserId,
   directConversations,
+  archivedDirectConversations = [],
   threadConversations,
   contacts,
   notices,
@@ -52,6 +55,7 @@ export function ConversationListPanel({
   filter: MsgVaultTabId;
   currentUserId: string;
   directConversations: MsgConversationDTO[];
+  archivedDirectConversations?: MsgConversationDTO[];
   threadConversations: MsgConversationDTO[];
   contacts: AllowedChatContact[];
   notices: VaultNoticeItem[];
@@ -83,14 +87,22 @@ export function ConversationListPanel({
         {loading ? (
           <CommunicationListEmpty>Loading…</CommunicationListEmpty>
         ) : filter === "chats" ? (
-          <ChatsList
-            conversations={sortByActivity(directConversations)}
-            contacts={contacts}
-            currentUserId={currentUserId}
-            selectedConversationId={selectedConversationId}
-            onSelectConversation={onSelectConversation}
-            onOpenContact={onOpenContact}
-          />
+          <>
+            <ChatsList
+              conversations={sortByActivity(directConversations)}
+              contacts={contacts}
+              currentUserId={currentUserId}
+              selectedConversationId={selectedConversationId}
+              onSelectConversation={onSelectConversation}
+              onOpenContact={onOpenContact}
+            />
+            <ArchivedChatsSection
+              conversations={sortByActivity(archivedDirectConversations)}
+              currentUserId={currentUserId}
+              selectedConversationId={selectedConversationId}
+              onSelect={onSelectConversation}
+            />
+          </>
         ) : filter === "threads" ? (
           <ThreadsList
             conversations={sortByActivity(threadConversations)}
@@ -175,6 +187,65 @@ function ChatsList({
         />
       ))}
     </>
+  );
+}
+
+function formatArchiveActivity(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function ArchivedChatsSection({
+  conversations,
+  currentUserId,
+  selectedConversationId,
+  onSelect,
+}: {
+  conversations: MsgConversationDTO[];
+  currentUserId: string;
+  selectedConversationId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  if (conversations.length === 0) return null;
+
+  return (
+    <div className="mt-1 shrink-0 border-t border-stone-100 pt-1">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full cursor-pointer items-center gap-1 border-0 bg-transparent px-2.5 py-1.5 text-left font-inherit text-[10px] font-bold uppercase tracking-wide text-stone-400 hover:text-stone-600"
+      >
+        {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+        {MSG_VAULT.archivedSection} ({conversations.length})
+      </button>
+      {expanded ? (
+        <div className="pb-1">
+          {conversations.map((conv) => {
+            const other = otherParticipant(conv, currentUserId);
+            const user = other?.user;
+            const label = conversationLabel(conv, currentUserId);
+            const firstName = user?.firstName ?? label.split(" ")[0] ?? "?";
+            const lastName = user?.lastName ?? label.split(" ").slice(1).join(" ") ?? "";
+            const when = formatArchiveActivity(conv.lastMessageAt ?? conv.updatedAt);
+            return (
+              <ConversationListRow
+                key={conv.id}
+                title={label}
+                preview={when || "…"}
+                firstName={firstName}
+                lastName={lastName}
+                photoUrl={user?.photoUrl ?? null}
+                active={conv.id === selectedConversationId}
+                unread={0}
+                onClick={() => onSelect(conv.id)}
+              />
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
   );
 }
 

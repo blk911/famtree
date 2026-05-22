@@ -14,6 +14,7 @@ import {
   sniffImageMime,
   sniffVideoContainerMime,
 } from "@/lib/media/image-sniff";
+import { resolveVaultAttachment } from "@/lib/msg-vault/attachments";
 
 export {
   POST_IMAGE_MAX_BYTES,
@@ -150,15 +151,26 @@ export async function validateImage(file: File): Promise<string | null> {
 }
 
 // ── Upload — returns the public URL ──────────────────────────────────────────
+function extensionForDocMime(mimeType: string): string {
+  return mimeType === "application/pdf" ? "pdf" : "bin";
+}
+
 export async function uploadFile(
   file: File,
-  folder: "profile" | "cover" | "gallery" | "post",
+  folder: "profile" | "cover" | "gallery" | "post" | "msg-vault",
   filename: string,
 ): Promise<string> {
   let mime: string;
   let ext: string;
 
-  if (folder === "post") {
+  if (folder === "msg-vault") {
+    const r = await resolveVaultAttachment(file);
+    if (!r.ok) throw new Error(`INVALID_IMAGE:${r.error}`);
+    mime = r.attachment.mimeType;
+    if (r.attachment.kind === "video") ext = extensionForVideoMime(mime);
+    else if (r.attachment.kind === "document") ext = extensionForDocMime(mime);
+    else ext = extensionForImageMime(mime);
+  } else if (folder === "post") {
     const r = await resolvePostAttachmentMime(file);
     if (!r.ok) throw new Error(`INVALID_IMAGE:${r.error}`);
     mime = r.mime;

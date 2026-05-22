@@ -19,7 +19,10 @@ export const MSG_VAULT = {
   composerPlaceholder: "Write a message…",
   composerClosed: "This chat is closed.",
   composerSendError: "Could not send message.",
-  attachHint: "Photos and files — coming soon",
+  attachHint: "JPG, PNG, WebP, MP4, or PDF",
+  archiveChat: "Archive chat",
+  resumeChat: "Resume chat",
+  archivedSection: "Archived",
   contextPickChat: "Pick a chat to see members and trust context.",
   contextPickThread: "Pick a thread to see members and trust context.",
 } as const;

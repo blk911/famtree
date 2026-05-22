@@ -1,12 +1,16 @@
 // Msg Vault — message services (Agent 50).
 
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { buildActorContext } from "@/lib/aihsafe/context/buildActorContext";
 import { asAIHUserId } from "@/types/aihsafe/ids";
 import { requireActiveParticipant } from "@/lib/msg-vault/access";
 import { validationError, accessDenied } from "@/lib/msg-vault/errors";
 import { toMessageDTO } from "@/lib/msg-vault/mappers";
+import { resolveVaultAttachment } from "@/lib/msg-vault/attachments";
 import { assertCanSendMessage } from "@/lib/msg-vault/policy";
+import { uploadFile } from "@/lib/storage";
+import type { MsgAttachmentDTO } from "@/types/msg-vault/attachment";
 import { createNotice } from "@/lib/msg-vault/notices";
 import type { MsgMessageDTO, SendMessageInput } from "@/types/msg-vault";
 import { MsgNoticeKind } from "@/types/msg-vault";
@@ -59,7 +63,7 @@ export async function sendMessage(
   conversationId: string,
   input: SendMessageInput,
 ): Promise<MsgMessageDTO> {
-  await requireActiveParticipant(actorUserId, conversationId);
+  const participant = await requireActiveParticipant(actorUserId, conversationId);
 
   const conversation = await prisma.aihMsgConversation.findUnique({
     where: { id: conversationId },
@@ -74,16 +78,33 @@ export async function sendMessage(
   if (conversation.status === "PENDING_APPROVAL") {
     throw accessDenied("This conversation is waiting for approval.");
   }
+  if (participant.archivedAt) {
+    throw accessDenied("Resume this chat before sending new messages.");
+  }
+
+  const bodyText = (input.bodyText ?? "").trim();
+  const attachments = input.attachments ?? [];
+  if (!bodyText && attachments.length === 0) {
+    throw validationError("Message must include text or an attachment.");
+  }
 
   const actor = await buildActorContext(asAIHUserId(actorUserId));
-  await assertCanSendMessage(actor, input.bodyText);
+  if (bodyText) {
+    await assertCanSendMessage(actor, bodyText);
+  } else {
+    await assertCanSendMessage(actor, "[attachment]");
+  }
 
   const message = await prisma.$transaction(async (tx) => {
     const row = await tx.aihMsgMessage.create({
       data: {
         conversationId,
         authorId:  actorUserId,
-        bodyText:  input.bodyText.trim(),
+        bodyText:  bodyText || (attachments.length > 0 ? "" : " "),
+        attachments:
+          attachments.length > 0
+            ? (attachments as unknown as Prisma.InputJsonValue)
+            : undefined,
         status:    "SENT",
       },
       include: { author: { select: AUTHOR_SELECT } },
@@ -100,7 +121,10 @@ export async function sendMessage(
         messageId:   row.id,
         actorUserId,
         eventType:   "message.sent",
-        contextJson: { bodyLength: row.bodyText.length },
+        contextJson: {
+          bodyLength: row.bodyText.length,
+          attachmentCount: attachments.length,
+        },
       },
     });
 
@@ -108,6 +132,25 @@ export async function sendMessage(
   });
 
   return toMessageDTO(message);
+}
+
+export async function sendMessageWithFile(
+  actorUserId: string,
+  conversationId: string,
+  file: File,
+  bodyText?: string,
+): Promise<MsgMessageDTO> {
+  const resolved = await resolveVaultAttachment(file);
+  if (!resolved.ok) {
+    throw validationError(resolved.error);
+  }
+  const filename = `${conversationId}-${Date.now()}`;
+  const url = await uploadFile(file, "msg-vault", filename);
+  const attachment: MsgAttachmentDTO = { ...resolved.attachment, url };
+  return sendMessage(actorUserId, conversationId, {
+    bodyText,
+    attachments: [attachment],
+  });
 }
 
 export async function removeMessage(actorUserId: string, messageId: string): Promise<void> {

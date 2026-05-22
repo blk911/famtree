@@ -5,6 +5,7 @@ import type {
   AihMsgParticipant,
   User,
 } from "@prisma/client";
+import { parseAttachmentsJson } from "@/lib/msg-vault/attachments";
 import type {
   MsgConversationDTO,
   MsgMessageDTO,
@@ -64,6 +65,7 @@ export function toConversationDTO(
 }
 
 export function toMessageDTO(row: MessageWithAuthor): MsgMessageDTO {
+  const attachments = parseAttachmentsJson(row.attachments);
   return {
     id:               row.id,
     conversationId:   row.conversationId,
@@ -75,6 +77,7 @@ export function toMessageDTO(row: MessageWithAuthor): MsgMessageDTO {
     createdAt:        row.createdAt.toISOString(),
     updatedAt:        row.updatedAt.toISOString(),
     deletedAt:        row.deletedAt?.toISOString() ?? null,
+    ...(attachments.length > 0 ? { attachments } : {}),
     ...(row.author
       ? {
           author: {

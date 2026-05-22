@@ -134,9 +134,19 @@ export function MsgVaultShell({
     [conversations, currentUserId, trustUnits],
   );
 
-  const directConversations = useMemo(
+  const allDirectConversations = useMemo(
     () => visibleConversations.filter((c) => c.kind === MsgConversationKind.DIRECT),
     [visibleConversations],
+  );
+
+  const directConversations = useMemo(
+    () => allDirectConversations.filter((c) => !c.archivedForViewer),
+    [allDirectConversations],
+  );
+
+  const archivedDirectConversations = useMemo(
+    () => allDirectConversations.filter((c) => c.archivedForViewer),
+    [allDirectConversations],
   );
 
   const threadConversations = useMemo(
@@ -311,6 +321,12 @@ export function MsgVaultShell({
     );
   }
 
+  function handleConversationUpdated(conversation: MsgConversationDTO) {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === conversation.id ? { ...c, ...conversation } : c)),
+    );
+  }
+
   function handleNoticeRead(n: VaultNoticeItem) {
     setNotices((prev) => prev.map((x) => (x.id === n.id ? n : x)));
     setUnreadNotices((c) => Math.max(0, c - 1));
@@ -360,6 +376,7 @@ export function MsgVaultShell({
             filter={tab}
             currentUserId={currentUserId}
             directConversations={directConversations}
+            archivedDirectConversations={archivedDirectConversations}
             threadConversations={threadConversations}
             contacts={contacts}
             notices={notices}
@@ -386,6 +403,7 @@ export function MsgVaultShell({
               currentUserId={currentUserId}
               loading={loadingMsgs}
               onMessageSent={handleMessageSent}
+              onConversationUpdated={handleConversationUpdated}
             />
           )
         }
