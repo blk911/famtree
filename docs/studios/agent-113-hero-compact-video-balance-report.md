@@ -38,5 +38,5 @@ Single column stacking order: pitch → centered video/meta → horizontally scr
 
 ## 8. Commit hash
 
-*TBD immediately after git commit --trailer "Co-authored-by: Cursor <cursoragent@cursor.com>".*
+**`c0dc160`** — `Balance Studios hero around featured video playlist`.
 
