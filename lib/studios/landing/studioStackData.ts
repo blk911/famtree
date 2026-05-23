@@ -47,8 +47,9 @@ export const FEATURED_STUDIO_VIDEO_CARDS: readonly StudioStackCardData[] = [
       "Your clients in one private Studio — relationship-first access, not anonymous marketplace traffic.",
     accent: "#b45309",
     accentSoft: "#fffbeb",
+    /** Verified 200 from images.unsplash.com (prior salon URL returned 404). */
     foldImageUrl:
-      "https://images.unsplash.com/photo-1560066984-138d983ef2e8?auto=format&fit=crop&w=800&q=75",
+      "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=800&q=75",
     videoSrc: HERO_PSN_BUSINESS.videoSrc,
     thumbSrc: HERO_PSN_BUSINESS.thumbSrc,
     liveActivityLabel: "Updates today",
@@ -67,8 +68,9 @@ export const FEATURED_STUDIO_VIDEO_CARDS: readonly StudioStackCardData[] = [
       "Confidential member network for leadership peers — invite-only access and governed messaging.",
     accent: "#44403c",
     accentSoft: "#f5f5f4",
+    /** Verified 200 — executive / team workspace. */
     foldImageUrl:
-      "https://images.unsplash.com/photo-1521737852567-6949f5f9f967?auto=format&fit=crop&w=800&q=75",
+      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=75",
     videoSrc: HERO_PSN_INTRO.videoSrc,
     thumbSrc: HERO_PSN_INTRO.thumbSrc,
     liveActivityLabel: null,
@@ -108,8 +110,9 @@ export const FEATURED_STUDIO_VIDEO_CARDS: readonly StudioStackCardData[] = [
       "High-school graduation onward: private pathways for families, tutors, and capability labs without public-feed chaos.",
     accent: "#9d174d",
     accentSoft: "#fdf2f8",
+    /** Verified 200 — cohort / flagship learning vibe (prior industrial URL 404'd). */
     foldImageUrl:
-      "https://images.unsplash.com/photo-1581094794329-c8112cde6e61?auto=format&fit=crop&w=800&q=75",
+      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=75",
     videoSrc: HERO_PSN_EDUCATION.videoSrc,
     thumbSrc: HERO_PSN_EDUCATION.thumbSrc,
     liveActivityLabel: null,

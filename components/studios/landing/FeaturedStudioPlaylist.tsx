@@ -17,10 +17,13 @@ const DEFAULT_ACTIVE_ID: StudioStackCardId = "private-client-network";
 export function FeaturedStudioPlaylist() {
   const [activeId, setActiveId] = useState<StudioStackCardId>(DEFAULT_ACTIVE_ID);
   const [modalOpen, setModalOpen] = useState(false);
+  /** When `/uploads/*.mp4` is missing on the host, fall back to static poster instead of infinite spinner/black. */
+  const [heroVideoBroken, setHeroVideoBroken] = useState(false);
   const active = FEATURED_STUDIO_VIDEO_CARDS.find((c) => c.id === activeId)!;
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    setHeroVideoBroken(false);
     videoRef.current?.pause();
     if (videoRef.current) videoRef.current.load();
   }, [activeId]);
@@ -202,9 +205,15 @@ export function FeaturedStudioPlaylist() {
           width: 72px;
           height: 40px;
           border-radius: 6px;
-          background-size: cover;
-          background-position: center;
+          overflow: hidden;
           flex-shrink: 0;
+          background-color: #e7e5e4;
+        }
+        .fsp-pl-thumb img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
         }
         .fsp-pl-copy {
           min-width: 0;
@@ -285,7 +294,7 @@ export function FeaturedStudioPlaylist() {
           <div className="fsp-shell" aria-label={`Featured Studio — ${active.title}`}>
             <div className="fsp-video-slot">
               <span className="fsp-poster-tint" style={{ backgroundImage: `url(${active.foldImageUrl})` }} />
-              {active.videoSrc ? (
+              {active.videoSrc && !heroVideoBroken ? (
                 <video
                   key={active.id}
                   ref={videoRef}
@@ -295,6 +304,7 @@ export function FeaturedStudioPlaylist() {
                   playsInline
                   controls
                   preload="metadata"
+                  onError={() => setHeroVideoBroken(true)}
                   aria-label={`Featured clip — ${active.videoLabel}`}
                 />
               ) : (
@@ -340,7 +350,9 @@ export function FeaturedStudioPlaylist() {
                     setModalOpen(false);
                   }}
                 >
-                  <span className="fsp-pl-thumb" style={{ backgroundImage: `url(${card.foldImageUrl})` }} aria-hidden />
+                  <span className="fsp-pl-thumb" aria-hidden>
+                    <img src={card.foldImageUrl} alt="" loading="lazy" decoding="async" />
+                  </span>
                   <span className="fsp-pl-copy">
                     <span className="fsp-pl-title">{card.title}</span>
                     <span className="fsp-pl-desc">{card.playlistDescriptor}</span>
