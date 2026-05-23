@@ -174,7 +174,9 @@ export function StudioPreviewModal({ card, onClose }: Props) {
         >
           <header className="spm-header">
             <div>
-              <p className="spm-eyebrow">Live studio preview</p>
+              <p className="spm-eyebrow">
+                Live preview · <span style={{ letterSpacing: "0.06em", color: "#78716c" }}>{card.videoLabel}</span>
+              </p>
               <h2 id="studio-preview-modal-title" className="spm-title">
                 {card.title}
               </h2>

@@ -13,7 +13,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { StudioStackCards } from "@/components/studios/landing/StudioStackCards";
+import { FeaturedStudioVideoCarousel } from "@/components/studios/landing/FeaturedStudioVideoCarousel";
 import { MOCK_TESTIMONIALS, MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
 import { StudiosMemberCreateCta } from "@/components/studios/StudiosMemberCreateCta";
@@ -309,7 +309,7 @@ export function StudiosLanding({
           </div>
 
           <div className="studios-hero-stack-col">
-            <StudioStackCards />
+            <FeaturedStudioVideoCarousel />
           </div>
         </div>
       </section>
