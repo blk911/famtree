@@ -43,7 +43,8 @@ Secondary: `/studios/gap-u`, `#studios-live` (existing anchor).
 
 ## Commit
 
-- **Branch:** `studios-agent-114-hero-cta-nav-cleanup`
-- **Commit:** `6b490d31ee3f3ebf541b45e21cff25338ed41b9c`
+- **Branch:** `studios-agent-114-hero-cta-nav-cleanup` (tracked on `origin`)
+- **Commits:** `6b490d3` (“Clean up Studios hero CTA hierarchy”) — implementation; `07fd790` — report touch-up listing hash above.
+- **Branch tip:** `07fd790`
 
-(Used scoped `git add` for mission files only; unrelated untracked `docs/admin-member-*` / `scripts/*` were left unstaged.)
+(`git add .` would have pulled in unrelated untracked admin/debug artifacts; staged only hero CTA + this report.)
