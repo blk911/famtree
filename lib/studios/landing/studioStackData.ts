@@ -16,6 +16,8 @@ export type StudioStackCardData = {
   templateType: StudioTemplateType;
   /** Short label for carousel thumbnail / modal eyebrow */
   videoLabel: string;
+  /** One-line label for stacked playlist strip */
+  playlistDescriptor: string;
   title: string;
   subcopy: string;
   summary: string;
@@ -32,14 +34,13 @@ export type StudioStackCardData = {
   preferLiveHeroCta?: boolean;
 };
 
-/**
- * Hero carousel order: Private Client → Executive → Family & Learning → Gap U.
- */
+/** Hero featured video + playlist order */
 export const FEATURED_STUDIO_VIDEO_CARDS: readonly StudioStackCardData[] = [
   {
     id: "private-client-network",
     templateType: "private-client-network",
     videoLabel: "Client Network tour",
+    playlistDescriptor: "Trainers · salons · wellness",
     title: "Private Client Network",
     subcopy: "For trainers, salons, wellness, and trusted client communities.",
     summary:
@@ -59,6 +60,7 @@ export const FEATURED_STUDIO_VIDEO_CARDS: readonly StudioStackCardData[] = [
     id: "executive-work",
     templateType: "executive-work",
     videoLabel: "Executive preview",
+    playlistDescriptor: "Leadership cohorts · quiet rooms",
     title: "Executive Strategy Space",
     subcopy: "Private communication for focused teams and leadership groups.",
     summary:
@@ -78,6 +80,7 @@ export const FEATURED_STUDIO_VIDEO_CARDS: readonly StudioStackCardData[] = [
     id: "family-learning",
     templateType: "family-learning",
     videoLabel: "Learning Space clip",
+    playlistDescriptor: "Pods · guardians · tutors",
     title: "Family & Learning Space",
     subcopy: "Safe coordination for families, tutoring, and modern learning communities.",
     summary:
@@ -97,6 +100,7 @@ export const FEATURED_STUDIO_VIDEO_CARDS: readonly StudioStackCardData[] = [
     id: "gap-u",
     templateType: "gap-u-learning-lab",
     videoLabel: "Gap U Studio",
+    playlistDescriptor: "Flagship future-learning lab",
     title: "Gap U",
     subcopy:
       "Future learning flagship — homeschool pods, invention labs, human mentors, stewarded Spaces.",

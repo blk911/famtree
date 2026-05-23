@@ -13,7 +13,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { FeaturedStudioVideoCarousel } from "@/components/studios/landing/FeaturedStudioVideoCarousel";
+import { FeaturedStudioPlaylist } from "@/components/studios/landing/FeaturedStudioPlaylist";
 import { MOCK_TESTIMONIALS, MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
 import { StudiosMemberCreateCta } from "@/components/studios/StudiosMemberCreateCta";
@@ -135,8 +135,9 @@ export function StudiosLanding({
         }
         @media (min-width: 880px) {
           .studios-hero-shell {
-            grid-template-columns: minmax(0, 1fr) minmax(280px, 38%);
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 40%);
             text-align: left;
+            align-items: flex-start;
           }
           .studios-hero-copy-inner {
             margin-left: 0;
@@ -148,7 +149,7 @@ export function StudiosLanding({
           .studios-hero-stack-col {
             justify-self: end;
             width: 100%;
-            max-width: 420px;
+            max-width: 472px;
           }
         }
       `}</style>
@@ -166,7 +167,7 @@ export function StudiosLanding({
       <section
         style={{
           position: "relative",
-          padding: "clamp(28px, 4vw, 40px) 20px 36px",
+          padding: "clamp(22px, 3.5vw, 34px) 20px 30px",
           overflow: "hidden",
         }}
       >
@@ -309,7 +310,7 @@ export function StudiosLanding({
           </div>
 
           <div className="studios-hero-stack-col">
-            <FeaturedStudioVideoCarousel />
+            <FeaturedStudioPlaylist />
           </div>
         </div>
       </section>
