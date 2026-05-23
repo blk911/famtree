@@ -45,7 +45,7 @@ Anonymous users: no breadcrumb bar (unchanged). Member pages require login with 
 
 ## Branch & commit
 
-- Branch: `studios-agent-115-split-explore-vs-build`
-- **Commit:** `a607250` — Separate Studios explore and build experiences
+- **Branch:** `studios-agent-115-split-explore-vs-build`
+- **Commits:** `a607250` — implementation; `9a0d3e7` — report hash note.
 
-(`git add .` was narrowed to Agent 115 paths only — unrelated untracked admin/debug artifacts were omitted.)
+(`git add .` omitted unrelated untracked workspace files.)
