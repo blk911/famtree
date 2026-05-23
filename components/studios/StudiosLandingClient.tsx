@@ -16,7 +16,8 @@ import {
 import { FeaturedStudioPlaylist } from "@/components/studios/landing/FeaturedStudioPlaylist";
 import { MOCK_TESTIMONIALS, MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
-import { StudiosMemberCreateCta } from "@/components/studios/StudiosMemberCreateCta";
+
+
 import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 import type { LucideIcon } from "lucide-react";
@@ -92,13 +93,7 @@ const BENEFITS: BenefitDef[] = [
   },
 ];
 
-export function StudiosLanding({
-  isAuthenticated = false,
-  continueDraftId = null,
-}: {
-  isAuthenticated?: boolean;
-  continueDraftId?: string | null;
-}) {
+export function StudiosLanding() {
   const [openBenefitId, setOpenBenefitId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -184,13 +179,8 @@ export function StudiosLanding({
           }
         }
       `}</style>
-      {isAuthenticated ? (
-        <div style={{ padding: "12px 20px 0", maxWidth: "1020px", margin: "0 auto" }}>
-          <StudiosMemberCreateCta isAuthenticated={isAuthenticated} continueDraftId={continueDraftId} />
-        </div>
-      ) : null}
 
-      {/* ── Fold 1 — tight hero ───────────────────────────────────────────── */}
+      {/* ── Fold 1 — storytelling hero ─────────────────────────────────────── */}
       <section
         style={{
           position: "relative",

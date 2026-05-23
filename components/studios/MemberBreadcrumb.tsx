@@ -8,6 +8,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { StudiosStartModeNav } from "@/components/studios/StudiosStartModeNav";
+import { StudiosUtilityBar } from "@/components/studios/landing/StudiosUtilityBar";
 import { formatDisplayName } from "@/lib/user/display-name";
 
 export async function MemberBreadcrumb() {
@@ -74,13 +75,16 @@ export async function MemberBreadcrumb() {
           </Suspense>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <span style={{ fontSize: "12px", color: "#737373", fontWeight: 500 }}>
-            Logged in as{" "}
-            <span style={{ color: "#262626" }}>
-              {formatDisplayName(user)}
-            </span>
-          </span>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            flexWrap: "wrap",
+            justifyContent: "flex-end",
+          }}
+        >
+          <StudiosUtilityBar displayName={formatDisplayName(user)} />
           <Link
             href="/settings"
             style={{
