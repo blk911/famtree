@@ -4,11 +4,16 @@
 
 export type GapUContentSource = "mock" | "live";
 
-export type GapUSection = {
+export type GapUPathway = {
   id: string;
+  /** Short label shown above the card title, e.g. “Pillar 1”. */
+  pillarLabel: string;
   title: string;
-  description: string;
-  bullets?: string[];
+  lede: string;
+  bullets: string[];
+  ctaLabel: string;
+  /** In-app route under `/studios/gap-u/*` — keep users in the Studio surface. */
+  href: string;
 };
 
 export type GapUAnnouncement = {
@@ -43,14 +48,17 @@ export type GapUStudioLiveContent = {
     eyebrow: string;
     headline: string;
     subcopy: string[];
-    pillars: string[];
+  };
+  pathways: GapUPathway[];
+  roadmapPreview: {
+    title: string;
+    intro: string;
   };
   whyPrivate: {
     title: string;
     intro: string;
     points: Array<{ title: string; body: string }>;
   };
-  sections: GapUSection[];
   announcements: GapUAnnouncement[];
   events: GapUEvent[];
   resources: GapUResource[];

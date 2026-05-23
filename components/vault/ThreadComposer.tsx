@@ -20,6 +20,7 @@ export function ThreadComposer({
   error,
   footer,
   tint,
+  canSend,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -30,7 +31,11 @@ export function ThreadComposer({
   error?: string | null;
   footer?: ReactNode;
   tint?: { bg: string; border: string };
+  /** When set, overrides default trim-only send enable (e.g. attachment pending). */
+  canSend?: boolean;
 }) {
+  const sendEnabled =
+    canSend !== undefined ? canSend : Boolean(value.trim()) && !disabled && !submitting;
   const shellStyle = tint
     ? { background: tint.bg, border: `1px solid ${tint.border}` }
     : undefined;
@@ -49,7 +54,7 @@ export function ThreadComposer({
         {footer ?? <span />}
         <ThreadComposerSend
           onClick={onSubmit}
-          disabled={disabled || submitting || !value.trim()}
+          disabled={!sendEnabled}
         >
           <Send className="h-3.5 w-3.5" />
           {submitting ? "Sending…" : "Send"}

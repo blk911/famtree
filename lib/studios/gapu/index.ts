@@ -8,7 +8,11 @@ export type {
   GapUAnnouncement,
   GapUEvent,
   GapUResource,
-  GapUSection,
+  GapUPathway,
   GapUStudioLiveContent,
   GapUContentSource,
 } from "@/lib/studios/gapu/types";
+
+export type { GapURoadmapBundle, GapURoadmapPhase, GapURoadmapUnit } from "@/lib/studios/gapu/gapuRoadmapData";
+export { GAP_U_ROADMAP } from "@/lib/studios/gapu/gapuRoadmapData";
+export { GAP_U_SURFACE_CSS } from "@/lib/studios/gapu/gapuSurfaceCss";

@@ -1213,6 +1213,8 @@ model AihMsgParticipant {
   joinedAt       DateTime                @default(now())
   lastReadAt     DateTime?
   mutedAt        DateTime?
+  /// Per-member hide from active list (Agent 109) — not a delete; resume clears this.
+  archivedAt     DateTime?
 
   @@unique([conversationId, userId])
   @@index([userId, status])
@@ -1228,6 +1230,8 @@ model AihMsgMessage {
   authorId         String
   author           User                @relation("AihMsgMessageAuthor", fields: [authorId], references: [id], onDelete: Restrict)
   bodyText         String              @db.Text
+  /// Governed attachment metadata (image / video / document URLs). Agent 109.
+  attachments      Json?
   status           AihMsgMessageStatus @default(SENT)
   governanceState  String              @default("allowed")
   escalationState  String            @default("none")

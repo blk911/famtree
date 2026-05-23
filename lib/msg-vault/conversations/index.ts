@@ -27,6 +27,10 @@ import { MsgConversationKind } from "@/types/msg-vault";
 
 export { listAllowedChatContacts } from "@/lib/msg-vault/conversations/allowed-contacts";
 export type { AllowedChatContactDTO } from "@/lib/msg-vault/conversations/allowed-contacts";
+export {
+  archiveConversationForUser,
+  resumeConversationForUser,
+} from "@/lib/msg-vault/conversations/archive";
 
 export async function listConversationsForUser(userId: string): Promise<MsgConversationDTO[]> {
   const rows = await prisma.aihMsgParticipant.findMany({
@@ -48,9 +52,10 @@ export async function listConversationsForUser(userId: string): Promise<MsgConve
     ],
   });
 
-  return rows.map((row) =>
-    toConversationDTO(row.conversation, row.conversation.participants),
-  );
+  return rows.map((row) => ({
+    ...toConversationDTO(row.conversation, row.conversation.participants),
+    archivedForViewer: row.archivedAt != null,
+  }));
 }
 
 export async function getConversationById(

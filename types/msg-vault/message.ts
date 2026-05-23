@@ -1,5 +1,7 @@
 // Msg Vault — message contracts (Agent 49). No Prisma imports.
 
+import type { MsgAttachmentDTO } from "@/types/msg-vault/attachment";
+
 export const MsgMessageStatus = {
   SENT:              "SENT",
   PENDING_APPROVAL:  "PENDING_APPROVAL",
@@ -26,8 +28,10 @@ export interface MsgMessageDTO {
     lastName: string;
     photoUrl: string | null;
   };
+  attachments?: MsgAttachmentDTO[];
 }
 
 export interface SendMessageInput {
-  bodyText: string;
+  bodyText?: string;
+  attachments?: MsgAttachmentDTO[];
 }

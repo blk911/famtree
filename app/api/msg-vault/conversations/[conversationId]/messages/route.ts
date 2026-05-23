@@ -9,7 +9,12 @@ import { requireAuth } from "@/lib/auth";
 import { readJson, parsePagination } from "@/lib/aihsafe/api/parse";
 import { created, ok, unauthenticated, validationFail } from "@/lib/aihsafe/api/envelopes";
 import { handleMsgVaultError } from "@/lib/msg-vault/route-utils";
-import { listMessages, sendMessage, recordBlockedMessageAttempt } from "@/lib/msg-vault/messages";
+import {
+  listMessages,
+  sendMessage,
+  sendMessageWithFile,
+  recordBlockedMessageAttempt,
+} from "@/lib/msg-vault/messages";
 import { MsgVaultError } from "@/lib/msg-vault/errors";
 
 type RouteCtx = { params: Promise<{ conversationId: string }> };
@@ -53,16 +58,28 @@ export async function POST(req: NextRequest, routeCtx: RouteCtx) {
       return validationFail("Conversation id is required.");
     }
 
-    const body = await readJson(req);
-    const parsed = SendMessageSchema.safeParse(body);
-    if (!parsed.success) {
-      return validationFail("Message body is required (max 5000 characters).");
-    }
+    const contentType = req.headers.get("content-type") ?? "";
+    let message;
 
     try {
-      const message = await sendMessage(user.id, conversationId, {
-        bodyText: parsed.data.bodyText,
-      });
+      if (contentType.includes("multipart/form-data")) {
+        const form = await req.formData();
+        const file = form.get("file");
+        const bodyText = String(form.get("bodyText") ?? "").trim();
+        if (!(file instanceof File) || file.size === 0) {
+          return validationFail("Attachment file is required.");
+        }
+        message = await sendMessageWithFile(user.id, conversationId, file, bodyText || undefined);
+      } else {
+        const body = await readJson(req);
+        const parsed = SendMessageSchema.safeParse(body);
+        if (!parsed.success) {
+          return validationFail("Message body is required (max 5000 characters).");
+        }
+        message = await sendMessage(user.id, conversationId, {
+          bodyText: parsed.data.bodyText,
+        });
+      }
       return created({ message });
     } catch (sendErr) {
       if (
