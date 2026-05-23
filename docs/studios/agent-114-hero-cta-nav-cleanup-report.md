@@ -43,4 +43,7 @@ Secondary: `/studios/gap-u`, `#studios-live` (existing anchor).
 
 ## Commit
 
-Committed and pushed on branch `studios-agent-114-hero-cta-nav-cleanup`; see repo `git log -1`.
+- **Branch:** `studios-agent-114-hero-cta-nav-cleanup`
+- **Commit:** `6b490d31ee3f3ebf541b45e21cff25338ed41b9c`
+
+(Used scoped `git add` for mission files only; unrelated untracked `docs/admin-member-*` / `scripts/*` were left unstaged.)
