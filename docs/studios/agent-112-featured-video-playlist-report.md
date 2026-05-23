@@ -50,5 +50,5 @@ CTA parity with Agent 111:
 
 ## 7. Commit hash
 
-*Pending commit*
+Primary feature commit: **`11b65d4`** (`Refactor Studios hero into featured video playlist layout`).
 
