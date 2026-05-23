@@ -153,20 +153,40 @@ export function StudiosLanding({
             line-height: 1.43;
           }
           .studios-hero-badge-row { justify-content: flex-start !important; }
-          .studios-hero-ctas {
-            justify-content: flex-start !important;
-            row-gap: 8px !important;
-            column-gap: 8px !important;
+        }
+        .studios-hero-explore {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 4px 10px;
+          margin-top: 4px;
+          justify-content: center;
+        }
+        .studios-hero-explore-link {
+          font-size: 12px;
+          font-weight: 700;
+          text-decoration: none;
+          border-bottom: 1px solid transparent;
+          padding-bottom: 1px;
+          transition: border-color 0.15s ease, color 0.15s ease;
+        }
+        .studios-hero-explore-link:hover {
+          border-bottom-color: currentColor;
+        }
+        .studios-hero-explore-sep {
+          color: rgba(168, 162, 158, 0.95);
+          font-size: 12px;
+          user-select: none;
+        }
+        @media (min-width: 880px) {
+          .studios-hero-explore {
+            justify-content: flex-start;
           }
         }
       `}</style>
       {isAuthenticated ? (
-        <div style={{ padding: "12px 20px 0", maxWidth: "1000px", margin: "0 auto" }}>
-          <StudiosMemberCreateCta
-            isAuthenticated={isAuthenticated}
-            continueDraftId={continueDraftId}
-            variant="banner"
-          />
+        <div style={{ padding: "12px 20px 0", maxWidth: "1020px", margin: "0 auto" }}>
+          <StudiosMemberCreateCta isAuthenticated={isAuthenticated} continueDraftId={continueDraftId} />
         </div>
       ) : null}
 
@@ -244,77 +264,25 @@ export function StudiosLanding({
                 fontSize: "clamp(14px, 1.85vw, 16px)",
                 lineHeight: 1.5,
                 color: muted,
-                margin: "0 0 16px",
+                margin: "0 0 10px",
                 fontWeight: 500,
               }}
             >
               The world is filling up with automated replies and optimized feeds. Studios is the opposite — a private place for trainers and wellness pros to build{" "}
               <strong style={{ color: ink, fontWeight: 700 }}>relationships that matter</strong>, with clients who earn access instead of arriving anonymously at scale.
             </p>
-            </div>
 
-            <div className="studios-hero-ctas" style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
-              {isAuthenticated ? (
-                <StudiosMemberCreateCta
-                  isAuthenticated={isAuthenticated}
-                  continueDraftId={continueDraftId}
-                  variant="hero"
-                />
-              ) : null}
-              <Link
-                href="/studios/start"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "9px 16px",
-                  borderRadius: "999px",
-                  background: ink,
-                  color: "#fff",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  textDecoration: "none",
-                  boxShadow: "0 3px 12px rgba(38, 38, 38, 0.18)",
-                }}
-              >
-                Start your studio <ArrowRight style={{ width: "14px", height: "14px" }} />
+            <div className="studios-hero-explore" aria-label="Secondary navigation">
+              <Link href="/studios/gap-u" className="studios-hero-explore-link" style={{ color: "#9d174d" }}>
+                Explore Gap U
               </Link>
-              <Link
-                href="/studios/gap-u"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "9px 16px",
-                  borderRadius: "999px",
-                  background: "#fdf2f8",
-                  color: "#9d174d",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  textDecoration: "none",
-                  border: "1px solid rgba(157, 23, 77, 0.2)",
-                }}
-              >
-                Explore Gap U <ArrowRight style={{ width: "14px", height: "14px" }} />
-              </Link>
-              <Link
-                href="#studios-live"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "9px 16px",
-                  borderRadius: "999px",
-                  background: "#fff",
-                  color: ink,
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  textDecoration: "none",
-                  border: `1px solid ${line}`,
-                }}
-              >
+              <span className="studios-hero-explore-sep" aria-hidden>
+                ·
+              </span>
+              <Link href="#studios-live" className="studios-hero-explore-link" style={{ color: ink }}>
                 See live pages
               </Link>
+            </div>
             </div>
           </div>
 
