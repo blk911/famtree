@@ -13,6 +13,7 @@ import { StudioPreviewModal } from "@/components/studios/landing/StudioPreviewMo
 
 const DEFAULT_ACTIVE_ID: StudioStackCardId = "private-client-network";
 
+/** Center video + meta and slim playlist rail plug into a 3-column hero via `display:contents` bridge. */
 export function FeaturedStudioPlaylist() {
   const [activeId, setActiveId] = useState<StudioStackCardId>(DEFAULT_ACTIVE_ID);
   const [modalOpen, setModalOpen] = useState(false);
@@ -31,14 +32,15 @@ export function FeaturedStudioPlaylist() {
   return (
     <>
       <style>{`
-        .fsp {
+        .fsp-grid-bridge {
+          display: contents;
+        }
+        .fsp-center {
+          min-width: 0;
           width: 100%;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
         }
         .fsp-shell {
-          border-radius: 16px;
+          border-radius: 15px;
           overflow: hidden;
           background: #fff;
           border: 1px solid rgba(28, 25, 23, 0.085);
@@ -50,7 +52,7 @@ export function FeaturedStudioPlaylist() {
           position: relative;
           width: 100%;
           aspect-ratio: 16 / 9;
-          max-height: 198px;
+          max-height: 236px;
           background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.08), transparent 52%), #171412;
           overflow: hidden;
         }
@@ -77,7 +79,7 @@ export function FeaturedStudioPlaylist() {
           justify-content: center;
           pointer-events: none;
           transition: opacity 0.22s ease;
-          opacity: 0.74;
+          opacity: 0.72;
         }
         .fsp-video-slot:hover .fsp-play-ornament {
           opacity: 1;
@@ -86,8 +88,8 @@ export function FeaturedStudioPlaylist() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 48px;
-          height: 48px;
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
           background: rgba(255, 255, 255, 0.12);
           color: rgba(253, 252, 251, 0.95);
@@ -96,40 +98,41 @@ export function FeaturedStudioPlaylist() {
           box-shadow: 0 8px 26px rgba(0, 0, 0, 0.28);
         }
         .fsp-feature-meta {
-          padding: 10px 13px 12px;
+          padding: 9px 12px 10px;
           border-top: 1px solid rgba(28, 25, 23, 0.06);
         }
         .fsp-feature-title {
-          margin: 0 0 4px;
-          font-size: 16px;
+          margin: 0 0 3px;
+          font-size: 15px;
           font-weight: 800;
-          letter-spacing: -0.024em;
+          letter-spacing: -0.022em;
           color: #1c1917;
         }
         .fsp-feature-sub {
-          margin: 0 0 10px;
-          font-size: 12px;
-          line-height: 1.45;
+          margin: 0 0 8px;
+          font-size: 11px;
+          line-height: 1.4;
           color: #78716c;
         }
         .fsp-actions {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: 8px;
+          gap: 7px;
         }
         .fsp-btn {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 8px 12px;
-          border-radius: 10px;
-          font-size: 12px;
+          gap: 5px;
+          padding: 7px 11px;
+          border-radius: 9px;
+          font-size: 11px;
           font-weight: 700;
           text-decoration: none;
           cursor: pointer;
           border: 1px solid transparent;
           transition: transform 0.14s ease, box-shadow 0.14s ease;
+          line-height: 1.2;
         }
         .fsp-btn:hover {
           transform: translateY(-1px);
@@ -148,82 +151,87 @@ export function FeaturedStudioPlaylist() {
           color: #44403c;
           border-color: rgba(28, 25, 23, 0.12);
         }
+
+        .fsp-rail {
+          min-width: 0;
+          width: 100%;
+          align-self: start;
+          padding-top: 2px;
+        }
         .fsp-divider-label {
-          font-size: 9px;
+          font-size: 8px;
           font-weight: 800;
-          letter-spacing: 0.12em;
+          letter-spacing: 0.14em;
           text-transform: uppercase;
           color: #a8a29e;
-          margin: 0 0 2px;
+          margin: 0 0 5px;
         }
         .fsp-playlist {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 4px;
         }
         .fsp-pl-row {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 8px;
           width: 100%;
-          padding: 6px 8px;
-          border-radius: 12px;
-          border: 1px solid rgba(28, 25, 23, 0.08);
-          border-left-width: 3px;
+          padding: 4px 6px;
+          border-radius: 8px;
+          border: 1px solid rgba(28, 25, 23, 0.07);
+          border-left-width: 2px;
+          border-left-style: solid;
           border-left-color: transparent;
-          background: rgba(250, 250, 249, 0.65);
+          background: rgba(247, 247, 245, 0.85);
           text-align: left;
           cursor: pointer;
-          min-height: 64px;
-          max-height: 78px;
-          transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+          min-height: 50px;
+          max-height: 56px;
+          transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
         }
         .fsp-pl-row:hover:not(.fsp-pl-row--active) {
-          transform: translateY(-2px);
-          box-shadow: 0 12px 24px rgba(38, 38, 38, 0.08);
+          transform: translateY(-1px);
+          box-shadow: inset 0 0 0 1px rgba(28, 25, 23, 0.1), 0 10px 20px rgba(38,38,38,0.06);
         }
         .fsp-pl-row--active {
-          background: rgba(255, 255, 255, 0.95);
-          border-color: transparent;
-          box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+          background: rgba(255, 255, 255, 0.98);
+          border-color: rgba(184, 149, 108, 0.28);
         }
         .fsp-pl-thumb {
           flex: 0 0 auto;
-          width: 96px;
-          height: 54px;
-          border-radius: 8px;
+          width: 72px;
+          height: 40px;
+          border-radius: 6px;
           background-size: cover;
           background-position: center;
           flex-shrink: 0;
-          box-shadow: inset 0 0 0 1px rgba(28,25,23,0.06);
         }
         .fsp-pl-copy {
           min-width: 0;
           flex: 1 1 auto;
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 1px;
         }
         .fsp-pl-title {
           margin: 0;
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 800;
-          letter-spacing: -0.015em;
+          letter-spacing: -0.012em;
           color: #1c1917;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          line-height: 1.2;
         }
         .fsp-pl-desc {
           margin: 0;
-          font-size: 11px;
-          line-height: 1.3;
+          font-size: 10px;
+          line-height: 1.25;
           color: #78716c;
-          display: -webkit-box;
-          line-clamp: 2;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
+          white-space: nowrap;
           overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -232,75 +240,83 @@ export function FeaturedStudioPlaylist() {
             transform: none !important;
           }
           .fsp-play-ornament {
-            opacity: 0.92 !important;
+            opacity: 0.9 !important;
           }
         }
 
         @media (max-width: 879px) {
           .fsp-video-slot {
-            max-height: 186px;
+            max-height: 200px;
           }
           .fsp-feature-meta {
-            padding: 9px 12px 11px;
+            padding: 8px 11px 9px;
+          }
+          .fsp-rail {
+            padding-top: 0;
           }
           .fsp-playlist {
             flex-direction: row;
             flex-wrap: nowrap;
             overflow-x: auto;
+            overflow-y: hidden;
             gap: 8px;
-            padding: 6px 0 8px;
+            padding: 4px 0 6px;
             margin: 0 -4px;
             scroll-snap-type: x proximity;
             scrollbar-width: thin;
           }
           .fsp-pl-row {
             flex: 0 0 auto;
-            width: min(82vw, 260px);
+            width: min(74vw, 240px);
             scroll-snap-align: start;
-            min-height: 68px;
+            min-height: 52px;
+            max-height: 56px;
+            padding-inline: 8px;
           }
           .fsp-pl-thumb {
-            width: 88px;
-            height: 50px;
+            width: 68px;
+            height: 38px;
           }
         }
       `}</style>
 
-      <section className="fsp" aria-label="Featured Studio previews — playlist">
-        <div className="fsp-shell">
-          <div className="fsp-video-slot">
-            <span className="fsp-poster-tint" style={{ backgroundImage: `url(${active.foldImageUrl})` }} />
-            {active.videoSrc ? (
-              <video
-                key={active.id}
-                ref={videoRef}
-                src={active.videoSrc}
-                poster={active.foldImageUrl}
-                muted
-                playsInline
-                controls
-                preload="metadata"
-                aria-label={`Featured clip — ${active.videoLabel}`}
-              />
-            ) : (
-              <div role="img" aria-label={active.title} style={posterOnlyStyle(active)} />
-            )}
-            <span className="fsp-play-ornament">
-              <span className="fsp-play-badge" aria-hidden>
-                <Play style={{ width: 22, height: 22 }} fill="currentColor" />
+      <div className="fsp-grid-bridge">
+        <div className="fsp-center">
+          <div className="fsp-shell" aria-label={`Featured Studio — ${active.title}`}>
+            <div className="fsp-video-slot">
+              <span className="fsp-poster-tint" style={{ backgroundImage: `url(${active.foldImageUrl})` }} />
+              {active.videoSrc ? (
+                <video
+                  key={active.id}
+                  ref={videoRef}
+                  src={active.videoSrc}
+                  poster={active.foldImageUrl}
+                  muted
+                  playsInline
+                  controls
+                  preload="metadata"
+                  aria-label={`Featured clip — ${active.videoLabel}`}
+                />
+              ) : (
+                <div role="img" aria-label={active.title} style={posterOnlyStyle(active)} />
+              )}
+              <span className="fsp-play-ornament">
+                <span className="fsp-play-badge" aria-hidden>
+                  <Play style={{ width: 20, height: 20 }} fill="currentColor" />
+                </span>
               </span>
-            </span>
-          </div>
-          <div className="fsp-feature-meta">
-            <p className="fsp-feature-title">{active.title}</p>
-            <p className="fsp-feature-sub">{active.subcopy}</p>
-            <div className="fsp-actions">{renderActions(active, openPreview)}</div>
+            </div>
+            <div className="fsp-feature-meta">
+              <p className="fsp-feature-title">{active.title}</p>
+              <p className="fsp-feature-sub">{active.subcopy}</p>
+              <div className="fsp-actions">{renderActions(active, openPreview)}</div>
+            </div>
           </div>
         </div>
 
-        <div>
-          <p className="fsp-divider-label">Watch next</p>
-          <div className="fsp-playlist" role="tablist" aria-label="Browse Studio previews">
+        <aside className="fsp-rail" aria-label="Studio playlist">
+          <p className="fsp-divider-label">Up next</p>
+          <div className="fsp-playlist" role="tablist">
             {FEATURED_STUDIO_VIDEO_CARDS.map((card) => {
               const selected = card.id === activeId;
               return (
@@ -318,12 +334,13 @@ export function FeaturedStudioPlaylist() {
                         } as CSSProperties)
                       : undefined
                   }
+                  aria-label={`Show ${card.title}`}
                   onClick={() => {
                     setActiveId(card.id);
                     setModalOpen(false);
                   }}
                 >
-                  <span className="fsp-pl-thumb" style={{ backgroundImage: `url(${card.foldImageUrl})` }} />
+                  <span className="fsp-pl-thumb" style={{ backgroundImage: `url(${card.foldImageUrl})` }} aria-hidden />
                   <span className="fsp-pl-copy">
                     <span className="fsp-pl-title">{card.title}</span>
                     <span className="fsp-pl-desc">{card.playlistDescriptor}</span>
@@ -332,8 +349,8 @@ export function FeaturedStudioPlaylist() {
               );
             })}
           </div>
-        </div>
-      </section>
+        </aside>
+      </div>
 
       {modalOpen ? <StudioPreviewModal card={active} onClose={() => setModalOpen(false)} /> : null}
     </>
@@ -352,10 +369,10 @@ function renderActions(card: StudioStackCardData, onPreview: () => void) {
     return (
       <>
         <Link href={href} className="fsp-btn fsp-btn-live" scroll>
-          {livePrimaryLabel(card)} <ArrowUpRight style={{ width: 14, height: 14 }} aria-hidden />
+          {livePrimaryLabel(card)} <ArrowUpRight style={{ width: 13, height: 13 }} aria-hidden />
         </Link>
         <button type="button" className="fsp-btn fsp-btn-ghost" onClick={onPreview}>
-          Studio preview …
+          Preview…
         </button>
       </>
     );
@@ -364,16 +381,16 @@ function renderActions(card: StudioStackCardData, onPreview: () => void) {
   return (
     <>
       <button type="button" className="fsp-btn fsp-btn-primary-solid" onClick={onPreview}>
-        Studio preview <ArrowRight style={{ width: 13, height: 13 }} aria-hidden />
+        Studio preview <ArrowRight style={{ width: 12, height: 12 }} aria-hidden />
       </button>
       {href ? (
         href.startsWith("#") ? (
           <Link href={href} className="fsp-btn fsp-btn-ghost">
-            Browse demos <ArrowRight style={{ width: 12, height: 12 }} aria-hidden />
+            Browse demos <ArrowRight style={{ width: 11, height: 11 }} aria-hidden />
           </Link>
         ) : (
           <Link href={href} className="fsp-btn fsp-btn-ghost" scroll>
-            Visit live Space <ArrowRight style={{ width: 12, height: 12 }} aria-hidden />
+            Live Space <ArrowRight style={{ width: 11, height: 11 }} aria-hidden />
           </Link>
         )
       ) : null}

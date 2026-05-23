@@ -118,11 +118,11 @@ export function StudiosLanding({
         .studios-lp-benefit:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .studios-lp-studio-card:hover { transform: translateY(-1px); }
         .studios-hero-shell {
-          max-width: 1080px;
+          max-width: min(1180px, 100%);
           margin: 0 auto;
           display: grid;
-          gap: clamp(22px, 5vw, 36px);
-          align-items: center;
+          gap: clamp(11px, 1.85vw, 18px);
+          align-items: start;
           grid-template-columns: 1fr;
           position: relative;
           z-index: 1;
@@ -133,23 +133,30 @@ export function StudiosLanding({
           margin-left: auto;
           margin-right: auto;
         }
+        .studios-hero-pitch-copy {
+          max-width: none;
+          margin-right: auto;
+        }
         @media (min-width: 880px) {
           .studios-hero-shell {
-            grid-template-columns: minmax(0, 1fr) minmax(280px, 40%);
+            grid-template-columns: minmax(0, 36%) minmax(0, 42%) minmax(0, 22%);
             text-align: left;
-            align-items: flex-start;
           }
           .studios-hero-copy-inner {
             margin-left: 0;
             margin-right: 0;
-            max-width: 540px;
+            width: 100%;
+            max-width: min(396px, 100%);
+          }
+          .studios-hero-pitch-copy p {
+            max-width: 40ch;
+            line-height: 1.43;
           }
           .studios-hero-badge-row { justify-content: flex-start !important; }
-          .studios-hero-ctas { justify-content: flex-start !important; }
-          .studios-hero-stack-col {
-            justify-self: end;
-            width: 100%;
-            max-width: 472px;
+          .studios-hero-ctas {
+            justify-content: flex-start !important;
+            row-gap: 8px !important;
+            column-gap: 8px !important;
           }
         }
       `}</style>
@@ -167,7 +174,7 @@ export function StudiosLanding({
       <section
         style={{
           position: "relative",
-          padding: "clamp(22px, 3.5vw, 34px) 20px 30px",
+          padding: "clamp(18px, 3vw, 28px) 18px 24px",
           overflow: "hidden",
         }}
       >
@@ -192,7 +199,7 @@ export function StudiosLanding({
               style={{
                 display: "flex",
                 justifyContent: "center",
-                marginBottom: "18px",
+                marginBottom: "12px",
               }}
             >
               <div
@@ -217,13 +224,14 @@ export function StudiosLanding({
               </div>
             </div>
 
+            <div className="studios-hero-pitch-copy">
             <h1
               style={{
-                fontSize: "clamp(28px, 4.2vw, 44px)",
+                fontSize: "clamp(24px, 3.85vw, 38px)",
                 fontWeight: 800,
-                letterSpacing: "-1.4px",
-                lineHeight: 1.08,
-                marginBottom: "14px",
+                letterSpacing: "-1.2px",
+                lineHeight: 1.05,
+                marginBottom: "10px",
                 color: ink,
               }}
             >
@@ -233,18 +241,19 @@ export function StudiosLanding({
 
             <p
               style={{
-                fontSize: "clamp(15px, 2vw, 17px)",
-                lineHeight: 1.55,
+                fontSize: "clamp(14px, 1.85vw, 16px)",
+                lineHeight: 1.5,
                 color: muted,
-                margin: "0 0 22px",
+                margin: "0 0 16px",
                 fontWeight: 500,
               }}
             >
               The world is filling up with automated replies and optimized feeds. Studios is the opposite — a private place for trainers and wellness pros to build{" "}
               <strong style={{ color: ink, fontWeight: 700 }}>relationships that matter</strong>, with clients who earn access instead of arriving anonymously at scale.
             </p>
+            </div>
 
-            <div className="studios-hero-ctas" style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+            <div className="studios-hero-ctas" style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
               {isAuthenticated ? (
                 <StudiosMemberCreateCta
                   isAuthenticated={isAuthenticated}
@@ -257,48 +266,48 @@ export function StudiosLanding({
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "8px",
-                  padding: "12px 22px",
+                  gap: "6px",
+                  padding: "9px 16px",
                   borderRadius: "999px",
                   background: ink,
                   color: "#fff",
-                  fontSize: "14px",
+                  fontSize: "13px",
                   fontWeight: 700,
                   textDecoration: "none",
-                  boxShadow: "0 4px 14px rgba(38, 38, 38, 0.2)",
+                  boxShadow: "0 3px 12px rgba(38, 38, 38, 0.18)",
                 }}
               >
-                Start your studio <ArrowRight style={{ width: "15px", height: "15px" }} />
+                Start your studio <ArrowRight style={{ width: "14px", height: "14px" }} />
               </Link>
               <Link
                 href="/studios/gap-u"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "8px",
-                  padding: "12px 22px",
+                  gap: "6px",
+                  padding: "9px 16px",
                   borderRadius: "999px",
                   background: "#fdf2f8",
                   color: "#9d174d",
-                  fontSize: "14px",
+                  fontSize: "13px",
                   fontWeight: 700,
                   textDecoration: "none",
                   border: "1px solid rgba(157, 23, 77, 0.2)",
                 }}
               >
-                Explore Gap U <ArrowRight style={{ width: "15px", height: "15px" }} />
+                Explore Gap U <ArrowRight style={{ width: "14px", height: "14px" }} />
               </Link>
               <Link
                 href="#studios-live"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "8px",
-                  padding: "12px 22px",
+                  gap: "6px",
+                  padding: "9px 16px",
                   borderRadius: "999px",
                   background: "#fff",
                   color: ink,
-                  fontSize: "14px",
+                  fontSize: "13px",
                   fontWeight: 700,
                   textDecoration: "none",
                   border: `1px solid ${line}`,
@@ -309,9 +318,7 @@ export function StudiosLanding({
             </div>
           </div>
 
-          <div className="studios-hero-stack-col">
-            <FeaturedStudioPlaylist />
-          </div>
+          <FeaturedStudioPlaylist />
         </div>
       </section>
 
