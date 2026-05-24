@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { StudiosGatewayAwareLink } from "@/components/studios/gateway/StudiosGatewayRoot";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { ArrowRight, ArrowUpRight, Play } from "lucide-react";
@@ -404,9 +405,9 @@ function renderActions(card: StudioStackCardData, onPreview: () => void) {
   if (card.preferLiveHeroCta && href) {
     return (
       <>
-        <Link href={href} className="shfs-btn shfs-btn-live" scroll>
+        <StudiosGatewayAwareLink href={href} actionLabel={livePrimaryLabel(card)} className="shfs-btn shfs-btn-live" scroll>
           {livePrimaryLabel(card)} <ArrowUpRight style={{ width: 13, height: 13 }} aria-hidden />
-        </Link>
+        </StudiosGatewayAwareLink>
         <button type="button" className="shfs-btn shfs-btn-ghost" onClick={onPreview}>
           Preview…
         </button>
@@ -425,9 +426,9 @@ function renderActions(card: StudioStackCardData, onPreview: () => void) {
             Browse demos <ArrowRight style={{ width: 11, height: 11 }} aria-hidden />
           </Link>
         ) : (
-          <Link href={href} className="shfs-btn shfs-btn-ghost" scroll>
+          <StudiosGatewayAwareLink href={href} actionLabel={livePrimaryLabel(card)} className="shfs-btn shfs-btn-ghost" scroll>
             Live Space <ArrowRight style={{ width: 11, height: 11 }} aria-hidden />
-          </Link>
+          </StudiosGatewayAwareLink>
         )
       ) : null}
     </>

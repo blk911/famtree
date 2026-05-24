@@ -1294,5 +1294,43 @@ model AihMsgGovernanceEvent {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// AIH Studios — public gateway (/amihuman/studios) hits + invitation requests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model StudiosGatewayPageHit {
+  id            String   @id @default(cuid())
+  sourceRoute   String
+  visitorType   String
+  authPresent   Boolean  @default(false)
+  referrer      String?  @db.VarChar(2000)
+  invitePresent Boolean  @default(false)
+  studioSlug    String?  @db.VarChar(320)
+  createdAt     DateTime @default(now())
+
+  @@index([sourceRoute, createdAt(sort: Desc)])
+  @@map("studios_gateway_page_hits")
+}
+
+model StudiosGatewayAccessRequest {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  status           String   @default("new")
+  sourceRoute      String
+  attemptedAction  String?
+  intendedHref     String?  @db.VarChar(2000)
+  fullName         String
+  email            String
+  phone            String?
+  interestType     String
+  note             String?  @db.Text
+  visitorType      String   @default("public_unknown")
+  referrer         String?  @db.VarChar(2000)
+
+  @@index([status, createdAt(sort: Desc)])
+  @@map("studios_gateway_access_requests")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // END AIH SAFE — ADDITIVE MODELS
 // ═══════════════════════════════════════════════════════════════════════════════
+

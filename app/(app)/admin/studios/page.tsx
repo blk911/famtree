@@ -13,6 +13,7 @@ import {
 } from "@/types/studios";
 import Link from "next/link";
 import { Building2, Plus, Sprout, Inbox } from "lucide-react";
+import { StudiosGatewayAccessRequestsSection } from "./StudiosGatewayAccessRequestsSection";
 
 const card = {
   background: "white",
@@ -31,7 +32,7 @@ const REQUEST_STATUS_STYLE: Record<string, { bg: string; color: string; label: s
   blocked:         { bg: "#fee2e2", color: "#991b1b", label: "Blocked" },
 };
 
-export default function AdminStudiosPage() {
+export default async function AdminStudiosPage() {
   const overview = getStudiosOverview();
 
   return (
@@ -159,6 +160,9 @@ export default function AdminStudiosPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Public gateway (/amihuman/studios) — Prisma-backed intake */}
+      <StudiosGatewayAccessRequestsSection />
 
       {/* Studio Requests */}
       <div style={card}>

@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ArrowRight, Play, X } from "lucide-react";
+import { useStudiosGateway } from "@/components/studios/gateway/StudiosGatewayRoot";
 import type { StudioStackCardData } from "@/lib/studios/landing/studioStackData";
+import { isProtectedStudiosHref } from "@/lib/studios/gateway/protected-urls";
 import { STUDIO_BUILDER_WIZARD_HREF } from "@/lib/studios/publishedSpaceBridge";
 
 type Props = {
@@ -13,6 +15,7 @@ type Props = {
 };
 
 export function StudioPreviewModal({ card, onClose }: Props) {
+  const gw = useStudiosGateway();
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -32,6 +35,42 @@ export function StudioPreviewModal({ card, onClose }: Props) {
   }, [card.id]);
 
   const buildHref = `${STUDIO_BUILDER_WIZARD_HREF}?template=${encodeURIComponent(card.templateType)}`;
+  const builderRoot = STUDIO_BUILDER_WIZARD_HREF;
+
+  function guardedCta(opts: {
+    href: string;
+    actionLabel: string;
+    className: string;
+    children: ReactNode;
+    closePreviewAfterGo?: boolean;
+  }) {
+    const { href, actionLabel, className, closePreviewAfterGo } = opts;
+    if (gw?.interceptProtected && isProtectedStudiosHref(href)) {
+      return (
+        <button
+          type="button"
+          className={className}
+          onClick={() => {
+            gw.openAccessRequest(actionLabel, href);
+            onClose();
+          }}
+        >
+          {opts.children}
+        </button>
+      );
+    }
+    return (
+      <Link
+        href={href}
+        className={className}
+        onClick={() => {
+          if (closePreviewAfterGo !== false) onClose();
+        }}
+      >
+        {opts.children}
+      </Link>
+    );
+  }
 
   return createPortal(
     <>
@@ -228,15 +267,30 @@ export function StudioPreviewModal({ card, onClose }: Props) {
               )}
 
               <div className="spm-ctas">
-                <Link href={card.exploreHref} className="spm-cta spm-cta-primary" onClick={onClose}>
-                  Explore live Studio <ArrowRight style={{ width: 14, height: 14 }} />
-                </Link>
-                <Link href={buildHref} className="spm-cta spm-cta-secondary">
-                  Clone this Studio
-                </Link>
-                <Link href={STUDIO_BUILDER_WIZARD_HREF} className="spm-cta spm-cta-ghost">
-                  Build your own
-                </Link>
+                {guardedCta({
+                  href: card.exploreHref,
+                  actionLabel: "Explore live Studio",
+                  className: "spm-cta spm-cta-primary",
+                  children: (
+                    <>
+                      Explore live Studio <ArrowRight style={{ width: 14, height: 14 }} />
+                    </>
+                  ),
+                })}
+                {guardedCta({
+                  href: buildHref,
+                  actionLabel: "Clone this Studio",
+                  className: "spm-cta spm-cta-secondary",
+                  children: "Clone this Studio",
+                  closePreviewAfterGo: false,
+                })}
+                {guardedCta({
+                  href: builderRoot,
+                  actionLabel: "Build your own",
+                  className: "spm-cta spm-cta-ghost",
+                  children: "Build your own",
+                  closePreviewAfterGo: false,
+                })}
               </div>
             </div>
           </div>

@@ -31,7 +31,11 @@ export type ProviderCategory =
   | "nutrition"
   | "performance_coach"
   | "beauty_salon"
-  | "nail_salon";
+  | "nail_salon"
+  /** Curated ecosystem demo studios (invite-first, non-directory framing) */
+  | "education_community"
+  | "coach_consult_collective"
+  | "private_business_strategy";
 
 export type OfferPackageType =
   | "intro"
@@ -61,6 +65,9 @@ export const PROVIDER_CATEGORY_LABELS: Record<ProviderCategory, string> = {
   performance_coach: "Performance Coach",
   beauty_salon:      "Beauty Salon",
   nail_salon:        "Nail Studio",
+  education_community: "Education & Learning",
+  coach_consult_collective: "Train · Coach · Consult",
+  private_business_strategy: "Private Business",
 };
 
 // ─── Core entities ─────────────────────────────────────────────

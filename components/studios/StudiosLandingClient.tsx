@@ -1,23 +1,205 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { StudiosHeroFeaturedStudios } from "@/components/studios/landing/StudiosHeroFeaturedStudios";
-import { MOCK_TESTIMONIALS, MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
+import {
+  StudiosGatewayProvider,
+  StudiosGatewayAwareLink,
+  type SerializedStudiosGatewayContext,
+} from "@/components/studios/gateway/StudiosGatewayRoot";
+import { MOCK_TESTIMONIALS } from "@/lib/studios/mockStudios";
+import { LIVE_STUDIO_SHOWCASE_CARDS } from "@/lib/studios/liveStudioShowcase";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
-import { PROVIDER_CATEGORY_LABELS } from "@/types/studios";
-import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
+import { STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 
 const ink = STUDIOS_INK;
 const muted = STUDIOS_MUTED;
 const line = STUDIOS_LINE;
-const cardShadow = STUDIOS_CARD_SHADOW;
 
-export function StudiosLanding() {
+type LandingProps = { serializedGateway?: SerializedStudiosGatewayContext | null };
+
+export function StudiosLanding({ serializedGateway = null }: LandingProps) {
   return (
-    <>
+    <StudiosGatewayProvider gateway={serializedGateway}>
+      <>
       <style>{`
-        .studios-lp-studio-card:hover { transform: translateY(-1px); }
+        .lss-wrap {
+          max-width: 1180px;
+          margin-left: auto;
+          margin-right: auto;
+          padding-bottom: clamp(10px, 2vw, 16px);
+        }
+        .lss-sectionHead {
+          text-align: center;
+          margin-bottom: clamp(18px, 3.5vw, 28px);
+        }
+        .lss-sectionEyebrow {
+          margin: 0 0 8px;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: #a8a29e;
+        }
+        .lss-headline {
+          margin: 0 0 8px;
+          font-size: clamp(20px, 2.5vw, 26px);
+          font-weight: 800;
+          letter-spacing: -0.5px;
+          color: ${ink};
+        }
+        .lss-subline {
+          margin: 0 auto;
+          font-size: clamp(13px, 1.4vw, 15px);
+          line-height: 1.52;
+          color: ${muted};
+          max-width: 44rem;
+          font-weight: 500;
+        }
+        .lss-grid {
+          display: grid;
+          gap: 16px;
+          align-items: stretch;
+        }
+        @media (min-width: 1060px) {
+          .lss-grid {
+            grid-template-columns: minmax(0, 1.13fr) repeat(3, minmax(0, 1fr));
+            gap: 18px;
+          }
+        }
+        @media (min-width: 700px) and (max-width: 1059px) {
+          .lss-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+          }
+        }
+        @media (max-width: 699px) {
+          .lss-grid {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 14px;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            scroll-snap-type: x mandatory;
+            padding: 4px 0 14px;
+            margin: 0 -8px;
+            padding-left: 12px;
+            padding-right: 12px;
+            -webkit-overflow-scrolling: touch;
+          }
+          .lss-grid .lss-card {
+            flex: 0 0 min(420px, 88vw);
+            scroll-snap-align: start;
+            max-width: 100%;
+          }
+        }
+        .lss-card {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          min-height: 0;
+          text-align: left;
+          text-decoration: none;
+          color: inherit;
+          font-family: inherit;
+          background: rgba(255, 255, 255, 0.94);
+          border: 1px solid rgba(28, 25, 23, 0.08);
+          border-radius: 18px;
+          overflow: hidden;
+          box-shadow: 0 10px 32px rgba(28, 25, 23, 0.07), 0 2px 6px rgba(28, 25, 23, 0.04);
+          transition: transform 0.14s ease, box-shadow 0.14s ease;
+          cursor: pointer;
+        }
+        .lss-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 18px 48px rgba(28, 25, 23, 0.1), 0 4px 12px rgba(28, 25, 23, 0.05);
+        }
+        .lss-card:focus-visible {
+          outline: 2px solid rgba(157, 23, 77, 0.5);
+          outline-offset: 2px;
+        }
+        .lss-card--featured {
+          border-color: rgba(157, 23, 77, 0.24);
+          background: linear-gradient(168deg, #fffefb 0%, #fffefd 52%, #fff 100%);
+          box-shadow: 0 16px 44px rgba(157, 23, 77, 0.1), 0 6px 18px rgba(28, 25, 23, 0.06);
+        }
+        .lss-card--featured:hover {
+          box-shadow: 0 22px 56px rgba(157, 23, 77, 0.12), 0 8px 20px rgba(28, 25, 23, 0.07);
+        }
+        .lss-visual {
+          position: relative;
+          aspect-ratio: 4 / 3;
+          min-height: clamp(148px, 22vw, 192px);
+          background: #e7e5e4;
+        }
+        .lss-visual img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .lss-visual::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(to top, rgba(28, 25, 23, 0.35) 0%, transparent 45%);
+          pointer-events: none;
+        }
+        .lss-card--featured .lss-visual::after {
+          background: linear-gradient(to top, rgba(125, 20, 60, 0.28) 0%, transparent 50%);
+        }
+        .lss-body {
+          display: flex;
+          flex-direction: column;
+          flex: 1 1 auto;
+          padding: 14px 16px 17px;
+          gap: 6px;
+        }
+        .lss-eyebrow {
+          margin: 0;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 0.09em;
+          text-transform: uppercase;
+          color: #78716c;
+          line-height: 1.35;
+        }
+        .lss-card--featured .lss-eyebrow {
+          color: #9d174d;
+          letter-spacing: 0.1em;
+        }
+        .lss-title {
+          margin: 0;
+          font-size: clamp(17px, 2vw, 19px);
+          font-weight: 800;
+          letter-spacing: -0.35px;
+          line-height: 1.17;
+          color: ${ink};
+        }
+        .lss-sub {
+          margin: 0 0 auto;
+          font-size: 12px;
+          line-height: 1.48;
+          color: ${muted};
+          flex: 1 1 auto;
+        }
+        .lss-cta {
+          margin-top: 10px;
+          font-size: 12px;
+          font-weight: 800;
+          color: #57534e;
+          letter-spacing: 0.01em;
+        }
+        .lss-card--featured .lss-cta {
+          color: #9d174d;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .lss-card:hover {
+            transform: none;
+          }
+        }
         .studios-hero-ribbon {
           max-width: min(820px, 94vw);
           margin: 0 auto clamp(10px, 2vw, 16px);
@@ -171,129 +353,43 @@ export function StudiosLanding() {
         </StudiosHeroFeaturedStudios>
       </section>
 
-      <section style={{ padding: "18px 20px 36px" }}>
-        <div style={{ maxWidth: "960px", margin: "0 auto" }}>
+      <section style={{ padding: "24px 20px 40px", background: "linear-gradient(180deg, transparent 0%, rgba(253,252,251,0.55) 30%, transparent 100%)" }}>
+        <div className="lss-wrap">
           <div id="studios-live" style={{ scrollMarginTop: "72px" }}>
-            <h2
-              style={{
-                fontSize: "clamp(17px, 2.4vw, 21px)",
-                fontWeight: 800,
-                textAlign: "center",
-                marginBottom: "6px",
-                letterSpacing: "-0.3px",
-                color: ink,
-              }}
-            >
-              Live studio pages
-            </h2>
-            <p
-              style={{
-                fontSize: "13px",
-                color: muted,
-                textAlign: "center",
-                marginBottom: "18px",
-              }}
-            >
-              Same layout you launch — explore examples below.
-            </p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: "12px",
-                marginBottom: "28px",
-              }}
-            >
-              <Link
-                className="studios-lp-studio-card"
-                href="/studios/gap-u"
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "6px",
-                  padding: "16px",
-                  borderRadius: "14px",
-                  background: "linear-gradient(165deg, #fdf2f8 0%, #fff 60%)",
-                  border: "1px solid rgba(157, 23, 77, 0.18)",
-                  boxShadow: cardShadow,
-                  textDecoration: "none",
-                  color: ink,
-                  transition: "transform 0.12s ease",
-                  gridColumn: "1 / -1",
-                  maxWidth: "100%",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    color: "#9d174d",
-                  }}
+            <header className="lss-sectionHead">
+              <p className="lss-sectionEyebrow">Live studio examples</p>
+              <h2 className="lss-headline">Live studio pages</h2>
+              <p className="lss-subline">
+                Private relationship-driven spaces built on AIH Studios.
+              </p>
+            </header>
+            {/* Desktop/tablet grid; narrow screens swap to horizontal scroll for premium pacing */}
+            <div className="lss-grid">
+              {LIVE_STUDIO_SHOWCASE_CARDS.map((card) => (
+                <StudiosGatewayAwareLink
+                  key={card.id}
+                  href={card.href}
+                  prefetch={false}
+                  actionLabel={card.ctaLabel.replace(/\s*→\s*$/, "").trim()}
+                  className={`lss-card ${card.featured ? "lss-card--featured" : ""}`}
                 >
-                  Flagship live Studio
-                </span>
-                <span style={{ fontSize: "16px", fontWeight: 800 }}>Gap U Learning Lab</span>
-                <span style={{ fontSize: "12px", color: muted, lineHeight: 1.45 }}>
-                  Future learning · homeschool pods · invention labs — invite-only, not a public feed.
-                </span>
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    marginTop: "4px",
-                    color: "#9d174d",
-                  }}
-                >
-                  Explore Gap U <ChevronRight style={{ width: "14px", height: "14px" }} />
-                </span>
-              </Link>
-              {MOCK_PROVIDERS.filter((p) => p.active).map((p) => (
-                <Link
-                  key={p.id}
-                  className="studios-lp-studio-card"
-                  href={`/studios/${p.slug}`}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                    padding: "16px",
-                    borderRadius: "14px",
-                    background: "#fff",
-                    border: `1px solid ${line}`,
-                    boxShadow: cardShadow,
-                    textDecoration: "none",
-                    color: ink,
-                    transition: "transform 0.12s ease",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 800,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                      color: muted,
-                    }}
-                  >
-                    {PROVIDER_CATEGORY_LABELS[p.category] ?? p.category}
-                  </span>
-                  <span style={{ fontSize: "16px", fontWeight: 800 }}>{p.displayName}</span>
-                  {p.locationLabel && <span style={{ fontSize: "12px", color: muted }}>{p.locationLabel}</span>}
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "13px", fontWeight: 700, marginTop: "4px" }}>
-                    View <ChevronRight style={{ width: "14px", height: "14px" }} />
-                  </span>
-                </Link>
+                  <div className="lss-visual">
+                    <img src={card.imageSrc} alt={card.imageAlt} loading="lazy" decoding="async" />
+                  </div>
+                  <div className="lss-body">
+                    <p className="lss-eyebrow">{card.categoryLabel}</p>
+                    <h3 className="lss-title">{card.title}</h3>
+                    <p className="lss-sub">{card.subtitle}</p>
+                    <span className="lss-cta">{card.ctaLabel}</span>
+                  </div>
+                </StudiosGatewayAwareLink>
               ))}
             </div>
           </div>
 
           <div
             style={{
+              marginTop: "clamp(28px, 4.5vw, 40px)",
               padding: "22px 18px",
               borderRadius: "16px",
               background: "rgba(255,255,255,0.65)",
@@ -338,6 +434,7 @@ export function StudiosLanding() {
       </section>
 
       <StudiosFooter />
-    </>
+      </>
+    </StudiosGatewayProvider>
   );
 }

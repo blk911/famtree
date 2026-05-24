@@ -30,6 +30,9 @@ const ACCENT_BY_CATEGORY: Record<ProviderCategory, string> = {
   performance_coach: "#c9a66b",
   beauty_salon: "#d4897a",
   nail_salon: "#d4897a",
+  education_community: "#818cf8",
+  coach_consult_collective: "#c9a66b",
+  private_business_strategy: "#57534e",
 };
 
 const NAV_LIVE = [
