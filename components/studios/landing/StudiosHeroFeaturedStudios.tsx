@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { SyntheticEvent } from "react";
 import { StudiosGatewayAwareLink } from "@/components/studios/gateway/StudiosGatewayRoot";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
@@ -16,23 +17,86 @@ type Props = { children: ReactNode };
 
 const HERO_FOCUS = FEATURED_STUDIO_VIDEO_CARDS.find((c) => c.id === "gap-u")!;
 
-/** Two-column hero (copy + single featured Gap U reel). Studio-example strip removed. */
+/** Full-bleed cover inside slot (poster snapshot or JPEG data URL); only for fallback state. */
+function slotCoverBg(url: string): CSSProperties {
+  return {
+    position: "absolute",
+    inset: 0,
+    backgroundImage: `url(${url})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center center",
+  };
+}
+
+/**
+ * Landing hero reel: one 16×9 viewport, video `object-fit: contain` so source isn’t vertically stretched,
+ * poster frame snapped from the real MP4 after metadata (replacing mismatched Gap U stock art).
+ */
 export function StudiosHeroFeaturedStudios({ children }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [heroVideoBroken, setHeroVideoBroken] = useState(false);
+  const [posterDataUrl, setPosterDataUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const posterCapturedRef = useRef(false);
+
+  const heroIntroSrc = STUDIOS_LANDING_HERO_INTRO.videoSrc;
 
   useEffect(() => {
+    posterCapturedRef.current = false;
+    setPosterDataUrl(null);
     setHeroVideoBroken(false);
     videoRef.current?.load();
-  }, []);
+  }, [heroIntroSrc]);
 
   function openPreview() {
     setModalOpen(true);
   }
 
-  const heroIntroSrc = STUDIOS_LANDING_HERO_INTRO.videoSrc;
-  const poster = HERO_FOCUS.foldImageUrl;
+  function capturePosterFrame(v: HTMLVideoElement) {
+    if (posterCapturedRef.current) return;
+    const w = v.videoWidth;
+    const h = v.videoHeight;
+    if (!w || !h) return;
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(v, 0, 0, w, h);
+      posterCapturedRef.current = true;
+      setPosterDataUrl(canvas.toDataURL("image/jpeg", 0.92));
+    } catch {
+      /* Rare: security / decode */
+    }
+  }
+
+  /** After first frames are buffered, seek briefly in and JPEG the decoded frame — matches the reel, not Gap U stock. */
+  function onHeroLoadedData(ev: SyntheticEvent<HTMLVideoElement>) {
+    const v = ev.currentTarget;
+    setHeroVideoBroken(false);
+
+    const onSeekedOnce = () => {
+      capturePosterFrame(v);
+      v.removeEventListener("seeked", onSeekedOnce);
+    };
+
+    v.addEventListener("seeked", onSeekedOnce);
+    requestAnimationFrame(() => {
+      try {
+        v.pause();
+        const d =
+          typeof v.duration === "number" && Number.isFinite(v.duration) && v.duration > 0
+            ? Math.min(0.12, Math.max(0.02, v.duration * 0.02))
+            : 0.04;
+        v.currentTime = d;
+      } catch {
+        capturePosterFrame(v);
+      }
+    });
+  }
+
+  const fallbackPoster = posterDataUrl;
 
   return (
     <>
@@ -64,8 +128,11 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
         .shfs-video-wrap {
           min-width: 0;
           width: 100%;
+          display: flex;
+          justify-content: center;
         }
         .shfs-shell {
+          width: min(720px, 100%);
           border-radius: 15px;
           overflow: hidden;
           background: #fff;
@@ -77,25 +144,22 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
         .shfs-video-slot {
           position: relative;
           width: 100%;
+          margin: 0;
           aspect-ratio: 16 / 9;
-          max-height: 272px;
-          background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.08), transparent 52%), #171412;
+          background:
+            radial-gradient(circle at 50% 32%, rgba(255,255,255,0.07), transparent 58%),
+            #141210;
           overflow: hidden;
         }
         .shfs-video-slot video {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-          background: #1c1917;
-        }
-        .shfs-poster-tint {
           position: absolute;
           inset: 0;
-          background-size: cover;
-          background-position: center;
-          opacity: 0.08;
-          pointer-events: none;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          object-position: center center;
+          display: block;
+          background: transparent;
         }
         .shfs-play-ornament {
           position: absolute;
@@ -188,11 +252,6 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
           color: #b45309;
           font-weight: 800;
         }
-        @media (max-width: 879px) {
-          .shfs-video-slot {
-            max-height: 220px;
-          }
-        }
         @media (prefers-reduced-motion: reduce) {
           .shfs-btn:hover {
             transform: none !important;
@@ -208,18 +267,17 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
         <div className="shfs-video-wrap">
           <div className="shfs-shell" aria-label={`Featured Studio — ${HERO_FOCUS.title}`}>
             <div className="shfs-video-slot">
-              <span className="shfs-poster-tint" style={{ backgroundImage: `url(${poster})` }} />
               {heroIntroSrc && !heroVideoBroken ? (
                 <video
                   key={heroIntroSrc}
                   ref={videoRef}
                   src={heroIntroSrc}
-                  poster={poster}
+                  poster={posterDataUrl ?? undefined}
                   muted
                   playsInline
                   controls
                   preload="metadata"
-                  onLoadedData={() => setHeroVideoBroken(false)}
+                  onLoadedData={onHeroLoadedData}
                   onError={(ev) => {
                     const el = ev.currentTarget;
                     const code = el.error?.code;
@@ -235,7 +293,15 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
                   aria-label="Studios landing hero intro clip"
                 />
               ) : (
-                <div role="img" aria-label={HERO_FOCUS.title} style={posterOnlyStyle(poster)} />
+                <div
+                  role="img"
+                  aria-label={`${HERO_FOCUS.title} — clip unavailable`}
+                  style={
+                    fallbackPoster
+                      ? slotCoverBg(fallbackPoster)
+                      : { position: "absolute", inset: 0, backgroundColor: "#1c1917" }
+                  }
+                />
               )}
               <span className="shfs-play-ornament">
                 <span className="shfs-play-badge" aria-hidden>
@@ -305,14 +371,4 @@ function renderActions(card: StudioStackCardData, onPreview: () => void) {
       ) : null}
     </>
   );
-}
-
-function posterOnlyStyle(foldImageUrl: string): CSSProperties {
-  return {
-    width: "100%",
-    height: "100%",
-    backgroundImage: `url(${foldImageUrl})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-  };
 }
