@@ -1,42 +1,36 @@
 "use client";
 
-import Link from "next/link";
 import type { SyntheticEvent } from "react";
 import { StudiosGatewayAwareLink } from "@/components/studios/gateway/StudiosGatewayRoot";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { ArrowRight, ArrowUpRight, Play } from "lucide-react";
-import {
-  FEATURED_STUDIO_VIDEO_CARDS,
-  type StudioStackCardData,
-} from "@/lib/studios/landing/studioStackData";
-import { StudioPreviewModal } from "@/components/studios/landing/StudioPreviewModal";
+import { ArrowUpRight, Play } from "lucide-react";
+import { FEATURED_STUDIO_VIDEO_CARDS } from "@/lib/studios/landing/studioStackData";
+import { StudiosHeroVideoLightbox } from "@/components/studios/landing/StudiosHeroVideoLightbox";
 import { STUDIOS_LANDING_HERO_INTRO } from "@/lib/studios/studioIntroVideo";
+import { GAP_U_CARD_THUMB_SRC } from "@/lib/studios/gapu/gapuStudioConfig";
 
 type Props = { children: ReactNode };
 
 const HERO_FOCUS = FEATURED_STUDIO_VIDEO_CARDS.find((c) => c.id === "gap-u")!;
 
-/** Full-bleed cover inside slot (poster snapshot or JPEG data URL); only for fallback state. */
-function slotCoverBg(url: string): CSSProperties {
+function thumbBg(url: string): CSSProperties {
   return {
     position: "absolute",
     inset: 0,
     backgroundImage: `url(${url})`,
     backgroundSize: "cover",
     backgroundPosition: "center center",
+    backgroundRepeat: "no-repeat",
   };
 }
 
-/**
- * Landing hero reel: one 16×9 viewport, video `object-fit: contain` so source isn’t vertically stretched,
- * poster frame snapped from the real MP4 after metadata (replacing mismatched Gap U stock art).
- */
+/** Compact Gap U hero card: thin cinematic thumb + play opens lightbox; Enter Gap U keeps gateway routing. */
 export function StudiosHeroFeaturedStudios({ children }: Props) {
-  const [modalOpen, setModalOpen] = useState(false);
+  const [videoLightboxOpen, setVideoLightboxOpen] = useState(false);
   const [heroVideoBroken, setHeroVideoBroken] = useState(false);
   const [posterDataUrl, setPosterDataUrl] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const probeRef = useRef<HTMLVideoElement>(null);
   const posterCapturedRef = useRef(false);
 
   const heroIntroSrc = STUDIOS_LANDING_HERO_INTRO.videoSrc;
@@ -45,12 +39,8 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
     posterCapturedRef.current = false;
     setPosterDataUrl(null);
     setHeroVideoBroken(false);
-    videoRef.current?.load();
+    probeRef.current?.load();
   }, [heroIntroSrc]);
-
-  function openPreview() {
-    setModalOpen(true);
-  }
 
   function capturePosterFrame(v: HTMLVideoElement) {
     if (posterCapturedRef.current) return;
@@ -67,12 +57,11 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
       posterCapturedRef.current = true;
       setPosterDataUrl(canvas.toDataURL("image/jpeg", 0.92));
     } catch {
-      /* Rare: security / decode */
+      /* decode / canvas */
     }
   }
 
-  /** After first frames are buffered, seek briefly in and JPEG the decoded frame — matches the reel, not Gap U stock. */
-  function onHeroLoadedData(ev: SyntheticEvent<HTMLVideoElement>) {
+  function onProbeLoadedData(ev: SyntheticEvent<HTMLVideoElement>) {
     const v = ev.currentTarget;
     setHeroVideoBroken(false);
 
@@ -96,7 +85,7 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
     });
   }
 
-  const fallbackPoster = posterDataUrl;
+  const thumbBackdrop = posterDataUrl ?? (!heroVideoBroken ? GAP_U_CARD_THUMB_SRC : null);
 
   return (
     <>
@@ -104,27 +93,19 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
         .shfs-twocol {
           display: grid;
           grid-template-columns: 1fr;
-          gap: clamp(14px, 3vw, 26px);
-          align-items: center;
+          gap: clamp(14px, 3vw, 22px);
+          align-items: start;
           width: 100%;
           max-width: min(1120px, 100%);
           margin: 0 auto;
         }
         @media (min-width: 880px) {
           .shfs-twocol {
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
-            align-items: center;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
           }
         }
-        .shfs-copy {
-          min-width: 0;
-          text-align: center;
-        }
-        @media (min-width: 880px) {
-          .shfs-copy {
-            text-align: left;
-          }
-        }
+        .shfs-copy { min-width: 0; text-align: center; }
+        @media (min-width: 880px) { .shfs-copy { text-align: left; } }
         .shfs-video-wrap {
           min-width: 0;
           width: 100%;
@@ -132,115 +113,117 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
           justify-content: center;
         }
         .shfs-shell {
-          width: min(720px, 100%);
-          border-radius: 15px;
+          width: min(400px, 100%);
+          border-radius: 14px;
           overflow: hidden;
-          background: #fff;
-          border: 1px solid rgba(28, 25, 23, 0.085);
+          background: rgba(255, 255, 255, 0.96);
+          border: 1px solid rgba(28, 25, 23, 0.065);
           box-shadow:
-            0 10px 28px rgba(38, 38, 38, 0.08),
-            0 1px 4px rgba(38, 38, 38, 0.04);
+            0 8px 24px rgba(28, 25, 23, 0.06),
+            0 1px 4px rgba(28, 25, 23, 0.04);
         }
-        .shfs-video-slot {
+        .shfs-probe-video {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          margin: -1px;
+          padding: 0;
+          border: 0;
+          overflow: hidden;
+          clip: rect(0 0 0 0);
+          opacity: 0;
+          pointer-events: none;
+        }
+        .shfs-thumb-slot {
           position: relative;
           width: 100%;
-          margin: 0;
-          aspect-ratio: 16 / 9;
+          aspect-ratio: 16 / 7.75;
           background:
-            radial-gradient(circle at 50% 32%, rgba(255,255,255,0.07), transparent 58%),
-            #141210;
+            radial-gradient(circle at 50% 30%, rgba(255,255,255,0.06), transparent 55%),
+            #161412;
           overflow: hidden;
         }
-        .shfs-video-slot video {
+        .shfs-thumb-hit {
           position: absolute;
           inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          object-position: center center;
+          cursor: pointer;
+          border: none;
+          margin: 0;
+          padding: 0;
           display: block;
           background: transparent;
         }
-        .shfs-play-ornament {
+        .shfs-thumb-hit:disabled { cursor: not-allowed; opacity: 0.65; }
+        .shfs-thumb-hit:focus-visible {
+          outline: 2px solid rgba(157, 23, 77, 0.55);
+          outline-offset: 2px;
+        }
+        .shfs-thumb-plate { position: absolute; inset: 0; }
+        .shfs-thumb-dim {
+          position: absolute;
+          inset: 0;
+          background: rgba(28, 25, 23, 0.18);
+          pointer-events: none;
+          transition: background 0.15s ease;
+        }
+        .shfs-thumb-hit:hover:not(:disabled) .shfs-thumb-dim {
+          background: rgba(28, 25, 23, 0.1);
+        }
+        .shfs-thumb-play {
           position: absolute;
           inset: 0;
           display: flex;
           align-items: center;
           justify-content: center;
           pointer-events: none;
-          transition: opacity 0.22s ease;
-          opacity: 0.72;
+          transition: transform 0.15s ease;
         }
-        .shfs-video-slot:hover .shfs-play-ornament {
-          opacity: 1;
+        .shfs-thumb-hit:hover:not(:disabled) .shfs-thumb-play {
+          transform: scale(1.06);
         }
-        .shfs-play-badge {
+        .shfs-thumb-play-ring {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 44px;
-          height: 44px;
+          width: 48px;
+          height: 48px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.12);
-          color: rgba(253, 252, 251, 0.95);
-          backdrop-filter: blur(6px);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          box-shadow: 0 8px 26px rgba(0, 0, 0, 0.28);
+          background: rgba(255, 255, 255, 0.16);
+          color: rgba(253, 252, 251, 0.96);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
         }
-        .shfs-feature-meta {
-          padding: 9px 12px 10px;
-          border-top: 1px solid rgba(28, 25, 23, 0.06);
-        }
+        .shfs-feature-meta { padding: 10px 12px 12px; }
         .shfs-feature-title {
-          margin: 0 0 3px;
+          margin: 0 0 4px;
           font-size: 15px;
           font-weight: 800;
           letter-spacing: -0.022em;
           color: #1c1917;
         }
         .shfs-feature-sub {
-          margin: 0 0 8px;
+          margin: 0 0 10px;
           font-size: 11px;
-          line-height: 1.4;
+          line-height: 1.43;
           color: #78716c;
         }
-        .shfs-actions {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          gap: 7px;
-        }
-        .shfs-btn {
+        .shfs-btn-live {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          padding: 7px 11px;
-          border-radius: 9px;
+          gap: 6px;
+          padding: 8px 12px;
+          border-radius: 10px;
           font-size: 11px;
           font-weight: 700;
           text-decoration: none;
           cursor: pointer;
-          border: 1px solid transparent;
-          transition: transform 0.14s ease, box-shadow 0.14s ease;
-          line-height: 1.2;
-        }
-        .shfs-btn:hover {
-          transform: translateY(-1px);
-        }
-        .shfs-btn-primary-solid {
-          background: #292524;
-          color: #fafaf9;
-        }
-        .shfs-btn-live {
+          border: 1px solid rgba(157, 23, 77, 0.3);
+          transition: transform 0.14s ease;
           background: #9d174d;
-          border-color: rgba(157, 23, 77, 0.3);
           color: #fff;
         }
-        .shfs-btn-ghost {
-          background: rgba(255, 255, 255, 0.92);
-          color: #44403c;
-          border-color: rgba(28, 25, 23, 0.12);
-        }
+        .shfs-btn-live:hover { transform: translateY(-1px); }
         .shfs-hero-video-fallback {
           margin: 8px 0 0;
           font-size: 10px;
@@ -248,127 +231,95 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
           color: #92400e;
           font-weight: 600;
         }
-        .shfs-hero-video-fallback a {
-          color: #b45309;
-          font-weight: 800;
-        }
+        .shfs-hero-video-fallback a { color: #b45309; font-weight: 800; }
         @media (prefers-reduced-motion: reduce) {
-          .shfs-btn:hover {
+          .shfs-btn-live:hover,
+          .shfs-thumb-hit:hover:not(:disabled) .shfs-thumb-play {
             transform: none !important;
-          }
-          .shfs-play-ornament {
-            opacity: 0.9 !important;
           }
         }
       `}</style>
 
+      {!heroVideoBroken && heroIntroSrc ? (
+        <video
+          key={heroIntroSrc}
+          ref={probeRef}
+          className="shfs-probe-video"
+          src={heroIntroSrc}
+          preload="metadata"
+          muted
+          playsInline
+          tabIndex={-1}
+          aria-hidden
+          onLoadedData={onProbeLoadedData}
+          onError={(ev) => {
+            console.error("[StudiosHeroFeaturedStudios] probe failed", {
+              code: ev.currentTarget.error?.code,
+              src: heroIntroSrc,
+            });
+            setHeroVideoBroken(true);
+          }}
+        />
+      ) : null}
+
       <div className="shfs-twocol">
         <div className="shfs-copy">{children}</div>
         <div className="shfs-video-wrap">
-          <div className="shfs-shell" aria-label={`Featured Studio — ${HERO_FOCUS.title}`}>
-            <div className="shfs-video-slot">
-              {heroIntroSrc && !heroVideoBroken ? (
-                <video
-                  key={heroIntroSrc}
-                  ref={videoRef}
-                  src={heroIntroSrc}
-                  poster={posterDataUrl ?? undefined}
-                  muted
-                  playsInline
-                  controls
-                  preload="metadata"
-                  onLoadedData={onHeroLoadedData}
-                  onError={(ev) => {
-                    const el = ev.currentTarget;
-                    const code = el.error?.code;
-                    console.error("[StudiosHeroFeaturedStudios] hero video failed", {
-                      requestedUrl: `${typeof window !== "undefined" ? window.location.origin : ""}${heroIntroSrc}`,
-                      filename: STUDIOS_LANDING_HERO_INTRO.expectedFileHint,
-                      mediaErrorCode: code,
-                      networkState: el.networkState,
-                      readyState: el.readyState,
-                    });
-                    setHeroVideoBroken(true);
-                  }}
-                  aria-label="Studios landing hero intro clip"
-                />
-              ) : (
-                <div
-                  role="img"
-                  aria-label={`${HERO_FOCUS.title} — clip unavailable`}
-                  style={
-                    fallbackPoster
-                      ? slotCoverBg(fallbackPoster)
-                      : { position: "absolute", inset: 0, backgroundColor: "#1c1917" }
-                  }
-                />
-              )}
-              <span className="shfs-play-ornament">
-                <span className="shfs-play-badge" aria-hidden>
-                  <Play style={{ width: 20, height: 20 }} fill="currentColor" />
+          <article className="shfs-shell" aria-label="Gap U featured reel">
+            <div className="shfs-thumb-slot">
+              <button
+                type="button"
+                className="shfs-thumb-hit"
+                disabled={!heroIntroSrc || heroVideoBroken}
+                aria-label="Play Gap U intro video"
+                onClick={() => setVideoLightboxOpen(true)}
+              >
+                <span className="shfs-thumb-plate">
+                  {thumbBackdrop ? (
+                    <span style={thumbBg(thumbBackdrop)} aria-hidden />
+                  ) : (
+                    <span aria-hidden style={{ position: "absolute", inset: 0, background: "#161412" }} />
+                  )}
                 </span>
-              </span>
+                <span className="shfs-thumb-dim" aria-hidden />
+                <span className="shfs-thumb-play" aria-hidden>
+                  <span className="shfs-thumb-play-ring">
+                    <Play style={{ width: 22, height: 22 }} fill="currentColor" />
+                  </span>
+                </span>
+              </button>
             </div>
             <div className="shfs-feature-meta">
-              <p className="shfs-feature-title">{HERO_FOCUS.title}</p>
+              <h2 className="shfs-feature-title">Gap U</h2>
               <p className="shfs-feature-sub">{HERO_FOCUS.subcopy}</p>
-              <div className="shfs-actions">{renderActions(HERO_FOCUS, openPreview)}</div>
+              <StudiosGatewayAwareLink
+                href={HERO_FOCUS.exploreHref}
+                prefetch={false}
+                actionLabel="Enter Gap U"
+                className="shfs-btn-live"
+                scroll
+              >
+                Enter Gap U <ArrowUpRight style={{ width: 13, height: 13 }} aria-hidden />
+              </StudiosGatewayAwareLink>
               {heroVideoBroken ? (
                 <p className="shfs-hero-video-fallback">
-                  The hero clip couldn’t load in-browser (404 or unsupported format). Try{" "}
+                  Preview unavailable. Try{" "}
                   <a href={heroIntroSrc} target="_blank" rel="noreferrer noopener">
-                    opening the MP4 directly
+                    opening the MP4
                   </a>{" "}
-                  or check DevTools Network for <code>{heroIntroSrc}</code>.
+                  · <code>{heroIntroSrc}</code>
                 </p>
               ) : null}
             </div>
-          </div>
+          </article>
         </div>
       </div>
 
-      {modalOpen ? <StudioPreviewModal card={HERO_FOCUS} onClose={() => setModalOpen(false)} /> : null}
-    </>
-  );
-}
-
-function livePrimaryLabel(card: StudioStackCardData): string {
-  if (card.id === "gap-u") return "Enter Gap U";
-  return "Visit live Space";
-}
-
-function renderActions(card: StudioStackCardData, onPreview: () => void) {
-  const href = card.exploreHref;
-
-  if (card.preferLiveHeroCta && href) {
-    return (
-      <>
-        <StudiosGatewayAwareLink href={href} actionLabel={livePrimaryLabel(card)} className="shfs-btn shfs-btn-live" scroll>
-          {livePrimaryLabel(card)} <ArrowUpRight style={{ width: 13, height: 13 }} aria-hidden />
-        </StudiosGatewayAwareLink>
-        <button type="button" className="shfs-btn shfs-btn-ghost" onClick={onPreview}>
-          Preview…
-        </button>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <button type="button" className="shfs-btn shfs-btn-primary-solid" onClick={onPreview}>
-        Studio preview <ArrowRight style={{ width: 12, height: 12 }} aria-hidden />
-      </button>
-      {href ? (
-        href.startsWith("#") ? (
-          <Link href={href} className="shfs-btn shfs-btn-ghost">
-            Browse demos <ArrowRight style={{ width: 11, height: 11 }} aria-hidden />
-          </Link>
-        ) : (
-          <StudiosGatewayAwareLink href={href} actionLabel={livePrimaryLabel(card)} className="shfs-btn shfs-btn-ghost" scroll>
-            Live Space <ArrowRight style={{ width: 11, height: 11 }} aria-hidden />
-          </StudiosGatewayAwareLink>
-        )
-      ) : null}
+      <StudiosHeroVideoLightbox
+        open={videoLightboxOpen}
+        onClose={() => setVideoLightboxOpen(false)}
+        videoSrc={heroIntroSrc}
+      />
     </>
   );
 }
