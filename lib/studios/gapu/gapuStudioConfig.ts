@@ -4,6 +4,9 @@ import type { GapUStudioLiveContent } from "@/lib/studios/gapu/types";
 
 export const GAP_U_SLUG = "gap-u" as const;
 
+/** Marketing tile thumb — JPG in `public/uploads/` (whitelist in `.gitignore`). */
+export const GAP_U_CARD_THUMB_SRC = "/uploads/Gap_u_thumb.jpg";
+
 export const GAP_U_PROVIDER: Provider = {
   id: "gap_u_flagship",
   displayName: "Gap U Learning Lab",
@@ -13,7 +16,7 @@ export const GAP_U_PROVIDER: Provider = {
   locationLabel: "Colorado Front Range · invite-only",
   city: "Colorado",
   state: "CO",
-  imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=75",
+  imageUrl: GAP_U_CARD_THUMB_SRC,
   introVideoUrl: HERO_PSN_EDUCATION.videoSrc,
   bio: "A living private Studio for families, tutors, and invention labs — human-guided learning without public feed chaos.",
   claimed: true,

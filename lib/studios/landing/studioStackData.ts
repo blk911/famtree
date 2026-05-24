@@ -3,6 +3,7 @@ import {
   HERO_PSN_EDUCATION,
   HERO_PSN_INTRO,
 } from "@/lib/studios/studioIntroVideo";
+import { GAP_U_CARD_THUMB_SRC } from "@/lib/studios/gapu/gapuStudioConfig";
 import type { StudioTemplateType } from "@/types/studios/builder";
 
 export type StudioStackCardId =
@@ -110,9 +111,8 @@ export const FEATURED_STUDIO_VIDEO_CARDS: readonly StudioStackCardData[] = [
       "High-school graduation onward: private pathways for families, tutors, and capability labs without public-feed chaos.",
     accent: "#9d174d",
     accentSoft: "#fdf2f8",
-    /** Verified 200 — cohort / flagship learning vibe (prior industrial URL 404'd). */
-    foldImageUrl:
-      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=75",
+    /** Bundled JPG — aligns with Gap U marketing tile thumb. */
+    foldImageUrl: GAP_U_CARD_THUMB_SRC,
     videoSrc: HERO_PSN_EDUCATION.videoSrc,
     thumbSrc: HERO_PSN_EDUCATION.thumbSrc,
     liveActivityLabel: null,

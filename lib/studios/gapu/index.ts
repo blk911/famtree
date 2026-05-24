@@ -1,5 +1,6 @@
 export {
   GAP_U_SLUG,
+  GAP_U_CARD_THUMB_SRC,
   GAP_U_PROVIDER,
   GAP_U_LIVE_CONTENT,
   getGapUStudioBundle,
