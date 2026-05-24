@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { StudiosHeroFeaturedStudios } from "@/components/studios/landing/StudiosHeroFeaturedStudios";
 import { MOCK_TESTIMONIALS, MOCK_PROVIDERS } from "@/lib/studios/mockStudios";
 import { StudiosFooter } from "@/components/studios/StudiosFooter";
@@ -44,37 +44,26 @@ export function StudiosLanding() {
             margin-right: 0;
             max-width: min(460px, 100%);
           }
-          .studios-hero-badge-row {
-            justify-content: flex-start !important;
-          }
         }
         .studios-hero-explore {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: 4px 10px;
-          margin-top: 4px;
+          gap: 10px;
+          margin-top: 14px;
           justify-content: center;
         }
-        .studios-hero-explore-link {
-          font-size: 12px;
-          font-weight: 700;
-          text-decoration: none;
-          border-bottom: 1px solid transparent;
-          padding-bottom: 1px;
-          transition: border-color 0.15s ease, color 0.15s ease;
-        }
-        .studios-hero-explore-link:hover {
-          border-bottom-color: currentColor;
-        }
-        .studios-hero-explore-sep {
-          color: rgba(168, 162, 158, 0.95);
-          font-size: 12px;
-          user-select: none;
+        .studios-hero-explore-btn:hover {
+          transform: translateY(-1px);
         }
         @media (min-width: 880px) {
           .studios-hero-explore {
             justify-content: flex-start;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .studios-hero-explore-btn:hover {
+            transform: none !important;
           }
         }
       `}</style>
@@ -106,36 +95,6 @@ export function StudiosLanding() {
 
         <StudiosHeroFeaturedStudios>
           <div className="studios-hero-copy-inner">
-            <div
-              className="studios-hero-badge-row"
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: "12px",
-              }}
-            >
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "7px",
-                  padding: "6px 14px",
-                  borderRadius: "999px",
-                  background: "#fff",
-                  border: `1px solid ${line}`,
-                  boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)",
-                  fontSize: "10px",
-                  fontWeight: 700,
-                  color: muted,
-                  letterSpacing: "0.09em",
-                  textTransform: "uppercase",
-                }}
-              >
-                <Sparkles style={{ width: "12px", height: "12px", color: "#d4a574" }} />
-                AIH Studios · Beta
-              </div>
-            </div>
-
             <div className="studios-hero-pitch-copy">
               <h1
                 style={{
@@ -144,11 +103,12 @@ export function StudiosLanding() {
                   letterSpacing: "-1.2px",
                   lineHeight: 1.05,
                   marginBottom: "10px",
+                  marginTop: 0,
                   color: ink,
                 }}
               >
-                Where humans
-                <span style={{ color: "#b8956c" }}> still connect</span>
+                Where humans{" "}
+                <span style={{ color: "#b8956c" }}>connect</span>
               </h1>
 
               <p
@@ -164,15 +124,46 @@ export function StudiosLanding() {
                 <strong style={{ color: ink, fontWeight: 700 }}>relationships that matter</strong>, with clients who earn access instead of arriving anonymously at scale.
               </p>
 
-              <div className="studios-hero-explore" aria-label="Secondary navigation">
-                <Link href="/studios/gap-u" className="studios-hero-explore-link" style={{ color: "#9d174d" }}>
-                  Explore Gap U
+              <div className="studios-hero-explore" aria-label="Explore Studios">
+                <Link
+                  href="/studios/gap-u"
+                  className="studios-hero-explore-btn"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "9px 16px",
+                    borderRadius: "999px",
+                    background: "#fdf2f8",
+                    color: "#9d174d",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    border: "1px solid rgba(157, 23, 77, 0.2)",
+                    transition: "transform 0.12s ease, box-shadow 0.12s ease",
+                  }}
+                >
+                  Explore Gap U <ArrowRight style={{ width: "14px", height: "14px" }} aria-hidden />
                 </Link>
-                <span className="studios-hero-explore-sep" aria-hidden>
-                  ·
-                </span>
-                <Link href="#studios-live" className="studios-hero-explore-link" style={{ color: ink }}>
-                  See live pages
+                <Link
+                  href="#studios-live"
+                  className="studios-hero-explore-btn"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "9px 16px",
+                    borderRadius: "999px",
+                    background: "#fff",
+                    color: ink,
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    border: `1px solid ${line}`,
+                    transition: "transform 0.12s ease, box-shadow 0.12s ease",
+                  }}
+                >
+                  See live pages <ArrowRight style={{ width: "14px", height: "14px" }} aria-hidden />
                 </Link>
               </div>
             </div>
