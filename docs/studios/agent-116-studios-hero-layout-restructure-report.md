@@ -52,4 +52,5 @@ Rendered as premium strip (gold-tint border-bottom, restrained type):
 
 ## Commit / push
 
-_(Record hash after committing on your branch.)_
+- **Branch:** `studios-agent-116-hero-layout-restructure` (pushed)
+- **Commit:** `f335f37` — feat(studios): restructure landing hero ribbon and example strip
