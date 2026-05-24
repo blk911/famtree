@@ -177,6 +177,17 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
           color: #44403c;
           border-color: rgba(28, 25, 23, 0.12);
         }
+        .shfs-hero-video-fallback {
+          margin: 8px 0 0;
+          font-size: 10px;
+          line-height: 1.4;
+          color: #92400e;
+          font-weight: 600;
+        }
+        .shfs-hero-video-fallback a {
+          color: #b45309;
+          font-weight: 800;
+        }
         @media (max-width: 879px) {
           .shfs-video-slot {
             max-height: 220px;
@@ -200,6 +211,7 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
               <span className="shfs-poster-tint" style={{ backgroundImage: `url(${poster})` }} />
               {heroIntroSrc && !heroVideoBroken ? (
                 <video
+                  key={heroIntroSrc}
                   ref={videoRef}
                   src={heroIntroSrc}
                   poster={poster}
@@ -207,8 +219,20 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
                   playsInline
                   controls
                   preload="metadata"
-                  onError={() => setHeroVideoBroken(true)}
-                  aria-label={`Studios hero intro`}
+                  onLoadedData={() => setHeroVideoBroken(false)}
+                  onError={(ev) => {
+                    const el = ev.currentTarget;
+                    const code = el.error?.code;
+                    console.error("[StudiosHeroFeaturedStudios] hero video failed", {
+                      requestedUrl: `${typeof window !== "undefined" ? window.location.origin : ""}${heroIntroSrc}`,
+                      filename: STUDIOS_LANDING_HERO_INTRO.expectedFileHint,
+                      mediaErrorCode: code,
+                      networkState: el.networkState,
+                      readyState: el.readyState,
+                    });
+                    setHeroVideoBroken(true);
+                  }}
+                  aria-label="Studios landing hero intro clip"
                 />
               ) : (
                 <div role="img" aria-label={HERO_FOCUS.title} style={posterOnlyStyle(poster)} />
@@ -223,6 +247,15 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
               <p className="shfs-feature-title">{HERO_FOCUS.title}</p>
               <p className="shfs-feature-sub">{HERO_FOCUS.subcopy}</p>
               <div className="shfs-actions">{renderActions(HERO_FOCUS, openPreview)}</div>
+              {heroVideoBroken ? (
+                <p className="shfs-hero-video-fallback">
+                  The hero clip couldn’t load in-browser (404 or unsupported format). Try{" "}
+                  <a href={heroIntroSrc} target="_blank" rel="noreferrer noopener">
+                    opening the MP4 directly
+                  </a>{" "}
+                  or check DevTools Network for <code>{heroIntroSrc}</code>.
+                </p>
+              ) : null}
             </div>
           </div>
         </div>

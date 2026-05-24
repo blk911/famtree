@@ -45,7 +45,7 @@ public/uploads/*
 # Member dashboard watch-once intro (`scripts/seed-member-intro-video.ts`)
 !public/uploads/admin-site-wide-intro.mp4
 # Studios landing hero — right-column featured `<video>` (`StudiosHeroFeaturedStudios`)
-!public/uploads/STUDIO Intro Vid 2.mp4
+!public/uploads/studios-hero-intro-v2.mp4
 
 # ── Logs ─────────────────────────────────────────────────────
 *.log

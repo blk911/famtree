@@ -5,7 +5,8 @@
 
 function uploadsVideoPaths(filename: string) {
   const expectedFileHint = `public/uploads/${filename}`;
-  const videoSrc = `/uploads/${filename.replace(/ /g, "%20")}`;
+  /** Encode path segments so spaces + punctuation survive proxies/CDNs; avoid naive space→%20 only. */
+  const videoSrc = `/uploads/${filename.split("/").map((s) => encodeURIComponent(s)).join("/")}`;
   const thumbSrc = `${videoSrc}#t=0.001`;
   return { expectedFileHint, videoSrc, thumbSrc } as const;
 }
@@ -22,8 +23,8 @@ export const HERO_PSN_BUSINESS = uploadsVideoPaths(HERO_PSN_BUSINESS_FILENAME);
 export const HERO_PSN_EDUCATION_FILENAME = "Private_Studio_Network_Education 1.mp4";
 export const HERO_PSN_EDUCATION = uploadsVideoPaths(HERO_PSN_EDUCATION_FILENAME);
 
-/** Landing hero — featured right-column clip (single video; carousel strip removed). Filename must match `public/uploads/` on disk. */
-export const STUDIOS_LANDING_HERO_INTRO_FILENAME = "STUDIO Intro Vid 2.mp4";
+/** Landing hero — featured right-column clip (single video; carousel strip removed). URL-safe name (no spaces). On disk: `public/uploads/studios-hero-intro-v2.mp4`. */
+export const STUDIOS_LANDING_HERO_INTRO_FILENAME = "studios-hero-intro-v2.mp4";
 export const STUDIOS_LANDING_HERO_INTRO = uploadsVideoPaths(STUDIOS_LANDING_HERO_INTRO_FILENAME);
 
 /** Filename only — must match disk exactly under `public/uploads/`. */
