@@ -287,7 +287,7 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
               </button>
             </div>
             <div className="shfs-feature-meta">
-              <h2 className="shfs-feature-title">Gap U</h2>
+              <h2 className="shfs-feature-title">Why Gap University?</h2>
               <p className="shfs-feature-sub">{HERO_FOCUS.subcopy}</p>
               <StudiosGatewayAwareLink
                 href={HERO_FOCUS.exploreHref}
