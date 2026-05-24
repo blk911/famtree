@@ -44,6 +44,8 @@ public/uploads/*
 !public/uploads/Index bkgrn 4.jpg
 # Member dashboard watch-once intro (`scripts/seed-member-intro-video.ts`)
 !public/uploads/admin-site-wide-intro.mp4
+# Studios landing hero — right-column featured `<video>` (`StudiosHeroFeaturedStudios`)
+!public/uploads/STUDIO Intro Vid 2.mp4
 
 # ── Logs ─────────────────────────────────────────────────────
 *.log

@@ -22,6 +22,10 @@ export const HERO_PSN_BUSINESS = uploadsVideoPaths(HERO_PSN_BUSINESS_FILENAME);
 export const HERO_PSN_EDUCATION_FILENAME = "Private_Studio_Network_Education 1.mp4";
 export const HERO_PSN_EDUCATION = uploadsVideoPaths(HERO_PSN_EDUCATION_FILENAME);
 
+/** Landing hero — featured right-column clip (single video; carousel strip removed). Filename must match `public/uploads/` on disk. */
+export const STUDIOS_LANDING_HERO_INTRO_FILENAME = "STUDIO Intro Vid 2.mp4";
+export const STUDIOS_LANDING_HERO_INTRO = uploadsVideoPaths(STUDIOS_LANDING_HERO_INTRO_FILENAME);
+
 /** Filename only — must match disk exactly under `public/uploads/`. */
 export const STUDIO_INTRO_VIDEO_FILENAME =
   "Studios_Relationship-Based_Business_720p_caption.mp4";

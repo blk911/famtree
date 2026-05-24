@@ -8,31 +8,31 @@ import { ArrowRight, ArrowUpRight, Play } from "lucide-react";
 import {
   FEATURED_STUDIO_VIDEO_CARDS,
   type StudioStackCardData,
-  type StudioStackCardId,
 } from "@/lib/studios/landing/studioStackData";
 import { StudioPreviewModal } from "@/components/studios/landing/StudioPreviewModal";
-
-const DEFAULT_ACTIVE_ID: StudioStackCardId = "private-client-network";
+import { STUDIOS_LANDING_HERO_INTRO } from "@/lib/studios/studioIntroVideo";
 
 type Props = { children: ReactNode };
 
-/** Two-column hero (copy + featured video) and horizontal studio example picker below. */
+const HERO_FOCUS = FEATURED_STUDIO_VIDEO_CARDS.find((c) => c.id === "gap-u")!;
+
+/** Two-column hero (copy + single featured Gap U reel). Studio-example strip removed. */
 export function StudiosHeroFeaturedStudios({ children }: Props) {
-  const [activeId, setActiveId] = useState<StudioStackCardId>(DEFAULT_ACTIVE_ID);
   const [modalOpen, setModalOpen] = useState(false);
   const [heroVideoBroken, setHeroVideoBroken] = useState(false);
-  const active = FEATURED_STUDIO_VIDEO_CARDS.find((c) => c.id === activeId)!;
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     setHeroVideoBroken(false);
-    videoRef.current?.pause();
     videoRef.current?.load();
-  }, [activeId]);
+  }, []);
 
   function openPreview() {
     setModalOpen(true);
   }
+
+  const heroIntroSrc = STUDIOS_LANDING_HERO_INTRO.videoSrc;
+  const poster = HERO_FOCUS.foldImageUrl;
 
   return (
     <>
@@ -177,134 +177,13 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
           color: #44403c;
           border-color: rgba(28, 25, 23, 0.12);
         }
-        .shfs-strip {
-          width: 100%;
-          max-width: min(1120px, 100%);
-          margin: clamp(10px, 2vw, 18px) auto 0;
-          padding-top: 2px;
-        }
-        .shfs-strip-label {
-          font-size: 8px;
-          font-weight: 800;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: #a8a29e;
-          margin: 0 0 6px;
-          text-align: center;
-        }
-        @media (min-width: 880px) {
-          .shfs-strip-label {
-            text-align: left;
-          }
-        }
-        .shfs-strip-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 8px;
-          align-items: stretch;
-        }
-        @media (max-width: 680px) {
-          .shfs-strip-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-        }
-        @media (max-width: 520px) {
-          .shfs-strip-grid {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            overflow-y: hidden;
-            gap: 8px;
-            padding: 2px 0 8px;
-            margin: 0 -4px;
-            scroll-snap-type: x proximity;
-            scrollbar-width: thin;
-            -webkit-overflow-scrolling: touch;
-          }
-          .shfs-ex-card {
-            flex: 0 0 min(78vw, 260px);
-            scroll-snap-align: start;
-          }
-        }
-        .shfs-ex-card {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          width: 100%;
-          padding: 8px 9px;
-          border-radius: 10px;
-          border: 1px solid rgba(28, 25, 23, 0.08);
-          border-left-width: 2px;
-          border-left-style: solid;
-          border-left-color: transparent;
-          background: rgba(255, 255, 255, 0.88);
-          text-align: left;
-          cursor: pointer;
-          min-height: 56px;
-          transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
-        }
-        .shfs-ex-card:hover:not(.shfs-ex-card--active) {
-          transform: translateY(-1px);
-          box-shadow: 0 8px 18px rgba(38, 38, 38, 0.06);
-        }
-        .shfs-ex-card--active {
-          background: rgba(255, 255, 255, 0.98);
-          border-color: rgba(184, 149, 108, 0.28);
-        }
-        .shfs-ex-thumb {
-          flex: 0 0 auto;
-          width: 58px;
-          height: 40px;
-          border-radius: 6px;
-          overflow: hidden;
-          background-color: #e7e5e4;
-          align-self: center;
-        }
-        .shfs-ex-thumb img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-        .shfs-ex-copy {
-          min-width: 0;
-          flex: 1 1 auto;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          gap: 3px;
-        }
-        .shfs-ex-title {
-          display: block;
-          margin: 0;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: -0.012em;
-          color: #1c1917;
-          line-height: 1.25;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .shfs-ex-desc {
-          display: block;
-          margin: 0;
-          font-size: 10px;
-          line-height: 1.3;
-          color: #78716c;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
         @media (max-width: 879px) {
           .shfs-video-slot {
             max-height: 220px;
           }
         }
         @media (prefers-reduced-motion: reduce) {
-          .shfs-btn:hover,
-          .shfs-ex-card:hover {
+          .shfs-btn:hover {
             transform: none !important;
           }
           .shfs-play-ornament {
@@ -316,24 +195,23 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
       <div className="shfs-twocol">
         <div className="shfs-copy">{children}</div>
         <div className="shfs-video-wrap">
-          <div className="shfs-shell" aria-label={`Featured Studio — ${active.title}`}>
+          <div className="shfs-shell" aria-label={`Featured Studio — ${HERO_FOCUS.title}`}>
             <div className="shfs-video-slot">
-              <span className="shfs-poster-tint" style={{ backgroundImage: `url(${active.foldImageUrl})` }} />
-              {active.videoSrc && !heroVideoBroken ? (
+              <span className="shfs-poster-tint" style={{ backgroundImage: `url(${poster})` }} />
+              {heroIntroSrc && !heroVideoBroken ? (
                 <video
-                  key={active.id}
                   ref={videoRef}
-                  src={active.videoSrc}
-                  poster={active.foldImageUrl}
+                  src={heroIntroSrc}
+                  poster={poster}
                   muted
                   playsInline
                   controls
                   preload="metadata"
                   onError={() => setHeroVideoBroken(true)}
-                  aria-label={`Featured clip — ${active.videoLabel}`}
+                  aria-label={`Studios hero intro`}
                 />
               ) : (
-                <div role="img" aria-label={active.title} style={posterOnlyStyle(active)} />
+                <div role="img" aria-label={HERO_FOCUS.title} style={posterOnlyStyle(poster)} />
               )}
               <span className="shfs-play-ornament">
                 <span className="shfs-play-badge" aria-hidden>
@@ -342,54 +220,15 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
               </span>
             </div>
             <div className="shfs-feature-meta">
-              <p className="shfs-feature-title">{active.title}</p>
-              <p className="shfs-feature-sub">{active.subcopy}</p>
-              <div className="shfs-actions">{renderActions(active, openPreview)}</div>
+              <p className="shfs-feature-title">{HERO_FOCUS.title}</p>
+              <p className="shfs-feature-sub">{HERO_FOCUS.subcopy}</p>
+              <div className="shfs-actions">{renderActions(HERO_FOCUS, openPreview)}</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="shfs-strip" aria-label="Studio examples">
-        <p className="shfs-strip-label">Studio examples</p>
-        <div className="shfs-strip-grid" role="tablist">
-          {FEATURED_STUDIO_VIDEO_CARDS.map((card) => {
-            const selected = card.id === activeId;
-            return (
-              <button
-                key={card.id}
-                role="tab"
-                type="button"
-                aria-selected={selected}
-                className={`shfs-ex-card ${selected ? "shfs-ex-card--active" : ""}`}
-                style={
-                  selected
-                    ? ({
-                        borderLeftColor: card.accent,
-                        backgroundColor: card.accentSoft,
-                      } as CSSProperties)
-                    : undefined
-                }
-                aria-label={`Show ${card.title}`}
-                onClick={() => {
-                  setActiveId(card.id);
-                  setModalOpen(false);
-                }}
-              >
-                <span className="shfs-ex-thumb" aria-hidden>
-                  <img src={card.foldImageUrl} alt="" loading="lazy" decoding="async" />
-                </span>
-                <span className="shfs-ex-copy">
-                  <span className="shfs-ex-title">{card.title}</span>
-                  <span className="shfs-ex-desc">{card.playlistDescriptor}</span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {modalOpen ? <StudioPreviewModal card={active} onClose={() => setModalOpen(false)} /> : null}
+      {modalOpen ? <StudioPreviewModal card={HERO_FOCUS} onClose={() => setModalOpen(false)} /> : null}
     </>
   );
 }
@@ -435,11 +274,11 @@ function renderActions(card: StudioStackCardData, onPreview: () => void) {
   );
 }
 
-function posterOnlyStyle(card: StudioStackCardData): CSSProperties {
+function posterOnlyStyle(foldImageUrl: string): CSSProperties {
   return {
     width: "100%",
     height: "100%",
-    backgroundImage: `url(${card.foldImageUrl})`,
+    backgroundImage: `url(${foldImageUrl})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
   };
