@@ -205,7 +205,13 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
           line-height: 1.43;
           color: #78716c;
         }
-        .shfs-btn-live {
+        .shfs-actions {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 8px;
+        }
+        .shfs-btn {
           display: inline-flex;
           align-items: center;
           gap: 6px;
@@ -215,12 +221,25 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
           font-weight: 700;
           text-decoration: none;
           cursor: pointer;
-          border: 1px solid rgba(157, 23, 77, 0.3);
           transition: transform 0.14s ease;
+          line-height: 1.2;
+        }
+        .shfs-btn:hover { transform: translateY(-1px); }
+        .shfs-btn:disabled {
+          cursor: not-allowed;
+          opacity: 0.6;
+          transform: none;
+        }
+        .shfs-btn-why {
+          background: rgba(255, 255, 255, 0.92);
+          border: 1px solid rgba(28, 25, 23, 0.14);
+          color: #292524;
+        }
+        .shfs-btn-live {
           background: #9d174d;
+          border: 1px solid rgba(157, 23, 77, 0.3);
           color: #fff;
         }
-        .shfs-btn-live:hover { transform: translateY(-1px); }
         .shfs-hero-video-fallback {
           margin: 8px 0 0;
           font-size: 10px;
@@ -230,7 +249,7 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
         }
         .shfs-hero-video-fallback a { color: #b45309; font-weight: 800; }
         @media (prefers-reduced-motion: reduce) {
-          .shfs-btn-live:hover,
+          .shfs-btn:hover,
           .shfs-thumb-hit:hover:not(:disabled) .shfs-thumb-play {
             transform: none !important;
           }
@@ -289,15 +308,25 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
             <div className="shfs-feature-meta">
               <h2 className="shfs-feature-title">Why Gap University?</h2>
               <p className="shfs-feature-sub">{HERO_FOCUS.subcopy}</p>
-              <StudiosGatewayAwareLink
-                href={HERO_FOCUS.exploreHref}
-                prefetch={false}
-                actionLabel="Enter Gap U"
-                className="shfs-btn-live"
-                scroll
-              >
-                Enter Gap U <ArrowUpRight style={{ width: 13, height: 13 }} aria-hidden />
-              </StudiosGatewayAwareLink>
+              <div className="shfs-actions">
+                <button
+                  type="button"
+                  className="shfs-btn shfs-btn-why"
+                  disabled={!heroIntroSrc || heroVideoBroken}
+                  onClick={() => setVideoLightboxOpen(true)}
+                >
+                  Here is the "Why"! <Play style={{ width: 13, height: 13 }} fill="currentColor" aria-hidden />
+                </button>
+                <StudiosGatewayAwareLink
+                  href={HERO_FOCUS.exploreHref}
+                  prefetch={false}
+                  actionLabel="Enter Gap U"
+                  className="shfs-btn shfs-btn-live"
+                  scroll
+                >
+                  Enter Gap U <ArrowUpRight style={{ width: 13, height: 13 }} aria-hidden />
+                </StudiosGatewayAwareLink>
+              </div>
               {heroVideoBroken ? (
                 <p className="shfs-hero-video-fallback">
                   Preview unavailable. Try{" "}
