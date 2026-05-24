@@ -3,7 +3,6 @@
 import type { SyntheticEvent } from "react";
 import { StudiosGatewayAwareLink } from "@/components/studios/gateway/StudiosGatewayRoot";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
 import { ArrowUpRight, Play } from "lucide-react";
 import { FEATURED_STUDIO_VIDEO_CARDS } from "@/lib/studios/landing/studioStackData";
 import { StudiosHeroVideoLightbox } from "@/components/studios/landing/StudiosHeroVideoLightbox";
@@ -13,17 +12,6 @@ import { GAP_U_CARD_THUMB_SRC } from "@/lib/studios/gapu/gapuStudioConfig";
 type Props = { children: ReactNode };
 
 const HERO_FOCUS = FEATURED_STUDIO_VIDEO_CARDS.find((c) => c.id === "gap-u")!;
-
-function thumbBg(url: string): CSSProperties {
-  return {
-    position: "absolute",
-    inset: 0,
-    backgroundImage: `url(${url})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center center",
-    backgroundRepeat: "no-repeat",
-  };
-}
 
 /** Compact Gap U hero card: thin cinematic thumb + play opens lightbox; Enter Gap U keeps gateway routing. */
 export function StudiosHeroFeaturedStudios({ children }: Props) {
@@ -113,7 +101,7 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
           justify-content: center;
         }
         .shfs-shell {
-          width: min(400px, 100%);
+          width: min(380px, 100%);
           border-radius: 14px;
           overflow: hidden;
           background: rgba(255, 255, 255, 0.96);
@@ -137,11 +125,20 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
         .shfs-thumb-slot {
           position: relative;
           width: 100%;
-          aspect-ratio: 16 / 7.75;
+          aspect-ratio: 16 / 10.25;
           background:
             radial-gradient(circle at 50% 30%, rgba(255,255,255,0.06), transparent 55%),
             #161412;
           overflow: hidden;
+        }
+        .shfs-thumb-media {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: top center;
+          display: block;
         }
         .shfs-thumb-hit {
           position: absolute;
@@ -276,7 +273,7 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
               >
                 <span className="shfs-thumb-plate">
                   {thumbBackdrop ? (
-                    <span style={thumbBg(thumbBackdrop)} aria-hidden />
+                    <img className="shfs-thumb-media" src={thumbBackdrop} alt="" aria-hidden />
                   ) : (
                     <span aria-hidden style={{ position: "absolute", inset: 0, background: "#161412" }} />
                   )}
