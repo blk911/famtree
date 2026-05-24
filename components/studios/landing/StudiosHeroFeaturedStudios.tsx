@@ -200,8 +200,9 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 8px;
+          align-items: stretch;
         }
-        @media (max-width: 900px) {
+        @media (max-width: 680px) {
           .shfs-strip-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
@@ -230,7 +231,7 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
           align-items: center;
           gap: 8px;
           width: 100%;
-          padding: 6px 8px;
+          padding: 8px 9px;
           border-radius: 10px;
           border: 1px solid rgba(28, 25, 23, 0.08);
           border-left-width: 2px;
@@ -239,8 +240,7 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
           background: rgba(255, 255, 255, 0.88);
           text-align: left;
           cursor: pointer;
-          min-height: 52px;
-          max-height: 58px;
+          min-height: 56px;
           transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
         }
         .shfs-ex-card:hover:not(.shfs-ex-card--active) {
@@ -253,11 +253,12 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
         }
         .shfs-ex-thumb {
           flex: 0 0 auto;
-          width: 56px;
-          height: 36px;
+          width: 58px;
+          height: 40px;
           border-radius: 6px;
           overflow: hidden;
           background-color: #e7e5e4;
+          align-self: center;
         }
         .shfs-ex-thumb img {
           width: 100%;
@@ -268,22 +269,28 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
         .shfs-ex-copy {
           min-width: 0;
           flex: 1 1 auto;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 3px;
         }
         .shfs-ex-title {
+          display: block;
           margin: 0;
           font-size: 11px;
           font-weight: 800;
           letter-spacing: -0.012em;
           color: #1c1917;
+          line-height: 1.25;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          line-height: 1.2;
         }
         .shfs-ex-desc {
-          margin: 2px 0 0;
+          display: block;
+          margin: 0;
           font-size: 10px;
-          line-height: 1.25;
+          line-height: 1.3;
           color: #78716c;
           white-space: nowrap;
           overflow: hidden;
