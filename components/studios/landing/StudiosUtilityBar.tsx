@@ -71,7 +71,7 @@ export function StudiosUtilityBar({ displayName, role }: Props) {
               fontWeight: 700,
             }}
           >
-            🧪 Creator Lab
+            🧪 Creator Intelligence
           </Link>
         )}
       </nav>

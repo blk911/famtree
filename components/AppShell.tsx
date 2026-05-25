@@ -150,7 +150,7 @@ export function AppShell({ user, coverUrl, children, vaultNotificationCount = 0 
             <Menu className="h-[18px] w-[18px]" />
           </AppMenuButton>
 
-          {/* Temp admin shortcut — Creator Lab */}
+          {/* Temp admin shortcut — Creator Intelligence */}
           {(user.role === "admin" || user.role === "founder") && (
             <Link
               href="/admin/studios/creator-lab"
@@ -169,7 +169,7 @@ export function AppShell({ user, coverUrl, children, vaultNotificationCount = 0 
                 letterSpacing: "0.02em",
               }}
             >
-              🧪 Creator Lab
+              🧪 Creator Intelligence
             </Link>
           )}
 

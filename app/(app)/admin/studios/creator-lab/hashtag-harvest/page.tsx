@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import { parseHashtags } from "@/lib/studios/creator-lab/hashtag-harvest/normalize-creators";
 import type {
   HashtagHarvestRun,
@@ -174,7 +175,7 @@ function CreatorRow({
                   <div style={{ marginTop: 8 }}>
                     <a href={`/admin/studios/creator-lab?url=${encodeURIComponent(result.bestMatchUrl)}`}
                       style={{ fontSize: 11, fontWeight: 700, color: "#9d174d", textDecoration: "none" }}>
-                      Assemble in Creator Lab →
+                      Assemble in Studio Assembler →
                     </a>
                   </div>
                 )}
@@ -391,21 +392,12 @@ export default function HashtagHarvestPage() {
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px 60px" }}>
 
-      {/* Nav */}
-      <div style={{ fontSize: 12, color: "#78716c", marginBottom: 8, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        <Link href="/admin/studios/creator-lab" style={{ color: "#9d174d", fontWeight: 700, textDecoration: "none" }}>
-          ← Creator Lab
-        </Link>
-        <span style={{ color: "#d6d3d1" }}>·</span>
-        <Link href="/admin/studios/creator-lab/ig-stubs" style={{ color: "#78716c", textDecoration: "none" }}>IG Resolver</Link>
-        <span style={{ color: "#d6d3d1" }}>·</span>
-        <Link href="/admin/studios/prospects" style={{ color: "#78716c", textDecoration: "none" }}>Prospects</Link>
-      </div>
+      <CreatorIntelligenceNav current="hashtag-harvest" />
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>
-          🌾 Hashtag Harvest
+          Hashtag Harvest
         </h1>
         <p style={{ fontSize: 13, color: "#78716c", margin: 0 }}>
           Harvest public Instagram creator signals from hashtags and feed into the resolver/prospect pipeline.

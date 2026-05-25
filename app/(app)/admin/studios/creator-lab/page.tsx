@@ -1,11 +1,12 @@
 "use client";
 
 // app/(app)/admin/studios/creator-lab/page.tsx
-// Studio Assembler Lab — internal AIH Studios tool.
+// Studio Assembler — internal Creator Intelligence tool.
 // Renders assembled result inline — no redirect, no storage dependency.
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import type { AssembledCreatorStudio } from "@/lib/studios/creator-lab/types";
 
 // ─── Shared primitives ────────────────────────────────────────────────────────
@@ -302,27 +303,12 @@ export default function CreatorLabPage() {
   return (
     <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 20px 60px" }}>
 
-      {/* Breadcrumb */}
-      <div style={{ fontSize: 13, color: "#78716c", marginBottom: 20, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        <Link href="/admin/studios" style={{ fontWeight: 700, color: "#1c1917", textDecoration: "none" }}>
-          ← Studio Management
-        </Link>
-        <span style={{ color: "#d6d3d1" }}>|</span>
-        <span style={{ fontWeight: 600, color: "#57534e" }}>Creator Lab</span>
-        <span style={{ color: "#d6d3d1" }}>·</span>
-        <Link href="/admin/studios/creator-lab/ig-stubs" style={{ color: "#78716c", textDecoration: "none" }}>
-          IG Resolver
-        </Link>
-        <span style={{ color: "#d6d3d1" }}>·</span>
-        <Link href="/admin/studios/prospects" style={{ color: "#9d174d", fontWeight: 600, textDecoration: "none" }}>
-          Prospects
-        </Link>
-      </div>
+      <CreatorIntelligenceNav current="assembler" />
 
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1c1917", margin: "0 0 8px" }}>
-          🧪 Studio Assembler Lab
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 8px" }}>
+          Studio Assembler
         </h1>
         <p style={{ fontSize: 15, color: "#78716c", margin: 0, lineHeight: 1.6 }}>
           Internal AIH Studios tool. Enter any creator URL — the system fetches public signals,

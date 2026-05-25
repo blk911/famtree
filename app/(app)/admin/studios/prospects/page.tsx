@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import type {
   ProspectRecord,
   ProspectStatus,
@@ -241,7 +242,7 @@ function ProspectDetail({
                 href={`/admin/studios/creator-lab?url=${encodeURIComponent(prospect.bestMatch.url)}`}
                 style={{ fontSize: 11, fontWeight: 700, color: "#9d174d", textDecoration: "none" }}
               >
-                Assemble in Creator Lab →
+                Assemble in Studio Assembler →
               </a>
             </div>
           )}
@@ -339,24 +340,15 @@ export default function ProspectsPage() {
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px 60px" }}>
 
+      <CreatorIntelligenceNav current="prospects" />
+
       {/* Header */}
       <div style={{ marginBottom: 6 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-          <Link href="/admin/studios/creator-lab/ig-stubs"
-            style={{ fontSize: 12, color: "#9d174d", fontWeight: 700, textDecoration: "none" }}>
-            ← IG Stub Resolver
-          </Link>
-          <span style={{ color: "#d6d3d1" }}>·</span>
-          <Link href="/admin/studios/creator-lab"
-            style={{ fontSize: 12, color: "#78716c", textDecoration: "none" }}>
-            Creator Lab
-          </Link>
-        </div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>
-          Creator Prospect Directory
+          Prospects
         </h1>
         <p style={{ fontSize: 13, color: "#78716c", margin: 0 }}>
-          Admin-only opportunity intelligence from Creator Lab resolver runs.
+          Admin-only opportunity intelligence from Creator Intelligence resolver runs.
         </p>
       </div>
 

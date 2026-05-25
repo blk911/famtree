@@ -3,6 +3,7 @@
 // IG Stub Resolver — given IG handles + display names, find public booking/store profiles.
 
 import { useState } from "react";
+import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import { parseSeeds } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
 import type {
   ResolveMode,
@@ -212,7 +213,7 @@ function ProfileCard({ profile, handle }: { profile: ResolvedProfile; handle: st
                 letterSpacing: "0.03em",
               }}
             >
-              Assemble in Creator Lab →
+              Assemble in Studio Assembler →
             </a>
           </div>
         </div>
@@ -257,7 +258,7 @@ function SeedResultBlock({ result }: { result: StubResolutionResult }) {
 
       {result.resolvedProfiles.length === 0 ? (
         <div style={{ fontSize: 13, color: "#a8a29e", fontStyle: "italic", padding: "8px 0" }}>
-          No public profiles found for this handle. Try Deep Research Mode or assemble manually via the Creator Lab.
+          No public profiles found for this handle. Try Deep Research Mode or assemble manually via Studio Assembler.
         </div>
       ) : (
         <>
@@ -444,26 +445,13 @@ export default function IgStubsPage() {
   const unresolved = results?.filter((r) => r.status === "unresolved").length ?? 0;
 
   return (
-    <div style={{ maxWidth: 860, margin: "0 auto", padding: "32px 24px" }}>
+    <div style={{ maxWidth: 860, margin: "0 auto", padding: "28px 24px" }}>
+      <CreatorIntelligenceNav current="ig-resolver" />
+
       {/* Page header */}
       <div style={{ marginBottom: 28 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-          <a
-            href="/admin/studios/creator-lab"
-            style={{ fontSize: 12, color: "#9d174d", textDecoration: "none", fontWeight: 700 }}
-          >
-            ← Creator Lab
-          </a>
-          <span style={{ color: "#d6d3d1" }}>·</span>
-          <a
-            href="/admin/studios/prospects"
-            style={{ fontSize: 12, color: "#78716c", textDecoration: "none", fontWeight: 600 }}
-          >
-            Prospect Directory →
-          </a>
-        </div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: 0 }}>
-          IG Stub Resolver
+          IG Resolver
         </h1>
         <p style={{ fontSize: 14, color: "#78716c", margin: "6px 0 0" }}>
           Given Instagram handles + display names, find public booking pages, stores, and link-in-bio profiles.
