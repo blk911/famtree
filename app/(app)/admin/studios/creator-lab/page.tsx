@@ -166,6 +166,7 @@ const STEP_LABELS: Record<Step, string> = {
 export default function CreatorLabPage() {
   const router = useRouter();
   const [url, setUrl] = useState("");
+  const [pastedContext, setPastedContext] = useState("");
   const [step, setStep] = useState<Step>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [entries, setEntries] = useState<CreatorLabEntry[] | null>(null);
@@ -206,7 +207,7 @@ export default function CreatorLabPage() {
       const res = await fetch("/api/admin/studios/creator-lab/assemble", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify({ url: url.trim(), pastedContext: pastedContext.trim() || undefined }),
       });
 
       setStep("saving");
@@ -273,6 +274,28 @@ export default function CreatorLabPage() {
           >
             {busy ? "Working…" : "Assemble →"}
           </button>
+        </div>
+
+        {/* Optional pasted context */}
+        <div style={{ marginTop: 14 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#78716c", display: "block", marginBottom: 6 }}>
+            Paste profile info <span style={{ fontWeight: 400, color: "#a8a29e" }}>(optional — bio, follower count, captions, anything you can copy from the page)</span>
+          </label>
+          <textarea
+            value={pastedContext}
+            onChange={(e) => setPastedContext(e.target.value)}
+            disabled={busy}
+            placeholder={"ashleyraycushman\nASHLEY RAY\n241 posts · 105K followers\nHi I'm Ashley — artist, maker..."}
+            rows={4}
+            style={{
+              ...inputStyle,
+              resize: "vertical",
+              fontFamily: "inherit",
+              fontSize: 13,
+              lineHeight: 1.55,
+              color: "#1c1917",
+            }}
+          />
         </div>
 
         {/* Progress / status */}

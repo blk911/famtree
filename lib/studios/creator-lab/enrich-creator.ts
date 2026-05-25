@@ -28,14 +28,17 @@ function getOpenAI(): OpenAI {
 
 // ─── Prompt builder ────────────────────────────────────────────────────────────
 
-function buildEnrichmentPrompt(source: CreatorSource, signals: CreatorSignalSet): string {
+function buildEnrichmentPrompt(source: CreatorSource, signals: CreatorSignalSet, pastedContext?: string): string {
   const lines: string[] = [
     `You are the Studio Assembler AI for AIH Studios — an internal lab that reconstructs creator/artist profiles from public web signals.`,
     ``,
     `SOURCE URL: ${source.sourceUrl}`,
     `PLATFORM: ${source.platform}`,
-    source.htmlLength === 0
+    source.htmlLength === 0 && !pastedContext
       ? `NOTE: This platform (${source.platform}) blocks automated access. Only the URL/handle is available. Infer what you can from the handle and platform context; use null for anything you cannot determine. Set confidence to "low".`
+      : ``,
+    pastedContext
+      ? `=== ADMIN-PASTED PROFILE INFO (treat as high-signal ground truth) ===\n${pastedContext}\n===`
       : ``,
     ``,
     `=== EXTRACTED SIGNALS ===`,
@@ -219,8 +222,9 @@ function parseConfidence(raw: unknown): AssemblyConfidence {
 export async function enrichCreator(
   source: CreatorSource,
   signals: CreatorSignalSet,
+  pastedContext?: string,
 ): Promise<AssembledCreatorStudio> {
-  const prompt = buildEnrichmentPrompt(source, signals);
+  const prompt = buildEnrichmentPrompt(source, signals, pastedContext);
 
   const completion = await getOpenAI().chat.completions.create({
     model: "gpt-4o-mini",
@@ -283,8 +287,10 @@ export async function enrichCreator(
     suggestedHeroImageUrl: signals.imageUrls[0] ?? null,
     confidence:           parseConfidence(parsed.confidence),
     reviewNotes: [
-      ...(source.htmlLength === 0
+      ...(source.htmlLength === 0 && !pastedContext
         ? [`⚠️ ${source.platform} blocks automated access — assembled from URL/handle only. Signals are minimal; manual enrichment recommended.`]
+        : source.htmlLength === 0 && pastedContext
+        ? [`ℹ️ ${source.platform} blocks automated access — assembled from admin-pasted profile info.`]
         : []),
       ...asStringArray(parsed.reviewNotes),
     ],

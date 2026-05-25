@@ -31,7 +31,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<AssembleRespo
     return err("Validation error", parsed.error.errors[0]?.message);
   }
 
-  const { url } = parsed.data;
+  const { url, pastedContext } = parsed.data;
 
   // ── Fetch ─────────────────────────────────────────────────────────────────────
   let source;
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<AssembleRespo
   // ── AI enrichment ─────────────────────────────────────────────────────────────
   let studio;
   try {
-    studio = await enrichCreator(source, signals);
+    studio = await enrichCreator(source, signals, pastedContext);
   } catch (aiErr) {
     const msg = aiErr instanceof Error ? aiErr.message : String(aiErr);
     console.error("[creator-lab/assemble] AI enrichment error:", msg);

@@ -146,6 +146,8 @@ export interface AssembledCreatorStudio {
 
 export interface AssembleRequest {
   url: string;
+  /** Optional admin-pasted profile info — bio, stats, captions, etc. */
+  pastedContext?: string;
 }
 
 export interface AssembleResponse {

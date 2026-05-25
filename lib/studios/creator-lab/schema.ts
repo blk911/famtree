@@ -18,6 +18,8 @@ export const AssembleRequestSchema = z.object({
       },
       { message: "Must be a valid URL" }
     ),
+  /** Optional freeform text pasted by admin — bio, follower count, captions, etc. */
+  pastedContext: z.string().max(4000).optional(),
 });
 
 export const ProductSignalSchema = z.object({
