@@ -2,14 +2,13 @@
 
 // app/(app)/admin/studios/creator-lab/page.tsx
 // Studio Assembler Lab — internal AIH Studios tool.
-// Admin enters a creator URL; system fetches, extracts, and enriches into a draft studio profile.
+// Renders assembled result inline — no redirect, no storage dependency.
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import type { CreatorLabEntry } from "@/lib/studios/creator-lab/types";
+import type { AssembledCreatorStudio } from "@/lib/studios/creator-lab/types";
 
-// ─── Styles ────────────────────────────────────────────────────────────────────
+// ─── Shared primitives ────────────────────────────────────────────────────────
 
 const card: React.CSSProperties = {
   background: "white",
@@ -50,100 +49,181 @@ const btnDisabled: React.CSSProperties = {
   cursor: "not-allowed",
 };
 
-const badge = (status: string): React.CSSProperties => {
-  const map: Record<string, { bg: string; color: string }> = {
-    assembled:     { bg: "#dbeafe", color: "#1e40af" },
-    pending_review: { bg: "#fef3c7", color: "#92400e" },
-    approved:      { bg: "#d1fae5", color: "#065f46" },
-    rejected:      { bg: "#fee2e2", color: "#991b1b" },
-  };
-  const { bg, color } = map[status] ?? { bg: "#f5f5f4", color: "#57534e" };
-  return {
-    display: "inline-block",
-    padding: "2px 10px",
-    borderRadius: 20,
-    fontSize: 11,
-    fontWeight: 600,
-    background: bg,
-    color,
-    textTransform: "capitalize",
-  };
+const chip = (text: string, bg = "#f5f5f4", color = "#57534e") => (
+  <span key={text} style={{
+    display: "inline-block", padding: "3px 10px", borderRadius: 20,
+    fontSize: 12, fontWeight: 500, background: bg, color,
+    margin: "2px 4px 2px 0",
+  }}>{text}</span>
+);
+
+const CONFIDENCE_COLOR: Record<string, string> = {
+  high: "#22c55e", medium: "#f59e0b", low: "#ef4444",
 };
-
-const confidenceDot = (c: string): React.CSSProperties => ({
-  display: "inline-block",
-  width: 8,
-  height: 8,
-  borderRadius: "50%",
-  background: c === "high" ? "#22c55e" : c === "medium" ? "#f59e0b" : "#ef4444",
-  marginRight: 5,
-  verticalAlign: "middle",
-});
-
-// ─── Platform chip ─────────────────────────────────────────────────────────────
 
 const PLATFORM_EMOJI: Record<string, string> = {
-  instagram: "📸",
-  etsy:      "🛍️",
-  shopify:   "🏪",
-  squarespace: "⬛",
-  wix:       "🌐",
-  bigcartel: "🎨",
-  website:   "🌎",
-  unknown:   "❓",
+  instagram: "📸", etsy: "🛍️", shopify: "🏪",
+  squarespace: "⬛", wix: "🌐", bigcartel: "🎨",
+  website: "🌎", unknown: "❓",
 };
 
-// ─── Entry card ────────────────────────────────────────────────────────────────
+// ─── Inline result view ───────────────────────────────────────────────────────
 
-function EntryCard({ entry }: { entry: CreatorLabEntry }) {
+function AssembledResult({ studio, onReset }: { studio: AssembledCreatorStudio; onReset: () => void }) {
+  const { identity, styleProfile, monetization, collections, signals } = studio;
+
   return (
-    <Link href={`/admin/studios/creator-lab/${entry.creatorId}`} style={{ textDecoration: "none" }}>
-      <div
-        style={{
-          background: "white",
-          border: "1px solid #ece9e3",
-          borderRadius: 12,
-          padding: "16px 20px",
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-          cursor: "pointer",
-          transition: "box-shadow 0.15s",
-        }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; }}
-      >
-        {/* Platform icon */}
-        <div style={{ fontSize: 28, flexShrink: 0, width: 44, textAlign: "center" }}>
-          {PLATFORM_EMOJI[entry.platform] ?? "🌎"}
-        </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-        {/* Main info */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: "#1c1917" }}>
-              {entry.suggestedStudioName}
-            </span>
-            {entry.handle && (
-              <span style={{ fontSize: 12, color: "#78716c" }}>{entry.handle}</span>
-            )}
-            <span style={badge(entry.status)}>{entry.status.replace("_", " ")}</span>
+      {/* Header bar */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 22 }}>{PLATFORM_EMOJI[studio.source.platform]}</span>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#1c1917" }}>
+              {studio.suggestedStudioName}
+            </h2>
+            {identity.handle && <div style={{ fontSize: 13, color: "#78716c" }}>{identity.handle}</div>}
           </div>
-          <div style={{ fontSize: 12, color: "#a8a29e", display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <span>
-              <span style={confidenceDot(entry.confidence)} />
-              {entry.confidence} confidence
-            </span>
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 280 }}>
-              {entry.sourceUrl}
-            </span>
-            <span>{new Date(entry.createdAt).toLocaleDateString()}</span>
-          </div>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 5,
+            padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 700,
+            background: "#f5f5f4", color: "#57534e",
+          }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: CONFIDENCE_COLOR[studio.confidence], display: "inline-block" }} />
+            {studio.confidence} confidence
+          </span>
         </div>
-
-        <div style={{ color: "#a8a29e", fontSize: 18, flexShrink: 0 }}>→</div>
+        <button onClick={onReset} style={{ ...btnPrimary, padding: "8px 18px", fontSize: 13, background: "#f5f5f4", color: "#1c1917" }}>
+          ← New assembly
+        </button>
       </div>
-    </Link>
+
+      {/* Review notes */}
+      {studio.reviewNotes.length > 0 && (
+        <div style={{ padding: "12px 16px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10 }}>
+          {studio.reviewNotes.map((n, i) => (
+            <div key={i} style={{ fontSize: 13, color: "#92400e", lineHeight: 1.6 }}>{n}</div>
+          ))}
+        </div>
+      )}
+
+      {/* Identity */}
+      <div style={card}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>Identity</div>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          {studio.suggestedHeroImageUrl && (
+            <img src={studio.suggestedHeroImageUrl} alt="" style={{ width: 80, height: 80, borderRadius: 10, objectFit: "cover", flexShrink: 0, background: "#f5f5f4" }} />
+          )}
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ fontSize: 13, color: "#57534e", fontStyle: "italic", marginBottom: 8 }}>"{studio.suggestedTagline}"</div>
+            <div style={{ marginBottom: 8 }}>
+              {chip(studio.vertical.replace("_", " "), "#f0fdf4", "#166534")}
+              {styleProfile.priceRange && chip(styleProfile.priceRange, "#fef9c3", "#713f12")}
+              {studio.suggestedCategories.map(c => chip(c, "#ede9fe", "#5b21b6"))}
+            </div>
+            {identity.locationGuess && <div style={{ fontSize: 12, color: "#a8a29e", marginBottom: 6 }}>📍 {identity.locationGuess}</div>}
+            <div style={{ fontSize: 14, color: "#374151", lineHeight: 1.65 }}>{identity.shortBio}</div>
+          </div>
+        </div>
+        {identity.longBio && (
+          <div style={{ marginTop: 14, padding: "12px 14px", background: "#f9fafb", borderRadius: 8, fontSize: 13, color: "#374151", lineHeight: 1.7 }}>
+            {identity.longBio}
+          </div>
+        )}
+      </div>
+
+      {/* Style + Monetization side by side */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+
+        <div style={card}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>Style</div>
+          {styleProfile.aesthetic.length > 0 && (
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: "#a8a29e", marginBottom: 4 }}>Aesthetic</div>
+              <div>{styleProfile.aesthetic.map(a => chip(a, "#fce7f3", "#9d174d"))}</div>
+            </div>
+          )}
+          {styleProfile.medium.length > 0 && (
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: "#a8a29e", marginBottom: 4 }}>Medium</div>
+              <div>{styleProfile.medium.map(m => chip(m, "#e0f2fe", "#075985"))}</div>
+            </div>
+          )}
+          {styleProfile.audienceGuess.length > 0 && (
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: "#a8a29e", marginBottom: 4 }}>Audience</div>
+              <div>{styleProfile.audienceGuess.map(a => chip(a, "#f0fdf4", "#166534"))}</div>
+            </div>
+          )}
+          {styleProfile.tags.length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, color: "#a8a29e", marginBottom: 4 }}>Tags</div>
+              <div>{styleProfile.tags.map(t => chip(`#${t}`, "#f5f5f4", "#44403c"))}</div>
+            </div>
+          )}
+        </div>
+
+        <div style={card}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>Monetization</div>
+          {monetization.primaryModel && (
+            <div style={{ marginBottom: 10 }}>{chip(monetization.primaryModel, "#fef3c7", "#92400e")}</div>
+          )}
+          {monetization.opportunities.length > 0 && (
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: "#a8a29e", marginBottom: 4 }}>Opportunities</div>
+              <ul style={{ margin: 0, padding: "0 0 0 16px", color: "#15803d", fontSize: 13, lineHeight: 1.8 }}>
+                {monetization.opportunities.map((o, i) => <li key={i}>{o}</li>)}
+              </ul>
+            </div>
+          )}
+          {monetization.signals.length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, color: "#a8a29e", marginBottom: 4 }}>Signals</div>
+              <ul style={{ margin: 0, padding: "0 0 0 16px", color: "#57534e", fontSize: 12, lineHeight: 1.8 }}>
+                {monetization.signals.map((s, i) => <li key={i}>{s}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Collections */}
+      {collections.length > 0 && (
+        <div style={card}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>
+            Collections ({collections.length})
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
+            {collections.map((col, i) => (
+              <div key={i} style={{ padding: "12px 14px", background: "#f9fafb", borderRadius: 8, border: "1px solid #f0ede8" }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: "#1c1917", marginBottom: 3 }}>{col.name}</div>
+                <div style={{ fontSize: 12, color: "#78716c", lineHeight: 1.5 }}>{col.description}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Signals summary */}
+      <div style={{ ...card, borderLeft: "3px solid #e7e5e4" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>Raw Signals</div>
+        <div style={{ display: "flex", gap: 24, flexWrap: "wrap", fontSize: 13, color: "#57534e" }}>
+          <span>📦 {signals.productSignals.length} products</span>
+          <span>🗂 {signals.collectionSignals.length} collections</span>
+          <span>📅 {signals.eventSignals.length} events</span>
+          <span>🖼 {signals.imageUrls.length} images</span>
+          <span>✍️ {signals.bioCandidates.length} bio candidates</span>
+          {signals.commissionSignals.length > 0 && <span>🎨 commissions detected</span>}
+          {signals.classWorkshopSignals.length > 0 && <span>🎓 classes detected</span>}
+        </div>
+        <div style={{ marginTop: 10, fontSize: 12, color: "#a8a29e" }}>
+          Source: <a href={studio.source.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#1d4ed8" }}>{studio.source.sourceUrl}</a>
+          {" · "}{studio.source.platform}{" · "}fetched {new Date(studio.source.fetchedAt).toLocaleTimeString()}
+        </div>
+      </div>
+
+    </div>
   );
 }
 
@@ -156,7 +236,7 @@ const STEP_LABELS: Record<Step, string> = {
   fetching:   "🌐 Fetching creator page…",
   extracting: "🔍 Extracting signals…",
   enriching:  "🤖 AI enrichment in progress…",
-  saving:     "💾 Saving assembled studio…",
+  saving:     "💾 Finalising…",
   done:       "✅ Assembly complete!",
   error:      "❌ Assembly failed",
 };
@@ -164,41 +244,27 @@ const STEP_LABELS: Record<Step, string> = {
 // ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function CreatorLabPage() {
-  const router = useRouter();
   const [url, setUrl] = useState("");
   const [pastedContext, setPastedContext] = useState("");
   const [step, setStep] = useState<Step>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [entries, setEntries] = useState<CreatorLabEntry[] | null>(null);
-  const [loadingEntries, setLoadingEntries] = useState(false);
+  const [assembledStudio, setAssembledStudio] = useState<AssembledCreatorStudio | null>(null);
+
   const busy = step !== "idle" && step !== "done" && step !== "error";
 
-  // Load existing entries on first render
-  const loadEntries = async () => {
-    if (loadingEntries || entries !== null) return;
-    setLoadingEntries(true);
-    try {
-      const res = await fetch("/api/admin/studios/creator-lab/list");
-      if (res.ok) {
-        const data = await res.json();
-        setEntries(data.entries ?? []);
-      }
-    } catch {}
-    setLoadingEntries(false);
+  const handleReset = () => {
+    setAssembledStudio(null);
+    setStep("idle");
+    setErrorMsg(null);
   };
-
-  // Kick off on mount via useEffect-equivalent approach
-  if (entries === null && !loadingEntries) {
-    loadEntries();
-  }
 
   const handleAssemble = async () => {
     if (!url.trim() || busy) return;
     setErrorMsg(null);
+    setAssembledStudio(null);
     setStep("fetching");
 
     try {
-      // Small UI delays so the user can see step progression
       await new Promise((r) => setTimeout(r, 300));
       setStep("extracting");
       await new Promise((r) => setTimeout(r, 200));
@@ -219,8 +285,7 @@ export default function CreatorLabPage() {
       }
 
       setStep("done");
-      await new Promise((r) => setTimeout(r, 600));
-      router.push(`/admin/studios/creator-lab/${data.creatorId}`);
+      setAssembledStudio(data.studio);
     } catch (e) {
       setStep("error");
       setErrorMsg(e instanceof Error ? e.message : String(e));
@@ -251,118 +316,83 @@ export default function CreatorLabPage() {
         </p>
       </div>
 
-      {/* Input card */}
-      <div style={{ ...card, marginBottom: 32 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "#57534e", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-          Creator URL
-        </div>
-
-        <div style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
-          <input
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") handleAssemble(); }}
-            placeholder="https://instagram.com/handle  ·  https://shop.etsy.com/shop/name  ·  any public URL"
-            style={inputStyle}
-            disabled={busy}
-            autoFocus
-          />
-          <button
-            onClick={handleAssemble}
-            disabled={!url.trim() || busy}
-            style={!url.trim() || busy ? btnDisabled : btnPrimary}
-          >
-            {busy ? "Working…" : "Assemble →"}
-          </button>
-        </div>
-
-        {/* Optional pasted context */}
-        <div style={{ marginTop: 14 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: "#78716c", display: "block", marginBottom: 6 }}>
-            Paste profile info <span style={{ fontWeight: 400, color: "#a8a29e" }}>(optional — bio, follower count, captions, anything you can copy from the page)</span>
-          </label>
-          <textarea
-            value={pastedContext}
-            onChange={(e) => setPastedContext(e.target.value)}
-            disabled={busy}
-            placeholder={"ashleyraycushman\nASHLEY RAY\n241 posts · 105K followers\nHi I'm Ashley — artist, maker..."}
-            rows={4}
-            style={{
-              ...inputStyle,
-              resize: "vertical",
-              fontFamily: "inherit",
-              fontSize: 13,
-              lineHeight: 1.55,
-              color: "#1c1917",
-            }}
-          />
-        </div>
-
-        {/* Progress / status */}
-        {step !== "idle" && (
-          <div style={{ marginTop: 16, padding: "10px 14px", background: "#f5f5f4", borderRadius: 8, fontSize: 13 }}>
-            <span style={{ color: step === "error" ? "#dc2626" : "#1c1917", fontWeight: 500 }}>
-              {STEP_LABELS[step]}
-            </span>
-            {errorMsg && (
-              <div style={{ marginTop: 6, color: "#dc2626", fontSize: 12 }}>{errorMsg}</div>
-            )}
+      {/* Input card — hide after successful assembly */}
+      {!assembledStudio && (
+        <div style={{ ...card, marginBottom: 32 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#57534e", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Creator URL
           </div>
-        )}
 
-        {/* Supported sources hint */}
-        <div style={{ marginTop: 14, fontSize: 12, color: "#a8a29e", display: "flex", gap: 12, flexWrap: "wrap" }}>
-          {["📸 Instagram", "🛍️ Etsy", "🏪 Shopify", "⬛ Squarespace", "🌎 Any public website"].map((s) => (
-            <span key={s}>{s}</span>
-          ))}
-        </div>
-      </div>
-
-      {/* Assembled studios list */}
-      <div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1c1917", margin: 0 }}>
-            Assembled Studios
-          </h2>
-          <span style={{ fontSize: 12, color: "#a8a29e" }}>
-            {entries === null ? "Loading…" : `${entries.length} total`}
-          </span>
-        </div>
-
-        {loadingEntries && (
-          <div style={{ color: "#a8a29e", fontSize: 14, padding: "24px 0" }}>Loading…</div>
-        )}
-
-        {entries !== null && entries.length === 0 && (
-          <div style={{
-            border: "2px dashed #e7e5e4",
-            borderRadius: 12,
-            padding: "40px 24px",
-            textAlign: "center",
-            color: "#a8a29e",
-            fontSize: 14,
-          }}>
-            No studios assembled yet. Paste a creator URL above to get started.
+          <div style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleAssemble(); }}
+              placeholder="https://instagram.com/handle  ·  https://shop.etsy.com/shop/name  ·  any public URL"
+              style={inputStyle}
+              disabled={busy}
+              autoFocus
+            />
+            <button
+              onClick={handleAssemble}
+              disabled={!url.trim() || busy}
+              style={!url.trim() || busy ? btnDisabled : btnPrimary}
+            >
+              {busy ? "Working…" : "Assemble →"}
+            </button>
           </div>
-        )}
 
-        {entries !== null && entries.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {entries.map((e) => (
-              <EntryCard key={e.creatorId} entry={e} />
+          {/* Optional pasted context */}
+          <div style={{ marginTop: 14 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: "#78716c", display: "block", marginBottom: 6 }}>
+              Paste profile info{" "}
+              <span style={{ fontWeight: 400, color: "#a8a29e" }}>
+                (optional — bio, follower count, captions, anything you can copy from the page)
+              </span>
+            </label>
+            <textarea
+              value={pastedContext}
+              onChange={(e) => setPastedContext(e.target.value)}
+              disabled={busy}
+              placeholder={"ashleyraycushman\nASHLEY RAY\n241 posts · 105K followers\nHi I'm Ashley — artist, maker..."}
+              rows={4}
+              style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", fontSize: 13, lineHeight: 1.55 }}
+            />
+          </div>
+
+          {/* Progress / status */}
+          {step !== "idle" && (
+            <div style={{ marginTop: 16, padding: "10px 14px", background: "#f5f5f4", borderRadius: 8, fontSize: 13 }}>
+              <span style={{ color: step === "error" ? "#dc2626" : "#1c1917", fontWeight: 500 }}>
+                {STEP_LABELS[step]}
+              </span>
+              {errorMsg && (
+                <div style={{ marginTop: 6, color: "#dc2626", fontSize: 12 }}>{errorMsg}</div>
+              )}
+            </div>
+          )}
+
+          {/* Supported sources */}
+          <div style={{ marginTop: 14, fontSize: 12, color: "#a8a29e", display: "flex", gap: 12, flexWrap: "wrap" }}>
+            {["📸 Instagram", "🛍️ Etsy", "🏪 Shopify", "⬛ Squarespace", "🌎 Any public website"].map((s) => (
+              <span key={s}>{s}</span>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Internal notice */}
-      <div style={{ marginTop: 40, fontSize: 12, color: "#d6d3d1", textAlign: "center" }}>
-        Internal AIH Studios tool · Not visible to creators or members · Data stored locally in{" "}
-        <code style={{ background: "#f5f5f4", padding: "1px 5px", borderRadius: 4 }}>
-          runtime-data/studios/creator-lab/
-        </code>
-      </div>
+      {/* Inline assembled result */}
+      {assembledStudio && (
+        <AssembledResult studio={assembledStudio} onReset={handleReset} />
+      )}
+
+      {/* Footer */}
+      {!assembledStudio && (
+        <div style={{ marginTop: 40, fontSize: 12, color: "#d6d3d1", textAlign: "center" }}>
+          Internal AIH Studios tool · Not visible to creators or members
+        </div>
+      )}
     </div>
   );
 }
