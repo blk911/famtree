@@ -18,7 +18,7 @@ const ink = STUDIOS_INK;
 const muted = STUDIOS_MUTED;
 const line = STUDIOS_LINE;
 
-const GAP_U_STUDENT_VID = "/uploads/Gap promo 1.mp4";
+const GAP_U_STUDENT_VID = "/uploads/Gap%20promo%201.mp4";
 
 // ─── Student video modal ───────────────────────────────────────────────────────
 
