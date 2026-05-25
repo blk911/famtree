@@ -458,8 +458,8 @@ export function StudiosLanding({ serializedGateway = null }: LandingProps) {
                     <p className="lss-eyebrow">{card.categoryLabel}</p>
                     <h3 className="lss-title">{card.title}</h3>
                     <p className="lss-sub">{card.subtitle}</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-                      <span className="lss-cta">{card.ctaLabel}</span>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap", marginTop: 10 }}>
+                      <span className="lss-cta" style={{ marginTop: 0 }}>{card.ctaLabel}</span>
                       {card.id === "gap-u" && (
                         <button
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); openStudentVid(); }}
