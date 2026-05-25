@@ -303,12 +303,20 @@ export default function CreatorLabPage() {
     <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 20px 60px" }}>
 
       {/* Breadcrumb */}
-      <div style={{ fontSize: 13, color: "#78716c", marginBottom: 20 }}>
+      <div style={{ fontSize: 13, color: "#78716c", marginBottom: 20, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         <Link href="/admin/studios" style={{ fontWeight: 700, color: "#1c1917", textDecoration: "none" }}>
           ← Studio Management
         </Link>
-        <span style={{ margin: "0 8px", color: "#d6d3d1" }}>|</span>
-        <span>Creator Lab</span>
+        <span style={{ color: "#d6d3d1" }}>|</span>
+        <span style={{ fontWeight: 600, color: "#57534e" }}>Creator Lab</span>
+        <span style={{ color: "#d6d3d1" }}>·</span>
+        <Link href="/admin/studios/creator-lab/ig-stubs" style={{ color: "#78716c", textDecoration: "none" }}>
+          IG Resolver
+        </Link>
+        <span style={{ color: "#d6d3d1" }}>·</span>
+        <Link href="/admin/studios/prospects" style={{ color: "#9d174d", fontWeight: 600, textDecoration: "none" }}>
+          Prospects
+        </Link>
       </div>
 
       {/* Header */}

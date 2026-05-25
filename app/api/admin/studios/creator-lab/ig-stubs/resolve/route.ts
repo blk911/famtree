@@ -9,6 +9,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sanitizeHandle, generateCandidateUrls } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
 import { fastResolve } from "@/lib/studios/creator-lab/ig-stubs/validator";
+import { upsertProspect } from "@/lib/studios/prospects/store";
+import { resultToProspect, generateBatchId } from "@/lib/studios/prospects/from-resolver";
 import type {
   IgSeed,
   StubResolutionResult,
@@ -66,6 +68,9 @@ export async function POST(req: NextRequest) {
   // Cap seeds for deep mode to control AI spend
   const activeSeed = mode === "deep" ? cleanSeeds.slice(0, 5) : cleanSeeds;
 
+  // Batch ID ties all prospect records from this run together
+  const batchId = generateBatchId();
+
   // Process all seeds in parallel
   const settled = await Promise.allSettled(
     activeSeed.map(async (seed): Promise<StubResolutionResult> => {
@@ -103,6 +108,20 @@ export async function POST(req: NextRequest) {
           status: "unresolved" as const,
         }
   );
+
+  // ── Persist prospects (fire-and-forget — never fail the main response) ─────
+  void (async () => {
+    try {
+      await Promise.allSettled(
+        results.map(async (result) => {
+          const input = resultToProspect(result, batchId);
+          if (input) await upsertProspect(input);
+        })
+      );
+    } catch (e) {
+      console.error("[ig-stubs/resolve] prospect upsert failed:", e);
+    }
+  })();
 
   return NextResponse.json(
     { ok: true, results, mode, processedAt: new Date().toISOString() } satisfies ResolveResponse,

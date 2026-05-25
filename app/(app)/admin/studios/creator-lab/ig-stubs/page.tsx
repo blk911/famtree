@@ -454,6 +454,13 @@ export default function IgStubsPage() {
           >
             ← Creator Lab
           </a>
+          <span style={{ color: "#d6d3d1" }}>·</span>
+          <a
+            href="/admin/studios/prospects"
+            style={{ fontSize: 12, color: "#78716c", textDecoration: "none", fontWeight: 600 }}
+          >
+            Prospect Directory →
+          </a>
         </div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: 0 }}>
           IG Stub Resolver
