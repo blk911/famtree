@@ -33,6 +33,15 @@ export async function POST(req: NextRequest): Promise<NextResponse<AssembleRespo
 
   const { url, pastedContext } = parsed.data;
 
+  // ── API key guard ─────────────────────────────────────────────────────────────
+  if (!process.env.OPENAI_API_KEY) {
+    return err(
+      "AI enrichment unavailable",
+      "OPENAI_API_KEY is not set in this environment. Add it to Vercel → Project → Settings → Environment Variables.",
+      503
+    );
+  }
+
   // ── Fetch ─────────────────────────────────────────────────────────────────────
   let source;
   try {

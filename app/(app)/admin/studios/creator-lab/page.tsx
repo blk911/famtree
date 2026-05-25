@@ -214,7 +214,8 @@ export default function CreatorLabPage() {
       const data = await res.json();
 
       if (!res.ok || !data.ok) {
-        throw new Error(data.error ?? `HTTP ${res.status}`);
+        const detail = data.detail ? ` — ${data.detail}` : "";
+        throw new Error(`${data.error ?? `HTTP ${res.status}`}${detail}`);
       }
 
       setStep("done");
