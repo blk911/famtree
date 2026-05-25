@@ -295,8 +295,7 @@ function SignalsSection({ studio }: { studio: AssembledCreatorStudio }) {
                 key={i}
                 src={url}
                 alt=""
-                style={{ width: 60, height: 60, borderRadius: 6, objectFit: "cover", border: "1px solid #ece9e3" }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                style={{ width: 60, height: 60, borderRadius: 6, objectFit: "cover", border: "1px solid #ece9e3", background: "#f5f5f4" }}
               />
             ))}
           </div>
