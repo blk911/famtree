@@ -16,7 +16,15 @@ import type {
 } from "./types";
 import { generateCreatorId } from "./url-utils";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Lazy singleton — instantiated on first call, not at module load time.
+// This prevents Vercel build from failing when OPENAI_API_KEY is a runtime-only env var.
+let _openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return _openai;
+}
 
 // ─── Prompt builder ────────────────────────────────────────────────────────────
 
@@ -211,7 +219,7 @@ export async function enrichCreator(
 ): Promise<AssembledCreatorStudio> {
   const prompt = buildEnrichmentPrompt(source, signals);
 
-  const completion = await openai.chat.completions.create({
+  const completion = await getOpenAI().chat.completions.create({
     model: "gpt-4o-mini",
     messages: [{ role: "user", content: prompt }],
     temperature: 0.3,
