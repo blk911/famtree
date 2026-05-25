@@ -210,7 +210,11 @@ export function StudiosLanding({ serializedGateway = null }: LandingProps) {
           position: relative;
           aspect-ratio: 4 / 3;
           min-height: clamp(148px, 22vw, 192px);
+          max-height: 192px;
           background: #e7e5e4;
+        }
+        .lss-card--featured .lss-visual {
+          max-height: 192px;
         }
         .lss-visual img {
           width: 100%;
