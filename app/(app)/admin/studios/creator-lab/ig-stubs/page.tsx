@@ -4,7 +4,6 @@
 
 import { useState } from "react";
 import { parseSeeds } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
-import { LabStepper } from "@/components/studios/creator-lab/LabStepper";
 import type {
   ResolveMode,
   ResolveResponse,
@@ -197,20 +196,23 @@ function ProfileCard({ profile, handle }: { profile: ResolvedProfile; handle: st
               "{profile.extractedDescription.slice(0, 200)}"
             </div>
           )}
-          {/* Quick assemble button */}
+          {/* Hand off to Creator Lab */}
           <div style={{ marginTop: 10 }}>
             <a
               href={`/admin/studios/creator-lab?url=${encodeURIComponent(profile.url)}`}
               style={{
                 display: "inline-block",
-                fontSize: 11,
-                fontWeight: 700,
-                color: "#9d174d",
+                fontSize: 12,
+                fontWeight: 800,
+                color: "#fff",
+                background: "#9d174d",
+                borderRadius: 8,
+                padding: "6px 14px",
                 textDecoration: "none",
-                letterSpacing: "0.05em",
+                letterSpacing: "0.03em",
               }}
             >
-              ASSEMBLE THIS PROFILE →
+              Assemble in Creator Lab →
             </a>
           </div>
         </div>
@@ -461,9 +463,6 @@ export default function IgStubsPage() {
           Fast Mode tests URL patterns directly. Deep Research Mode adds AI identity analysis + web search.
         </p>
       </div>
-
-      {/* Step nav */}
-      <LabStepper active={1} />
 
       {/* Input form — hidden when results showing */}
       {!results && (

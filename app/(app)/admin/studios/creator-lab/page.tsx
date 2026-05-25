@@ -4,10 +4,9 @@
 // Studio Assembler Lab — internal AIH Studios tool.
 // Renders assembled result inline — no redirect, no storage dependency.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { AssembledCreatorStudio } from "@/lib/studios/creator-lab/types";
-import { LabStepper } from "@/components/studios/creator-lab/LabStepper";
 
 // ─── Shared primitives ────────────────────────────────────────────────────────
 
@@ -247,6 +246,13 @@ const STEP_LABELS: Record<Step, string> = {
 export default function CreatorLabPage() {
   const [url, setUrl] = useState("");
   const [pastedContext, setPastedContext] = useState("");
+
+  // Pre-fill URL if arriving from the IG Stub Resolver via ?url=
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const incoming = params.get("url");
+    if (incoming) setUrl(decodeURIComponent(incoming));
+  }, []);
   const [step, setStep] = useState<Step>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [assembledStudio, setAssembledStudio] = useState<AssembledCreatorStudio | null>(null);
@@ -317,9 +323,6 @@ export default function CreatorLabPage() {
         </p>
       </div>
 
-      {/* Step nav */}
-      <LabStepper active={assembledStudio ? 3 : 2} />
-
       {/* Input card — hide after successful assembly */}
       {!assembledStudio && (
         <div style={{ ...card, marginBottom: 32 }}>
@@ -345,6 +348,16 @@ export default function CreatorLabPage() {
             >
               {busy ? "Working…" : "Assemble →"}
             </button>
+          </div>
+
+          {/* No URL? Use the stub resolver */}
+          <div style={{ marginTop: 8, textAlign: "right" }}>
+            <Link
+              href="/admin/studios/creator-lab/ig-stubs"
+              style={{ fontSize: 12, color: "#9d174d", fontWeight: 700, textDecoration: "none" }}
+            >
+              Don't have a URL? Find one via IG handle →
+            </Link>
           </div>
 
           {/* Optional pasted context */}
