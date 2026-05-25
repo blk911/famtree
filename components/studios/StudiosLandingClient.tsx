@@ -18,11 +18,14 @@ const ink = STUDIOS_INK;
 const muted = STUDIOS_MUTED;
 const line = STUDIOS_LINE;
 
-const GAP_U_STUDENT_VID = "/uploads/Gap%20promo%201.mp4";
+const CARD_TESTIMONIAL_VIDS: Record<string, string> = {
+  "gap-u":     "/uploads/Gap%20promo%201.mp4",
+  "education": "/uploads/Private_Studio_Network_Education%201.mp4",
+};
 
-// ─── Student video modal ───────────────────────────────────────────────────────
+// ─── Testimonial video modal ───────────────────────────────────────────────────
 
-function StudentVideoModal({ onClose }: { onClose: () => void }) {
+function StudentVideoModal({ src, onClose }: { src: string; onClose: () => void }) {
   // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -80,7 +83,7 @@ function StudentVideoModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <video
-          src={GAP_U_STUDENT_VID}
+          src={src}
           controls
           autoPlay
           playsInline
@@ -94,9 +97,9 @@ function StudentVideoModal({ onClose }: { onClose: () => void }) {
 type LandingProps = { serializedGateway?: SerializedStudiosGatewayContext | null };
 
 export function StudiosLanding({ serializedGateway = null }: LandingProps) {
-  const [studentVidOpen, setStudentVidOpen] = useState(false);
-  const openStudentVid = useCallback(() => setStudentVidOpen(true), []);
-  const closeStudentVid = useCallback(() => setStudentVidOpen(false), []);
+  const [activeVidSrc, setActiveVidSrc] = useState<string | null>(null);
+  const openVid = useCallback((src: string) => setActiveVidSrc(src), []);
+  const closeVid = useCallback(() => setActiveVidSrc(null), []);
 
   return (
     <StudiosGatewayProvider gateway={serializedGateway}>
@@ -243,14 +246,10 @@ export function StudiosLanding({ serializedGateway = null }: LandingProps) {
           margin: 0;
           font-size: 9px;
           font-weight: 800;
-          letter-spacing: 0.09em;
-          text-transform: uppercase;
-          color: #78716c;
-          line-height: 1.35;
-        }
-        .lss-card--featured .lss-eyebrow {
-          color: #9d174d;
           letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #9d174d;
+          line-height: 1.35;
         }
         .lss-title {
           margin: 0;
@@ -464,9 +463,9 @@ export function StudiosLanding({ serializedGateway = null }: LandingProps) {
                     <p className="lss-sub">{card.subtitle}</p>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap", marginTop: 10 }}>
                       <span className="lss-cta" style={{ marginTop: 0 }}>{card.ctaLabel}</span>
-                      {card.id === "gap-u" && (
+                      {CARD_TESTIMONIAL_VIDS[card.id] && (
                         <button
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); openStudentVid(); }}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); openVid(CARD_TESTIMONIAL_VIDS[card.id]); }}
                           style={{
                             display: "inline-flex", alignItems: "center", gap: 4,
                             background: "none", border: "none", padding: 0,
@@ -534,7 +533,7 @@ export function StudiosLanding({ serializedGateway = null }: LandingProps) {
 
       <StudiosFooter />
 
-      {studentVidOpen && <StudentVideoModal onClose={closeStudentVid} />}
+      {activeVidSrc && <StudentVideoModal src={activeVidSrc} onClose={closeVid} />}
       </>
     </StudiosGatewayProvider>
   );
