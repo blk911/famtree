@@ -7,6 +7,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { AssembledCreatorStudio } from "@/lib/studios/creator-lab/types";
+import { LabStepper } from "@/components/studios/creator-lab/LabStepper";
 
 // ─── Shared primitives ────────────────────────────────────────────────────────
 
@@ -315,6 +316,9 @@ export default function CreatorLabPage() {
           draft studio profile.
         </p>
       </div>
+
+      {/* Step nav */}
+      <LabStepper active={assembledStudio ? 3 : 2} />
 
       {/* Input card — hide after successful assembly */}
       {!assembledStudio && (

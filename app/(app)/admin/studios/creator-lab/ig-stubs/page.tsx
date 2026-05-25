@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { parseSeeds } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
+import { LabStepper } from "@/components/studios/creator-lab/LabStepper";
 import type {
   ResolveMode,
   ResolveResponse,
@@ -460,6 +461,9 @@ export default function IgStubsPage() {
           Fast Mode tests URL patterns directly. Deep Research Mode adds AI identity analysis + web search.
         </p>
       </div>
+
+      {/* Step nav */}
+      <LabStepper active={1} />
 
       {/* Input form — hidden when results showing */}
       {!results && (
