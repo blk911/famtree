@@ -7,7 +7,11 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { AssembledCreatorStudio, CreatorLabEntry } from "./types";
 
-const DATA_DIR = path.resolve(process.cwd(), "runtime-data", "studios", "creator-lab");
+// Vercel serverless: /var/task is read-only; /tmp is the only writable dir.
+// Locally: use runtime-data/ so files persist across dev server restarts.
+const DATA_DIR = process.env.VERCEL
+  ? "/tmp/creator-lab"
+  : path.resolve(process.cwd(), "runtime-data", "studios", "creator-lab");
 
 async function ensureDir(): Promise<void> {
   await fs.mkdir(DATA_DIR, { recursive: true });
