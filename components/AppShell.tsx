@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { Menu, Megaphone, X, Volume2 } from "lucide-react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { TopBarUser } from "@/components/TopBarUser";
@@ -148,6 +149,30 @@ export function AppShell({ user, coverUrl, children, vaultNotificationCount = 0 
           <AppMenuButton onClick={() => setSidebarOpen(true)} aria-label="Open menu">
             <Menu className="h-[18px] w-[18px]" />
           </AppMenuButton>
+
+          {/* Temp admin shortcut — Creator Lab */}
+          {(user.role === "admin" || user.role === "founder") && (
+            <Link
+              href="/admin/studios/creator-lab"
+              style={{
+                marginLeft: "auto",
+                marginRight: 10,
+                fontSize: 12,
+                fontWeight: 700,
+                color: "#9d174d",
+                background: "#fdf2f8",
+                border: "1px solid #fbcfe8",
+                borderRadius: 20,
+                padding: "5px 12px",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+                letterSpacing: "0.02em",
+              }}
+            >
+              🧪 Creator Lab
+            </Link>
+          )}
+
           <TopBarUser user={user} />
         </AppTopBar>
 
