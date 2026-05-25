@@ -84,7 +84,7 @@ export async function MemberBreadcrumb() {
             justifyContent: "flex-end",
           }}
         >
-          <StudiosUtilityBar displayName={formatDisplayName(user)} />
+          <StudiosUtilityBar displayName={formatDisplayName(user)} role={user.role} />
           <Link
             href="/settings"
             style={{

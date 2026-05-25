@@ -22,9 +22,12 @@ const utilityPill: CSSProperties = {
 
 type Props = {
   displayName: string;
+  role?: string;
 };
 
-export function StudiosUtilityBar({ displayName }: Props) {
+export function StudiosUtilityBar({ displayName, role }: Props) {
+  const isAdmin = role === "admin" || role === "founder";
+
   return (
     <div
       style={{
@@ -56,6 +59,21 @@ export function StudiosUtilityBar({ displayName }: Props) {
         <Link href="/studios/my-studios" prefetch={false} style={utilityPill}>
           My Studios
         </Link>
+        {isAdmin && (
+          <Link
+            href="/admin/studios/creator-lab"
+            prefetch={false}
+            style={{
+              ...utilityPill,
+              background: "#fdf2f8",
+              border: "1px solid #fbcfe8",
+              color: "#9d174d",
+              fontWeight: 700,
+            }}
+          >
+            🧪 Creator Lab
+          </Link>
+        )}
       </nav>
     </div>
   );
