@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { StudiosHeroFeaturedStudios } from "@/components/studios/landing/StudiosHeroFeaturedStudios";
 import {
   StudiosGatewayProvider,
@@ -17,9 +18,86 @@ const ink = STUDIOS_INK;
 const muted = STUDIOS_MUTED;
 const line = STUDIOS_LINE;
 
+const GAP_U_STUDENT_VID = "/uploads/Gap promo 1.mp4";
+
+// ─── Student video modal ───────────────────────────────────────────────────────
+
+function StudentVideoModal({ onClose }: { onClose: () => void }) {
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        background: "rgba(0,0,0,0.78)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "20px",
+        backdropFilter: "blur(4px)",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          position: "relative",
+          width: "100%", maxWidth: 780,
+          borderRadius: 16,
+          overflow: "hidden",
+          background: "#000",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.55)",
+        }}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          aria-label="Close video"
+          style={{
+            position: "absolute", top: 12, right: 12, zIndex: 10,
+            background: "rgba(0,0,0,0.55)", border: "none", borderRadius: "50%",
+            width: 36, height: 36, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "#fff",
+          }}
+        >
+          <X style={{ width: 18, height: 18 }} />
+        </button>
+
+        {/* Title bar */}
+        <div style={{
+          padding: "14px 20px 10px",
+          background: "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%)",
+          position: "absolute", top: 0, left: 0, right: 0, zIndex: 5,
+          pointerEvents: "none",
+        }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "0.03em" }}>
+            🎓 Hear from Gap U Students
+          </p>
+        </div>
+
+        <video
+          src={GAP_U_STUDENT_VID}
+          controls
+          autoPlay
+          playsInline
+          style={{ display: "block", width: "100%", maxHeight: "72vh", background: "#000" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 type LandingProps = { serializedGateway?: SerializedStudiosGatewayContext | null };
 
 export function StudiosLanding({ serializedGateway = null }: LandingProps) {
+  const [studentVidOpen, setStudentVidOpen] = useState(false);
+  const openStudentVid = useCallback(() => setStudentVidOpen(true), []);
+  const closeStudentVid = useCallback(() => setStudentVidOpen(false), []);
+
   return (
     <StudiosGatewayProvider gateway={serializedGateway}>
       <>
@@ -380,6 +458,22 @@ export function StudiosLanding({ serializedGateway = null }: LandingProps) {
                     <p className="lss-eyebrow">{card.categoryLabel}</p>
                     <h3 className="lss-title">{card.title}</h3>
                     <p className="lss-sub">{card.subtitle}</p>
+                    {card.id === "gap-u" && (
+                      <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); openStudentVid(); }}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 5,
+                          background: "none", border: "none", padding: "4px 0 8px",
+                          cursor: "pointer", fontSize: 13, fontWeight: 700,
+                          color: "#9d174d", textDecoration: "underline",
+                          textDecorationStyle: "dotted", textUnderlineOffset: 3,
+                          letterSpacing: "0.01em",
+                        }}
+                        aria-label="Watch Gap U student testimonial video"
+                      >
+                        🎓 Hear Students!
+                      </button>
+                    )}
                     <span className="lss-cta">{card.ctaLabel}</span>
                   </div>
                 </StudiosGatewayAwareLink>
@@ -434,6 +528,8 @@ export function StudiosLanding({ serializedGateway = null }: LandingProps) {
       </section>
 
       <StudiosFooter />
+
+      {studentVidOpen && <StudentVideoModal onClose={closeStudentVid} />}
       </>
     </StudiosGatewayProvider>
   );
