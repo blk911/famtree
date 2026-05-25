@@ -20,7 +20,7 @@ import type {
 
 const SeedSchema = z.object({
   handle: z.string().min(1).max(60),
-  displayName: z.string().min(1).max(120),
+  displayName: z.string().max(120).default(""),
 });
 
 const RequestSchema = z.object({
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   // Sanitize seeds
   const cleanSeeds: IgSeed[] = seeds.map((s) => ({
     handle: sanitizeHandle(s.handle),
-    displayName: s.displayName.trim(),
+    displayName: s.displayName.trim() || sanitizeHandle(s.handle),
   }));
 
   // Cap seeds for deep mode to control AI spend

@@ -103,11 +103,13 @@ export interface ParsedSeed {
 
 /**
  * Parses a textarea where each line is one seed.
- * Accepted formats:
+ * Handles Instagram bio paste format generously:
  *   @handle | Display Name
  *   handle | Display Name
  *   handle, Display Name
- *   @handle           ← displayName falls back to handle
+ *   handle bio text || more bio         ← double-pipe normalized
+ *   handle display name (no separator)  ← first word = handle, rest = display name
+ *   @handle                             ← displayName falls back to handle
  */
 export function parseSeeds(raw: string): ParsedSeed[] {
   return raw
@@ -115,10 +117,26 @@ export function parseSeeds(raw: string): ParsedSeed[] {
     .map((line) => line.trim())
     .filter((line) => line.length > 0 && !line.startsWith("#"))
     .map((line) => {
-      const sep = line.includes("|") ? "|" : ",";
-      const parts = line.split(sep).map((p) => p.trim());
-      const handle = sanitizeHandle(parts[0] ?? "");
-      const displayName = parts[1] ?? handle;
+      // Normalize double-pipe (Instagram bio separator) to single pipe
+      const normalized = line.replace(/\|\|/g, "|");
+
+      // Split on pipe or comma, drop empty segments
+      const sep = normalized.includes("|") ? "|" : normalized.includes(",") ? "," : null;
+      const parts = sep
+        ? normalized.split(sep).map((p) => p.trim()).filter((p) => p.length > 0)
+        : [normalized.trim()];
+
+      const firstPart = parts[0] ?? "";
+
+      // Handle = first word only (the actual IG username, no spaces)
+      const words = firstPart.split(/\s+/);
+      const handle = sanitizeHandle(words[0] ?? "");
+
+      // Display name priority: second segment > rest of first segment > handle
+      const restOfFirst = words.slice(1).join(" ").trim();
+      const secondPart = (parts[1] ?? "").trim();
+      const displayName = secondPart || restOfFirst || handle;
+
       return { handle, displayName };
     })
     .filter((s) => s.handle.length > 0);
