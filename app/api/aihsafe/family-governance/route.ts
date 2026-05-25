@@ -1,6 +1,8 @@
 // GET /api/aihsafe/family-governance — family-wide settings + caller's resolved policy (read-only).
 // All authenticated Family Safe users may read; only founders/admins may PATCH founder-settings.
 
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/lib/db/prisma";
 import { requireAuth } from "@/lib/auth";
 import { resolvePolicyProfile } from "@/lib/aihsafe/policy";
