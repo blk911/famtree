@@ -34,6 +34,9 @@ function buildEnrichmentPrompt(source: CreatorSource, signals: CreatorSignalSet)
     ``,
     `SOURCE URL: ${source.sourceUrl}`,
     `PLATFORM: ${source.platform}`,
+    source.htmlLength === 0
+      ? `NOTE: This platform (${source.platform}) blocks automated access. Only the URL/handle is available. Infer what you can from the handle and platform context; use null for anything you cannot determine. Set confidence to "low".`
+      : ``,
     ``,
     `=== EXTRACTED SIGNALS ===`,
     ``,
@@ -279,7 +282,12 @@ export async function enrichCreator(
     suggestedCategories:  asStringArray(parsed.suggestedCategories),
     suggestedHeroImageUrl: signals.imageUrls[0] ?? null,
     confidence:           parseConfidence(parsed.confidence),
-    reviewNotes:          asStringArray(parsed.reviewNotes),
+    reviewNotes: [
+      ...(source.htmlLength === 0
+        ? [`⚠️ ${source.platform} blocks automated access — assembled from URL/handle only. Signals are minimal; manual enrichment recommended.`]
+        : []),
+      ...asStringArray(parsed.reviewNotes),
+    ],
     adminNotes:           "",
   };
 }

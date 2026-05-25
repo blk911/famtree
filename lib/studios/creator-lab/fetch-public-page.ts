@@ -3,7 +3,7 @@
 // No DOM library — uses regex on raw HTML. Runs server-side only.
 
 import type { CreatorSource, Platform } from "./types";
-import { normalizeUrl, detectPlatform } from "./url-utils";
+import { normalizeUrl, detectPlatform, extractHandle } from "./url-utils";
 
 const USER_AGENTS = [
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -140,11 +140,46 @@ function buildFetchHeaders(platform: Platform): Record<string, string> {
   return base;
 }
 
+// ─── Instagram stub ────────────────────────────────────────────────────────────
+// Instagram blocks all server-side fetches (redirects to login wall).
+// Build a minimal source from URL signals so the AI can still run.
+
+function buildInstagramStub(rawUrl: string, normalizedUrl: string): CreatorSource {
+  const handle = extractHandle(normalizedUrl, "instagram");
+  const handleClean = handle ? handle.replace(/^@/, "") : null;
+
+  // Synthetic text blocks the AI can use
+  const blocks: string[] = [];
+  if (handleClean) {
+    blocks.push(`Instagram creator: @${handleClean}`);
+    blocks.push(`Public Instagram profile for ${handleClean}`);
+  }
+
+  return {
+    sourceUrl:     rawUrl,
+    normalizedUrl,
+    platform:      "instagram",
+    fetchedAt:     new Date().toISOString(),
+    httpStatus:    0,
+    htmlLength:    0,
+    htmlText:      "",
+    links:         [`https://www.instagram.com/${handleClean ?? ""}/`],
+    imageUrls:     [],
+    rawTextBlocks: blocks,
+  };
+}
+
 // ─── Main fetch function ───────────────────────────────────────────────────────
 
 export async function fetchPublicPage(rawUrl: string): Promise<CreatorSource> {
   const normalizedUrl = normalizeUrl(rawUrl);
   const platform = detectPlatform(normalizedUrl);
+
+  // Instagram blocks server-side fetches — skip the attempt entirely
+  // and return a URL-derived stub so signal extraction + AI can still run.
+  if (platform === "instagram") {
+    return buildInstagramStub(rawUrl, normalizedUrl);
+  }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -191,7 +226,7 @@ export async function fetchPublicPage(rawUrl: string): Promise<CreatorSource> {
     fetchedAt:    new Date().toISOString(),
     httpStatus,
     htmlLength:   htmlText.length,
-    htmlText:     htmlText.slice(0, 800_000), // cap at ~800KB to avoid storage bloat
+    htmlText:     htmlText.slice(0, 800_000),
     links:        links.slice(0, 200),
     imageUrls,
     rawTextBlocks: allBlocks,

@@ -43,6 +43,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<AssembleRespo
     return err("Failed to fetch creator page", msg, 502);
   }
 
+  // httpStatus=0 means platform stub (e.g. Instagram — skip HTTP check)
   if (source.httpStatus >= 400) {
     return err(
       `Creator page returned HTTP ${source.httpStatus}`,
@@ -51,7 +52,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<AssembleRespo
     );
   }
 
-  if (source.htmlLength < 200) {
+  // Instagram stubs have htmlLength=0 by design — allow through
+  if (source.htmlLength < 200 && source.platform !== "instagram") {
     return err(
       "Page returned too little content",
       "The fetched page was nearly empty — it may require login or block automated access.",
