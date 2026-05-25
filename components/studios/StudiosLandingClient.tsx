@@ -466,9 +466,8 @@ export function StudiosLanding({ serializedGateway = null }: LandingProps) {
                           style={{
                             display: "inline-flex", alignItems: "center", gap: 4,
                             background: "none", border: "none", padding: 0,
-                            cursor: "pointer", fontSize: 13, fontWeight: 700,
-                            color: "#9d174d", textDecoration: "underline",
-                            textDecorationStyle: "dotted", textUnderlineOffset: 3,
+                            cursor: "pointer", fontSize: 12, fontWeight: 800,
+                            color: "#9d174d", textDecoration: "none",
                             letterSpacing: "0.01em",
                           }}
                           aria-label="Watch Gap University student testimonials"
