@@ -101,7 +101,7 @@ export function StudiosLanding({ serializedGateway = null }: LandingProps) {
   return (
     <StudiosGatewayProvider gateway={serializedGateway}>
       <>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .lss-wrap {
           max-width: 1180px;
           margin-left: auto;
@@ -326,7 +326,7 @@ export function StudiosLanding({ serializedGateway = null }: LandingProps) {
             transform: none !important;
           }
         }
-      `}</style>
+      ` }} />
 
       <section
         style={{
