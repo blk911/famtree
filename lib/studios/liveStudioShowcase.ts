@@ -20,7 +20,7 @@ export const LIVE_STUDIO_SHOWCASE_CARDS: readonly LiveStudioShowcaseCard[] = [
     id: "gap-u",
     featured: true,
     categoryLabel: "FLAGSHIP LEARNING STUDIO",
-    title: "Gap U",
+    title: "GAP University",
     subtitle: "Future learning • homeschool pods • invention labs • invite-only learning communities",
     ctaLabel: "Explore Gap U →",
     href: "/studios/gap-u",

@@ -458,23 +458,25 @@ export function StudiosLanding({ serializedGateway = null }: LandingProps) {
                     <p className="lss-eyebrow">{card.categoryLabel}</p>
                     <h3 className="lss-title">{card.title}</h3>
                     <p className="lss-sub">{card.subtitle}</p>
-                    {card.id === "gap-u" && (
-                      <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); openStudentVid(); }}
-                        style={{
-                          display: "inline-flex", alignItems: "center", gap: 5,
-                          background: "none", border: "none", padding: "4px 0 8px",
-                          cursor: "pointer", fontSize: 13, fontWeight: 700,
-                          color: "#9d174d", textDecoration: "underline",
-                          textDecorationStyle: "dotted", textUnderlineOffset: 3,
-                          letterSpacing: "0.01em",
-                        }}
-                        aria-label="Watch Gap U student testimonial video"
-                      >
-                        🎓 Hear Students!
-                      </button>
-                    )}
-                    <span className="lss-cta">{card.ctaLabel}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+                      <span className="lss-cta">{card.ctaLabel}</span>
+                      {card.id === "gap-u" && (
+                        <button
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); openStudentVid(); }}
+                          style={{
+                            display: "inline-flex", alignItems: "center", gap: 4,
+                            background: "none", border: "none", padding: 0,
+                            cursor: "pointer", fontSize: 13, fontWeight: 700,
+                            color: "#9d174d", textDecoration: "underline",
+                            textDecorationStyle: "dotted", textUnderlineOffset: 3,
+                            letterSpacing: "0.01em",
+                          }}
+                          aria-label="Watch Gap University student testimonials"
+                        >
+                          🎓 Testimonials
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </StudiosGatewayAwareLink>
               ))}
