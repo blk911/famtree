@@ -4,6 +4,7 @@
 // Docs: https://apify.com/apify/instagram-hashtag-scraper
 
 import type { ApifyPost } from "./types";
+import { generateMockPosts } from "./mock-harvest";
 
 const APIFY_BASE = "https://api.apify.com/v2";
 const ACTOR_ID  = "apify~instagram-hashtag-scraper";
@@ -129,6 +130,12 @@ export async function runApifyHashtagHarvest(
   hashtags: string[],
   maxPerHashtag: number,
 ): Promise<ApifyHarvestResult> {
+  // Dev mock mode — set HARVEST_MOCK=true in .env.local to skip Apify entirely
+  if (process.env.HARVEST_MOCK === "true") {
+    const posts = generateMockPosts(hashtags, maxPerHashtag);
+    return { posts, actorRunId: "mock-run", error: null };
+  }
+
   const token = process.env.APIFY_TOKEN;
 
   if (!token) {
@@ -141,24 +148,27 @@ export async function runApifyHashtagHarvest(
 
   const runInfo = await startRun(hashtags, maxPerHashtag, token);
   if (!runInfo || runInfo.startError) {
+    // Apify failed — fall back to mock so the pipeline still runs
+    console.warn("[apify-client] falling back to mock:", runInfo?.startError);
+    const posts = generateMockPosts(hashtags, maxPerHashtag);
     return {
-      posts: [],
-      actorRunId: runInfo?.runId || null,
-      error: `Apify actor run failed to start — ${runInfo?.startError ?? "network error or unexpected response"}`,
+      posts,
+      actorRunId: null,
+      error: `Apify unavailable (${runInfo?.startError ?? "no response"}) — showing synthetic data`,
     };
   }
 
   const { runId, datasetId, status } = runInfo;
 
-  // If run finished within waitForFinish window → fetch items
-  // If still RUNNING (timeout) → fetch whatever is in the dataset so far
   const posts = await fetchDatasetItems(datasetId, token, maxPerHashtag * hashtags.length * 2);
 
   if (status !== "SUCCEEDED" && posts.length === 0) {
+    console.warn("[apify-client] run returned no items, falling back to mock");
+    const mockPosts = generateMockPosts(hashtags, maxPerHashtag);
     return {
-      posts: [],
+      posts: mockPosts,
       actorRunId: runId,
-      error: `Apify run status: ${status}. No items returned. The actor may have been rate-limited or blocked.`,
+      error: `Apify run status: ${status} — showing synthetic data`,
     };
   }
 
