@@ -10,6 +10,7 @@ export type CreatorIntelligenceTool =
   | "ig-resolver"
   | "hashtag-harvest"
   | "styleseat"
+  | "education-seeds"
   | "prospects"
   | "runs";
 
@@ -17,8 +18,9 @@ const TOOLS: { id: CreatorIntelligenceTool; label: string; href: string }[] = [
   { id: "assembler",       label: "Studio Assembler",   href: "/admin/studios/creator-lab" },
   { id: "ig-resolver",     label: "IG Resolver",        href: "/admin/studios/creator-lab/ig-stubs" },
   { id: "hashtag-harvest", label: "Hashtag Harvest",    href: "/admin/studios/creator-lab/hashtag-harvest" },
-  { id: "styleseat",       label: "StyleSeat Discovery",href: "/admin/studios/styleseat" },
-  { id: "prospects",       label: "Prospects",          href: "/admin/studios/prospects" },
+  { id: "styleseat",        label: "StyleSeat Discovery",  href: "/admin/studios/styleseat" },
+  { id: "education-seeds", label: "Education Seeds",     href: "/admin/studios/education-seeds" },
+  { id: "prospects",        label: "Prospects",           href: "/admin/studios/prospects" },
   { id: "runs",            label: "Runs",               href: "/admin/studios/runs" },
 ];
 

@@ -1,11 +1,13 @@
 // lib/studios/styleseat/normalize.ts
 // Normalizes StyleSeat operator data into resolver-ready inputs.
 // Generates IG handle candidates from names + city context.
-// Builds UpsertInput from resolved operator data.
+// Builds IdentitySeed from operator data (for the shared assembler).
+// Also exports legacy operatorToUpsertInput for backward compatibility.
 
 import type { StyleSeatOperator, StyleSeatCategory } from "./types";
 import type { UpsertInput } from "@/lib/studios/prospects/store";
 import type { ResolvedProfile } from "@/lib/studios/creator-lab/ig-stubs/types";
+import type { IdentitySeed } from "@/lib/studios/identity-seeds/types";
 import { buildProspectSourcePath } from "@/lib/studios/prospects/source-path";
 
 // ─── City abbreviation map ────────────────────────────────────────────────────
@@ -251,6 +253,58 @@ export function operatorToUpsertInput(
     suggestedValidationStatus: igHandleFound && overallConfidence >= 50
       ? "needs_review"
       : "needs_review",
+  };
+}
+
+// ─── Operator → IdentitySeed (for shared assembler) ──────────────────────────
+
+/**
+ * Converts a StyleSeatOperator into an IdentitySeed for the shared assembler.
+ * The StyleSeat profile URL is pre-included as a high-confidence anchor.
+ */
+export function operatorToIdentitySeed(
+  operator: StyleSeatOperator,
+  ctx: StyleSeatHarvestContext,
+): IdentitySeed {
+  const category = operator.categories[0] ?? null;
+
+  const knownUrls: import("@/lib/studios/prospects/types").MatchedUrl[] = [
+    {
+      platform:    "styleseat",
+      url:         operator.styleseatUrl,
+      confidence:  operator.reviewCount > 5 ? 75 : 50,
+      matchReason: `StyleSeat listing — ${operator.reviewCount} reviews`,
+    },
+  ];
+
+  const extraEvidence: string[] = [
+    ...(operator.reviewCount > 0 ? [`${operator.reviewCount} StyleSeat reviews`] : []),
+    ...(operator.rating ? [`Rating: ${operator.rating}/5`] : []),
+    ...operator.specialties.map((s) => `specialty: ${s}`),
+  ].filter(Boolean);
+
+  return {
+    name:           operator.name,
+    handle:         null,               // no known IG handle — assembler will generate candidates
+    city:           operator.city,
+    state:          operator.state,
+    vertical:       "beauty",
+    category:       CATEGORY_GUESS[category ?? "hair"] ?? category,
+    subcategory:    category,
+    sourcePlatform: "styleseat",
+    sourceTool:     "styleseat_harvest",
+    seedDate:       ctx.harvestDate,
+    batchId:        ctx.batchId,
+    runId:          ctx.runId,
+    sourceHashtag:  category,
+    sourceHashtags: operator.categories,
+    educationType:  null,
+    audienceType:   null,
+    sourceTopic:    null,
+    knownUrls,
+    bio:            operator.bio,
+    extraEvidence,
+    services:       operator.services.map((s) => s.name),
   };
 }
 

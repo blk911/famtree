@@ -1,13 +1,12 @@
 // lib/studios/styleseat/resolver.ts
-// Orchestrates the full StyleSeat → IG enrichment → upsert pipeline.
+// Adapts StyleSeat operators into IdentitySeeds and delegates to the shared
+// Identity Seed Assembler pipeline.
 //
-// Architecture mirrors run-resolver.ts:
-//   Phase 1 — IG enrichment runs in PARALLEL (network-bound).
-//   Phase 2 — Prospect upserts run SEQUENTIALLY (file I/O, no concurrent writes).
+// StyleSeat is an intake adapter — no forked resolver logic, no separate
+// prospect truth. All resolution + upsert goes through runIdentityAssembler().
 
-import { upsertProspect } from "@/lib/studios/prospects/store";
-import { findIgMatchForOperator } from "./ig-enrichment";
-import { operatorToUpsertInput } from "./normalize";
+import { runIdentityAssembler } from "@/lib/studios/identity-seeds/assembler";
+import { operatorToIdentitySeed } from "./normalize";
 import type { StyleSeatHarvestContext } from "./normalize";
 import type {
   StyleSeatOperator,
@@ -33,17 +32,6 @@ export interface StyleSeatPipelineResult {
   savedHandles: string[];
 }
 
-// ─── Phase 1 intermediate shape ───────────────────────────────────────────────
-
-interface EnrichedOperator {
-  operator: StyleSeatOperator;
-  igHandleFound: string | null;
-  igCandidatesTried: number;
-  igConfidence: number;
-  profiles: import("@/lib/studios/creator-lab/ig-stubs/types").ResolvedProfile[];
-  upsertInput: import("@/lib/studios/prospects/store").UpsertInput;
-}
-
 // ─── Main entry ───────────────────────────────────────────────────────────────
 
 export async function runStyleSeatPipeline(
@@ -53,107 +41,66 @@ export async function runStyleSeatPipeline(
 ): Promise<StyleSeatPipelineResult> {
   const capped = operators.slice(0, MAX_RESOLVE);
 
-  console.log(`[styleseat/resolver] Phase 1: enriching ${capped.length} operators (mode=${mode})`);
+  console.log(`[styleseat/resolver] converting ${capped.length} operators → IdentitySeeds`);
 
-  // ── Phase 1: IG enrichment in PARALLEL ────────────────────────────────────
-  const settled = await Promise.allSettled(
-    capped.map(async (operator): Promise<EnrichedOperator> => {
-      const match = await findIgMatchForOperator(operator, mode);
+  // Convert operators → IdentitySeeds
+  const seeds = capped.map((op) => operatorToIdentitySeed(op, ctx));
 
-      const igHandleFound   = match?.handle ?? null;
-      const igCandidatesTried = match?.candidatesTried ?? 1;
-      const igConfidence    = match?.confidence ?? 0;
-      const profiles        = match?.profiles ?? [];
+  // Delegate to shared assembler
+  const assemblerResult = await runIdentityAssembler(seeds, {
+    mode,
+    maxCandidatesPerSeed: 8,
+    maxSeeds: MAX_RESOLVE,
+    igConfidenceThreshold: 20,
+    sourcePathOverrides: {
+      verticalLabel: "Beauty",
+      platformLabel: "StyleSeat",
+      toolLabel:     "StyleSeat Harvest",
+    },
+  });
 
-      const upsertInput = operatorToUpsertInput(operator, igHandleFound, profiles, ctx);
+  // Adapt assembler results → StyleSeatResolverResult[]
+  const results: StyleSeatResolverResult[] = assemblerResult.results.map((r, i) => {
+    const operator = capped[i];
+    const igConf   = r.igConfidence;
 
-      return { operator, igHandleFound, igCandidatesTried, igConfidence, profiles, upsertInput };
-    })
-  );
-
-  // ── Phase 2: sequential upserts ───────────────────────────────────────────
-  const results: StyleSeatResolverResult[] = [];
-  const saveErrors: SaveError[] = [];
-  const savedHandles: string[] = [];
-  let savedCount       = 0;
-  let failedToSaveCount = 0;
-  let totalIgFound     = 0;
-
-  const upsertAttempts = settled.filter((s) => s.status === "fulfilled").length;
-  console.log(`[styleseat/resolver] Phase 2: ${upsertAttempts} upserts (${settled.filter(s => s.status === "rejected").length} phase-1 failures)`);
-
-  for (let i = 0; i < settled.length; i++) {
-    const s = settled[i];
-    const original = capped[i];
-
-    if (s.status === "rejected") {
-      const msg = s.reason instanceof Error ? s.reason.message : "enrichment error";
-      results.push({
-        operator: original,
-        igHandleFound: null,
-        igCandidatesTried: 0,
-        resolved: false,
-        bestMatchUrl: null,
-        bestMatchPlatform: null,
-        igConfidence: 0,
-        prospectId: null,
-        status: "unresolved",
-        notes: msg,
-        saveError: null,
-      });
-      continue;
-    }
-
-    const { operator, igHandleFound, igCandidatesTried, igConfidence, profiles, upsertInput } = s.value;
-
-    if (igHandleFound) totalIgFound++;
-
-    const bestProfile = profiles[0] ?? null;
     const status: StyleSeatOperatorStatus =
-      igHandleFound && igConfidence >= 55 ? "ig_verified"  :
-      igHandleFound && igConfidence >= 20 ? "ig_candidate" :
+      r.prospectId && r.igHandleFound && igConf >= 55 ? "ig_verified"     :
+      r.igHandleFound && igConf >= 20                 ? "ig_candidate"    :
+      r.prospectId                                    ? "resolver_merged" :
       "unresolved";
 
-    let prospectId: string | null = null;
-    let saveError:  string | null = null;
-
-    console.log(`[styleseat/resolver] [${i + 1}/${upsertAttempts}] upserting "${operator.name}" (handle=${igHandleFound ?? "none"}, conf=${igConfidence})`);
-
-    try {
-      const saved = await upsertProspect(upsertInput);
-      prospectId = saved.prospectId;
-      savedCount++;
-      savedHandles.push(igHandleFound ?? operator.slug);
-      console.log(`[styleseat/resolver] ✓ saved "${operator.name}" → ${saved.prospectId}`);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      saveError = msg;
-      failedToSaveCount++;
-      saveErrors.push({
-        handle: igHandleFound ?? operator.slug,
-        sourceHashtag: operator.categories[0] ?? "beauty",
-        platform: bestProfile?.platform ?? null,
-        message: msg,
-      });
-      console.error(`[styleseat/resolver] ✗ upsert failed for "${operator.name}":`, e);
-    }
-
-    results.push({
+    return {
       operator,
-      igHandleFound,
-      igCandidatesTried,
-      resolved: igHandleFound !== null && igConfidence >= 20,
-      bestMatchUrl:      bestProfile?.url ?? null,
-      bestMatchPlatform: bestProfile?.platform ?? null,
-      igConfidence,
-      prospectId,
-      status: prospectId ? (status === "unresolved" ? "resolver_merged" : status) : status,
-      notes: bestProfile?.matchReason ?? (igHandleFound ? "IG handle found, no booking profile match" : "No IG handle identified"),
-      saveError,
-    });
-  }
+      igHandleFound:      r.igHandleFound,
+      igCandidatesTried:  r.igCandidatesTried,
+      resolved:           r.resolved,
+      bestMatchUrl:       r.seed.knownUrls?.[0]?.url ?? null,
+      bestMatchPlatform:  r.seed.knownUrls?.[0]?.platform ?? null,
+      igConfidence:       igConf,
+      prospectId:         r.prospectId,
+      status,
+      notes: r.igHandleFound
+        ? `IG candidate found (conf=${igConf})`
+        : "No IG handle identified",
+      saveError: r.saveError,
+    };
+  });
 
-  console.log(`[styleseat/resolver] Phase 2 complete: ${savedCount} saved, ${failedToSaveCount} failed, ${totalIgFound} IG matches`);
+  // Adapt saveErrors to StyleSeat's SaveError shape
+  const saveErrors: SaveError[] = assemblerResult.saveErrors.map((e, i) => ({
+    handle:       e.handle,
+    sourceHashtag: capped[i]?.categories[0] ?? "beauty",
+    platform:     null,
+    message:      e.message,
+  }));
 
-  return { results, savedCount, failedToSaveCount, saveErrors, totalIgFound, savedHandles };
+  return {
+    results,
+    savedCount:       assemblerResult.savedCount,
+    failedToSaveCount: assemblerResult.failedToSaveCount,
+    saveErrors,
+    totalIgFound:     assemblerResult.totalIgFound,
+    savedHandles:     assemblerResult.savedHandles,
+  };
 }

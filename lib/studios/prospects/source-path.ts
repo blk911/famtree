@@ -11,10 +11,12 @@ export interface SourcePathParams {
 }
 
 const TOOL_LABELS: Record<string, string> = {
-  hashtag_harvest: "Hashtag Harvest",
-  ig_stub_run:     "IG Stub Run",
-  "ig-stub-run":   "IG Stub Run",
-  manual:          "Manual",
+  hashtag_harvest:       "Hashtag Harvest",
+  ig_stub_run:           "IG Stub Run",
+  "ig-stub-run":         "IG Stub Run",
+  styleseat_harvest:     "StyleSeat Harvest",
+  education_seed_import: "Education Seed Import",
+  manual:                "Manual",
 };
 
 const PLATFORM_LABELS: Record<string, string> = {
