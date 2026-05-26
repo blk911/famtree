@@ -1,6 +1,6 @@
 // app/api/admin/studios/prospects/update/route.ts
 // POST /api/admin/studios/prospects/update
-// Updates status and/or notes on a prospect record.
+// Updates status, validationStatus, archiveReason, and/or notes on a prospect record.
 
 export const dynamic = "force-dynamic";
 
@@ -14,10 +14,17 @@ const VALID_STATUSES = [
   "contacted", "registered", "claimed", "converted",
 ] as const;
 
+const VALID_VALIDATION_STATUSES = [
+  "new", "needs_review", "valid", "active", "education_relevant",
+  "not_education", "dead_link", "duplicate", "priority", "archive",
+] as const;
+
 const UpdateSchema = z.object({
-  prospectId: z.string().min(1).max(120),
-  status: z.enum(VALID_STATUSES).optional(),
-  notes: z.string().max(2000).optional(),
+  prospectId:        z.string().min(1).max(120),
+  status:            z.enum(VALID_STATUSES).optional(),
+  validationStatus:  z.enum(VALID_VALIDATION_STATUSES).optional(),
+  notes:             z.string().max(2000).optional(),
+  archiveReason:     z.string().max(120).nullable().optional(),
 });
 
 function err(error: string, detail?: string, status = 400) {
@@ -37,16 +44,18 @@ export async function POST(req: NextRequest) {
     return err("Validation error", parsed.error.errors[0]?.message);
   }
 
-  const { prospectId, status, notes } = parsed.data;
+  const { prospectId, status, validationStatus, notes, archiveReason } = parsed.data;
 
-  if (!status && notes === undefined) {
-    return err("Nothing to update — provide status and/or notes");
+  if (!status && !validationStatus && notes === undefined && archiveReason === undefined) {
+    return err("Nothing to update — provide at least one field");
   }
 
   try {
     const updated = await updateProspect(prospectId, {
-      ...(status !== undefined ? { status } : {}),
-      ...(notes !== undefined ? { notes } : {}),
+      ...(status            !== undefined ? { status }            : {}),
+      ...(validationStatus  !== undefined ? { validationStatus }  : {}),
+      ...(notes             !== undefined ? { notes }             : {}),
+      ...(archiveReason     !== undefined ? { archiveReason }     : {}),
     });
 
     if (!updated) {

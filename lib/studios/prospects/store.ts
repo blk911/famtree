@@ -5,7 +5,8 @@
 
 import { promises as fs } from "fs";
 import path from "path";
-import type { ProspectRecord, MatchedUrl } from "./types";
+import type { ProspectRecord, ProspectStatus, MatchedUrl } from "./types";
+import type { ValidationStatus } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp/studios-prospects"
@@ -61,9 +62,27 @@ function mergeStrings(a: string[], b: string[], cap = 20): string[] {
   return Array.from(new Set([...a, ...b])).filter(Boolean).slice(0, cap);
 }
 
-// ─── Upsert (dedup by handle or bestMatch URL) ────────────────────────────────
+// ─── Human-set field guard ────────────────────────────────────────────────────
 
-export type UpsertInput = Omit<ProspectRecord, "prospectId" | "createdAt" | "updatedAt" | "status" | "notes">;
+/**
+ * Returns true if the validationStatus was set by a human (not the system default).
+ * System sets "new" and "needs_review" automatically. Anything else is human.
+ */
+function isHumanSetValidationStatus(vs: ValidationStatus | undefined): boolean {
+  if (!vs) return false;
+  return vs !== "new" && vs !== "needs_review";
+}
+
+// ─── UpsertInput ──────────────────────────────────────────────────────────────
+
+export type UpsertInput = Omit<ProspectRecord,
+  "prospectId" | "createdAt" | "updatedAt" | "status" | "notes" | "validationStatus" | "archiveReason"
+> & {
+  /** System-suggested validation status — NOT applied if human has overridden */
+  suggestedValidationStatus?: ValidationStatus;
+};
+
+// ─── Upsert (dedup by handle or bestMatch URL) ────────────────────────────────
 
 export async function upsertProspect(incoming: UpsertInput): Promise<ProspectRecord> {
   const records = await loadAllProspects();
@@ -85,6 +104,19 @@ export async function upsertProspect(incoming: UpsertInput): Promise<ProspectRec
   if (existingIdx >= 0) {
     const existing = records[existingIdx];
 
+    // Determine effective validation status:
+    // NEVER downgrade a human-set status on re-run
+    const effectiveValidationStatus: ValidationStatus =
+      isHumanSetValidationStatus(existing.validationStatus)
+        ? existing.validationStatus
+        : (incoming.suggestedValidationStatus ?? existing.validationStatus ?? "new");
+
+    // Merge sourceHashtags — accumulate across runs
+    const mergedHashtags = mergeStrings(
+      existing.sourceHashtags ?? [],
+      incoming.sourceHashtags ?? []
+    );
+
     const merged: ProspectRecord = {
       ...existing,
       updatedAt: now,
@@ -95,23 +127,43 @@ export async function upsertProspect(incoming: UpsertInput): Promise<ProspectRec
         categoryGuess: incoming.identity.categoryGuess ?? existing.identity.categoryGuess,
         locationGuess: incoming.identity.locationGuess ?? existing.identity.locationGuess,
       },
+      // Education classification — upgrade if incoming is more specific
+      educationType: (incoming.educationType && incoming.educationType !== "unknown")
+        ? incoming.educationType
+        : existing.educationType ?? null,
+      audienceType: (incoming.audienceType && incoming.audienceType !== "unknown")
+        ? incoming.audienceType
+        : existing.audienceType ?? null,
+      sourceTopic: incoming.sourceTopic ?? existing.sourceTopic ?? null,
+      // Source provenance — enrich, don't overwrite
+      vertical:       incoming.vertical       || existing.vertical       || "education",
+      sourcePlatform: incoming.sourcePlatform || existing.sourcePlatform || "instagram",
+      sourceTool:     incoming.sourceTool     || existing.sourceTool     || "hashtag_harvest",
+      sourceHashtag:  existing.sourceHashtag  ?? incoming.sourceHashtag  ?? null,
+      sourceHashtags: mergedHashtags,
+      sourcePath:     existing.sourcePath     || incoming.sourcePath     || "",
+      runId:          incoming.runId          ?? existing.runId          ?? null,
+      harvestDate:    existing.harvestDate    ?? incoming.harvestDate    ?? null,
       // Upgrade bestMatch only if incoming has higher confidence
       bestMatch:
         !existing.bestMatch ||
         (incoming.bestMatch && incoming.bestMatch.confidence > existing.bestMatch.confidence)
           ? incoming.bestMatch
           : existing.bestMatch,
-      services: mergeStrings(existing.services, incoming.services),
+      platforms: mergeStrings(existing.platforms ?? [], incoming.platforms ?? []),
+      services:  mergeStrings(existing.services, incoming.services),
       allMatchedUrls: mergeMatchedUrls(existing.allMatchedUrls, incoming.allMatchedUrls),
-      evidence: mergeStrings(existing.evidence, incoming.evidence),
-      // Upgrade confidence breakdown if overall is better
+      evidence:  mergeStrings(existing.evidence, incoming.evidence, 20),
+      // Upgrade confidence if overall is better
       confidence:
         incoming.confidence.overall > existing.confidence.overall
           ? incoming.confidence
           : existing.confidence,
-      // ALWAYS preserve human-set fields
+      // ── ALWAYS preserve human-set fields ───────────────────────────────────
+      validationStatus: effectiveValidationStatus,
+      archiveReason: existing.archiveReason ?? null,
       status: existing.status,
-      notes: existing.notes,
+      notes:  existing.notes,
     };
 
     records[existingIdx] = merged;
@@ -119,25 +171,39 @@ export async function upsertProspect(incoming: UpsertInput): Promise<ProspectRec
     return merged;
   }
 
-  // New record
+  // ── New record ────────────────────────────────────────────────────────────────
   const newRecord: ProspectRecord = {
     ...incoming,
     prospectId: generateProspectId(incoming.identity.handle),
     createdAt: now,
     updatedAt: now,
+    vertical:       incoming.vertical       || "education",
+    sourcePlatform: incoming.sourcePlatform || "instagram",
+    sourceTool:     incoming.sourceTool     || "hashtag_harvest",
+    sourceHashtag:  incoming.sourceHashtag  ?? null,
+    sourceHashtags: incoming.sourceHashtags ?? [],
+    sourcePath:     incoming.sourcePath     || "",
+    runId:          incoming.runId          ?? null,
+    harvestDate:    incoming.harvestDate    ?? null,
+    educationType:  incoming.educationType  ?? null,
+    audienceType:   incoming.audienceType   ?? null,
+    sourceTopic:    incoming.sourceTopic    ?? null,
+    platforms:      incoming.platforms      ?? [],
+    validationStatus: incoming.suggestedValidationStatus ?? "new",
+    archiveReason: null,
     status: "new",
-    notes: "",
+    notes:  "",
   };
   records.push(newRecord);
   await writeAllProspects(records);
   return newRecord;
 }
 
-// ─── Status / notes update (admin edit) ──────────────────────────────────────
+// ─── Status / notes / validationStatus update (admin edit) ───────────────────
 
 export async function updateProspect(
   prospectId: string,
-  patch: Partial<Pick<ProspectRecord, "status" | "notes">>
+  patch: Partial<Pick<ProspectRecord, "status" | "notes" | "validationStatus" | "archiveReason">>
 ): Promise<ProspectRecord | null> {
   const records = await loadAllProspects();
   const idx = records.findIndex((r) => r.prospectId === prospectId);
@@ -157,6 +223,5 @@ export async function updateProspect(
 
 export async function listProspects(): Promise<ProspectRecord[]> {
   const records = await loadAllProspects();
-  // Default: newest first
   return records.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }

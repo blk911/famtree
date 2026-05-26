@@ -1,9 +1,24 @@
 // lib/studios/prospects/from-resolver.ts
 // Converts IG Stub Resolver output (StubResolutionResult) into ProspectRecord upsert inputs.
+// Also provides seedToProspect for saving unresolved seeds as needs_review records.
 
 import type { StubResolutionResult, ResolvedProfile } from "@/lib/studios/creator-lab/ig-stubs/types";
+import type { HarvestedCreatorSeed } from "@/lib/studios/creator-lab/hashtag-harvest/types";
 import type { UpsertInput } from "./store";
 import type { MatchedUrl, ProspectConfidenceBreakdown } from "./types";
+import { buildProspectSourcePath } from "./source-path";
+
+// ─── Harvest context ──────────────────────────────────────────────────────────
+
+export interface HarvestContext {
+  runId: string;
+  batchId: string;
+  hashtags: string[];     // all hashtags in this run
+  harvestDate: string;    // ISO date
+  vertical: string;       // "education"
+  sourcePlatform: string; // "instagram"
+  sourceTool: string;     // "hashtag_harvest"
+}
 
 // ─── Category inference ───────────────────────────────────────────────────────
 
@@ -21,6 +36,7 @@ export function guessCategory(services: string[]): string | null {
   if (has("facial", "skin", "wax", "waxing", "dermaplaning")) return "Skin & Body";
   if (has("fitness", "yoga", "pilates", "training", "coach", "hiit")) return "Fitness & Wellness";
   if (has("nutrition", "dietitian", "wellness")) return "Health & Nutrition";
+  if (has("homeschool", "tutor", "education", "learning", "stem", "math", "reading")) return "Education";
   return null;
 }
 
@@ -48,7 +64,6 @@ function computeConfidence(
 
   const allServices = Array.from(new Set(profiles.flatMap((p) => p.detectedServices)));
   const categoryMatch = Math.min(100, allServices.length * 12);
-
   const locationMatch = profiles.some((p) => p.detectedLocation) ? 60 : 0;
 
   return {
@@ -60,13 +75,12 @@ function computeConfidence(
   };
 }
 
-// ─── Main converter ───────────────────────────────────────────────────────────
+// ─── Resolved result → UpsertInput ───────────────────────────────────────────
 
 export function resultToProspect(
   result: StubResolutionResult,
   batchId: string,
 ): UpsertInput | null {
-  // Only persist if there's at least one matched profile
   if (result.resolvedProfiles.length === 0) return null;
 
   const profiles = result.resolvedProfiles;
@@ -99,12 +113,24 @@ export function resultToProspect(
       sourceHandle: result.seed.handle,
       sourceDisplayName: result.seed.displayName,
     },
+    vertical: "education",
+    sourcePlatform: "instagram",
+    sourceTool: "ig-stub-run",
+    sourceHashtag: null,
+    sourceHashtags: [],
+    sourcePath: "",
+    runId: null,
+    harvestDate: null,
     identity: {
       name,
       handle: result.seed.handle,
       categoryGuess: guessCategory(services),
       locationGuess,
     },
+    educationType: null,
+    audienceType: null,
+    sourceTopic: null,
+    platforms: Array.from(new Set(profiles.map((p) => p.platform))),
     bestMatch: best
       ? {
           platform: best.platform,
@@ -117,6 +143,59 @@ export function resultToProspect(
     allMatchedUrls,
     evidence,
     confidence: computeConfidence(result.seed.handle, profiles),
+    suggestedValidationStatus: "new",
+  };
+}
+
+// ─── Seed → UpsertInput (for unresolved / weak records) ──────────────────────
+
+/**
+ * Converts a raw HarvestedCreatorSeed to a minimal UpsertInput for weak/unresolved records.
+ * These are saved with suggestedValidationStatus: "needs_review".
+ */
+export function seedToProspect(
+  seed: HarvestedCreatorSeed,
+  ctx: HarvestContext,
+): UpsertInput {
+  const sourcePath = buildProspectSourcePath({
+    vertical:   ctx.vertical,
+    platform:   ctx.sourcePlatform,
+    sourceTool: ctx.sourceTool,
+    date:       ctx.harvestDate,
+    hashtag:    seed.sourceHashtag,
+  });
+
+  return {
+    source: {
+      sourceType: "hashtag_harvest",
+      batchId:    ctx.batchId,
+      sourceHandle:      seed.handle,
+      sourceDisplayName: seed.displayName,
+    },
+    vertical:       ctx.vertical,
+    sourcePlatform: ctx.sourcePlatform,
+    sourceTool:     ctx.sourceTool,
+    sourceHashtag:  seed.sourceHashtag,
+    sourceHashtags: [seed.sourceHashtag],
+    sourcePath,
+    runId:          ctx.runId,
+    harvestDate:    ctx.harvestDate,
+    identity: {
+      name:          seed.displayName,
+      handle:        seed.handle,
+      categoryGuess: seed.detectedCategory,
+      locationGuess: seed.detectedLocation,
+    },
+    educationType: seed.educationType,
+    audienceType:  seed.audienceType,
+    sourceTopic:   null,
+    platforms:     [],
+    bestMatch:     null,
+    services:      [],
+    allMatchedUrls: [],
+    evidence:      seed.evidence,
+    confidence:    { identityMatch: 0, bookingMatch: 0, categoryMatch: 0, locationMatch: 0, overall: 0 },
+    suggestedValidationStatus: "needs_review",
   };
 }
 

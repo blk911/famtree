@@ -2,6 +2,7 @@
 // Types for the Hashtag Harvest pipeline — admin-only, internal tooling only.
 
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
+import type { EducationType, AudienceType } from "./education-config";
 
 // ─── Apify raw output ─────────────────────────────────────────────────────────
 
@@ -49,6 +50,8 @@ export interface HarvestedCreatorSeed {
   imageUrl: string | null;
   detectedCategory: string | null;
   detectedLocation: string | null;
+  educationType: EducationType | null;
+  audienceType: AudienceType | null;
   evidence: string[];
 }
 

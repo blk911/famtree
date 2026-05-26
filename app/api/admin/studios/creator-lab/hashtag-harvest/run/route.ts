@@ -13,6 +13,7 @@ import { normalizeCreators } from "@/lib/studios/creator-lab/hashtag-harvest/nor
 import { runResolverForSeeds } from "@/lib/studios/creator-lab/hashtag-harvest/run-resolver";
 import { saveHarvestRun, generateRunId } from "@/lib/studios/creator-lab/hashtag-harvest/store";
 import { generateBatchId } from "@/lib/studios/prospects/from-resolver";
+import type { HarvestContext } from "@/lib/studios/creator-lab/hashtag-harvest/run-resolver";
 import type {
   HashtagHarvestRun,
   HarvestRunResponse,
@@ -80,10 +81,20 @@ export async function POST(req: NextRequest) {
   const normalizedCreators = normalizeCreators(allSeeds);
 
   // ── Step 4: Run resolver + upsert prospects ─────────────────────────────────
+  const harvestCtx: HarvestContext = {
+    runId:          runId,
+    batchId:        batchId,
+    hashtags:       hashtags,
+    harvestDate:    now.slice(0, 10),
+    vertical:       "education",
+    sourcePlatform: "instagram",
+    sourceTool:     "hashtag_harvest",
+  };
+
   let results: ResolverPipelineResult[] = [];
   if (normalizedCreators.length > 0) {
     try {
-      results = await runResolverForSeeds(normalizedCreators, mode, batchId);
+      results = await runResolverForSeeds(normalizedCreators, mode, harvestCtx);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       errors.push(`Resolver error: ${msg}`);

@@ -36,6 +36,8 @@ export function normalizeCreators(seeds: HarvestedCreatorSeed[]): HarvestedCreat
       // Prefer specific over null
       detectedCategory: existing.detectedCategory ?? seed.detectedCategory,
       detectedLocation: existing.detectedLocation ?? seed.detectedLocation,
+      educationType: existing.educationType ?? seed.educationType,
+      audienceType:  existing.audienceType  ?? seed.audienceType,
       // Merge evidence, dedupe
       evidence: Array.from(
         new Set([...existing.evidence, ...seed.evidence])

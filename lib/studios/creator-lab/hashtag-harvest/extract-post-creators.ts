@@ -2,6 +2,7 @@
 // Extracts HarvestedCreatorSeed records from raw Apify post items.
 
 import type { ApifyPost, HarvestedCreatorSeed } from "./types";
+import { inferEducationType, inferAudienceType } from "./education-config";
 
 // ─── Category detection ───────────────────────────────────────────────────────
 
@@ -123,11 +124,14 @@ export function extractPostCreators(
 
     const detectedCategory = detectCategory(fullText) ?? (categoryHint || null);
     const detectedLocation = detectLocation(fullText) ?? (marketHint || null);
+    const educationType = inferEducationType(sourceHashtag, caption);
+    const audienceType  = inferAudienceType(sourceHashtag, caption);
 
     const evidence: string[] = [];
     if (captionSnippet) evidence.push(`Caption: "${captionSnippet.slice(0, 100)}"`);
     if (detectedCategory) evidence.push(`Category: ${detectedCategory}`);
     if (detectedLocation) evidence.push(`Location: ${detectedLocation}`);
+    if (educationType && educationType !== "unknown") evidence.push(`Education type: ${educationType}`);
     evidence.push(`Source hashtag: #${sourceHashtag}`);
 
     seeds.push({
@@ -140,6 +144,8 @@ export function extractPostCreators(
       imageUrl: extractImageUrl(post),
       detectedCategory,
       detectedLocation,
+      educationType,
+      audienceType,
       evidence,
     });
   }
