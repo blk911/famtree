@@ -77,7 +77,6 @@ export function generateMockPosts(hashtags: string[], maxPerHashtag: number): Ap
         hashtags: [hashtag, "homeschool", "education", "learningathome"],
         url: `https://www.instagram.com/p/mock-${handle.slice(0, 8)}/`,
         shortCode: `mock-${handle.slice(0, 8)}`,
-        imageUrl: null,
         timestamp: new Date().toISOString(),
         likesCount: Math.floor(Math.random() * 500) + 10,
         commentsCount: Math.floor(Math.random() * 50) + 1,
