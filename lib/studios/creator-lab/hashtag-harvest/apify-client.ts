@@ -4,7 +4,7 @@
 // Docs: https://apify.com/apify/instagram-hashtag-scraper
 
 import type { ApifyPost } from "./types";
-import { generateMockPosts } from "./mock-harvest";
+import { generateMockPosts } from "./mock-harvest"; // used only when HARVEST_MOCK=true
 
 const APIFY_BASE = "https://api.apify.com/v2";
 const ACTOR_ID  = "apify~instagram-hashtag-scraper";
@@ -52,10 +52,8 @@ async function startRun(
 
   const body = JSON.stringify({
     hashtags: hashtags.map((h) => h.replace(/^#/, "").toLowerCase().trim()),
+    resultsType: "posts",
     resultsLimit: maxPerHashtag,
-    // Some actor versions use these alternate field names
-    maxResults: maxPerHashtag,
-    scrapeType: "posts",
   });
 
   let res: Response;
@@ -148,13 +146,10 @@ export async function runApifyHashtagHarvest(
 
   const runInfo = await startRun(hashtags, maxPerHashtag, token);
   if (!runInfo || runInfo.startError) {
-    // Apify failed — fall back to mock so the pipeline still runs
-    console.warn("[apify-client] falling back to mock:", runInfo?.startError);
-    const posts = generateMockPosts(hashtags, maxPerHashtag);
     return {
-      posts,
+      posts: [],
       actorRunId: null,
-      error: `Apify unavailable (${runInfo?.startError ?? "no response"}) — showing synthetic data`,
+      error: `Apify actor run failed — ${runInfo?.startError ?? "network error or unexpected response"}`,
     };
   }
 
@@ -163,12 +158,10 @@ export async function runApifyHashtagHarvest(
   const posts = await fetchDatasetItems(datasetId, token, maxPerHashtag * hashtags.length * 2);
 
   if (status !== "SUCCEEDED" && posts.length === 0) {
-    console.warn("[apify-client] run returned no items, falling back to mock");
-    const mockPosts = generateMockPosts(hashtags, maxPerHashtag);
     return {
-      posts: mockPosts,
+      posts: [],
       actorRunId: runId,
-      error: `Apify run status: ${status} — showing synthetic data`,
+      error: `Apify run status: ${status}. No items returned.`,
     };
   }
 
