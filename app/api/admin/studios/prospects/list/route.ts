@@ -1,16 +1,41 @@
 // app/api/admin/studios/prospects/list/route.ts
 // GET /api/admin/studios/prospects/list
-// Returns all prospect records. Admin-only. Not exposed to members.
+// Returns prospect records with optional query-param filtering.
+// Admin-only. Not exposed to members.
+//
+// Query params (all optional):
+//   vertical         — e.g. "education"
+//   educationType    — e.g. "homeschool"
+//   audienceType     — e.g. "parent"
+//   sourceHashtag    — e.g. "homeschoolmom"  (no #)
+//   validationStatus — e.g. "needs_review"
+//   platform         — e.g. "glossgenius"
+//   location         — substring match on locationGuess
+//   minConfidence    — integer 0-100
 
 export const dynamic = "force-dynamic";
 
-import { NextResponse } from "next/server";
-import { listProspects } from "@/lib/studios/prospects/store";
+import { NextRequest, NextResponse } from "next/server";
+import { filterProspects } from "@/lib/studios/prospects/store";
 import type { ProspectListResponse, ProspectErrorResponse } from "@/lib/studios/prospects/types";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const prospects = await listProspects();
+    const sp = req.nextUrl.searchParams;
+
+    const minConf = sp.get("minConfidence");
+
+    const prospects = await filterProspects({
+      vertical:        sp.get("vertical")        ?? undefined,
+      educationType:   sp.get("educationType")   ?? undefined,
+      audienceType:    sp.get("audienceType")     ?? undefined,
+      sourceHashtag:   sp.get("sourceHashtag")   ?? undefined,
+      validationStatus:sp.get("validationStatus") ?? undefined,
+      platform:        sp.get("platform")         ?? undefined,
+      location:        sp.get("location")         ?? undefined,
+      minConfidence:   minConf !== null ? Number(minConf) : undefined,
+    });
+
     return NextResponse.json(
       { ok: true, prospects, total: prospects.length } satisfies ProspectListResponse
     );

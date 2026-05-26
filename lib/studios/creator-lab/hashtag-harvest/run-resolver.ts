@@ -2,9 +2,10 @@
 // Feeds HarvestedCreatorSeed records into the IG Stub resolver pipeline,
 // upserts ALL seeds as prospects (resolved or not), and returns results.
 //
-// IMPORTANT: resolution (network) runs in parallel via Promise.allSettled,
-// but file upserts run SEQUENTIALLY afterwards to avoid concurrent write
-// races on the flat JSON store (causes EPERM on Windows / data loss).
+// Architecture: two-phase.
+//   Phase 1 — URL resolution runs in PARALLEL (network-bound, expensive).
+//   Phase 2 — File upserts run SEQUENTIALLY to prevent concurrent write
+//              races on the flat JSON store (EPERM on Windows / data loss).
 
 import { generateCandidateUrls } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
 import { fastResolve } from "@/lib/studios/creator-lab/ig-stubs/validator";
@@ -13,45 +14,51 @@ import { resultToProspect, seedToProspect } from "@/lib/studios/prospects/from-r
 import { buildProspectSourcePath } from "@/lib/studios/prospects/source-path";
 import type { HarvestContext } from "@/lib/studios/prospects/from-resolver";
 import type { ResolveMode, IgSeed, StubResolutionResult, ResolvedProfile } from "@/lib/studios/creator-lab/ig-stubs/types";
-import type { HarvestedCreatorSeed, ResolverPipelineResult } from "./types";
 import type { UpsertInput } from "@/lib/studios/prospects/store";
+import type {
+  HarvestedCreatorSeed,
+  ResolverPipelineResult,
+  RunResolverResult,
+  SaveError,
+} from "./types";
 
 export type { HarvestContext };
 
 // Max seeds to resolve per harvest run (cost / time guard)
 const MAX_RESOLVE = 40;
 
-// ─── Step 1: resolve profiles in parallel ────────────────────────────────────
+// ─── Internal resolved-seed shape (phase 1 output) ───────────────────────────
 
 interface ResolvedSeed {
   seed: HarvestedCreatorSeed;
-  stubResult: StubResolutionResult;
   validProfiles: ResolvedProfile[];
   bestMatch: ResolvedProfile | null;
   status: StubResolutionResult["status"];
   upsertInput: UpsertInput;
-  sourcePath: string;
 }
+
+// ─── Main entry ───────────────────────────────────────────────────────────────
 
 export async function runResolverForSeeds(
   seeds: HarvestedCreatorSeed[],
   mode: ResolveMode,
   ctx: HarvestContext,
-): Promise<ResolverPipelineResult[]> {
+): Promise<RunResolverResult> {
   const capped = seeds.slice(0, MAX_RESOLVE);
 
+  // Load deep-resolve module lazily (only in "deep" mode)
   let deepResolve: typeof import("@/lib/studios/creator-lab/ig-stubs/deep-research").deepResolve | null = null;
   if (mode === "deep") {
     try {
       const mod = await import("@/lib/studios/creator-lab/ig-stubs/deep-research");
       deepResolve = mod.deepResolve;
     } catch {
-      // fall back to fast
+      // fall back to fast silently
     }
   }
 
-  // ── Phase 1: resolve all seeds in parallel (network-bound) ──────────────────
-  const resolvedSeeds = await Promise.allSettled(
+  // ── Phase 1: resolve all seeds in parallel (network I/O) ──────────────────
+  const settled = await Promise.allSettled(
     capped.map(async (seed): Promise<ResolvedSeed> => {
       const igSeed: IgSeed = {
         handle: seed.handle,
@@ -79,13 +86,6 @@ export async function runResolverForSeeds(
           ? "partial"
           : "unresolved";
 
-      const stubResult: StubResolutionResult = {
-        seed: igSeed,
-        resolvedProfiles: validProfiles,
-        bestMatch,
-        status,
-      };
-
       const sourcePath = buildProspectSourcePath({
         vertical:   ctx.vertical,
         platform:   ctx.sourcePlatform,
@@ -94,12 +94,18 @@ export async function runResolverForSeeds(
         hashtag:    seed.sourceHashtag,
       });
 
-      // Build the upsert input now (pure transform, no I/O)
+      // Build upsert input (pure transform, no I/O) so phase 2 is trivially serialisable
+      const stubResult: StubResolutionResult = {
+        seed: igSeed,
+        resolvedProfiles: validProfiles,
+        bestMatch,
+        status,
+      };
+
       let upsertInput: UpsertInput;
       const resolved = resultToProspect(stubResult, ctx.batchId);
 
       if (resolved) {
-        // Resolved — enrich with harvest-specific data
         resolved.vertical       = ctx.vertical;
         resolved.sourcePlatform = ctx.sourcePlatform;
         resolved.sourceTool     = ctx.sourceTool;
@@ -124,22 +130,27 @@ export async function runResolverForSeeds(
 
         upsertInput = resolved;
       } else {
-        // Unresolved — save as needs_review, never discard
+        // Unresolved — still save, but as needs_review
         upsertInput = seedToProspect(seed, ctx);
       }
 
-      return { seed, stubResult, validProfiles, bestMatch, status, upsertInput, sourcePath };
+      return { seed, validProfiles, bestMatch, status, upsertInput };
     })
   );
 
-  // ── Phase 2: upsert prospects sequentially (file I/O — avoids write races) ──
+  // ── Phase 2: upsert prospects SEQUENTIALLY (file I/O — no concurrent writes) ──
   const results: ResolverPipelineResult[] = [];
+  const saveErrors: SaveError[] = [];
+  let savedCount = 0;
+  let failedToSaveCount = 0;
 
-  for (let i = 0; i < resolvedSeeds.length; i++) {
-    const settled = resolvedSeeds[i];
+  for (let i = 0; i < settled.length; i++) {
+    const s = settled[i];
     const original = capped[i];
 
-    if (settled.status === "rejected") {
+    // Resolution itself failed — still record it, nothing to upsert
+    if (s.status === "rejected") {
+      const msg = s.reason instanceof Error ? s.reason.message : "resolution error";
       results.push({
         seed: original,
         resolved: false,
@@ -148,19 +159,33 @@ export async function runResolverForSeeds(
         matchedUrlCount: 0,
         prospectId: null,
         confidence: 0,
-        notes: settled.reason instanceof Error ? settled.reason.message : "resolution error",
+        notes: msg,
+        saveError: null,
       });
       continue;
     }
 
-    const { seed, validProfiles, bestMatch, status, upsertInput } = settled.value;
+    const { seed, validProfiles, bestMatch, status, upsertInput } = s.value;
 
     let prospectId: string | null = null;
+    let saveError: string | null = null;
+
     try {
       const saved = await upsertProspect(upsertInput);
       prospectId = saved.prospectId;
+      savedCount++;
     } catch (e) {
-      console.error(`[run-resolver] upsert failed for @${seed.handle}:`, e);
+      const msg = e instanceof Error ? e.message : String(e);
+      saveError = msg;
+      failedToSaveCount++;
+      saveErrors.push({
+        handle: seed.handle,
+        sourceHashtag: seed.sourceHashtag,
+        platform: bestMatch?.platform ?? null,
+        message: msg,
+      });
+      // Log server-side so nothing is silent in the server console
+      console.error(`[run-resolver] upsert failed for @${seed.handle} (${seed.sourceHashtag}):`, e);
     }
 
     results.push({
@@ -172,8 +197,9 @@ export async function runResolverForSeeds(
       prospectId,
       confidence: bestMatch?.confidenceScore ?? 0,
       notes: bestMatch?.matchReason ?? "",
+      saveError,
     });
   }
 
-  return results;
+  return { results, savedCount, failedToSaveCount, saveErrors };
 }

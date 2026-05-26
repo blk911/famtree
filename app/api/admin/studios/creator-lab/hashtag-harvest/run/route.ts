@@ -18,7 +18,6 @@ import type {
   HashtagHarvestRun,
   HarvestRunResponse,
   HarvestErrorResponse,
-  ResolverPipelineResult,
 } from "@/lib/studios/creator-lab/hashtag-harvest/types";
 
 function err(error: string, detail?: string, status = 400) {
@@ -45,19 +44,15 @@ export async function POST(req: NextRequest) {
   // ── Step 1: Apify harvest ───────────────────────────────────────────────────
   const { posts, actorRunId, error: apifyError } = await runApifyHashtagHarvest(hashtags, maxPerHashtag);
 
-  // Fatal early exit: if Apify couldn't run at all (no token, actor start failure)
-  // and returned zero posts, there's nothing to pipeline — surface the error on
-  // the form (ok: false) rather than showing an empty results screen.
+  // Fatal early exit: Apify couldn't run and returned zero posts
   if (apifyError && posts.length === 0) {
     return err(apifyError, undefined, 400);
   }
-
   if (apifyError) {
     errors.push(apifyError);
   }
 
   // ── Step 2: Extract creator seeds per-hashtag ───────────────────────────────
-  // Group posts by source hashtag (best-effort based on post hashtags field)
   const allSeeds = [];
   for (const hashtag of hashtags) {
     const hashtagPosts = posts.filter((p) => {
@@ -65,8 +60,6 @@ export async function POST(req: NextRequest) {
       return tags.includes(hashtag.toLowerCase());
     });
 
-    // Fallback: if no posts match the filter (actor may not return hashtags field),
-    // distribute posts across hashtags evenly
     const postsForTag = hashtagPosts.length > 0
       ? hashtagPosts
       : posts.slice(
@@ -80,21 +73,22 @@ export async function POST(req: NextRequest) {
   // ── Step 3: Normalize / dedupe across all hashtags ──────────────────────────
   const normalizedCreators = normalizeCreators(allSeeds);
 
-  // ── Step 4: Run resolver + upsert prospects ─────────────────────────────────
+  // ── Step 4: Run resolver + sequential upserts ───────────────────────────────
   const harvestCtx: HarvestContext = {
-    runId:          runId,
-    batchId:        batchId,
-    hashtags:       hashtags,
-    harvestDate:    now.slice(0, 10),
+    runId,
+    batchId,
+    hashtags,
+    harvestDate: now.slice(0, 10),
     vertical:       "education",
     sourcePlatform: "instagram",
     sourceTool:     "hashtag_harvest",
   };
 
-  let results: ResolverPipelineResult[] = [];
+  let resolverResult = { results: [], savedCount: 0, failedToSaveCount: 0, saveErrors: [] } as Awaited<ReturnType<typeof runResolverForSeeds>>;
+
   if (normalizedCreators.length > 0) {
     try {
-      results = await runResolverForSeeds(normalizedCreators, mode, harvestCtx);
+      resolverResult = await runResolverForSeeds(normalizedCreators, mode, harvestCtx);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       errors.push(`Resolver error: ${msg}`);
@@ -102,11 +96,15 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── Step 5: Compute summary metrics ────────────────────────────────────────
-  const resolved    = results.filter((r) => r.resolved);
-  const withProspect = results.filter((r) => r.prospectId);
+  const { results, savedCount, failedToSaveCount, saveErrors } = resolverResult;
 
-  // We can't distinguish new vs updated from upsert currently — mark all as created
+  // ── Step 5: Compute summary metrics ────────────────────────────────────────
+  const resolved = results.filter((r) => r.resolved);
+
+  if (failedToSaveCount > 0) {
+    errors.push(`${failedToSaveCount} prospect(s) failed to save — see saveErrors in response`);
+  }
+
   const run: HashtagHarvestRun = {
     runId,
     createdAt: now,
@@ -118,8 +116,11 @@ export async function POST(req: NextRequest) {
     totalPosts: posts.length,
     totalCreators: normalizedCreators.length,
     totalResolved: resolved.length,
-    totalProspectsCreated: withProspect.length,
+    totalProspectsCreated: savedCount,
     totalProspectsUpdated: 0,
+    savedCount,
+    failedToSaveCount,
+    saveErrors,
     errors,
   };
 
@@ -133,7 +134,7 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json(
-    { ok: true, run, creators: normalizedCreators, results } satisfies HarvestRunResponse,
+    { ok: true, run, creators: normalizedCreators, results, saveErrors } satisfies HarvestRunResponse,
     { status: 200 }
   );
 }

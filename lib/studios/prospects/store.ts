@@ -225,3 +225,37 @@ export async function listProspects(): Promise<ProspectRecord[]> {
   const records = await loadAllProspects();
   return records.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
+
+// ─── Filtered list (for API query params) ────────────────────────────────────
+
+export interface ProspectFilter {
+  vertical?: string;
+  educationType?: string;
+  audienceType?: string;
+  sourceHashtag?: string;
+  validationStatus?: string;
+  platform?: string;
+  location?: string;      // substring match on identity.locationGuess
+  minConfidence?: number;
+}
+
+export async function filterProspects(filter: ProspectFilter): Promise<ProspectRecord[]> {
+  const records = await loadAllProspects();
+
+  const filtered = records.filter((p) => {
+    if (filter.vertical       && p.vertical       !== filter.vertical)                          return false;
+    if (filter.educationType  && p.educationType  !== filter.educationType)                     return false;
+    if (filter.audienceType   && p.audienceType   !== filter.audienceType)                      return false;
+    if (filter.sourceHashtag  && p.sourceHashtag  !== filter.sourceHashtag)                    return false;
+    if (filter.validationStatus && (p.validationStatus ?? "new") !== filter.validationStatus)   return false;
+    if (filter.platform       && p.bestMatch?.platform !== filter.platform)                     return false;
+    if (filter.location) {
+      const loc = (p.identity.locationGuess ?? "").toLowerCase();
+      if (!loc.includes(filter.location.toLowerCase()))                                         return false;
+    }
+    if (filter.minConfidence  !== undefined && p.confidence.overall < filter.minConfidence)     return false;
+    return true;
+  });
+
+  return filtered.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}

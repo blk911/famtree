@@ -2,7 +2,7 @@
 // app/(app)/admin/studios/creator-lab/hashtag-harvest/page.tsx
 // Hashtag Harvest — admin-only. Not public. Not member-facing.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import { parseHashtags } from "@/lib/studios/creator-lab/hashtag-harvest/normalize-creators";
@@ -23,7 +23,10 @@ import type {
   ResolverPipelineResult,
   HarvestRunResponse,
   HarvestErrorResponse,
+  SaveError,
 } from "@/lib/studios/creator-lab/hashtag-harvest/types";
+import type { ProspectRecord, ProspectListResponse } from "@/lib/studios/prospects/types";
+import { VALIDATION_STATUS_LABELS as VS_LABELS } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -121,74 +124,77 @@ function BreakdownSection({
 }
 
 function ReportsView({
-  run, creators, results,
-}: { run: HashtagHarvestRun; creators: HarvestedCreatorSeed[]; results: ResolverPipelineResult[] }) {
-  // ── By educationType ──
+  run, results, saveErrors,
+}: {
+  run: HashtagHarvestRun;
+  creators: HarvestedCreatorSeed[];
+  results: ResolverPipelineResult[];
+  saveErrors: SaveError[];
+}) {
+  // ── Stored prospects from the real DB — fetched once when tab opens ──────────
+  const [storedProspects, setStoredProspects] = useState<ProspectRecord[]>([]);
+  const [storedLoading, setStoredLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/studios/prospects/list?vertical=education")
+      .then((r) => r.json())
+      .then((d: ProspectListResponse) => { if (d.ok) setStoredProspects(d.prospects); })
+      .catch(() => {/* non-fatal */})
+      .finally(() => setStoredLoading(false));
+  }, []);
+
+  // ── Run-level breakdowns (from this run's response) ───────────────────────────
   const eduTypeCounts = results.reduce<Record<string, number>>((acc, r) => {
     const et = r.seed.educationType ?? "unknown";
     const label = EDUCATION_TYPE_LABELS[et as EducationType] ?? et;
     acc[label] = (acc[label] ?? 0) + 1;
     return acc;
   }, {});
-  const eduTypeEntries = Object.entries(eduTypeCounts)
-    .sort((a, b) => b[1] - a[1]);
+  const eduTypeEntries = Object.entries(eduTypeCounts).sort((a, b) => b[1] - a[1]);
 
-  // ── By audienceType ──
   const audienceCounts = results.reduce<Record<string, number>>((acc, r) => {
     const at = r.seed.audienceType ?? "unknown";
     const label = AUDIENCE_TYPE_LABELS[at as AudienceType] ?? at;
     acc[label] = (acc[label] ?? 0) + 1;
     return acc;
   }, {});
-  const audienceEntries = Object.entries(audienceCounts)
-    .sort((a, b) => b[1] - a[1]);
+  const audienceEntries = Object.entries(audienceCounts).sort((a, b) => b[1] - a[1]);
 
-  // ── By sourceHashtag ──
   const hashtagCounts = results.reduce<Record<string, number>>((acc, r) => {
     const tag = `#${r.seed.sourceHashtag}`;
     acc[tag] = (acc[tag] ?? 0) + 1;
     return acc;
   }, {});
-  const hashtagEntries = Object.entries(hashtagCounts)
-    .sort((a, b) => b[1] - a[1]);
+  const hashtagEntries = Object.entries(hashtagCounts).sort((a, b) => b[1] - a[1]);
 
-  // ── By platform ──
   const platformCounts = results.reduce<Record<string, number>>((acc, r) => {
-    if (r.bestMatchPlatform) {
-      acc[r.bestMatchPlatform] = (acc[r.bestMatchPlatform] ?? 0) + 1;
-    }
+    if (r.bestMatchPlatform) acc[r.bestMatchPlatform] = (acc[r.bestMatchPlatform] ?? 0) + 1;
     return acc;
   }, {});
-  const platformEntries = Object.entries(platformCounts)
-    .sort((a, b) => b[1] - a[1]);
+  const platformEntries = Object.entries(platformCounts).sort((a, b) => b[1] - a[1]);
 
-  // ── By resolution status (pseudo-validationStatus from run) ──
-  const resolved = results.filter((r) => r.resolved && r.confidence >= 50).length;
-  const partial = results.filter((r) => r.resolved && r.confidence < 50).length;
-  const unresolved = results.filter((r) => !r.resolved).length;
-  const resolutionEntries: [string, number][] = [
-    ["Resolved (≥50 conf)", resolved],
-    ["Partial (20-49 conf)", partial],
-    ["Unresolved / needs review", unresolved],
-  ];
-
-  // ── By location ──
   const locationCounts = results.reduce<Record<string, number>>((acc, r) => {
     const loc = r.seed.detectedLocation;
     if (loc) acc[loc] = (acc[loc] ?? 0) + 1;
     return acc;
   }, {});
-  const locationEntries = Object.entries(locationCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 15);
+  const locationEntries = Object.entries(locationCounts).sort((a, b) => b[1] - a[1]).slice(0, 15);
 
-  // ── Confidence histogram ──
   const confBuckets = [
-    { label: "High (≥65)", count: results.filter((r) => r.confidence >= 65).length, color: "#16a34a" },
-    { label: "Medium (35–64)", count: results.filter((r) => r.confidence >= 35 && r.confidence < 65).length, color: "#d97706" },
-    { label: "Low (1–34)", count: results.filter((r) => r.confidence > 0 && r.confidence < 35).length, color: "#dc2626" },
-    { label: "No match (0)", count: results.filter((r) => r.confidence === 0).length, color: "#d6d3d1" },
+    { label: "High (≥65)",    count: results.filter((r) => r.confidence >= 65).length,                       color: "#16a34a" },
+    { label: "Medium (35–64)",count: results.filter((r) => r.confidence >= 35 && r.confidence < 65).length,  color: "#d97706" },
+    { label: "Low (1–34)",    count: results.filter((r) => r.confidence > 0 && r.confidence < 35).length,    color: "#dc2626" },
+    { label: "No match (0)",  count: results.filter((r) => r.confidence === 0).length,                       color: "#d6d3d1" },
   ];
+
+  // ── Validation status breakdown — from STORED prospects (real human labels) ──
+  const storedVsCounts = storedProspects.reduce<Record<string, number>>((acc, p) => {
+    const vs = p.validationStatus ?? "new";
+    const label = VS_LABELS[vs] ?? vs;
+    acc[label] = (acc[label] ?? 0) + 1;
+    return acc;
+  }, {});
+  const vsEntries = Object.entries(storedVsCounts).sort((a, b) => b[1] - a[1]);
 
   const total = results.length;
 
@@ -227,34 +233,89 @@ function ReportsView({
         )}
       </div>
 
+      {/* Save Results panel */}
+      <div style={{
+        background: saveErrors.length > 0 ? "#fffbeb" : "#f0fdf4",
+        border: `1px solid ${saveErrors.length > 0 ? "#fde68a" : "#bbf7d0"}`,
+        borderRadius: 12, padding: "14px 18px", marginBottom: 14,
+      }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 10 }}>
+          SAVE RESULTS
+        </div>
+        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontSize: 10, color: "#a8a29e", fontWeight: 600 }}>Saved</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#15803d" }}>{run.savedCount}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: "#a8a29e", fontWeight: 600 }}>Failed</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: saveErrors.length > 0 ? "#b91c1c" : "#a8a29e" }}>
+              {run.failedToSaveCount}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: "#a8a29e", fontWeight: 600 }}>Seeded (total)</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#1c1917" }}>{run.totalCreators}</div>
+          </div>
+        </div>
+        {saveErrors.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#b91c1c", marginBottom: 6 }}>
+              FAILED SAVES — these seeds were not persisted:
+            </div>
+            {saveErrors.map((se, i) => (
+              <div key={i} style={{
+                fontSize: 11, background: "#fef2f2", border: "1px solid #fecaca",
+                borderRadius: 6, padding: "5px 10px", marginBottom: 4,
+                display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap",
+              }}>
+                <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#1c1917" }}>@{se.handle}</span>
+                <span style={{ color: "#9d174d" }}>#{se.sourceHashtag}</span>
+                {se.platform && <span style={{ color: "#78716c" }}>{se.platform}</span>}
+                <span style={{ color: "#b91c1c", flex: 1 }}>{se.message}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         {/* Left column */}
         <div>
           <BreakdownSection
-            title="EDUCATION TYPE"
+            title="EDUCATION TYPE (this run)"
             entries={eduTypeEntries}
             total={total}
             color="#6d28d9"
           />
           <BreakdownSection
-            title="AUDIENCE TYPE"
+            title="AUDIENCE TYPE (this run)"
             entries={audienceEntries}
             total={total}
             color="#1d4ed8"
           />
-          <BreakdownSection
-            title="RESOLUTION STATUS"
-            entries={resolutionEntries}
-            total={total}
-            color="#15803d"
-          />
           {/* Confidence histogram */}
           <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "16px 20px", marginBottom: 14 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 12 }}>
-              CONFIDENCE DISTRIBUTION
+              CONFIDENCE DISTRIBUTION (this run)
             </div>
             {confBuckets.map(({ label, count, color }) => (
               <BreakdownBar key={label} label={label} count={count} total={total} color={color} />
+            ))}
+          </div>
+          {/* Validation status from STORED prospects */}
+          <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "16px 20px", marginBottom: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 4 }}>
+              VALIDATION STATUS — STORED REPOSITORY
+            </div>
+            <div style={{ fontSize: 10, color: "#c4b5fd", marginBottom: 10 }}>
+              {storedLoading ? "Loading…" : `${storedProspects.length} total prospects (Education vertical)`}
+            </div>
+            {!storedLoading && vsEntries.length === 0 && (
+              <div style={{ fontSize: 12, color: "#d6d3d1" }}>No stored prospects yet</div>
+            )}
+            {vsEntries.map(([label, count]) => (
+              <BreakdownBar key={label} label={label} count={count} total={storedProspects.length} color="#7c3aed" />
             ))}
           </div>
         </div>
@@ -262,20 +323,20 @@ function ReportsView({
         {/* Right column */}
         <div>
           <BreakdownSection
-            title="SOURCE HASHTAG"
+            title="SOURCE HASHTAG (this run)"
             entries={hashtagEntries}
             total={total}
             color="#9d174d"
           />
           <BreakdownSection
-            title="MATCHED PLATFORM"
+            title="MATCHED PLATFORM (this run)"
             entries={platformEntries}
             total={total}
             color="#0284c7"
           />
           {locationEntries.length > 0 && (
             <BreakdownSection
-              title="DETECTED LOCATION (TOP 15)"
+              title="DETECTED LOCATION — TOP 15 (this run)"
               entries={locationEntries}
               total={total}
               color="#78716c"
@@ -285,9 +346,9 @@ function ReportsView({
       </div>
 
       <div style={{ marginTop: 4, fontSize: 11, color: "#a8a29e" }}>
-        All prospects (including unresolved) are saved to the Discovered Entities repository.{" "}
+        All seeds (resolved + unresolved) are saved to the Discovered Entities repository.{" "}
         <Link href="/admin/studios/prospects" style={{ color: "#9d174d", fontWeight: 700, textDecoration: "none" }}>
-          View repository →
+          View {storedProspects.length > 0 ? `${storedProspects.length} stored` : "repository"} →
         </Link>
       </div>
     </div>
@@ -353,7 +414,11 @@ function CreatorRow({
               style={{ fontSize: 10, color: "#9d174d", fontWeight: 700, textDecoration: "none" }}>
               Saved →
             </a>
-          ) : <span style={{ fontSize: 10, color: "#d6d3d1" }}>—</span>}
+          ) : result.saveError ? (
+            <span title={result.saveError} style={{ fontSize: 10, color: "#b91c1c", fontWeight: 700, cursor: "help" }}>⚠ Failed</span>
+          ) : (
+            <span style={{ fontSize: 10, color: "#d6d3d1" }}>—</span>
+          )}
         </td>
       </tr>
       {expanded && (
@@ -662,6 +727,7 @@ export default function HashtagHarvestPage() {
     run: HashtagHarvestRun;
     creators: HarvestedCreatorSeed[];
     results: ResolverPipelineResult[];
+    saveErrors: SaveError[];
   } | null>(null);
   const [resultsTab, setResultsTab] = useState<"creators" | "reports">("creators");
 
@@ -691,7 +757,7 @@ export default function HashtagHarvestPage() {
         return;
       }
       const ok = data as HarvestRunResponse;
-      setRunData({ run: ok.run, creators: ok.creators, results: ok.results });
+      setRunData({ run: ok.run, creators: ok.creators, results: ok.results, saveErrors: ok.saveErrors ?? [] });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
@@ -894,6 +960,11 @@ export default function HashtagHarvestPage() {
 
           {resultsTab === "creators" && (
             <>
+              {runData.saveErrors.length > 0 && (
+                <div style={{ marginBottom: 10, padding: "8px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, fontSize: 12, color: "#b91c1c" }}>
+                  ⚠️ {runData.saveErrors.length} seed(s) failed to save. Check Reports tab for details.
+                </div>
+              )}
               {runData.results.length > 0 ? (
                 <>
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 8 }}>
@@ -917,6 +988,7 @@ export default function HashtagHarvestPage() {
               run={runData.run}
               creators={runData.creators}
               results={runData.results}
+              saveErrors={runData.saveErrors}
             />
           )}
         </>

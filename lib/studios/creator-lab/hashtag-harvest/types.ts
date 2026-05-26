@@ -66,6 +66,26 @@ export interface ResolverPipelineResult {
   prospectId: string | null;
   confidence: number;
   notes: string;
+  /** Non-null when the upsert write failed for this seed */
+  saveError: string | null;
+}
+
+// ─── Save error ───────────────────────────────────────────────────────────────
+
+export interface SaveError {
+  handle: string;
+  sourceHashtag: string;
+  platform: string | null;
+  message: string;
+}
+
+// ─── Resolver aggregate result ────────────────────────────────────────────────
+
+export interface RunResolverResult {
+  results: ResolverPipelineResult[];
+  savedCount: number;
+  failedToSaveCount: number;
+  saveErrors: SaveError[];
 }
 
 // ─── Harvest run ──────────────────────────────────────────────────────────────
@@ -83,6 +103,9 @@ export interface HashtagHarvestRun {
   totalResolved: number;
   totalProspectsCreated: number;
   totalProspectsUpdated: number;
+  savedCount: number;
+  failedToSaveCount: number;
+  saveErrors: SaveError[];
   errors: string[];
 }
 
@@ -107,6 +130,7 @@ export interface HarvestRunResponse {
   run: HashtagHarvestRun;
   creators: HarvestedCreatorSeed[];
   results: ResolverPipelineResult[];
+  saveErrors: SaveError[];
 }
 
 export interface HarvestErrorResponse {
