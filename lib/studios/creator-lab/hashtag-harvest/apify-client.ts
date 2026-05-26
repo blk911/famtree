@@ -43,7 +43,7 @@ async function startRun(
   hashtags: string[],
   maxPerHashtag: number,
   token: string,
-): Promise<{ runId: string; datasetId: string; status: string } | null> {
+): Promise<{ runId: string; datasetId: string; status: string; startError?: string } | null> {
   const url = apifyUrl(
     `/acts/${ACTOR_ID}/runs?waitForFinish=${WAIT_FOR_FINISH_SECS}`,
     token,
@@ -68,7 +68,8 @@ async function startRun(
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     console.error(`[apify-client] start run HTTP ${res.status}:`, text.slice(0, 200));
-    return null;
+    // Return a typed error so callers can surface the HTTP status to the admin
+    return { runId: "", datasetId: "", status: "FAILED", startError: `HTTP ${res.status}: ${text.slice(0, 120)}` };
   }
 
   const data = await res.json() as { data?: ApifyRunResult };
@@ -139,11 +140,11 @@ export async function runApifyHashtagHarvest(
   }
 
   const runInfo = await startRun(hashtags, maxPerHashtag, token);
-  if (!runInfo) {
+  if (!runInfo || runInfo.startError) {
     return {
       posts: [],
-      actorRunId: null,
-      error: "Apify actor run failed to start. Check APIFY_TOKEN and actor availability.",
+      actorRunId: runInfo?.runId || null,
+      error: `Apify actor run failed to start — ${runInfo?.startError ?? "network error or unexpected response"}`,
     };
   }
 
