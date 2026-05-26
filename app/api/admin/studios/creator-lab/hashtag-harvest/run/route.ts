@@ -44,9 +44,15 @@ export async function POST(req: NextRequest) {
   // ── Step 1: Apify harvest ───────────────────────────────────────────────────
   const { posts, actorRunId, error: apifyError } = await runApifyHashtagHarvest(hashtags, maxPerHashtag);
 
+  // Fatal early exit: if Apify couldn't run at all (no token, actor start failure)
+  // and returned zero posts, there's nothing to pipeline — surface the error on
+  // the form (ok: false) rather than showing an empty results screen.
+  if (apifyError && posts.length === 0) {
+    return err(apifyError, undefined, 400);
+  }
+
   if (apifyError) {
     errors.push(apifyError);
-    // Don't abort — allow empty-post path so UI shows a useful summary
   }
 
   // ── Step 2: Extract creator seeds per-hashtag ───────────────────────────────
@@ -112,7 +118,7 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[hashtag-harvest/run] save error:", msg);
-    // Non-fatal
+    run.errors.push(`Run file not saved: ${msg}`);
   }
 
   return NextResponse.json(
