@@ -197,7 +197,7 @@ export function identitySeedToProspectInput(
   ]));
 
   // Validate sourceType
-  const validSourceTypes = ["ig-stub-run", "hashtag_harvest", "styleseat_harvest", "education_seed_import"] as const;
+  const validSourceTypes = ["ig-stub-run", "hashtag_harvest", "styleseat_harvest", "education_seed_import", "education_directory_import"] as const;
   const sourceType = (validSourceTypes as readonly string[]).includes(seed.sourceTool)
     ? seed.sourceTool as ProspectSource["sourceType"]
     : "education_seed_import" as ProspectSource["sourceType"];

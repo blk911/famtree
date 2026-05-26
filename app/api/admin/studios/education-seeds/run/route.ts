@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { runEducationSeedPipeline } from "@/lib/studios/education-seeds/resolver";
-import { getProspectStorePath, countProspects } from "@/lib/studios/prospects/store";
+import { getStoreBackendInfo, countProspects } from "@/lib/studios/prospects/store";
 import type { EducationSeedRunResponse, EducationSeedErrorResponse } from "@/lib/studios/education-seeds/types";
 
 const VALID_EDU_TYPES = [
@@ -51,11 +51,12 @@ export async function POST(req: Request) {
     const config = parsed.data;
     const runId  = generateRunId();
 
-    // Diagnostics: store path + before-count
-    const storePath          = getProspectStorePath();
+    // Diagnostics: backend info + before-count
+    const backendInfo          = await getStoreBackendInfo();
+    const storePath            = backendInfo.storePath;
     const prospectsBeforeCount = await countProspects();
 
-    console.log(`[education-seeds/run] starting run ${runId} — store: ${storePath} (${prospectsBeforeCount} existing)`);
+    console.log(`[education-seeds/run] starting run ${runId} — backend: ${backendInfo.backend}, store: ${storePath ?? "postgres"} (${prospectsBeforeCount} existing)`);
     console.log(`[education-seeds/run] mode=${config.mode}, dryRun=${config.dryRun ?? false}`);
 
     const result = await runEducationSeedPipeline(config, runId);
@@ -72,15 +73,17 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       runId,
-      parsedCount:     result.parsedCount,
-      assemblerResult: result.assemblerResult,
-      processedAt:     new Date().toISOString(),
+      parsedCount:          result.parsedCount,
+      assemblerResult:      result.assemblerResult,
+      processedAt:          new Date().toISOString(),
       // Diagnostic fields
       storePath,
+      prospectStoreBackend: backendInfo.backend,
       prospectsBeforeCount,
       prospectsAfterCount,
     } satisfies EducationSeedRunResponse & {
-      storePath: string;
+      storePath: string | null;
+      prospectStoreBackend: string;
       prospectsBeforeCount: number;
       prospectsAfterCount: number;
     });

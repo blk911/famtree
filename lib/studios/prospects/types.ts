@@ -51,7 +51,12 @@ export const PROSPECT_STATUS_COLORS: Record<ProspectStatus, { bg: string; fg: st
 // ─── Source ───────────────────────────────────────────────────────────────────
 
 export interface ProspectSource {
-  sourceType: "ig-stub-run" | "hashtag_harvest" | "styleseat_harvest" | "education_seed_import";
+  sourceType:
+    | "ig-stub-run"
+    | "hashtag_harvest"
+    | "styleseat_harvest"
+    | "education_seed_import"
+    | "education_directory_import";
   batchId: string;
   sourceHandle: string;
   sourceDisplayName: string;

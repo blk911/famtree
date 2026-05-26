@@ -1334,3 +1334,80 @@ model StudiosGatewayAccessRequest {
 // END AIH SAFE — ADDITIVE MODELS
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// AIH STUDIOS — CREATOR PROSPECTS
+// Production-safe persistence for the Creator Intelligence prospect repository.
+// Falls back to JSON flat file in dev when PROSPECT_STORE_BACKEND=json.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Canonical creator/educator prospect record.
+/// Deduped by normalized handle OR bestMatchUrl on upsert.
+/// Human-set fields (validationStatus, notes, archiveReason) are NEVER overwritten by reruns.
+model StudioProspect {
+  id String @id  // e.g. "prospect-janesmith"
+
+  // ── Source provenance ──────────────────────────────────────────────────────
+  vertical         String @default("education")
+  sourcePlatform   String @default("instagram")
+  sourceType       String @default("hashtag_harvest")
+  sourceTool       String @default("hashtag_harvest")
+  sourcePath       String @default("")
+  sourceHashtag    String?
+  sourceHashtags   Json   @default("[]")   // string[]
+  runId            String?
+  harvestDate      String?
+  batchId          String @default("")
+  sourceHandle     String @default("")
+  sourceDisplayName String @default("")
+
+  // ── Identity ───────────────────────────────────────────────────────────────
+  name          String @default("")
+  handle        String @default("")   // normalized lowercase, no @
+  categoryGuess String?
+  locationGuess String?
+
+  // ── Match data ─────────────────────────────────────────────────────────────
+  platforms      Json @default("[]")   // string[]
+  bestMatchUrl   String?
+  bestMatchPlatform String?
+  bestMatchConf  Int?
+  bestMatchReason String?
+  allMatchedUrls Json @default("[]")  // MatchedUrl[]
+  services       Json @default("[]")  // string[]
+  evidence       Json @default("[]")  // string[]
+
+  // ── Confidence ─────────────────────────────────────────────────────────────
+  confIdentity  Int @default(0)
+  confBooking   Int @default(0)
+  confCategory  Int @default(0)
+  confLocation  Int @default(0)
+  confOverall   Int @default(0)
+
+  // ── Education classification ───────────────────────────────────────────────
+  educationType String?
+  audienceType  String?
+  sourceTopic   String?
+
+  // ── Human-managed CRM (NEVER overwritten by reruns) ───────────────────────
+  validationStatus String @default("new")
+  archiveReason    String?
+  status           String @default("new")  // ProspectStatus
+  notes            String @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vertical])
+  @@index([sourcePlatform])
+  @@index([sourceType])
+  @@index([sourceHashtag])
+  @@index([validationStatus])
+  @@index([educationType])
+  @@index([audienceType])
+  @@index([handle])
+  @@index([bestMatchUrl])
+  @@index([runId])
+  @@index([updatedAt(sort: Desc)])
+  @@map("studio_prospects")
+}
+

@@ -15,8 +15,9 @@ const TOOL_LABELS: Record<string, string> = {
   ig_stub_run:           "IG Stub Run",
   "ig-stub-run":         "IG Stub Run",
   styleseat_harvest:     "StyleSeat Harvest",
-  education_seed_import: "Education Seed Import",
-  manual:                "Manual",
+  education_seed_import:      "Education Seed Import",
+  education_directory_import: "Education Directory Import",
+  manual:                     "Manual",
 };
 
 const PLATFORM_LABELS: Record<string, string> = {

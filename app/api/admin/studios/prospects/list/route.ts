@@ -12,6 +12,10 @@
 //   platform         — e.g. "glossgenius"
 //   location         — substring match on locationGuess
 //   minConfidence    — integer 0-100
+//   sourceType       — e.g. "education_directory_import"
+//   sourcePlatform   — e.g. "directory_import"
+//   sourceTool       — e.g. "hashtag_harvest"
+//   runId            — exact run ID match
 
 export const dynamic = "force-dynamic";
 
@@ -26,14 +30,18 @@ export async function GET(req: NextRequest) {
     const minConf = sp.get("minConfidence");
 
     const prospects = await filterProspects({
-      vertical:        sp.get("vertical")        ?? undefined,
-      educationType:   sp.get("educationType")   ?? undefined,
-      audienceType:    sp.get("audienceType")     ?? undefined,
-      sourceHashtag:   sp.get("sourceHashtag")   ?? undefined,
+      vertical:        sp.get("vertical")         ?? undefined,
+      educationType:   sp.get("educationType")    ?? undefined,
+      audienceType:    sp.get("audienceType")      ?? undefined,
+      sourceHashtag:   sp.get("sourceHashtag")    ?? undefined,
       validationStatus:sp.get("validationStatus") ?? undefined,
-      platform:        sp.get("platform")         ?? undefined,
-      location:        sp.get("location")         ?? undefined,
+      platform:        sp.get("platform")          ?? undefined,
+      location:        sp.get("location")          ?? undefined,
       minConfidence:   minConf !== null ? Number(minConf) : undefined,
+      sourceType:      sp.get("sourceType")        ?? undefined,
+      sourcePlatform:  sp.get("sourcePlatform")    ?? undefined,
+      sourceTool:      sp.get("sourceTool")         ?? undefined,
+      runId:           sp.get("runId")             ?? undefined,
     });
 
     return NextResponse.json(
