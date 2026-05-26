@@ -9,15 +9,17 @@ export type CreatorIntelligenceTool =
   | "assembler"
   | "ig-resolver"
   | "hashtag-harvest"
+  | "styleseat"
   | "prospects"
   | "runs";
 
 const TOOLS: { id: CreatorIntelligenceTool; label: string; href: string }[] = [
-  { id: "assembler",       label: "Studio Assembler", href: "/admin/studios/creator-lab" },
-  { id: "ig-resolver",     label: "IG Resolver",      href: "/admin/studios/creator-lab/ig-stubs" },
-  { id: "hashtag-harvest", label: "Hashtag Harvest",  href: "/admin/studios/creator-lab/hashtag-harvest" },
-  { id: "prospects",       label: "Prospects",        href: "/admin/studios/prospects" },
-  { id: "runs",            label: "Runs",             href: "/admin/studios/runs" },
+  { id: "assembler",       label: "Studio Assembler",   href: "/admin/studios/creator-lab" },
+  { id: "ig-resolver",     label: "IG Resolver",        href: "/admin/studios/creator-lab/ig-stubs" },
+  { id: "hashtag-harvest", label: "Hashtag Harvest",    href: "/admin/studios/creator-lab/hashtag-harvest" },
+  { id: "styleseat",       label: "StyleSeat Discovery",href: "/admin/studios/styleseat" },
+  { id: "prospects",       label: "Prospects",          href: "/admin/studios/prospects" },
+  { id: "runs",            label: "Runs",               href: "/admin/studios/runs" },
 ];
 
 export function CreatorIntelligenceNav({ current }: { current: CreatorIntelligenceTool }) {
