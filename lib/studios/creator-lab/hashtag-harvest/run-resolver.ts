@@ -141,8 +141,13 @@ export async function runResolverForSeeds(
   // ── Phase 2: upsert prospects SEQUENTIALLY (file I/O — no concurrent writes) ──
   const results: ResolverPipelineResult[] = [];
   const saveErrors: SaveError[] = [];
+  const savedProspectIds: string[] = [];
+  const savedHandles: string[] = [];
   let savedCount = 0;
   let failedToSaveCount = 0;
+  const upsertAttemptCount = settled.filter((s) => s.status === "fulfilled").length;
+
+  console.log(`[run-resolver] Phase 2: attempting ${upsertAttemptCount} upserts (${settled.filter(s => s.status === "rejected").length} phase-1 rejections skipped)`);
 
   for (let i = 0; i < settled.length; i++) {
     const s = settled[i];
@@ -170,10 +175,14 @@ export async function runResolverForSeeds(
     let prospectId: string | null = null;
     let saveError: string | null = null;
 
+    console.log(`[run-resolver] upserting [${i + 1}/${upsertAttemptCount}] @${seed.handle} (${seed.sourceHashtag})`);
     try {
       const saved = await upsertProspect(upsertInput);
       prospectId = saved.prospectId;
       savedCount++;
+      savedProspectIds.push(saved.prospectId);
+      savedHandles.push(seed.handle);
+      console.log(`[run-resolver] ✓ saved @${seed.handle} → ${saved.prospectId}`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       saveError = msg;
@@ -185,7 +194,7 @@ export async function runResolverForSeeds(
         message: msg,
       });
       // Log server-side so nothing is silent in the server console
-      console.error(`[run-resolver] upsert failed for @${seed.handle} (${seed.sourceHashtag}):`, e);
+      console.error(`[run-resolver] ✗ upsert failed for @${seed.handle} (${seed.sourceHashtag}):`, e);
     }
 
     results.push({
@@ -201,5 +210,7 @@ export async function runResolverForSeeds(
     });
   }
 
-  return { results, savedCount, failedToSaveCount, saveErrors };
+  console.log(`[run-resolver] Phase 2 complete: ${savedCount} saved, ${failedToSaveCount} failed, ${upsertAttemptCount} attempted`);
+
+  return { results, savedCount, failedToSaveCount, saveErrors, upsertAttemptCount, savedProspectIds, savedHandles };
 }

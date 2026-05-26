@@ -13,6 +13,7 @@ import { normalizeCreators } from "@/lib/studios/creator-lab/hashtag-harvest/nor
 import { runResolverForSeeds } from "@/lib/studios/creator-lab/hashtag-harvest/run-resolver";
 import { saveHarvestRun, generateRunId } from "@/lib/studios/creator-lab/hashtag-harvest/store";
 import { generateBatchId } from "@/lib/studios/prospects/from-resolver";
+import { getProspectStorePath, countProspects } from "@/lib/studios/prospects/store";
 import type { HarvestContext } from "@/lib/studios/creator-lab/hashtag-harvest/run-resolver";
 import type {
   HashtagHarvestRun,
@@ -73,6 +74,12 @@ export async function POST(req: NextRequest) {
   // ── Step 3: Normalize / dedupe across all hashtags ──────────────────────────
   const normalizedCreators = normalizeCreators(allSeeds);
 
+  // ── Step 4a: Capture store path + before-count for diagnostics ─────────────
+  const prospectStorePath = getProspectStorePath();
+  const prospectsBeforeCount = await countProspects();
+  console.log(`[hashtag-harvest/run] store path: ${prospectStorePath}`);
+  console.log(`[hashtag-harvest/run] prospects before: ${prospectsBeforeCount}`);
+
   // ── Step 4: Run resolver + sequential upserts ───────────────────────────────
   const harvestCtx: HarvestContext = {
     runId,
@@ -84,7 +91,7 @@ export async function POST(req: NextRequest) {
     sourceTool:     "hashtag_harvest",
   };
 
-  let resolverResult = { results: [], savedCount: 0, failedToSaveCount: 0, saveErrors: [] } as Awaited<ReturnType<typeof runResolverForSeeds>>;
+  let resolverResult = { results: [], savedCount: 0, failedToSaveCount: 0, saveErrors: [], upsertAttemptCount: 0, savedProspectIds: [], savedHandles: [] } as Awaited<ReturnType<typeof runResolverForSeeds>>;
 
   if (normalizedCreators.length > 0) {
     try {
@@ -96,7 +103,13 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { results, savedCount, failedToSaveCount, saveErrors } = resolverResult;
+  const { results, savedCount, failedToSaveCount, saveErrors, upsertAttemptCount, savedProspectIds, savedHandles } = resolverResult;
+
+  // ── Step 4b: After-count for diagnostics ────────────────────────────────────
+  const prospectsAfterCount = await countProspects();
+  console.log(`[hashtag-harvest/run] prospects after: ${prospectsAfterCount} (delta: +${prospectsAfterCount - prospectsBeforeCount})`);
+  console.log(`[hashtag-harvest/run] upsertAttempts=${upsertAttemptCount} saved=${savedCount} failed=${failedToSaveCount}`);
+  console.log(`[hashtag-harvest/run] savedHandles:`, savedHandles);
 
   // ── Step 5: Compute summary metrics ────────────────────────────────────────
   const resolved = results.filter((r) => r.resolved);
@@ -122,6 +135,12 @@ export async function POST(req: NextRequest) {
     failedToSaveCount,
     saveErrors,
     errors,
+    prospectStorePath,
+    prospectsBeforeCount,
+    prospectsAfterCount,
+    upsertAttemptCount,
+    savedProspectIds,
+    savedHandles,
   };
 
   // ── Step 6: Persist run file ────────────────────────────────────────────────

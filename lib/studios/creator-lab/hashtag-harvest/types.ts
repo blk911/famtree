@@ -86,6 +86,12 @@ export interface RunResolverResult {
   savedCount: number;
   failedToSaveCount: number;
   saveErrors: SaveError[];
+  /** How many seeds the upsert loop attempted (== capped.length) */
+  upsertAttemptCount: number;
+  /** prospectId of every successfully saved record */
+  savedProspectIds: string[];
+  /** @handle of every successfully saved record */
+  savedHandles: string[];
 }
 
 // ─── Harvest run ──────────────────────────────────────────────────────────────
@@ -107,6 +113,13 @@ export interface HashtagHarvestRun {
   failedToSaveCount: number;
   saveErrors: SaveError[];
   errors: string[];
+  // ── Save diagnostics ─────────────────────────────────────────────────────────
+  prospectStorePath: string;
+  prospectsBeforeCount: number;
+  prospectsAfterCount: number;
+  upsertAttemptCount: number;
+  savedProspectIds: string[];
+  savedHandles: string[];
 }
 
 export interface HarvestRunFile {

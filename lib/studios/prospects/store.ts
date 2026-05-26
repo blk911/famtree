@@ -14,6 +14,17 @@ const DATA_DIR = process.env.VERCEL
 
 const PROSPECTS_FILE = path.join(DATA_DIR, "prospects.json");
 
+/** Returns the absolute path to the prospects JSON file — for diagnostics. */
+export function getProspectStorePath(): string {
+  return PROSPECTS_FILE;
+}
+
+/** Returns the number of records currently in the store without modifying anything. */
+export async function countProspects(): Promise<number> {
+  const records = await loadAllProspects();
+  return records.length;
+}
+
 async function ensureDir(): Promise<void> {
   await fs.mkdir(DATA_DIR, { recursive: true });
 }

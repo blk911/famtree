@@ -134,6 +134,7 @@ function ReportsView({
   // ── Stored prospects from the real DB — fetched once when tab opens ──────────
   const [storedProspects, setStoredProspects] = useState<ProspectRecord[]>([]);
   const [storedLoading, setStoredLoading] = useState(true);
+  const [debugOpen, setDebugOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/studios/prospects/list?vertical=education")
@@ -275,6 +276,61 @@ function ReportsView({
                 <span style={{ color: "#b91c1c", flex: 1 }}>{se.message}</span>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Debug panel — collapsible */}
+      <div style={{ marginBottom: 14 }}>
+        <button
+          type="button"
+          onClick={() => setDebugOpen((v) => !v)}
+          style={{
+            fontSize: 10, fontWeight: 700, color: "#78716c", background: "#f5f5f4",
+            border: "1px solid #e7e5e4", borderRadius: 6, padding: "4px 10px",
+            cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5,
+          }}
+        >
+          🔍 Debug Panel {debugOpen ? "▲" : "▼"}
+        </button>
+
+        {debugOpen && (
+          <div style={{ marginTop: 8, background: "#1c1917", color: "#e7e5e4", borderRadius: 10, padding: "14px 18px", fontSize: 11, fontFamily: "monospace" }}>
+            <div style={{ marginBottom: 8, fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em" }}>SAVE DIAGNOSTICS</div>
+            <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "4px 16px", alignItems: "start" }}>
+              {([
+                ["prospectStorePath",   run.prospectStorePath],
+                ["prospectsBeforeCount", String(run.prospectsBeforeCount)],
+                ["prospectsAfterCount",  String(run.prospectsAfterCount)],
+                ["delta",               `+${(run.prospectsAfterCount ?? 0) - (run.prospectsBeforeCount ?? 0)}`],
+                ["upsertAttemptCount",  String(run.upsertAttemptCount)],
+                ["savedCount",          String(run.savedCount)],
+                ["failedToSaveCount",   String(run.failedToSaveCount)],
+                ["totalCreators",       String(run.totalCreators)],
+                ["runId",               run.runId],
+              ] as [string, string][]).map(([k, v]) => (
+                <>
+                  <span key={`k-${k}`} style={{ color: "#a8a29e", whiteSpace: "nowrap" }}>{k}</span>
+                  <span key={`v-${k}`} style={{ color: "#fef3c7", wordBreak: "break-all" }}>{v}</span>
+                </>
+              ))}
+            </div>
+            {(run.savedHandles?.length ?? 0) > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <div style={{ color: "#a8a29e", marginBottom: 4 }}>savedHandles ({run.savedHandles.length})</div>
+                <div style={{ color: "#bbf7d0" }}>{run.savedHandles.join(", ")}</div>
+              </div>
+            )}
+            {saveErrors.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <div style={{ color: "#fca5a5", marginBottom: 4 }}>saveErrors ({saveErrors.length})</div>
+                {saveErrors.map((se, i) => (
+                  <div key={i} style={{ color: "#fca5a5", marginBottom: 2 }}>
+                    @{se.handle} #{se.sourceHashtag}: {se.message}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -864,7 +920,7 @@ export default function HashtagHarvestPage() {
               </label>
               <div style={{ display: "flex", gap: 8 }}>
                 {(["fast", "deep"] as ResolveMode[]).map((m) => (
-                  <button key={m} onClick={() => setMode(m)} disabled={loading}
+                  <button key={m} type="button" onClick={() => setMode(m)} disabled={loading}
                     style={{
                       padding: "7px 16px", borderRadius: 20, border: "2px solid",
                       borderColor: mode === m ? "#9d174d" : "#e7e5e4",
@@ -947,6 +1003,26 @@ export default function HashtagHarvestPage() {
           )}
 
           <SummaryCards run={runData.run} results={runData.results} />
+
+          {/* Hard zero-save warning */}
+          {runData.run.totalCreators > 0 && runData.run.savedCount === 0 && (
+            <div style={{ marginBottom: 16, padding: "12px 16px", background: "#fef2f2", border: "2px solid #dc2626", borderRadius: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#dc2626", marginBottom: 4 }}>
+                ⛔ Zero prospects saved — {runData.run.totalCreators} creator(s) were seeded but none persisted.
+              </div>
+              <div style={{ fontSize: 11, color: "#b91c1c" }}>
+                Store path: <code style={{ fontFamily: "monospace", background: "#fee2e2", padding: "1px 4px", borderRadius: 3 }}>{runData.run.prospectStorePath}</code>
+              </div>
+              {runData.run.saveErrors.length > 0 && (
+                <div style={{ marginTop: 6, fontSize: 11, color: "#b91c1c" }}>
+                  {runData.run.saveErrors.length} save error(s) — check Reports → Debug Panel for details.
+                </div>
+              )}
+              <div style={{ marginTop: 6, fontSize: 11, color: "#78716c" }}>
+                Check: Is <code style={{ fontFamily: "monospace" }}>VERCEL=1</code> set in .env.production.local? If running <code style={{ fontFamily: "monospace" }}>npm start</code>, the store writes to <code style={{ fontFamily: "monospace" }}>/tmp/</code>, not <code style={{ fontFamily: "monospace" }}>runtime-data/</code>. Use <code style={{ fontFamily: "monospace" }}>npm run dev</code> for local development.
+              </div>
+            </div>
+          )}
 
           {/* Tab switcher */}
           <div style={{ display: "flex", gap: 4, marginBottom: 14, background: "#f5f5f4", borderRadius: 24, padding: 4, width: "fit-content" }}>

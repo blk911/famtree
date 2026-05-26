@@ -218,6 +218,7 @@ type SortKey = "name" | "handle" | "educationType" | "platform" | "confidence" |
 export default function ProspectsPage() {
   const [prospects, setProspects]   = useState<ProspectRecord[]>([]);
   const [loading, setLoading]       = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [sortKey, setSortKey]       = useState<SortKey>("createdAt");
   const [sortDir, setSortDir]       = useState<"asc" | "desc">("desc");
@@ -232,8 +233,17 @@ export default function ProspectsPage() {
 
   useEffect(() => {
     fetch("/api/admin/studios/prospects/list")
-      .then((r) => r.json())
-      .then((data: ProspectListResponse) => { if (data.ok) setProspects(data.prospects); })
+      .then(async (r) => {
+        const data = await r.json() as ProspectListResponse | { ok: false; error: string; detail?: string };
+        if (data.ok) {
+          setProspects((data as ProspectListResponse).prospects);
+        } else {
+          const err = data as { ok: false; error: string; detail?: string };
+          setFetchError(`${err.error}${err.detail ? ` — ${err.detail}` : ""}`);
+          console.error("[prospects/page] list error:", err);
+        }
+      })
+      .catch((e) => setFetchError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
   }, []);
 
@@ -332,6 +342,13 @@ export default function ProspectsPage() {
               <div style={{ fontSize: 9, color: "#a8a29e", fontWeight: 700, letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{label.toUpperCase()}</div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Fetch error */}
+      {fetchError && (
+        <div style={{ marginBottom: 14, padding: "10px 14px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, fontSize: 13, color: "#b91c1c" }}>
+          ❌ Failed to load prospects: {fetchError}
         </div>
       )}
 
