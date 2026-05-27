@@ -44,47 +44,31 @@ export function DiscoverySubjectCard({ subject }: Props) {
           el.style.borderColor = "rgba(255,255,255,0.07)";
         }}
       >
-        {/* Gradient header — icon, count chip, and title all live here */}
+        {/* Gradient header */}
         <div
           style={{
             background: subject.thumbGradient,
-            padding: "20px 20px 18px",
+            padding: "24px 22px",
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            minHeight: 130,
+            alignItems: "center",
+            gap: 14,
+            minHeight: 112,
             position: "relative",
           }}
         >
-          {/* Top row: icon + count chip */}
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 36, lineHeight: 1, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.4))" }}>
-              {subject.icon}
-            </span>
-            <span
-              style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
-                color: "rgba(255,255,255,0.72)",
-                background: "rgba(0,0,0,0.38)",
-                borderRadius: 20, padding: "4px 10px",
-                border: "1px solid rgba(255,255,255,0.14)",
-                backdropFilter: "blur(6px)",
-              }}
-            >
-              {totalItems} items
-            </span>
-          </div>
-
-          {/* Title at the bottom of the gradient area */}
+          <span style={{ fontSize: 42, lineHeight: 1, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.4))" }}>
+            {subject.icon}
+          </span>
           <h2
             style={{
-              margin: "12px 0 0",
-              fontSize: 18,
+              margin: 0,
+              fontSize: 20,
               fontWeight: 900,
               color: "#fff",
               letterSpacing: "-0.03em",
               lineHeight: 1.15,
               textShadow: "0 2px 12px rgba(0,0,0,0.35)",
+              minWidth: 0,
             }}
           >
             {subject.title}
@@ -148,17 +132,31 @@ export function DiscoverySubjectCard({ subject }: Props) {
           </div>
 
           {/* Footer row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
-                textTransform: "uppercase", color: "#4ade80",
-              }}
-            >
-              <ShieldCheck style={{ width: 11, height: 11 }} />
-              Safe View
-            </span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.04em",
+                  color: "rgba(255,255,255,0.44)",
+                  textTransform: "uppercase",
+                }}
+              >
+                {totalItems} items
+              </span>
+              <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.24)" }} />
+              <span
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+                  textTransform: "uppercase", color: "#4ade80",
+                }}
+              >
+                <ShieldCheck style={{ width: 11, height: 11 }} />
+                Safe View
+              </span>
+            </div>
 
             <span
               style={{
