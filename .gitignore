@@ -46,6 +46,8 @@ public/uploads/*
 !public/uploads/admin-site-wide-intro.mp4
 # Studios landing hero — right-column featured `<video>` (`StudiosHeroFeaturedStudios`)
 !public/uploads/studios-hero-intro-v2.mp4
+# Hero video card static thumbnail (`StudiosHeroFeaturedStudios`)
+!public/uploads/STUDIO Intro Vid Thumb.png
 # Gap U live showcase + stack card thumb (`liveStudioShowcase.ts`, `studioStackData.ts`, `gapuStudioConfig.ts`)
 !public/uploads/Gap_u_thumb.jpg
 

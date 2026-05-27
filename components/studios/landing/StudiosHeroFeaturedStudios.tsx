@@ -73,7 +73,9 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
     });
   }
 
-  const thumbBackdrop = posterDataUrl ?? (!heroVideoBroken ? GAP_U_CARD_THUMB_SRC : null);
+  // Static thumbnail — always show the uploaded preview image instead of a canvas-captured frame.
+  const STUDIO_INTRO_THUMB_SRC = "/uploads/STUDIO%20Intro%20Vid%20Thumb.png";
+  const thumbBackdrop = STUDIO_INTRO_THUMB_SRC;
 
   return (
     <>
@@ -281,7 +283,12 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
       <div className="shfs-twocol">
         <div className="shfs-copy">{children}</div>
         <div className="shfs-video-wrap">
-          <article className="shfs-shell" aria-label="Gap U featured reel">
+          <article
+            className="shfs-shell"
+            aria-label="Gap U featured reel"
+            style={{ cursor: "pointer" }}
+            onClick={() => { if (heroIntroSrc && !heroVideoBroken) setVideoLightboxOpen(true); }}
+          >
             <div className="shfs-thumb-slot">
               <button
                 type="button"
@@ -317,15 +324,18 @@ export function StudiosHeroFeaturedStudios({ children }: Props) {
                 >
                   Here is the "Why"! <Play style={{ width: 13, height: 13 }} fill="currentColor" aria-hidden />
                 </button>
-                <StudiosGatewayAwareLink
-                  href={HERO_FOCUS.exploreHref}
-                  prefetch={false}
-                  actionLabel="Enter Gap U"
-                  className="shfs-btn shfs-btn-live"
-                  scroll
-                >
-                  Enter Gap U <ArrowUpRight style={{ width: 13, height: 13 }} aria-hidden />
-                </StudiosGatewayAwareLink>
+                {/* Stop propagation so navigation doesn't also open the video */}
+                <span onClick={(e) => e.stopPropagation()}>
+                  <StudiosGatewayAwareLink
+                    href={HERO_FOCUS.exploreHref}
+                    prefetch={false}
+                    actionLabel="Enter Gap U"
+                    className="shfs-btn shfs-btn-live"
+                    scroll
+                  >
+                    Enter Gap U <ArrowUpRight style={{ width: 13, height: 13 }} aria-hidden />
+                  </StudiosGatewayAwareLink>
+                </span>
               </div>
               {heroVideoBroken ? (
                 <p className="shfs-hero-video-fallback">
