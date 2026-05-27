@@ -5,6 +5,7 @@
 // Subject pages are the exploration hubs.
 
 import { ArrowRight, Compass, ShieldCheck, Sparkles, Tv2, BookOpen, Users } from "lucide-react";
+import Link from "next/link";
 import { SUBJECTS } from "@/lib/discovery/catalog";
 import { DiscoverySubjectCard } from "@/components/discovery/DiscoverySubjectCard";
 
@@ -17,6 +18,7 @@ const GUIDED_DISCOVERY_PATHS = [
     tags: ["Experiments", "Stories", "Nature", "Numbers", "Making"],
     gradient: "linear-gradient(135deg, rgba(34,197,94,0.34), rgba(14,165,233,0.18))",
     accent: "#4ade80",
+    href: "/discovery/core-explorers",
   },
   {
     title: "Advanced Explorers",
@@ -213,8 +215,9 @@ export default function DiscoveryHomePage() {
           </div>
 
           <div className="disc-trails-row">
-            {GUIDED_DISCOVERY_PATHS.map((path) => (
-              <article
+            {GUIDED_DISCOVERY_PATHS.map((path) => {
+              const card = (
+                <article
                 key={path.title}
                 style={{
                   minHeight: 260,
@@ -226,6 +229,7 @@ export default function DiscoveryHomePage() {
                   display: "flex",
                   flexDirection: "column",
                   position: "relative",
+                  height: "100%",
                 }}
               >
                 <div
@@ -341,7 +345,7 @@ export default function DiscoveryHomePage() {
                       padding: "9px 14px",
                       fontSize: 12,
                       fontWeight: 850,
-                      cursor: "default",
+                      cursor: "pointer",
                     }}
                     aria-label={`Explore ${path.title}`}
                   >
@@ -350,7 +354,18 @@ export default function DiscoveryHomePage() {
                   </button>
                 </div>
               </article>
-            ))}
+              );
+
+              if ("href" in path) {
+                return (
+                  <Link key={path.title} href={path.href} style={{ color: "inherit", textDecoration: "none" }}>
+                    {card}
+                  </Link>
+                );
+              }
+
+              return card;
+            })}
           </div>
         </div>
 
