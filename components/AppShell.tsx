@@ -176,46 +176,51 @@ export function AppShell({ user, coverUrl, children, vaultNotificationCount = 0 
           <TopBarUser user={user} />
         </AppTopBar>
 
-        <AppContentWrap className={pathname === "/invite" ? "app-content-pad--invite" : undefined}>
-          {bannerVisible && annState && (
-            <AppAnnouncementBanner>
-              <Megaphone className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+        {pathname.startsWith("/discovery") ? (
+          // Full-bleed layout for Discovery — skip the constrained AppContentWrap
+          children
+        ) : (
+          <AppContentWrap className={pathname === "/invite" ? "app-content-pad--invite" : undefined}>
+            {bannerVisible && annState && (
+              <AppAnnouncementBanner>
+                <Megaphone className="h-3.5 w-3.5 shrink-0 text-amber-600" />
 
-              <AppBannerExpandButton onClick={handleBannerExpand}>
-                <span className="shrink-0 whitespace-nowrap text-[13px] font-bold text-amber-900">
-                  {annState.announcement.title || "Announcement"}
-                </span>
-                <span className="shrink-0 text-[13px] text-amber-600">—</span>
-                <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-stone-500">
-                  {(() => {
-                    const body = annState.announcement.body ?? "";
-                    return body.length > 90 ? `${body.slice(0, 90)}…` : body;
-                  })()}
-                </span>
-                <span className="shrink-0 text-[13px] text-amber-700">→</span>
-              </AppBannerExpandButton>
+                <AppBannerExpandButton onClick={handleBannerExpand}>
+                  <span className="shrink-0 whitespace-nowrap text-[13px] font-bold text-amber-900">
+                    {annState.announcement.title || "Announcement"}
+                  </span>
+                  <span className="shrink-0 text-[13px] text-amber-600">—</span>
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-stone-500">
+                    {(() => {
+                      const body = annState.announcement.body ?? "";
+                      return body.length > 90 ? `${body.slice(0, 90)}…` : body;
+                    })()}
+                  </span>
+                  <span className="shrink-0 text-[13px] text-amber-700">→</span>
+                </AppBannerExpandButton>
 
-              <AppBannerIconButton onClick={handleBannerPlayVoice} title="Play voice message">
-                <Volume2 className="h-3.5 w-3.5" />
-              </AppBannerIconButton>
+                <AppBannerIconButton onClick={handleBannerPlayVoice} title="Play voice message">
+                  <Volume2 className="h-3.5 w-3.5" />
+                </AppBannerIconButton>
 
-              <AppBannerIconButton onClick={handleBannerDismiss} title="Dismiss">
-                <X className="h-[13px] w-[13px]" />
-              </AppBannerIconButton>
-            </AppAnnouncementBanner>
-          )}
+                <AppBannerIconButton onClick={handleBannerDismiss} title="Dismiss">
+                  <X className="h-[13px] w-[13px]" />
+                </AppBannerIconButton>
+              </AppAnnouncementBanner>
+            )}
 
-          <AppPageHero
-            user={{
-              firstName: user.firstName,
-              lastName: user.lastName,
-              photoUrl: user.photoUrl,
-              role: user.role,
-            }}
-            coverUrl={coverUrl}
-          />
-          {children}
-        </AppContentWrap>
+            <AppPageHero
+              user={{
+                firstName: user.firstName,
+                lastName: user.lastName,
+                photoUrl: user.photoUrl,
+                role: user.role,
+              }}
+              coverUrl={coverUrl}
+            />
+            {children}
+          </AppContentWrap>
+        )}
       </AppMain>
     </>
   );

@@ -14,6 +14,7 @@ type HeroUser = {
 
 const HERO_COPY: Array<{ match: (path: string) => boolean; title: string; subtitle: string; hidden?: true }> = [
   { match: (path) => path === "/aihsafe" || path.startsWith("/aihsafe/"), title: "", subtitle: "", hidden: true },
+  { match: (path) => path === "/discovery" || path.startsWith("/discovery/"), title: "", subtitle: "", hidden: true },
   { match: (path) => path === "/msg-vault" || path.startsWith("/msg-vault/"), title: "Msg Vault", subtitle: "Private chats, threads, and notices" },
   { match: (path) => path === "/admin/studios" || path.startsWith("/admin/studios/"), title: "AIH Studios", subtitle: "Studio management and directory" },
   { match: (path) => path === "/admin/tools", title: "Tools & foundation", subtitle: "Scripts, services, and ops reference for admins" },

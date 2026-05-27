@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, Mail,
-  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2, Terminal,
+  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2, Terminal, Tv2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { User as PrismaUser } from "@prisma/client";
@@ -210,6 +210,15 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
         >
           <ShieldCheck style={{width:"18px",height:"18px",flexShrink:0}} />
           Family Safe
+        </Link>
+
+        {/* Discovery Channel — family-safe learning hub */}
+        <Link
+          href="/discovery"
+          style={linkStyle(pathname === "/discovery" || pathname.startsWith("/discovery/"))}
+        >
+          <Tv2 style={{width:"18px",height:"18px",flexShrink:0}} />
+          Discovery Channel
         </Link>
 
         {/* Settings — accordion for admins, plain link for members */}
