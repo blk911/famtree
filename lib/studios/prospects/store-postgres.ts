@@ -15,6 +15,7 @@ import {
   mergeMatchedUrls,
   mergeStrings,
   isHumanSetValidationStatus,
+  generateIdentityFingerprint,
 } from "./store-json";
 import type { UpsertInput, ProspectFilter } from "./store-json";
 
@@ -23,6 +24,7 @@ import type { UpsertInput, ProspectFilter } from "./store-json";
 
 interface DbProspectRow {
   id: string;
+  identityFingerprint?: string | null;
   vertical: string;
   sourcePlatform: string;
   sourceType: string;
@@ -90,6 +92,12 @@ function rowToRecord(row: DbProspectRow): ProspectRecord {
 
   return {
     prospectId:     row.id,
+    identityFingerprint: row.identityFingerprint ?? generateIdentityFingerprint({
+      handle: row.handle,
+      name: row.name,
+      bestMatchUrl: row.bestMatchUrl,
+      sourcePlatform: row.sourcePlatform,
+    }),
     createdAt:      toIso(row.createdAt),
     updatedAt:      toIso(row.updatedAt),
     source: {
@@ -142,6 +150,14 @@ async function findExisting(
 ): Promise<DbProspectRow | null> {
   const normalizedKey = normalizeHandle(incomingHandle);
   const hasValidHandle = normalizedKey.length > 2;
+  const fingerprint = generateIdentityFingerprint({ handle: incomingHandle, bestMatchUrl: incomingUrl });
+
+  const byFingerprint = await prisma.$queryRaw<DbProspectRow[]>`
+    SELECT * FROM studio_prospects
+    WHERE "identityFingerprint" = ${fingerprint}
+    LIMIT 1
+  `;
+  if (byFingerprint.length > 0) return byFingerprint[0];
 
   // Try handle match first
   if (hasValidHandle) {
@@ -172,6 +188,12 @@ async function findExisting(
 export async function upsertProspectPostgres(incoming: UpsertInput): Promise<ProspectRecord> {
   const now = new Date().toISOString();
   const incomingUrl = incoming.bestMatch?.url ?? null;
+  const incomingFingerprint = generateIdentityFingerprint({
+    handle: incoming.identity.handle,
+    name: incoming.identity.name,
+    bestMatchUrl: incomingUrl,
+    sourcePlatform: incoming.sourcePlatform,
+  });
 
   const existing = await findExisting(incoming.identity.handle, incomingUrl);
 
@@ -203,6 +225,7 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
 
     const merged: ProspectRecord = {
       ...existingRecord,
+      identityFingerprint: existingRecord.identityFingerprint || incomingFingerprint,
       updatedAt: now,
       identity: {
         name:          incoming.identity.name || existingRecord.identity.name,
@@ -241,6 +264,7 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
     await prisma.$executeRaw`
       UPDATE studio_prospects SET
         "updatedAt"        = NOW(),
+        "identityFingerprint" = ${merged.identityFingerprint},
         "name"             = ${merged.identity.name},
         "categoryGuess"    = ${merged.identity.categoryGuess},
         "locationGuess"    = ${merged.identity.locationGuess},
@@ -278,6 +302,7 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
   const newRecord: ProspectRecord = {
     ...incoming,
     prospectId:     generateProspectId(incoming.identity.handle),
+    identityFingerprint: incomingFingerprint,
     createdAt:      now,
     updatedAt:      now,
     vertical:       incoming.vertical       || "education",
@@ -300,7 +325,7 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
 
   await prisma.$executeRaw`
     INSERT INTO studio_prospects (
-      "id", "vertical", "sourcePlatform", "sourceType", "sourceTool",
+      "id", "identityFingerprint", "vertical", "sourcePlatform", "sourceType", "sourceTool",
       "sourcePath", "sourceHashtag", "sourceHashtags", "runId", "harvestDate",
       "batchId", "sourceHandle", "sourceDisplayName",
       "name", "handle", "categoryGuess", "locationGuess",
@@ -312,6 +337,7 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
       "createdAt", "updatedAt"
     ) VALUES (
       ${newRecord.prospectId},
+      ${newRecord.identityFingerprint},
       ${newRecord.vertical},
       ${newRecord.sourcePlatform},
       ${newRecord.source.sourceType},

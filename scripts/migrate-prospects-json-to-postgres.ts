@@ -13,6 +13,7 @@
 
 import path from "path";
 import { promises as fs } from "fs";
+import { generateIdentityFingerprint } from "../lib/studios/prospects/store-json";
 
 // ─── Parse args ───────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -42,6 +43,12 @@ async function upsertToPostgres(
   record: import("../lib/studios/prospects/types").ProspectRecord,
 ): Promise<void> {
   const { prisma } = await import("../lib/db/prisma");
+  const identityFingerprint = record.identityFingerprint ?? generateIdentityFingerprint({
+    handle: record.identity.handle,
+    name: record.identity.name,
+    bestMatchUrl: record.bestMatch?.url,
+    sourcePlatform: record.sourcePlatform,
+  });
 
   // Check for existing by ID first (most reliable)
   const existing = await prisma.$queryRaw<[{ id: string }?]>`
@@ -53,6 +60,7 @@ async function upsertToPostgres(
     await prisma.$executeRaw`
       UPDATE studio_prospects SET
         "updatedAt"         = NOW(),
+        "identityFingerprint" = ${identityFingerprint},
         "name"              = ${record.identity.name},
         "handle"            = ${record.identity.handle},
         "categoryGuess"     = ${record.identity.categoryGuess},
@@ -94,7 +102,7 @@ async function upsertToPostgres(
   } else {
     await prisma.$executeRaw`
       INSERT INTO studio_prospects (
-        "id", "vertical", "sourcePlatform", "sourceType", "sourceTool",
+        "id", "identityFingerprint", "vertical", "sourcePlatform", "sourceType", "sourceTool",
         "sourcePath", "sourceHashtag", "sourceHashtags", "runId", "harvestDate",
         "batchId", "sourceHandle", "sourceDisplayName",
         "name", "handle", "categoryGuess", "locationGuess",
@@ -106,6 +114,7 @@ async function upsertToPostgres(
         "createdAt", "updatedAt"
       ) VALUES (
         ${record.prospectId},
+        ${identityFingerprint},
         ${record.vertical},
         ${record.sourcePlatform},
         ${record.source.sourceType},

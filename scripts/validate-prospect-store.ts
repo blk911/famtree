@@ -9,6 +9,7 @@
 //  4. Archive does not delete records
 
 import { upsertProspect, loadAllProspects, updateProspect } from "../lib/studios/prospects/store";
+import { generateIdentityFingerprint } from "../lib/studios/prospects/store-json";
 import type { UpsertInput } from "../lib/studios/prospects/store";
 
 const BASE: Omit<UpsertInput, "source" | "identity"> = {
@@ -87,7 +88,17 @@ async function run() {
     console.error("  ✗ FAIL: sourceHashtags did not merge:", merged);
     process.exit(1);
   }
-  console.log(`  ✓ PASS — sourceHashtags: [${merged.join(", ")}]\n`);
+  const expectedFingerprint = generateIdentityFingerprint({
+    handle: re.identity.handle,
+    name: re.identity.name,
+    bestMatchUrl: re.bestMatch?.url,
+    sourcePlatform: re.sourcePlatform,
+  });
+  if (re.identityFingerprint !== expectedFingerprint) {
+    console.error(`  ✗ FAIL: identityFingerprint="${re.identityFingerprint}", expected="${expectedFingerprint}"`);
+    process.exit(1);
+  }
+  console.log(`  ✓ PASS — sourceHashtags: [${merged.join(", ")}], identityFingerprint="${re.identityFingerprint}"\n`);
 
   // ── Test 3: Human-set validationStatus preserved on re-upsert ─────────────
   console.log("Test 3: Human-set validationStatus not overwritten on re-upsert…");

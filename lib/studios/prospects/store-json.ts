@@ -34,13 +34,42 @@ export function generateProspectId(handle: string): string {
   return `prospect-${clean}`;
 }
 
+export function generateIdentityFingerprint(input: {
+  handle?: string | null;
+  name?: string | null;
+  bestMatchUrl?: string | null;
+  sourcePlatform?: string | null;
+}): string {
+  const handle = normalizeHandle(input.handle ?? "");
+  if (handle.length > 2) return `handle:${handle}`;
+
+  const url = (input.bestMatchUrl ?? "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/+$/, "");
+  if (url) return `url:${url}`;
+
+  const platform = (input.sourcePlatform ?? "unknown").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const name = (input.name ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  return `name:${platform}:${name || "unknown"}`;
+}
+
+function withGeneratedFields(record: ProspectRecord): ProspectRecord {
+  return {
+    ...record,
+    identityFingerprint: record.identityFingerprint ?? generateIdentityFingerprint({
+      handle: record.identity.handle,
+      name: record.identity.name,
+      bestMatchUrl: record.bestMatch?.url,
+      sourcePlatform: record.sourcePlatform,
+    }),
+  };
+}
+
 // ─── Low-level IO ─────────────────────────────────────────────────────────────
 
 export async function loadAllProspects(): Promise<ProspectRecord[]> {
   await ensureDir();
   try {
     const raw = await fs.readFile(PROSPECTS_FILE, "utf-8");
-    return JSON.parse(raw) as ProspectRecord[];
+    return (JSON.parse(raw) as ProspectRecord[]).map(withGeneratedFields);
   } catch {
     return [];
   }
@@ -77,7 +106,7 @@ export function isHumanSetValidationStatus(vs: ValidationStatus | undefined): bo
 // ─── UpsertInput ──────────────────────────────────────────────────────────────
 
 export type UpsertInput = Omit<ProspectRecord,
-  "prospectId" | "createdAt" | "updatedAt" | "status" | "notes" | "validationStatus" | "archiveReason"
+  "prospectId" | "identityFingerprint" | "createdAt" | "updatedAt" | "status" | "notes" | "validationStatus" | "archiveReason"
 > & {
   suggestedValidationStatus?: ValidationStatus;
 };
@@ -107,14 +136,27 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
 
   const incomingKey = normalizeHandle(incoming.identity.handle);
   const incomingUrl = incoming.bestMatch?.url ?? null;
+  const incomingFingerprint = generateIdentityFingerprint({
+    handle: incoming.identity.handle,
+    name: incoming.identity.name,
+    bestMatchUrl: incomingUrl,
+    sourcePlatform: incoming.sourcePlatform,
+  });
 
   const existingIdx = records.findIndex((r) => {
+    const sameFingerprint =
+      (r.identityFingerprint ?? generateIdentityFingerprint({
+        handle: r.identity.handle,
+        name: r.identity.name,
+        bestMatchUrl: r.bestMatch?.url,
+        sourcePlatform: r.sourcePlatform,
+      })) === incomingFingerprint;
     const sameHandle = incomingKey.length > 2 &&
       normalizeHandle(r.identity.handle) === incomingKey;
     const sameUrl = incomingUrl &&
       (r.bestMatch?.url === incomingUrl ||
        r.allMatchedUrls.some((u) => u.url === incomingUrl));
-    return sameHandle || sameUrl;
+    return sameFingerprint || sameHandle || sameUrl;
   });
 
   if (existingIdx >= 0) {
@@ -129,6 +171,7 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
 
     const merged: ProspectRecord = {
       ...existing,
+      identityFingerprint: existing.identityFingerprint ?? incomingFingerprint,
       updatedAt: now,
       identity: {
         name: incoming.identity.name || existing.identity.name,
@@ -179,6 +222,7 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
   const newRecord: ProspectRecord = {
     ...incoming,
     prospectId: generateProspectId(incoming.identity.handle),
+    identityFingerprint: incomingFingerprint,
     createdAt: now,
     updatedAt: now,
     vertical:       incoming.vertical       || "education",

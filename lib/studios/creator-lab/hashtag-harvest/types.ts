@@ -114,7 +114,8 @@ export interface HashtagHarvestRun {
   saveErrors: SaveError[];
   errors: string[];
   // ── Save diagnostics ─────────────────────────────────────────────────────────
-  prospectStorePath: string;
+  prospectStorePath: string | null;
+  prospectStoreBackend?: string;
   prospectsBeforeCount: number;
   prospectsAfterCount: number;
   upsertAttemptCount: number;

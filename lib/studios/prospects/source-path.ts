@@ -25,6 +25,8 @@ const PLATFORM_LABELS: Record<string, string> = {
   tiktok:    "TikTok",
   youtube:   "YouTube",
   linkedin:  "LinkedIn",
+  directory_import: "Directory Import",
+  "directory import": "Directory Import",
 };
 
 function capitalize(s: string): string {
@@ -55,7 +57,13 @@ export function buildProspectSourcePath(params: SourcePathParams): string {
   const date      = toDateSlug(params.date);
   const hashtag   = params.hashtag ? normalizeHashtag(params.hashtag) : null;
 
-  const parts = [vertical, platform, toolLabel, date];
+  const isDuplicatedImportLabel =
+    platform.toLowerCase().endsWith(" import") &&
+    toolLabel.toLowerCase().includes(platform.toLowerCase());
+
+  const parts = isDuplicatedImportLabel
+    ? [vertical, platform, date]
+    : [vertical, platform, toolLabel, date];
   if (hashtag) parts.push(hashtag);
 
   return parts.join(" / ");

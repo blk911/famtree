@@ -101,6 +101,7 @@ export interface ProspectConfidenceBreakdown {
 
 export interface ProspectRecord {
   prospectId: string;
+  identityFingerprint: string;
   createdAt: string;   // ISO-8601
   updatedAt: string;
 
@@ -164,8 +165,27 @@ export interface ProspectRecord {
 
 export interface ProspectListResponse {
   ok: true;
+  items?: ProspectRecord[];
   prospects: ProspectRecord[];
   total: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
+  selectedBackend?: string;
+  backendInfo?: {
+    backend: string;
+    storePath: string | null;
+    envSetting: string;
+  };
+  pagination?: {
+    limit: number;
+    offset: number;
+    returned: number;
+    hasMore: boolean;
+  };
+  backend?: string;
+  storePath?: string | null;
+  warnings?: string[];
 }
 
 export interface ProspectUpdateRequest {

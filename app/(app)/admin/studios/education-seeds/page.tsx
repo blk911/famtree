@@ -23,7 +23,8 @@ interface RunResponse {
   parsedCount: number;
   assemblerResult: IdentityAssemblerRunResult;
   processedAt: string;
-  storePath: string;
+  storePath: string | null;
+  prospectStoreBackend: string;
   prospectsBeforeCount: number;
   prospectsAfterCount: number;
 }

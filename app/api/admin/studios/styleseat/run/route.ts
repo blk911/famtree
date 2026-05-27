@@ -11,7 +11,7 @@ import { z } from "zod";
 import { runStyleSeatHarvest } from "@/lib/studios/styleseat/extract";
 import { runStyleSeatPipeline } from "@/lib/studios/styleseat/resolver";
 import { saveStyleSeatRun, generateStyleSeatRunId } from "@/lib/studios/styleseat/store";
-import { getProspectStorePath, countProspects } from "@/lib/studios/prospects/store";
+import { getStoreBackendInfo, countProspects } from "@/lib/studios/prospects/store";
 import { generateBatchId } from "@/lib/studios/prospects/from-resolver";
 import type { StyleSeatHarvestContext } from "@/lib/studios/styleseat/resolver";
 import type {
@@ -64,9 +64,10 @@ export async function POST(req: NextRequest) {
   const errors: string[] = [];
 
   // ── Step 1: Capture store path + before-count ───────────────────────────────
-  const prospectStorePath   = getProspectStorePath();
+  const backendInfo = await getStoreBackendInfo();
+  const prospectStorePath = backendInfo.storePath;
   const prospectsBeforeCount = await countProspects();
-  console.log(`[styleseat/run] storePath=${prospectStorePath} prospectsBeforeCount=${prospectsBeforeCount}`);
+  console.log(`[styleseat/run] backend=${backendInfo.backend} store=${prospectStorePath ?? "postgres"} prospectsBeforeCount=${prospectsBeforeCount}`);
 
   // ── Step 2: StyleSeat harvest ───────────────────────────────────────────────
   console.log(`[styleseat/run] harvesting market=${market} categories=[${categories}] maxResults=${maxResults}`);
@@ -140,6 +141,7 @@ export async function POST(req: NextRequest) {
     saveErrors,
     errors,
     prospectStorePath,
+    prospectStoreBackend: backendInfo.backend,
     prospectsBeforeCount,
     prospectsAfterCount,
     savedHandles,

@@ -144,7 +144,8 @@ export interface StyleSeatHarvestRun {
   saveErrors: SaveError[];
   errors: string[];
   // Diagnostics
-  prospectStorePath: string;
+  prospectStorePath: string | null;
+  prospectStoreBackend?: string;
   prospectsBeforeCount: number;
   prospectsAfterCount: number;
   savedHandles: string[];

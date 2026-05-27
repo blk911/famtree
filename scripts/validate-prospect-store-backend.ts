@@ -31,7 +31,7 @@ function makeTestInput(suffix: string): UpsertInput {
     sourceTool:      "education_directory_import",
     sourceHashtag:   null,
     sourceHashtags:  [],
-    sourcePath:      "Education / Directory Import / Education Directory Import / 2026-05-26",
+    sourcePath:      "Education / Education Directory Import / 2026-05-26",
     runId:           `validate-run-${suffix}`,
     harvestDate:     "2026-05-26",
     identity: {
@@ -139,6 +139,8 @@ async function main() {
   assert(inserted.validationStatus === "needs_review", `validationStatus = "needs_review" (suggestedValidationStatus respected)`);
   assert(inserted.notes === "", `notes = "" (empty on insert)`);
   assert(inserted.educationType === "homeschool", `educationType = "homeschool"`);
+  assert(!!inserted.identityFingerprint, `identityFingerprint generated (${inserted.identityFingerprint})`);
+  assert(!inserted.sourcePath.includes("Directory Import / Education Directory Import"), `sourcePath has no duplicated import labels`);
 
   // ── 3. Upsert (re-run same data) ──────────────────────────────────────────
   console.log("\n── 3. Upsert same handle (merge)\n");

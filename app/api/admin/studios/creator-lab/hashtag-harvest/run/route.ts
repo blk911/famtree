@@ -13,7 +13,7 @@ import { normalizeCreators } from "@/lib/studios/creator-lab/hashtag-harvest/nor
 import { runResolverForSeeds } from "@/lib/studios/creator-lab/hashtag-harvest/run-resolver";
 import { saveHarvestRun, generateRunId } from "@/lib/studios/creator-lab/hashtag-harvest/store";
 import { generateBatchId } from "@/lib/studios/prospects/from-resolver";
-import { getProspectStorePath, countProspects } from "@/lib/studios/prospects/store";
+import { getStoreBackendInfo, countProspects } from "@/lib/studios/prospects/store";
 import type { HarvestContext } from "@/lib/studios/creator-lab/hashtag-harvest/run-resolver";
 import type {
   HashtagHarvestRun,
@@ -75,9 +75,10 @@ export async function POST(req: NextRequest) {
   const normalizedCreators = normalizeCreators(allSeeds);
 
   // ── Step 4a: Capture store path + before-count for diagnostics ─────────────
-  const prospectStorePath = getProspectStorePath();
+  const backendInfo = await getStoreBackendInfo();
+  const prospectStorePath = backendInfo.storePath;
   const prospectsBeforeCount = await countProspects();
-  console.log(`[hashtag-harvest/run] store path: ${prospectStorePath}`);
+  console.log(`[hashtag-harvest/run] backend=${backendInfo.backend} store=${prospectStorePath ?? "postgres"}`);
   console.log(`[hashtag-harvest/run] prospects before: ${prospectsBeforeCount}`);
 
   // ── Step 4: Run resolver + sequential upserts ───────────────────────────────
@@ -136,6 +137,7 @@ export async function POST(req: NextRequest) {
     saveErrors,
     errors,
     prospectStorePath,
+    prospectStoreBackend: backendInfo.backend,
     prospectsBeforeCount,
     prospectsAfterCount,
     upsertAttemptCount,

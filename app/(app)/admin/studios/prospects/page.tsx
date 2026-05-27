@@ -3,7 +3,7 @@
 // Discovered Entities Under Review — education-first prospect repository.
 // Admin-only. NOT member-facing.
 
-import { useState, useEffect, useMemo } from "react";
+import { Fragment, useState, useEffect, useMemo } from "react";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import type { ProspectRecord, ProspectStatus, ProspectListResponse } from "@/lib/studios/prospects/types";
 import { PROSPECT_STATUS_LABELS, PROSPECT_STATUS_COLORS } from "@/lib/studios/prospects/types";
@@ -219,6 +219,9 @@ export default function ProspectsPage() {
   const [prospects, setProspects]   = useState<ProspectRecord[]>([]);
   const [loading, setLoading]       = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [backendWarnings, setBackendWarnings] = useState<string[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [sortKey, setSortKey]       = useState<SortKey>("createdAt");
   const [sortDir, setSortDir]       = useState<"asc" | "desc">("desc");
@@ -230,13 +233,28 @@ export default function ProspectsPage() {
   const [fHashtag, setFHashtag]           = useState("all");
   const [fPlatform, setFPlatform]         = useState("all");
   const [fMinConf, setFMinConf]           = useState(0);
+  const pageSize = 100;
 
   useEffect(() => {
-    fetch("/api/admin/studios/prospects/list")
+    const params = new URLSearchParams();
+    params.set("limit", String(pageSize));
+    params.set("offset", String(offset));
+    if (fValidation !== "all") params.set("validationStatus", fValidation);
+    if (fEducationType !== "all") params.set("educationType", fEducationType);
+    if (fAudienceType !== "all") params.set("audienceType", fAudienceType);
+    if (fHashtag !== "all") params.set("sourceHashtag", fHashtag);
+    if (fPlatform !== "all") params.set("platform", fPlatform);
+    if (fMinConf > 0) params.set("minConfidence", String(fMinConf));
+
+    setLoading(true);
+    setFetchError(null);
+    fetch(`/api/admin/studios/prospects/list?${params.toString()}`)
       .then(async (r) => {
         const data = await r.json() as ProspectListResponse | { ok: false; error: string; detail?: string };
         if (data.ok) {
           setProspects((data as ProspectListResponse).prospects);
+          setTotalCount((data as ProspectListResponse).total);
+          setBackendWarnings((data as ProspectListResponse).warnings ?? []);
         } else {
           const err = data as { ok: false; error: string; detail?: string };
           setFetchError(`${err.error}${err.detail ? ` — ${err.detail}` : ""}`);
@@ -245,7 +263,11 @@ export default function ProspectsPage() {
       })
       .catch((e) => setFetchError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
-  }, []);
+  }, [offset, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf]);
+
+  useEffect(() => {
+    setOffset(0);
+  }, [fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf]);
 
   // Derive filter options
   const hashtags  = useMemo(() => Array.from(new Set(prospects.map((p) => p.sourceHashtag).filter(Boolean) as string[])).sort(), [prospects]);
@@ -253,12 +275,6 @@ export default function ProspectsPage() {
 
   const visible = useMemo(() => {
     let rows = [...prospects];
-    if (fValidation   !== "all") rows = rows.filter((p) => (p.validationStatus ?? "new") === fValidation);
-    if (fEducationType !== "all") rows = rows.filter((p) => p.educationType === fEducationType);
-    if (fAudienceType  !== "all") rows = rows.filter((p) => p.audienceType  === fAudienceType);
-    if (fHashtag       !== "all") rows = rows.filter((p) => p.sourceHashtag === fHashtag);
-    if (fPlatform      !== "all") rows = rows.filter((p) => p.bestMatch?.platform === fPlatform);
-    if (fMinConf        > 0)      rows = rows.filter((p) => p.confidence.overall >= fMinConf);
 
     rows.sort((a, b) => {
       let av: string | number = "", bv: string | number = "";
@@ -275,7 +291,7 @@ export default function ProspectsPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return rows;
-  }, [prospects, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, sortKey, sortDir]);
+  }, [prospects, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
@@ -307,7 +323,7 @@ export default function ProspectsPage() {
   };
 
   // Stats
-  const total       = prospects.length;
+  const total       = totalCount;
   const priority    = prospects.filter((p) => p.validationStatus === "priority").length;
   const edRelevant  = prospects.filter((p) => p.validationStatus === "education_relevant").length;
   const needsReview = prospects.filter((p) => (p.validationStatus ?? "new") === "needs_review").length;
@@ -391,8 +407,14 @@ export default function ProspectsPage() {
             Clear
           </button>
         )}
-        <span style={{ marginLeft: "auto", fontSize: 11, color: "#a8a29e" }}>{visible.length} of {total}</span>
+        <span style={{ marginLeft: "auto", fontSize: 11, color: "#a8a29e" }}>{visible.length} shown · {totalCount} matching</span>
       </div>
+
+      {backendWarnings.length > 0 && (
+        <div style={{ marginBottom: 14, padding: "10px 14px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, fontSize: 12, color: "#92400e" }}>
+          {backendWarnings.join(" · ")}
+        </div>
+      )}
 
       {/* Table */}
       {loading ? (
@@ -428,7 +450,7 @@ export default function ProspectsPage() {
               {visible.map((p) => {
                 const isExpanded = expandedId === p.prospectId;
                 return (
-                  <>
+                  <Fragment key={p.prospectId}>
                     <tr key={p.prospectId}
                       onClick={() => setExpandedId(isExpanded ? null : p.prospectId)}
                       style={{ cursor: "pointer", background: isExpanded ? "#fdf2f8" : "transparent" }}>
@@ -489,11 +511,33 @@ export default function ProspectsPage() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {!loading && totalCount > pageSize && (
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: 12 }}>
+          <button
+            onClick={() => setOffset((n) => Math.max(0, n - pageSize))}
+            disabled={offset === 0}
+            style={{ ...selS, cursor: offset === 0 ? "not-allowed" : "pointer", opacity: offset === 0 ? 0.5 : 1 }}
+          >
+            Previous
+          </button>
+          <span style={{ fontSize: 11, color: "#78716c" }}>
+            {offset + 1}-{Math.min(offset + pageSize, totalCount)} of {totalCount}
+          </span>
+          <button
+            onClick={() => setOffset((n) => n + pageSize)}
+            disabled={offset + pageSize >= totalCount}
+            style={{ ...selS, cursor: offset + pageSize >= totalCount ? "not-allowed" : "pointer", opacity: offset + pageSize >= totalCount ? 0.5 : 1 }}
+          >
+            Next
+          </button>
         </div>
       )}
 

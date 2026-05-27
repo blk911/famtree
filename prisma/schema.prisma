@@ -1345,6 +1345,7 @@ model StudiosGatewayAccessRequest {
 /// Human-set fields (validationStatus, notes, archiveReason) are NEVER overwritten by reruns.
 model StudioProspect {
   id String @id  // e.g. "prospect-janesmith"
+  identityFingerprint String @default("")
 
   // ── Source provenance ──────────────────────────────────────────────────────
   vertical         String @default("education")
@@ -1405,9 +1406,9 @@ model StudioProspect {
   @@index([educationType])
   @@index([audienceType])
   @@index([handle])
+  @@index([identityFingerprint])
   @@index([bestMatchUrl])
   @@index([runId])
   @@index([updatedAt(sort: Desc)])
   @@map("studio_prospects")
 }
-
