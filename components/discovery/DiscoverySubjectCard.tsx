@@ -44,61 +44,63 @@ export function DiscoverySubjectCard({ subject }: Props) {
           el.style.borderColor = "rgba(255,255,255,0.07)";
         }}
       >
-        {/* Gradient header */}
+        {/* Gradient header — icon, count chip, and title all live here */}
         <div
           style={{
             background: subject.thumbGradient,
-            padding: "28px 24px 22px",
+            padding: "20px 20px 18px",
             display: "flex",
-            alignItems: "flex-end",
+            flexDirection: "column",
             justifyContent: "space-between",
-            minHeight: 110,
+            minHeight: 130,
             position: "relative",
           }}
         >
-          {/* Icon */}
-          <span style={{ fontSize: 44, lineHeight: 1, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.4))" }}>
-            {subject.icon}
-          </span>
+          {/* Top row: icon + count chip */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 36, lineHeight: 1, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.4))" }}>
+              {subject.icon}
+            </span>
+            <span
+              style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
+                color: "rgba(255,255,255,0.72)",
+                background: "rgba(0,0,0,0.38)",
+                borderRadius: 20, padding: "4px 10px",
+                border: "1px solid rgba(255,255,255,0.14)",
+                backdropFilter: "blur(6px)",
+              }}
+            >
+              {totalItems} items
+            </span>
+          </div>
 
-          {/* Item count chip */}
-          <span
+          {/* Title at the bottom of the gradient area */}
+          <h2
             style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
-              color: "rgba(255,255,255,0.72)",
-              background: "rgba(0,0,0,0.38)",
-              borderRadius: 20, padding: "4px 10px",
-              border: "1px solid rgba(255,255,255,0.14)",
-              backdropFilter: "blur(6px)",
+              margin: "12px 0 0",
+              fontSize: 18,
+              fontWeight: 900,
+              color: "#fff",
+              letterSpacing: "-0.03em",
+              lineHeight: 1.15,
+              textShadow: "0 2px 12px rgba(0,0,0,0.35)",
             }}
           >
-            {totalItems} items
-          </span>
+            {subject.title}
+          </h2>
         </div>
 
         {/* Content */}
         <div
           style={{
-            padding: "16px 20px 20px",
+            padding: "12px 20px 18px",
             flex: 1,
             display: "flex",
             flexDirection: "column",
             gap: 0,
           }}
         >
-          <h2
-            style={{
-              margin: "0 0 7px",
-              fontSize: 17,
-              fontWeight: 900,
-              color: "#fff",
-              letterSpacing: "-0.03em",
-              lineHeight: 1.2,
-            }}
-          >
-            {subject.title}
-          </h2>
-
           <p
             style={{
               margin: "0 0 14px",
