@@ -73,6 +73,8 @@ function buildFallbackReport(file: StyleSeatRunFile): StyleSeatRunReport {
       crawledUrls:      file.crawl?.crawledUrls.length ?? run.report?.totals.crawledUrls ?? 0,
       profileUrls:      file.crawl?.profileUrls.length ?? run.report?.totals.profileUrls ?? run.totalHarvested,
       internalApiUrlsTried: file.crawl?.debug?.internalApiUrlsTried?.length ?? run.report?.totals.internalApiUrlsTried ?? 0,
+      internalApiUrlsSucceeded: file.crawl?.debug?.internalApiUrlsSucceeded?.length ?? run.report?.totals.internalApiUrlsSucceeded ?? 0,
+      internalApiUrlsFailed: file.crawl?.debug?.internalApiUrlsFailed?.length ?? run.report?.totals.internalApiUrlsFailed ?? 0,
       internalApiRecords: file.crawl?.debug?.internalApiRecords ?? run.report?.totals.internalApiRecords ?? 0,
       normalized:       file.normalized?.length ?? file.operators.length,
       igCandidates:     run.totalIgFound,

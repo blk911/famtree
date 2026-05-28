@@ -1174,6 +1174,8 @@ export default function StyleSeatDiscoveryPage() {
               <span><strong>Extraction Source:</strong> {(runData.run.report?.extractionSource ?? runData.crawl?.debug?.extractionSource ?? "none").replace(/_/g, " ")}</span>
               <span><strong>{runData.run.report?.totals.internalApiRecords ?? runData.crawl?.debug?.internalApiRecords ?? 0}</strong> API records</span>
               <span><strong>{runData.run.report?.totals.internalApiUrlsTried ?? runData.crawl?.debug?.internalApiUrlsTried?.length ?? 0}</strong> API URLs tried</span>
+              <span><strong>{runData.run.report?.totals.internalApiUrlsSucceeded ?? runData.crawl?.debug?.internalApiUrlsSucceeded?.length ?? 0}</strong> API URLs succeeded</span>
+              <span><strong>{runData.run.report?.totals.internalApiUrlsFailed ?? runData.crawl?.debug?.internalApiUrlsFailed?.length ?? 0}</strong> API URLs failed</span>
             </div>
             <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, fontSize: 11, color: "#78716c" }}>
               <div>

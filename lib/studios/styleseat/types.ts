@@ -144,6 +144,8 @@ export interface StyleSeatRunTotals {
   crawledUrls?: number;
   profileUrls?: number;
   internalApiUrlsTried?: number;
+  internalApiUrlsSucceeded?: number;
+  internalApiUrlsFailed?: number;
   internalApiRecords?: number;
   harvested: number;
   normalized: number;

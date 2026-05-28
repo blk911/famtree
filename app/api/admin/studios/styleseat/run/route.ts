@@ -300,6 +300,8 @@ export async function POST(req: NextRequest) {
       crawledUrls:       crawl?.crawledUrls.length ?? 0,
       profileUrls:       crawl?.profileUrls.length ?? operators.length,
       internalApiUrlsTried: crawl?.debug?.internalApiUrlsTried?.length ?? 0,
+      internalApiUrlsSucceeded: crawl?.debug?.internalApiUrlsSucceeded?.length ?? 0,
+      internalApiUrlsFailed: crawl?.debug?.internalApiUrlsFailed?.length ?? 0,
       internalApiRecords: crawl?.debug?.internalApiRecords ?? operators.filter((operator) => operator.extractionSource === "internal_api").length,
       harvested:        operators.length,
       normalized:       normalizedArtifact.length,
