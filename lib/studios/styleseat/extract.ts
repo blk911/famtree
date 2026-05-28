@@ -9,6 +9,7 @@
 import type { StyleSeatOperator, StyleSeatCategory, StyleSeatRunConfig, StyleSeatCrawlResult } from "./types";
 import { STYLESEAT_CATEGORY_SLUGS } from "./types";
 import { extractEmbeddedStyleSeatData, extractScriptContents } from "./embedded-data";
+import { extractStyleSeatViaInternalApi } from "./internal-api";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -36,6 +37,13 @@ function buildSearchUrl(category: StyleSeatCategory, market: string, state: stri
   const citySlug  = market.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const stateSlug = state.toLowerCase().replace(/[^a-z]+/g, "-");
   return `https://www.styleseat.com/${catSlug}/${citySlug}--${stateSlug}`;
+}
+
+function buildMarketplaceSearchUrl(category: StyleSeatCategory, market: string, state: string): string {
+  const categorySlug = category === "hair" ? "hair-salons" : category;
+  const citySlug = market.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const stateSlug = state.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
+  return `https://www.styleseat.com/m/search/${citySlug}-${stateSlug}/${categorySlug}`;
 }
 
 export function normalizeStyleSeatUrl(input: string): string {
@@ -311,6 +319,7 @@ function operatorFromProfileHtml(
     sourceUrl: profileUrl,
     rawText,
     imageCount,
+    extractionSource: "static_links",
   };
 }
 
@@ -340,137 +349,6 @@ async function fetchHtmlWithMeta(url: string): Promise<StyleSeatHtmlFetchResult>
 
 async function fetchHtml(url: string): Promise<string> {
   return (await fetchHtmlWithMeta(url)).html;
-}
-
-const MARKET_COORDINATES: Record<string, { lat: number; lon: number; label: string }> = {
-  "atlanta-ga": { lat: 33.749, lon: -84.388, label: "Atlanta, GA" },
-  "denver-co": { lat: 39.7392, lon: -104.9903, label: "Denver, CO" },
-  "houston-tx": { lat: 29.7604, lon: -95.3698, label: "Houston, TX" },
-  "las-vegas-nv": { lat: 36.1699, lon: -115.1398, label: "Las Vegas, NV" },
-  "miami-fl": { lat: 25.7617, lon: -80.1918, label: "Miami, FL" },
-  "new-york-ny": { lat: 40.7128, lon: -74.006, label: "New York, NY" },
-};
-
-function parseSearchUrl(url: string): { marketSlug: string; query: string; loc: string; lat: number; lon: number } | null {
-  const pathname = new URL(url).pathname.replace(/\/+$/, "");
-  const match = pathname.match(/^\/m\/search\/([^/]+)\/([^/]+)$/i);
-  if (!match) return null;
-  const marketSlug = decodeURIComponent(match[1]).toLowerCase();
-  const query = decodeURIComponent(match[2]).replace(/[-_]+/g, " ").trim();
-  const coords = MARKET_COORDINATES[marketSlug] ?? { lat: 0, lon: 0, label: marketSlug.replace(/-/g, " ") };
-  return { marketSlug, query, loc: coords.label, lat: coords.lat, lon: coords.lon };
-}
-
-function stringValue(value: unknown): string {
-  return typeof value === "string" ? value.trim() : value == null ? "" : String(value).trim();
-}
-
-function numberValue(value: unknown): number {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : 0;
-}
-
-function operatorFromSearchApiResult(
-  item: Record<string, unknown>,
-  config: StyleSeatRunConfig,
-  idx: number,
-  seedUrl: string,
-  batch: string,
-  query: string,
-): StyleSeatOperator {
-  const salon = item.matched_salon && typeof item.matched_salon === "object" ? item.matched_salon as Record<string, unknown> : {};
-  const location = salon.location && typeof salon.location === "object" ? salon.location as Record<string, unknown> : {};
-  const id = stringValue(item.id) || `api-${idx + 1}`;
-  const vanity = stringValue(item.vanity_url);
-  const profileUrl = vanity
-    ? `https://www.styleseat.com/m/v/${vanity}`
-    : `https://www.styleseat.com/m/p/${id}`;
-  const name = stringValue(item.name) || stringValue(item["0_name"]) || stringValue(salon.name) || vanity || id;
-  const city = stringValue(location.city) || config.market;
-  const state = stringValue(location.state) || config.state;
-  const serviceNames = Array.isArray(item.matched_services)
-    ? item.matched_services.flatMap((service) => {
-        if (!service || typeof service !== "object") return [];
-        const record = service as Record<string, unknown>;
-        return stringValue(record.name) ? [stringValue(record.name)] : [];
-      })
-    : [];
-  const rawText = JSON.stringify(item).slice(0, 5000);
-  const categories = deriveCategories(`${query} ${name} ${stringValue(salon.name)} ${serviceNames.join(" ")} ${rawText}`, config.categories);
-
-  return {
-    styleseatId: `ss-${id}`,
-    name,
-    slug: vanity || id,
-    styleseatUrl: profileUrl,
-    city,
-    state,
-    categories,
-    specialties: serviceNames.length > 0 ? serviceNames.slice(0, 8) : categories,
-    bio: stringValue(salon.name) || null,
-    services: serviceNames.map((service) => ({ name: service, price: null, duration: null })),
-    reviewCount: numberValue(item.num_ratings),
-    rating: item.average_rating != null ? numberValue(item.average_rating) : null,
-    imageUrl: stringValue(item.profile_photo) || null,
-    priceRange: null,
-    isIndependent: true,
-    harvestDate: new Date().toISOString().slice(0, 10),
-    batchId: batch,
-    discoveryMode: config.discoveryMode ?? "direct_url",
-    seedUrl,
-    sourceUrl: profileUrl,
-    rawText,
-    imageCount: [item.profile_photo, item.cover_photo].filter(Boolean).length,
-  };
-}
-
-async function crawlSearchApi(input: {
-  url: string;
-  config: StyleSeatRunConfig;
-  maxOperators: number;
-}): Promise<{ operators: StyleSeatOperator[]; profileUrls: string[]; apiUrl?: string; responsePath?: string; note?: string }> {
-  const parsed = parseSearchUrl(input.url);
-  if (!parsed) return { operators: [], profileUrls: [] };
-  if (!parsed.lat || !parsed.lon) {
-    return { operators: [], profileUrls: [], note: `No local coordinates configured for ${parsed.marketSlug}; rendered extraction fallback required.` };
-  }
-  const params = new URLSearchParams({
-    query: parsed.query,
-    loc: parsed.loc,
-    lat: String(parsed.lat),
-    lon: String(parsed.lon),
-    size: String(input.maxOperators),
-    from: "0",
-    date: new Date().toISOString().slice(0, 10),
-  });
-  const apiUrl = `https://search.styleseat.com/api/v3.0/salons.json?${params.toString()}`;
-  const res = await fetch(apiUrl, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; AIH StyleSeat Discovery/1.0)",
-      "Accept": "application/json",
-    },
-    signal: AbortSignal.timeout(20_000),
-  });
-  if (!res.ok) return { operators: [], profileUrls: [], apiUrl, note: `StyleSeat search API HTTP ${res.status}` };
-  const data = await res.json() as { results?: Record<string, unknown>[] };
-  let responsePath: string | undefined;
-  if (input.config.debug) {
-    const dir = getRunDebugDir(input.config.runId);
-    if (dir) {
-      await fs.mkdir(dir, { recursive: true });
-      responsePath = path.join(dir, "search-api-response.json");
-      await fs.writeFile(responsePath, JSON.stringify({
-        apiUrl,
-        resultCount: Array.isArray(data.results) ? data.results.length : 0,
-        sampleResults: Array.isArray(data.results) ? data.results.slice(0, 5) : [],
-      }, null, 2), "utf8");
-    }
-  }
-  const batch = `styleseat-search-${Date.now()}`;
-  const operators = (Array.isArray(data.results) ? data.results : [])
-    .slice(0, input.maxOperators)
-    .map((item, idx) => operatorFromSearchApiResult(item, input.config, idx, input.url, batch, parsed.query));
-  return { operators, profileUrls: operators.map((operator) => operator.styleseatUrl), apiUrl, responsePath };
 }
 
 function collectInternalStyleSeatHrefs(urls: string[]): string[] {
@@ -764,10 +642,15 @@ export async function crawlStyleSeatDiscovery(input: {
   let embeddedCandidateCount = 0;
   let detectedLikelyExtractionSource: "static_links" | "next_data" | "next_flight" | "json_ld" | "internal_api" | "rendered_dom_required" | "blocked_or_empty" | undefined;
   let detectedRecommendation: string | undefined;
-  let extractionSource: "static_links" | "search_api" | "rendered_dom" | "none" = "none";
+  let extractionSource: "internal_api" | "static_links" | "embedded_json" | "none" = "none";
   let searchApiUrl: string | undefined;
   let searchApiResponsePath: string | undefined;
   let searchApiResultCount = 0;
+  let internalApiDebugPath: string | undefined;
+  const internalApiUrlsTried: string[] = [];
+  const internalApiUrlsSucceeded: string[] = [];
+  const internalApiUrlsFailed: Array<{ url: string; status?: number; error?: string }> = [];
+  let internalApiRecords = 0;
   const firstInternalHrefs: string[] = [];
   const debugNotes: string[] = [];
 
@@ -786,6 +669,46 @@ export async function crawlStyleSeatDiscovery(input: {
       continue;
     }
     if (next.depth > input.crawlDepth) continue;
+
+    if (kind === "search") {
+      const apiResult = await extractStyleSeatViaInternalApi({
+        sourceUrl: next.url,
+        city: input.config.market,
+        state: input.config.state,
+        categories: input.config.categories,
+        maxOperators: input.maxOperators - profileUrls.length,
+        debug: input.config.debug,
+        runId: input.config.runId,
+        discoveryMode: input.config.discoveryMode,
+      });
+      internalApiUrlsTried.push(...apiResult.apiUrlsTried);
+      internalApiUrlsSucceeded.push(...apiResult.apiUrlsSucceeded);
+      internalApiUrlsFailed.push(...apiResult.apiUrlsFailed);
+      internalApiRecords += apiResult.records.length;
+      internalApiDebugPath = apiResult.diagnostics.debugArtifactPath ?? internalApiDebugPath;
+      searchApiUrl = apiResult.apiUrlsSucceeded[0] ?? apiResult.apiUrlsTried[0] ?? searchApiUrl;
+      searchApiResponsePath = internalApiDebugPath ?? searchApiResponsePath;
+      searchApiResultCount += apiResult.records.length;
+      for (const operator of apiResult.records) {
+        if (profileUrls.length >= input.maxOperators) break;
+        if (!profileUrls.includes(operator.styleseatUrl)) {
+          apiOperators.push(operator);
+          profileUrls.push(operator.styleseatUrl);
+        }
+      }
+      if (apiResult.records.length > 0) {
+        extractionSource = "internal_api";
+        crawledUrls.push(next.url);
+        for (const operator of apiResult.records) {
+          if (operator.city && operator.state) discoveredMarkets.add(`${operator.city}, ${operator.state}`);
+          for (const category of operator.categories) discoveredCategories.add(category);
+        }
+        continue;
+      }
+      if (apiResult.apiUrlsFailed.length > 0) {
+        debugNotes.push(`Internal API returned 0 records for ${next.url}`);
+      }
+    }
 
     let html = "";
     let htmlFetch: StyleSeatHtmlFetchResult | null = null;
@@ -844,27 +767,6 @@ export async function crawlStyleSeatDiscovery(input: {
     }
     if (hasStaticProfiles) extractionSource = "static_links";
 
-    if (!hasStaticProfiles && kind === "search") {
-      const apiResult = await crawlSearchApi({
-        url: next.url,
-        config: input.config,
-        maxOperators: input.maxOperators - profileUrls.length,
-      });
-      searchApiUrl = apiResult.apiUrl ?? searchApiUrl;
-      searchApiResponsePath = apiResult.responsePath ?? searchApiResponsePath;
-      searchApiResultCount += apiResult.operators.length;
-      if (apiResult.note) debugNotes.push(apiResult.note);
-      for (const operator of apiResult.operators) {
-        if (profileUrls.length >= input.maxOperators) break;
-        if (!profileUrls.includes(operator.styleseatUrl)) {
-          apiOperators.push(operator);
-          profileUrls.push(operator.styleseatUrl);
-        }
-      }
-      if (apiResult.operators.length > 0) extractionSource = "search_api";
-      pageLinks = Array.from(new Set([...pageLinks, ...apiResult.profileUrls]));
-    }
-
     const hasProfilesAfterApi = pageLinks.some((url) => classifyStyleSeatUrl(url) === "profile") || profileUrls.length > 0;
     const needsRenderedFallback = !hasProfilesAfterApi
       && ["search", "category", "aggregator"].includes(kind)
@@ -887,7 +789,7 @@ export async function crawlStyleSeatDiscovery(input: {
       });
       renderedAnchorCount += renderedUrls.length;
       pageLinks = Array.from(new Set([...staticLinks, ...renderedUrls, ...extractAnchorUrls(rendered.html, next.url)]));
-      if (renderedUrls.some((url) => classifyStyleSeatUrl(url) === "profile")) extractionSource = "rendered_dom";
+      if (renderedUrls.some((url) => classifyStyleSeatUrl(url) === "profile")) extractionSource = "static_links";
     }
 
     for (const href of collectInternalStyleSeatHrefs(pageLinks)) {
@@ -983,6 +885,11 @@ export async function crawlStyleSeatDiscovery(input: {
       searchApiUrl,
       searchApiResultCount,
       searchApiResponsePath,
+      internalApiUrlsTried: Array.from(new Set(internalApiUrlsTried)),
+      internalApiUrlsSucceeded: Array.from(new Set(internalApiUrlsSucceeded)),
+      internalApiUrlsFailed,
+      internalApiRecords,
+      internalApiDebugPath,
       notes: debugNotes,
       suggestedUrls: SUGGESTED_SEARCH_URLS,
     },
@@ -1165,6 +1072,48 @@ export async function runStyleSeatHarvest(
         : null,
       crawl,
     };
+  }
+
+  if (discoveryMode === "market_search" && config.market && config.state) {
+    const operators: StyleSeatOperator[] = [];
+    const crawls: StyleSeatCrawlResult[] = [];
+    for (const category of config.categories.length > 0 ? config.categories : ["hair" as StyleSeatCategory]) {
+      if (operators.length >= maxOperators) break;
+      const crawl = await crawlStyleSeatDiscovery({
+        startUrl: buildMarketplaceSearchUrl(category, config.market, config.state),
+        crawlDepth,
+        maxOperators: maxOperators - operators.length,
+        categories: [category],
+        discoveryMode,
+        runId: config.runId,
+        config: { ...config, categories: [category], maxOperators: maxOperators - operators.length },
+      });
+      crawls.push(crawl);
+      for (const operator of crawl.apiOperators ?? []) {
+        if (operators.length >= maxOperators) break;
+        if (!operators.some((existing) => existing.styleseatUrl === operator.styleseatUrl)) {
+          operators.push(operator);
+        }
+      }
+    }
+    if (operators.length > 0 || config.debug) {
+      const crawl: StyleSeatCrawlResult = {
+        seedUrls: Array.from(new Set(crawls.flatMap((item) => item.seedUrls))),
+        crawledUrls: Array.from(new Set(crawls.flatMap((item) => item.crawledUrls))),
+        profileUrls: Array.from(new Set(crawls.flatMap((item) => item.profileUrls))).slice(0, maxOperators),
+        rejectedUrls: Array.from(new Set(crawls.flatMap((item) => item.rejectedUrls))).slice(0, 200),
+        discoveredMarkets: Array.from(new Set(crawls.flatMap((item) => item.discoveredMarkets))),
+        discoveredCategories: Array.from(new Set(crawls.flatMap((item) => item.discoveredCategories))),
+        apiOperators: operators,
+        debug: crawls.find((item) => item.debug?.extractionSource === "internal_api")?.debug ?? crawls[0]?.debug,
+      };
+      return {
+        operators,
+        actorRunId: null,
+        error: operators.length === 0 ? "StyleSeat internal API found no market search records" : null,
+        crawl,
+      };
+    }
   }
 
   if (!process.env.APIFY_TOKEN) {

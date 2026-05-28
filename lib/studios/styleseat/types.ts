@@ -113,6 +113,8 @@ export interface StyleSeatOperator {
   sourceUrl?: string;
   rawText?: string;
   imageCount?: number;
+  extractionSource?: "internal_api" | "static_links" | "embedded_json" | "none";
+  rawApiRecord?: Record<string, unknown>;
 }
 
 // ─── Resolver result (per-operator) ───────────────────────────────────────────
@@ -141,6 +143,8 @@ export type StyleSeatPipelineMode =
 export interface StyleSeatRunTotals {
   crawledUrls?: number;
   profileUrls?: number;
+  internalApiUrlsTried?: number;
+  internalApiRecords?: number;
   harvested: number;
   normalized: number;
   igCandidates: number;
@@ -168,6 +172,7 @@ export interface StyleSeatRunReport {
   totals: StyleSeatRunTotals;
   discoveredMarkets?: string[];
   discoveredCategories?: string[];
+  extractionSource?: "internal_api" | "static_links" | "embedded_json" | "none";
   artifactPaths: Record<string, string>;
   intelligenceSummary?: {
     topMarkets: string[];
@@ -205,7 +210,7 @@ export interface StyleSeatCrawlDebug {
   extractionReportPath?: string;
   renderedHtmlPath?: string;
   debugJsonPath?: string;
-  extractionSource?: "static_links" | "search_api" | "rendered_dom" | "none";
+  extractionSource?: "internal_api" | "static_links" | "embedded_json" | "none";
   embeddedDataCount?: number;
   jsonScriptCount?: number;
   jsonLdCount?: number;
@@ -222,6 +227,11 @@ export interface StyleSeatCrawlDebug {
   searchApiUrl?: string;
   searchApiResultCount?: number;
   searchApiResponsePath?: string;
+  internalApiUrlsTried?: string[];
+  internalApiUrlsSucceeded?: string[];
+  internalApiUrlsFailed?: Array<{ url: string; status?: number; error?: string }>;
+  internalApiRecords?: number;
+  internalApiDebugPath?: string;
   notes: string[];
   suggestedUrls: string[];
 }

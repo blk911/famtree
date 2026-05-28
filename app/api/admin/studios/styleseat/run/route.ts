@@ -299,6 +299,8 @@ export async function POST(req: NextRequest) {
     totals: {
       crawledUrls:       crawl?.crawledUrls.length ?? 0,
       profileUrls:       crawl?.profileUrls.length ?? operators.length,
+      internalApiUrlsTried: crawl?.debug?.internalApiUrlsTried?.length ?? 0,
+      internalApiRecords: crawl?.debug?.internalApiRecords ?? operators.filter((operator) => operator.extractionSource === "internal_api").length,
       harvested:        operators.length,
       normalized:       normalizedArtifact.length,
       igCandidates:     totalIgFound,
@@ -311,6 +313,7 @@ export async function POST(req: NextRequest) {
     artifactPaths: getStyleSeatArtifactPaths(runId),
     discoveredMarkets: crawl?.discoveredMarkets ?? [],
     discoveredCategories: crawl?.discoveredCategories ?? [],
+    extractionSource: crawl?.debug?.extractionSource ?? (operators.some((operator) => operator.extractionSource === "internal_api") ? "internal_api" : "none"),
     notes: runErrors,
   };
 

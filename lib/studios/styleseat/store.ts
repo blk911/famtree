@@ -72,6 +72,8 @@ function buildFallbackReport(file: StyleSeatRunFile): StyleSeatRunReport {
       harvested:        run.totalHarvested,
       crawledUrls:      file.crawl?.crawledUrls.length ?? run.report?.totals.crawledUrls ?? 0,
       profileUrls:      file.crawl?.profileUrls.length ?? run.report?.totals.profileUrls ?? run.totalHarvested,
+      internalApiUrlsTried: file.crawl?.debug?.internalApiUrlsTried?.length ?? run.report?.totals.internalApiUrlsTried ?? 0,
+      internalApiRecords: file.crawl?.debug?.internalApiRecords ?? run.report?.totals.internalApiRecords ?? 0,
       normalized:       file.normalized?.length ?? file.operators.length,
       igCandidates:     run.totalIgFound,
       resolverMerged:   file.results.filter((r) => r.prospectId).length,
@@ -91,6 +93,7 @@ function buildFallbackReport(file: StyleSeatRunFile): StyleSeatRunReport {
     pipelineMode: run.mode,
     discoveredMarkets: run.discoveredMarkets ?? file.crawl?.discoveredMarkets ?? [],
     discoveredCategories: run.discoveredCategories ?? file.crawl?.discoveredCategories ?? [],
+    extractionSource: run.report?.extractionSource ?? file.crawl?.debug?.extractionSource ?? "none",
     notes: run.errors ?? [],
   };
 }

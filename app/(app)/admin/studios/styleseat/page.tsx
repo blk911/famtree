@@ -1171,6 +1171,9 @@ export default function StyleSeatDiscoveryPage() {
               <span><strong>{runData.run.report?.totals.resolverMerged ?? runData.run.totalResolved}</strong> resolver merged</span>
               <span><strong>{runData.run.report?.totals.prospectsCreated ?? runData.run.savedCount}</strong> prospects created/updated</span>
               <span><strong>{runData.failures?.length ?? runData.run.failedToSaveCount}</strong> failures</span>
+              <span><strong>Extraction Source:</strong> {(runData.run.report?.extractionSource ?? runData.crawl?.debug?.extractionSource ?? "none").replace(/_/g, " ")}</span>
+              <span><strong>{runData.run.report?.totals.internalApiRecords ?? runData.crawl?.debug?.internalApiRecords ?? 0}</strong> API records</span>
+              <span><strong>{runData.run.report?.totals.internalApiUrlsTried ?? runData.crawl?.debug?.internalApiUrlsTried?.length ?? 0}</strong> API URLs tried</span>
             </div>
             <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, fontSize: 11, color: "#78716c" }}>
               <div>
