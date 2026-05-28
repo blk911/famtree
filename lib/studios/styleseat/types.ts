@@ -185,6 +185,18 @@ export interface StyleSeatCrawlResult {
   rejectedUrls: string[];
   discoveredMarkets: string[];
   discoveredCategories: string[];
+  apiOperators?: StyleSeatOperator[];
+  debug?: StyleSeatCrawlDebug;
+}
+
+export interface StyleSeatCrawlDebug {
+  staticAnchorCount: number;
+  renderedAnchorCount: number;
+  firstInternalHrefs: string[];
+  renderedHtmlPath?: string;
+  debugJsonPath?: string;
+  notes: string[];
+  suggestedUrls: string[];
 }
 
 export type StyleSeatOperatorLabel =
@@ -318,6 +330,7 @@ export interface StyleSeatRunFile {
 // ─── Run config ───────────────────────────────────────────────────────────────
 
 export interface StyleSeatRunConfig {
+  runId?: string;
   discoveryMode?: StyleSeatDiscoveryMode;
   sourceUrl?: string;
   market: string;

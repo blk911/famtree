@@ -151,6 +151,7 @@ export async function POST(req: NextRequest) {
   // ── Step 2: StyleSeat harvest ───────────────────────────────────────────────
   console.log(`[styleseat/run] discoveryMode=${discoveryMode} sourceUrl=${sourceUrl ?? "market"} market=${market} categories=[${effectiveCategories}] maxOperators=${maxOperators}`);
   const { operators, actorRunId, error: harvestError, crawl } = await runStyleSeatHarvest({
+    runId,
     discoveryMode,
     sourceUrl: sourceUrl ?? undefined,
     market: market || "StyleSeat",
@@ -164,11 +165,8 @@ export async function POST(req: NextRequest) {
   });
 
   if (harvestError) errors.push(harvestError);
+  if (crawl?.debug?.notes.length) errors.push(...crawl.debug.notes);
   console.log(`[styleseat/run] harvested ${operators.length} operators`);
-
-  if (operators.length === 0) {
-    return err(harvestError ?? "StyleSeat harvest returned 0 operators", undefined, 400);
-  }
 
   // ── Step 3: IG enrichment + prospect upserts ────────────────────────────────
   const harvestCtx: StyleSeatHarvestContext = {
@@ -195,7 +193,7 @@ export async function POST(req: NextRequest) {
     savedHandles: [] as string[],
   };
 
-  if (pipelineMode !== "harvest_only") {
+  if (pipelineMode !== "harvest_only" && operators.length > 0) {
     try {
       pipelineResult = await runStyleSeatPipeline(operators, resolverMode, harvestCtx);
     } catch (e) {
@@ -204,7 +202,9 @@ export async function POST(req: NextRequest) {
       console.error("[styleseat/run] pipeline error:", msg);
     }
   } else {
-    errors.push("Harvest-only mode: identity assembler and prospect upsert skipped.");
+    errors.push(operators.length === 0
+      ? "No harvested operators: identity assembler and prospect upsert skipped."
+      : "Harvest-only mode: identity assembler and prospect upsert skipped.");
   }
 
   const {
@@ -225,6 +225,7 @@ export async function POST(req: NextRequest) {
   if (failedToSaveCount > 0) {
     errors.push(`${failedToSaveCount} operator(s) failed to save — see saveErrors`);
   }
+  const runErrors = Array.from(new Set(errors));
 
   // ── Step 5: Build run summary ───────────────────────────────────────────────
   const run: StyleSeatHarvestRun = {
@@ -251,7 +252,7 @@ export async function POST(req: NextRequest) {
     savedCount,
     failedToSaveCount,
     saveErrors,
-    errors,
+    errors: runErrors,
     prospectStorePath,
     prospectStoreBackend: backendInfo.backend,
     prospectsBeforeCount,
@@ -288,7 +289,7 @@ export async function POST(req: NextRequest) {
     artifactPaths: getStyleSeatArtifactPaths(runId),
     discoveredMarkets: crawl?.discoveredMarkets ?? [],
     discoveredCategories: crawl?.discoveredCategories ?? [],
-    notes: errors,
+    notes: runErrors,
   };
 
   const intelligence = buildStyleSeatMarketIntelligenceReport({

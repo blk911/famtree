@@ -1,6 +1,6 @@
 // lib/studios/styleseat/extract.ts
-// Pulls StyleSeat operator listings via Apify web scraper.
-// If APIFY_TOKEN is not set OR STYLESEAT_MOCK=true, returns mock operators.
+// Pulls StyleSeat operator listings via local discovery crawl or Apify web scraper.
+// If STYLESEAT_MOCK=true, returns mock operators. Market search uses Apify when configured.
 //
 // StyleSeat search URL format:
 //   https://www.styleseat.com/{category-slug}/{city-slug}--{state-slug}
@@ -8,10 +8,21 @@
 
 import type { StyleSeatOperator, StyleSeatCategory, StyleSeatRunConfig, StyleSeatCrawlResult } from "./types";
 import { STYLESEAT_CATEGORY_SLUGS } from "./types";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 const APIFY_BASE = "https://api.apify.com/v2";
 const WAIT_FOR_FINISH_SECS = 55;
 const DEFAULT_AGGREGATOR_URL = "https://www.styleseat.com/m/";
+const DEBUG_ROOT = process.env.VERCEL
+  ? "/tmp/studios-styleseat/debug"
+  : path.join(process.cwd(), "runtime-data", "studios", "styleseat", "debug");
+const AGGREGATOR_EMPTY_NOTE = "No profiles found from aggregator root. Try a direct search URL.";
+const SUGGESTED_SEARCH_URLS = [
+  "https://www.styleseat.com/m/search/denver-co/braids",
+  "https://www.styleseat.com/m/search/houston-tx/hair",
+  "https://www.styleseat.com/m/search/atlanta-ga/locs",
+];
 const BLOCKED_PATH_PARTS = [
   "/appointments", "/my-account", "/login", "/blog", "/about", "/terms", "/privacy",
   "/help", "/support", "/careers", "/download", "/pro", "/join",
@@ -45,9 +56,10 @@ function classifyStyleSeatUrl(url: string): "profile" | "search" | "category" | 
   const parsed = new URL(url);
   const pathname = parsed.pathname.replace(/\/+$/, "") || "/";
   if (BLOCKED_PATH_PARTS.some((part) => pathname.toLowerCase().startsWith(part))) return "unknown";
-  if (/^\/m\/[^/]+$/i.test(pathname)) return "profile";
+  if (/^\/m\/search(?:\/|$)/i.test(pathname) || pathname.includes("/search/")) return "search";
   if (/^\/m\/?$/i.test(pathname)) return "aggregator";
-  if (pathname.includes("/search/")) return "search";
+  if (/^\/m\/[^/]+$/i.test(pathname)) return "profile";
+  if (/^\/m\/(?:p|v|pro|provider)\/[^/]+$/i.test(pathname)) return "profile";
   if (Object.values(STYLESEAT_CATEGORY_SLUGS).some((slug) => pathname.includes(`/${slug}/`) || pathname === `/${slug}`)) return "category";
   return "unknown";
 }
@@ -61,6 +73,15 @@ function extractAnchorUrls(html: string, baseUrl: string): string[] {
     if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) continue;
     try {
       urls.push(normalizeStyleSeatUrl(new URL(href, baseUrl).toString()));
+    } catch {
+      // non-StyleSeat URL
+    }
+  }
+  const absoluteRe = /https?:\\?\/\\?\/(?:www\.)?styleseat\.com\\?\/[A-Za-z0-9._~:/?#[\]@!$&'()*+,;=%-]+/gi;
+  while ((match = absoluteRe.exec(html))) {
+    const raw = match[0].replace(/\\\//g, "/").replace(/\\u002F/gi, "/");
+    try {
+      urls.push(normalizeStyleSeatUrl(raw));
     } catch {
       // non-StyleSeat URL
     }
@@ -116,7 +137,8 @@ function operatorFromProfileHtml(
   batch: string,
 ): StyleSeatOperator {
   const rawText = textFromHtml(html).slice(0, 5000);
-  const slug = new URL(profileUrl).pathname.split("/m/")[1]?.split("/")[0] || `profile-${idx + 1}`;
+  const pathParts = new URL(profileUrl).pathname.split("/").filter(Boolean);
+  const slug = pathParts.at(-1) || `profile-${idx + 1}`;
   const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
   const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
   const name = textFromHtml(h1Match?.[1] || titleMatch?.[1] || slug.replace(/[-_]+/g, " "))
@@ -167,11 +189,207 @@ async function fetchHtml(url: string): Promise<string> {
   return await res.text();
 }
 
+const MARKET_COORDINATES: Record<string, { lat: number; lon: number; label: string }> = {
+  "atlanta-ga": { lat: 33.749, lon: -84.388, label: "Atlanta, GA" },
+  "denver-co": { lat: 39.7392, lon: -104.9903, label: "Denver, CO" },
+  "houston-tx": { lat: 29.7604, lon: -95.3698, label: "Houston, TX" },
+  "las-vegas-nv": { lat: 36.1699, lon: -115.1398, label: "Las Vegas, NV" },
+  "miami-fl": { lat: 25.7617, lon: -80.1918, label: "Miami, FL" },
+  "new-york-ny": { lat: 40.7128, lon: -74.006, label: "New York, NY" },
+};
+
+function parseSearchUrl(url: string): { marketSlug: string; query: string; loc: string; lat: number; lon: number } | null {
+  const pathname = new URL(url).pathname.replace(/\/+$/, "");
+  const match = pathname.match(/^\/m\/search\/([^/]+)\/([^/]+)$/i);
+  if (!match) return null;
+  const marketSlug = decodeURIComponent(match[1]).toLowerCase();
+  const query = decodeURIComponent(match[2]).replace(/[-_]+/g, " ").trim();
+  const coords = MARKET_COORDINATES[marketSlug] ?? { lat: 0, lon: 0, label: marketSlug.replace(/-/g, " ") };
+  return { marketSlug, query, loc: coords.label, lat: coords.lat, lon: coords.lon };
+}
+
+function stringValue(value: unknown): string {
+  return typeof value === "string" ? value.trim() : value == null ? "" : String(value).trim();
+}
+
+function numberValue(value: unknown): number {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : 0;
+}
+
+function operatorFromSearchApiResult(
+  item: Record<string, unknown>,
+  config: StyleSeatRunConfig,
+  idx: number,
+  seedUrl: string,
+  batch: string,
+  query: string,
+): StyleSeatOperator {
+  const salon = item.matched_salon && typeof item.matched_salon === "object" ? item.matched_salon as Record<string, unknown> : {};
+  const location = salon.location && typeof salon.location === "object" ? salon.location as Record<string, unknown> : {};
+  const id = stringValue(item.id) || `api-${idx + 1}`;
+  const vanity = stringValue(item.vanity_url);
+  const profileUrl = vanity
+    ? `https://www.styleseat.com/m/v/${vanity}`
+    : `https://www.styleseat.com/m/p/${id}`;
+  const name = stringValue(item.name) || stringValue(item["0_name"]) || stringValue(salon.name) || vanity || id;
+  const city = stringValue(location.city) || config.market;
+  const state = stringValue(location.state) || config.state;
+  const serviceNames = Array.isArray(item.matched_services)
+    ? item.matched_services.flatMap((service) => {
+        if (!service || typeof service !== "object") return [];
+        const record = service as Record<string, unknown>;
+        return stringValue(record.name) ? [stringValue(record.name)] : [];
+      })
+    : [];
+  const rawText = JSON.stringify(item).slice(0, 5000);
+  const categories = deriveCategories(`${query} ${name} ${stringValue(salon.name)} ${serviceNames.join(" ")} ${rawText}`, config.categories);
+
+  return {
+    styleseatId: `ss-${id}`,
+    name,
+    slug: vanity || id,
+    styleseatUrl: profileUrl,
+    city,
+    state,
+    categories,
+    specialties: serviceNames.length > 0 ? serviceNames.slice(0, 8) : categories,
+    bio: stringValue(salon.name) || null,
+    services: serviceNames.map((service) => ({ name: service, price: null, duration: null })),
+    reviewCount: numberValue(item.num_ratings),
+    rating: item.average_rating != null ? numberValue(item.average_rating) : null,
+    imageUrl: stringValue(item.profile_photo) || null,
+    priceRange: null,
+    isIndependent: true,
+    harvestDate: new Date().toISOString().slice(0, 10),
+    batchId: batch,
+    discoveryMode: config.discoveryMode ?? "direct_url",
+    seedUrl,
+    sourceUrl: profileUrl,
+    rawText,
+    imageCount: [item.profile_photo, item.cover_photo].filter(Boolean).length,
+  };
+}
+
+async function crawlSearchApi(input: {
+  url: string;
+  config: StyleSeatRunConfig;
+  maxOperators: number;
+}): Promise<{ operators: StyleSeatOperator[]; profileUrls: string[]; note?: string }> {
+  const parsed = parseSearchUrl(input.url);
+  if (!parsed) return { operators: [], profileUrls: [] };
+  if (!parsed.lat || !parsed.lon) {
+    return { operators: [], profileUrls: [], note: `No local coordinates configured for ${parsed.marketSlug}; rendered extraction fallback required.` };
+  }
+  const params = new URLSearchParams({
+    query: parsed.query,
+    loc: parsed.loc,
+    lat: String(parsed.lat),
+    lon: String(parsed.lon),
+    size: String(input.maxOperators),
+    from: "0",
+    date: new Date().toISOString().slice(0, 10),
+  });
+  const apiUrl = `https://search.styleseat.com/api/v3.0/salons.json?${params.toString()}`;
+  const res = await fetch(apiUrl, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; AIH StyleSeat Discovery/1.0)",
+      "Accept": "application/json",
+    },
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (!res.ok) return { operators: [], profileUrls: [], note: `StyleSeat search API HTTP ${res.status}` };
+  const data = await res.json() as { results?: Record<string, unknown>[] };
+  const batch = `styleseat-search-${Date.now()}`;
+  const operators = (Array.isArray(data.results) ? data.results : [])
+    .slice(0, input.maxOperators)
+    .map((item, idx) => operatorFromSearchApiResult(item, input.config, idx, input.url, batch, parsed.query));
+  return { operators, profileUrls: operators.map((operator) => operator.styleseatUrl) };
+}
+
+function collectInternalStyleSeatHrefs(urls: string[]): string[] {
+  return Array.from(new Set(urls.filter((url) => {
+    try {
+      const parsed = new URL(url);
+      return /(\.|^)styleseat\.com$/i.test(parsed.hostname);
+    } catch {
+      return false;
+    }
+  })));
+}
+
+async function saveRenderedDebugSnapshot(input: {
+  runId?: string;
+  html: string;
+  debug: {
+    staticAnchorCount: number;
+    renderedAnchorCount: number;
+    firstInternalHrefs: string[];
+    notes: string[];
+    suggestedUrls: string[];
+  };
+}): Promise<{ renderedHtmlPath?: string; debugJsonPath?: string }> {
+  if (!input.runId) return {};
+  await fs.mkdir(DEBUG_ROOT, { recursive: true });
+  const htmlPath = path.join(DEBUG_ROOT, `${input.runId}-rendered.html`);
+  const jsonPath = path.join(DEBUG_ROOT, `${input.runId}-render-debug.json`);
+  await fs.writeFile(htmlPath, input.html, "utf8");
+  await fs.writeFile(jsonPath, JSON.stringify(input.debug, null, 2), "utf8");
+  return { renderedHtmlPath: htmlPath, debugJsonPath: jsonPath };
+}
+
+export async function crawlStyleSeatRenderedPage(url: string): Promise<{
+  html: string;
+  hrefs: string[];
+  error?: string;
+}> {
+  try {
+    const dynamicImport = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<{
+      chromium?: {
+        launch(options?: Record<string, unknown>): Promise<{
+          newPage(): Promise<{
+            goto(url: string, options?: Record<string, unknown>): Promise<unknown>;
+            waitForSelector(selector: string, options?: Record<string, unknown>): Promise<unknown>;
+            $$eval<T>(selector: string, pageFunction: (elements: Element[]) => T): Promise<T>;
+            content(): Promise<string>;
+          }>;
+          close(): Promise<void>;
+        }>;
+      };
+    }>;
+    const playwright = await dynamicImport("playwright");
+    if (!playwright.chromium) {
+      return { html: "", hrefs: [], error: "Playwright chromium is unavailable" };
+    }
+    const browser = await playwright.chromium.launch({ headless: true });
+    try {
+      const page = await browser.newPage();
+      await page.goto(url, { waitUntil: "networkidle", timeout: 30_000 });
+      await page.waitForSelector("a[href*='/m/'], a[href*='styleseat.com/m/']", { timeout: 10_000 }).catch(() => undefined);
+      const hrefs = await page.$$eval("a[href]", (anchors) =>
+        anchors
+          .map((anchor) => anchor.getAttribute("href") ?? "")
+          .filter(Boolean)
+      );
+      const html = await page.content();
+      return { html, hrefs };
+    } finally {
+      await browser.close();
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { html: "", hrefs: [], error: `Rendered extraction unavailable: ${msg}` };
+  }
+}
+
 export async function crawlStyleSeatDiscovery(input: {
   startUrl: string;
   crawlDepth: number;
   maxOperators: number;
   categories: StyleSeatCategory[];
+  discoveryMode?: StyleSeatRunConfig["discoveryMode"];
+  runId?: string;
+  config: StyleSeatRunConfig;
 }): Promise<StyleSeatCrawlResult> {
   const seedUrl = normalizeStyleSeatUrl(input.startUrl || DEFAULT_AGGREGATOR_URL);
   const queue: Array<{ url: string; depth: number }> = [{ url: seedUrl, depth: 0 }];
@@ -181,6 +399,14 @@ export async function crawlStyleSeatDiscovery(input: {
   const rejectedUrls: string[] = [];
   const discoveredMarkets = new Set<string>();
   const discoveredCategories = new Set<string>();
+  const apiOperators: StyleSeatOperator[] = [];
+  let staticAnchorCount = 0;
+  let renderedAnchorCount = 0;
+  let renderedHtml = "";
+  let renderedHtmlPath: string | undefined;
+  let debugJsonPath: string | undefined;
+  const firstInternalHrefs: string[] = [];
+  const debugNotes: string[] = [];
 
   while (queue.length > 0 && profileUrls.length < input.maxOperators) {
     const next = queue.shift()!;
@@ -207,12 +433,55 @@ export async function crawlStyleSeatDiscovery(input: {
       continue;
     }
 
-    const pageText = textFromHtml(html);
+    let pageLinks = extractAnchorUrls(html, next.url);
+    const staticLinks = pageLinks;
+    staticAnchorCount += staticLinks.length;
+
+    const hasStaticProfiles = staticLinks.some((url) => classifyStyleSeatUrl(url) === "profile");
+    if (!hasStaticProfiles && kind === "search") {
+      const apiResult = await crawlSearchApi({
+        url: next.url,
+        config: input.config,
+        maxOperators: input.maxOperators - profileUrls.length,
+      });
+      if (apiResult.note) debugNotes.push(apiResult.note);
+      for (const operator of apiResult.operators) {
+        if (profileUrls.length >= input.maxOperators) break;
+        if (!profileUrls.includes(operator.styleseatUrl)) {
+          apiOperators.push(operator);
+          profileUrls.push(operator.styleseatUrl);
+        }
+      }
+      pageLinks = Array.from(new Set([...pageLinks, ...apiResult.profileUrls]));
+    }
+
+    const hasProfilesAfterApi = pageLinks.some((url) => classifyStyleSeatUrl(url) === "profile") || profileUrls.length > 0;
+    if (!hasProfilesAfterApi && ["search", "category", "aggregator"].includes(kind)) {
+      const rendered = await crawlStyleSeatRenderedPage(next.url);
+      if (rendered.error) debugNotes.push(rendered.error);
+      renderedHtml = rendered.html || html;
+      const renderedUrls = rendered.hrefs.flatMap((href) => {
+        try {
+          return [normalizeStyleSeatUrl(new URL(href, next.url).toString())];
+        } catch {
+          return [];
+        }
+      });
+      renderedAnchorCount += renderedUrls.length;
+      pageLinks = Array.from(new Set([...staticLinks, ...renderedUrls, ...extractAnchorUrls(rendered.html, next.url)]));
+    }
+
+    for (const href of collectInternalStyleSeatHrefs(pageLinks)) {
+      if (firstInternalHrefs.length >= 50) break;
+      firstInternalHrefs.push(href);
+    }
+
+    const pageText = textFromHtml(`${html} ${renderedHtml}`);
     const location = deriveLocation(pageText, "", "");
     if (location.city && location.state) discoveredMarkets.add(`${location.city}, ${location.state}`);
     for (const category of deriveCategories(pageText, input.categories)) discoveredCategories.add(category);
 
-    for (const url of extractAnchorUrls(html, next.url)) {
+    for (const url of pageLinks) {
       const urlKind = classifyStyleSeatUrl(url);
       if (urlKind === "profile" && profileUrls.length < input.maxOperators && !profileUrls.includes(url)) {
         profileUrls.push(url);
@@ -224,6 +493,36 @@ export async function crawlStyleSeatDiscovery(input: {
     }
   }
 
+  if (input.discoveryMode === "aggregator_crawl" && profileUrls.length === 0) {
+    debugNotes.push(AGGREGATOR_EMPTY_NOTE);
+  }
+
+  for (const operator of apiOperators) {
+    if (operator.city && operator.state) discoveredMarkets.add(`${operator.city}, ${operator.state}`);
+    for (const category of operator.categories) discoveredCategories.add(category);
+  }
+
+  if (profileUrls.length === 0 && renderedHtml) {
+    try {
+      const saved = await saveRenderedDebugSnapshot({
+        runId: input.runId,
+        html: renderedHtml,
+        debug: {
+          staticAnchorCount,
+          renderedAnchorCount,
+          firstInternalHrefs: Array.from(new Set(firstInternalHrefs)).slice(0, 50),
+          notes: debugNotes,
+          suggestedUrls: SUGGESTED_SEARCH_URLS,
+        },
+      });
+      renderedHtmlPath = saved.renderedHtmlPath;
+      debugJsonPath = saved.debugJsonPath;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      debugNotes.push(`Failed to save rendered debug snapshot: ${msg}`);
+    }
+  }
+
   return {
     seedUrls: [seedUrl],
     crawledUrls: Array.from(new Set(crawledUrls)),
@@ -231,6 +530,16 @@ export async function crawlStyleSeatDiscovery(input: {
     rejectedUrls: Array.from(new Set(rejectedUrls)).slice(0, 200),
     discoveredMarkets: Array.from(discoveredMarkets),
     discoveredCategories: Array.from(discoveredCategories),
+    apiOperators,
+    debug: {
+      staticAnchorCount,
+      renderedAnchorCount,
+      firstInternalHrefs: Array.from(new Set(firstInternalHrefs)).slice(0, 50),
+      renderedHtmlPath,
+      debugJsonPath,
+      notes: debugNotes,
+      suggestedUrls: SUGGESTED_SEARCH_URLS,
+    },
   };
 }
 
@@ -359,15 +668,13 @@ export async function runStyleSeatHarvest(
   const crawlDepth = config.crawlDepth ?? 2;
 
   // Dev mock mode
-  if (process.env.STYLESEAT_MOCK === "true" || !process.env.APIFY_TOKEN) {
-    const reason = !process.env.APIFY_TOKEN
-      ? "APIFY_TOKEN not set — mock operators returned"
-      : "STYLESEAT_MOCK=true — mock operators returned";
+  if (process.env.STYLESEAT_MOCK === "true") {
+    const reason = "STYLESEAT_MOCK=true - mock operators returned";
     console.warn(`[styleseat/extract] ${reason}`);
     return {
       operators: generateMockOperators({ ...config, maxResults: maxOperators }),
       actorRunId: null,
-      error: `⚠️ ${reason}`,
+      error: reason,
       crawl: mockCrawl(config),
     };
   }
@@ -381,6 +688,9 @@ export async function runStyleSeatHarvest(
         crawlDepth,
         maxOperators,
         categories: config.categories,
+        discoveryMode,
+        runId: config.runId,
+        config,
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -388,8 +698,9 @@ export async function runStyleSeatHarvest(
     }
 
     const batch = `styleseat-crawl-${Date.now()}`;
-    const operators: StyleSeatOperator[] = [];
+    const operators: StyleSeatOperator[] = [...(crawl.apiOperators ?? [])].slice(0, maxOperators);
     for (const profileUrl of crawl.profileUrls.slice(0, maxOperators)) {
+      if (operators.some((operator) => operator.styleseatUrl === profileUrl)) continue;
       try {
         const html = await fetchHtml(profileUrl);
         operators.push(operatorFromProfileHtml(profileUrl, html, config, operators.length, crawl.seedUrls[0], batch));
@@ -401,8 +712,23 @@ export async function runStyleSeatHarvest(
     return {
       operators,
       actorRunId: null,
-      error: operators.length === 0 ? "StyleSeat crawl found no extractable profiles" : null,
+      error: operators.length === 0
+        ? discoveryMode === "aggregator_crawl"
+          ? `${AGGREGATOR_EMPTY_NOTE} Examples: ${SUGGESTED_SEARCH_URLS.join(", ")}`
+          : "StyleSeat crawl found no extractable profiles"
+        : null,
       crawl,
+    };
+  }
+
+  if (!process.env.APIFY_TOKEN) {
+    const reason = "APIFY_TOKEN not set - mock operators returned for market_search";
+    console.warn(`[styleseat/extract] ${reason}`);
+    return {
+      operators: generateMockOperators({ ...config, maxResults: maxOperators }),
+      actorRunId: null,
+      error: reason,
+      crawl: mockCrawl(config),
     };
   }
 

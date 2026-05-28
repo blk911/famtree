@@ -111,6 +111,9 @@ function RunForm({
     width: "100%", padding: "8px 12px", border: "1px solid #e7e5e4", borderRadius: 8,
     fontSize: 13, color: "#1c1917", background: "#fff", boxSizing: "border-box",
   };
+  const actionsDisabled = loading
+    || (discoveryMode === "market_search" && (!market || !state))
+    || (discoveryMode === "direct_url" && !sourceUrl);
 
   return (
     <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 16, padding: "24px", marginBottom: 24 }}>
@@ -154,6 +157,14 @@ function RunForm({
             </label>
             <input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)}
               placeholder="https://www.styleseat.com/m/" style={inputStyle} disabled={loading} />
+            {discoveryMode === "aggregator_crawl" && (
+              <div style={{ marginTop: 7, fontSize: 11, color: "#78716c", lineHeight: 1.45 }}>
+                Aggregator root may not expose profiles. For reliable pulls, use Direct URL with a StyleSeat search URL.
+                <div style={{ color: "#9d174d", fontWeight: 700, marginTop: 2 }}>
+                  https://www.styleseat.com/m/search/denver-co/braids
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -205,7 +216,7 @@ function RunForm({
             })}
           </div>
           {categories.length === 0 && (
-            <div style={{ fontSize: 11, color: "#dc2626", marginTop: 4 }}>Select at least one category.</div>
+            <div style={{ fontSize: 11, color: "#a8a29e", marginTop: 4 }}>Optional. The crawler will infer categories from profile content.</div>
           )}
         </div>
 
@@ -296,13 +307,13 @@ function RunForm({
             key={pipelineMode}
             type="button"
             onClick={() => onRun({ discoveryMode, sourceUrl, city: market, state, categories, maxOperators, crawlDepth, pipelineMode, resolverMode })}
-            disabled={loading || (discoveryMode === "market_search" && (!market || !state)) || (discoveryMode === "direct_url" && !sourceUrl)}
+            disabled={actionsDisabled}
             style={{
               padding: "10px 18px", borderRadius: 10, border: idx === 0 ? "1px solid #e7e5e4" : "none",
-              background: loading || (discoveryMode === "market_search" && (!market || !state)) || (discoveryMode === "direct_url" && !sourceUrl) ? "#d6d3d1" : idx === 0 ? "#fff" : "#1c1917",
-              color: loading || (discoveryMode === "market_search" && (!market || !state)) || (discoveryMode === "direct_url" && !sourceUrl) ? "#fff" : idx === 0 ? "#57534e" : "#fff",
+              background: actionsDisabled ? "#d6d3d1" : idx === 0 ? "#fff" : "#1c1917",
+              color: actionsDisabled ? "#fff" : idx === 0 ? "#57534e" : "#fff",
               fontWeight: 800, fontSize: 14,
-              cursor: loading || categories.length === 0 || !market ? "not-allowed" : "pointer",
+              cursor: actionsDisabled ? "not-allowed" : "pointer",
             }}
           >
             {loading ? "Running..." : label}
