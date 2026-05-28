@@ -169,6 +169,12 @@ export interface StyleSeatRunReport {
   discoveredMarkets?: string[];
   discoveredCategories?: string[];
   artifactPaths: Record<string, string>;
+  intelligenceSummary?: {
+    topMarkets: string[];
+    topCategories: string[];
+    topOperators: string[];
+    recommendationCount: number;
+  };
   notes: string[];
 }
 
@@ -179,6 +185,81 @@ export interface StyleSeatCrawlResult {
   rejectedUrls: string[];
   discoveredMarkets: string[];
   discoveredCategories: string[];
+}
+
+export type StyleSeatOperatorLabel =
+  | "creator_candidate"
+  | "premium_operator"
+  | "high_social_signal"
+  | "independent_brand"
+  | "likely_suite_renter"
+  | "likely_mobile"
+  | "emerging_creator";
+
+export interface StyleSeatOperatorScore {
+  operatorId: string;
+  name: string;
+  city: string;
+  state: string;
+  market: string;
+  categories: StyleSeatCategory[];
+  specialties: string[];
+  score: number;
+  resolverConfidence: number;
+  labels: StyleSeatOperatorLabel[];
+  signals: string[];
+  igHandleFound: string | null;
+  prospectId: string | null;
+}
+
+export interface StyleSeatMarketIntelligence {
+  market: string;
+  city: string;
+  state: string;
+  operatorCount: number;
+  categoryCounts: Partial<Record<StyleSeatCategory, number>>;
+  topSpecialties: string[];
+  topServiceKeywords: string[];
+  activeIGPercent: number;
+  avgReviewCount: number;
+  avgImageCount: number;
+  mobileOperatorPercent: number;
+  suiteOperatorPercent: number;
+  unresolvedPercent: number;
+  marketScore: number;
+  summary: string;
+}
+
+export interface StyleSeatCategoryIntelligence {
+  category: StyleSeatCategory;
+  count: number;
+  marketDistribution: Record<string, number>;
+  IGActivePercent: number;
+  avgReviews: number;
+  topMarkets: string[];
+  growthSignals: string[];
+  score: number;
+}
+
+export interface StyleSeatMarketCluster {
+  market: string;
+  dominantCategories: string[];
+  ecosystemType: string;
+  operatorCount: number;
+  avgSocialSignal: number;
+  score: number;
+  signals: string[];
+}
+
+export interface StyleSeatIntelligenceReport {
+  runId: string;
+  createdAt: string;
+  markets: StyleSeatMarketIntelligence[];
+  categories: StyleSeatCategoryIntelligence[];
+  operators: StyleSeatOperatorScore[];
+  clusters: StyleSeatMarketCluster[];
+  insights: string[];
+  recommendations: string[];
 }
 
 // ─── Harvest run summary ──────────────────────────────────────────────────────
@@ -228,6 +309,9 @@ export interface StyleSeatRunFile {
   prospects?: unknown[];
   failures?: unknown[];
   log?: unknown[];
+  intelligence?: StyleSeatIntelligenceReport | null;
+  operatorScores?: StyleSeatOperatorScore[];
+  marketClusters?: StyleSeatMarketCluster[];
   report?: StyleSeatRunReport;
 }
 
@@ -273,6 +357,7 @@ export interface StyleSeatRunResponse {
   prospects?: unknown[];
   failures?: unknown[];
   log?: unknown[];
+  intelligence?: StyleSeatIntelligenceReport | null;
   report?: StyleSeatRunReport;
 }
 
@@ -299,5 +384,6 @@ export interface StyleSeatDetailResponse {
   prospects: unknown[];
   failures: unknown[];
   log: unknown[];
+  intelligence: StyleSeatIntelligenceReport | null;
   report: StyleSeatRunReport | null;
 }

@@ -20,6 +20,7 @@ import {
   type StyleSeatErrorResponse,
   type StyleSeatListResponse,
   type StyleSeatDetailResponse,
+  type StyleSeatIntelligenceReport,
 } from "@/lib/studios/styleseat/types";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 
@@ -68,6 +69,7 @@ type StyleSeatPageRunData = {
   prospects?: unknown[];
   failures?: unknown[];
   log?: unknown[];
+  intelligence?: StyleSeatIntelligenceReport | null;
 };
 
 // ─── Run form ─────────────────────────────────────────────────────────────────
@@ -756,6 +758,105 @@ function PipelineSummary({
   );
 }
 
+function IntelligenceDashboard({ intelligence }: { intelligence: StyleSeatIntelligenceReport | null | undefined }) {
+  if (!intelligence) {
+    return (
+      <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: 18, color: "#78716c", fontSize: 13 }}>
+        Intelligence artifacts are not available for this run.
+      </div>
+    );
+  }
+
+  const card: React.CSSProperties = { background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: 16 };
+  const title: React.CSSProperties = { fontSize: 10, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 10 };
+
+  return (
+    <div style={{ display: "grid", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div style={card}>
+          <div style={title}>TOP MARKETS</div>
+          {intelligence.markets.slice(0, 6).map((market) => (
+            <div key={market.market} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, padding: "7px 0", borderBottom: "1px solid #f5f5f4" }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#1c1917" }}>{market.market}</div>
+                <div style={{ fontSize: 11, color: "#78716c" }}>{Object.entries(market.categoryCounts).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0)).slice(0, 3).map(([cat]) => cat).join(", ")}</div>
+              </div>
+              <div style={{ textAlign: "right", fontSize: 11, color: "#57534e" }}>
+                <strong style={{ fontSize: 18, color: confColor(market.marketScore) }}>{market.marketScore}</strong><br />
+                {market.operatorCount} ops
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={card}>
+          <div style={title}>TOP CATEGORIES</div>
+          {intelligence.categories.slice(0, 6).map((category) => (
+            <div key={category.category} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, padding: "7px 0", borderBottom: "1px solid #f5f5f4" }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#1c1917" }}>{STYLESEAT_CATEGORY_LABELS[category.category]}</div>
+                <div style={{ fontSize: 11, color: "#78716c" }}>{category.topMarkets.join(", ") || "No market concentration yet"}</div>
+              </div>
+              <div style={{ textAlign: "right", fontSize: 11, color: "#57534e" }}>
+                <strong style={{ fontSize: 18, color: "#9d174d" }}>{category.count}</strong><br />
+                {category.IGActivePercent}% IG
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={card}>
+        <div style={title}>TOP CREATOR CANDIDATES</div>
+        <div style={{ display: "grid", gap: 8 }}>
+          {intelligence.operators.slice(0, 8).map((operator) => (
+            <div key={operator.operatorId} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", padding: "8px 0", borderBottom: "1px solid #f5f5f4" }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#1c1917" }}>{operator.name}</div>
+                <div style={{ fontSize: 11, color: "#78716c" }}>{operator.market} · {operator.specialties.slice(0, 3).join(", ") || operator.categories.join(", ")}</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+                  {operator.labels.slice(0, 4).map((label) => (
+                    <span key={label} style={{ fontSize: 9, fontWeight: 700, color: "#9d174d", background: "#fce7f3", borderRadius: 20, padding: "2px 7px" }}>{label.replace(/_/g, " ")}</span>
+                  ))}
+                </div>
+              </div>
+              <div style={{ textAlign: "right", fontSize: 11, color: "#57534e" }}>
+                <strong style={{ fontSize: 18, color: confColor(operator.score) }}>{operator.score}</strong><br />
+                {operator.igHandleFound ? `@${operator.igHandleFound}` : "no IG"}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div style={card}>
+          <div style={title}>MARKET CLUSTERS</div>
+          {intelligence.clusters.slice(0, 6).map((cluster) => (
+            <div key={cluster.market} style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#1c1917" }}>{cluster.ecosystemType}</div>
+              <div style={{ fontSize: 11, color: "#78716c" }}>{cluster.market} · {cluster.dominantCategories.join(", ")}</div>
+            </div>
+          ))}
+        </div>
+        <div style={card}>
+          <div style={title}>RECOMMENDATIONS</div>
+          {intelligence.recommendations.slice(0, 8).map((rec, i) => (
+            <div key={i} style={{ fontSize: 12, color: "#57534e", marginBottom: 8 }}>{rec}</div>
+          ))}
+        </div>
+      </div>
+
+      <div style={card}>
+        <div style={title}>INSIGHTS</div>
+        {intelligence.insights.slice(0, 10).map((insight, i) => (
+          <div key={i} style={{ fontSize: 12, color: "#57534e", marginBottom: 6 }}>{insight}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function RecentRunsList({
   runs,
   onOpen,
@@ -822,7 +923,7 @@ export default function StyleSeatDiscoveryPage() {
   const [error, setError]           = useState<string | null>(null);
   const [runs, setRuns]             = useState<StyleSeatHarvestRun[]>([]);
   const [runData, setRunData]       = useState<StyleSeatPageRunData | null>(null);
-  const [tab, setTab]               = useState<"operators" | "summary">("operators");
+  const [tab, setTab]               = useState<"operators" | "summary" | "intelligence">("operators");
 
   async function loadRuns() {
     try {
@@ -859,8 +960,9 @@ export default function StyleSeatDiscoveryPage() {
         prospects: data.prospects,
         failures: data.failures,
         log: data.log,
+        intelligence: data.intelligence,
       });
-      setTab("summary");
+      setTab(data.intelligence ? "intelligence" : "summary");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
@@ -912,6 +1014,7 @@ export default function StyleSeatDiscoveryPage() {
         prospects: ok.prospects,
         failures: ok.failures,
         log: ok.log,
+        intelligence: ok.intelligence,
       });
       await loadRuns();
     } catch (e) {
@@ -1028,6 +1131,9 @@ export default function StyleSeatDiscoveryPage() {
             <button type="button" style={tabStyle(tab === "summary")} onClick={() => setTab("summary")}>
               📊 Pipeline Summary
             </button>
+            <button type="button" style={tabStyle(tab === "intelligence")} onClick={() => setTab("intelligence")}>
+              Intelligence
+            </button>
           </div>
 
           {tab === "operators" && (
@@ -1046,6 +1152,10 @@ export default function StyleSeatDiscoveryPage() {
 
           {tab === "summary" && (
             <PipelineSummary run={runData.run} results={runData.results} />
+          )}
+
+          {tab === "intelligence" && (
+            <IntelligenceDashboard intelligence={runData.intelligence} />
           )}
         </>
       )}

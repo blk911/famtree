@@ -11,7 +11,19 @@ const DATA_DIR = process.env.VERCEL
   ? "/tmp/studios-styleseat"
   : path.resolve(process.cwd(), "runtime-data", "studios", "styleseat");
 
-const ARTIFACT_NAMES = ["crawl", "raw", "normalized", "resolver", "prospects", "failures", "summary", "log"] as const;
+const ARTIFACT_NAMES = [
+  "crawl",
+  "raw",
+  "normalized",
+  "resolver",
+  "prospects",
+  "failures",
+  "summary",
+  "log",
+  "market-intelligence",
+  "operator-scores",
+  "market-clusters",
+] as const;
 type ArtifactName = typeof ARTIFACT_NAMES[number];
 
 export function getStyleSeatDataRoot(): string {
@@ -113,6 +125,9 @@ export async function saveStyleSeatRun(file: StyleSeatRunFile): Promise<void> {
   await writeJson(artifactPath(run.runId, "failures"), fullFile.failures ?? run.saveErrors ?? []);
   await writeJson(artifactPath(run.runId, "summary"), report);
   await writeJson(artifactPath(run.runId, "log"), fullFile.log ?? []);
+  await writeJson(artifactPath(run.runId, "market-intelligence"), fullFile.intelligence ?? null);
+  await writeJson(artifactPath(run.runId, "operator-scores"), fullFile.operatorScores ?? fullFile.intelligence?.operators ?? []);
+  await writeJson(artifactPath(run.runId, "market-clusters"), fullFile.marketClusters ?? fullFile.intelligence?.clusters ?? []);
 }
 
 async function loadFromArtifacts(runId: string): Promise<StyleSeatRunFile | null> {
@@ -154,6 +169,9 @@ async function loadFromArtifacts(runId: string): Promise<StyleSeatRunFile | null
     prospects:  await readJson<unknown[]>(artifactPath(runId, "prospects")) ?? flat?.prospects ?? [],
     failures:   await readJson<unknown[]>(artifactPath(runId, "failures")) ?? flat?.failures ?? [],
     log:        await readJson<unknown[]>(artifactPath(runId, "log")) ?? flat?.log ?? [],
+    intelligence: await readJson<StyleSeatRunFile["intelligence"]>(artifactPath(runId, "market-intelligence")) ?? flat?.intelligence ?? null,
+    operatorScores: await readJson<StyleSeatRunFile["operatorScores"]>(artifactPath(runId, "operator-scores")) ?? flat?.operatorScores ?? [],
+    marketClusters: await readJson<StyleSeatRunFile["marketClusters"]>(artifactPath(runId, "market-clusters")) ?? flat?.marketClusters ?? [],
     report,
   };
 }
@@ -173,6 +191,9 @@ export async function loadStyleSeatRun(runId: string): Promise<StyleSeatRunFile 
     prospects:  flat.prospects ?? [],
     failures:   flat.failures ?? flat.run.saveErrors ?? [],
     log:        flat.log ?? [],
+    intelligence: flat.intelligence ?? null,
+    operatorScores: flat.operatorScores ?? [],
+    marketClusters: flat.marketClusters ?? [],
     report,
     run:        { ...flat.run, report },
   };

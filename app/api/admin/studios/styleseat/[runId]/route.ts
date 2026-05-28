@@ -39,6 +39,7 @@ export async function GET(
       prospects: file.prospects ?? [],
       failures: file.failures ?? [],
       log: file.log ?? [],
+      intelligence: file.intelligence ?? null,
       report: file.report ?? file.run.report ?? null,
     } satisfies StyleSeatDetailResponse);
   } catch (e) {

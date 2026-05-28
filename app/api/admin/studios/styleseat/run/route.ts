@@ -11,6 +11,7 @@ import { z } from "zod";
 import { runStyleSeatHarvest } from "@/lib/studios/styleseat/extract";
 import { normalizeStyleSeatRecord } from "@/lib/studios/styleseat/normalize";
 import { runStyleSeatPipeline } from "@/lib/studios/styleseat/resolver";
+import { buildStyleSeatMarketIntelligenceReport } from "@/lib/studios/styleseat/report-builder";
 import { saveStyleSeatRun, generateStyleSeatRunId, getStyleSeatArtifactPaths } from "@/lib/studios/styleseat/store";
 import { getStoreBackendInfo, countProspects } from "@/lib/studios/prospects/store";
 import { generateBatchId } from "@/lib/studios/prospects/from-resolver";
@@ -289,6 +290,25 @@ export async function POST(req: NextRequest) {
     discoveredCategories: crawl?.discoveredCategories ?? [],
     notes: errors,
   };
+
+  const intelligence = buildStyleSeatMarketIntelligenceReport({
+    run,
+    crawl,
+    operators,
+    normalized: normalizedArtifact,
+    results,
+    prospects,
+    failures: saveErrors,
+    log: [],
+    report,
+  });
+
+  report.intelligenceSummary = {
+    topMarkets: intelligence.markets.slice(0, 5).map((market) => `${market.market} (${market.marketScore})`),
+    topCategories: intelligence.categories.slice(0, 5).map((category) => `${category.category} (${category.count})`),
+    topOperators: intelligence.operators.slice(0, 5).map((operator) => `${operator.name} (${operator.score})`),
+    recommendationCount: intelligence.recommendations.length,
+  };
   run.report = report;
 
   // ── Step 6: Persist run file ────────────────────────────────────────────────
@@ -301,6 +321,9 @@ export async function POST(req: NextRequest) {
       results,
       prospects,
       failures: saveErrors,
+      intelligence,
+      operatorScores: intelligence.operators,
+      marketClusters: intelligence.clusters,
       log: [{
         at: now,
         mode: pipelineMode,
@@ -326,6 +349,7 @@ export async function POST(req: NextRequest) {
       results,
       prospects,
       failures: saveErrors,
+      intelligence,
       log: [{
         at: now,
         mode: pipelineMode,
