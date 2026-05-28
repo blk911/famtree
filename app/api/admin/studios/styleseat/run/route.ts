@@ -24,6 +24,7 @@ import type {
   StyleSeatRunResponse,
   StyleSeatErrorResponse,
   StyleSeatCategory,
+  StyleSeatExtractionDiagnosticSummary,
 } from "@/lib/studios/styleseat/types";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 
@@ -169,6 +170,21 @@ export async function POST(req: NextRequest) {
   if (harvestError) errors.push(harvestError);
   if (crawl?.debug?.notes.length) errors.push(...crawl.debug.notes);
   console.log(`[styleseat/run] harvested ${operators.length} operators`);
+
+  const diagnosticSummary: StyleSeatExtractionDiagnosticSummary | undefined =
+    parsed.data.debug && operators.length === 0
+      ? {
+          staticAnchorCount: crawl?.debug?.staticAnchorCount ?? 0,
+          internalStyleSeatLinkCount: crawl?.debug?.internalLinkCount ?? 0,
+          jsonScriptCount: crawl?.debug?.jsonScriptCount ?? 0,
+          nextDataFound: crawl?.debug?.nextDataFound ?? false,
+          nextFlightFound: crawl?.debug?.nextFlightFound ?? false,
+          jsonLdCount: crawl?.debug?.jsonLdCount ?? 0,
+          candidateObjectCount: crawl?.debug?.candidateObjectCount ?? 0,
+          networkHintCount: crawl?.debug?.networkHintCount ?? 0,
+          debugArtifactPath: crawl?.debug?.diagnosticsDir,
+        }
+      : undefined;
 
   // ── Step 3: IG enrichment + prospect upserts ────────────────────────────────
   const harvestCtx: StyleSeatHarvestContext = {
@@ -361,6 +377,7 @@ export async function POST(req: NextRequest) {
         message: "StyleSeat run completed",
       }],
       report,
+      diagnosticSummary,
     } satisfies StyleSeatRunResponse,
     { status: 200 }
   );

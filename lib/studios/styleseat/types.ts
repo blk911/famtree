@@ -195,14 +195,24 @@ export interface StyleSeatCrawlDebug {
   firstInternalHrefs: string[];
   diagnosticsDir?: string;
   rawHtmlPath?: string;
-  embeddedDataPath?: string;
+  scriptsIndexPath?: string;
+  embeddedJsonPath?: string;
+  jsonLdPath?: string;
   allInternalLinksPath?: string;
+  internalLinksPath?: string;
   urlClassificationPath?: string;
   networkHintsPath?: string;
+  extractionReportPath?: string;
   renderedHtmlPath?: string;
   debugJsonPath?: string;
   extractionSource?: "static_links" | "search_api" | "rendered_dom" | "none";
   embeddedDataCount?: number;
+  jsonScriptCount?: number;
+  jsonLdCount?: number;
+  nextDataFound?: boolean;
+  nextFlightFound?: boolean;
+  candidateObjectCount?: number;
+  networkHintCount?: number;
   internalLinkCount?: number;
   profileLinkCount?: number;
   searchApiUrl?: string;
@@ -210,6 +220,18 @@ export interface StyleSeatCrawlDebug {
   searchApiResponsePath?: string;
   notes: string[];
   suggestedUrls: string[];
+}
+
+export interface StyleSeatExtractionDiagnosticSummary {
+  staticAnchorCount: number;
+  internalStyleSeatLinkCount: number;
+  jsonScriptCount: number;
+  nextDataFound: boolean;
+  nextFlightFound: boolean;
+  jsonLdCount: number;
+  candidateObjectCount: number;
+  networkHintCount: number;
+  debugArtifactPath?: string;
 }
 
 export type StyleSeatOperatorLabel =
@@ -387,6 +409,7 @@ export interface StyleSeatRunResponse {
   log?: unknown[];
   intelligence?: StyleSeatIntelligenceReport | null;
   report?: StyleSeatRunReport;
+  diagnosticSummary?: StyleSeatExtractionDiagnosticSummary;
 }
 
 export interface StyleSeatErrorResponse {
