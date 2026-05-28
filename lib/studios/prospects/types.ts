@@ -95,6 +95,7 @@ export interface StructuredProspectEvidence {
   url: string;
   label: string;
   city?: string;
+  state?: string;
   serviceCategory?: string | null;
   confidence?: number;
 }

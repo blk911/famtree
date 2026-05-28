@@ -11,7 +11,7 @@ const DATA_DIR = process.env.VERCEL
   ? "/tmp/studios-styleseat"
   : path.resolve(process.cwd(), "runtime-data", "studios", "styleseat");
 
-const ARTIFACT_NAMES = ["raw", "normalized", "resolver", "prospects", "failures", "summary", "log"] as const;
+const ARTIFACT_NAMES = ["crawl", "raw", "normalized", "resolver", "prospects", "failures", "summary", "log"] as const;
 type ArtifactName = typeof ARTIFACT_NAMES[number];
 
 export function getStyleSeatDataRoot(): string {
@@ -58,6 +58,8 @@ function buildFallbackReport(file: StyleSeatRunFile): StyleSeatRunReport {
     mode:      run.mode,
     totals: {
       harvested:        run.totalHarvested,
+      crawledUrls:      file.crawl?.crawledUrls.length ?? run.report?.totals.crawledUrls ?? 0,
+      profileUrls:      file.crawl?.profileUrls.length ?? run.report?.totals.profileUrls ?? run.totalHarvested,
       normalized:       file.normalized?.length ?? file.operators.length,
       igCandidates:     run.totalIgFound,
       resolverMerged:   file.results.filter((r) => r.prospectId).length,
@@ -67,6 +69,16 @@ function buildFallbackReport(file: StyleSeatRunFile): StyleSeatRunReport {
       failed:           run.failedToSaveCount + (file.failures?.length ?? 0),
     },
     artifactPaths: getStyleSeatArtifactPaths(run.runId),
+    discoveryMode: run.discoveryMode,
+    sourceUrl: run.sourceUrl ?? null,
+    seedUrls: run.seedUrls ?? file.crawl?.seedUrls ?? [],
+    marketSearchInput: run.discoveryMode === "market_search" ? { city: run.market, state: run.state } : null,
+    crawlDepth: run.crawlDepth,
+    maxOperators: run.maxOperators,
+    resolverMode: run.resolverMode,
+    pipelineMode: run.mode,
+    discoveredMarkets: run.discoveredMarkets ?? file.crawl?.discoveredMarkets ?? [],
+    discoveredCategories: run.discoveredCategories ?? file.crawl?.discoveredCategories ?? [],
     notes: run.errors ?? [],
   };
 }
@@ -93,6 +105,7 @@ export async function saveStyleSeatRun(file: StyleSeatRunFile): Promise<void> {
 
   const dir = runDir(run.runId);
   await ensureDir(dir);
+  await writeJson(artifactPath(run.runId, "crawl"), fullFile.crawl ?? null);
   await writeJson(artifactPath(run.runId, "raw"), fullFile.operators);
   await writeJson(artifactPath(run.runId, "normalized"), fullFile.normalized ?? []);
   await writeJson(artifactPath(run.runId, "resolver"), fullFile.results);
@@ -135,6 +148,7 @@ async function loadFromArtifacts(runId: string): Promise<StyleSeatRunFile | null
   return {
     run: { ...run, report },
     operators:  await readJson<StyleSeatRunFile["operators"]>(artifactPath(runId, "raw")) ?? flat?.operators ?? [],
+    crawl:      await readJson<StyleSeatRunFile["crawl"]>(artifactPath(runId, "crawl")) ?? flat?.crawl ?? null,
     normalized: await readJson<unknown[]>(artifactPath(runId, "normalized")) ?? flat?.normalized ?? [],
     results:    await readJson<StyleSeatRunFile["results"]>(artifactPath(runId, "resolver")) ?? flat?.results ?? [],
     prospects:  await readJson<unknown[]>(artifactPath(runId, "prospects")) ?? flat?.prospects ?? [],
@@ -154,6 +168,7 @@ export async function loadStyleSeatRun(runId: string): Promise<StyleSeatRunFile 
   const report = flat.report ?? flat.run.report ?? buildFallbackReport(flat);
   return {
     ...flat,
+    crawl:      flat.crawl ?? null,
     normalized: flat.normalized ?? [],
     prospects:  flat.prospects ?? [],
     failures:   flat.failures ?? flat.run.saveErrors ?? [],

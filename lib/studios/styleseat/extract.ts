@@ -6,11 +6,16 @@
 //   https://www.styleseat.com/{category-slug}/{city-slug}--{state-slug}
 //   e.g. https://www.styleseat.com/braiders/houston--tx
 
-import type { StyleSeatOperator, StyleSeatCategory, StyleSeatRunConfig } from "./types";
+import type { StyleSeatOperator, StyleSeatCategory, StyleSeatRunConfig, StyleSeatCrawlResult } from "./types";
 import { STYLESEAT_CATEGORY_SLUGS } from "./types";
 
 const APIFY_BASE = "https://api.apify.com/v2";
 const WAIT_FOR_FINISH_SECS = 55;
+const DEFAULT_AGGREGATOR_URL = "https://www.styleseat.com/m/";
+const BLOCKED_PATH_PARTS = [
+  "/appointments", "/my-account", "/login", "/blog", "/about", "/terms", "/privacy",
+  "/help", "/support", "/careers", "/download", "/pro", "/join",
+];
 
 // ─── URL builders ─────────────────────────────────────────────────────────────
 
@@ -19,6 +24,214 @@ function buildSearchUrl(category: StyleSeatCategory, market: string, state: stri
   const citySlug  = market.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const stateSlug = state.toLowerCase().replace(/[^a-z]+/g, "-");
   return `https://www.styleseat.com/${catSlug}/${citySlug}--${stateSlug}`;
+}
+
+export function normalizeStyleSeatUrl(input: string): string {
+  const url = new URL(input, DEFAULT_AGGREGATOR_URL);
+  if (!/(\.|^)styleseat\.com$/i.test(url.hostname)) {
+    throw new Error("Only styleseat.com URLs are supported");
+  }
+  url.protocol = "https:";
+  url.hash = "";
+  for (const key of Array.from(url.searchParams.keys())) {
+    if (key.toLowerCase().startsWith("utm_") || ["fbclid", "gclid", "mc_cid", "mc_eid"].includes(key.toLowerCase())) {
+      url.searchParams.delete(key);
+    }
+  }
+  return url.toString();
+}
+
+function classifyStyleSeatUrl(url: string): "profile" | "search" | "category" | "aggregator" | "unknown" {
+  const parsed = new URL(url);
+  const pathname = parsed.pathname.replace(/\/+$/, "") || "/";
+  if (BLOCKED_PATH_PARTS.some((part) => pathname.toLowerCase().startsWith(part))) return "unknown";
+  if (/^\/m\/[^/]+$/i.test(pathname)) return "profile";
+  if (/^\/m\/?$/i.test(pathname)) return "aggregator";
+  if (pathname.includes("/search/")) return "search";
+  if (Object.values(STYLESEAT_CATEGORY_SLUGS).some((slug) => pathname.includes(`/${slug}/`) || pathname === `/${slug}`)) return "category";
+  return "unknown";
+}
+
+function extractAnchorUrls(html: string, baseUrl: string): string[] {
+  const urls: string[] = [];
+  const re = /href\s*=\s*["']([^"']+)["']/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(html))) {
+    const href = match[1];
+    if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) continue;
+    try {
+      urls.push(normalizeStyleSeatUrl(new URL(href, baseUrl).toString()));
+    } catch {
+      // non-StyleSeat URL
+    }
+  }
+  return Array.from(new Set(urls));
+}
+
+function textFromHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function deriveCategories(text: string, fallback: StyleSeatCategory[]): StyleSeatCategory[] {
+  const lower = text.toLowerCase();
+  const hits: StyleSeatCategory[] = [];
+  const checks: Array<[StyleSeatCategory, string[]]> = [
+    ["hair", ["hair", "silk press", "color", "stylist"]],
+    ["braids", ["braid", "knotless", "protective style"]],
+    ["barber", ["barber", "fade", "beard"]],
+    ["locs", ["loc", "retwist", "starter loc"]],
+    ["makeup", ["makeup", "mua", "glam"]],
+    ["lashes", ["lash", "extensions"]],
+    ["brows", ["brow", "lamination", "threading"]],
+    ["nails", ["nail", "acrylic", "manicure"]],
+    ["extensions", ["extensions", "weave", "sew-in"]],
+  ];
+  for (const [category, needles] of checks) {
+    if (needles.some((needle) => lower.includes(needle))) hits.push(category);
+  }
+  return hits.length > 0 ? hits : fallback.length > 0 ? fallback : ["hair"];
+}
+
+function deriveLocation(text: string, fallbackCity: string, fallbackState: string): { city: string; state: string } {
+  const match = text.match(/\b([A-Z][a-zA-Z .'-]{2,40}),\s*([A-Z]{2})\b/);
+  return {
+    city: match?.[1]?.trim() || fallbackCity,
+    state: match?.[2]?.trim() || fallbackState,
+  };
+}
+
+function operatorFromProfileHtml(
+  profileUrl: string,
+  html: string,
+  config: StyleSeatRunConfig,
+  idx: number,
+  seedUrl: string,
+  batch: string,
+): StyleSeatOperator {
+  const rawText = textFromHtml(html).slice(0, 5000);
+  const slug = new URL(profileUrl).pathname.split("/m/")[1]?.split("/")[0] || `profile-${idx + 1}`;
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+  const name = textFromHtml(h1Match?.[1] || titleMatch?.[1] || slug.replace(/[-_]+/g, " "))
+    .replace(/\s*\|\s*StyleSeat.*$/i, "")
+    .replace(/\s*-\s*StyleSeat.*$/i, "")
+    .trim() || slug;
+  const location = deriveLocation(rawText, config.market, config.state);
+  const categories = deriveCategories(rawText, config.categories);
+  const reviewMatch = rawText.match(/\b([0-9][0-9,]*)\s+reviews?\b/i);
+  const ratingMatch = rawText.match(/\b([0-5](?:\.[0-9])?)\s*(?:stars?|rating)\b/i);
+  const imageCount = (html.match(/<img\b/gi) ?? []).length;
+
+  return {
+    styleseatId: `ss-${slug}-${idx}`,
+    name,
+    slug,
+    styleseatUrl: profileUrl,
+    city: location.city,
+    state: location.state,
+    categories,
+    specialties: categories,
+    bio: rawText.slice(0, 300) || null,
+    services: categories.map((category) => ({ name: category, price: null, duration: null })),
+    reviewCount: reviewMatch ? Number(reviewMatch[1].replace(/,/g, "")) : 0,
+    rating: ratingMatch ? Number(ratingMatch[1]) : null,
+    imageUrl: null,
+    priceRange: null,
+    isIndependent: true,
+    harvestDate: new Date().toISOString().slice(0, 10),
+    batchId: batch,
+    discoveryMode: config.discoveryMode ?? "market_search",
+    seedUrl,
+    sourceUrl: profileUrl,
+    rawText,
+    imageCount,
+  };
+}
+
+async function fetchHtml(url: string): Promise<string> {
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; AIH StyleSeat Discovery/1.0)",
+      "Accept": "text/html,application/xhtml+xml",
+    },
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.text();
+}
+
+export async function crawlStyleSeatDiscovery(input: {
+  startUrl: string;
+  crawlDepth: number;
+  maxOperators: number;
+  categories: StyleSeatCategory[];
+}): Promise<StyleSeatCrawlResult> {
+  const seedUrl = normalizeStyleSeatUrl(input.startUrl || DEFAULT_AGGREGATOR_URL);
+  const queue: Array<{ url: string; depth: number }> = [{ url: seedUrl, depth: 0 }];
+  const seen = new Set<string>();
+  const crawledUrls: string[] = [];
+  const profileUrls: string[] = [];
+  const rejectedUrls: string[] = [];
+  const discoveredMarkets = new Set<string>();
+  const discoveredCategories = new Set<string>();
+
+  while (queue.length > 0 && profileUrls.length < input.maxOperators) {
+    const next = queue.shift()!;
+    if (seen.has(next.url)) continue;
+    seen.add(next.url);
+
+    const kind = classifyStyleSeatUrl(next.url);
+    if (kind === "unknown") {
+      rejectedUrls.push(next.url);
+      continue;
+    }
+    if (kind === "profile") {
+      profileUrls.push(next.url);
+      continue;
+    }
+    if (next.depth > input.crawlDepth) continue;
+
+    let html = "";
+    try {
+      html = await fetchHtml(next.url);
+      crawledUrls.push(next.url);
+    } catch {
+      rejectedUrls.push(next.url);
+      continue;
+    }
+
+    const pageText = textFromHtml(html);
+    const location = deriveLocation(pageText, "", "");
+    if (location.city && location.state) discoveredMarkets.add(`${location.city}, ${location.state}`);
+    for (const category of deriveCategories(pageText, input.categories)) discoveredCategories.add(category);
+
+    for (const url of extractAnchorUrls(html, next.url)) {
+      const urlKind = classifyStyleSeatUrl(url);
+      if (urlKind === "profile" && profileUrls.length < input.maxOperators && !profileUrls.includes(url)) {
+        profileUrls.push(url);
+      } else if (["search", "category", "aggregator"].includes(urlKind) && next.depth + 1 <= input.crawlDepth && !seen.has(url)) {
+        queue.push({ url, depth: next.depth + 1 });
+      } else if (urlKind === "unknown") {
+        rejectedUrls.push(url);
+      }
+    }
+  }
+
+  return {
+    seedUrls: [seedUrl],
+    crawledUrls: Array.from(new Set(crawledUrls)),
+    profileUrls: Array.from(new Set(profileUrls)).slice(0, input.maxOperators),
+    rejectedUrls: Array.from(new Set(rejectedUrls)).slice(0, 200),
+    discoveredMarkets: Array.from(discoveredMarkets),
+    discoveredCategories: Array.from(discoveredCategories),
+  };
 }
 
 // ─── Apify helpers (mirrors apify-client.ts pattern) ─────────────────────────
@@ -135,11 +348,15 @@ export interface StyleSeatExtractResult {
   operators: StyleSeatOperator[];
   actorRunId: string | null;
   error: string | null;
+  crawl?: StyleSeatCrawlResult | null;
 }
 
 export async function runStyleSeatHarvest(
   config: StyleSeatRunConfig,
 ): Promise<StyleSeatExtractResult> {
+  const discoveryMode = config.discoveryMode ?? "market_search";
+  const maxOperators = config.maxOperators ?? config.maxResults;
+  const crawlDepth = config.crawlDepth ?? 2;
 
   // Dev mock mode
   if (process.env.STYLESEAT_MOCK === "true" || !process.env.APIFY_TOKEN) {
@@ -148,9 +365,44 @@ export async function runStyleSeatHarvest(
       : "STYLESEAT_MOCK=true — mock operators returned";
     console.warn(`[styleseat/extract] ${reason}`);
     return {
-      operators: generateMockOperators(config),
+      operators: generateMockOperators({ ...config, maxResults: maxOperators }),
       actorRunId: null,
       error: `⚠️ ${reason}`,
+      crawl: mockCrawl(config),
+    };
+  }
+
+  if (discoveryMode === "aggregator_crawl" || discoveryMode === "direct_url") {
+    const startUrl = config.sourceUrl || DEFAULT_AGGREGATOR_URL;
+    let crawl: StyleSeatCrawlResult;
+    try {
+      crawl = await crawlStyleSeatDiscovery({
+        startUrl,
+        crawlDepth,
+        maxOperators,
+        categories: config.categories,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return { operators: [], actorRunId: null, error: `StyleSeat crawl failed: ${msg}`, crawl: null };
+    }
+
+    const batch = `styleseat-crawl-${Date.now()}`;
+    const operators: StyleSeatOperator[] = [];
+    for (const profileUrl of crawl.profileUrls.slice(0, maxOperators)) {
+      try {
+        const html = await fetchHtml(profileUrl);
+        operators.push(operatorFromProfileHtml(profileUrl, html, config, operators.length, crawl.seedUrls[0], batch));
+      } catch {
+        // keep crawling results inspectable even if one profile fails
+      }
+    }
+
+    return {
+      operators,
+      actorRunId: null,
+      error: operators.length === 0 ? "StyleSeat crawl found no extractable profiles" : null,
+      crawl,
     };
   }
 
@@ -218,7 +470,7 @@ export async function runStyleSeatHarvest(
   const batch = `styleseat-batch-${Date.now()}`;
 
   const operators: StyleSeatOperator[] = rawItems
-    .slice(0, config.maxResults)
+    .slice(0, maxOperators)
     .map((item, idx): StyleSeatOperator | null => {
       const name = String(item.name ?? "").trim();
       const slug = String(item.slug ?? "").trim();
@@ -247,11 +499,41 @@ export async function runStyleSeatHarvest(
         isIndependent: true,
         harvestDate: now,
         batchId:     batch,
+        discoveryMode,
+        seedUrl: sourceUrl,
+        sourceUrl,
+        rawText: String(item.bio ?? ""),
+        imageCount: item.imageUrl ? 1 : 0,
       };
     })
     .filter((op): op is StyleSeatOperator => op !== null);
 
-  return { operators, actorRunId: runId, error: null };
+  return {
+    operators,
+    actorRunId: runId,
+    error: null,
+    crawl: {
+      seedUrls: startUrls.map((s) => s.url),
+      crawledUrls: startUrls.map((s) => s.url),
+      profileUrls: operators.map((op) => op.styleseatUrl),
+      rejectedUrls: [],
+      discoveredMarkets: Array.from(new Set(operators.map((op) => `${op.city}, ${op.state}`))),
+      discoveredCategories: Array.from(new Set(operators.flatMap((op) => op.categories))),
+    },
+  };
+}
+
+function mockCrawl(config: StyleSeatRunConfig): StyleSeatCrawlResult {
+  const seed = config.sourceUrl || DEFAULT_AGGREGATOR_URL;
+  const operators = generateMockOperators(config);
+  return {
+    seedUrls: [seed],
+    crawledUrls: [seed],
+    profileUrls: operators.map((op) => op.styleseatUrl),
+    rejectedUrls: [],
+    discoveredMarkets: Array.from(new Set(operators.map((op) => `${op.city}, ${op.state}`))),
+    discoveredCategories: Array.from(new Set(operators.flatMap((op) => op.categories))),
+  };
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -277,10 +559,10 @@ const MOCK_OPERATORS_POOL: Array<{ name: string; specialties: string[]; bio: str
 function generateMockOperators(config: StyleSeatRunConfig): StyleSeatOperator[] {
   const now   = new Date().toISOString().slice(0, 10);
   const batch = `styleseat-mock-${Date.now()}`;
-  const cap   = Math.min(config.maxResults, MOCK_OPERATORS_POOL.length);
+  const cap   = Math.min(config.maxOperators ?? config.maxResults, MOCK_OPERATORS_POOL.length);
 
   return MOCK_OPERATORS_POOL.slice(0, cap).map((tmpl, i): StyleSeatOperator => {
-    const category = config.categories[i % config.categories.length];
+    const category = config.categories[i % Math.max(config.categories.length, 1)] ?? "hair";
     const slug     = tmpl.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     const reviews  = 5 + (i * 7) + (i % 3) * 11;
     const rating   = Number((4.3 + (i % 4) * 0.15).toFixed(1));
@@ -306,6 +588,11 @@ function generateMockOperators(config: StyleSeatRunConfig): StyleSeatOperator[] 
       isIndependent: true,
       harvestDate:  now,
       batchId:      batch,
+      discoveryMode: config.discoveryMode ?? "market_search",
+      seedUrl:      config.sourceUrl ?? DEFAULT_AGGREGATOR_URL,
+      sourceUrl:    config.sourceUrl ?? DEFAULT_AGGREGATOR_URL,
+      rawText:      tmpl.bio,
+      imageCount:   0,
     };
   });
 }

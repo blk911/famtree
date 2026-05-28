@@ -137,6 +137,58 @@ export interface StyleSeatHarvestContext {
   categories: StyleSeatCategory[];
 }
 
+export interface NormalizedStyleSeatRecord {
+  discoveryMode: StyleSeatOperator["discoveryMode"];
+  seedUrl: string | null;
+  sourceUrl: string | null;
+  profileUrl: string;
+  displayName: string;
+  normalizedName: string;
+  city: string;
+  state: string;
+  derivedMarket: string;
+  categories: StyleSeatCategory[];
+  specialtyTags: string[];
+  serviceKeywords: string[];
+  possibleIgQueries: string[];
+  rawText: string | null;
+}
+
+export function normalizeStyleSeatRecord(operator: StyleSeatOperator): NormalizedStyleSeatRecord {
+  const category = operator.categories[0] ?? "hair";
+  const serviceKeywords = Array.from(new Set([
+    ...operator.services.map((s) => s.name.toLowerCase()),
+    ...operator.specialties.map((s) => s.toLowerCase()),
+    category,
+  ])).filter(Boolean).slice(0, 12);
+  const specialty = serviceKeywords[0] ?? category;
+  const slug = operator.slug;
+  const possibleIgQueries = [
+    `${operator.name} ${operator.city} ${specialty}`,
+    `${operator.name} ${operator.state} ${specialty}`,
+    `${operator.name} StyleSeat`,
+    `${slug} instagram`,
+    ...serviceKeywords.slice(0, 4).map((kw) => `${operator.name} ${kw} instagram`),
+  ].filter(Boolean);
+
+  return {
+    discoveryMode: operator.discoveryMode,
+    seedUrl: operator.seedUrl ?? null,
+    sourceUrl: operator.sourceUrl ?? null,
+    profileUrl: operator.styleseatUrl,
+    displayName: operator.name,
+    normalizedName: operator.name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(),
+    city: operator.city,
+    state: operator.state,
+    derivedMarket: [operator.city, operator.state].filter(Boolean).join(", "),
+    categories: operator.categories,
+    specialtyTags: operator.specialties,
+    serviceKeywords,
+    possibleIgQueries,
+    rawText: operator.rawText ?? operator.bio ?? null,
+  };
+}
+
 // ─── Operator → UpsertInput ───────────────────────────────────────────────────
 
 /**
@@ -202,6 +254,7 @@ export function operatorToUpsertInput(
     url:             operator.styleseatUrl,
     label:           operator.name,
     city:            [operator.city, operator.state].filter(Boolean).join(", "),
+    state:           operator.state,
     serviceCategory: category,
     confidence:      styleseatUrl.confidence,
   };
@@ -295,6 +348,7 @@ export function operatorToIdentitySeed(
     url:             operator.styleseatUrl,
     label:           operator.name,
     city:            [operator.city, operator.state].filter(Boolean).join(", "),
+    state:           operator.state,
     serviceCategory: category,
     confidence:      knownUrls[0].confidence,
   };

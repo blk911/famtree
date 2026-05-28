@@ -19,6 +19,11 @@ export type StyleSeatCategory =
   | "nails"
   | "extensions";
 
+export type StyleSeatDiscoveryMode =
+  | "aggregator_crawl"
+  | "direct_url"
+  | "market_search";
+
 export const STYLESEAT_CATEGORY_LABELS: Record<StyleSeatCategory, string> = {
   hair:       "Hair",
   braids:     "Braids",
@@ -103,6 +108,11 @@ export interface StyleSeatOperator {
   isIndependent: boolean;
   harvestDate: string;
   batchId: string;
+  discoveryMode?: StyleSeatDiscoveryMode;
+  seedUrl?: string;
+  sourceUrl?: string;
+  rawText?: string;
+  imageCount?: number;
 }
 
 // ─── Resolver result (per-operator) ───────────────────────────────────────────
@@ -129,6 +139,8 @@ export type StyleSeatPipelineMode =
   | "full_pipeline";
 
 export interface StyleSeatRunTotals {
+  crawledUrls?: number;
+  profileUrls?: number;
   harvested: number;
   normalized: number;
   igCandidates: number;
@@ -142,12 +154,31 @@ export interface StyleSeatRunTotals {
 export interface StyleSeatRunReport {
   runId: string;
   createdAt: string;
+  discoveryMode?: StyleSeatDiscoveryMode;
+  sourceUrl?: string | null;
+  seedUrls?: string[];
+  marketSearchInput?: { city: string; state: string } | null;
   market: string;
   categories: StyleSeatCategory[];
+  crawlDepth?: number;
+  maxOperators?: number;
+  resolverMode?: ResolveMode;
   mode: StyleSeatPipelineMode;
+  pipelineMode?: StyleSeatPipelineMode;
   totals: StyleSeatRunTotals;
+  discoveredMarkets?: string[];
+  discoveredCategories?: string[];
   artifactPaths: Record<string, string>;
   notes: string[];
+}
+
+export interface StyleSeatCrawlResult {
+  seedUrls: string[];
+  crawledUrls: string[];
+  profileUrls: string[];
+  rejectedUrls: string[];
+  discoveredMarkets: string[];
+  discoveredCategories: string[];
 }
 
 // ─── Harvest run summary ──────────────────────────────────────────────────────
@@ -158,6 +189,13 @@ export interface StyleSeatHarvestRun {
   createdAt: string;
   market: string;
   state: string;
+  discoveryMode?: StyleSeatDiscoveryMode;
+  sourceUrl?: string | null;
+  seedUrls?: string[];
+  crawlDepth?: number;
+  maxOperators?: number;
+  discoveredMarkets?: string[];
+  discoveredCategories?: string[];
   categories: StyleSeatCategory[];
   mode: StyleSeatPipelineMode;
   resolverMode: ResolveMode;
@@ -183,6 +221,7 @@ export interface StyleSeatHarvestRun {
 /** Stored file shape — one per run */
 export interface StyleSeatRunFile {
   run: StyleSeatHarvestRun;
+  crawl?: StyleSeatCrawlResult | null;
   operators: StyleSeatOperator[];
   normalized?: unknown[];
   results: StyleSeatResolverResult[];
@@ -195,10 +234,14 @@ export interface StyleSeatRunFile {
 // ─── Run config ───────────────────────────────────────────────────────────────
 
 export interface StyleSeatRunConfig {
+  discoveryMode?: StyleSeatDiscoveryMode;
+  sourceUrl?: string;
   market: string;
   state: string;
   categories: StyleSeatCategory[];
   maxResults: number;
+  maxOperators?: number;
+  crawlDepth?: number;
   mode: StyleSeatPipelineMode;
   resolverMode?: ResolveMode;
 }
@@ -206,17 +249,24 @@ export interface StyleSeatRunConfig {
 // ─── API shapes ───────────────────────────────────────────────────────────────
 
 export interface StyleSeatRunRequest {
-  market: string;
+  discoveryMode?: StyleSeatDiscoveryMode;
+  sourceUrl?: string;
+  city?: string;
+  market?: string;
   state?: string;
-  categories: StyleSeatCategory[];
-  maxResults: number;
-  mode: ResolveMode | StyleSeatPipelineMode;
+  categories?: StyleSeatCategory[];
+  maxResults?: number;
+  maxOperators?: number;
+  crawlDepth?: number;
+  mode?: ResolveMode | StyleSeatPipelineMode;
+  pipelineMode?: StyleSeatPipelineMode;
   resolverMode?: ResolveMode;
 }
 
 export interface StyleSeatRunResponse {
   ok: true;
   run: StyleSeatHarvestRun;
+  crawl?: StyleSeatCrawlResult | null;
   operators: StyleSeatOperator[];
   normalized?: unknown[];
   results: StyleSeatResolverResult[];
@@ -241,6 +291,7 @@ export interface StyleSeatListResponse {
 export interface StyleSeatDetailResponse {
   ok: true;
   run: StyleSeatHarvestRun;
+  crawl: StyleSeatCrawlResult | null;
   operators: StyleSeatOperator[];
   raw: StyleSeatOperator[];
   normalized: unknown[];

@@ -31,6 +31,7 @@ export async function GET(
     return NextResponse.json({
       ok: true,
       run: file.run,
+      crawl: file.crawl ?? null,
       operators: file.operators,
       raw: file.operators,
       normalized: file.normalized ?? [],

@@ -11,6 +11,7 @@ import {
   STYLESEAT_STATUS_LABELS,
   STYLESEAT_STATUS_COLORS,
   type StyleSeatCategory,
+  type StyleSeatDiscoveryMode,
   type StyleSeatOperator,
   type StyleSeatResolverResult,
   type StyleSeatHarvestRun,
@@ -61,6 +62,7 @@ type StyleSeatPageRunData = {
   run: StyleSeatHarvestRun;
   operators: StyleSeatOperator[];
   results: StyleSeatResolverResult[];
+  crawl?: import("@/lib/studios/styleseat/types").StyleSeatCrawlResult | null;
   raw?: StyleSeatOperator[];
   normalized?: unknown[];
   prospects?: unknown[];
@@ -77,9 +79,12 @@ function RunForm({
   progressIdx,
 }: {
   onRun: (config: {
-    market: string; state: string;
+    discoveryMode: StyleSeatDiscoveryMode;
+    sourceUrl?: string;
+    city?: string; state: string;
     categories: StyleSeatCategory[];
-    maxResults: number; mode: StyleSeatPipelineMode; resolverMode: ResolveMode;
+    maxOperators: number; crawlDepth: number;
+    pipelineMode: StyleSeatPipelineMode; resolverMode: ResolveMode;
   }) => void;
   loading: boolean;
   error: string | null;
@@ -87,8 +92,11 @@ function RunForm({
 }) {
   const [market, setMarket]           = useState("Houston");
   const [state, setState]             = useState("TX");
+  const [discoveryMode, setDiscoveryMode] = useState<StyleSeatDiscoveryMode>("aggregator_crawl");
+  const [sourceUrl, setSourceUrl] = useState("https://www.styleseat.com/m/");
+  const [crawlDepth, setCrawlDepth] = useState(2);
   const [categories, setCategories]   = useState<StyleSeatCategory[]>(["braids", "hair"]);
-  const [maxResults, setMaxResults]   = useState(10);
+  const [maxOperators, setMaxOperators]   = useState(25);
   const [resolverMode, setResolverMode] = useState<ResolveMode>("fast");
 
   function toggleCategory(cat: StyleSeatCategory) {
@@ -105,27 +113,67 @@ function RunForm({
   return (
     <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 16, padding: "24px", marginBottom: 24 }}>
       <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 16 }}>
-        DISCOVERY CONFIGURATION
+        DISCOVERY SOURCE
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
+        {([
+          ["Aggregator Crawl", "aggregator_crawl"],
+          ["Direct URL", "direct_url"],
+          ["Market Search", "market_search"],
+        ] as [string, StyleSeatDiscoveryMode][]).map(([label, mode]) => (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => setDiscoveryMode(mode)}
+            disabled={loading}
+            style={{
+              padding: "8px 14px",
+              borderRadius: 20,
+              border: "2px solid",
+              borderColor: discoveryMode === mode ? "#9d174d" : "#e7e5e4",
+              background: discoveryMode === mode ? "#9d174d" : "#fff",
+              color: discoveryMode === mode ? "#fff" : "#57534e",
+              fontSize: 12,
+              fontWeight: 800,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-        {/* Market */}
-        <div>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
-            MARKET / CITY
-          </label>
-          <input value={market} onChange={(e) => setMarket(e.target.value)}
-            placeholder="Houston" style={inputStyle} disabled={loading} />
-        </div>
+        {discoveryMode !== "market_search" && (
+          <div style={{ gridColumn: "1 / -1" }}>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
+              {discoveryMode === "direct_url" ? "PASTE STYLESEAT URL" : "START URL"}
+            </label>
+            <input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)}
+              placeholder="https://www.styleseat.com/m/" style={inputStyle} disabled={loading} />
+          </div>
+        )}
 
-        {/* State */}
-        <div>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
-            STATE ABBREV
-          </label>
-          <input value={state} onChange={(e) => setState(e.target.value)}
-            placeholder="TX" style={{ ...inputStyle }} disabled={loading} maxLength={2} />
-        </div>
+        {discoveryMode === "market_search" && (
+          <>
+            <div>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
+                CITY
+              </label>
+              <input value={market} onChange={(e) => setMarket(e.target.value)}
+                placeholder="Houston" style={inputStyle} disabled={loading} />
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
+                STATE
+              </label>
+              <input value={state} onChange={(e) => setState(e.target.value)}
+                placeholder="TX" style={{ ...inputStyle }} disabled={loading} maxLength={2} />
+            </div>
+          </>
+        )}
 
         {/* Categories */}
         <div style={{ gridColumn: "1 / -1" }}>
@@ -159,14 +207,26 @@ function RunForm({
           )}
         </div>
 
-        {/* Max results */}
+        {discoveryMode !== "market_search" && (
+          <div>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
+              CRAWL DEPTH
+            </label>
+            <select value={crawlDepth} onChange={(e) => setCrawlDepth(Number(e.target.value))}
+              style={inputStyle} disabled={loading}>
+              {[0, 1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+        )}
+
+        {/* Max operators */}
         <div>
           <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
             MAX OPERATORS
           </label>
-          <select value={maxResults} onChange={(e) => setMaxResults(Number(e.target.value))}
+          <select value={maxOperators} onChange={(e) => setMaxOperators(Number(e.target.value))}
             style={inputStyle} disabled={loading}>
-            {[5, 10, 20, 30, 50].map((n) => <option key={n} value={n}>{n}</option>)}
+            {[5, 10, 25, 50, 75, 100].map((n) => <option key={n} value={n}>{n}</option>)}
           </select>
         </div>
 
@@ -192,6 +252,17 @@ function RunForm({
           <div style={{ fontSize: 11, color: "#a8a29e", marginTop: 4 }}>
             {resolverMode === "fast" ? "URL pattern matching only. No AI spend." : "AI identity analysis. Slower, higher accuracy."}
           </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 16, padding: "12px 14px", background: "#fafaf9", border: "1px solid #e7e5e4", borderRadius: 10, fontSize: 11, color: "#57534e" }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 6 }}>RUN PLAN PREVIEW</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8 }}>
+          <span><strong>Mode:</strong> {discoveryMode.replace(/_/g, " ")}</span>
+          <span><strong>Seed:</strong> {discoveryMode === "market_search" ? `${market}, ${state}` : sourceUrl}</span>
+          <span><strong>Max:</strong> {maxOperators}</span>
+          <span><strong>Depth:</strong> {discoveryMode === "market_search" ? "market results" : crawlDepth}</span>
+          <span><strong>Resolver:</strong> {resolverMode}</span>
         </div>
       </div>
 
@@ -222,12 +293,12 @@ function RunForm({
           <button
             key={pipelineMode}
             type="button"
-            onClick={() => onRun({ market, state, categories, maxResults, mode: pipelineMode, resolverMode })}
-            disabled={loading || categories.length === 0 || !market}
+            onClick={() => onRun({ discoveryMode, sourceUrl, city: market, state, categories, maxOperators, crawlDepth, pipelineMode, resolverMode })}
+            disabled={loading || (discoveryMode === "market_search" && (!market || !state)) || (discoveryMode === "direct_url" && !sourceUrl)}
             style={{
               padding: "10px 18px", borderRadius: 10, border: idx === 0 ? "1px solid #e7e5e4" : "none",
-              background: loading || categories.length === 0 || !market ? "#d6d3d1" : idx === 0 ? "#fff" : "#1c1917",
-              color: loading || categories.length === 0 || !market ? "#fff" : idx === 0 ? "#57534e" : "#fff",
+              background: loading || (discoveryMode === "market_search" && (!market || !state)) || (discoveryMode === "direct_url" && !sourceUrl) ? "#d6d3d1" : idx === 0 ? "#fff" : "#1c1917",
+              color: loading || (discoveryMode === "market_search" && (!market || !state)) || (discoveryMode === "direct_url" && !sourceUrl) ? "#fff" : idx === 0 ? "#57534e" : "#fff",
               fontWeight: 800, fontSize: 14,
               cursor: loading || categories.length === 0 || !market ? "not-allowed" : "pointer",
             }}
@@ -723,15 +794,15 @@ function RecentRunsList({
             >
               <div>
                 <div style={{ fontSize: 13, fontWeight: 800, color: "#1c1917" }}>
-                  {run.market}{run.state ? `, ${run.state}` : ""} · {run.mode.replace(/_/g, " ")}
+                  {run.discoveryMode?.replace(/_/g, " ") ?? "market search"} · {run.sourceUrl ?? `${run.market}${run.state ? `, ${run.state}` : ""}`}
                 </div>
                 <div style={{ fontSize: 11, color: "#78716c", marginTop: 2 }}>
-                  {new Date(run.createdAt).toLocaleString()} · {run.categories.join(", ")}
+                  {new Date(run.createdAt).toLocaleString()} · {run.categories.join(", ") || "derived categories"}
                 </div>
               </div>
               <div style={{ fontSize: 11, color: "#57534e", textAlign: "right", whiteSpace: "nowrap" }}>
-                <strong>{totals?.harvested ?? run.totalHarvested}</strong> harvested<br />
-                <strong>{totals?.resolverMerged ?? run.totalResolved}</strong> merged · <strong>{totals?.failed ?? run.failedToSaveCount}</strong> failed
+                <strong>{totals?.profileUrls ?? 0}</strong> profiles · <strong>{totals?.harvested ?? run.totalHarvested}</strong> harvested<br />
+                <strong>{totals?.igCandidates ?? run.totalIgFound}</strong> IG · <strong>{totals?.resolverMerged ?? run.totalResolved}</strong> merged · <strong>{totals?.prospectsCreated ?? run.savedCount}</strong> saved · <strong>{totals?.failed ?? run.failedToSaveCount}</strong> failed
                 {loadingRunId === run.runId && <div style={{ color: "#9d174d", marginTop: 2 }}>Loading...</div>}
               </div>
             </button>
@@ -780,6 +851,7 @@ export default function StyleSeatDiscoveryPage() {
       }
       setRunData({
         run: data.run,
+        crawl: data.crawl,
         operators: data.operators,
         results: data.results,
         raw: data.raw,
@@ -797,9 +869,12 @@ export default function StyleSeatDiscoveryPage() {
   }
 
   async function handleRun(config: {
-    market: string; state: string;
+    discoveryMode: StyleSeatDiscoveryMode;
+    sourceUrl?: string;
+    city?: string; state: string;
     categories: StyleSeatCategory[];
-    maxResults: number; mode: StyleSeatPipelineMode; resolverMode: ResolveMode;
+    maxOperators: number; crawlDepth: number;
+    pipelineMode: StyleSeatPipelineMode; resolverMode: ResolveMode;
   }) {
     if (loading) return;
     setLoading(true);
@@ -829,6 +904,7 @@ export default function StyleSeatDiscoveryPage() {
       const ok = data as StyleSeatRunResponse;
       setRunData({
         run: ok.run,
+        crawl: ok.crawl,
         operators: ok.operators,
         results: ok.results,
         raw: ok.operators,
@@ -930,6 +1006,17 @@ export default function StyleSeatDiscoveryPage() {
               <span><strong>{runData.run.report?.totals.resolverMerged ?? runData.run.totalResolved}</strong> resolver merged</span>
               <span><strong>{runData.run.report?.totals.prospectsCreated ?? runData.run.savedCount}</strong> prospects created/updated</span>
               <span><strong>{runData.failures?.length ?? runData.run.failedToSaveCount}</strong> failures</span>
+            </div>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, fontSize: 11, color: "#78716c" }}>
+              <div>
+                <strong>Discovered markets:</strong> {(runData.run.report?.discoveredMarkets ?? runData.crawl?.discoveredMarkets ?? []).slice(0, 5).join(", ") || "none captured"}
+              </div>
+              <div>
+                <strong>Discovered categories:</strong> {(runData.run.report?.discoveredCategories ?? runData.crawl?.discoveredCategories ?? []).slice(0, 8).join(", ") || "none captured"}
+              </div>
+              <div style={{ gridColumn: "1 / -1", fontFamily: "monospace", wordBreak: "break-all" }}>
+                <strong>Artifacts:</strong> {Object.entries(runData.run.report?.artifactPaths ?? {}).map(([k, v]) => `${k}:${v}`).join(" | ") || "not available"}
+              </div>
             </div>
           </div>
 

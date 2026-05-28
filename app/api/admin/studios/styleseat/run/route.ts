@@ -9,6 +9,7 @@ export const maxDuration = 120; // enrichment phase can take 60-90s
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runStyleSeatHarvest } from "@/lib/studios/styleseat/extract";
+import { normalizeStyleSeatRecord } from "@/lib/studios/styleseat/normalize";
 import { runStyleSeatPipeline } from "@/lib/studios/styleseat/resolver";
 import { saveStyleSeatRun, generateStyleSeatRunId, getStyleSeatArtifactPaths } from "@/lib/studios/styleseat/store";
 import { getStoreBackendInfo, countProspects } from "@/lib/studios/prospects/store";
@@ -16,6 +17,7 @@ import { generateBatchId } from "@/lib/studios/prospects/from-resolver";
 import type { StyleSeatHarvestContext } from "@/lib/studios/styleseat/resolver";
 import type {
   StyleSeatHarvestRun,
+  StyleSeatDiscoveryMode,
   StyleSeatPipelineMode,
   StyleSeatRunReport,
   StyleSeatRunResponse,
@@ -30,13 +32,52 @@ const VALID_CATEGORIES: StyleSeatCategory[] = [
   "hair", "braids", "barber", "locs", "makeup",
   "lashes", "brows", "nails", "extensions",
 ];
+const DEFAULT_SOURCE_URL = "https://www.styleseat.com/m/";
+
+function normalizeCategory(input: string): StyleSeatCategory | null {
+  const value = input.toLowerCase().trim().replace(/\s+/g, "_");
+  const aliases: Record<string, StyleSeatCategory> = {
+    hair: "hair",
+    braids: "braids",
+    barber: "barber",
+    locs: "locs",
+    makeup: "makeup",
+    lashes: "lashes",
+    brows: "brows",
+    nails: "nails",
+    extensions: "extensions",
+  };
+  return aliases[value] ?? null;
+}
+
+function normalizeSourceUrl(input: string): string {
+  const url = new URL(input, DEFAULT_SOURCE_URL);
+  if (!/(\.|^)styleseat\.com$/i.test(url.hostname)) {
+    throw new Error("Only styleseat.com URLs are supported");
+  }
+  url.protocol = "https:";
+  url.hash = "";
+  for (const key of Array.from(url.searchParams.keys())) {
+    const lower = key.toLowerCase();
+    if (lower.startsWith("utm_") || ["fbclid", "gclid", "mc_cid", "mc_eid"].includes(lower)) {
+      url.searchParams.delete(key);
+    }
+  }
+  return url.toString();
+}
 
 const RunSchema = z.object({
-  market:     z.string().min(2).max(80),
+  discoveryMode: z.enum(["aggregator_crawl", "direct_url", "market_search"]).default("aggregator_crawl"),
+  sourceUrl:  z.string().max(500).optional(),
+  city:       z.string().max(80).optional(),
+  market:     z.string().max(80).optional(),
   state:      z.string().max(40).optional().default(""),
-  categories: z.array(z.enum(VALID_CATEGORIES as [StyleSeatCategory, ...StyleSeatCategory[]])).min(1).max(9),
-  maxResults: z.number().int().min(1).max(100).default(10),
+  categories: z.array(z.string()).optional().default([]),
+  maxResults: z.number().int().min(1).max(100).optional(),
+  maxOperators: z.number().int().min(1).max(100).optional(),
+  crawlDepth: z.number().int().min(0).max(4).optional().default(2),
   mode:       z.enum(["fast", "deep", "harvest_only", "harvest_and_resolve", "full_pipeline"]).default("full_pipeline"),
+  pipelineMode: z.enum(["harvest_only", "harvest_and_resolve", "full_pipeline"]).optional(),
   resolverMode: z.enum(["fast", "deep"]).optional().default("fast"),
 });
 
@@ -61,11 +102,36 @@ export async function POST(req: NextRequest) {
     return err("Validation error", parsed.error.errors[0]?.message);
   }
 
-  const { market, state, categories, maxResults } = parsed.data;
+  let sourceUrl: string | null = null;
+  try {
+    sourceUrl = parsed.data.discoveryMode === "market_search"
+      ? null
+      : normalizeSourceUrl(parsed.data.sourceUrl || DEFAULT_SOURCE_URL);
+  } catch (e) {
+    return err("Validation error", e instanceof Error ? e.message : String(e));
+  }
+
+  const discoveryMode = parsed.data.discoveryMode as StyleSeatDiscoveryMode;
+  const market = (parsed.data.city || parsed.data.market || "").trim();
+  const state = (parsed.data.state || "").trim().toUpperCase();
+  if (discoveryMode === "direct_url" && !parsed.data.sourceUrl) {
+    return err("Validation error", "direct_url requires sourceUrl");
+  }
+  if (discoveryMode === "market_search" && (!market || !state)) {
+    return err("Validation error", "market_search requires city and state");
+  }
+
+  const categories = parsed.data.categories
+    .map(normalizeCategory)
+    .filter((category): category is StyleSeatCategory => category !== null);
+  const effectiveCategories = categories.length > 0 ? categories : discoveryMode === "market_search" ? ["hair"] as StyleSeatCategory[] : [];
+  const maxOperators = parsed.data.maxOperators ?? parsed.data.maxResults ?? 25;
+  const crawlDepth = parsed.data.crawlDepth ?? 2;
   const pipelineMode: StyleSeatPipelineMode =
-    parsed.data.mode === "fast" || parsed.data.mode === "deep"
+    parsed.data.pipelineMode ??
+    (parsed.data.mode === "fast" || parsed.data.mode === "deep"
       ? "full_pipeline"
-      : parsed.data.mode;
+      : parsed.data.mode);
   const resolverMode: ResolveMode =
     parsed.data.mode === "fast" || parsed.data.mode === "deep"
       ? parsed.data.mode
@@ -82,9 +148,18 @@ export async function POST(req: NextRequest) {
   console.log(`[styleseat/run] backend=${backendInfo.backend} store=${prospectStorePath ?? "postgres"} prospectsBeforeCount=${prospectsBeforeCount}`);
 
   // ── Step 2: StyleSeat harvest ───────────────────────────────────────────────
-  console.log(`[styleseat/run] harvesting market=${market} categories=[${categories}] maxResults=${maxResults}`);
-  const { operators, actorRunId, error: harvestError } = await runStyleSeatHarvest({
-    market, state, categories, maxResults, mode: pipelineMode, resolverMode,
+  console.log(`[styleseat/run] discoveryMode=${discoveryMode} sourceUrl=${sourceUrl ?? "market"} market=${market} categories=[${effectiveCategories}] maxOperators=${maxOperators}`);
+  const { operators, actorRunId, error: harvestError, crawl } = await runStyleSeatHarvest({
+    discoveryMode,
+    sourceUrl: sourceUrl ?? undefined,
+    market: market || "StyleSeat",
+    state,
+    categories: effectiveCategories,
+    maxResults: maxOperators,
+    maxOperators,
+    crawlDepth,
+    mode: pipelineMode,
+    resolverMode,
   });
 
   if (harvestError) errors.push(harvestError);
@@ -102,11 +177,12 @@ export async function POST(req: NextRequest) {
     vertical:       "beauty",
     sourcePlatform: "styleseat",
     sourceTool:     "styleseat_harvest",
-    market,
+    market: market || crawl?.discoveredMarkets[0] || "StyleSeat",
     state,
-    categories,
+    categories: effectiveCategories,
   };
 
+  const normalizedArtifact = operators.map(normalizeStyleSeatRecord);
   let pipelineResult = {
     results: [] as Awaited<ReturnType<typeof runStyleSeatPipeline>>["results"],
     normalized: [] as Awaited<ReturnType<typeof runStyleSeatPipeline>>["normalized"],
@@ -154,9 +230,16 @@ export async function POST(req: NextRequest) {
     runId,
     batchId,
     createdAt: now,
-    market,
+    market: market || crawl?.discoveredMarkets[0] || "StyleSeat",
     state,
-    categories,
+    discoveryMode,
+    sourceUrl,
+    seedUrls: crawl?.seedUrls ?? (sourceUrl ? [sourceUrl] : []),
+    crawlDepth,
+    maxOperators,
+    discoveredMarkets: crawl?.discoveredMarkets ?? [],
+    discoveredCategories: crawl?.discoveredCategories ?? [],
+    categories: effectiveCategories,
     mode: pipelineMode,
     resolverMode,
     apifyActorRunId: actorRunId,
@@ -178,12 +261,22 @@ export async function POST(req: NextRequest) {
   const report: StyleSeatRunReport = {
     runId,
     createdAt: now,
-    market,
-    categories,
+    discoveryMode,
+    sourceUrl,
+    seedUrls: crawl?.seedUrls ?? (sourceUrl ? [sourceUrl] : []),
+    marketSearchInput: discoveryMode === "market_search" ? { city: market, state } : null,
+    market: market || crawl?.discoveredMarkets[0] || "StyleSeat",
+    categories: effectiveCategories,
+    crawlDepth,
+    maxOperators,
+    resolverMode,
     mode: pipelineMode,
+    pipelineMode,
     totals: {
+      crawledUrls:       crawl?.crawledUrls.length ?? 0,
+      profileUrls:       crawl?.profileUrls.length ?? operators.length,
       harvested:        operators.length,
-      normalized:       normalized.length || (pipelineMode === "harvest_only" ? 0 : operators.length),
+      normalized:       normalizedArtifact.length,
       igCandidates:     totalIgFound,
       resolverMerged:   results.filter((r) => r.prospectId).length,
       prospectsCreated: savedCount,
@@ -192,6 +285,8 @@ export async function POST(req: NextRequest) {
       failed:           failedToSaveCount,
     },
     artifactPaths: getStyleSeatArtifactPaths(runId),
+    discoveredMarkets: crawl?.discoveredMarkets ?? [],
+    discoveredCategories: crawl?.discoveredCategories ?? [],
     notes: errors,
   };
   run.report = report;
@@ -200,8 +295,9 @@ export async function POST(req: NextRequest) {
   try {
     await saveStyleSeatRun({
       run,
+      crawl,
       operators,
-      normalized,
+      normalized: normalizedArtifact,
       results,
       prospects,
       failures: saveErrors,
@@ -224,8 +320,9 @@ export async function POST(req: NextRequest) {
     {
       ok: true,
       run,
+      crawl,
       operators,
-      normalized,
+      normalized: normalizedArtifact,
       results,
       prospects,
       failures: saveErrors,
