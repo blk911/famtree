@@ -160,6 +160,34 @@ export interface StyleSeatRunTotals {
   failed: number;
 }
 
+export interface StyleSeatRequestEcho {
+  discoveryMode: StyleSeatDiscoveryMode;
+  sourceUrl: string | null;
+  city: string;
+  state: string;
+  categories: StyleSeatCategory[];
+  maxOperators: number;
+  crawlDepth: number;
+  pipelineMode: StyleSeatPipelineMode;
+  resolverMode: ResolveMode;
+  debug: boolean;
+  generatedSearchUrls: string[];
+  internalApiEligible: boolean;
+  internalApiReason: string;
+}
+
+export interface StyleSeatExecutionPath {
+  discoveryMode: StyleSeatDiscoveryMode;
+  urlClassification: "profile" | "search" | "category" | "aggregator" | "market_search" | "unknown";
+  enteredInternalApiPath: boolean;
+  enteredStaticExtractionPath: boolean;
+  enteredFallbackPath: boolean;
+  generatedSearchUrls: string[];
+  apiExtractionAttempted: boolean;
+  apiExtractionSucceeded: boolean;
+  extractionSource: "internal_api" | "static_links" | "embedded_json" | "none";
+}
+
 export interface StyleSeatProspectPersistenceAuditEntry {
   name: string;
   profileUrl: string | null;
@@ -201,6 +229,8 @@ export interface StyleSeatRunReport {
   discoveredMarkets?: string[];
   discoveredCategories?: string[];
   extractionSource?: "internal_api" | "static_links" | "embedded_json" | "none";
+  requestEcho?: StyleSeatRequestEcho;
+  executionPath?: StyleSeatExecutionPath;
   artifactPaths: Record<string, string>;
   intelligenceSummary?: {
     topMarkets: string[];
@@ -407,6 +437,9 @@ export interface StyleSeatRunFile {
   operatorScores?: StyleSeatOperatorScore[];
   marketClusters?: StyleSeatMarketCluster[];
   prospectPersistenceAudit?: StyleSeatProspectPersistenceAuditEntry[];
+  requestEcho?: StyleSeatRequestEcho;
+  executionPath?: StyleSeatExecutionPath;
+  generatedSearchUrls?: string[];
   report?: StyleSeatRunReport;
 }
 
@@ -458,6 +491,8 @@ export interface StyleSeatRunResponse {
   log?: unknown[];
   intelligence?: StyleSeatIntelligenceReport | null;
   report?: StyleSeatRunReport;
+  requestEcho?: StyleSeatRequestEcho;
+  executionPath?: StyleSeatExecutionPath;
   diagnosticSummary?: StyleSeatExtractionDiagnosticSummary;
 }
 
@@ -487,4 +522,6 @@ export interface StyleSeatDetailResponse {
   log: unknown[];
   intelligence: StyleSeatIntelligenceReport | null;
   report: StyleSeatRunReport | null;
+  requestEcho?: StyleSeatRequestEcho;
+  executionPath?: StyleSeatExecutionPath;
 }

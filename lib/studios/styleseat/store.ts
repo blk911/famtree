@@ -24,6 +24,8 @@ const ARTIFACT_NAMES = [
   "operator-scores",
   "market-clusters",
   "prospect-persistence-audit",
+  "execution-path",
+  "generated-search-urls",
 ] as const;
 type ArtifactName = typeof ARTIFACT_NAMES[number];
 
@@ -100,6 +102,8 @@ function buildFallbackReport(file: StyleSeatRunFile): StyleSeatRunReport {
     discoveredMarkets: run.discoveredMarkets ?? file.crawl?.discoveredMarkets ?? [],
     discoveredCategories: run.discoveredCategories ?? file.crawl?.discoveredCategories ?? [],
     extractionSource: run.report?.extractionSource ?? file.crawl?.debug?.extractionSource ?? "none",
+    requestEcho: run.report?.requestEcho ?? file.requestEcho,
+    executionPath: run.report?.executionPath ?? file.executionPath,
     notes: run.errors ?? [],
   };
 }
@@ -138,6 +142,8 @@ export async function saveStyleSeatRun(file: StyleSeatRunFile): Promise<void> {
   await writeJson(artifactPath(run.runId, "operator-scores"), fullFile.operatorScores ?? fullFile.intelligence?.operators ?? []);
   await writeJson(artifactPath(run.runId, "market-clusters"), fullFile.marketClusters ?? fullFile.intelligence?.clusters ?? []);
   await writeJson(artifactPath(run.runId, "prospect-persistence-audit"), fullFile.prospectPersistenceAudit ?? []);
+  await writeJson(artifactPath(run.runId, "execution-path"), fullFile.executionPath ?? report.executionPath ?? null);
+  await writeJson(artifactPath(run.runId, "generated-search-urls"), fullFile.generatedSearchUrls ?? report.requestEcho?.generatedSearchUrls ?? []);
 }
 
 async function loadFromArtifacts(runId: string): Promise<StyleSeatRunFile | null> {
@@ -179,6 +185,9 @@ async function loadFromArtifacts(runId: string): Promise<StyleSeatRunFile | null
     prospects:  await readJson<unknown[]>(artifactPath(runId, "prospects")) ?? flat?.prospects ?? [],
     failures:   await readJson<unknown[]>(artifactPath(runId, "failures")) ?? flat?.failures ?? [],
     prospectPersistenceAudit: await readJson<StyleSeatRunFile["prospectPersistenceAudit"]>(artifactPath(runId, "prospect-persistence-audit")) ?? flat?.prospectPersistenceAudit ?? [],
+    requestEcho: flat?.requestEcho ?? report.requestEcho,
+    executionPath: await readJson<StyleSeatRunFile["executionPath"]>(artifactPath(runId, "execution-path")) ?? flat?.executionPath ?? report.executionPath,
+    generatedSearchUrls: await readJson<string[]>(artifactPath(runId, "generated-search-urls")) ?? flat?.generatedSearchUrls ?? report.requestEcho?.generatedSearchUrls ?? [],
     log:        await readJson<unknown[]>(artifactPath(runId, "log")) ?? flat?.log ?? [],
     intelligence: await readJson<StyleSeatRunFile["intelligence"]>(artifactPath(runId, "market-intelligence")) ?? flat?.intelligence ?? null,
     operatorScores: await readJson<StyleSeatRunFile["operatorScores"]>(artifactPath(runId, "operator-scores")) ?? flat?.operatorScores ?? [],
@@ -202,6 +211,9 @@ export async function loadStyleSeatRun(runId: string): Promise<StyleSeatRunFile 
     prospects:  flat.prospects ?? [],
     failures:   flat.failures ?? flat.run.saveErrors ?? [],
     prospectPersistenceAudit: flat.prospectPersistenceAudit ?? [],
+    requestEcho: flat.requestEcho ?? report.requestEcho,
+    executionPath: flat.executionPath ?? report.executionPath,
+    generatedSearchUrls: flat.generatedSearchUrls ?? report.requestEcho?.generatedSearchUrls ?? [],
     log:        flat.log ?? [],
     intelligence: flat.intelligence ?? null,
     operatorScores: flat.operatorScores ?? [],

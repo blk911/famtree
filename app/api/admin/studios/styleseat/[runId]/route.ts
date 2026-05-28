@@ -42,6 +42,8 @@ export async function GET(
       log: file.log ?? [],
       intelligence: file.intelligence ?? null,
       report: file.report ?? file.run.report ?? null,
+      requestEcho: file.requestEcho ?? file.report?.requestEcho,
+      executionPath: file.executionPath ?? file.report?.executionPath,
     } satisfies StyleSeatDetailResponse);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

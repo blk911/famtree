@@ -8,7 +8,11 @@ export const maxDuration = 120; // enrichment phase can take 60-90s
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { runStyleSeatHarvest } from "@/lib/studios/styleseat/extract";
+import {
+  buildStyleSeatMarketplaceSearchUrl,
+  classifyStyleSeatDiscoveryUrl,
+  runStyleSeatHarvest,
+} from "@/lib/studios/styleseat/extract";
 import { normalizeStyleSeatRecord } from "@/lib/studios/styleseat/normalize";
 import { runStyleSeatPipeline } from "@/lib/studios/styleseat/resolver";
 import { persistStyleSeatDiscoveries } from "@/lib/studios/styleseat/persistence";
@@ -27,6 +31,8 @@ import type {
   StyleSeatCategory,
   StyleSeatExtractionDiagnosticSummary,
   StyleSeatProspectPersistenceAuditEntry,
+  StyleSeatExecutionPath,
+  StyleSeatRequestEcho,
 } from "@/lib/studios/styleseat/types";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 
@@ -145,6 +151,34 @@ export async function POST(req: NextRequest) {
   const batchId = generateBatchId();
   const now    = new Date().toISOString();
   const errors: string[] = [];
+  const generatedSearchUrls = discoveryMode === "market_search"
+    ? effectiveCategories.map((category) => buildStyleSeatMarketplaceSearchUrl(category, market, state))
+    : [];
+  const sourceClassification = sourceUrl ? classifyStyleSeatDiscoveryUrl(sourceUrl) : discoveryMode === "market_search" ? "market_search" : "unknown";
+  const internalApiEligible = sourceClassification === "search" || discoveryMode === "market_search";
+  const internalApiReason =
+    sourceClassification === "search"
+      ? "sourceUrl classified as /m/search URL"
+      : discoveryMode === "market_search"
+        ? "market_search generated search URL"
+        : discoveryMode === "aggregator_crawl"
+          ? "aggregator mode bypassed internal API"
+          : `sourceUrl classified as ${sourceClassification}`;
+  const requestEcho: StyleSeatRequestEcho = {
+    discoveryMode,
+    sourceUrl,
+    city: market,
+    state,
+    categories: effectiveCategories,
+    maxOperators,
+    crawlDepth,
+    pipelineMode,
+    resolverMode,
+    debug: parsed.data.debug,
+    generatedSearchUrls,
+    internalApiEligible,
+    internalApiReason,
+  };
 
   // ── Step 1: Capture store path + before-count ───────────────────────────────
   const backendInfo = await getStoreBackendInfo();
@@ -154,6 +188,7 @@ export async function POST(req: NextRequest) {
 
   // ── Step 2: StyleSeat harvest ───────────────────────────────────────────────
   console.log(`[styleseat/run] discoveryMode=${discoveryMode} sourceUrl=${sourceUrl ?? "market"} market=${market} categories=[${effectiveCategories}] maxOperators=${maxOperators}`);
+  console.log("[styleseat/run] requestEcho", requestEcho);
   const { operators, actorRunId, error: harvestError, crawl } = await runStyleSeatHarvest({
     runId,
     debug: parsed.data.debug,
@@ -206,6 +241,18 @@ export async function POST(req: NextRequest) {
   };
 
   const normalizedArtifact = operators.map(normalizeStyleSeatRecord);
+  const extractionSource = crawl?.debug?.extractionSource ?? (operators.some((operator) => operator.extractionSource === "internal_api") ? "internal_api" : "none");
+  const executionPath: StyleSeatExecutionPath = {
+    discoveryMode,
+    urlClassification: sourceClassification,
+    enteredInternalApiPath: (crawl?.debug?.internalApiUrlsTried?.length ?? 0) > 0 || extractionSource === "internal_api",
+    enteredStaticExtractionPath: (crawl?.debug?.staticAnchorCount ?? 0) > 0,
+    enteredFallbackPath: (crawl?.debug?.notes ?? []).some((note) => note.toLowerCase().includes("fallback")),
+    generatedSearchUrls,
+    apiExtractionAttempted: (crawl?.debug?.internalApiUrlsTried?.length ?? 0) > 0,
+    apiExtractionSucceeded: (crawl?.debug?.internalApiUrlsSucceeded?.length ?? 0) > 0 || extractionSource === "internal_api",
+    extractionSource,
+  };
   let persistenceResult: Awaited<ReturnType<typeof persistStyleSeatDiscoveries>> = {
     audit: [] as StyleSeatProspectPersistenceAuditEntry[],
     summary: { attempted: 0, created: 0, updated: 0, skipped: 0, failed: 0, topSkipReasons: [] },
@@ -352,7 +399,9 @@ export async function POST(req: NextRequest) {
     artifactPaths: getStyleSeatArtifactPaths(runId),
     discoveredMarkets: crawl?.discoveredMarkets ?? [],
     discoveredCategories: crawl?.discoveredCategories ?? [],
-    extractionSource: crawl?.debug?.extractionSource ?? (operators.some((operator) => operator.extractionSource === "internal_api") ? "internal_api" : "none"),
+    extractionSource,
+    requestEcho,
+    executionPath,
     persistenceAuditSummary: persistenceResult.summary,
     notes: runErrors,
   };
@@ -388,6 +437,9 @@ export async function POST(req: NextRequest) {
       prospects,
       failures: saveErrors,
       prospectPersistenceAudit: persistenceResult.audit,
+      requestEcho,
+      executionPath,
+      generatedSearchUrls,
       intelligence,
       operatorScores: intelligence.operators,
       marketClusters: intelligence.clusters,
@@ -417,6 +469,8 @@ export async function POST(req: NextRequest) {
       prospects,
       failures: saveErrors,
       prospectPersistenceAudit: persistenceResult.audit,
+      requestEcho,
+      executionPath,
       intelligence,
       log: [{
         at: now,

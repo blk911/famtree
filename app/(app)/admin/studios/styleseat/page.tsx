@@ -22,9 +22,13 @@ import {
   type StyleSeatDetailResponse,
   type StyleSeatIntelligenceReport,
   type StyleSeatExtractionDiagnosticSummary,
+  type StyleSeatExecutionPath,
   type StyleSeatProspectPersistenceAuditEntry,
+  type StyleSeatRequestEcho,
 } from "@/lib/studios/styleseat/types";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
+
+const STYLESEAT_UI_BUILD_STAMP = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local-dev";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -74,6 +78,8 @@ type StyleSeatPageRunData = {
   log?: unknown[];
   intelligence?: StyleSeatIntelligenceReport | null;
   diagnosticSummary?: StyleSeatExtractionDiagnosticSummary;
+  requestEcho?: StyleSeatRequestEcho;
+  executionPath?: StyleSeatExecutionPath;
 };
 
 // ─── Run form ─────────────────────────────────────────────────────────────────
@@ -106,6 +112,7 @@ function RunForm({
   const [categories, setCategories]   = useState<StyleSeatCategory[]>(["braids", "hair"]);
   const [maxOperators, setMaxOperators]   = useState(25);
   const [resolverMode, setResolverMode] = useState<ResolveMode>("fast");
+  const [pipelinePreviewMode, setPipelinePreviewMode] = useState<StyleSeatPipelineMode>("harvest_only");
 
   function toggleCategory(cat: StyleSeatCategory) {
     setCategories((prev) =>
@@ -126,6 +133,17 @@ function RunForm({
   const actionsDisabled = loading
     || (discoveryMode === "market_search" && (!market || !state))
     || (discoveryMode === "direct_url" && !sourceUrl);
+  const requestPreview = {
+    debug: debugExtraction,
+    discoveryMode,
+    ...(discoveryMode !== "market_search" ? { sourceUrl } : {}),
+    ...(discoveryMode === "market_search" ? { city: market, state } : { state }),
+    categories,
+    maxOperators,
+    crawlDepth,
+    pipelineMode: pipelinePreviewMode,
+    resolverMode,
+  };
 
   return (
     <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 16, padding: "24px", marginBottom: 24 }}>
@@ -302,6 +320,16 @@ function RunForm({
         </div>
       </div>
 
+      <div style={{ marginTop: 12, padding: "12px 14px", background: "#1c1917", border: "1px solid #292524", borderRadius: 10 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", marginBottom: 8 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.08em" }}>RUN REQUEST PREVIEW</div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: "#fef3c7" }}>ACTIVE MODE: {discoveryMode}</div>
+        </div>
+        <pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-word", color: "#e7e5e4", fontSize: 11, lineHeight: 1.5 }}>
+          {JSON.stringify(requestPreview, null, 2)}
+        </pre>
+      </div>
+
       {/* Error */}
       {error && (
         <div style={{ marginTop: 16, padding: "10px 14px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, fontSize: 13, color: "#b91c1c" }}>
@@ -329,6 +357,8 @@ function RunForm({
           <button
             key={pipelineMode}
             type="button"
+            onMouseEnter={() => setPipelinePreviewMode(pipelineMode)}
+            onFocus={() => setPipelinePreviewMode(pipelineMode)}
             onClick={() => onRun({ debug: debugExtraction, discoveryMode, sourceUrl, city: market, state, categories, maxOperators, crawlDepth, pipelineMode, resolverMode })}
             disabled={actionsDisabled}
             style={{
@@ -395,6 +425,47 @@ function DiagnosticSummaryCard({ summary }: { summary?: StyleSeatExtractionDiagn
       {summary.debugArtifactPath && (
         <div style={{ marginTop: 8, fontFamily: "monospace", fontSize: 11, color: "#9a3412", wordBreak: "break-all" }}>
           {summary.debugArtifactPath}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ExecutionPathCard({
+  requestEcho,
+  executionPath,
+  report,
+}: {
+  requestEcho?: StyleSeatRequestEcho;
+  executionPath?: StyleSeatExecutionPath;
+  report?: StyleSeatHarvestRun["report"];
+}) {
+  if (!requestEcho && !executionPath) return null;
+  const apiTried = report?.totals.internalApiUrlsTried ?? 0;
+  const apiSucceeded = report?.totals.internalApiUrlsSucceeded ?? 0;
+  return (
+    <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, padding: "12px 16px", marginBottom: 16 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, color: "#1d4ed8", letterSpacing: "0.08em", marginBottom: 8 }}>
+        EXECUTION PATH
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, fontSize: 12, color: "#1e3a8a" }}>
+        <span><strong>discoveryMode:</strong> {requestEcho?.discoveryMode ?? executionPath?.discoveryMode}</span>
+        <span><strong>classification:</strong> {executionPath?.urlClassification ?? "unknown"}</span>
+        <span><strong>extractionSource:</strong> {executionPath?.extractionSource ?? report?.extractionSource ?? "none"}</span>
+        <span><strong>internal API eligible:</strong> {requestEcho?.internalApiEligible ? "yes" : "no"}</span>
+        <span><strong>API attempted:</strong> {executionPath?.apiExtractionAttempted ? "yes" : "no"}</span>
+        <span><strong>API succeeded:</strong> {executionPath?.apiExtractionSucceeded ? "yes" : "no"}</span>
+        <span><strong>API URLs tried:</strong> {apiTried}</span>
+        <span><strong>API URLs succeeded:</strong> {apiSucceeded}</span>
+      </div>
+      {requestEcho?.internalApiReason && (
+        <div style={{ marginTop: 8, fontSize: 12, color: "#1d4ed8" }}>
+          <strong>Reason:</strong> {requestEcho.internalApiReason}
+        </div>
+      )}
+      {(requestEcho?.generatedSearchUrls.length ?? 0) > 0 && (
+        <div style={{ marginTop: 8, fontSize: 11, color: "#1e40af", fontFamily: "monospace", wordBreak: "break-all" }}>
+          <strong>Generated search URLs:</strong> {requestEcho?.generatedSearchUrls.join(" | ")}
         </div>
       )}
     </div>
@@ -1055,6 +1126,8 @@ export default function StyleSeatDiscoveryPage() {
         prospectPersistenceAudit: data.prospectPersistenceAudit,
         log: data.log,
         intelligence: data.intelligence,
+        requestEcho: data.requestEcho,
+        executionPath: data.executionPath,
       });
       setTab(data.intelligence ? "intelligence" : "summary");
     } catch (e) {
@@ -1112,6 +1185,8 @@ export default function StyleSeatDiscoveryPage() {
         log: ok.log,
         intelligence: ok.intelligence,
         diagnosticSummary: ok.diagnosticSummary,
+        requestEcho: ok.requestEcho,
+        executionPath: ok.executionPath,
       });
       await loadRuns();
     } catch (e) {
@@ -1197,6 +1272,7 @@ export default function StyleSeatDiscoveryPage() {
 
           <SummaryCards run={runData.run} />
           <DiagnosticSummaryCard summary={runData.diagnosticSummary} />
+          <ExecutionPathCard requestEcho={runData.requestEcho ?? runData.run.report?.requestEcho} executionPath={runData.executionPath ?? runData.run.report?.executionPath} report={runData.run.report} />
 
           <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "12px 16px", marginBottom: 16 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 8 }}>RUN ARTIFACTS</div>
@@ -1266,7 +1342,7 @@ export default function StyleSeatDiscoveryPage() {
       )}
 
       <div style={{ marginTop: 20, fontSize: 11, color: "#d6d3d1", textAlign: "right" }}>
-        StyleSeat Discovery · Admin only · Beauty vertical · Not visible to members
+        StyleSeat Discovery · Admin only · Beauty vertical · Not visible to members · build {STYLESEAT_UI_BUILD_STAMP}
       </div>
     </div>
   );

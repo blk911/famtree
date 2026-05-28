@@ -2,6 +2,8 @@
 // Admin shell for managing AIH Studios
 // TODO(studios:auth): replace any local check with the existing requireAdmin() guard
 
+export const dynamic = "force-dynamic";
+
 import type { CSSProperties } from "react";
 import {
   MOCK_PROVIDERS,

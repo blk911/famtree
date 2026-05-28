@@ -46,6 +46,10 @@ function buildMarketplaceSearchUrl(category: StyleSeatCategory, market: string, 
   return `https://www.styleseat.com/m/search/${citySlug}-${stateSlug}/${categorySlug}`;
 }
 
+export function buildStyleSeatMarketplaceSearchUrl(category: StyleSeatCategory, market: string, state: string): string {
+  return buildMarketplaceSearchUrl(category, market, state);
+}
+
 export function normalizeStyleSeatUrl(input: string): string {
   const url = new URL(input, DEFAULT_AGGREGATOR_URL);
   if (!/(\.|^)styleseat\.com$/i.test(url.hostname)) {
@@ -71,6 +75,18 @@ function classifyStyleSeatUrl(url: string): "profile" | "search" | "category" | 
   if (/^\/m\/(?:p|v|pro|provider)\/[^/]+$/i.test(pathname)) return "profile";
   if (Object.values(STYLESEAT_CATEGORY_SLUGS).some((slug) => pathname.includes(`/${slug}/`) || pathname === `/${slug}`)) return "category";
   return "unknown";
+}
+
+export function classifyStyleSeatDiscoveryUrl(url: string): "profile" | "search" | "category" | "aggregator" | "unknown" {
+  return classifyStyleSeatUrl(url);
+}
+
+export function isStyleSeatSearchUrl(url: string): boolean {
+  try {
+    return classifyStyleSeatUrl(url) === "search";
+  } catch {
+    return false;
+  }
 }
 
 function classifyStyleSeatDebugUrl(url: string): "profile" | "search" | "category" | "booking" | "account" | "blog" | "legal" | "unknown" {
@@ -671,6 +687,7 @@ export async function crawlStyleSeatDiscovery(input: {
     if (next.depth > input.crawlDepth) continue;
 
     if (kind === "search") {
+      console.log(`[styleseat/extract] Using internal API extraction for search URL: ${next.url}`);
       const apiResult = await extractStyleSeatViaInternalApi({
         sourceUrl: next.url,
         city: input.config.market,
