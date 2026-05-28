@@ -30,6 +30,18 @@ import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 
 const STYLESEAT_UI_BUILD_STAMP = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local-dev";
 
+const PIPELINE_MODE_LABELS: Record<StyleSeatPipelineMode, string> = {
+  harvest_only: "Harvest Only",
+  harvest_and_resolve: "Harvest + Resolve",
+  full_pipeline: "Full Pipeline",
+};
+
+const PIPELINE_MODE_HELP: Record<StyleSeatPipelineMode, string> = {
+  harvest_only: "Extract StyleSeat records, normalize them, and generate intelligence. Resolver and prospect persistence are intentionally skipped.",
+  harvest_and_resolve: "Extract records and run the identity resolver. Prospect persistence is attempted after discovery records are prepared.",
+  full_pipeline: "Extract records, run resolver enrichment, and persist canonical prospects.",
+};
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function confColor(n: number) {
@@ -384,12 +396,19 @@ function RunForm({
 // ─── Summary cards ────────────────────────────────────────────────────────────
 
 function SummaryCards({ run }: { run: StyleSeatHarvestRun }) {
+  const persistedCount = (run.report?.totals.prospectsCreated ?? 0) + (run.report?.totals.prospectsUpdated ?? 0);
+  const mode = run.mode;
   const stats = [
     { label: "Operators found",  val: run.totalHarvested,  color: "#1c1917" },
-    { label: "IG matches",       val: run.totalIgFound,    color: "#1d4ed8" },
-    { label: "Resolved",         val: run.totalResolved,   color: "#15803d" },
-    { label: "Prospects saved",  val: run.totalProspects,  color: "#9d174d" },
-    { label: "Failed to save",   val: run.failedToSaveCount, color: run.failedToSaveCount > 0 ? "#b91c1c" : "#a8a29e" },
+    { label: "Normalized",       val: run.report?.totals.normalized ?? run.totalHarvested, color: "#57534e" },
+    { label: "Intelligence",     val: run.report?.intelligenceSummary ? "Yes" : "Ready", color: "#1d4ed8" },
+    ...(mode === "harvest_only"
+      ? [{ label: "Persistence", val: "Skipped", color: "#78716c" }]
+      : [
+          { label: "IG matches",       val: run.totalIgFound,    color: "#1d4ed8" },
+          { label: "Prospects saved",  val: persistedCount || run.totalProspects,  color: "#9d174d" },
+          { label: "Failed to save",   val: run.failedToSaveCount, color: run.failedToSaveCount > 0 ? "#b91c1c" : "#a8a29e" },
+        ]),
   ];
 
   return (
@@ -733,6 +752,8 @@ function PipelineSummary({
 }) {
   const [debugOpen, setDebugOpen] = useState(false);
   const auditSummary = run.report?.persistenceAuditSummary;
+  const isHarvestOnly = run.mode === "harvest_only";
+  const persistedCount = (run.report?.totals.prospectsCreated ?? 0) + (run.report?.totals.prospectsUpdated ?? 0);
 
   // Category breakdown
   const catCounts = results.reduce<Record<string, number>>((acc, r) => {
@@ -773,12 +794,13 @@ function PipelineSummary({
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
           {[
             { label: "Run ID",        val: run.runId.slice(0, 20) + "…" },
+            { label: "Pipeline mode", val: run.mode },
             { label: "Market",        val: `${run.market}, ${run.state}` },
             { label: "Categories",    val: run.categories.length },
             { label: "Harvested",     val: run.totalHarvested },
-            { label: "IG matches",    val: run.totalIgFound },
-            { label: "Resolved",      val: run.totalResolved },
-            { label: "Saved",         val: run.savedCount },
+            { label: "Normalized",    val: run.report?.totals.normalized ?? run.totalHarvested },
+            { label: "Intelligence",  val: run.report?.intelligenceSummary ? "Generated" : "Ready" },
+            { label: isHarvestOnly ? "Persistence" : "Prospects", val: isHarvestOnly ? "Skipped" : persistedCount || run.savedCount },
             { label: "Errors",        val: run.errors.length },
           ].map(({ label, val }) => (
             <div key={label}>
@@ -791,15 +813,39 @@ function PipelineSummary({
 
       {/* Save results */}
       <div style={{
-        background: run.failedToSaveCount > 0 ? "#fffbeb" : "#f0fdf4",
-        border: `1px solid ${run.failedToSaveCount > 0 ? "#fde68a" : "#bbf7d0"}`,
+        background: isHarvestOnly ? "#eff6ff" : run.failedToSaveCount > 0 ? "#fffbeb" : "#f0fdf4",
+        border: `1px solid ${isHarvestOnly ? "#bfdbfe" : run.failedToSaveCount > 0 ? "#fde68a" : "#bbf7d0"}`,
         borderRadius: 12, padding: "14px 18px", marginBottom: 14,
       }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 10 }}>SAVE RESULTS</div>
+        <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 10 }}>
+          {isHarvestOnly ? "HARVEST RESULTS" : "SAVE RESULTS"}
+        </div>
+        {isHarvestOnly && (
+          <div style={{ fontSize: 12, color: "#1e40af", fontWeight: 700, marginBottom: 10 }}>
+            Harvest completed successfully. Prospect persistence skipped because pipeline mode is harvest_only.
+          </div>
+        )}
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+          {isHarvestOnly ? (
+            <>
+              <div>
+                <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600 }}>Harvested</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#1c1917" }}>{run.totalHarvested}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600 }}>Normalized</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#1d4ed8" }}>{run.report?.totals.normalized ?? run.totalHarvested}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600 }}>Intelligence</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#1d4ed8" }}>{run.report?.intelligenceSummary ? "Generated" : "Ready"}</div>
+              </div>
+            </>
+          ) : (
+          <>
           <div>
             <div style={{ fontSize: 10, color: "#a8a29e", fontWeight: 600 }}>Saved</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#15803d" }}>{run.savedCount}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#15803d" }}>{persistedCount || run.savedCount}</div>
           </div>
           <div>
             <div style={{ fontSize: 10, color: "#a8a29e", fontWeight: 600 }}>Failed</div>
@@ -811,8 +857,10 @@ function PipelineSummary({
             <div style={{ fontSize: 10, color: "#a8a29e", fontWeight: 600 }}>Total operators</div>
             <div style={{ fontSize: 20, fontWeight: 800, color: "#1c1917" }}>{run.totalHarvested}</div>
           </div>
+          </>
+          )}
         </div>
-        {run.saveErrors.length > 0 && (
+        {!isHarvestOnly && run.saveErrors.length > 0 && (
           <div style={{ marginTop: 12 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: "#b91c1c", marginBottom: 6 }}>FAILED SAVES:</div>
             {run.saveErrors.map((se, i) => (
@@ -1243,6 +1291,21 @@ export default function StyleSeatDiscoveryPage() {
             <span style={{ fontSize: 12, color: "#78716c" }}>
               {runData.run.market}, {runData.run.state} · {new Date(runData.run.createdAt).toLocaleString()} · {runData.run.mode.replace(/_/g, " ")}
             </span>
+            <span
+              title={PIPELINE_MODE_HELP[runData.run.mode]}
+              style={{
+                fontSize: 11,
+                fontWeight: 800,
+                color: "#1d4ed8",
+                background: "#eff6ff",
+                border: "1px solid #bfdbfe",
+                borderRadius: 20,
+                padding: "4px 9px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Current Pipeline Mode: {PIPELINE_MODE_LABELS[runData.run.mode]}
+            </span>
             <Link href="/admin/studios/prospects?vertical=beauty"
               style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "#9d174d", textDecoration: "none" }}>
               View Beauty Prospects →
@@ -1258,11 +1321,26 @@ export default function StyleSeatDiscoveryPage() {
             </div>
           )}
 
-          {/* Zero-save warning */}
-          {runData.run.totalHarvested > 0 && runData.run.savedCount === 0 && (
+          {runData.run.mode === "harvest_only" && runData.run.totalHarvested > 0 && (
+            <div style={{ marginBottom: 16, padding: "12px 16px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#1d4ed8", marginBottom: 4 }}>
+                Harvest completed successfully. Prospect persistence skipped because pipeline mode is harvest_only.
+              </div>
+              <div style={{ fontSize: 11, color: "#1e40af" }}>
+                Harvested {runData.run.totalHarvested} operator(s), normalized {runData.run.report?.totals.normalized ?? runData.normalized?.length ?? 0}, intelligence {runData.intelligence ? "generated" : "ready"}.
+              </div>
+            </div>
+          )}
+
+          {/* Zero-persistence warning */}
+          {runData.run.mode !== "harvest_only"
+            && runData.run.totalHarvested > 0
+            && (runData.run.report
+              ? (runData.run.report.totals.prospectsCreated + runData.run.report.totals.prospectsUpdated)
+              : runData.run.savedCount) === 0 && (
             <div style={{ marginBottom: 16, padding: "12px 16px", background: "#fef2f2", border: "2px solid #dc2626", borderRadius: 10 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: "#dc2626", marginBottom: 4 }}>
-                ⛔ Zero prospects saved — {runData.run.totalHarvested} operator(s) harvested but none persisted.
+                Zero prospects persisted — {runData.run.totalHarvested} operator(s) harvested but none persisted.
               </div>
               <div style={{ fontSize: 11, color: "#b91c1c" }}>
                 Store path: <code style={{ fontFamily: "monospace", background: "#fee2e2", padding: "1px 4px", borderRadius: 3 }}>{runData.run.prospectStorePath}</code>
