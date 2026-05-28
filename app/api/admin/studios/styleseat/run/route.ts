@@ -68,6 +68,7 @@ function normalizeSourceUrl(input: string): string {
 }
 
 const RunSchema = z.object({
+  debug: z.boolean().optional().default(false),
   discoveryMode: z.enum(["aggregator_crawl", "direct_url", "market_search"]).default("aggregator_crawl"),
   sourceUrl:  z.string().max(500).optional(),
   city:       z.string().max(80).optional(),
@@ -152,6 +153,7 @@ export async function POST(req: NextRequest) {
   console.log(`[styleseat/run] discoveryMode=${discoveryMode} sourceUrl=${sourceUrl ?? "market"} market=${market} categories=[${effectiveCategories}] maxOperators=${maxOperators}`);
   const { operators, actorRunId, error: harvestError, crawl } = await runStyleSeatHarvest({
     runId,
+    debug: parsed.data.debug,
     discoveryMode,
     sourceUrl: sourceUrl ?? undefined,
     market: market || "StyleSeat",

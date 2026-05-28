@@ -64,6 +64,17 @@ function classifyStyleSeatUrl(url: string): "profile" | "search" | "category" | 
   return "unknown";
 }
 
+function classifyStyleSeatDebugUrl(url: string): "profile" | "search" | "category" | "booking" | "login" | "unknown" {
+  const parsed = new URL(url);
+  const pathname = parsed.pathname.replace(/\/+$/, "") || "/";
+  const lower = pathname.toLowerCase();
+  if (lower.includes("appointment") || lower.includes("booking") || lower.includes("book")) return "booking";
+  if (lower.includes("login") || lower.includes("my-account") || lower.includes("sign")) return "login";
+  const kind = classifyStyleSeatUrl(url);
+  if (kind === "aggregator") return "category";
+  return kind === "profile" || kind === "search" || kind === "category" ? kind : "unknown";
+}
+
 function extractAnchorUrls(html: string, baseUrl: string): string[] {
   const urls: string[] = [];
   const re = /href\s*=\s*["']([^"']+)["']/gi;
@@ -87,6 +98,109 @@ function extractAnchorUrls(html: string, baseUrl: string): string[] {
     }
   }
   return Array.from(new Set(urls));
+}
+
+function extractRawInternalLinks(html: string, baseUrl: string): Array<{ href: string; normalizedUrl: string | null; classifiedType: string }> {
+  const links: Array<{ href: string; normalizedUrl: string | null; classifiedType: string }> = [];
+  const re = /href\s*=\s*["']([^"']+)["']/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(html))) {
+    const href = match[1];
+    if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) continue;
+    try {
+      const normalizedUrl = normalizeStyleSeatUrl(new URL(href, baseUrl).toString());
+      links.push({ href, normalizedUrl, classifiedType: classifyStyleSeatDebugUrl(normalizedUrl) });
+    } catch {
+      // external URL
+    }
+  }
+  for (const normalizedUrl of extractAnchorUrls(html, baseUrl)) {
+    if (!links.some((link) => link.normalizedUrl === normalizedUrl)) {
+      links.push({ href: normalizedUrl, normalizedUrl, classifiedType: classifyStyleSeatDebugUrl(normalizedUrl) });
+    }
+  }
+  return links;
+}
+
+function extractScriptContents(html: string): Array<{ attributes: string; content: string }> {
+  const scripts: Array<{ attributes: string; content: string }> = [];
+  const re = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(html))) {
+    scripts.push({ attributes: match[1] ?? "", content: (match[2] ?? "").trim() });
+  }
+  return scripts;
+}
+
+function collectEmbeddedData(html: string): Array<{ kind: string; attributes?: string; length: number; snippet: string; parsed?: unknown }> {
+  const blobs: Array<{ kind: string; attributes?: string; length: number; snippet: string; parsed?: unknown }> = [];
+  for (const script of extractScriptContents(html)) {
+    const attrs = script.attributes;
+    const content = script.content;
+    if (!content) continue;
+    const lowerAttrs = attrs.toLowerCase();
+    let kind: string | null = null;
+    if (attrs.includes("__NEXT_DATA__")) kind = "__NEXT_DATA__";
+    else if (lowerAttrs.includes("application/ld+json")) kind = "application/ld+json";
+    else if (lowerAttrs.includes("application/json")) kind = "script[type=application/json]";
+    else if (content.includes("__APOLLO_STATE__")) kind = "__APOLLO_STATE__";
+    else if (content.includes("__INITIAL_STATE__")) kind = "window.__INITIAL_STATE__";
+    else if (content.includes("JSON.parse(")) kind = "JSON.parse";
+    if (!kind) continue;
+
+    const blob: { kind: string; attributes?: string; length: number; snippet: string; parsed?: unknown } = {
+      kind,
+      attributes: attrs.trim(),
+      length: content.length,
+      snippet: content.slice(0, 4000),
+    };
+    if (kind === "__NEXT_DATA__" || kind === "application/ld+json" || kind === "script[type=application/json]") {
+      try { blob.parsed = JSON.parse(content); } catch { /* keep snippet */ }
+    }
+    blobs.push(blob);
+  }
+  const globalPatterns: Array<[string, RegExp]> = [
+    ["__APOLLO_STATE__", /__APOLLO_STATE__\s*=\s*({[\s\S]{0,20000}?});/],
+    ["window.__INITIAL_STATE__", /__INITIAL_STATE__\s*=\s*({[\s\S]{0,20000}?});/],
+    ["JSON.parse", /JSON\.parse\(\s*(['"`])([\s\S]{0,20000}?)\1\s*\)/],
+  ];
+  for (const [kind, re] of globalPatterns) {
+    const match = html.match(re);
+    if (!match) continue;
+    const content = match[2] ?? match[1] ?? match[0];
+    blobs.push({ kind, length: content.length, snippet: content.slice(0, 4000) });
+  }
+  return blobs;
+}
+
+function collectNetworkHints(html: string): {
+  counts: Record<string, number>;
+  scriptSources: string[];
+  hints: Array<{ kind: string; index: number; snippet: string }>;
+} {
+  const terms = ["graphql", "api", "fetch(", "xhr", "XMLHttpRequest", "relay", "apollo", "queryHash", "queryId", "search.styleseat.com"];
+  const hints: Array<{ kind: string; index: number; snippet: string }> = [];
+  const counts: Record<string, number> = {};
+  for (const term of terms) {
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(escaped, "gi");
+    const matches = Array.from(html.matchAll(re));
+    counts[term] = matches.length;
+    for (const match of matches.slice(0, 12)) {
+      const index = match.index ?? 0;
+      hints.push({
+        kind: term,
+        index,
+        snippet: html.slice(Math.max(0, index - 220), Math.min(html.length, index + 420)),
+      });
+    }
+  }
+  const scriptSources = extractScriptContents(html)
+    .flatMap((script) => {
+      const match = script.attributes.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+      return match?.[1] ? [match[1]] : [];
+    });
+  return { counts, scriptSources, hints };
 }
 
 function textFromHtml(html: string): string {
@@ -275,7 +389,7 @@ async function crawlSearchApi(input: {
   url: string;
   config: StyleSeatRunConfig;
   maxOperators: number;
-}): Promise<{ operators: StyleSeatOperator[]; profileUrls: string[]; note?: string }> {
+}): Promise<{ operators: StyleSeatOperator[]; profileUrls: string[]; apiUrl?: string; responsePath?: string; note?: string }> {
   const parsed = parseSearchUrl(input.url);
   if (!parsed) return { operators: [], profileUrls: [] };
   if (!parsed.lat || !parsed.lon) {
@@ -298,13 +412,26 @@ async function crawlSearchApi(input: {
     },
     signal: AbortSignal.timeout(20_000),
   });
-  if (!res.ok) return { operators: [], profileUrls: [], note: `StyleSeat search API HTTP ${res.status}` };
+  if (!res.ok) return { operators: [], profileUrls: [], apiUrl, note: `StyleSeat search API HTTP ${res.status}` };
   const data = await res.json() as { results?: Record<string, unknown>[] };
+  let responsePath: string | undefined;
+  if (input.config.debug) {
+    const dir = getRunDebugDir(input.config.runId);
+    if (dir) {
+      await fs.mkdir(dir, { recursive: true });
+      responsePath = path.join(dir, "search-api-response.json");
+      await fs.writeFile(responsePath, JSON.stringify({
+        apiUrl,
+        resultCount: Array.isArray(data.results) ? data.results.length : 0,
+        sampleResults: Array.isArray(data.results) ? data.results.slice(0, 5) : [],
+      }, null, 2), "utf8");
+    }
+  }
   const batch = `styleseat-search-${Date.now()}`;
   const operators = (Array.isArray(data.results) ? data.results : [])
     .slice(0, input.maxOperators)
     .map((item, idx) => operatorFromSearchApiResult(item, input.config, idx, input.url, batch, parsed.query));
-  return { operators, profileUrls: operators.map((operator) => operator.styleseatUrl) };
+  return { operators, profileUrls: operators.map((operator) => operator.styleseatUrl), apiUrl, responsePath };
 }
 
 function collectInternalStyleSeatHrefs(urls: string[]): string[] {
@@ -318,6 +445,85 @@ function collectInternalStyleSeatHrefs(urls: string[]): string[] {
   })));
 }
 
+function getRunDebugDir(runId?: string): string | null {
+  return runId ? path.join(DEBUG_ROOT, runId) : null;
+}
+
+async function saveExtractionDiagnostics(input: {
+  runId?: string;
+  url: string;
+  html: string;
+  pageLinks: string[];
+  force?: boolean;
+}): Promise<{
+  diagnosticsDir?: string;
+  rawHtmlPath?: string;
+  embeddedDataPath?: string;
+  allInternalLinksPath?: string;
+  urlClassificationPath?: string;
+  networkHintsPath?: string;
+  embeddedDataCount: number;
+  internalLinkCount: number;
+  profileLinkCount: number;
+  hasUsableStaticLinks: boolean;
+  hasEmbeddedData: boolean;
+  hasNetworkHints: boolean;
+}> {
+  const embeddedData = collectEmbeddedData(input.html);
+  const allLinks = extractRawInternalLinks(input.html, input.url);
+  const classifications = allLinks.map((link) => ({
+    ...link,
+    classifiedType: link.normalizedUrl ? classifyStyleSeatDebugUrl(link.normalizedUrl) : "unknown",
+  }));
+  const networkHints = collectNetworkHints(input.html);
+  const profileLinkCount = classifications.filter((link) => link.classifiedType === "profile").length;
+  const result = {
+    embeddedDataCount: embeddedData.length,
+    internalLinkCount: classifications.length,
+    profileLinkCount,
+    hasUsableStaticLinks: profileLinkCount > 0,
+    hasEmbeddedData: embeddedData.length > 0,
+    hasNetworkHints: networkHints.hints.length > 0,
+  };
+  const dir = getRunDebugDir(input.runId);
+  if (!dir || (!input.force && result.hasUsableStaticLinks)) return result;
+
+  await fs.mkdir(dir, { recursive: true });
+  const rawHtmlPath = path.join(dir, "raw.html");
+  const embeddedDataPath = path.join(dir, "embedded-data.json");
+  const allInternalLinksPath = path.join(dir, "all-internal-links.json");
+  const urlClassificationPath = path.join(dir, "url-classification.json");
+  const networkHintsPath = path.join(dir, "network-hints.json");
+
+  await fs.writeFile(rawHtmlPath, input.html, "utf8");
+  await fs.writeFile(embeddedDataPath, JSON.stringify(embeddedData, null, 2), "utf8");
+  await fs.writeFile(allInternalLinksPath, JSON.stringify(classifications, null, 2), "utf8");
+  await fs.writeFile(urlClassificationPath, JSON.stringify({
+    sourceUrl: input.url,
+    totals: {
+      allInternalLinks: classifications.length,
+      profile: classifications.filter((link) => link.classifiedType === "profile").length,
+      search: classifications.filter((link) => link.classifiedType === "search").length,
+      category: classifications.filter((link) => link.classifiedType === "category").length,
+      booking: classifications.filter((link) => link.classifiedType === "booking").length,
+      login: classifications.filter((link) => link.classifiedType === "login").length,
+      unknown: classifications.filter((link) => link.classifiedType === "unknown").length,
+    },
+    links: classifications,
+  }, null, 2), "utf8");
+  await fs.writeFile(networkHintsPath, JSON.stringify(networkHints, null, 2), "utf8");
+
+  return {
+    ...result,
+    diagnosticsDir: dir,
+    rawHtmlPath,
+    embeddedDataPath,
+    allInternalLinksPath,
+    urlClassificationPath,
+    networkHintsPath,
+  };
+}
+
 async function saveRenderedDebugSnapshot(input: {
   runId?: string;
   html: string;
@@ -329,18 +535,21 @@ async function saveRenderedDebugSnapshot(input: {
     suggestedUrls: string[];
   };
 }): Promise<{ renderedHtmlPath?: string; debugJsonPath?: string }> {
-  if (!input.runId) return {};
-  await fs.mkdir(DEBUG_ROOT, { recursive: true });
-  const htmlPath = path.join(DEBUG_ROOT, `${input.runId}-rendered.html`);
-  const jsonPath = path.join(DEBUG_ROOT, `${input.runId}-render-debug.json`);
+  const dir = getRunDebugDir(input.runId);
+  if (!dir) return {};
+  await fs.mkdir(dir, { recursive: true });
+  const htmlPath = path.join(dir, "rendered.html");
+  const jsonPath = path.join(dir, "render-debug.json");
   await fs.writeFile(htmlPath, input.html, "utf8");
   await fs.writeFile(jsonPath, JSON.stringify(input.debug, null, 2), "utf8");
   return { renderedHtmlPath: htmlPath, debugJsonPath: jsonPath };
 }
 
-export async function crawlStyleSeatRenderedPage(url: string): Promise<{
+export async function crawlStyleSeatRenderedPage(url: string, runId?: string): Promise<{
   html: string;
   hrefs: string[];
+  renderedLinksPath?: string;
+  screenshotPath?: string;
   error?: string;
 }> {
   try {
@@ -352,6 +561,7 @@ export async function crawlStyleSeatRenderedPage(url: string): Promise<{
             waitForSelector(selector: string, options?: Record<string, unknown>): Promise<unknown>;
             $$eval<T>(selector: string, pageFunction: (elements: Element[]) => T): Promise<T>;
             content(): Promise<string>;
+            screenshot(options?: Record<string, unknown>): Promise<Buffer>;
           }>;
           close(): Promise<void>;
         }>;
@@ -372,7 +582,17 @@ export async function crawlStyleSeatRenderedPage(url: string): Promise<{
           .filter(Boolean)
       );
       const html = await page.content();
-      return { html, hrefs };
+      let renderedLinksPath: string | undefined;
+      let screenshotPath: string | undefined;
+      const dir = getRunDebugDir(runId);
+      if (dir) {
+        await fs.mkdir(dir, { recursive: true });
+        renderedLinksPath = path.join(dir, "rendered-links.json");
+        screenshotPath = path.join(dir, "screenshot.png");
+        await fs.writeFile(renderedLinksPath, JSON.stringify(hrefs, null, 2), "utf8");
+        await fs.writeFile(screenshotPath, await page.screenshot({ fullPage: true }));
+      }
+      return { html, hrefs, renderedLinksPath, screenshotPath };
     } finally {
       await browser.close();
     }
@@ -405,6 +625,19 @@ export async function crawlStyleSeatDiscovery(input: {
   let renderedHtml = "";
   let renderedHtmlPath: string | undefined;
   let debugJsonPath: string | undefined;
+  let diagnosticsDir: string | undefined;
+  let rawHtmlPath: string | undefined;
+  let embeddedDataPath: string | undefined;
+  let allInternalLinksPath: string | undefined;
+  let urlClassificationPath: string | undefined;
+  let networkHintsPath: string | undefined;
+  let embeddedDataCount = 0;
+  let internalLinkCount = 0;
+  let profileLinkCount = 0;
+  let extractionSource: "static_links" | "search_api" | "rendered_dom" | "none" = "none";
+  let searchApiUrl: string | undefined;
+  let searchApiResponsePath: string | undefined;
+  let searchApiResultCount = 0;
   const firstInternalHrefs: string[] = [];
   const debugNotes: string[] = [];
 
@@ -438,12 +671,39 @@ export async function crawlStyleSeatDiscovery(input: {
     staticAnchorCount += staticLinks.length;
 
     const hasStaticProfiles = staticLinks.some((url) => classifyStyleSeatUrl(url) === "profile");
+    const diagnostics = await saveExtractionDiagnostics({
+      runId: input.runId,
+      url: next.url,
+      html,
+      pageLinks,
+      force: input.config.debug,
+    }).catch((e) => {
+      const msg = e instanceof Error ? e.message : String(e);
+      debugNotes.push(`Failed to save extraction diagnostics: ${msg}`);
+      return null;
+    });
+    if (diagnostics) {
+      diagnosticsDir = diagnostics.diagnosticsDir ?? diagnosticsDir;
+      rawHtmlPath = diagnostics.rawHtmlPath ?? rawHtmlPath;
+      embeddedDataPath = diagnostics.embeddedDataPath ?? embeddedDataPath;
+      allInternalLinksPath = diagnostics.allInternalLinksPath ?? allInternalLinksPath;
+      urlClassificationPath = diagnostics.urlClassificationPath ?? urlClassificationPath;
+      networkHintsPath = diagnostics.networkHintsPath ?? networkHintsPath;
+      embeddedDataCount += diagnostics.embeddedDataCount;
+      internalLinkCount += diagnostics.internalLinkCount;
+      profileLinkCount += diagnostics.profileLinkCount;
+    }
+    if (hasStaticProfiles) extractionSource = "static_links";
+
     if (!hasStaticProfiles && kind === "search") {
       const apiResult = await crawlSearchApi({
         url: next.url,
         config: input.config,
         maxOperators: input.maxOperators - profileUrls.length,
       });
+      searchApiUrl = apiResult.apiUrl ?? searchApiUrl;
+      searchApiResponsePath = apiResult.responsePath ?? searchApiResponsePath;
+      searchApiResultCount += apiResult.operators.length;
       if (apiResult.note) debugNotes.push(apiResult.note);
       for (const operator of apiResult.operators) {
         if (profileUrls.length >= input.maxOperators) break;
@@ -452,12 +712,17 @@ export async function crawlStyleSeatDiscovery(input: {
           profileUrls.push(operator.styleseatUrl);
         }
       }
+      if (apiResult.operators.length > 0) extractionSource = "search_api";
       pageLinks = Array.from(new Set([...pageLinks, ...apiResult.profileUrls]));
     }
 
     const hasProfilesAfterApi = pageLinks.some((url) => classifyStyleSeatUrl(url) === "profile") || profileUrls.length > 0;
-    if (!hasProfilesAfterApi && ["search", "category", "aggregator"].includes(kind)) {
-      const rendered = await crawlStyleSeatRenderedPage(next.url);
+    const needsRenderedFallback = !hasProfilesAfterApi
+      && ["search", "category", "aggregator"].includes(kind)
+      && !diagnostics?.hasEmbeddedData
+      && !diagnostics?.hasUsableStaticLinks;
+    if (needsRenderedFallback) {
+      const rendered = await crawlStyleSeatRenderedPage(next.url, input.runId);
       if (rendered.error) debugNotes.push(rendered.error);
       renderedHtml = rendered.html || html;
       const renderedUrls = rendered.hrefs.flatMap((href) => {
@@ -469,6 +734,7 @@ export async function crawlStyleSeatDiscovery(input: {
       });
       renderedAnchorCount += renderedUrls.length;
       pageLinks = Array.from(new Set([...staticLinks, ...renderedUrls, ...extractAnchorUrls(rendered.html, next.url)]));
+      if (renderedUrls.some((url) => classifyStyleSeatUrl(url) === "profile")) extractionSource = "rendered_dom";
     }
 
     for (const href of collectInternalStyleSeatHrefs(pageLinks)) {
@@ -537,6 +803,19 @@ export async function crawlStyleSeatDiscovery(input: {
       firstInternalHrefs: Array.from(new Set(firstInternalHrefs)).slice(0, 50),
       renderedHtmlPath,
       debugJsonPath,
+      diagnosticsDir,
+      rawHtmlPath,
+      embeddedDataPath,
+      allInternalLinksPath,
+      urlClassificationPath,
+      networkHintsPath,
+      extractionSource,
+      embeddedDataCount,
+      internalLinkCount,
+      profileLinkCount,
+      searchApiUrl,
+      searchApiResultCount,
+      searchApiResponsePath,
       notes: debugNotes,
       suggestedUrls: SUGGESTED_SEARCH_URLS,
     },

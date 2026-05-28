@@ -81,6 +81,7 @@ function RunForm({
   progressIdx,
 }: {
   onRun: (config: {
+    debug?: boolean;
     discoveryMode: StyleSeatDiscoveryMode;
     sourceUrl?: string;
     city?: string; state: string;
@@ -92,10 +93,11 @@ function RunForm({
   error: string | null;
   progressIdx: number;
 }) {
-  const [market, setMarket]           = useState("Houston");
-  const [state, setState]             = useState("TX");
+  const [market, setMarket]           = useState("");
+  const [state, setState]             = useState("");
   const [discoveryMode, setDiscoveryMode] = useState<StyleSeatDiscoveryMode>("aggregator_crawl");
   const [sourceUrl, setSourceUrl] = useState("https://www.styleseat.com/m/");
+  const [debugExtraction, setDebugExtraction] = useState(false);
   const [crawlDepth, setCrawlDepth] = useState(2);
   const [categories, setCategories]   = useState<StyleSeatCategory[]>(["braids", "hair"]);
   const [maxOperators, setMaxOperators]   = useState(25);
@@ -105,6 +107,12 @@ function RunForm({
     setCategories((prev) =>
       prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
     );
+  }
+
+  function selectDiscoveryMode(mode: StyleSeatDiscoveryMode) {
+    setDiscoveryMode(mode);
+    if (mode === "aggregator_crawl") setSourceUrl("https://www.styleseat.com/m/");
+    if (mode === "direct_url") setSourceUrl("");
   }
 
   const inputStyle: React.CSSProperties = {
@@ -130,7 +138,7 @@ function RunForm({
           <button
             key={mode}
             type="button"
-            onClick={() => setDiscoveryMode(mode)}
+            onClick={() => selectDiscoveryMode(mode)}
             disabled={loading}
             style={{
               padding: "8px 14px",
@@ -175,7 +183,7 @@ function RunForm({
                 CITY
               </label>
               <input value={market} onChange={(e) => setMarket(e.target.value)}
-                placeholder="Houston" style={inputStyle} disabled={loading} />
+                placeholder="City" style={inputStyle} disabled={loading} />
             </div>
 
             <div>
@@ -183,7 +191,7 @@ function RunForm({
                 STATE
               </label>
               <input value={state} onChange={(e) => setState(e.target.value)}
-                placeholder="TX" style={{ ...inputStyle }} disabled={loading} maxLength={2} />
+                placeholder="State" style={{ ...inputStyle }} disabled={loading} maxLength={2} />
             </div>
           </>
         )}
@@ -268,6 +276,16 @@ function RunForm({
         </div>
       </div>
 
+      <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 16, fontSize: 12, fontWeight: 800, color: "#57534e" }}>
+        <input
+          type="checkbox"
+          checked={debugExtraction}
+          onChange={(e) => setDebugExtraction(e.target.checked)}
+          disabled={loading}
+        />
+        Debug Extraction
+      </label>
+
       <div style={{ marginTop: 16, padding: "12px 14px", background: "#fafaf9", border: "1px solid #e7e5e4", borderRadius: 10, fontSize: 11, color: "#57534e" }}>
         <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 6 }}>RUN PLAN PREVIEW</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8 }}>
@@ -276,6 +294,7 @@ function RunForm({
           <span><strong>Max:</strong> {maxOperators}</span>
           <span><strong>Depth:</strong> {discoveryMode === "market_search" ? "market results" : crawlDepth}</span>
           <span><strong>Resolver:</strong> {resolverMode}</span>
+          <span><strong>Debug:</strong> {debugExtraction ? "on" : "off"}</span>
         </div>
       </div>
 
@@ -306,7 +325,7 @@ function RunForm({
           <button
             key={pipelineMode}
             type="button"
-            onClick={() => onRun({ discoveryMode, sourceUrl, city: market, state, categories, maxOperators, crawlDepth, pipelineMode, resolverMode })}
+            onClick={() => onRun({ debug: debugExtraction, discoveryMode, sourceUrl, city: market, state, categories, maxOperators, crawlDepth, pipelineMode, resolverMode })}
             disabled={actionsDisabled}
             style={{
               padding: "10px 18px", borderRadius: 10, border: idx === 0 ? "1px solid #e7e5e4" : "none",
@@ -982,6 +1001,7 @@ export default function StyleSeatDiscoveryPage() {
   }
 
   async function handleRun(config: {
+    debug?: boolean;
     discoveryMode: StyleSeatDiscoveryMode;
     sourceUrl?: string;
     city?: string; state: string;

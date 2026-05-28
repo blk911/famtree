@@ -193,8 +193,21 @@ export interface StyleSeatCrawlDebug {
   staticAnchorCount: number;
   renderedAnchorCount: number;
   firstInternalHrefs: string[];
+  diagnosticsDir?: string;
+  rawHtmlPath?: string;
+  embeddedDataPath?: string;
+  allInternalLinksPath?: string;
+  urlClassificationPath?: string;
+  networkHintsPath?: string;
   renderedHtmlPath?: string;
   debugJsonPath?: string;
+  extractionSource?: "static_links" | "search_api" | "rendered_dom" | "none";
+  embeddedDataCount?: number;
+  internalLinkCount?: number;
+  profileLinkCount?: number;
+  searchApiUrl?: string;
+  searchApiResultCount?: number;
+  searchApiResponsePath?: string;
   notes: string[];
   suggestedUrls: string[];
 }
@@ -331,6 +344,7 @@ export interface StyleSeatRunFile {
 
 export interface StyleSeatRunConfig {
   runId?: string;
+  debug?: boolean;
   discoveryMode?: StyleSeatDiscoveryMode;
   sourceUrl?: string;
   market: string;
@@ -346,6 +360,7 @@ export interface StyleSeatRunConfig {
 // ─── API shapes ───────────────────────────────────────────────────────────────
 
 export interface StyleSeatRunRequest {
+  debug?: boolean;
   discoveryMode?: StyleSeatDiscoveryMode;
   sourceUrl?: string;
   city?: string;
