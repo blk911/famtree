@@ -8,6 +8,7 @@
 
 import type { StyleSeatOperator, StyleSeatCategory, StyleSeatRunConfig, StyleSeatCrawlResult } from "./types";
 import { STYLESEAT_CATEGORY_SLUGS } from "./types";
+import { extractEmbeddedStyleSeatData, extractScriptContents } from "./embedded-data";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -64,12 +65,14 @@ function classifyStyleSeatUrl(url: string): "profile" | "search" | "category" | 
   return "unknown";
 }
 
-function classifyStyleSeatDebugUrl(url: string): "profile" | "search" | "category" | "booking" | "login" | "unknown" {
+function classifyStyleSeatDebugUrl(url: string): "profile" | "search" | "category" | "booking" | "account" | "blog" | "legal" | "unknown" {
   const parsed = new URL(url);
   const pathname = parsed.pathname.replace(/\/+$/, "") || "/";
   const lower = pathname.toLowerCase();
+  if (lower.includes("terms") || lower.includes("privacy") || lower.includes("legal")) return "legal";
+  if (lower.includes("blog")) return "blog";
   if (lower.includes("appointment") || lower.includes("booking") || lower.includes("book")) return "booking";
-  if (lower.includes("login") || lower.includes("my-account") || lower.includes("sign")) return "login";
+  if (lower.includes("login") || lower.includes("my-account") || lower.includes("sign")) return "account";
   const kind = classifyStyleSeatUrl(url);
   if (kind === "aggregator") return "category";
   return kind === "profile" || kind === "search" || kind === "category" ? kind : "unknown";
@@ -100,245 +103,103 @@ function extractAnchorUrls(html: string, baseUrl: string): string[] {
   return Array.from(new Set(urls));
 }
 
-function extractRawInternalLinks(html: string, baseUrl: string): Array<{ href: string; normalizedUrl: string | null; classifiedType: string }> {
-  const links: Array<{ href: string; normalizedUrl: string | null; classifiedType: string }> = [];
+function normalizeDebugUrl(raw: string, baseUrl: string): string | null {
+  try {
+    return normalizeStyleSeatUrl(new URL(raw, baseUrl).toString());
+  } catch {
+    return null;
+  }
+}
+
+function extractRawInternalLinks(html: string, baseUrl: string): Array<{ raw: string; normalizedUrl: string | null; source: "anchor" | "script" | "text"; classification: string }> {
+  const links: Array<{ raw: string; normalizedUrl: string | null; source: "anchor" | "script" | "text"; classification: string }> = [];
+  const seen = new Set<string>();
+  const add = (raw: string, source: "anchor" | "script" | "text") => {
+    const normalizedUrl = normalizeDebugUrl(raw.replace(/\\\//g, "/").replace(/\\u002F/gi, "/"), baseUrl);
+    if (!normalizedUrl) return;
+    const key = `${source}:${normalizedUrl}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    links.push({ raw, normalizedUrl, source, classification: classifyStyleSeatDebugUrl(normalizedUrl) });
+  };
   const re = /href\s*=\s*["']([^"']+)["']/gi;
   let match: RegExpExecArray | null;
   while ((match = re.exec(html))) {
     const href = match[1];
     if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) continue;
-    try {
-      const normalizedUrl = normalizeStyleSeatUrl(new URL(href, baseUrl).toString());
-      links.push({ href, normalizedUrl, classifiedType: classifyStyleSeatDebugUrl(normalizedUrl) });
-    } catch {
-      // external URL
-    }
+    add(href, "anchor");
   }
-  for (const normalizedUrl of extractAnchorUrls(html, baseUrl)) {
-    if (!links.some((link) => link.normalizedUrl === normalizedUrl)) {
-      links.push({ href: normalizedUrl, normalizedUrl, classifiedType: classifyStyleSeatDebugUrl(normalizedUrl) });
-    }
+  const scripts = extractScriptContents(html);
+  for (const script of scripts) {
+    const urlRe = /(https?:\\?\/\\?\/(?:www\.)?styleseat\.com\\?\/[A-Za-z0-9._~:/?#[\]@!$&'()*+,;=%-]+|\/m\/[A-Za-z0-9._~:/?#[\]@!$&'()*+,;=%-]+)/gi;
+    while ((match = urlRe.exec(script.content))) add(match[1], "script");
   }
+  const textHtml = html.replace(/<script[\s\S]*?<\/script>/gi, " ");
+  const textUrlRe = /(https?:\\?\/\\?\/(?:www\.)?styleseat\.com\\?\/[A-Za-z0-9._~:/?#[\]@!$&'()*+,;=%-]+|\/m\/[A-Za-z0-9._~:/?#[\]@!$&'()*+,;=%-]+)/gi;
+  while ((match = textUrlRe.exec(textHtml))) add(match[1], "text");
   return links;
 }
 
-function extractScriptContents(html: string): Array<{ attributes: string; content: string }> {
-  const scripts: Array<{ attributes: string; content: string }> = [];
-  const re = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(html))) {
-    scripts.push({ attributes: match[1] ?? "", content: (match[2] ?? "").trim() });
-  }
-  return scripts;
-}
-
-type EmbeddedStyleSeatBlob = { kind: string; attributes?: string; length: number; snippet: string; parsed?: unknown };
-type EmbeddedStyleSeatCandidate = {
-  score: number;
-  matchedFields: string[];
-  value: Record<string, unknown>;
-  path: string;
-};
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === "object" && !Array.isArray(value);
-}
-
-function candidateFields(value: Record<string, unknown>): string[] {
-  const aliases = [
-    "name", "firstName", "lastName", "displayName", "profileUrl", "url", "slug",
-    "city", "state", "rating", "reviewCount", "services", "specialties",
-    "businessName", "professionalId", "providerId", "userId",
-  ];
-  const keys = new Set(Object.keys(value));
-  const matched = aliases.filter((field) => keys.has(field));
-  if (keys.has("provider_id")) matched.push("providerId");
-  if (keys.has("professional_id")) matched.push("professionalId");
-  if (keys.has("user_id")) matched.push("userId");
-  if (keys.has("average_rating")) matched.push("rating");
-  if (keys.has("num_ratings")) matched.push("reviewCount");
-  if (keys.has("matched_services")) matched.push("services");
-  if (keys.has("vanity_url")) matched.push("slug");
-  if (keys.has("provider_name")) matched.push("name");
-  if (isRecord(value.location)) {
-    const locationKeys = new Set(Object.keys(value.location));
-    if (locationKeys.has("city")) matched.push("city");
-    if (locationKeys.has("state")) matched.push("state");
-  }
-  if (isRecord(value.matched_salon)) matched.push("businessName");
-  return Array.from(new Set(matched));
-}
-
-function findCandidateObjects(value: unknown, pathLabel = "$", out: EmbeddedStyleSeatCandidate[] = [], seen = new WeakSet<object>()): EmbeddedStyleSeatCandidate[] {
-  if (!value || typeof value !== "object") return out;
-  if (seen.has(value)) return out;
-  seen.add(value);
-
-  if (Array.isArray(value)) {
-    value.slice(0, 500).forEach((item, index) => findCandidateObjects(item, `${pathLabel}[${index}]`, out, seen));
-    return out;
-  }
-
-  const record = value as Record<string, unknown>;
-  const matchedFields = candidateFields(record);
-  if (matchedFields.length >= 2) {
-    out.push({
-      score: matchedFields.length,
-      matchedFields,
-      value: record,
-      path: pathLabel,
-    });
-  }
-
-  for (const [key, child] of Object.entries(record).slice(0, 500)) {
-    if (child && typeof child === "object") findCandidateObjects(child, `${pathLabel}.${key}`, out, seen);
-  }
-  return out;
-}
-
-function extractJsonLookingPayloads(text: string): unknown[] {
-  const payloads: unknown[] = [];
-  const jsonParseRe = /JSON\.parse\(\s*(['"`])([\s\S]{20,20000}?)\1\s*\)/g;
-  let match: RegExpExecArray | null;
-  while ((match = jsonParseRe.exec(text))) {
-    try {
-      payloads.push(JSON.parse(match[2].replace(/\\"/g, "\"").replace(/\\n/g, "\n")));
-    } catch {
-      // not a clean JSON payload
-    }
-  }
-  const objectRe = /({(?=[\s\S]{0,2000}(?:provider|professional|profile|services|rating|review|city|state))[\s\S]{50,5000}?})/gi;
-  while ((match = objectRe.exec(text)) && payloads.length < 40) {
-    try {
-      payloads.push(JSON.parse(match[1]));
-    } catch {
-      // noisy JavaScript object or partial JSON
-    }
-  }
-  return payloads;
-}
-
-export function extractEmbeddedStyleSeatData(html: string): {
-  scriptsIndex: Array<{ index: number; attributes: string; src?: string; type?: string; id?: string; length: number; signals: string[] }>;
-  embeddedJson: EmbeddedStyleSeatBlob[];
-  jsonLd: EmbeddedStyleSeatBlob[];
-  candidateObjects: EmbeddedStyleSeatCandidate[];
+function likelyExtractionSource(input: {
+  htmlLength: number;
+  statusCode?: number;
+  profileLikeLinkCount: number;
+  embeddedCandidateCount: number;
   nextDataFound: boolean;
   nextFlightFound: boolean;
-  readableFlightStrings: string[];
-  flightUrls: string[];
+  nextFlightLinkCount: number;
+  jsonLdCount: number;
+  networkHintCount: number;
+}): {
+  source: "static_links" | "next_data" | "next_flight" | "json_ld" | "internal_api" | "rendered_dom_required" | "blocked_or_empty";
+  recommendation: string;
 } {
-  const embeddedJson: EmbeddedStyleSeatBlob[] = [];
-  const jsonLd: EmbeddedStyleSeatBlob[] = [];
-  const candidateObjects: EmbeddedStyleSeatCandidate[] = [];
-  const scripts = extractScriptContents(html);
-  const scriptsIndex = scripts.map((script, index) => {
-    const attrs = script.attributes;
-    const signals = [
-      "__NEXT_DATA__", "self.__next_f.push", "__INITIAL_STATE__", "__APOLLO_STATE__",
-      "graphql", "api", "professionals", "providers", "stylists", "searchResults",
-      "marketplace", "booking",
-    ].filter((signal) => attrs.includes(signal) || script.content.includes(signal));
-    return {
-      index,
-      attributes: attrs.trim(),
-      src: attrs.match(/\bsrc\s*=\s*["']([^"']+)["']/i)?.[1],
-      type: attrs.match(/\btype\s*=\s*["']([^"']+)["']/i)?.[1],
-      id: attrs.match(/\bid\s*=\s*["']([^"']+)["']/i)?.[1],
-      length: script.content.length,
-      signals,
-    };
-  });
-  const readableFlightStrings: string[] = [];
-  const flightUrls = Array.from(new Set(
-    Array.from(html.matchAll(/https?:\\?\/\\?\/(?:www\.)?styleseat\.com\\?\/m\\?\/[^"'\\\s)]+/gi))
-      .map((match) => match[0].replace(/\\\//g, "/").replace(/\\u002F/gi, "/"))
-  ));
-
-  for (const script of extractScriptContents(html)) {
-    const attrs = script.attributes;
-    const content = script.content;
-    if (!content) continue;
-    const lowerAttrs = attrs.toLowerCase();
-    let kind: string | null = null;
-    if (attrs.includes("__NEXT_DATA__")) kind = "__NEXT_DATA__";
-    else if (lowerAttrs.includes("application/ld+json")) kind = "application/ld+json";
-    else if (lowerAttrs.includes("application/json")) kind = "script[type=application/json]";
-    else if (content.includes("__APOLLO_STATE__")) kind = "__APOLLO_STATE__";
-    else if (content.includes("__INITIAL_STATE__")) kind = "window.__INITIAL_STATE__";
-    else if (content.includes("JSON.parse(")) kind = "JSON.parse";
-    if (content.includes("self.__next_f.push")) {
-      for (const match of Array.from(content.matchAll(/"([^"]{3,160})"/g))) {
-        const value = match[1].replace(/\\u002F/gi, "/").replace(/\\"/g, "\"");
-        if (/styleseat|\/m\/|provider|professional|search|braid|booking|denver|city|state/i.test(value)) {
-          readableFlightStrings.push(value);
-        }
-      }
-    }
-    if (!kind) {
-      for (const payload of extractJsonLookingPayloads(content)) {
-        findCandidateObjects(payload, "$.scriptPayload", candidateObjects);
-      }
-      continue;
-    }
-
-    const blob: EmbeddedStyleSeatBlob = {
-      kind,
-      attributes: attrs.trim(),
-      length: content.length,
-      snippet: content.slice(0, 4000),
-    };
-    if (kind === "__NEXT_DATA__" || kind === "application/ld+json" || kind === "script[type=application/json]") {
-      try {
-        blob.parsed = JSON.parse(content);
-        findCandidateObjects(blob.parsed, `$.${kind}`, candidateObjects);
-      } catch { /* keep snippet */ }
-    }
-    if (kind === "application/ld+json") jsonLd.push(blob);
-    else embeddedJson.push(blob);
+  if ((input.statusCode && input.statusCode >= 400) || input.htmlLength < 500) {
+    return { source: "blocked_or_empty", recommendation: "URL returned no useful HTML." };
   }
-  const globalPatterns: Array<[string, RegExp]> = [
-    ["__APOLLO_STATE__", /__APOLLO_STATE__\s*=\s*({[\s\S]{0,20000}?});/],
-    ["window.__INITIAL_STATE__", /__INITIAL_STATE__\s*=\s*({[\s\S]{0,20000}?});/],
-    ["JSON.parse", /JSON\.parse\(\s*(['"`])([\s\S]{0,20000}?)\1\s*\)/],
-  ];
-  for (const [kind, re] of globalPatterns) {
-    const match = html.match(re);
-    if (!match) continue;
-    const content = match[2] ?? match[1] ?? match[0];
-    const blob: EmbeddedStyleSeatBlob = { kind, length: content.length, snippet: content.slice(0, 4000) };
-    try {
-      blob.parsed = JSON.parse(content);
-      findCandidateObjects(blob.parsed, `$.${kind}`, candidateObjects);
-    } catch { /* keep snippet */ }
-    embeddedJson.push(blob);
+  if (input.profileLikeLinkCount > 0) {
+    return { source: "static_links", recommendation: "Parse static profile-like links from the listing HTML." };
   }
-  return {
-    scriptsIndex,
-    embeddedJson,
-    jsonLd,
-    candidateObjects: candidateObjects
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 100),
-    nextDataFound: html.includes("__NEXT_DATA__"),
-    nextFlightFound: html.includes("self.__next_f.push"),
-    readableFlightStrings: Array.from(new Set(readableFlightStrings)).slice(0, 200),
-    flightUrls: flightUrls.slice(0, 100),
-  };
+  if (input.nextDataFound && input.embeddedCandidateCount > 0) {
+    return { source: "next_data", recommendation: "Parse __NEXT_DATA__ candidates." };
+  }
+  if (input.nextFlightFound && input.nextFlightLinkCount > 0) {
+    return { source: "next_flight", recommendation: "Parse Next flight strings for profile URLs and operator text." };
+  }
+  if (input.jsonLdCount > 0 && input.embeddedCandidateCount > 0) {
+    return { source: "json_ld", recommendation: "Parse JSON-LD profile candidates." };
+  }
+  if (input.networkHintCount > 0) {
+    return { source: "internal_api", recommendation: "Investigate internal API hints." };
+  }
+  return { source: "rendered_dom_required", recommendation: "Install Playwright rendered fallback only if rendered DOM contains cards." };
+}
+
+function networkHintScriptIndex(scripts: ReturnType<typeof extractScriptContents>, index: number): number | undefined {
+  let cursor = 0;
+  for (let i = 0; i < scripts.length; i += 1) {
+    const script = scripts[i];
+    const start = cursor + script.attributes.length;
+    const end = start + script.content.length;
+    if (index >= start && index <= end) return i;
+    cursor = end;
+  }
+  return undefined;
 }
 
 function collectNetworkHints(html: string): {
   counts: Record<string, number>;
   scriptSources: string[];
   urlLikeStrings: string[];
-  hints: Array<{ kind: string; index: number; snippet: string }>;
+  hints: Array<{ matchedString: string; kind: string; index: number; sourceScriptIndex?: number; snippet: string }>;
 } {
   const terms = [
     "graphql", "api", "fetch(", "xhr", "XMLHttpRequest", "relay", "apollo", "queryHash", "queryId",
     "search.styleseat.com", "professionals", "providers", "stylists", "searchResults", "marketplace", "booking",
   ];
-  const hints: Array<{ kind: string; index: number; snippet: string }> = [];
+  const hints: Array<{ matchedString: string; kind: string; index: number; sourceScriptIndex?: number; snippet: string }> = [];
   const counts: Record<string, number> = {};
+  const scripts = extractScriptContents(html);
   for (const term of terms) {
     const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const re = new RegExp(escaped, "gi");
@@ -347,13 +208,15 @@ function collectNetworkHints(html: string): {
     for (const match of matches.slice(0, 12)) {
       const index = match.index ?? 0;
       hints.push({
+        matchedString: match[0],
         kind: term,
         index,
+        sourceScriptIndex: networkHintScriptIndex(scripts, index),
         snippet: html.slice(Math.max(0, index - 220), Math.min(html.length, index + 420)),
       });
     }
   }
-  const scriptSources = extractScriptContents(html)
+  const scriptSources = scripts
     .flatMap((script) => {
       const match = script.attributes.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
       return match?.[1] ? [match[1]] : [];
@@ -451,7 +314,14 @@ function operatorFromProfileHtml(
   };
 }
 
-async function fetchHtml(url: string): Promise<string> {
+type StyleSeatHtmlFetchResult = {
+  html: string;
+  statusCode: number;
+  finalUrl: string;
+  fetchedAt: string;
+};
+
+async function fetchHtmlWithMeta(url: string): Promise<StyleSeatHtmlFetchResult> {
   const res = await fetch(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (compatible; AIH StyleSeat Discovery/1.0)",
@@ -460,7 +330,16 @@ async function fetchHtml(url: string): Promise<string> {
     signal: AbortSignal.timeout(20_000),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return await res.text();
+  return {
+    html: await res.text(),
+    statusCode: res.status,
+    finalUrl: res.url || url,
+    fetchedAt: new Date().toISOString(),
+  };
+}
+
+async function fetchHtml(url: string): Promise<string> {
+  return (await fetchHtmlWithMeta(url)).html;
 }
 
 const MARKET_COORDINATES: Record<string, { lat: number; lon: number; label: string }> = {
@@ -614,6 +493,9 @@ async function saveExtractionDiagnostics(input: {
   url: string;
   html: string;
   pageLinks: string[];
+  statusCode?: number;
+  finalUrl?: string;
+  fetchedAt?: string;
   force?: boolean;
 }): Promise<{
   diagnosticsDir?: string;
@@ -635,36 +517,52 @@ async function saveExtractionDiagnostics(input: {
   networkHintCount: number;
   internalLinkCount: number;
   profileLinkCount: number;
+  profileLikeLinkCount: number;
+  embeddedCandidateCount: number;
+  likelyExtractionSource: "static_links" | "next_data" | "next_flight" | "json_ld" | "internal_api" | "rendered_dom_required" | "blocked_or_empty";
+  recommendation: string;
   hasUsableStaticLinks: boolean;
   hasEmbeddedData: boolean;
   hasNetworkHints: boolean;
 }> {
   const embeddedData = extractEmbeddedStyleSeatData(input.html);
   const allLinks = extractRawInternalLinks(input.html, input.url);
-  const classifications = allLinks.map((link) => ({
-    ...link,
-    classifiedType: link.normalizedUrl ? classifyStyleSeatDebugUrl(link.normalizedUrl) : "unknown",
-  }));
+  const classifications = allLinks;
   const networkHints = collectNetworkHints(input.html);
-  const profileLinkCount = classifications.filter((link) => link.classifiedType === "profile").length;
-  const extractionReport = {
-    sourceUrl: input.url,
-    isStaticHtml: true,
+  const profileLinkCount = classifications.filter((link) => link.classification === "profile").length;
+  const networkHintCount = networkHints.hints.length + networkHints.urlLikeStrings.length;
+  const sourceGuess = likelyExtractionSource({
+    htmlLength: input.html.length,
+    statusCode: input.statusCode,
+    profileLikeLinkCount: profileLinkCount,
+    embeddedCandidateCount: embeddedData.candidateObjects.length,
     nextDataFound: embeddedData.nextDataFound,
     nextFlightFound: embeddedData.nextFlightFound,
+    nextFlightLinkCount: embeddedData.nextFlight.links.length,
+    jsonLdCount: embeddedData.jsonLd.length,
+    networkHintCount,
+  });
+  const createdAt = new Date().toISOString();
+  const extractionReport = {
+    runId: input.runId,
+    url: input.url,
+    finalUrl: input.finalUrl ?? input.url,
+    createdAt,
+    fetchedAt: input.fetchedAt ?? createdAt,
+    statusCode: input.statusCode,
+    htmlLength: input.html.length,
+    staticAnchorCount: input.pageLinks.length,
+    internalStyleSeatLinkCount: classifications.length,
+    profileLikeLinkCount: profileLinkCount,
     jsonScriptCount: embeddedData.embeddedJson.length,
     jsonLdCount: embeddedData.jsonLd.length,
-    candidateObjectCount: embeddedData.candidateObjects.length,
-    networkHintCount: networkHints.hints.length + networkHints.urlLikeStrings.length,
-    internalStyleSeatLinkCount: classifications.length,
-    profileLinkCount,
-    likelyDataSource: embeddedData.candidateObjects.length > 0
-      ? "embedded_json"
-      : profileLinkCount > 0
-        ? "static_links"
-        : networkHints.urlLikeStrings.some((url) => url.includes("search.styleseat.com") || url.includes("/api/"))
-          ? "internal_api"
-          : "unknown_or_rendered_dom",
+    nextDataFound: embeddedData.nextDataFound,
+    nextFlightFound: embeddedData.nextFlightFound,
+    embeddedCandidateCount: embeddedData.candidateObjects.length,
+    networkHintCount,
+    likelyExtractionSource: sourceGuess.source,
+    recommendation: sourceGuess.recommendation,
+    debugArtifactPath: getRunDebugDir(input.runId) ?? undefined,
   };
   const result = {
     embeddedDataCount: embeddedData.embeddedJson.length + embeddedData.jsonLd.length,
@@ -673,9 +571,13 @@ async function saveExtractionDiagnostics(input: {
     nextDataFound: embeddedData.nextDataFound,
     nextFlightFound: embeddedData.nextFlightFound,
     candidateObjectCount: embeddedData.candidateObjects.length,
-    networkHintCount: networkHints.hints.length + networkHints.urlLikeStrings.length,
+    networkHintCount,
     internalLinkCount: classifications.length,
     profileLinkCount,
+    profileLikeLinkCount: profileLinkCount,
+    embeddedCandidateCount: embeddedData.candidateObjects.length,
+    likelyExtractionSource: sourceGuess.source,
+    recommendation: sourceGuess.recommendation,
     hasUsableStaticLinks: profileLinkCount > 0,
     hasEmbeddedData: embeddedData.candidateObjects.length > 0,
     hasNetworkHints: networkHints.hints.length > 0,
@@ -701,8 +603,7 @@ async function saveExtractionDiagnostics(input: {
     nextFlightFound: embeddedData.nextFlightFound,
     embeddedJson: embeddedData.embeddedJson,
     candidateObjects: embeddedData.candidateObjects,
-    readableFlightStrings: embeddedData.readableFlightStrings,
-    flightUrls: embeddedData.flightUrls,
+    nextFlight: embeddedData.nextFlight,
   }, null, 2), "utf8");
   await fs.writeFile(jsonLdPath, JSON.stringify(embeddedData.jsonLd, null, 2), "utf8");
   await fs.writeFile(internalLinksPath, JSON.stringify(classifications, null, 2), "utf8");
@@ -710,12 +611,14 @@ async function saveExtractionDiagnostics(input: {
     sourceUrl: input.url,
     totals: {
       allInternalLinks: classifications.length,
-      profile: classifications.filter((link) => link.classifiedType === "profile").length,
-      search: classifications.filter((link) => link.classifiedType === "search").length,
-      category: classifications.filter((link) => link.classifiedType === "category").length,
-      booking: classifications.filter((link) => link.classifiedType === "booking").length,
-      login: classifications.filter((link) => link.classifiedType === "login").length,
-      unknown: classifications.filter((link) => link.classifiedType === "unknown").length,
+      profile: classifications.filter((link) => link.classification === "profile").length,
+      search: classifications.filter((link) => link.classification === "search").length,
+      category: classifications.filter((link) => link.classification === "category").length,
+      booking: classifications.filter((link) => link.classification === "booking").length,
+      account: classifications.filter((link) => link.classification === "account").length,
+      blog: classifications.filter((link) => link.classification === "blog").length,
+      legal: classifications.filter((link) => link.classification === "legal").length,
+      unknown: classifications.filter((link) => link.classification === "unknown").length,
     },
     links: classifications,
   }, null, 2), "utf8");
@@ -857,6 +760,10 @@ export async function crawlStyleSeatDiscovery(input: {
   let nextFlightFound = false;
   let internalLinkCount = 0;
   let profileLinkCount = 0;
+  let profileLikeLinkCount = 0;
+  let embeddedCandidateCount = 0;
+  let detectedLikelyExtractionSource: "static_links" | "next_data" | "next_flight" | "json_ld" | "internal_api" | "rendered_dom_required" | "blocked_or_empty" | undefined;
+  let detectedRecommendation: string | undefined;
   let extractionSource: "static_links" | "search_api" | "rendered_dom" | "none" = "none";
   let searchApiUrl: string | undefined;
   let searchApiResponsePath: string | undefined;
@@ -881,8 +788,10 @@ export async function crawlStyleSeatDiscovery(input: {
     if (next.depth > input.crawlDepth) continue;
 
     let html = "";
+    let htmlFetch: StyleSeatHtmlFetchResult | null = null;
     try {
-      html = await fetchHtml(next.url);
+      htmlFetch = await fetchHtmlWithMeta(next.url);
+      html = htmlFetch.html;
       crawledUrls.push(next.url);
     } catch {
       rejectedUrls.push(next.url);
@@ -899,6 +808,9 @@ export async function crawlStyleSeatDiscovery(input: {
       url: next.url,
       html,
       pageLinks,
+      statusCode: htmlFetch?.statusCode,
+      finalUrl: htmlFetch?.finalUrl,
+      fetchedAt: htmlFetch?.fetchedAt,
       force: input.config.debug,
     }).catch((e) => {
       const msg = e instanceof Error ? e.message : String(e);
@@ -925,6 +837,10 @@ export async function crawlStyleSeatDiscovery(input: {
       nextFlightFound = nextFlightFound || diagnostics.nextFlightFound;
       internalLinkCount += diagnostics.internalLinkCount;
       profileLinkCount += diagnostics.profileLinkCount;
+      profileLikeLinkCount += diagnostics.profileLikeLinkCount;
+      embeddedCandidateCount += diagnostics.embeddedCandidateCount;
+      detectedLikelyExtractionSource = diagnostics.likelyExtractionSource;
+      detectedRecommendation = diagnostics.recommendation;
     }
     if (hasStaticProfiles) extractionSource = "static_links";
 
@@ -1057,9 +973,13 @@ export async function crawlStyleSeatDiscovery(input: {
       nextDataFound,
       nextFlightFound,
       candidateObjectCount,
+      embeddedCandidateCount,
       networkHintCount,
       internalLinkCount,
       profileLinkCount,
+      profileLikeLinkCount,
+      likelyExtractionSource: detectedLikelyExtractionSource,
+      recommendation: detectedRecommendation,
       searchApiUrl,
       searchApiResultCount,
       searchApiResponsePath,

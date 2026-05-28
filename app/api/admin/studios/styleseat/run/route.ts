@@ -176,12 +176,16 @@ export async function POST(req: NextRequest) {
       ? {
           staticAnchorCount: crawl?.debug?.staticAnchorCount ?? 0,
           internalStyleSeatLinkCount: crawl?.debug?.internalLinkCount ?? 0,
+          profileLikeLinkCount: crawl?.debug?.profileLikeLinkCount ?? crawl?.debug?.profileLinkCount ?? 0,
           jsonScriptCount: crawl?.debug?.jsonScriptCount ?? 0,
           nextDataFound: crawl?.debug?.nextDataFound ?? false,
           nextFlightFound: crawl?.debug?.nextFlightFound ?? false,
           jsonLdCount: crawl?.debug?.jsonLdCount ?? 0,
           candidateObjectCount: crawl?.debug?.candidateObjectCount ?? 0,
+          embeddedCandidateCount: crawl?.debug?.embeddedCandidateCount ?? crawl?.debug?.candidateObjectCount ?? 0,
           networkHintCount: crawl?.debug?.networkHintCount ?? 0,
+          likelyExtractionSource: crawl?.debug?.likelyExtractionSource ?? "blocked_or_empty",
+          recommendation: crawl?.debug?.recommendation,
           debugArtifactPath: crawl?.debug?.diagnosticsDir,
         }
       : undefined;

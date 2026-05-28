@@ -212,9 +212,13 @@ export interface StyleSeatCrawlDebug {
   nextDataFound?: boolean;
   nextFlightFound?: boolean;
   candidateObjectCount?: number;
+  embeddedCandidateCount?: number;
   networkHintCount?: number;
   internalLinkCount?: number;
   profileLinkCount?: number;
+  profileLikeLinkCount?: number;
+  likelyExtractionSource?: "static_links" | "next_data" | "next_flight" | "json_ld" | "internal_api" | "rendered_dom_required" | "blocked_or_empty";
+  recommendation?: string;
   searchApiUrl?: string;
   searchApiResultCount?: number;
   searchApiResponsePath?: string;
@@ -225,12 +229,16 @@ export interface StyleSeatCrawlDebug {
 export interface StyleSeatExtractionDiagnosticSummary {
   staticAnchorCount: number;
   internalStyleSeatLinkCount: number;
+  profileLikeLinkCount: number;
   jsonScriptCount: number;
   nextDataFound: boolean;
   nextFlightFound: boolean;
   jsonLdCount: number;
   candidateObjectCount: number;
+  embeddedCandidateCount: number;
   networkHintCount: number;
+  likelyExtractionSource: "static_links" | "next_data" | "next_flight" | "json_ld" | "internal_api" | "rendered_dom_required" | "blocked_or_empty";
+  recommendation?: string;
   debugArtifactPath?: string;
 }
 

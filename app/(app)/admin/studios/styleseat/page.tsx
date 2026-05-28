@@ -21,6 +21,7 @@ import {
   type StyleSeatListResponse,
   type StyleSeatDetailResponse,
   type StyleSeatIntelligenceReport,
+  type StyleSeatExtractionDiagnosticSummary,
 } from "@/lib/studios/styleseat/types";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 
@@ -70,6 +71,7 @@ type StyleSeatPageRunData = {
   failures?: unknown[];
   log?: unknown[];
   intelligence?: StyleSeatIntelligenceReport | null;
+  diagnosticSummary?: StyleSeatExtractionDiagnosticSummary;
 };
 
 // ─── Run form ─────────────────────────────────────────────────────────────────
@@ -366,6 +368,33 @@ function SummaryCards({ run }: { run: StyleSeatHarvestRun }) {
           <div style={{ fontSize: 10, color: "#a8a29e", fontWeight: 600, whiteSpace: "nowrap" }}>{label}</div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function DiagnosticSummaryCard({ summary }: { summary?: StyleSeatExtractionDiagnosticSummary }) {
+  if (!summary) return null;
+  return (
+    <div style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 12, padding: "12px 16px", marginBottom: 16 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, color: "#c2410c", letterSpacing: "0.08em", marginBottom: 8 }}>
+        EXTRACTION DIAGNOSTICS
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, fontSize: 12, color: "#7c2d12" }}>
+        <span><strong>Likely source:</strong> {summary.likelyExtractionSource.replace(/_/g, " ")}</span>
+        <span><strong>Profile-like links:</strong> {summary.profileLikeLinkCount}</span>
+        <span><strong>Embedded candidates:</strong> {summary.embeddedCandidateCount}</span>
+        <span><strong>Network hints:</strong> {summary.networkHintCount}</span>
+      </div>
+      {summary.recommendation && (
+        <div style={{ marginTop: 8, fontSize: 12, color: "#9a3412" }}>
+          <strong>Recommendation:</strong> {summary.recommendation}
+        </div>
+      )}
+      {summary.debugArtifactPath && (
+        <div style={{ marginTop: 8, fontFamily: "monospace", fontSize: 11, color: "#9a3412", wordBreak: "break-all" }}>
+          {summary.debugArtifactPath}
+        </div>
+      )}
     </div>
   );
 }
@@ -1046,6 +1075,7 @@ export default function StyleSeatDiscoveryPage() {
         failures: ok.failures,
         log: ok.log,
         intelligence: ok.intelligence,
+        diagnosticSummary: ok.diagnosticSummary,
       });
       await loadRuns();
     } catch (e) {
@@ -1130,6 +1160,7 @@ export default function StyleSeatDiscoveryPage() {
           )}
 
           <SummaryCards run={runData.run} />
+          <DiagnosticSummaryCard summary={runData.diagnosticSummary} />
 
           <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "12px 16px", marginBottom: 16 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 8 }}>RUN ARTIFACTS</div>
