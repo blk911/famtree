@@ -12,11 +12,11 @@ interface Props {
 }
 
 const AGE_COLOURS: Record<string, { bg: string; text: string }> = {
-  "K-2":      { bg: "rgba(34,197,94,0.16)",  text: "#4ade80" },
-  "3-5":      { bg: "rgba(59,130,246,0.16)", text: "#60a5fa" },
-  "6-8":      { bg: "rgba(245,158,11,0.16)", text: "#fbbf24" },
-  "9-12":     { bg: "rgba(239,68,68,0.16)",  text: "#f87171" },
-  "All Ages": { bg: "rgba(168,85,247,0.16)", text: "#c084fc" },
+  "K-2":      { bg: "rgba(22,163,74,0.12)",   text: "#16a34a" },
+  "3-5":      { bg: "rgba(37,99,235,0.12)",   text: "#2563eb" },
+  "6-8":      { bg: "rgba(217,119,6,0.12)",   text: "#d97706" },
+  "9-12":     { bg: "rgba(220,38,38,0.12)",   text: "#dc2626" },
+  "All Ages": { bg: "rgba(147,51,234,0.12)",  text: "#9333ea" },
 };
 
 export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
@@ -29,8 +29,9 @@ export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
         width: fullWidth ? "100%" : "min(320px, 90vw)",
         borderRadius: 16,
         overflow: "hidden",
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.07)",
+        background: "#ffffff",
+        border: "1px solid rgba(28,25,23,0.08)",
+        boxShadow: "0 1px 6px rgba(28,25,23,0.05)",
         transition: "transform 0.18s ease, box-shadow 0.18s ease",
         display: "flex",
         flexDirection: "column",
@@ -38,12 +39,12 @@ export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLElement;
         el.style.transform = "translateY(-4px)";
-        el.style.boxShadow = "0 16px 40px rgba(0,0,0,0.4)";
+        el.style.boxShadow = "0 14px 36px rgba(28,25,23,0.12)";
       }}
       onMouseLeave={(e) => {
         const el = e.currentTarget as HTMLElement;
         el.style.transform = "translateY(0)";
-        el.style.boxShadow = "none";
+        el.style.boxShadow = "0 1px 6px rgba(28,25,23,0.05)";
       }}
     >
       {/* Gradient header strip */}
@@ -70,7 +71,7 @@ export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
         <span
           style={{
             fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
-            color: "rgba(255,255,255,0.72)",
+            color: "rgba(255,255,255,0.88)",
             background: "rgba(0,0,0,0.32)",
             borderRadius: 20, padding: "3px 8px",
             border: "1px solid rgba(255,255,255,0.12)",
@@ -88,7 +89,7 @@ export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
             style={{
               margin: "0 0 5px",
               fontSize: 14, fontWeight: 900, letterSpacing: "-0.025em", lineHeight: 1.25,
-              color: "rgba(255,255,255,0.95)",
+              color: "#1c1917",
             }}
           >
             {trail.title}
@@ -96,7 +97,7 @@ export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
           <p
             style={{
               margin: 0, fontSize: 11, lineHeight: 1.5,
-              color: "rgba(255,255,255,0.45)",
+              color: "rgba(28,25,23,0.52)",
               display: "-webkit-box",
               WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
@@ -122,17 +123,17 @@ export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
               <span
                 style={{
                   fontSize: 10, fontWeight: 700, letterSpacing: "0.02em",
-                  color: "rgba(255,255,255,0.72)",
-                  background: "rgba(255,255,255,0.08)",
+                  color: "rgba(28,25,23,0.68)",
+                  background: "rgba(28,25,23,0.06)",
                   borderRadius: 6, padding: "2px 7px",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(28,25,23,0.08)",
                   whiteSpace: "nowrap",
                 }}
               >
                 {step}
               </span>
               {i < trail.steps.length - 1 && (
-                <ArrowRight style={{ width: 10, height: 10, color: "rgba(255,255,255,0.24)", flexShrink: 0 }} />
+                <ArrowRight style={{ width: 10, height: 10, color: "rgba(28,25,23,0.28)", flexShrink: 0 }} />
               )}
             </span>
           ))}

@@ -24,7 +24,7 @@ export default function SubjectPage({ params }: { params: { subject: string } })
       <div
         style={{
           minHeight: "calc(100vh - 60px)",
-          background: "#0d0d0f",
+          background: "#f7f5f2",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -35,10 +35,10 @@ export default function SubjectPage({ params }: { params: { subject: string } })
         }}
       >
         <span style={{ fontSize: 48 }}>🔭</span>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, color: "#fff", letterSpacing: "-0.03em" }}>
+        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, color: "#1c1917", letterSpacing: "-0.03em" }}>
           Subject not found
         </h1>
-        <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.46)", maxWidth: 340, lineHeight: 1.55 }}>
+        <p style={{ margin: 0, fontSize: 14, color: "rgba(28,25,23,0.50)", maxWidth: 340, lineHeight: 1.55 }}>
           That subject does not exist yet. Head back to the Discovery home to explore what is available.
         </p>
         <a
@@ -48,9 +48,9 @@ export default function SubjectPage({ params }: { params: { subject: string } })
             display: "inline-block",
             padding: "9px 20px",
             borderRadius: 12,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.14)",
-            color: "rgba(255,255,255,0.82)",
+            background: "rgba(28,25,23,0.06)",
+            border: "1px solid rgba(28,25,23,0.12)",
+            color: "rgba(28,25,23,0.75)",
             fontSize: 13,
             fontWeight: 700,
             textDecoration: "none",
@@ -100,8 +100,8 @@ export default function SubjectPage({ params }: { params: { subject: string } })
       <div
         style={{
           minHeight: "calc(100vh - 60px)",
-          background: "#0d0d0f",
-          color: "#fff",
+          background: "#f7f5f2",
+          color: "#1c1917",
           paddingBottom: 80,
         }}
       >
@@ -165,16 +165,16 @@ export default function SubjectPage({ params }: { params: { subject: string } })
             margin: `clamp(40px,5vw,60px) ${SECTION_PAD} 0`,
             padding: "16px 20px",
             borderRadius: 14,
-            background: "rgba(20,83,45,0.16)",
-            border: "1px solid rgba(74,222,128,0.12)",
+            background: "rgba(20,83,45,0.06)",
+            border: "1px solid rgba(74,222,128,0.30)",
             display: "flex",
             alignItems: "flex-start",
             gap: 10,
           }}
         >
-          <ShieldCheck style={{ width: 16, height: 16, color: "#4ade80", flexShrink: 0, marginTop: 2 }} />
-          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: "rgba(255,255,255,0.50)" }}>
-            <strong style={{ color: "#4ade80" }}>Everything in this channel is reviewed</strong>{" "}
+          <ShieldCheck style={{ width: 16, height: 16, color: "#16a34a", flexShrink: 0, marginTop: 2 }} />
+          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: "rgba(28,25,23,0.58)" }}>
+            <strong style={{ color: "#16a34a" }}>Everything in this channel is reviewed</strong>{" "}
             for safe viewing inside AIH Discovery. Content opens in Safe View — no external
             navigation, no comment sections, no autoplay queues.
           </p>
@@ -197,7 +197,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
         fontSize: "clamp(15px, 2vw, 18px)",
         fontWeight: 900,
         letterSpacing: "-0.025em",
-        color: "rgba(255,255,255,0.92)",
+        color: "#1c1917",
       }}
     >
       {children}
@@ -207,7 +207,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function SectionSub({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ margin: 0, fontSize: 12, color: "rgba(255,255,255,0.32)", fontWeight: 500, lineHeight: 1.5 }}>
+    <p style={{ margin: 0, fontSize: 12, color: "rgba(28,25,23,0.45)", fontWeight: 500, lineHeight: 1.5 }}>
       {children}
     </p>
   );

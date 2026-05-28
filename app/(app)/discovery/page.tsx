@@ -17,7 +17,7 @@ const GUIDED_DISCOVERY_PATHS = [
       "Build curiosity through experiments, stories, nature, numbers, making, and safe discovery.",
     tags: ["Experiments", "Stories", "Nature", "Numbers", "Making"],
     gradient: "linear-gradient(135deg, rgba(34,197,94,0.34), rgba(14,165,233,0.18))",
-    accent: "#4ade80",
+    accent: "#16a34a",
     href: "/discovery/core-explorers",
   },
   {
@@ -27,7 +27,7 @@ const GUIDED_DISCOVERY_PATHS = [
       "Go deeper into science, math, engineering, coding, history, logic, and real-world systems.",
     tags: ["Science", "Math", "Engineering", "Coding", "Systems"],
     gradient: "linear-gradient(135deg, rgba(59,130,246,0.34), rgba(168,85,247,0.18))",
-    accent: "#60a5fa",
+    accent: "#2563eb",
   },
   {
     title: "Career & Pro Studies",
@@ -36,7 +36,7 @@ const GUIDED_DISCOVERY_PATHS = [
       "Explore future careers, AI, robotics, entrepreneurship, medicine, design, engineering, trades, and advanced learning tracks.",
     tags: ["AI", "Robotics", "Careers", "Design", "Trades"],
     gradient: "linear-gradient(135deg, rgba(217,70,239,0.28), rgba(245,158,11,0.18))",
-    accent: "#f0abfc",
+    accent: "#9333ea",
   },
 ] as const;
 
@@ -71,8 +71,8 @@ export default function DiscoveryHomePage() {
       <div
         style={{
           minHeight: "calc(100vh - 60px)",
-          background: "#0d0d0f",
-          color: "#fff",
+          background: "#f7f5f2",
+          color: "#1c1917",
           paddingBottom: 80,
         }}
       >
@@ -80,9 +80,8 @@ export default function DiscoveryHomePage() {
         <div
           style={{
             width: "100%",
-            borderBottom: "1px solid rgba(255,255,255,0.05)",
-            background:
-              "linear-gradient(180deg, rgba(99,102,241,0.14) 0%, transparent 100%)",
+            borderBottom: "1px solid rgba(28,25,23,0.08)",
+            background: "linear-gradient(180deg, rgba(99,102,241,0.07) 0%, transparent 100%)",
             padding: "clamp(32px,5vw,60px) clamp(16px,4vw,40px) clamp(28px,4vw,48px)",
           }}
         >
@@ -106,14 +105,14 @@ export default function DiscoveryHomePage() {
               fontWeight: 900,
               letterSpacing: "-0.04em",
               lineHeight: 1.06,
-              color: "#fff",
+              color: "#1c1917",
               maxWidth: 600,
             }}
           >
             Where do you want{" "}
             <span
               style={{
-                background: "linear-gradient(90deg, #818cf8, #c084fc)",
+                background: "linear-gradient(90deg, #6366f1, #a855f7)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}
@@ -127,7 +126,7 @@ export default function DiscoveryHomePage() {
               margin: "0 0 26px",
               fontSize: "clamp(13px, 1.6vw, 16px)",
               lineHeight: 1.6,
-              color: "rgba(255,255,255,0.46)",
+              color: "rgba(28,25,23,0.52)",
               maxWidth: 500,
             }}
           >
@@ -148,9 +147,9 @@ export default function DiscoveryHomePage() {
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "5px 12px", borderRadius: 20,
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  background: "rgba(255,255,255,0.04)",
-                  fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.56)",
+                  border: "1px solid rgba(28,25,23,0.12)",
+                  background: "#fff",
+                  fontSize: 11, fontWeight: 700, color: "rgba(28,25,23,0.55)",
                   letterSpacing: "0.02em",
                 }}
               >
@@ -162,11 +161,7 @@ export default function DiscoveryHomePage() {
         </div>
 
         {/* ── Subject grid ─────────────────────────────────────────────── */}
-        <div
-          style={{
-            padding: "clamp(32px,4vw,52px) clamp(16px,4vw,40px) 0",
-          }}
-        >
+        <div style={{ padding: "clamp(32px,4vw,52px) clamp(16px,4vw,40px) 0" }}>
           <div style={{ marginBottom: 20 }}>
             <h2
               style={{
@@ -174,12 +169,12 @@ export default function DiscoveryHomePage() {
                 fontSize: "clamp(15px, 2vw, 18px)",
                 fontWeight: 900,
                 letterSpacing: "-0.025em",
-                color: "rgba(255,255,255,0.9)",
+                color: "#1c1917",
               }}
             >
               Explore the World
             </h2>
-            <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(255,255,255,0.32)", fontWeight: 500 }}>
+            <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(28,25,23,0.45)", fontWeight: 500 }}>
               Every subject opens a new way to think, build, and discover.
             </p>
           </div>
@@ -191,12 +186,8 @@ export default function DiscoveryHomePage() {
           </div>
         </div>
 
-        {/* ── Featured Trails ──────────────────────────────────────────── */}
-        <div
-          style={{
-            padding: "clamp(44px,5vw,64px) clamp(16px,4vw,40px) 0",
-          }}
-        >
+        {/* ── Guided Discovery Paths ───────────────────────────────────── */}
+        <div style={{ padding: "clamp(44px,5vw,64px) clamp(16px,4vw,40px) 0" }}>
           <div style={{ marginBottom: 18 }}>
             <h2
               style={{
@@ -204,12 +195,12 @@ export default function DiscoveryHomePage() {
                 fontSize: "clamp(15px, 2vw, 18px)",
                 fontWeight: 900,
                 letterSpacing: "-0.025em",
-                color: "rgba(255,255,255,0.9)",
+                color: "#1c1917",
               }}
             >
               Guided Discovery Paths
             </h2>
-            <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(255,255,255,0.32)", fontWeight: 500 }}>
+            <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(28,25,23,0.45)", fontWeight: 500 }}>
               Start with wonder, go deeper with skill, and grow toward real-world mastery.
             </p>
           </div>
@@ -218,142 +209,124 @@ export default function DiscoveryHomePage() {
             {GUIDED_DISCOVERY_PATHS.map((path) => {
               const card = (
                 <article
-                key={path.title}
-                style={{
-                  minHeight: 260,
-                  borderRadius: 22,
-                  overflow: "hidden",
-                  background: "rgba(255,255,255,0.045)",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  boxShadow: "0 20px 70px rgba(0,0,0,0.22)",
-                  display: "flex",
-                  flexDirection: "column",
-                  position: "relative",
-                  height: "100%",
-                }}
-              >
-                <div
+                  key={path.title}
                   style={{
-                    background: path.gradient,
-                    borderBottom: "1px solid rgba(255,255,255,0.10)",
-                    padding: "24px 24px 22px",
-                    minHeight: 90,
+                    minHeight: 260,
+                    borderRadius: 22,
+                    overflow: "hidden",
+                    background: "#ffffff",
+                    border: "1px solid rgba(28,25,23,0.08)",
+                    boxShadow: "0 2px 12px rgba(28,25,23,0.06)",
                     display: "flex",
-                    alignItems: "flex-start",
-                    justifyContent: "space-between",
-                    gap: 14,
+                    flexDirection: "column",
+                    position: "relative",
+                    height: "100%",
+                    transition: "transform 0.18s ease, box-shadow 0.18s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.transform = "translateY(-3px)";
+                    el.style.boxShadow = "0 12px 36px rgba(28,25,23,0.12)";
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.transform = "translateY(0)";
+                    el.style.boxShadow = "0 2px 12px rgba(28,25,23,0.06)";
                   }}
                 >
                   <div
                     style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 14,
-                      background: "rgba(0,0,0,0.26)",
-                      border: "1px solid rgba(255,255,255,0.14)",
+                      background: path.gradient,
+                      borderBottom: "1px solid rgba(28,25,23,0.06)",
+                      padding: "24px 24px 22px",
+                      minHeight: 90,
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      boxShadow: "0 12px 30px rgba(0,0,0,0.22)",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
+                      gap: 14,
                     }}
                   >
-                    <Compass style={{ width: 22, height: 22, color: "#fff" }} />
-                  </div>
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      borderRadius: 999,
-                      padding: "5px 10px",
-                      background: "rgba(0,0,0,0.30)",
-                      border: "1px solid rgba(255,255,255,0.13)",
-                      color: "rgba(255,255,255,0.76)",
-                      fontSize: 11,
-                      fontWeight: 800,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    <Sparkles style={{ width: 12, height: 12, color: path.accent }} />
-                    {path.ages}
-                  </span>
-                </div>
-
-                <div
-                  style={{
-                    padding: "22px 24px 24px",
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <h3
-                    style={{
-                      margin: "0 0 8px",
-                      fontSize: "clamp(18px, 2.1vw, 23px)",
-                      fontWeight: 950,
-                      letterSpacing: "-0.03em",
-                      color: "#fff",
-                      lineHeight: 1.1,
-                    }}
-                  >
-                    {path.title}
-                  </h3>
-
-                  <p
-                    style={{
-                      margin: "0 0 18px",
-                      color: "rgba(255,255,255,0.54)",
-                      fontSize: 13,
-                      lineHeight: 1.58,
-                    }}
-                  >
-                    {path.subhead}
-                  </p>
-
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 22 }}>
-                    {path.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        style={{
-                          borderRadius: 8,
-                          padding: "4px 9px",
-                          background: `${path.accent}17`,
-                          border: `1px solid ${path.accent}2f`,
-                          color: path.accent,
-                          fontSize: 11,
-                          fontWeight: 750,
-                        }}
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                    <div
+                      style={{
+                        width: 44, height: 44, borderRadius: 14,
+                        background: "rgba(255,255,255,0.55)",
+                        border: "1px solid rgba(255,255,255,0.7)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.10)",
+                      }}
+                    >
+                      <Compass style={{ width: 22, height: 22, color: path.accent }} />
+                    </div>
+                    <span
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        borderRadius: 999, padding: "5px 10px",
+                        background: "rgba(255,255,255,0.60)",
+                        border: "1px solid rgba(255,255,255,0.75)",
+                        color: "rgba(28,25,23,0.70)",
+                        fontSize: 11, fontWeight: 800, whiteSpace: "nowrap",
+                      }}
+                    >
+                      <Sparkles style={{ width: 12, height: 12, color: path.accent }} />
+                      {path.ages}
+                    </span>
                   </div>
 
-                  <button
-                    type="button"
-                    style={{
-                      marginTop: "auto",
-                      alignSelf: "flex-start",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                      borderRadius: 999,
-                      border: "1px solid rgba(255,255,255,0.16)",
-                      background: "rgba(255,255,255,0.08)",
-                      color: "#fff",
-                      padding: "9px 14px",
-                      fontSize: 12,
-                      fontWeight: 850,
-                      cursor: "pointer",
-                    }}
-                    aria-label={`Explore ${path.title}`}
-                  >
-                    Explore
-                    <ArrowRight style={{ width: 14, height: 14, color: path.accent }} />
-                  </button>
-                </div>
-              </article>
+                  <div style={{ padding: "20px 24px 24px", flex: 1, display: "flex", flexDirection: "column" }}>
+                    <h3
+                      style={{
+                        margin: "0 0 8px",
+                        fontSize: "clamp(17px, 2.1vw, 21px)",
+                        fontWeight: 900,
+                        letterSpacing: "-0.03em",
+                        color: "#1c1917",
+                        lineHeight: 1.15,
+                      }}
+                    >
+                      {path.title}
+                    </h3>
+
+                    <p style={{ margin: "0 0 16px", color: "rgba(28,25,23,0.55)", fontSize: 13, lineHeight: 1.58 }}>
+                      {path.subhead}
+                    </p>
+
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
+                      {path.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          style={{
+                            borderRadius: 7, padding: "3px 9px",
+                            background: `${path.accent}12`,
+                            border: `1px solid ${path.accent}28`,
+                            color: path.accent,
+                            fontSize: 11, fontWeight: 700,
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      style={{
+                        marginTop: "auto",
+                        alignSelf: "flex-start",
+                        display: "inline-flex", alignItems: "center", gap: 8,
+                        borderRadius: 999,
+                        border: `1px solid ${path.accent}30`,
+                        background: `${path.accent}10`,
+                        color: path.accent,
+                        padding: "8px 14px",
+                        fontSize: 12, fontWeight: 800, cursor: "pointer",
+                      }}
+                      aria-label={`Explore ${path.title}`}
+                    >
+                      Explore
+                      <ArrowRight style={{ width: 13, height: 13 }} />
+                    </button>
+                  </div>
+                </article>
               );
 
               if ("href" in path) {
@@ -364,7 +337,7 @@ export default function DiscoveryHomePage() {
                 );
               }
 
-              return card;
+              return <div key={path.title}>{card}</div>;
             })}
           </div>
         </div>
@@ -375,20 +348,20 @@ export default function DiscoveryHomePage() {
             margin: "clamp(44px,5vw,64px) clamp(16px,4vw,40px) 0",
             padding: "clamp(24px,3.5vw,40px) clamp(20px,4vw,44px)",
             borderRadius: 20,
-            background: "rgba(20,83,45,0.16)",
-            border: "1px solid rgba(74,222,128,0.14)",
+            background: "rgba(20,83,45,0.06)",
+            border: "1px solid rgba(74,222,128,0.30)",
           }}
         >
           <div style={{ display: "flex", alignItems: "flex-start", gap: 18, flexWrap: "wrap" }}>
             <div
               style={{
                 width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-                background: "rgba(74,222,128,0.12)",
-                border: "1px solid rgba(74,222,128,0.24)",
+                background: "rgba(22,163,74,0.10)",
+                border: "1px solid rgba(22,163,74,0.22)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}
             >
-              <ShieldCheck style={{ width: 24, height: 24, color: "#4ade80" }} />
+              <ShieldCheck style={{ width: 24, height: 24, color: "#16a34a" }} />
             </div>
 
             <div style={{ flex: 1, minWidth: 220 }}>
@@ -396,7 +369,7 @@ export default function DiscoveryHomePage() {
                 style={{
                   margin: "0 0 10px",
                   fontSize: "clamp(16px, 2vw, 20px)",
-                  fontWeight: 900, letterSpacing: "-0.03em", color: "#fff",
+                  fontWeight: 900, letterSpacing: "-0.03em", color: "#1c1917",
                 }}
               >
                 How Safe View Works
@@ -405,7 +378,7 @@ export default function DiscoveryHomePage() {
                 style={{
                   margin: "0 0 16px",
                   fontSize: 13, lineHeight: 1.6,
-                  color: "rgba(255,255,255,0.48)", maxWidth: 560,
+                  color: "rgba(28,25,23,0.55)", maxWidth: 560,
                 }}
               >
                 Every item on the Discovery Channel opens inside AIH Safe View — a fully
@@ -433,15 +406,10 @@ export default function DiscoveryHomePage() {
                     key={f}
                     style={{
                       display: "flex", alignItems: "center", gap: 8,
-                      fontSize: 12, color: "rgba(255,255,255,0.58)", fontWeight: 600,
+                      fontSize: 12, color: "rgba(28,25,23,0.60)", fontWeight: 600,
                     }}
                   >
-                    <span
-                      style={{
-                        width: 5, height: 5, borderRadius: "50%",
-                        background: "#4ade80", flexShrink: 0,
-                      }}
-                    />
+                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#16a34a", flexShrink: 0 }} />
                     {f}
                   </div>
                 ))}
@@ -451,22 +419,11 @@ export default function DiscoveryHomePage() {
         </div>
 
         {/* ── Footer ───────────────────────────────────────────────────── */}
-        <div
-          style={{
-            margin: "clamp(40px,5vw,56px) clamp(16px,4vw,40px) 0",
-            textAlign: "center",
-          }}
-        >
-          <p
-            style={{
-              margin: "0 0 6px", fontSize: 11, fontWeight: 700,
-              letterSpacing: "0.1em", textTransform: "uppercase",
-              color: "rgba(255,255,255,0.22)",
-            }}
-          >
+        <div style={{ margin: "clamp(40px,5vw,56px) clamp(16px,4vw,40px) 0", textAlign: "center" }}>
+          <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(28,25,23,0.28)" }}>
             AIH Discovery Channel — MVP
           </p>
-          <p style={{ margin: 0, fontSize: 12, color: "rgba(255,255,255,0.16)" }}>
+          <p style={{ margin: 0, fontSize: 12, color: "rgba(28,25,23,0.22)" }}>
             Full video library, parental controls, and saved trails coming soon.
           </p>
         </div>

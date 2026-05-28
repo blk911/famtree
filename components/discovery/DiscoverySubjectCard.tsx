@@ -24,8 +24,9 @@ export function DiscoverySubjectCard({ subject }: Props) {
         style={{
           borderRadius: 18,
           overflow: "hidden",
-          background: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.07)",
+          background: "#ffffff",
+          border: "1px solid rgba(28,25,23,0.08)",
+          boxShadow: "0 1px 6px rgba(28,25,23,0.05)",
           transition: "transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease",
           height: "100%",
           display: "flex",
@@ -34,14 +35,14 @@ export function DiscoverySubjectCard({ subject }: Props) {
         onMouseEnter={(e) => {
           const el = e.currentTarget as HTMLElement;
           el.style.transform = "translateY(-5px)";
-          el.style.boxShadow = "0 20px 50px rgba(0,0,0,0.5)";
-          el.style.borderColor = "rgba(255,255,255,0.16)";
+          el.style.boxShadow = "0 16px 44px rgba(28,25,23,0.13)";
+          el.style.borderColor = "rgba(28,25,23,0.14)";
         }}
         onMouseLeave={(e) => {
           const el = e.currentTarget as HTMLElement;
           el.style.transform = "translateY(0)";
-          el.style.boxShadow = "none";
-          el.style.borderColor = "rgba(255,255,255,0.07)";
+          el.style.boxShadow = "0 1px 6px rgba(28,25,23,0.05)";
+          el.style.borderColor = "rgba(28,25,23,0.08)";
         }}
       >
         {/* Gradient header */}
@@ -90,7 +91,7 @@ export function DiscoverySubjectCard({ subject }: Props) {
               margin: "0 0 14px",
               fontSize: 12,
               lineHeight: 1.55,
-              color: "rgba(255,255,255,0.48)",
+              color: "rgba(28,25,23,0.52)",
               flex: 1,
               display: "-webkit-box",
               WebkitLineClamp: 3,
@@ -121,9 +122,9 @@ export function DiscoverySubjectCard({ subject }: Props) {
               <span
                 style={{
                   fontSize: 10, fontWeight: 600, letterSpacing: "0.02em",
-                  color: "rgba(255,255,255,0.32)",
+                  color: "rgba(28,25,23,0.38)",
                   borderRadius: 6, padding: "2px 8px",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  border: "1px solid rgba(28,25,23,0.12)",
                 }}
               >
                 +{subject.subtopics.length - 3}
@@ -139,18 +140,18 @@ export function DiscoverySubjectCard({ subject }: Props) {
                   fontSize: 10,
                   fontWeight: 800,
                   letterSpacing: "0.04em",
-                  color: "rgba(255,255,255,0.44)",
+                  color: "rgba(28,25,23,0.40)",
                   textTransform: "uppercase",
                 }}
               >
                 {totalItems} items
               </span>
-              <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.24)" }} />
+              <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(28,25,23,0.18)" }} />
               <span
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 4,
                   fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
-                  textTransform: "uppercase", color: "#4ade80",
+                  textTransform: "uppercase", color: "#16a34a",
                 }}
               >
                 <ShieldCheck style={{ width: 11, height: 11 }} />

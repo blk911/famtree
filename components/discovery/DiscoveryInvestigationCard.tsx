@@ -14,26 +14,26 @@ interface Props {
 }
 
 const AGE_COLOURS: Record<string, { bg: string; text: string }> = {
-  "K-2":      { bg: "rgba(34,197,94,0.16)",  text: "#4ade80" },
-  "3-5":      { bg: "rgba(59,130,246,0.16)", text: "#60a5fa" },
-  "6-8":      { bg: "rgba(245,158,11,0.16)", text: "#fbbf24" },
-  "9-12":     { bg: "rgba(239,68,68,0.16)",  text: "#f87171" },
-  "All Ages": { bg: "rgba(168,85,247,0.16)", text: "#c084fc" },
+  "K-2":      { bg: "rgba(22,163,74,0.12)",   text: "#16a34a" },
+  "3-5":      { bg: "rgba(37,99,235,0.12)",   text: "#2563eb" },
+  "6-8":      { bg: "rgba(217,119,6,0.12)",   text: "#d97706" },
+  "9-12":     { bg: "rgba(220,38,38,0.12)",   text: "#dc2626" },
+  "All Ages": { bg: "rgba(147,51,234,0.12)",  text: "#9333ea" },
 };
 
 const TYPE_COLOURS: Record<string, string> = {
-  Investigation: "#60a5fa",
-  "Mini-Doc":    "#fb923c",
-  Workshop:      "#f472b6",
-  Interactive:   "#2dd4bf",
-  Project:       "#a78bfa",
-  Trail:         "#fbbf24",
-  Collection:    "#86efac",
+  Investigation: "#2563eb",
+  "Mini-Doc":    "#ea580c",
+  Workshop:      "#db2777",
+  Interactive:   "#0d9488",
+  Project:       "#7c3aed",
+  Trail:         "#d97706",
+  Collection:    "#16a34a",
 };
 
 export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props) {
   const ageBadge = AGE_COLOURS[item.ageTier] ?? AGE_COLOURS["All Ages"];
-  const typeColor = TYPE_COLOURS[item.itemType] ?? "#fff";
+  const typeColor = TYPE_COLOURS[item.itemType] ?? "#1c1917";
 
   return (
     <article
@@ -47,8 +47,9 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
         width: wide ? 280 : 240,
         borderRadius: 14,
         overflow: "hidden",
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.07)",
+        background: "#ffffff",
+        border: "1px solid rgba(28,25,23,0.08)",
+        boxShadow: "0 1px 6px rgba(28,25,23,0.05)",
         cursor: "pointer",
         transition: "transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease",
         display: "flex",
@@ -57,14 +58,14 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLElement;
         el.style.transform = "translateY(-4px)";
-        el.style.boxShadow = `0 16px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.12)`;
-        el.style.borderColor = "rgba(255,255,255,0.14)";
+        el.style.boxShadow = `0 14px 36px rgba(28,25,23,0.13), 0 0 0 1px rgba(28,25,23,0.10)`;
+        el.style.borderColor = "rgba(28,25,23,0.14)";
       }}
       onMouseLeave={(e) => {
         const el = e.currentTarget as HTMLElement;
         el.style.transform = "translateY(0)";
-        el.style.boxShadow = "none";
-        el.style.borderColor = "rgba(255,255,255,0.07)";
+        el.style.boxShadow = "0 1px 6px rgba(28,25,23,0.05)";
+        el.style.borderColor = "rgba(28,25,23,0.08)";
       }}
     >
       {/* Thumbnail */}
@@ -136,7 +137,7 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
             {item.itemType}
             {item.episodes ? ` · ${item.episodes} eps` : ""}
           </span>
-          <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.2)", flexShrink: 0 }} />
+          <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(28,25,23,0.18)", flexShrink: 0 }} />
           <span
             style={{
               fontSize: 9, fontWeight: 700, letterSpacing: "0.04em",
@@ -152,7 +153,7 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
           style={{
             margin: "0 0 5px",
             fontSize: 13, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.3,
-            color: "rgba(255,255,255,0.95)",
+            color: "#1c1917",
             flex: 1,
           }}
         >
@@ -162,7 +163,7 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
         <p
           style={{
             margin: 0, fontSize: 11, lineHeight: 1.45,
-            color: "rgba(255,255,255,0.40)",
+            color: "rgba(28,25,23,0.50)",
             display: "-webkit-box",
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
@@ -179,8 +180,8 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
               style={{
                 fontSize: 9, fontWeight: 700, letterSpacing: "0.04em",
                 borderRadius: 5, padding: "2px 6px",
-                background: "rgba(255,255,255,0.07)",
-                color: "rgba(255,255,255,0.45)",
+                background: "rgba(28,25,23,0.06)",
+                color: "rgba(28,25,23,0.48)",
               }}
             >
               {item.difficulty}
@@ -188,7 +189,7 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
             <span
               style={{
                 fontSize: 9, fontWeight: 600,
-                color: "rgba(255,255,255,0.30)",
+                color: "rgba(28,25,23,0.38)",
               }}
             >
               {item.buildTime}
