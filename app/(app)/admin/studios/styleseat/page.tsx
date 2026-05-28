@@ -94,6 +94,28 @@ type StyleSeatPageRunData = {
   executionPath?: StyleSeatExecutionPath;
 };
 
+type StorageStatusResponse = {
+  ok: boolean;
+  NODE_ENV?: string | null;
+  vercel?: boolean;
+  runtimeDataRoot?: string;
+  isEphemeralRuntime?: boolean;
+  styleseatRunsCount?: number;
+  latestStyleSeatRunId?: string | null;
+  latestStyleSeatRunCreatedAt?: string | null;
+  prospectStorePath?: string | null;
+  prospectStoreBackend?: string;
+  prospectCount?: number;
+  prospectStoreBytes?: number;
+  prospectStoreLastModifiedAt?: string | null;
+  lastSavedProspectTimestamp?: string | null;
+  durableDatabaseConfigured?: boolean;
+  databaseUrlPresent?: boolean;
+  warnings?: string[];
+  error?: string;
+  detail?: string;
+};
+
 // ─── Run form ─────────────────────────────────────────────────────────────────
 
 function RunForm({
@@ -419,6 +441,113 @@ function SummaryCards({ run }: { run: StyleSeatHarvestRun }) {
           <div style={{ fontSize: 10, color: "#a8a29e", fontWeight: 600, whiteSpace: "nowrap" }}>{label}</div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function StorageStatusPanel({ status }: { status: StorageStatusResponse | null }) {
+  if (!status) {
+    return (
+      <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, padding: "14px 18px", marginBottom: 18 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 8 }}>
+          STORAGE STATUS
+        </div>
+        <div style={{ fontSize: 12, color: "#78716c" }}>Loading storage diagnostics...</div>
+      </div>
+    );
+  }
+
+  if (!status.ok) {
+    return (
+      <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 14, padding: "14px 18px", marginBottom: 18 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: "#b91c1c", letterSpacing: "0.08em", marginBottom: 8 }}>
+          STORAGE STATUS
+        </div>
+        <div style={{ fontSize: 12, color: "#b91c1c" }}>
+          {status.error ?? "Storage diagnostics unavailable"}{status.detail ? ` - ${status.detail}` : ""}
+        </div>
+      </div>
+    );
+  }
+
+  const warnings = status.warnings ?? [];
+  const updatedAt = status.lastSavedProspectTimestamp ?? status.prospectStoreLastModifiedAt ?? null;
+
+  return (
+    <div style={{
+      background: warnings.length > 0 ? "#fffbeb" : "#f0fdf4",
+      border: `1px solid ${warnings.length > 0 ? "#fde68a" : "#bbf7d0"}`,
+      borderRadius: 14,
+      padding: "14px 18px",
+      marginBottom: 18,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: warnings.length > 0 ? "#92400e" : "#15803d", letterSpacing: "0.08em" }}>
+          STORAGE STATUS
+        </div>
+        <span style={{
+          fontSize: 10,
+          fontWeight: 800,
+          color: status.prospectStoreBackend === "postgres" ? "#15803d" : "#92400e",
+          background: status.prospectStoreBackend === "postgres" ? "#dcfce7" : "#fef3c7",
+          borderRadius: 20,
+          padding: "2px 8px",
+        }}>
+          {status.prospectStoreBackend === "postgres" ? "Durable Postgres" : "Local runtime files"}
+        </span>
+      </div>
+
+      {status.isEphemeralRuntime && (
+        <div style={{ fontSize: 12, color: "#92400e", fontWeight: 700, marginBottom: 10 }}>
+          Prospects are stored in ephemeral runtime storage and may not persist across deployments.
+        </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10, fontSize: 12, color: "#57534e" }}>
+        <span><strong>Runtime root:</strong> <code style={{ fontSize: 11 }}>{status.runtimeDataRoot ?? "unknown"}</code></span>
+        <span><strong>Vercel:</strong> {status.vercel ? "yes" : "no"}</span>
+        <span><strong>DATABASE_URL:</strong> {status.databaseUrlPresent ? "present" : "missing"}</span>
+        <span><strong>Durable DB:</strong> {status.durableDatabaseConfigured ? "configured" : "not active"}</span>
+        <span><strong>Canonical prospects:</strong> {status.prospectCount ?? 0}</span>
+        <span><strong>Prospect bytes:</strong> {status.prospectStoreBytes ?? 0}</span>
+        <span><strong>Latest run:</strong> {status.latestStyleSeatRunId ?? "none"}</span>
+        <span><strong>StyleSeat runs:</strong> {status.styleseatRunsCount ?? 0}</span>
+        <span><strong>Last saved prospect:</strong> {updatedAt ? new Date(updatedAt).toLocaleString() : "none"}</span>
+        <span style={{ gridColumn: "1 / -1" }}><strong>Prospect store:</strong> <code style={{ fontSize: 11, wordBreak: "break-all" }}>{status.prospectStorePath ?? "postgres"}</code></span>
+      </div>
+
+      {warnings.length > 0 && (
+        <div style={{ marginTop: 10, display: "grid", gap: 4 }}>
+          {warnings.map((warning) => (
+            <div key={warning} style={{ fontSize: 11, color: "#92400e" }}>{warning}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WriteConfirmationCard({ run }: { run: StyleSeatHarvestRun }) {
+  if (run.mode !== "full_pipeline") return null;
+
+  const totals = run.report?.totals;
+  const attempted = totals?.prospectsAttempted ?? 0;
+  const created = totals?.prospectsCreated ?? 0;
+  const updated = totals?.prospectsUpdated ?? 0;
+  const artifactsWritten = !!run.report?.artifactPaths;
+
+  return (
+    <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px 16px", marginBottom: 16 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, color: "#15803d", letterSpacing: "0.08em", marginBottom: 8 }}>
+        WRITE CONFIRMATION
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 16, fontSize: 12, color: "#166534" }}>
+        <span><strong>Run artifacts written:</strong> {artifactsWritten ? "yes" : "not reported"}</span>
+        <span><strong>Canonical prospects attempted:</strong> {attempted}</span>
+        <span><strong>Created:</strong> {created}</span>
+        <span><strong>Updated:</strong> {updated}</span>
+        <span style={{ wordBreak: "break-all" }}><strong>Canonical store path:</strong> <code>{run.prospectStorePath ?? "postgres"}</code></span>
+      </div>
     </div>
   );
 }
@@ -1135,6 +1264,7 @@ export default function StyleSeatDiscoveryPage() {
   const [error, setError]           = useState<string | null>(null);
   const [runs, setRuns]             = useState<StyleSeatHarvestRun[]>([]);
   const [runData, setRunData]       = useState<StyleSeatPageRunData | null>(null);
+  const [storageStatus, setStorageStatus] = useState<StorageStatusResponse | null>(null);
   const [tab, setTab]               = useState<"operators" | "summary" | "intelligence">("operators");
 
   async function loadRuns() {
@@ -1147,8 +1277,23 @@ export default function StyleSeatDiscoveryPage() {
     }
   }
 
+  async function loadStorageStatus() {
+    try {
+      const res = await fetch("/api/admin/studios/storage/status", { cache: "no-store" });
+      const data: StorageStatusResponse = await res.json();
+      setStorageStatus(data);
+    } catch (e) {
+      setStorageStatus({
+        ok: false,
+        error: "Storage diagnostics unavailable",
+        detail: e instanceof Error ? e.message : String(e),
+      });
+    }
+  }
+
   useEffect(() => {
     void loadRuns();
+    void loadStorageStatus();
   }, []);
 
   async function openRun(runId: string) {
@@ -1237,6 +1382,7 @@ export default function StyleSeatDiscoveryPage() {
         executionPath: ok.executionPath,
       });
       await loadRuns();
+      await loadStorageStatus();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
@@ -1265,6 +1411,8 @@ export default function StyleSeatDiscoveryPage() {
           Discover independent beauty operators from StyleSeat — braiders, barbers, lash artists, nail techs — then resolve their IG identity and save to the prospect repository.
         </p>
       </div>
+
+      <StorageStatusPanel status={storageStatus} />
 
       {/* Run form (pre-run) */}
       {!runData && (
@@ -1351,6 +1499,7 @@ export default function StyleSeatDiscoveryPage() {
           <SummaryCards run={runData.run} />
           <DiagnosticSummaryCard summary={runData.diagnosticSummary} />
           <ExecutionPathCard requestEcho={runData.requestEcho ?? runData.run.report?.requestEcho} executionPath={runData.executionPath ?? runData.run.report?.executionPath} report={runData.run.report} />
+          <WriteConfirmationCard run={runData.run} />
 
           <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "12px 16px", marginBottom: 16 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 8 }}>RUN ARTIFACTS</div>
