@@ -22,6 +22,7 @@ import {
   type StyleSeatDetailResponse,
   type StyleSeatIntelligenceReport,
   type StyleSeatExtractionDiagnosticSummary,
+  type StyleSeatProspectPersistenceAuditEntry,
 } from "@/lib/studios/styleseat/types";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 
@@ -69,6 +70,7 @@ type StyleSeatPageRunData = {
   normalized?: unknown[];
   prospects?: unknown[];
   failures?: unknown[];
+  prospectPersistenceAudit?: StyleSeatProspectPersistenceAuditEntry[];
   log?: unknown[];
   intelligence?: StyleSeatIntelligenceReport | null;
   diagnosticSummary?: StyleSeatExtractionDiagnosticSummary;
@@ -659,6 +661,7 @@ function PipelineSummary({
   results: StyleSeatResolverResult[];
 }) {
   const [debugOpen, setDebugOpen] = useState(false);
+  const auditSummary = run.report?.persistenceAuditSummary;
 
   // Category breakdown
   const catCounts = results.reduce<Record<string, number>>((acc, r) => {
@@ -750,6 +753,37 @@ function PipelineSummary({
           </div>
         )}
       </div>
+
+      {auditSummary && (
+        <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "14px 18px", marginBottom: 14 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 10 }}>
+            PROSPECT PERSISTENCE AUDIT
+          </div>
+          <div style={{ display: "flex", gap: 22, flexWrap: "wrap", marginBottom: auditSummary.topSkipReasons.length > 0 ? 10 : 0 }}>
+            {([
+              ["Attempted", auditSummary.attempted, "#1c1917"],
+              ["Created", auditSummary.created, "#15803d"],
+              ["Updated", auditSummary.updated, "#1d4ed8"],
+              ["Skipped", auditSummary.skipped, "#d97706"],
+              ["Failed", auditSummary.failed, auditSummary.failed > 0 ? "#b91c1c" : "#a8a29e"],
+            ] as [string, number, string][]).map(([label, value, color]) => (
+              <div key={label}>
+                <div style={{ fontSize: 10, color: "#a8a29e", fontWeight: 600 }}>{label}</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color }}>{value}</div>
+              </div>
+            ))}
+          </div>
+          {auditSummary.topSkipReasons.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {auditSummary.topSkipReasons.map((item) => (
+                <span key={item.reason} style={{ fontSize: 11, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 20, padding: "3px 9px" }}>
+                  {item.reason}: {item.count}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Breakdowns */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
@@ -1018,6 +1052,7 @@ export default function StyleSeatDiscoveryPage() {
         normalized: data.normalized,
         prospects: data.prospects,
         failures: data.failures,
+        prospectPersistenceAudit: data.prospectPersistenceAudit,
         log: data.log,
         intelligence: data.intelligence,
       });
@@ -1073,6 +1108,7 @@ export default function StyleSeatDiscoveryPage() {
         normalized: ok.normalized,
         prospects: ok.prospects,
         failures: ok.failures,
+        prospectPersistenceAudit: ok.prospectPersistenceAudit,
         log: ok.log,
         intelligence: ok.intelligence,
         diagnosticSummary: ok.diagnosticSummary,
@@ -1169,7 +1205,9 @@ export default function StyleSeatDiscoveryPage() {
               <span><strong>{runData.normalized?.length ?? 0}</strong> normalized</span>
               <span><strong>{runData.run.report?.totals.igCandidates ?? runData.run.totalIgFound}</strong> IG candidates</span>
               <span><strong>{runData.run.report?.totals.resolverMerged ?? runData.run.totalResolved}</strong> resolver merged</span>
-              <span><strong>{runData.run.report?.totals.prospectsCreated ?? runData.run.savedCount}</strong> prospects created/updated</span>
+              <span><strong>{(runData.run.report?.totals.prospectsCreated ?? runData.run.savedCount) + (runData.run.report?.totals.prospectsUpdated ?? 0)}</strong> prospects created/updated</span>
+              <span><strong>{runData.run.report?.totals.prospectsAttempted ?? 0}</strong> prospect attempts</span>
+              <span><strong>{runData.run.report?.totals.prospectsSkipped ?? 0}</strong> prospect skips</span>
               <span><strong>{runData.failures?.length ?? runData.run.failedToSaveCount}</strong> failures</span>
               <span><strong>Extraction Source:</strong> {(runData.run.report?.extractionSource ?? runData.crawl?.debug?.extractionSource ?? "none").replace(/_/g, " ")}</span>
               <span><strong>{runData.run.report?.totals.internalApiRecords ?? runData.crawl?.debug?.internalApiRecords ?? 0}</strong> API records</span>

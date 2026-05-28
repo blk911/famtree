@@ -146,7 +146,11 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
   const now = new Date().toISOString();
 
   const incomingKey = normalizeHandle(incoming.identity.handle);
-  const incomingUrl = incoming.bestMatch?.url ?? null;
+  const incomingUrls = Array.from(new Set([
+    incoming.bestMatch?.url,
+    ...(incoming.allMatchedUrls ?? []).map((u) => u.url),
+  ].filter((url): url is string => !!url)));
+  const incomingUrl = incomingUrls[0] ?? null;
   const incomingFingerprint = generateIdentityFingerprint({
     handle: incoming.identity.handle,
     name: incoming.identity.name,
@@ -164,9 +168,10 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
       })) === incomingFingerprint;
     const sameHandle = incomingKey.length > 2 &&
       normalizeHandle(r.identity.handle) === incomingKey;
-    const sameUrl = incomingUrl &&
-      (r.bestMatch?.url === incomingUrl ||
-       r.allMatchedUrls.some((u) => u.url === incomingUrl));
+    const sameUrl = incomingUrls.length > 0 && incomingUrls.some((url) =>
+      r.bestMatch?.url === url ||
+      r.allMatchedUrls.some((u) => u.url === url)
+    );
     return sameFingerprint || sameHandle || sameUrl;
   });
 

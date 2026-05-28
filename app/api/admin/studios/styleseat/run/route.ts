@@ -11,6 +11,7 @@ import { z } from "zod";
 import { runStyleSeatHarvest } from "@/lib/studios/styleseat/extract";
 import { normalizeStyleSeatRecord } from "@/lib/studios/styleseat/normalize";
 import { runStyleSeatPipeline } from "@/lib/studios/styleseat/resolver";
+import { persistStyleSeatDiscoveries } from "@/lib/studios/styleseat/persistence";
 import { buildStyleSeatMarketIntelligenceReport } from "@/lib/studios/styleseat/report-builder";
 import { saveStyleSeatRun, generateStyleSeatRunId, getStyleSeatArtifactPaths } from "@/lib/studios/styleseat/store";
 import { getStoreBackendInfo, countProspects } from "@/lib/studios/prospects/store";
@@ -25,6 +26,7 @@ import type {
   StyleSeatErrorResponse,
   StyleSeatCategory,
   StyleSeatExtractionDiagnosticSummary,
+  StyleSeatProspectPersistenceAuditEntry,
 } from "@/lib/studios/styleseat/types";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 
@@ -196,7 +198,7 @@ export async function POST(req: NextRequest) {
     batchId,
     harvestDate:    now.slice(0, 10),
     vertical:       "beauty",
-    sourcePlatform: "styleseat",
+    sourcePlatform: "styleseat_harvest",
     sourceTool:     "styleseat_harvest",
     market: market || crawl?.discoveredMarkets[0] || "StyleSeat",
     state,
@@ -204,6 +206,13 @@ export async function POST(req: NextRequest) {
   };
 
   const normalizedArtifact = operators.map(normalizeStyleSeatRecord);
+  let persistenceResult: Awaited<ReturnType<typeof persistStyleSeatDiscoveries>> = {
+    audit: [] as StyleSeatProspectPersistenceAuditEntry[],
+    summary: { attempted: 0, created: 0, updated: 0, skipped: 0, failed: 0, topSkipReasons: [] },
+    prospects: [],
+    saveErrors: [],
+    savedHandles: [],
+  };
   let pipelineResult = {
     results: [] as Awaited<ReturnType<typeof runStyleSeatPipeline>>["results"],
     normalized: [] as Awaited<ReturnType<typeof runStyleSeatPipeline>>["normalized"],
@@ -216,6 +225,13 @@ export async function POST(req: NextRequest) {
   };
 
   if (pipelineMode !== "harvest_only" && operators.length > 0) {
+    try {
+      persistenceResult = await persistStyleSeatDiscoveries(operators, harvestCtx);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      errors.push(`StyleSeat discovery persistence error: ${msg}`);
+      console.error("[styleseat/run] discovery persistence error:", msg);
+    }
     try {
       pipelineResult = await runStyleSeatPipeline(operators, resolverMode, harvestCtx);
     } catch (e) {
@@ -232,13 +248,31 @@ export async function POST(req: NextRequest) {
   const {
     results,
     normalized,
-    prospects,
-    savedCount,
-    failedToSaveCount,
-    saveErrors,
+    prospects: resolverProspects,
+    failedToSaveCount: resolverFailedToSaveCount,
+    saveErrors: resolverSaveErrors,
     totalIgFound,
-    savedHandles,
+    savedHandles: resolverSavedHandles,
   } = pipelineResult;
+  const prospects = Array.from(
+    new Map([...persistenceResult.prospects, ...resolverProspects].map((prospect) => [prospect.prospectId, prospect])).values()
+  );
+  const saveErrors = [...persistenceResult.saveErrors, ...resolverSaveErrors];
+  const savedHandles = Array.from(new Set([...persistenceResult.savedHandles, ...resolverSavedHandles]));
+  const savedCount = prospects.length;
+  const failedToSaveCount = persistenceResult.summary.failed + resolverFailedToSaveCount;
+  if (persistenceResult.audit.length > 0 && results.length > 0) {
+    const resolverStatusByUrl = new Map(
+      results.map((result) => [result.operator.styleseatUrl, result.status])
+    );
+    persistenceResult = {
+      ...persistenceResult,
+      audit: persistenceResult.audit.map((entry) => ({
+        ...entry,
+        resolverStatus: resolverStatusByUrl.get(entry.profileUrl ?? "") ?? entry.resolverStatus,
+      })),
+    };
+  }
 
   // ── Step 4: After-count ─────────────────────────────────────────────────────
   const prospectsAfterCount = await countProspects();
@@ -307,8 +341,11 @@ export async function POST(req: NextRequest) {
       normalized:       normalizedArtifact.length,
       igCandidates:     totalIgFound,
       resolverMerged:   results.filter((r) => r.prospectId).length,
-      prospectsCreated: savedCount,
-      prospectsUpdated: 0,
+      prospectsCreated: persistenceResult.summary.created,
+      prospectsUpdated: persistenceResult.summary.updated,
+      prospectsAttempted: persistenceResult.summary.attempted,
+      prospectsSkipped: persistenceResult.summary.skipped,
+      prospectsFailed: persistenceResult.summary.failed + resolverFailedToSaveCount,
       unresolved:       pipelineMode === "harvest_only" ? operators.length : results.filter((r) => r.status === "unresolved").length,
       failed:           failedToSaveCount,
     },
@@ -316,6 +353,7 @@ export async function POST(req: NextRequest) {
     discoveredMarkets: crawl?.discoveredMarkets ?? [],
     discoveredCategories: crawl?.discoveredCategories ?? [],
     extractionSource: crawl?.debug?.extractionSource ?? (operators.some((operator) => operator.extractionSource === "internal_api") ? "internal_api" : "none"),
+    persistenceAuditSummary: persistenceResult.summary,
     notes: runErrors,
   };
 
@@ -349,6 +387,7 @@ export async function POST(req: NextRequest) {
       results,
       prospects,
       failures: saveErrors,
+      prospectPersistenceAudit: persistenceResult.audit,
       intelligence,
       operatorScores: intelligence.operators,
       marketClusters: intelligence.clusters,
@@ -377,6 +416,7 @@ export async function POST(req: NextRequest) {
       results,
       prospects,
       failures: saveErrors,
+      prospectPersistenceAudit: persistenceResult.audit,
       intelligence,
       log: [{
         at: now,

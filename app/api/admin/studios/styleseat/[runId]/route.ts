@@ -38,6 +38,7 @@ export async function GET(
       results: file.results,
       prospects: file.prospects ?? [],
       failures: file.failures ?? [],
+      prospectPersistenceAudit: file.prospectPersistenceAudit ?? [],
       log: file.log ?? [],
       intelligence: file.intelligence ?? null,
       report: file.report ?? file.run.report ?? null,

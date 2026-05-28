@@ -130,7 +130,7 @@ export interface StyleSeatHarvestContext {
   batchId: string;
   harvestDate: string;   // ISO date
   vertical: "beauty";
-  sourcePlatform: "styleseat";
+  sourcePlatform: "styleseat_harvest";
   sourceTool: "styleseat_harvest";
   market: string;
   state: string;
@@ -239,7 +239,12 @@ export function operatorToUpsertInput(
         confidence:  bestBookingMatch.confidenceScore,
         matchReason: bestBookingMatch.matchReason,
       }
-    : null;
+    : {
+        platform:    styleseatUrl.platform,
+        url:         styleseatUrl.url,
+        confidence:  styleseatUrl.confidence,
+        matchReason: styleseatUrl.matchReason,
+      };
 
   const services = Array.from(
     new Set([
@@ -256,7 +261,7 @@ export function operatorToUpsertInput(
     city:            [operator.city, operator.state].filter(Boolean).join(", "),
     state:           operator.state,
     serviceCategory: category,
-    confidence:      styleseatUrl.confidence,
+    confidence:      0.65,
   };
 
   const evidence: ProspectEvidence[] = [
@@ -273,7 +278,7 @@ export function operatorToUpsertInput(
 
   const overallConfidence = bestBookingMatch
     ? Math.min(100, Math.round((bestBookingMatch.confidenceScore + styleseatUrl.confidence) / 2))
-    : 0;
+    : styleseatUrl.confidence;
 
   const platforms = Array.from(
     new Set(["styleseat", ...profiles.map((p) => p.platform)])
@@ -287,7 +292,7 @@ export function operatorToUpsertInput(
       sourceDisplayName: operator.name,
     },
     vertical:       "beauty",
-    sourcePlatform: "styleseat",
+    sourcePlatform: "styleseat_harvest",
     sourceTool:     "styleseat_harvest",
     sourceHashtag:  category,
     sourceHashtags: operator.categories,
@@ -350,7 +355,7 @@ export function operatorToIdentitySeed(
     city:            [operator.city, operator.state].filter(Boolean).join(", "),
     state:           operator.state,
     serviceCategory: category,
-    confidence:      knownUrls[0].confidence,
+    confidence:      0.65,
   };
 
   const extraEvidence: ProspectEvidence[] = [
@@ -368,7 +373,7 @@ export function operatorToIdentitySeed(
     vertical:       "beauty",
     category:       CATEGORY_GUESS[category ?? "hair"] ?? category,
     subcategory:    category,
-    sourcePlatform: "styleseat",
+    sourcePlatform: "styleseat_harvest",
     sourceTool:     "styleseat_harvest",
     seedDate:       ctx.harvestDate,
     batchId:        ctx.batchId,

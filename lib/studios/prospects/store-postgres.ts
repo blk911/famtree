@@ -147,10 +147,11 @@ function rowToRecord(row: DbProspectRow): ProspectRecord {
 
 async function findExisting(
   incomingHandle: string,
-  incomingUrl: string | null,
+  incomingUrls: string[],
 ): Promise<DbProspectRow | null> {
   const normalizedKey = normalizeHandle(incomingHandle);
   const hasValidHandle = normalizedKey.length > 2;
+  const incomingUrl = incomingUrls[0] ?? null;
   const fingerprint = generateIdentityFingerprint({ handle: incomingHandle, bestMatchUrl: incomingUrl });
 
   const byFingerprint = await prisma.$queryRaw<DbProspectRow[]>`
@@ -171,11 +172,11 @@ async function findExisting(
   }
 
   // Try URL match (bestMatchUrl or inside allMatchedUrls JSON)
-  if (incomingUrl) {
+  for (const url of incomingUrls) {
     const byUrl = await prisma.$queryRaw<DbProspectRow[]>`
       SELECT * FROM studio_prospects
-      WHERE "bestMatchUrl" = ${incomingUrl}
-         OR "allMatchedUrls"::jsonb @> ${JSON.stringify([{ url: incomingUrl }])}::jsonb
+      WHERE "bestMatchUrl" = ${url}
+         OR "allMatchedUrls"::jsonb @> ${JSON.stringify([{ url }])}::jsonb
       LIMIT 1
     `;
     if (byUrl.length > 0) return byUrl[0];
@@ -188,7 +189,11 @@ async function findExisting(
 
 export async function upsertProspectPostgres(incoming: UpsertInput): Promise<ProspectRecord> {
   const now = new Date().toISOString();
-  const incomingUrl = incoming.bestMatch?.url ?? null;
+  const incomingUrls = Array.from(new Set([
+    incoming.bestMatch?.url,
+    ...(incoming.allMatchedUrls ?? []).map((u) => u.url),
+  ].filter((url): url is string => !!url)));
+  const incomingUrl = incomingUrls[0] ?? null;
   const incomingFingerprint = generateIdentityFingerprint({
     handle: incoming.identity.handle,
     name: incoming.identity.name,
@@ -196,7 +201,7 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
     sourcePlatform: incoming.sourcePlatform,
   });
 
-  const existing = await findExisting(incoming.identity.handle, incomingUrl);
+  const existing = await findExisting(incoming.identity.handle, incomingUrls);
 
   if (existing) {
     // ── Merge logic (mirrors store-json upsert) ───────────────────────────────

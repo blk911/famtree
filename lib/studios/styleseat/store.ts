@@ -23,6 +23,7 @@ const ARTIFACT_NAMES = [
   "market-intelligence",
   "operator-scores",
   "market-clusters",
+  "prospect-persistence-audit",
 ] as const;
 type ArtifactName = typeof ARTIFACT_NAMES[number];
 
@@ -81,6 +82,9 @@ function buildFallbackReport(file: StyleSeatRunFile): StyleSeatRunReport {
       resolverMerged:   file.results.filter((r) => r.prospectId).length,
       prospectsCreated: run.savedCount,
       prospectsUpdated: 0,
+      prospectsAttempted: file.report?.totals.prospectsAttempted ?? file.prospectPersistenceAudit?.filter((entry) => entry.attemptedSave).length ?? 0,
+      prospectsSkipped: file.report?.totals.prospectsSkipped ?? file.prospectPersistenceAudit?.filter((entry) => entry.skippedReason).length ?? 0,
+      prospectsFailed: file.report?.totals.prospectsFailed ?? file.prospectPersistenceAudit?.filter((entry) => entry.attemptedSave && !entry.saved && !entry.skippedReason).length ?? 0,
       unresolved:       file.results.filter((r) => r.status === "unresolved").length,
       failed:           run.failedToSaveCount + (file.failures?.length ?? 0),
     },
@@ -133,6 +137,7 @@ export async function saveStyleSeatRun(file: StyleSeatRunFile): Promise<void> {
   await writeJson(artifactPath(run.runId, "market-intelligence"), fullFile.intelligence ?? null);
   await writeJson(artifactPath(run.runId, "operator-scores"), fullFile.operatorScores ?? fullFile.intelligence?.operators ?? []);
   await writeJson(artifactPath(run.runId, "market-clusters"), fullFile.marketClusters ?? fullFile.intelligence?.clusters ?? []);
+  await writeJson(artifactPath(run.runId, "prospect-persistence-audit"), fullFile.prospectPersistenceAudit ?? []);
 }
 
 async function loadFromArtifacts(runId: string): Promise<StyleSeatRunFile | null> {
@@ -173,6 +178,7 @@ async function loadFromArtifacts(runId: string): Promise<StyleSeatRunFile | null
     results:    await readJson<StyleSeatRunFile["results"]>(artifactPath(runId, "resolver")) ?? flat?.results ?? [],
     prospects:  await readJson<unknown[]>(artifactPath(runId, "prospects")) ?? flat?.prospects ?? [],
     failures:   await readJson<unknown[]>(artifactPath(runId, "failures")) ?? flat?.failures ?? [],
+    prospectPersistenceAudit: await readJson<StyleSeatRunFile["prospectPersistenceAudit"]>(artifactPath(runId, "prospect-persistence-audit")) ?? flat?.prospectPersistenceAudit ?? [],
     log:        await readJson<unknown[]>(artifactPath(runId, "log")) ?? flat?.log ?? [],
     intelligence: await readJson<StyleSeatRunFile["intelligence"]>(artifactPath(runId, "market-intelligence")) ?? flat?.intelligence ?? null,
     operatorScores: await readJson<StyleSeatRunFile["operatorScores"]>(artifactPath(runId, "operator-scores")) ?? flat?.operatorScores ?? [],
@@ -195,6 +201,7 @@ export async function loadStyleSeatRun(runId: string): Promise<StyleSeatRunFile 
     normalized: flat.normalized ?? [],
     prospects:  flat.prospects ?? [],
     failures:   flat.failures ?? flat.run.saveErrors ?? [],
+    prospectPersistenceAudit: flat.prospectPersistenceAudit ?? [],
     log:        flat.log ?? [],
     intelligence: flat.intelligence ?? null,
     operatorScores: flat.operatorScores ?? [],

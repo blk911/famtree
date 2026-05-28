@@ -153,8 +153,34 @@ export interface StyleSeatRunTotals {
   resolverMerged: number;
   prospectsCreated: number;
   prospectsUpdated: number;
+  prospectsAttempted?: number;
+  prospectsSkipped?: number;
+  prospectsFailed?: number;
   unresolved: number;
   failed: number;
+}
+
+export interface StyleSeatProspectPersistenceAuditEntry {
+  name: string;
+  profileUrl: string | null;
+  city: string | null;
+  category: string | null;
+  attemptedSave: boolean;
+  saved: boolean;
+  skippedReason: string | null;
+  validationErrors: string[];
+  prospectId: string | null;
+  matchedExistingProspectId: string | null;
+  resolverStatus: StyleSeatOperatorStatus | "not_resolved";
+}
+
+export interface StyleSeatProspectPersistenceAuditSummary {
+  attempted: number;
+  created: number;
+  updated: number;
+  skipped: number;
+  failed: number;
+  topSkipReasons: Array<{ reason: string; count: number }>;
 }
 
 export interface StyleSeatRunReport {
@@ -182,6 +208,7 @@ export interface StyleSeatRunReport {
     topOperators: string[];
     recommendationCount: number;
   };
+  persistenceAuditSummary?: StyleSeatProspectPersistenceAuditSummary;
   notes: string[];
 }
 
@@ -379,6 +406,7 @@ export interface StyleSeatRunFile {
   intelligence?: StyleSeatIntelligenceReport | null;
   operatorScores?: StyleSeatOperatorScore[];
   marketClusters?: StyleSeatMarketCluster[];
+  prospectPersistenceAudit?: StyleSeatProspectPersistenceAuditEntry[];
   report?: StyleSeatRunReport;
 }
 
@@ -426,6 +454,7 @@ export interface StyleSeatRunResponse {
   results: StyleSeatResolverResult[];
   prospects?: unknown[];
   failures?: unknown[];
+  prospectPersistenceAudit?: StyleSeatProspectPersistenceAuditEntry[];
   log?: unknown[];
   intelligence?: StyleSeatIntelligenceReport | null;
   report?: StyleSeatRunReport;
@@ -454,6 +483,7 @@ export interface StyleSeatDetailResponse {
   results: StyleSeatResolverResult[];
   prospects: unknown[];
   failures: unknown[];
+  prospectPersistenceAudit?: StyleSeatProspectPersistenceAuditEntry[];
   log: unknown[];
   intelligence: StyleSeatIntelligenceReport | null;
   report: StyleSeatRunReport | null;

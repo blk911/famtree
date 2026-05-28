@@ -15,6 +15,7 @@ export type { EducationType, AudienceType, ValidationStatus };
 
 export type ProspectStatus =
   | "new"
+  | "styleseat_discovered"
   | "reviewed"
   | "good_fit"
   | "maybe"
@@ -26,6 +27,7 @@ export type ProspectStatus =
 
 export const PROSPECT_STATUS_LABELS: Record<ProspectStatus, string> = {
   new:        "New",
+  styleseat_discovered: "StyleSeat Discovered",
   reviewed:   "Reviewed",
   good_fit:   "Good Fit",
   maybe:      "Maybe",
@@ -38,6 +40,7 @@ export const PROSPECT_STATUS_LABELS: Record<ProspectStatus, string> = {
 
 export const PROSPECT_STATUS_COLORS: Record<ProspectStatus, { bg: string; fg: string }> = {
   new:        { bg: "#f5f5f4", fg: "#78716c" },
+  styleseat_discovered: { bg: "#f5f5f4", fg: "#78716c" },
   reviewed:   { bg: "#eff6ff", fg: "#1d4ed8" },
   good_fit:   { bg: "#dcfce7", fg: "#15803d" },
   maybe:      { bg: "#fef3c7", fg: "#b45309" },
