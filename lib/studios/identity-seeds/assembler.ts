@@ -19,7 +19,7 @@ import type {
 } from "./types";
 import type { UpsertInput } from "@/lib/studios/prospects/store";
 import type { ResolvedProfile } from "@/lib/studios/creator-lab/ig-stubs/types";
-import type { MatchedUrl, ProspectSource } from "@/lib/studios/prospects/types";
+import type { MatchedUrl, ProspectEvidence, ProspectSource } from "@/lib/studios/prospects/types";
 
 // ─── IG resolution helpers ────────────────────────────────────────────────────
 
@@ -181,7 +181,7 @@ export function identitySeedToProspectInput(
 
   const locationGuess = [seed.city, seed.state].filter(Boolean).join(", ") || null;
 
-  const evidence: string[] = [
+  const evidence: ProspectEvidence[] = [
     ...(seed.extraEvidence ?? []),
     ...knownUrls.map((u) => `${u.platform}: ${u.url}`),
     ...profiles.flatMap((p) => p.evidenceSnippets).slice(0, 6),

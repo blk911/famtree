@@ -5,9 +5,8 @@
 // StyleSeat is an intake adapter — no forked resolver logic, no separate
 // prospect truth. All resolution + upsert goes through runIdentityAssembler().
 
-import { runIdentityAssembler } from "@/lib/studios/identity-seeds/assembler";
-import { operatorToIdentitySeed } from "./normalize";
 import type { StyleSeatHarvestContext } from "./normalize";
+import { enrichStyleSeatRecordsWithIdentity } from "./ig-enrichment";
 import type {
   StyleSeatOperator,
   StyleSeatResolverResult,
@@ -15,6 +14,7 @@ import type {
 } from "./types";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 import type { SaveError } from "@/lib/studios/creator-lab/hashtag-harvest/types";
+import type { IdentitySeed } from "@/lib/studios/identity-seeds/types";
 
 export type { StyleSeatHarvestContext };
 
@@ -25,6 +25,8 @@ const MAX_RESOLVE = 40;
 
 export interface StyleSeatPipelineResult {
   results: StyleSeatResolverResult[];
+  normalized: IdentitySeed[];
+  prospects: Array<{ prospectId: string; handle: string | null; name: string }>;
   savedCount: number;
   failedToSaveCount: number;
   saveErrors: SaveError[];
@@ -41,23 +43,9 @@ export async function runStyleSeatPipeline(
 ): Promise<StyleSeatPipelineResult> {
   const capped = operators.slice(0, MAX_RESOLVE);
 
-  console.log(`[styleseat/resolver] converting ${capped.length} operators → IdentitySeeds`);
+  console.log(`[styleseat/resolver] converting ${capped.length} operators -> IdentitySeeds`);
 
-  // Convert operators → IdentitySeeds
-  const seeds = capped.map((op) => operatorToIdentitySeed(op, ctx));
-
-  // Delegate to shared assembler
-  const assemblerResult = await runIdentityAssembler(seeds, {
-    mode,
-    maxCandidatesPerSeed: 8,
-    maxSeeds: MAX_RESOLVE,
-    igConfidenceThreshold: 20,
-    sourcePathOverrides: {
-      verticalLabel: "Beauty",
-      platformLabel: "StyleSeat",
-      toolLabel:     "StyleSeat Harvest",
-    },
-  });
+  const { normalized, assemblerResult } = await enrichStyleSeatRecordsWithIdentity(capped, mode, ctx, MAX_RESOLVE);
 
   // Adapt assembler results → StyleSeatResolverResult[]
   const results: StyleSeatResolverResult[] = assemblerResult.results.map((r, i) => {
@@ -65,8 +53,8 @@ export async function runStyleSeatPipeline(
     const igConf   = r.igConfidence;
 
     const status: StyleSeatOperatorStatus =
-      r.prospectId && r.igHandleFound && igConf >= 55 ? "ig_verified"     :
-      r.igHandleFound && igConf >= 20                 ? "ig_candidate"    :
+      r.prospectId && r.igHandleFound && igConf >= 55 ? "ig_verified"          :
+      r.igHandleFound && igConf >= 20                 ? "ig_candidate_found"   :
       r.prospectId                                    ? "resolver_merged" :
       "unresolved";
 
@@ -97,6 +85,14 @@ export async function runStyleSeatPipeline(
 
   return {
     results,
+    normalized,
+    prospects: results
+      .filter((r) => r.prospectId)
+      .map((r) => ({
+        prospectId: r.prospectId as string,
+        handle:     r.igHandleFound,
+        name:       r.operator.name,
+      })),
     savedCount:       assemblerResult.savedCount,
     failedToSaveCount: assemblerResult.failedToSaveCount,
     saveErrors,

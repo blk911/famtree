@@ -7,13 +7,14 @@
 
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
-import type { ProspectRecord, ProspectStatus, MatchedUrl } from "./types";
+import type { ProspectRecord, ProspectStatus, MatchedUrl, ProspectEvidence } from "./types";
 import type { ValidationStatus } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import {
   normalizeHandle,
   generateProspectId,
   mergeMatchedUrls,
   mergeStrings,
+  mergeEvidence,
   isHumanSetValidationStatus,
   generateIdentityFingerprint,
 } from "./store-json";
@@ -124,7 +125,7 @@ function rowToRecord(row: DbProspectRow): ProspectRecord {
     bestMatch,
     allMatchedUrls: parseJsonCol<MatchedUrl[]>(row.allMatchedUrls),
     services:       parseJsonCol<string[]>(row.services),
-    evidence:       parseJsonCol<string[]>(row.evidence),
+    evidence:       parseJsonCol<ProspectEvidence[]>(row.evidence),
     confidence: {
       identityMatch: row.confIdentity,
       bookingMatch:  row.confBooking,
@@ -210,7 +211,7 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
     const mergedPlatforms  = mergeStrings(existingRecord.platforms ?? [], incoming.platforms ?? []);
     const mergedServices   = mergeStrings(existingRecord.services, incoming.services);
     const mergedUrls       = mergeMatchedUrls(existingRecord.allMatchedUrls, incoming.allMatchedUrls);
-    const mergedEvidence   = mergeStrings(existingRecord.evidence, incoming.evidence, 20);
+    const mergedEvidence   = mergeEvidence(existingRecord.evidence, incoming.evidence, 20);
 
     const bestMatch =
       !existingRecord.bestMatch ||

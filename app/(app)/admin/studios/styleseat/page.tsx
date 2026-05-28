@@ -3,7 +3,7 @@
 // StyleSeat Discovery — admin-only. Not public. Not member-facing.
 // Harvests independent beauty operators from StyleSeat → IG enrichment → prospect store.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import {
@@ -14,8 +14,11 @@ import {
   type StyleSeatOperator,
   type StyleSeatResolverResult,
   type StyleSeatHarvestRun,
+  type StyleSeatPipelineMode,
   type StyleSeatRunResponse,
   type StyleSeatErrorResponse,
+  type StyleSeatListResponse,
+  type StyleSeatDetailResponse,
 } from "@/lib/studios/styleseat/types";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 
@@ -28,13 +31,13 @@ function confColor(n: number) {
 }
 
 function StatusChip({ status }: { status: import("@/lib/studios/styleseat/types").StyleSeatOperatorStatus }) {
-  const c = STYLESEAT_STATUS_COLORS[status];
+  const c = STYLESEAT_STATUS_COLORS[status] ?? { bg: "#f5f5f4", fg: "#78716c" };
   return (
     <span style={{
       fontSize: 9, fontWeight: 700, letterSpacing: "0.05em",
       background: c.bg, color: c.fg, borderRadius: 20, padding: "2px 8px", whiteSpace: "nowrap",
     }}>
-      {STYLESEAT_STATUS_LABELS[status]}
+      {STYLESEAT_STATUS_LABELS[status] ?? status}
     </span>
   );
 }
@@ -54,6 +57,17 @@ const PROGRESS_MSGS = [
   "Finalising run…",
 ];
 
+type StyleSeatPageRunData = {
+  run: StyleSeatHarvestRun;
+  operators: StyleSeatOperator[];
+  results: StyleSeatResolverResult[];
+  raw?: StyleSeatOperator[];
+  normalized?: unknown[];
+  prospects?: unknown[];
+  failures?: unknown[];
+  log?: unknown[];
+};
+
 // ─── Run form ─────────────────────────────────────────────────────────────────
 
 function RunForm({
@@ -65,7 +79,7 @@ function RunForm({
   onRun: (config: {
     market: string; state: string;
     categories: StyleSeatCategory[];
-    maxResults: number; mode: ResolveMode;
+    maxResults: number; mode: StyleSeatPipelineMode; resolverMode: ResolveMode;
   }) => void;
   loading: boolean;
   error: string | null;
@@ -75,7 +89,7 @@ function RunForm({
   const [state, setState]             = useState("TX");
   const [categories, setCategories]   = useState<StyleSeatCategory[]>(["braids", "hair"]);
   const [maxResults, setMaxResults]   = useState(10);
-  const [mode, setMode]               = useState<ResolveMode>("fast");
+  const [resolverMode, setResolverMode] = useState<ResolveMode>("fast");
 
   function toggleCategory(cat: StyleSeatCategory) {
     setCategories((prev) =>
@@ -163,20 +177,20 @@ function RunForm({
           </label>
           <div style={{ display: "flex", gap: 8 }}>
             {(["fast", "deep"] as ResolveMode[]).map((m) => (
-              <button key={m} type="button" onClick={() => setMode(m)} disabled={loading}
+              <button key={m} type="button" onClick={() => setResolverMode(m)} disabled={loading}
                 style={{
                   padding: "7px 16px", borderRadius: 20, border: "2px solid",
-                  borderColor: mode === m ? "#9d174d" : "#e7e5e4",
-                  background: mode === m ? "#9d174d" : "#fff",
-                  color: mode === m ? "#fff" : "#57534e",
+                  borderColor: resolverMode === m ? "#9d174d" : "#e7e5e4",
+                  background: resolverMode === m ? "#9d174d" : "#fff",
+                  color: resolverMode === m ? "#fff" : "#57534e",
                   fontWeight: 700, fontSize: 12, cursor: "pointer",
                 }}>
-                {m === "fast" ? "⚡ Fast" : "🔬 Deep"}
+                {m === "fast" ? "Fast" : "Deep"}
               </button>
             ))}
           </div>
           <div style={{ fontSize: 11, color: "#a8a29e", marginTop: 4 }}>
-            {mode === "fast" ? "URL pattern matching only. No AI spend." : "AI identity analysis. Slower, higher accuracy."}
+            {resolverMode === "fast" ? "URL pattern matching only. No AI spend." : "AI identity analysis. Slower, higher accuracy."}
           </div>
         </div>
       </div>
@@ -191,7 +205,7 @@ function RunForm({
       {/* Progress */}
       {loading && (
         <div style={{ marginTop: 16, padding: "12px 16px", background: "#f5f5f4", borderRadius: 8, fontSize: 13, color: "#57534e" }}>
-          <span style={{ marginRight: 8 }}>⏳</span>{PROGRESS_MSGS[progressIdx]}
+          <span style={{ marginRight: 8 }}>...</span>{PROGRESS_MSGS[progressIdx]}
           <div style={{ fontSize: 11, color: "#a8a29e", marginTop: 4 }}>
             This can take 30–90s. Harvesting StyleSeat listings, then running IG resolver on each operator.
           </div>
@@ -199,20 +213,28 @@ function RunForm({
       )}
 
       {/* Actions */}
-      <div style={{ display: "flex", gap: 12, marginTop: 20, alignItems: "center" }}>
-        <button
-          type="button"
-          onClick={() => onRun({ market, state, categories, maxResults, mode })}
-          disabled={loading || categories.length === 0 || !market}
-          style={{
-            padding: "10px 24px", borderRadius: 10, border: "none",
-            background: loading || categories.length === 0 || !market ? "#d6d3d1" : "#1c1917",
-            color: "#fff", fontWeight: 800, fontSize: 14,
-            cursor: loading || categories.length === 0 || !market ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? "Discovering…" : `Discover ${market || "Operators"}`}
-        </button>
+      <div style={{ display: "flex", gap: 10, marginTop: 20, alignItems: "center", flexWrap: "wrap" }}>
+        {([
+          ["Run Harvest", "harvest_only"],
+          ["Run + IG Resolve", "harvest_and_resolve"],
+          ["Run Full Pipeline", "full_pipeline"],
+        ] as [string, StyleSeatPipelineMode][]).map(([label, pipelineMode], idx) => (
+          <button
+            key={pipelineMode}
+            type="button"
+            onClick={() => onRun({ market, state, categories, maxResults, mode: pipelineMode, resolverMode })}
+            disabled={loading || categories.length === 0 || !market}
+            style={{
+              padding: "10px 18px", borderRadius: 10, border: idx === 0 ? "1px solid #e7e5e4" : "none",
+              background: loading || categories.length === 0 || !market ? "#d6d3d1" : idx === 0 ? "#fff" : "#1c1917",
+              color: loading || categories.length === 0 || !market ? "#fff" : idx === 0 ? "#57534e" : "#fff",
+              fontWeight: 800, fontSize: 14,
+              cursor: loading || categories.length === 0 || !market ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Running..." : label}
+          </button>
+        ))}
         <Link href="/admin/studios/prospects?vertical=beauty"
           style={{ fontSize: 12, fontWeight: 700, color: "#9d174d", textDecoration: "none" }}>
           View Beauty Prospects →
@@ -663,23 +685,121 @@ function PipelineSummary({
   );
 }
 
+function RecentRunsList({
+  runs,
+  onOpen,
+  loadingRunId,
+}: {
+  runs: StyleSeatHarvestRun[];
+  onOpen: (runId: string) => void;
+  loadingRunId: string | null;
+}) {
+  if (runs.length === 0) return null;
+
+  return (
+    <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, padding: 18, marginBottom: 24 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 10 }}>
+        RECENT STYLESEAT RUNS
+      </div>
+      <div style={{ display: "grid", gap: 8 }}>
+        {runs.slice(0, 8).map((run) => {
+          const totals = run.report?.totals;
+          return (
+            <button
+              key={run.runId}
+              type="button"
+              onClick={() => onOpen(run.runId)}
+              style={{
+                textAlign: "left",
+                border: "1px solid #f0ede8",
+                borderRadius: 10,
+                background: "#fafaf9",
+                padding: "10px 12px",
+                cursor: "pointer",
+                display: "grid",
+                gridTemplateColumns: "1fr auto",
+                gap: 10,
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#1c1917" }}>
+                  {run.market}{run.state ? `, ${run.state}` : ""} · {run.mode.replace(/_/g, " ")}
+                </div>
+                <div style={{ fontSize: 11, color: "#78716c", marginTop: 2 }}>
+                  {new Date(run.createdAt).toLocaleString()} · {run.categories.join(", ")}
+                </div>
+              </div>
+              <div style={{ fontSize: 11, color: "#57534e", textAlign: "right", whiteSpace: "nowrap" }}>
+                <strong>{totals?.harvested ?? run.totalHarvested}</strong> harvested<br />
+                <strong>{totals?.resolverMerged ?? run.totalResolved}</strong> merged · <strong>{totals?.failed ?? run.failedToSaveCount}</strong> failed
+                {loadingRunId === run.runId && <div style={{ color: "#9d174d", marginTop: 2 }}>Loading...</div>}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function StyleSeatDiscoveryPage() {
   const [loading, setLoading]       = useState(false);
+  const [loadingRunId, setLoadingRunId] = useState<string | null>(null);
   const [progressIdx, setProgressIdx] = useState(0);
   const [error, setError]           = useState<string | null>(null);
-  const [runData, setRunData]       = useState<{
-    run: StyleSeatHarvestRun;
-    operators: StyleSeatOperator[];
-    results: StyleSeatResolverResult[];
-  } | null>(null);
+  const [runs, setRuns]             = useState<StyleSeatHarvestRun[]>([]);
+  const [runData, setRunData]       = useState<StyleSeatPageRunData | null>(null);
   const [tab, setTab]               = useState<"operators" | "summary">("operators");
+
+  async function loadRuns() {
+    try {
+      const res = await fetch("/api/admin/studios/styleseat/list", { cache: "no-store" });
+      const data: StyleSeatListResponse | StyleSeatErrorResponse = await res.json();
+      if (data.ok) setRuns(data.runs);
+    } catch {
+      // Recent runs are non-critical for the run form.
+    }
+  }
+
+  useEffect(() => {
+    void loadRuns();
+  }, []);
+
+  async function openRun(runId: string) {
+    setLoadingRunId(runId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/studios/styleseat/${encodeURIComponent(runId)}`, { cache: "no-store" });
+      const data: StyleSeatDetailResponse | StyleSeatErrorResponse = await res.json();
+      if (!data.ok) {
+        const e = data as StyleSeatErrorResponse;
+        setError(`${e.error}${e.detail ? ` - ${e.detail}` : ""}`);
+        return;
+      }
+      setRunData({
+        run: data.run,
+        operators: data.operators,
+        results: data.results,
+        raw: data.raw,
+        normalized: data.normalized,
+        prospects: data.prospects,
+        failures: data.failures,
+        log: data.log,
+      });
+      setTab("summary");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error");
+    } finally {
+      setLoadingRunId(null);
+    }
+  }
 
   async function handleRun(config: {
     market: string; state: string;
     categories: StyleSeatCategory[];
-    maxResults: number; mode: ResolveMode;
+    maxResults: number; mode: StyleSeatPipelineMode; resolverMode: ResolveMode;
   }) {
     if (loading) return;
     setLoading(true);
@@ -707,7 +827,17 @@ export default function StyleSeatDiscoveryPage() {
       }
 
       const ok = data as StyleSeatRunResponse;
-      setRunData({ run: ok.run, operators: ok.operators, results: ok.results });
+      setRunData({
+        run: ok.run,
+        operators: ok.operators,
+        results: ok.results,
+        raw: ok.operators,
+        normalized: ok.normalized,
+        prospects: ok.prospects,
+        failures: ok.failures,
+        log: ok.log,
+      });
+      await loadRuns();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
@@ -739,12 +869,15 @@ export default function StyleSeatDiscoveryPage() {
 
       {/* Run form (pre-run) */}
       {!runData && (
-        <RunForm
-          onRun={handleRun}
-          loading={loading}
-          error={error}
-          progressIdx={progressIdx}
-        />
+        <>
+          <RunForm
+            onRun={handleRun}
+            loading={loading}
+            error={error}
+            progressIdx={progressIdx}
+          />
+          <RecentRunsList runs={runs} onOpen={openRun} loadingRunId={loadingRunId} />
+        </>
       )}
 
       {/* Results */}
@@ -757,7 +890,7 @@ export default function StyleSeatDiscoveryPage() {
               ← New Discovery
             </button>
             <span style={{ fontSize: 12, color: "#78716c" }}>
-              {runData.run.market}, {runData.run.state} · {new Date(runData.run.createdAt).toLocaleString()}
+              {runData.run.market}, {runData.run.state} · {new Date(runData.run.createdAt).toLocaleString()} · {runData.run.mode.replace(/_/g, " ")}
             </span>
             <Link href="/admin/studios/prospects?vertical=beauty"
               style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "#9d174d", textDecoration: "none" }}>
@@ -787,6 +920,18 @@ export default function StyleSeatDiscoveryPage() {
           )}
 
           <SummaryCards run={runData.run} />
+
+          <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "12px 16px", marginBottom: 16 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 8 }}>RUN ARTIFACTS</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 16, fontSize: 12, color: "#57534e" }}>
+              <span><strong>{runData.raw?.length ?? runData.operators.length}</strong> harvested</span>
+              <span><strong>{runData.normalized?.length ?? 0}</strong> normalized</span>
+              <span><strong>{runData.run.report?.totals.igCandidates ?? runData.run.totalIgFound}</strong> IG candidates</span>
+              <span><strong>{runData.run.report?.totals.resolverMerged ?? runData.run.totalResolved}</strong> resolver merged</span>
+              <span><strong>{runData.run.report?.totals.prospectsCreated ?? runData.run.savedCount}</strong> prospects created/updated</span>
+              <span><strong>{runData.failures?.length ?? runData.run.failedToSaveCount}</strong> failures</span>
+            </div>
+          </div>
 
           {/* Tab switcher */}
           <div style={{ display: "flex", gap: 4, marginBottom: 14, background: "#f5f5f4", borderRadius: 24, padding: 4, width: "fit-content" }}>

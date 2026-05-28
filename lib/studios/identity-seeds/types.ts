@@ -4,7 +4,7 @@
 
 import type { EducationType, AudienceType } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
-import type { MatchedUrl } from "@/lib/studios/prospects/types";
+import type { MatchedUrl, ProspectEvidence } from "@/lib/studios/prospects/types";
 
 // Re-export for consumers
 export type { EducationType, AudienceType, ResolveMode };
@@ -50,8 +50,8 @@ export interface IdentitySeed {
   knownUrls?: MatchedUrl[];
   /** Raw bio text — included in evidence */
   bio?: string | null;
-  /** Additional context strings to include in evidence */
-  extraEvidence?: string[];
+  /** Additional context strings/objects to include in evidence */
+  extraEvidence?: ProspectEvidence[];
   /** Pre-known service list */
   services?: string[];
 }

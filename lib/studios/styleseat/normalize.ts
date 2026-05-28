@@ -8,6 +8,7 @@ import type { StyleSeatOperator, StyleSeatCategory } from "./types";
 import type { UpsertInput } from "@/lib/studios/prospects/store";
 import type { ResolvedProfile } from "@/lib/studios/creator-lab/ig-stubs/types";
 import type { IdentitySeed } from "@/lib/studios/identity-seeds/types";
+import type { ProspectEvidence, StructuredProspectEvidence } from "@/lib/studios/prospects/types";
 import { buildProspectSourcePath } from "@/lib/studios/prospects/source-path";
 
 // ─── City abbreviation map ────────────────────────────────────────────────────
@@ -195,7 +196,18 @@ export function operatorToUpsertInput(
     ])
   ).slice(0, 20);
 
-  const evidence: string[] = [
+  const profileEvidence: StructuredProspectEvidence = {
+    type:            "styleseat_profile",
+    source:          "styleseat_harvest",
+    url:             operator.styleseatUrl,
+    label:           operator.name,
+    city:            [operator.city, operator.state].filter(Boolean).join(", "),
+    serviceCategory: category,
+    confidence:      styleseatUrl.confidence,
+  };
+
+  const evidence: ProspectEvidence[] = [
+    profileEvidence,
     `StyleSeat: ${operator.styleseatUrl}`,
     ...(operator.reviewCount > 0 ? [`${operator.reviewCount} StyleSeat reviews`] : []),
     ...(operator.rating ? [`Rating: ${operator.rating}/5`] : []),
@@ -277,7 +289,18 @@ export function operatorToIdentitySeed(
     },
   ];
 
-  const extraEvidence: string[] = [
+  const profileEvidence: StructuredProspectEvidence = {
+    type:            "styleseat_profile",
+    source:          "styleseat_harvest",
+    url:             operator.styleseatUrl,
+    label:           operator.name,
+    city:            [operator.city, operator.state].filter(Boolean).join(", "),
+    serviceCategory: category,
+    confidence:      knownUrls[0].confidence,
+  };
+
+  const extraEvidence: ProspectEvidence[] = [
+    profileEvidence,
     ...(operator.reviewCount > 0 ? [`${operator.reviewCount} StyleSeat reviews`] : []),
     ...(operator.rating ? [`Rating: ${operator.rating}/5`] : []),
     ...operator.specialties.map((s) => `specialty: ${s}`),

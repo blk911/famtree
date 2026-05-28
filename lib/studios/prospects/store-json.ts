@@ -5,7 +5,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
-import type { ProspectRecord, ProspectStatus, MatchedUrl } from "./types";
+import type { ProspectRecord, ProspectStatus, MatchedUrl, ProspectEvidence } from "./types";
 import type { ValidationStatus } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 
 const DATA_DIR = process.env.VERCEL
@@ -94,6 +94,17 @@ export function mergeMatchedUrls(existing: MatchedUrl[], incoming: MatchedUrl[])
 
 export function mergeStrings(a: string[], b: string[], cap = 20): string[] {
   return Array.from(new Set([...a, ...b])).filter(Boolean).slice(0, cap);
+}
+
+export function mergeEvidence(a: ProspectEvidence[], b: ProspectEvidence[], cap = 20): ProspectEvidence[] {
+  const map = new Map<string, ProspectEvidence>();
+  for (const item of [...a, ...b].filter(Boolean)) {
+    const key = typeof item === "string"
+      ? `string:${item}`
+      : `object:${item.type}:${item.url}:${item.label}`;
+    if (!map.has(key)) map.set(key, item);
+  }
+  return Array.from(map.values()).slice(0, cap);
 }
 
 // ─── Human-set field guard ────────────────────────────────────────────────────
@@ -202,7 +213,7 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
       platforms: mergeStrings(existing.platforms ?? [], incoming.platforms ?? []),
       services:  mergeStrings(existing.services, incoming.services),
       allMatchedUrls: mergeMatchedUrls(existing.allMatchedUrls, incoming.allMatchedUrls),
-      evidence:  mergeStrings(existing.evidence, incoming.evidence, 20),
+      evidence:  mergeEvidence(existing.evidence, incoming.evidence, 20),
       confidence:
         incoming.confidence.overall > existing.confidence.overall
           ? incoming.confidence

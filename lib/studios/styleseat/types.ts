@@ -46,8 +46,8 @@ export const STYLESEAT_CATEGORY_SLUGS: Record<StyleSeatCategory, string> = {
 // ─── Operator status ──────────────────────────────────────────────────────────
 
 export type StyleSeatOperatorStatus =
-  | "discovered"
-  | "ig_candidate"
+  | "styleseat_discovered"
+  | "ig_candidate_found"
   | "ig_verified"
   | "resolver_merged"
   | "active_operator"
@@ -55,23 +55,23 @@ export type StyleSeatOperatorStatus =
   | "dead";
 
 export const STYLESEAT_STATUS_LABELS: Record<StyleSeatOperatorStatus, string> = {
-  discovered:       "Discovered",
-  ig_candidate:     "IG Candidate",
-  ig_verified:      "IG Verified",
-  resolver_merged:  "Resolver Merged",
-  active_operator:  "Active Operator",
-  unresolved:       "Unresolved",
-  dead:             "Dead",
+  styleseat_discovered: "StyleSeat Discovered",
+  ig_candidate_found:   "IG Candidate Found",
+  ig_verified:          "IG Verified",
+  resolver_merged:      "Resolver Merged",
+  active_operator:      "Active Operator",
+  unresolved:           "Unresolved",
+  dead:                 "Dead",
 };
 
 export const STYLESEAT_STATUS_COLORS: Record<StyleSeatOperatorStatus, { bg: string; fg: string }> = {
-  discovered:       { bg: "#f5f5f4",  fg: "#78716c" },
-  ig_candidate:     { bg: "#eff6ff",  fg: "#1d4ed8" },
-  ig_verified:      { bg: "#dcfce7",  fg: "#15803d" },
-  resolver_merged:  { bg: "#ede9fe",  fg: "#6d28d9" },
-  active_operator:  { bg: "#fce7f3",  fg: "#9d174d" },
-  unresolved:       { bg: "#fef3c7",  fg: "#b45309" },
-  dead:             { bg: "#fee2e2",  fg: "#b91c1c" },
+  styleseat_discovered: { bg: "#f5f5f4",  fg: "#78716c" },
+  ig_candidate_found:   { bg: "#eff6ff",  fg: "#1d4ed8" },
+  ig_verified:          { bg: "#dcfce7",  fg: "#15803d" },
+  resolver_merged:      { bg: "#ede9fe",  fg: "#6d28d9" },
+  active_operator:      { bg: "#fce7f3",  fg: "#9d174d" },
+  unresolved:           { bg: "#fef3c7",  fg: "#b45309" },
+  dead:                 { bg: "#fee2e2",  fg: "#b91c1c" },
 };
 
 // ─── Operator ─────────────────────────────────────────────────────────────────
@@ -123,6 +123,33 @@ export interface StyleSeatResolverResult {
   saveError: string | null;
 }
 
+export type StyleSeatPipelineMode =
+  | "harvest_only"
+  | "harvest_and_resolve"
+  | "full_pipeline";
+
+export interface StyleSeatRunTotals {
+  harvested: number;
+  normalized: number;
+  igCandidates: number;
+  resolverMerged: number;
+  prospectsCreated: number;
+  prospectsUpdated: number;
+  unresolved: number;
+  failed: number;
+}
+
+export interface StyleSeatRunReport {
+  runId: string;
+  createdAt: string;
+  market: string;
+  categories: StyleSeatCategory[];
+  mode: StyleSeatPipelineMode;
+  totals: StyleSeatRunTotals;
+  artifactPaths: Record<string, string>;
+  notes: string[];
+}
+
 // ─── Harvest run summary ──────────────────────────────────────────────────────
 
 export interface StyleSeatHarvestRun {
@@ -132,7 +159,8 @@ export interface StyleSeatHarvestRun {
   market: string;
   state: string;
   categories: StyleSeatCategory[];
-  mode: ResolveMode;
+  mode: StyleSeatPipelineMode;
+  resolverMode: ResolveMode;
   apifyActorRunId: string | null;
   // Counts
   totalHarvested: number;
@@ -149,13 +177,19 @@ export interface StyleSeatHarvestRun {
   prospectsBeforeCount: number;
   prospectsAfterCount: number;
   savedHandles: string[];
+  report?: StyleSeatRunReport;
 }
 
 /** Stored file shape — one per run */
 export interface StyleSeatRunFile {
   run: StyleSeatHarvestRun;
   operators: StyleSeatOperator[];
+  normalized?: unknown[];
   results: StyleSeatResolverResult[];
+  prospects?: unknown[];
+  failures?: unknown[];
+  log?: unknown[];
+  report?: StyleSeatRunReport;
 }
 
 // ─── Run config ───────────────────────────────────────────────────────────────
@@ -165,7 +199,8 @@ export interface StyleSeatRunConfig {
   state: string;
   categories: StyleSeatCategory[];
   maxResults: number;
-  mode: ResolveMode;
+  mode: StyleSeatPipelineMode;
+  resolverMode?: ResolveMode;
 }
 
 // ─── API shapes ───────────────────────────────────────────────────────────────
@@ -175,14 +210,20 @@ export interface StyleSeatRunRequest {
   state?: string;
   categories: StyleSeatCategory[];
   maxResults: number;
-  mode: ResolveMode;
+  mode: ResolveMode | StyleSeatPipelineMode;
+  resolverMode?: ResolveMode;
 }
 
 export interface StyleSeatRunResponse {
   ok: true;
   run: StyleSeatHarvestRun;
   operators: StyleSeatOperator[];
+  normalized?: unknown[];
   results: StyleSeatResolverResult[];
+  prospects?: unknown[];
+  failures?: unknown[];
+  log?: unknown[];
+  report?: StyleSeatRunReport;
 }
 
 export interface StyleSeatErrorResponse {
@@ -195,4 +236,17 @@ export interface StyleSeatListResponse {
   ok: true;
   runs: StyleSeatHarvestRun[];
   total: number;
+}
+
+export interface StyleSeatDetailResponse {
+  ok: true;
+  run: StyleSeatHarvestRun;
+  operators: StyleSeatOperator[];
+  raw: StyleSeatOperator[];
+  normalized: unknown[];
+  results: StyleSeatResolverResult[];
+  prospects: unknown[];
+  failures: unknown[];
+  log: unknown[];
+  report: StyleSeatRunReport | null;
 }

@@ -49,6 +49,16 @@ function StatusBadge({ status }: { status: ProspectStatus }) {
   );
 }
 
+function evidenceLabel(e: ProspectRecord["evidence"][number]): string {
+  if (typeof e === "string") return e;
+  return [
+    `${e.type}: ${e.label}`,
+    e.city,
+    e.serviceCategory,
+    e.url,
+  ].filter(Boolean).join(" | ");
+}
+
 // ─── Expanded detail ──────────────────────────────────────────────────────────
 
 function ProspectDetail({ prospect, onSaved }: {
@@ -144,7 +154,7 @@ function ProspectDetail({ prospect, onSaved }: {
               <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 5 }}>EVIDENCE</div>
               {prospect.evidence.slice(0, 6).map((e, i) => (
                 <div key={i} style={{ fontSize: 11, color: "#57534e", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 5, padding: "3px 8px", marginBottom: 2, fontFamily: "monospace" }}>
-                  {e}
+                  {evidenceLabel(e)}
                 </div>
               ))}
             </div>

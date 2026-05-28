@@ -87,6 +87,20 @@ export interface MatchedUrl {
   matchReason: string;
 }
 
+export type ProspectEvidenceType = "styleseat_profile";
+
+export interface StructuredProspectEvidence {
+  type: ProspectEvidenceType;
+  source: string;
+  url: string;
+  label: string;
+  city?: string;
+  serviceCategory?: string | null;
+  confidence?: number;
+}
+
+export type ProspectEvidence = string | StructuredProspectEvidence;
+
 // ─── Confidence breakdown ─────────────────────────────────────────────────────
 
 export interface ProspectConfidenceBreakdown {
@@ -151,7 +165,7 @@ export interface ProspectRecord {
   platforms: string[];
   services: string[];
   allMatchedUrls: MatchedUrl[];
-  evidence: string[];
+  evidence: ProspectEvidence[];
   confidence: ProspectConfidenceBreakdown;
 
   // ── Human-managed CRM ────────────────────────────────────────────────────────
