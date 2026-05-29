@@ -490,18 +490,17 @@ export default function ProspectsPage() {
 
   const visible = useMemo(() => {
     let rows = prospects.filter((p) => {
-      if (selectedMarketCategories.length > 0 && !selectedMarketCategories.includes(p.businessCategory as BusinessCategory)) return false;
       const marketKey = marketForCategory(p.businessCategory).key;
       const marketSpecificSubtypes = selectedSubtypesByMarket[marketKey] ?? [];
       const marketAllSelected = selectedSubtypeAllMarkets.includes(marketKey);
-      const hasAnySubtypeSelection = selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0;
-      if (hasAnySubtypeSelection) {
-        if (selectedMarkets.length > 0) {
-          if (!marketAllSelected && !marketSpecificSubtypes.includes(p.businessSubcategory ?? "")) return false;
-        } else if (!marketAllSelected && !selectedSubtypes.includes(p.businessSubcategory ?? "")) {
-          return false;
-        }
+
+      if (selectedMarkets.length > 0) {
+        if (!selectedMarketCategories.includes(p.businessCategory as BusinessCategory)) return false;
+        if (!marketAllSelected && !marketSpecificSubtypes.includes(p.businessSubcategory ?? "")) return false;
+      } else if (selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0) {
+        if (!marketAllSelected && !selectedSubtypes.includes(p.businessSubcategory ?? "")) return false;
       }
+
       if (!relationshipAllSelected && selectedRelationshipTypes.length === 0) return false;
       if (!relationshipAllSelected && selectedRelationshipTypes.length > 0 && !selectedRelationshipTypes.includes((p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType)) return false;
       return true;
