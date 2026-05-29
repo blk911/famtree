@@ -499,7 +499,6 @@ export default function ProspectsPage() {
       if (!selectedMarketCategories.includes(p.businessCategory as BusinessCategory)) return false;
       if (!marketAllSelected && !marketSpecificSubtypes.includes(p.businessSubcategory ?? "")) return false;
 
-      if (!relationshipAllSelected && selectedRelationshipTypes.length === 0) return false;
       if (!relationshipAllSelected && selectedRelationshipTypes.length > 0 && !selectedRelationshipTypes.includes((p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType)) return false;
       return true;
     });
