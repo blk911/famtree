@@ -1,0 +1,253 @@
+{
+  "run": {
+    "runId": "styleseat-1779975755951-45rgn",
+    "batchId": "batch-1779975755951-sed1ai",
+    "createdAt": "2026-05-28T13:42:35.951Z",
+    "market": "StyleSeat",
+    "state": "",
+    "discoveryMode": "aggregator_crawl",
+    "sourceUrl": "https://www.styleseat.com/m/",
+    "seedUrls": [
+      "https://www.styleseat.com/m/"
+    ],
+    "crawlDepth": 1,
+    "maxOperators": 5,
+    "discoveredMarkets": [],
+    "discoveredCategories": [
+      "hair"
+    ],
+    "categories": [],
+    "mode": "harvest_only",
+    "resolverMode": "fast",
+    "apifyActorRunId": null,
+    "totalHarvested": 0,
+    "totalIgFound": 0,
+    "totalResolved": 0,
+    "totalProspects": 0,
+    "savedCount": 0,
+    "failedToSaveCount": 0,
+    "saveErrors": [],
+    "errors": [
+      "No profiles found from aggregator root. Try a direct search URL. Examples: https://www.styleseat.com/m/search/denver-co/braids, https://www.styleseat.com/m/search/houston-tx/hair, https://www.styleseat.com/m/search/atlanta-ga/locs",
+      "Rendered extraction unavailable: Cannot find package 'playwright' imported from C:\\dev\\famtree\\.next\\server\\app\\api\\admin\\studios\\styleseat\\run\\route.js",
+      "No profiles found from aggregator root. Try a direct search URL.",
+      "No harvested operators: identity assembler and prospect upsert skipped."
+    ],
+    "prospectStorePath": "C:\\dev\\famtree\\runtime-data\\studios\\prospects\\prospects.json",
+    "prospectStoreBackend": "json",
+    "prospectsBeforeCount": 0,
+    "prospectsAfterCount": 0,
+    "savedHandles": [],
+    "report": {
+      "runId": "styleseat-1779975755951-45rgn",
+      "createdAt": "2026-05-28T13:42:35.951Z",
+      "discoveryMode": "aggregator_crawl",
+      "sourceUrl": "https://www.styleseat.com/m/",
+      "seedUrls": [
+        "https://www.styleseat.com/m/"
+      ],
+      "marketSearchInput": null,
+      "market": "StyleSeat",
+      "categories": [],
+      "crawlDepth": 1,
+      "maxOperators": 5,
+      "resolverMode": "fast",
+      "mode": "harvest_only",
+      "pipelineMode": "harvest_only",
+      "totals": {
+        "crawledUrls": 1,
+        "profileUrls": 0,
+        "harvested": 0,
+        "normalized": 0,
+        "igCandidates": 0,
+        "resolverMerged": 0,
+        "prospectsCreated": 0,
+        "prospectsUpdated": 0,
+        "unresolved": 0,
+        "failed": 0
+      },
+      "artifactPaths": {
+        "crawl": "runs/styleseat-1779975755951-45rgn/crawl.json",
+        "raw": "runs/styleseat-1779975755951-45rgn/raw.json",
+        "normalized": "runs/styleseat-1779975755951-45rgn/normalized.json",
+        "resolver": "runs/styleseat-1779975755951-45rgn/resolver.json",
+        "prospects": "runs/styleseat-1779975755951-45rgn/prospects.json",
+        "failures": "runs/styleseat-1779975755951-45rgn/failures.json",
+        "summary": "runs/styleseat-1779975755951-45rgn/summary.json",
+        "log": "runs/styleseat-1779975755951-45rgn/log.json",
+        "market-intelligence": "runs/styleseat-1779975755951-45rgn/market-intelligence.json",
+        "operator-scores": "runs/styleseat-1779975755951-45rgn/operator-scores.json",
+        "market-clusters": "runs/styleseat-1779975755951-45rgn/market-clusters.json"
+      },
+      "discoveredMarkets": [],
+      "discoveredCategories": [
+        "hair"
+      ],
+      "notes": [
+        "No profiles found from aggregator root. Try a direct search URL. Examples: https://www.styleseat.com/m/search/denver-co/braids, https://www.styleseat.com/m/search/houston-tx/hair, https://www.styleseat.com/m/search/atlanta-ga/locs",
+        "Rendered extraction unavailable: Cannot find package 'playwright' imported from C:\\dev\\famtree\\.next\\server\\app\\api\\admin\\studios\\styleseat\\run\\route.js",
+        "No profiles found from aggregator root. Try a direct search URL.",
+        "No harvested operators: identity assembler and prospect upsert skipped."
+      ],
+      "intelligenceSummary": {
+        "topMarkets": [],
+        "topCategories": [],
+        "topOperators": [],
+        "recommendationCount": 1
+      }
+    }
+  },
+  "crawl": {
+    "seedUrls": [
+      "https://www.styleseat.com/m/"
+    ],
+    "crawledUrls": [
+      "https://www.styleseat.com/m/"
+    ],
+    "profileUrls": [],
+    "rejectedUrls": [
+      "https://www.styleseat.com/",
+      "https://search.styleseat.com/",
+      "https://www.styleseat.com/favicons/favicon-16x16.png",
+      "https://www.styleseat.com/favicons/favicon-32x32.png",
+      "https://www.styleseat.com/favicons/favicon-96x96.png",
+      "https://www.styleseat.com/favicons/android-chrome-192x192.png",
+      "https://www.styleseat.com/favicons/android-chrome-512x512.png",
+      "https://www.styleseat.com/favicons/apple-touch-icon-57x57.png",
+      "https://www.styleseat.com/favicons/apple-touch-icon-60x60.png",
+      "https://www.styleseat.com/favicons/apple-touch-icon-72x72.png",
+      "https://www.styleseat.com/favicons/apple-touch-icon-76x76.png",
+      "https://www.styleseat.com/favicons/apple-touch-icon-114x114.png",
+      "https://www.styleseat.com/favicons/apple-touch-icon-120x120.png",
+      "https://www.styleseat.com/favicons/apple-touch-icon-144x144.png",
+      "https://www.styleseat.com/favicons/apple-touch-icon-152x152.png",
+      "https://www.styleseat.com/favicons/apple-touch-icon-180x180.png",
+      "https://www.styleseat.com/styles/application.c21fe9d852027a1ec574.css"
+    ],
+    "discoveredMarkets": [],
+    "discoveredCategories": [
+      "hair"
+    ],
+    "apiOperators": [],
+    "debug": {
+      "staticAnchorCount": 17,
+      "renderedAnchorCount": 0,
+      "firstInternalHrefs": [
+        "https://www.styleseat.com/",
+        "https://search.styleseat.com/",
+        "https://www.styleseat.com/favicons/favicon-16x16.png",
+        "https://www.styleseat.com/favicons/favicon-32x32.png",
+        "https://www.styleseat.com/favicons/favicon-96x96.png",
+        "https://www.styleseat.com/favicons/android-chrome-192x192.png",
+        "https://www.styleseat.com/favicons/android-chrome-512x512.png",
+        "https://www.styleseat.com/favicons/apple-touch-icon-57x57.png",
+        "https://www.styleseat.com/favicons/apple-touch-icon-60x60.png",
+        "https://www.styleseat.com/favicons/apple-touch-icon-72x72.png",
+        "https://www.styleseat.com/favicons/apple-touch-icon-76x76.png",
+        "https://www.styleseat.com/favicons/apple-touch-icon-114x114.png",
+        "https://www.styleseat.com/favicons/apple-touch-icon-120x120.png",
+        "https://www.styleseat.com/favicons/apple-touch-icon-144x144.png",
+        "https://www.styleseat.com/favicons/apple-touch-icon-152x152.png",
+        "https://www.styleseat.com/favicons/apple-touch-icon-180x180.png",
+        "https://www.styleseat.com/styles/application.c21fe9d852027a1ec574.css"
+      ],
+      "renderedHtmlPath": "C:\\dev\\famtree\\runtime-data\\studios\\styleseat\\debug\\styleseat-1779975755951-45rgn-rendered.html",
+      "debugJsonPath": "C:\\dev\\famtree\\runtime-data\\studios\\styleseat\\debug\\styleseat-1779975755951-45rgn-render-debug.json",
+      "notes": [
+        "Rendered extraction unavailable: Cannot find package 'playwright' imported from C:\\dev\\famtree\\.next\\server\\app\\api\\admin\\studios\\styleseat\\run\\route.js",
+        "No profiles found from aggregator root. Try a direct search URL."
+      ],
+      "suggestedUrls": [
+        "https://www.styleseat.com/m/search/denver-co/braids",
+        "https://www.styleseat.com/m/search/houston-tx/hair",
+        "https://www.styleseat.com/m/search/atlanta-ga/locs"
+      ]
+    }
+  },
+  "operators": [],
+  "normalized": [],
+  "results": [],
+  "prospects": [],
+  "failures": [],
+  "intelligence": {
+    "runId": "styleseat-1779975755951-45rgn",
+    "createdAt": "2026-05-28T13:42:36.576Z",
+    "markets": [],
+    "categories": [],
+    "operators": [],
+    "clusters": [],
+    "insights": [],
+    "recommendations": [
+      "Run a larger aggregator crawl to increase market density confidence."
+    ]
+  },
+  "operatorScores": [],
+  "marketClusters": [],
+  "log": [
+    {
+      "at": "2026-05-28T13:42:35.951Z",
+      "mode": "harvest_only",
+      "resolverMode": "fast",
+      "backend": "json",
+      "message": "StyleSeat run completed"
+    }
+  ],
+  "report": {
+    "runId": "styleseat-1779975755951-45rgn",
+    "createdAt": "2026-05-28T13:42:35.951Z",
+    "discoveryMode": "aggregator_crawl",
+    "sourceUrl": "https://www.styleseat.com/m/",
+    "seedUrls": [
+      "https://www.styleseat.com/m/"
+    ],
+    "marketSearchInput": null,
+    "market": "StyleSeat",
+    "categories": [],
+    "crawlDepth": 1,
+    "maxOperators": 5,
+    "resolverMode": "fast",
+    "mode": "harvest_only",
+    "pipelineMode": "harvest_only",
+    "totals": {
+      "crawledUrls": 1,
+      "profileUrls": 0,
+      "harvested": 0,
+      "normalized": 0,
+      "igCandidates": 0,
+      "resolverMerged": 0,
+      "prospectsCreated": 0,
+      "prospectsUpdated": 0,
+      "unresolved": 0,
+      "failed": 0
+    },
+    "artifactPaths": {
+      "crawl": "runs/styleseat-1779975755951-45rgn/crawl.json",
+      "raw": "runs/styleseat-1779975755951-45rgn/raw.json",
+      "normalized": "runs/styleseat-1779975755951-45rgn/normalized.json",
+      "resolver": "runs/styleseat-1779975755951-45rgn/resolver.json",
+      "prospects": "runs/styleseat-1779975755951-45rgn/prospects.json",
+      "failures": "runs/styleseat-1779975755951-45rgn/failures.json",
+      "summary": "runs/styleseat-1779975755951-45rgn/summary.json",
+      "log": "runs/styleseat-1779975755951-45rgn/log.json",
+      "market-intelligence": "runs/styleseat-1779975755951-45rgn/market-intelligence.json",
+      "operator-scores": "runs/styleseat-1779975755951-45rgn/operator-scores.json",
+      "market-clusters": "runs/styleseat-1779975755951-45rgn/market-clusters.json"
+    },
+    "discoveredMarkets": [],
+    "discoveredCategories": [
+      "hair"
+    ],
+    "notes": [
+      "No profiles found from aggregator root. Try a direct search URL. Examples: https://www.styleseat.com/m/search/denver-co/braids, https://www.styleseat.com/m/search/houston-tx/hair, https://www.styleseat.com/m/search/atlanta-ga/locs",
+      "Rendered extraction unavailable: Cannot find package 'playwright' imported from C:\\dev\\famtree\\.next\\server\\app\\api\\admin\\studios\\styleseat\\run\\route.js",
+      "No profiles found from aggregator root. Try a direct search URL.",
+      "No harvested operators: identity assembler and prospect upsert skipped."
+    ],
+    "intelligenceSummary": {
+      "topMarkets": [],
+      "topCategories": [],
+      "topOperators": [],
+      "recommendationCount": 1
+    }
+  }
+}

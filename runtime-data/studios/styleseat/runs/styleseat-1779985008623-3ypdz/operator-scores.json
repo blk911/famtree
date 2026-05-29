@@ -1,0 +1,906 @@
+[
+  {
+    "operatorId": "ss-8783",
+    "name": "Trichologist Angela (Licensed)",
+    "city": "Aurora",
+    "state": "CO",
+    "market": "Aurora, CO",
+    "categories": [
+      "braids",
+      "hair"
+    ],
+    "specialties": [
+      "Braids/Plats",
+      "Kid's Box Braids - Singles - Twists - ( Natural Hair)",
+      "Basic Two Strand Twists",
+      "Stitch Braids",
+      "Fulani Braids"
+    ],
+    "score": 100,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_suite_renter",
+      "likely_mobile"
+    ],
+    "signals": [
+      "167 reviews",
+      "2 images",
+      "IG candidate @trichologistangela",
+      "suite",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "trichologistangela",
+    "prospectId": "prospect-angelajohnson"
+  },
+  {
+    "operatorId": "ss-2126909",
+    "name": "Renee Malone",
+    "city": "Aurora",
+    "state": "CO",
+    "market": "Aurora, CO",
+    "categories": [
+      "braids",
+      "extensions"
+    ],
+    "specialties": [
+      "Men’s Cornrows Extensions (feed-in)",
+      "Man bun Box Braids",
+      "Jumbo plats (Box Braids)",
+      "Lemonade braids",
+      "Men’s freestyle Braids"
+    ],
+    "score": 100,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "124 reviews",
+      "2 images",
+      "IG candidate @reneemalone",
+      "extensions",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "reneemalone",
+    "prospectId": "prospect-divinestylesco"
+  },
+  {
+    "operatorId": "ss-2105808",
+    "name": "Stephanie",
+    "city": "Aurora",
+    "state": "CO",
+    "market": "Aurora, CO",
+    "categories": [
+      "braids",
+      "extensions"
+    ],
+    "specialties": [
+      "Loc Extensions Consult",
+      "4-6 Stitch Braids",
+      "7-10 Stitch Braids",
+      "Knotless Braids (Kids Only)",
+      "Freestyle Stitch Braids"
+    ],
+    "score": 100,
+    "resolverConfidence": 100,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "151 reviews",
+      "2 images",
+      "IG candidate @stephanie",
+      "extensions",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "stephanie",
+    "prospectId": "prospect-stephaniejefferson2"
+  },
+  {
+    "operatorId": "ss-1104078",
+    "name": "Hair Theory&CO/Nadine",
+    "city": "Aurora",
+    "state": "CO",
+    "market": "Aurora, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Sew-In\\braid\\Takedown\\add on service",
+      "Crochet Braids"
+    ],
+    "score": 100,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_suite_renter",
+      "likely_mobile"
+    ],
+    "signals": [
+      "166 reviews",
+      "2 images",
+      "IG candidate @theoryconadinetheoryconadine",
+      "suite",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "theoryconadinetheoryconadine",
+    "prospectId": "prospect-nadinehughes"
+  },
+  {
+    "operatorId": "ss-1499927",
+    "name": "Jacqueline Childs 720-949-5020",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids",
+      "hair"
+    ],
+    "specialties": [
+      "Crochet Braids",
+      "Goddess Braids",
+      "Kid's Braids or Twist 12 and under",
+      "Braids/Twist NATURAL HAIR/wash included",
+      "Crochet Braids, Shampoo/Blowdry"
+    ],
+    "score": 100,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_suite_renter",
+      "likely_mobile"
+    ],
+    "signals": [
+      "265 reviews",
+      "2 images",
+      "IG candidate @jacquelinechilds",
+      "suite",
+      "ig",
+      "instagram",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "jacquelinechilds",
+    "prospectId": "prospect-jacquelinechilds"
+  },
+  {
+    "operatorId": "ss-693862",
+    "name": "The Hair Doctor/Tracie Patton",
+    "city": "Aurora",
+    "state": "CO",
+    "market": "Aurora, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Simple cornrow Braids",
+      "2-feed in Braids",
+      "Kid's Braids 8yr-under",
+      "Braid Bar Style",
+      "Crochet Braids"
+    ],
+    "score": 100,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_suite_renter",
+      "likely_mobile"
+    ],
+    "signals": [
+      "366 reviews",
+      "2 images",
+      "IG candidate @doctortraciepatton",
+      "suite",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "doctortraciepatton",
+    "prospectId": "prospect-traciepatton"
+  },
+  {
+    "operatorId": "ss-1453593",
+    "name": "Sunjia Blanton (Brown)",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids",
+      "hair"
+    ],
+    "specialties": [
+      "Basic Braid down",
+      "Extra Length 25- 30 inches",
+      "1-4 braids",
+      "Men Basic Braids natural hair",
+      "Braids"
+    ],
+    "score": 100,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "613 reviews",
+      "2 images",
+      "IG candidate @sunjiablanton",
+      "extensions",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "sunjiablanton",
+    "prospectId": "prospect-sunjiabrown"
+  },
+  {
+    "operatorId": "ss-2306452",
+    "name": "Tatiana Henderson",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Male braided style"
+    ],
+    "score": 98,
+    "resolverConfidence": 92,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_suite_renter",
+      "likely_mobile"
+    ],
+    "signals": [
+      "50 reviews",
+      "2 images",
+      "IG candidate @tatianahenderson",
+      "suite",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "tatianahenderson",
+    "prospectId": "prospect-tatianahenderson3"
+  },
+  {
+    "operatorId": "ss-1706867",
+    "name": "Nesha",
+    "city": "Aurora",
+    "state": "CO",
+    "market": "Aurora, CO",
+    "categories": [
+      "braids",
+      "locs"
+    ],
+    "specialties": [
+      "2 Kid Stitch Braids",
+      "2 Braids",
+      "4 Stitch Braids",
+      "Twisties/ Starter Locs",
+      "Natural Freestyle"
+    ],
+    "score": 96,
+    "resolverConfidence": 100,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "266 reviews",
+      "2 images",
+      "IG candidate @nesha",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "nesha",
+    "prospectId": "prospect-braidsbynesha"
+  },
+  {
+    "operatorId": "ss-1182292",
+    "name": "Starr",
+    "city": "Aurora",
+    "state": "CO",
+    "market": "Aurora, CO",
+    "categories": [
+      "braids",
+      "locs"
+    ],
+    "specialties": [
+      "3 strand braids (Locs) Style",
+      "Cornrows/French Braids",
+      "Single Crochet (Looks like Faux Locs)"
+    ],
+    "score": 96,
+    "resolverConfidence": 100,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "435 reviews",
+      "2 images",
+      "IG candidate @starr",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "starr",
+    "prospectId": "prospect-starrtechniques"
+  },
+  {
+    "operatorId": "ss-1741652",
+    "name": "Courtney Frazier(DENVER)",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Edge Brush",
+      "Edge Control",
+      "Braid Mousse",
+      "Consultation",
+      "Braid Bonnet"
+    ],
+    "score": 95,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "134 reviews",
+      "2 images",
+      "IG candidate @courtneyfrazierdenver",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "courtneyfrazierdenver",
+    "prospectId": "prospect-courtneyfrazier2"
+  },
+  {
+    "operatorId": "ss-1635632",
+    "name": "Nakisha Ashley",
+    "city": "Aurora",
+    "state": "CO",
+    "market": "Aurora, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Kid's Braids",
+      "Kid's Braids W/Beads",
+      "Men’s Box Braids",
+      "Knotless Braids",
+      "Box Braids"
+    ],
+    "score": 94,
+    "resolverConfidence": 92,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "201 reviews",
+      "2 images",
+      "IG candidate @nakishaashley",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "nakishaashley",
+    "prospectId": "prospect-nakishaashley2"
+  },
+  {
+    "operatorId": "ss-2245523",
+    "name": "Ruta Andebrhan",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Natural Twists",
+      "Loc Maintenance",
+      "Loc Style",
+      "Loc Coils",
+      "Braids"
+    ],
+    "score": 93,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "41 reviews",
+      "2 images",
+      "IG candidate @rutaandebrhan",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "rutaandebrhan",
+    "prospectId": "prospect-rutaandebrhan"
+  },
+  {
+    "operatorId": "ss-2212307",
+    "name": "Lavita  Howard",
+    "city": "Aurora",
+    "state": "CO",
+    "market": "Aurora, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "2 Braids",
+      "Men’s Braids",
+      "Kid's Braids",
+      "Braided ponytail",
+      "2 feed in braids"
+    ],
+    "score": 92,
+    "resolverConfidence": 92,
+    "labels": [
+      "creator_candidate",
+      "premium_operator",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "42 reviews",
+      "2 images",
+      "IG candidate @lavitahoward",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "lavitahoward",
+    "prospectId": "prospect-lavitahoward2"
+  },
+  {
+    "operatorId": "ss-2313632",
+    "name": "Agie  Paul",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Medium Goddess Braids",
+      "Kid's corn rows 6-12yrs",
+      "Kid's stitch braids",
+      "Fulani Braids/ Tribal braids",
+      "Crochet Braids"
+    ],
+    "score": 91,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "28 reviews",
+      "2 images",
+      "IG candidate @agiepaul",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "agiepaul",
+    "prospectId": "prospect-agiepaul"
+  },
+  {
+    "operatorId": "ss-2420251",
+    "name": "Jessica Marsh",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Braid Bar Style"
+    ],
+    "score": 91,
+    "resolverConfidence": 92,
+    "labels": [
+      "creator_candidate",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "7 reviews",
+      "2 images",
+      "IG candidate @jessicamarsh",
+      "extensions",
+      "ig",
+      "book",
+      "dm",
+      "mobile"
+    ],
+    "igHandleFound": "jessicamarsh",
+    "prospectId": "prospect-jessicahairandmakeupartistry"
+  },
+  {
+    "operatorId": "ss-2171745",
+    "name": "Shandra",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Kid's Braids",
+      "Butterfly Braids",
+      "Kid's Braided Ponytail",
+      "Braid- down for wigs, sews, & crochet",
+      "Braided Mohawk"
+    ],
+    "score": 91,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "31 reviews",
+      "2 images",
+      "IG candidate @shandra",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "shandra",
+    "prospectId": "prospect-dimariebeauty"
+  },
+  {
+    "operatorId": "ss-1801765",
+    "name": "Afrocentric Braiding Salon LLC",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Consultation",
+      "Loc Style",
+      "Tracking / Single Track Sew-In",
+      "Takedown",
+      "Kid's Braids make sure you be specific of what kind of braids. This is just the starting price. So please call me when you make the appointment."
+    ],
+    "score": 91,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "31 reviews",
+      "2 images",
+      "IG candidate @afrocentricbraiding",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "afrocentricbraiding",
+    "prospectId": "prospect-yamahconstance"
+  },
+  {
+    "operatorId": "ss-1973685",
+    "name": "Hair by Quin LLC",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Bob French curls Braids",
+      "Fulani braids",
+      "Kid's Braids",
+      "Crochet Braids",
+      "Lemonade braids"
+    ],
+    "score": 90,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "25 reviews",
+      "2 images",
+      "IG candidate @quinllc",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "quinllc",
+    "prospectId": "prospect-kasongoquingmailcomkasongoquingmailcom"
+  },
+  {
+    "operatorId": "ss-2117147",
+    "name": "Mercedez  Brooks",
+    "city": "Aurora",
+    "state": "CO",
+    "market": "Aurora, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Braids",
+      "Kid's Braids",
+      "Wig Braid down",
+      "Men’s Braids",
+      "Crochet Braids"
+    ],
+    "score": 89,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "21 reviews",
+      "2 images",
+      "IG candidate @mercedezbrooks",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "mercedezbrooks",
+    "prospectId": "prospect-mercedezbrooks"
+  },
+  {
+    "operatorId": "ss-1444488",
+    "name": "Nae",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Braid Touchuo",
+      "Crochet Braids",
+      "Natural Plaits",
+      "Tribal Braids",
+      "Fulani Braids"
+    ],
+    "score": 88,
+    "resolverConfidence": 100,
+    "labels": [
+      "creator_candidate",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "16 reviews",
+      "2 images",
+      "IG candidate @nae",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "nae",
+    "prospectId": "prospect-kolefacx"
+  },
+  {
+    "operatorId": "ss-2418527",
+    "name": "Danielle Gomez",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Beard Trim",
+      "Eyebrow Trim",
+      "Travel Fee",
+      "Kid’s Cut",
+      "Women's Trim"
+    ],
+    "score": 87,
+    "resolverConfidence": 100,
+    "labels": [
+      "creator_candidate",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "13 reviews",
+      "2 images",
+      "IG candidate @daniellegomez",
+      "ig",
+      "book",
+      "mobile",
+      "travel",
+      "house call",
+      "on location"
+    ],
+    "igHandleFound": "daniellegomez",
+    "prospectId": "prospect-daniellegomez7"
+  },
+  {
+    "operatorId": "ss-2239586",
+    "name": "Estella Gracious",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Kid's Braids",
+      "Braids",
+      "Box Braids",
+      "Ghana Braids",
+      "Tree Braids"
+    ],
+    "score": 86,
+    "resolverConfidence": 100,
+    "labels": [
+      "creator_candidate",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "11 reviews",
+      "2 images",
+      "IG candidate @estellagracious",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "estellagracious",
+    "prospectId": "prospect-estellagracious"
+  },
+  {
+    "operatorId": "ss-2320012",
+    "name": "Cherifa Traore",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids"
+    ],
+    "specialties": [
+      "Ghana Braids",
+      "Braids Tutorial",
+      "Braids Lesson",
+      "Kid's Braids",
+      "Tree Braids"
+    ],
+    "score": 84,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "9 reviews",
+      "2 images",
+      "IG candidate @cherifatraore",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "cherifatraore",
+    "prospectId": "prospect-cherifatraore"
+  },
+  {
+    "operatorId": "ss-2431731",
+    "name": "Mandie Pewett",
+    "city": "Denver",
+    "state": "CO",
+    "market": "Denver, CO",
+    "categories": [
+      "braids",
+      "extensions"
+    ],
+    "specialties": [
+      "Braid Bar Style",
+      "Tree Braids",
+      "Individual Braids",
+      "Poetic Justice Braids",
+      "Takedown Braids/ extensions"
+    ],
+    "score": 79,
+    "resolverConfidence": 97,
+    "labels": [
+      "creator_candidate",
+      "high_social_signal",
+      "independent_brand",
+      "likely_mobile"
+    ],
+    "signals": [
+      "1 reviews",
+      "2 images",
+      "IG candidate @mandiepewett",
+      "extensions",
+      "ig",
+      "book",
+      "mobile"
+    ],
+    "igHandleFound": "mandiepewett",
+    "prospectId": "prospect-mandiepewett"
+  }
+]

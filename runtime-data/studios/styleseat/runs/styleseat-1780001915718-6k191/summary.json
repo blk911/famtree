@@ -1,0 +1,131 @@
+{
+  "runId": "styleseat-1780001915718-6k191",
+  "createdAt": "2026-05-28T20:58:35.718Z",
+  "discoveryMode": "market_search",
+  "sourceUrl": null,
+  "seedUrls": [
+    "https://www.styleseat.com/m/search/denver-co/braids"
+  ],
+  "marketSearchInput": {
+    "city": "Denver",
+    "state": "CO"
+  },
+  "market": "Denver",
+  "categories": [
+    "braids"
+  ],
+  "crawlDepth": 1,
+  "maxOperators": 25,
+  "resolverMode": "fast",
+  "mode": "harvest_only",
+  "pipelineMode": "harvest_only",
+  "totals": {
+    "crawledUrls": 1,
+    "profileUrls": 25,
+    "internalApiUrlsTried": 1,
+    "internalApiUrlsSucceeded": 1,
+    "internalApiUrlsFailed": 0,
+    "internalApiRecords": 25,
+    "harvested": 25,
+    "normalized": 25,
+    "igCandidates": 0,
+    "resolverMerged": 0,
+    "prospectsCreated": 0,
+    "prospectsUpdated": 0,
+    "prospectsAttempted": 0,
+    "prospectsSkipped": 0,
+    "prospectsFailed": 0,
+    "unresolved": 25,
+    "failed": 0
+  },
+  "artifactPaths": {
+    "crawl": "runs/styleseat-1780001915718-6k191/crawl.json",
+    "raw": "runs/styleseat-1780001915718-6k191/raw.json",
+    "normalized": "runs/styleseat-1780001915718-6k191/normalized.json",
+    "resolver": "runs/styleseat-1780001915718-6k191/resolver.json",
+    "prospects": "runs/styleseat-1780001915718-6k191/prospects.json",
+    "failures": "runs/styleseat-1780001915718-6k191/failures.json",
+    "summary": "runs/styleseat-1780001915718-6k191/summary.json",
+    "log": "runs/styleseat-1780001915718-6k191/log.json",
+    "market-intelligence": "runs/styleseat-1780001915718-6k191/market-intelligence.json",
+    "operator-scores": "runs/styleseat-1780001915718-6k191/operator-scores.json",
+    "market-clusters": "runs/styleseat-1780001915718-6k191/market-clusters.json",
+    "prospect-persistence-audit": "runs/styleseat-1780001915718-6k191/prospect-persistence-audit.json",
+    "execution-path": "runs/styleseat-1780001915718-6k191/execution-path.json",
+    "generated-search-urls": "runs/styleseat-1780001915718-6k191/generated-search-urls.json"
+  },
+  "discoveredMarkets": [
+    "Denver, CO",
+    "Aurora, CO"
+  ],
+  "discoveredCategories": [
+    "braids",
+    "locs",
+    "extensions",
+    "hair"
+  ],
+  "extractionSource": "internal_api",
+  "requestEcho": {
+    "discoveryMode": "market_search",
+    "sourceUrl": null,
+    "city": "Denver",
+    "state": "CO",
+    "categories": [
+      "braids"
+    ],
+    "maxOperators": 25,
+    "crawlDepth": 1,
+    "pipelineMode": "harvest_only",
+    "resolverMode": "fast",
+    "debug": true,
+    "generatedSearchUrls": [
+      "https://www.styleseat.com/m/search/denver-co/braids"
+    ],
+    "internalApiEligible": true,
+    "internalApiReason": "market_search generated search URL"
+  },
+  "executionPath": {
+    "discoveryMode": "market_search",
+    "urlClassification": "market_search",
+    "enteredInternalApiPath": true,
+    "enteredStaticExtractionPath": false,
+    "enteredFallbackPath": false,
+    "generatedSearchUrls": [
+      "https://www.styleseat.com/m/search/denver-co/braids"
+    ],
+    "apiExtractionAttempted": true,
+    "apiExtractionSucceeded": true,
+    "extractionSource": "internal_api"
+  },
+  "persistenceAuditSummary": {
+    "attempted": 0,
+    "created": 0,
+    "updated": 0,
+    "skipped": 0,
+    "failed": 0,
+    "topSkipReasons": []
+  },
+  "notes": [
+    "Harvest-only mode: identity assembler and prospect upsert skipped."
+  ],
+  "intelligenceSummary": {
+    "topMarkets": [
+      "Aurora, CO (77)",
+      "Denver, CO (68)"
+    ],
+    "topCategories": [
+      "braids (25)",
+      "hair (3)",
+      "extensions (3)",
+      "locs (2)"
+    ],
+    "topOperators": [
+      "Jacqueline Childs 720-949-5020 (80)",
+      "Trichologist Angela (Licensed) (76)",
+      "Renee Malone (76)",
+      "Stephanie (76)",
+      "Hair Theory&CO/Nadine (76)"
+    ],
+    "recommendationCount": 7
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "runId": "styleseat-1779982009975-ix3d8",
+  "createdAt": "2026-05-28T15:26:49.975Z",
+  "discoveryMode": "direct_url",
+  "sourceUrl": "https://www.styleseat.com/m/search/denver-co/hair-salons",
+  "seedUrls": [
+    "https://www.styleseat.com/m/search/denver-co/hair-salons"
+  ],
+  "marketSearchInput": null,
+  "market": "Denver, CO",
+  "categories": [],
+  "crawlDepth": 1,
+  "maxOperators": 10,
+  "resolverMode": "fast",
+  "mode": "harvest_only",
+  "pipelineMode": "harvest_only",
+  "totals": {
+    "crawledUrls": 1,
+    "profileUrls": 10,
+    "internalApiUrlsTried": 1,
+    "internalApiRecords": 10,
+    "harvested": 10,
+    "normalized": 10,
+    "igCandidates": 0,
+    "resolverMerged": 0,
+    "prospectsCreated": 0,
+    "prospectsUpdated": 0,
+    "unresolved": 10,
+    "failed": 0
+  },
+  "artifactPaths": {
+    "crawl": "runs/styleseat-1779982009975-ix3d8/crawl.json",
+    "raw": "runs/styleseat-1779982009975-ix3d8/raw.json",
+    "normalized": "runs/styleseat-1779982009975-ix3d8/normalized.json",
+    "resolver": "runs/styleseat-1779982009975-ix3d8/resolver.json",
+    "prospects": "runs/styleseat-1779982009975-ix3d8/prospects.json",
+    "failures": "runs/styleseat-1779982009975-ix3d8/failures.json",
+    "summary": "runs/styleseat-1779982009975-ix3d8/summary.json",
+    "log": "runs/styleseat-1779982009975-ix3d8/log.json",
+    "market-intelligence": "runs/styleseat-1779982009975-ix3d8/market-intelligence.json",
+    "operator-scores": "runs/styleseat-1779982009975-ix3d8/operator-scores.json",
+    "market-clusters": "runs/styleseat-1779982009975-ix3d8/market-clusters.json"
+  },
+  "discoveredMarkets": [
+    "Denver, CO",
+    "Aurora, CO",
+    "Wheat Ridge, CO"
+  ],
+  "discoveredCategories": [
+    "hair",
+    "braids",
+    "lashes",
+    "locs",
+    "extensions"
+  ],
+  "extractionSource": "internal_api",
+  "notes": [
+    "Harvest-only mode: identity assembler and prospect upsert skipped."
+  ],
+  "intelligenceSummary": {
+    "topMarkets": [
+      "Denver, CO (73)",
+      "Aurora, CO (53)",
+      "Wheat Ridge, CO (53)"
+    ],
+    "topCategories": [
+      "hair (10)",
+      "braids (3)",
+      "lashes (1)",
+      "locs (1)",
+      "extensions (1)"
+    ],
+    "topOperators": [
+      "Courtney Frazier(DENVER) (76)",
+      "Marc Pierre (76)",
+      "Tatiana Henderson (75)",
+      "Channing Monae (71)",
+      "Starr (71)"
+    ],
+    "recommendationCount": 9
+  }
+}

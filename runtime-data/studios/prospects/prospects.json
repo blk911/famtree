@@ -1,1 +1,3160 @@
-[]
+[
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "courtneyfrazier2",
+      "sourceDisplayName": "Courtney Frazier(DENVER)"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Courtney Frazier(DENVER)",
+      "handle": "courtneyfrazier2",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/courtneyfrazier2",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 134 reviews"
+    },
+    "services": [
+      "Edge Brush",
+      "Edge Control",
+      "Braid Mousse",
+      "Consultation",
+      "Braid Bonnet",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/courtneyfrazier2",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 134 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://courtneyfrazierdenver.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/courtneyfrazierdenver",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/courtneyfrazierdenver",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/courtneyfrazier2",
+        "label": "Courtney Frazier(DENVER)",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/courtneyfrazier2",
+      "134 StyleSeat reviews",
+      "Rating: 4.9627/5",
+      "specialty: Edge Brush",
+      "specialty: Edge Control",
+      "specialty: Braid Mousse",
+      "specialty: Consultation",
+      "specialty: Braid Bonnet",
+      "Bio: Barbie Soul Braids",
+      "styleseat: https://www.styleseat.com/m/v/courtneyfrazier2",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-courtneyfrazier2",
+    "identityFingerprint": "handle:courtneyfrazier2",
+    "createdAt": "2026-05-28T16:16:49.431Z",
+    "updatedAt": "2026-05-28T16:18:49.965Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "agiepaul",
+      "sourceDisplayName": "Agie  Paul"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Agie  Paul",
+      "handle": "agiepaul",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/agiepaul",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 28 reviews"
+    },
+    "services": [
+      "Medium Goddess Braids",
+      "Kid's corn rows 6-12yrs",
+      "Kid's stitch braids",
+      "Fulani Braids/ Tribal braids",
+      "Crochet Braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/agiepaul",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 28 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://agiepaul.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/agiepaul",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/agiepaul",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/agiepaul",
+        "label": "Agie  Paul",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/agiepaul",
+      "28 StyleSeat reviews",
+      "Rating: 5/5",
+      "specialty: Medium Goddess Braids",
+      "specialty: Kid's corn rows 6-12yrs",
+      "specialty: Kid's stitch braids",
+      "specialty: Fulani Braids/ Tribal braids",
+      "specialty: Crochet Braids",
+      "Bio: Agies Golden Touch Beauty",
+      "styleseat: https://www.styleseat.com/m/v/agiepaul",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-agiepaul",
+    "identityFingerprint": "handle:agiepaul",
+    "createdAt": "2026-05-28T16:16:49.432Z",
+    "updatedAt": "2026-05-28T16:18:49.967Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "tatianahenderson3",
+      "sourceDisplayName": "Tatiana Henderson"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Tatiana Henderson",
+      "handle": "tatianahenderson3",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/tatianahenderson3",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 50 reviews"
+    },
+    "services": [
+      "Male braided style",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/tatianahenderson3",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 50 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://tatianahenderson.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/tatianahenderson",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/tatianahenderson3",
+        "label": "Tatiana Henderson",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/tatianahenderson3",
+      "50 StyleSeat reviews",
+      "Rating: 4.9/5",
+      "specialty: Male braided style",
+      "Bio: T.Latrice Hair & Beauty",
+      "styleseat: https://www.styleseat.com/m/v/tatianahenderson3",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"Stan - Your Creator Store\"",
+      "Description: \"We work 1-on-1 with the Top Creators to monetize their business\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 12,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-tatianahenderson3",
+    "identityFingerprint": "handle:tatianahenderson3",
+    "createdAt": "2026-05-28T16:16:49.434Z",
+    "updatedAt": "2026-05-28T16:18:49.969Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "daniellegomez7",
+      "sourceDisplayName": "Danielle Gomez"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Danielle Gomez",
+      "handle": "daniellegomez7",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "linktree",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/daniellegomez7",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 13 reviews"
+    },
+    "services": [
+      "Beard Trim",
+      "Eyebrow Trim",
+      "Travel Fee",
+      "Kid’s Cut",
+      "Women's Trim",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Spa",
+      "Studio"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/daniellegomez7",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 13 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://daniellegomez.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "linktree",
+        "url": "https://linktr.ee/daniellegomez",
+        "confidence": 59,
+        "matchReason": "exact handle in URL · services: hair, spa, studio · location: la"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/daniellegomez",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/daniellegomez7",
+        "label": "Danielle Gomez",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/daniellegomez7",
+      "13 StyleSeat reviews",
+      "Rating: 5/5",
+      "specialty: Beard Trim",
+      "specialty: Eyebrow Trim",
+      "specialty: Travel Fee",
+      "specialty: Kid’s Cut",
+      "specialty: Women's Trim",
+      "Bio: Braided by QUEEN",
+      "styleseat: https://www.styleseat.com/m/v/daniellegomez7",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"daniellegomez OnlyFans Official - Exclusive Content & Account | Linktree\"",
+      "Description: \"See daniellegomez on OnlyFans. Access exclusive photos and videos. Visit the official page now.\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-daniellegomez7",
+    "identityFingerprint": "handle:daniellegomez7",
+    "createdAt": "2026-05-28T16:16:49.435Z",
+    "updatedAt": "2026-05-28T16:18:49.970Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "braidsbynesha",
+      "sourceDisplayName": "Nesha"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids",
+      "locs"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Nesha",
+      "handle": "braidsbynesha",
+      "categoryGuess": "Braider",
+      "locationGuess": "Aurora, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "linktree",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/braidsbynesha",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 266 reviews"
+    },
+    "services": [
+      "2 Kid Stitch Braids",
+      "2 Braids",
+      "4 Stitch Braids",
+      "Twisties/ Starter Locs",
+      "Natural Freestyle",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/braidsbynesha",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 266 reviews"
+      },
+      {
+        "platform": "linktree",
+        "url": "https://linktr.ee/nesha",
+        "confidence": 75,
+        "matchReason": "exact handle in URL · display name match · location: la"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://nesha.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/nesha",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/braidsbynesha",
+        "label": "Nesha",
+        "city": "Aurora, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/braidsbynesha",
+      "266 StyleSeat reviews",
+      "Rating: 4.9737/5",
+      "specialty: 2 Kid Stitch Braids",
+      "specialty: 2 Braids",
+      "specialty: 4 Stitch Braids",
+      "specialty: Twisties/ Starter Locs",
+      "specialty: Natural Freestyle",
+      "Bio: Braids By Nesha",
+      "styleseat: https://www.styleseat.com/m/v/braidsbynesha",
+      "Title: \"Nesha | Linktree\"",
+      "\"...nesha | linktree linktree. make you...\"",
+      "Description: \"Linktree. Make your link do more.\"",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-braidsbynesha",
+    "identityFingerprint": "handle:braidsbynesha",
+    "createdAt": "2026-05-28T16:16:49.437Z",
+    "updatedAt": "2026-05-28T16:18:49.972Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "kasongoquingmailcomkasongoquingmailcom",
+      "sourceDisplayName": "Hair by Quin LLC"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Hair by Quin LLC",
+      "handle": "kasongoquingmailcomkasongoquingmailcom",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/kasongoquingmailcomkasongoquingmailcom",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 25 reviews"
+    },
+    "services": [
+      "Bob French curls Braids",
+      "Fulani braids",
+      "Kid's Braids",
+      "Crochet Braids",
+      "Lemonade braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/kasongoquingmailcomkasongoquingmailcom",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 25 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://quinllc.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/quinllc",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/quinllc",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/kasongoquingmailcomkasongoquingmailcom",
+        "label": "Hair by Quin LLC",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/kasongoquingmailcomkasongoquingmailcom",
+      "25 StyleSeat reviews",
+      "Rating: 4.56/5",
+      "specialty: Bob French curls Braids",
+      "specialty: Fulani braids",
+      "specialty: Kid's Braids",
+      "specialty: Crochet Braids",
+      "specialty: Lemonade braids",
+      "Bio: Hairbyquin",
+      "styleseat: https://www.styleseat.com/m/v/kasongoquingmailcomkasongoquingmailcom",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-kasongoquingmailcomkasongoquingmailcom",
+    "identityFingerprint": "handle:kasongoquingmailcomkasongoquingmailcom",
+    "createdAt": "2026-05-28T16:16:49.438Z",
+    "updatedAt": "2026-05-28T16:18:49.973Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "cherifatraore",
+      "sourceDisplayName": "Cherifa Traore"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Cherifa Traore",
+      "handle": "cherifatraore",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/cherifatraore",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 9 reviews"
+    },
+    "services": [
+      "Ghana Braids",
+      "Braids Tutorial",
+      "Braids Lesson",
+      "Kid's Braids",
+      "Tree Braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/cherifatraore",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 9 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://cherifatraore.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/cherifatraore",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/cherifatraore",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/cherifatraore",
+        "label": "Cherifa Traore",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/cherifatraore",
+      "9 StyleSeat reviews",
+      "Rating: 5/5",
+      "specialty: Ghana Braids",
+      "specialty: Braids Tutorial",
+      "specialty: Braids Lesson",
+      "specialty: Kid's Braids",
+      "specialty: Tree Braids",
+      "Bio: Nelly’s Hair Shine",
+      "styleseat: https://www.styleseat.com/m/v/cherifatraore",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-cherifatraore",
+    "identityFingerprint": "handle:cherifatraore",
+    "createdAt": "2026-05-28T16:16:49.440Z",
+    "updatedAt": "2026-05-28T16:18:49.974Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "kolefacx",
+      "sourceDisplayName": "Nae"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Nae",
+      "handle": "kolefacx",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "linktree",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/kolefacx",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 16 reviews"
+    },
+    "services": [
+      "Braid Touchuo",
+      "Crochet Braids",
+      "Natural Plaits",
+      "Tribal Braids",
+      "Fulani Braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/kolefacx",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 16 reviews"
+      },
+      {
+        "platform": "linktree",
+        "url": "https://linktr.ee/nae",
+        "confidence": 75,
+        "matchReason": "exact handle in URL · display name match · location: la"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://nae.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/nae",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/kolefacx",
+        "label": "Nae",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/kolefacx",
+      "16 StyleSeat reviews",
+      "Rating: 4.625/5",
+      "specialty: Braid Touchuo",
+      "specialty: Crochet Braids",
+      "specialty: Natural Plaits",
+      "specialty: Tribal Braids",
+      "specialty: Fulani Braids",
+      "Bio: Kolefacx & Co.",
+      "styleseat: https://www.styleseat.com/m/v/kolefacx",
+      "Title: \"nae | Linktree\"",
+      "\"...nae | linktree linktree. make you...\"",
+      "Description: \"Linktree. Make your link do more.\"",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-kolefacx",
+    "identityFingerprint": "handle:kolefacx",
+    "createdAt": "2026-05-28T16:16:49.441Z",
+    "updatedAt": "2026-05-28T16:18:49.976Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "jessicahairandmakeupartistry",
+      "sourceDisplayName": "Jessica Marsh"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Jessica Marsh",
+      "handle": "jessicahairandmakeupartistry",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/jessicahairandmakeupartistry",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 7 reviews"
+    },
+    "services": [
+      "Braid Bar Style",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/jessicahairandmakeupartistry",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 7 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://jessicamarsh.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/jessicamarsh",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/jessicahairandmakeupartistry",
+        "label": "Jessica Marsh",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/jessicahairandmakeupartistry",
+      "7 StyleSeat reviews",
+      "Rating: 5/5",
+      "specialty: Braid Bar Style",
+      "Bio: Jessica.Hairandmakeupartistry",
+      "styleseat: https://www.styleseat.com/m/v/jessicahairandmakeupartistry",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"Stan - Your Creator Store\"",
+      "Description: \"We work 1-on-1 with the Top Creators to monetize their business\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 12,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-jessicahairandmakeupartistry",
+    "identityFingerprint": "handle:jessicahairandmakeupartistry",
+    "createdAt": "2026-05-28T16:16:49.443Z",
+    "updatedAt": "2026-05-28T16:18:49.977Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "estellagracious",
+      "sourceDisplayName": "Estella Gracious"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Estella Gracious",
+      "handle": "estellagracious",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "linktree",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "linktree",
+      "url": "https://linktr.ee/estellagracious",
+      "confidence": 90,
+      "matchReason": "exact handle in URL · display name match · services: hair, wax, makeup, studio · location: la"
+    },
+    "services": [
+      "Kid's Braids",
+      "Braids",
+      "Box Braids",
+      "Ghana Braids",
+      "Tree Braids",
+      "Hair",
+      "Wax",
+      "Makeup",
+      "Studio",
+      "Appointment",
+      "Lash",
+      "Nail",
+      "Brow",
+      "Massage",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "linktree",
+        "url": "https://linktr.ee/estellagracious",
+        "confidence": 90,
+        "matchReason": "exact handle in URL · display name match · services: hair, wax, makeup, studio · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/estellagracious",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 11 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://estellagracious.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/estellagracious",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/estellagracious",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/estellagracious",
+        "label": "Estella Gracious",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/estellagracious",
+      "11 StyleSeat reviews",
+      "Rating: 5/5",
+      "specialty: Kid's Braids",
+      "specialty: Braids",
+      "specialty: Box Braids",
+      "specialty: Ghana Braids",
+      "specialty: Tree Braids",
+      "Bio: Beauty Inspired by Estella Gracious",
+      "styleseat: https://www.styleseat.com/m/v/estellagracious",
+      "Title: \"Beauty Inspired by Estella Official: Facebook | Linktree\"",
+      "\"... care, and more — inspired by estella gracious. 💫 beauty inspired by estell...\"",
+      "Description: \"Your beauty, our passion. Hair, body care, and more — inspired by Estella Gracious. 💫\"",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\""
+    ],
+    "confidence": {
+      "identityMatch": 60,
+      "bookingMatch": 90,
+      "categoryMatch": 100,
+      "locationMatch": 60,
+      "overall": 90
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-estellagracious",
+    "identityFingerprint": "handle:estellagracious",
+    "createdAt": "2026-05-28T16:16:49.444Z",
+    "updatedAt": "2026-05-28T16:18:49.979Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "mandiepewett",
+      "sourceDisplayName": "Mandie Pewett"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids",
+      "extensions"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Mandie Pewett",
+      "handle": "mandiepewett",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "glossgenius",
+      "url": "https://mandiepewett.glossgenius.com",
+      "confidence": 65,
+      "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+    },
+    "services": [
+      "Braid Bar Style",
+      "Tree Braids",
+      "Individual Braids",
+      "Poetic Justice Braids",
+      "Takedown Braids/ extensions",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "glossgenius",
+        "url": "https://mandiepewett.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/mandiepewett",
+        "confidence": 50,
+        "matchReason": "StyleSeat listing — 1 reviews"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/mandiepewett",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/mandiepewett",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/mandiepewett",
+        "label": "Mandie Pewett",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/mandiepewett",
+      "1 StyleSeat reviews",
+      "Rating: 5/5",
+      "specialty: Braid Bar Style",
+      "specialty: Tree Braids",
+      "specialty: Individual Braids",
+      "specialty: Poetic Justice Braids",
+      "specialty: Takedown Braids/ extensions",
+      "Bio: Mandies Lab",
+      "styleseat: https://www.styleseat.com/m/v/mandiepewett",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 60,
+      "bookingMatch": 65,
+      "categoryMatch": 100,
+      "locationMatch": 60,
+      "overall": 65
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-mandiepewett",
+    "identityFingerprint": "handle:mandiepewett",
+    "createdAt": "2026-05-28T16:16:49.446Z",
+    "updatedAt": "2026-05-28T16:18:49.980Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "StarrTechniques",
+      "sourceDisplayName": "Starr"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids",
+      "locs"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Starr",
+      "handle": "StarrTechniques",
+      "categoryGuess": "Braider",
+      "locationGuess": "Aurora, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "linktree",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "linktree",
+      "url": "https://linktr.ee/starr",
+      "confidence": 78,
+      "matchReason": "exact handle in URL · display name match · services: studio · location: la"
+    },
+    "services": [
+      "3 strand braids (Locs) Style",
+      "Cornrows/French Braids",
+      "Single Crochet (Looks like Faux Locs)",
+      "Studio",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "linktree",
+        "url": "https://linktr.ee/starr",
+        "confidence": 78,
+        "matchReason": "exact handle in URL · display name match · services: studio · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/StarrTechniques",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 435 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://starr.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/starr",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/StarrTechniques",
+        "label": "Starr",
+        "city": "Aurora, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/StarrTechniques",
+      "435 StyleSeat reviews",
+      "Rating: 4.9172/5",
+      "specialty: 3 strand braids (Locs) Style",
+      "specialty: Cornrows/French Braids",
+      "specialty: Single Crochet (Looks like Faux Locs)",
+      "Bio: Techniques By Starr LLC",
+      "styleseat: https://www.styleseat.com/m/v/StarrTechniques",
+      "Title: \"Starr | Linktree\"",
+      "\"...starr | linktree hey it&#x27;s sexy...\"",
+      "Description: \"Hey it&#x27;s SexyStarrr 💖💖💖\"",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\""
+    ],
+    "confidence": {
+      "identityMatch": 60,
+      "bookingMatch": 78,
+      "categoryMatch": 100,
+      "locationMatch": 60,
+      "overall": 78
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-starrtechniques",
+    "identityFingerprint": "handle:starrtechniques",
+    "createdAt": "2026-05-28T16:16:49.447Z",
+    "updatedAt": "2026-05-28T16:18:49.981Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "angelajohnson",
+      "sourceDisplayName": "Trichologist Angela (Licensed)"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids",
+      "hair"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Trichologist Angela (Licensed)",
+      "handle": "angelajohnson",
+      "categoryGuess": "Braider",
+      "locationGuess": "Aurora, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/angelajohnson",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 167 reviews"
+    },
+    "services": [
+      "Braids/Plats",
+      "Kid's Box Braids - Singles - Twists - ( Natural Hair)",
+      "Basic Two Strand Twists",
+      "Stitch Braids",
+      "Fulani Braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/angelajohnson",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 167 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://trichologistangela.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/trichologistangela",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/trichologistangela",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/angelajohnson",
+        "label": "Trichologist Angela (Licensed)",
+        "city": "Aurora, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/angelajohnson",
+      "167 StyleSeat reviews",
+      "Rating: 4.7784/5",
+      "specialty: Braids/Plats",
+      "specialty: Kid's Box Braids - Singles - Twists - ( Natural Hair)",
+      "specialty: Basic Two Strand Twists",
+      "specialty: Stitch Braids",
+      "specialty: Fulani Braids",
+      "Bio: Whip A Peel Hair/Hairzie Hair Salon",
+      "styleseat: https://www.styleseat.com/m/v/angelajohnson",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-angelajohnson",
+    "identityFingerprint": "handle:angelajohnson",
+    "createdAt": "2026-05-28T16:16:49.449Z",
+    "updatedAt": "2026-05-28T16:18:49.983Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "rutaandebrhan",
+      "sourceDisplayName": "Ruta Andebrhan"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Ruta Andebrhan",
+      "handle": "rutaandebrhan",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/rutaandebrhan",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 41 reviews"
+    },
+    "services": [
+      "Natural Twists",
+      "Loc Maintenance",
+      "Loc Style",
+      "Loc Coils",
+      "Braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/rutaandebrhan",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 41 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://rutaandebrhan.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/rutaandebrhan",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/rutaandebrhan",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/rutaandebrhan",
+        "label": "Ruta Andebrhan",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/rutaandebrhan",
+      "41 StyleSeat reviews",
+      "Rating: 4.8293/5",
+      "specialty: Natural Twists",
+      "specialty: Loc Maintenance",
+      "specialty: Loc Style",
+      "specialty: Loc Coils",
+      "specialty: Braids",
+      "Bio: Braiding ,styling,sewing,silkpress",
+      "styleseat: https://www.styleseat.com/m/v/rutaandebrhan",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-rutaandebrhan",
+    "identityFingerprint": "handle:rutaandebrhan",
+    "createdAt": "2026-05-28T16:16:49.450Z",
+    "updatedAt": "2026-05-28T16:18:49.984Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "divinestylesco",
+      "sourceDisplayName": "Renee Malone"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids",
+      "extensions"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Renee Malone",
+      "handle": "divinestylesco",
+      "categoryGuess": "Braider",
+      "locationGuess": "Aurora, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/divinestylesco",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 124 reviews"
+    },
+    "services": [
+      "Men’s Cornrows Extensions (feed-in)",
+      "Man bun Box Braids",
+      "Jumbo plats (Box Braids)",
+      "Lemonade braids",
+      "Men’s freestyle Braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/divinestylesco",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 124 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://reneemalone.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/reneemalone",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/reneemalone",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/divinestylesco",
+        "label": "Renee Malone",
+        "city": "Aurora, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/divinestylesco",
+      "124 StyleSeat reviews",
+      "Rating: 4.9839/5",
+      "specialty: Men’s Cornrows Extensions (feed-in)",
+      "specialty: Man bun Box Braids",
+      "specialty: Jumbo plats (Box Braids)",
+      "specialty: Lemonade braids",
+      "specialty: Men’s freestyle Braids",
+      "Bio: Divine Styles Co.",
+      "styleseat: https://www.styleseat.com/m/v/divinestylesco",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-divinestylesco",
+    "identityFingerprint": "handle:divinestylesco",
+    "createdAt": "2026-05-28T16:16:49.452Z",
+    "updatedAt": "2026-05-28T16:18:49.985Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "stephaniejefferson2",
+      "sourceDisplayName": "Stephanie"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids",
+      "extensions"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Stephanie",
+      "handle": "stephaniejefferson2",
+      "categoryGuess": "Braider",
+      "locationGuess": "Aurora, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "linktree",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/stephaniejefferson2",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 151 reviews"
+    },
+    "services": [
+      "Loc Extensions Consult",
+      "4-6 Stitch Braids",
+      "7-10 Stitch Braids",
+      "Knotless Braids (Kids Only)",
+      "Freestyle Stitch Braids",
+      "Hair",
+      "Salon",
+      "Services",
+      "Color",
+      "Cut",
+      "Extensions"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/stephaniejefferson2",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 151 reviews"
+      },
+      {
+        "platform": "linktree",
+        "url": "https://linktr.ee/stephanie",
+        "confidence": 75,
+        "matchReason": "exact handle in URL · display name match · location: la"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://stephanie.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: hair, salon, services, color · location: la"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/stephanie",
+        "confidence": 60,
+        "matchReason": "exact handle in URL · display name match"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/stephaniejefferson2",
+        "label": "Stephanie",
+        "city": "Aurora, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/stephaniejefferson2",
+      "151 StyleSeat reviews",
+      "Rating: 4.9735/5",
+      "specialty: Loc Extensions Consult",
+      "specialty: 4-6 Stitch Braids",
+      "specialty: 7-10 Stitch Braids",
+      "specialty: Knotless Braids (Kids Only)",
+      "specialty: Freestyle Stitch Braids",
+      "Bio: StyledBySteff",
+      "styleseat: https://www.styleseat.com/m/v/stephaniejefferson2",
+      "Title: \"Stephanie | Linktree\"",
+      "\"...stephanie | linktree linktree. make you...\"",
+      "Description: \"Linktree. Make your link do more.\"",
+      "Title: \"Steph Doan Hair | Health & Beauty in San Diego, CA\"",
+      "IG link present: https://www.instagram.com/stephdoanhair",
+      "Description: \"Steph Doan Hair offers shampoo blowdry, add on conditoning treatment, and women’s haircut in San Diego, CA. Check out my\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-stephaniejefferson2",
+    "identityFingerprint": "handle:stephaniejefferson2",
+    "createdAt": "2026-05-28T16:16:49.453Z",
+    "updatedAt": "2026-05-28T16:18:49.987Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "nadinehughes",
+      "sourceDisplayName": "Hair Theory&CO/Nadine"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Hair Theory&CO/Nadine",
+      "handle": "nadinehughes",
+      "categoryGuess": "Braider",
+      "locationGuess": "Aurora, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/nadinehughes",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 166 reviews"
+    },
+    "services": [
+      "Sew-In\\braid\\Takedown\\add on service",
+      "Crochet Braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/nadinehughes",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 166 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://theoryconadinetheoryconadine.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/theoryconadinetheoryconadine",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/theoryconadinetheoryconadine",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/nadinehughes",
+        "label": "Hair Theory&CO/Nadine",
+        "city": "Aurora, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/nadinehughes",
+      "166 StyleSeat reviews",
+      "Rating: 4.8373/5",
+      "specialty: Sew-In\\braid\\Takedown\\add on service",
+      "specialty: Crochet Braids",
+      "Bio: Hair Theory&CO",
+      "styleseat: https://www.styleseat.com/m/v/nadinehughes",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 24,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-nadinehughes",
+    "identityFingerprint": "handle:nadinehughes",
+    "createdAt": "2026-05-28T16:16:49.455Z",
+    "updatedAt": "2026-05-28T16:18:49.989Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "jacquelinechilds",
+      "sourceDisplayName": "Jacqueline Childs 720-949-5020"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids",
+      "hair"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Jacqueline Childs 720-949-5020",
+      "handle": "jacquelinechilds",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/jacquelinechilds",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 265 reviews"
+    },
+    "services": [
+      "Crochet Braids",
+      "Goddess Braids",
+      "Kid's Braids or Twist 12 and under",
+      "Braids/Twist NATURAL HAIR/wash included",
+      "Crochet Braids, Shampoo/Blowdry",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/jacquelinechilds",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 265 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://jacquelinechilds.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/jacquelinechilds",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/jacquelinechilds",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/jacquelinechilds",
+        "label": "Jacqueline Childs 720-949-5020",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/jacquelinechilds",
+      "265 StyleSeat reviews",
+      "Rating: 4.9811/5",
+      "specialty: Crochet Braids",
+      "specialty: Goddess Braids",
+      "specialty: Kid's Braids or Twist 12 and under",
+      "specialty: Braids/Twist NATURAL HAIR/wash included",
+      "specialty: Crochet Braids, Shampoo/Blowdry",
+      "Bio: Dazzles/ Instagram j_loveshair",
+      "styleseat: https://www.styleseat.com/m/v/jacquelinechilds",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-jacquelinechilds",
+    "identityFingerprint": "handle:jacquelinechilds",
+    "createdAt": "2026-05-28T16:16:49.456Z",
+    "updatedAt": "2026-05-28T16:18:49.990Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "mercedezbrooks",
+      "sourceDisplayName": "Mercedez  Brooks"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Mercedez  Brooks",
+      "handle": "mercedezbrooks",
+      "categoryGuess": "Braider",
+      "locationGuess": "Aurora, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/mercedezbrooks",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 21 reviews"
+    },
+    "services": [
+      "Braids",
+      "Kid's Braids",
+      "Wig Braid down",
+      "Men’s Braids",
+      "Crochet Braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/mercedezbrooks",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 21 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://mercedezbrooks.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/mercedezbrooks",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/mercedezbrooks",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/mercedezbrooks",
+        "label": "Mercedez  Brooks",
+        "city": "Aurora, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/mercedezbrooks",
+      "21 StyleSeat reviews",
+      "Rating: 4.8095/5",
+      "specialty: Braids",
+      "specialty: Kid's Braids",
+      "specialty: Wig Braid down",
+      "specialty: Men’s Braids",
+      "specialty: Crochet Braids",
+      "Bio: Moniez Beauty Bar",
+      "styleseat: https://www.styleseat.com/m/v/mercedezbrooks",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-mercedezbrooks",
+    "identityFingerprint": "handle:mercedezbrooks",
+    "createdAt": "2026-05-28T16:16:49.458Z",
+    "updatedAt": "2026-05-28T16:18:49.991Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "lavitahoward2",
+      "sourceDisplayName": "Lavita  Howard"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Lavita  Howard",
+      "handle": "lavitahoward2",
+      "categoryGuess": "Braider",
+      "locationGuess": "Aurora, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/lavitahoward2",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 42 reviews"
+    },
+    "services": [
+      "2 Braids",
+      "Men’s Braids",
+      "Kid's Braids",
+      "Braided ponytail",
+      "2 feed in braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/lavitahoward2",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 42 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://lavitahoward.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/lavitahoward",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/lavitahoward2",
+        "label": "Lavita  Howard",
+        "city": "Aurora, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/lavitahoward2",
+      "42 StyleSeat reviews",
+      "Rating: 4.8095/5",
+      "specialty: 2 Braids",
+      "specialty: Men’s Braids",
+      "specialty: Kid's Braids",
+      "specialty: Braided ponytail",
+      "specialty: 2 feed in braids",
+      "Bio: Vitamin V",
+      "styleseat: https://www.styleseat.com/m/v/lavitahoward2",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"Stan - Your Creator Store\"",
+      "Description: \"We work 1-on-1 with the Top Creators to monetize their business\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-lavitahoward2",
+    "identityFingerprint": "handle:lavitahoward2",
+    "createdAt": "2026-05-28T16:16:49.460Z",
+    "updatedAt": "2026-05-28T16:18:49.993Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "dimariebeauty",
+      "sourceDisplayName": "Shandra"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Shandra",
+      "handle": "dimariebeauty",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/dimariebeauty",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 31 reviews"
+    },
+    "services": [
+      "Kid's Braids",
+      "Butterfly Braids",
+      "Kid's Braided Ponytail",
+      "Braid- down for wigs, sews, & crochet",
+      "Braided Mohawk",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/dimariebeauty",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 31 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://shandra.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/shandra",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/shandra",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/dimariebeauty",
+        "label": "Shandra",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/dimariebeauty",
+      "31 StyleSeat reviews",
+      "Rating: 5/5",
+      "specialty: Kid's Braids",
+      "specialty: Butterfly Braids",
+      "specialty: Kid's Braided Ponytail",
+      "specialty: Braid- down for wigs, sews, & crochet",
+      "specialty: Braided Mohawk",
+      "Bio: Di-Marie Beauty",
+      "styleseat: https://www.styleseat.com/m/v/dimariebeauty",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Description: \"We work 1-on-1 with the Top Creators to monetize their business.\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-dimariebeauty",
+    "identityFingerprint": "handle:dimariebeauty",
+    "createdAt": "2026-05-28T16:16:49.461Z",
+    "updatedAt": "2026-05-28T16:18:49.994Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "traciepatton",
+      "sourceDisplayName": "The Hair Doctor/Tracie Patton"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "The Hair Doctor/Tracie Patton",
+      "handle": "traciepatton",
+      "categoryGuess": "Braider",
+      "locationGuess": "Aurora, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/traciepatton",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 366 reviews"
+    },
+    "services": [
+      "Simple cornrow Braids",
+      "2-feed in Braids",
+      "Kid's Braids 8yr-under",
+      "Braid Bar Style",
+      "Crochet Braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/traciepatton",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 366 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://doctortraciepatton.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/doctortraciepatton",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/doctortraciepatton",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/traciepatton",
+        "label": "The Hair Doctor/Tracie Patton",
+        "city": "Aurora, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/traciepatton",
+      "366 StyleSeat reviews",
+      "Rating: 4.9426/5",
+      "specialty: Simple cornrow Braids",
+      "specialty: 2-feed in Braids",
+      "specialty: Kid's Braids 8yr-under",
+      "specialty: Braid Bar Style",
+      "specialty: Crochet Braids",
+      "Bio: Unique Visions Salon w/SolaSalon",
+      "styleseat: https://www.styleseat.com/m/v/traciepatton",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-traciepatton",
+    "identityFingerprint": "handle:traciepatton",
+    "createdAt": "2026-05-28T16:16:49.463Z",
+    "updatedAt": "2026-05-28T16:18:49.996Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "nakishaashley2",
+      "sourceDisplayName": "Nakisha Ashley"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Nakisha Ashley",
+      "handle": "nakishaashley2",
+      "categoryGuess": "Braider",
+      "locationGuess": "Aurora, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/nakishaashley2",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 201 reviews"
+    },
+    "services": [
+      "Kid's Braids",
+      "Kid's Braids W/Beads",
+      "Men’s Box Braids",
+      "Knotless Braids",
+      "Box Braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/nakishaashley2",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 201 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://nakishaashley.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/nakishaashley",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/nakishaashley2",
+        "label": "Nakisha Ashley",
+        "city": "Aurora, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/nakishaashley2",
+      "201 StyleSeat reviews",
+      "Rating: 4.995/5",
+      "specialty: Kid's Braids",
+      "specialty: Kid's Braids W/Beads",
+      "specialty: Men’s Box Braids",
+      "specialty: Knotless Braids",
+      "specialty: Box Braids",
+      "Bio: Mile High Stylist",
+      "styleseat: https://www.styleseat.com/m/v/nakishaashley2",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"Stan - Your Creator Store\"",
+      "Description: \"We work 1-on-1 with the Top Creators to monetize their business\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-nakishaashley2",
+    "identityFingerprint": "handle:nakishaashley2",
+    "createdAt": "2026-05-28T16:16:49.465Z",
+    "updatedAt": "2026-05-28T16:18:49.997Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "sunjiabrown",
+      "sourceDisplayName": "Sunjia Blanton (Brown)"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids",
+      "hair"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Sunjia Blanton (Brown)",
+      "handle": "sunjiabrown",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/sunjiabrown",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 613 reviews"
+    },
+    "services": [
+      "Basic Braid down",
+      "Extra Length 25- 30 inches",
+      "1-4 braids",
+      "Men Basic Braids natural hair",
+      "Braids",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/sunjiabrown",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 613 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://sunjiablanton.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/sunjiablanton",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/sunjiablanton",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/sunjiabrown",
+        "label": "Sunjia Blanton (Brown)",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/sunjiabrown",
+      "613 StyleSeat reviews",
+      "Rating: 4.9886/5",
+      "specialty: Basic Braid down",
+      "specialty: Extra Length 25- 30 inches",
+      "specialty: 1-4 braids",
+      "specialty: Men Basic Braids natural hair",
+      "specialty: Braids",
+      "Bio: Simply Braidiful",
+      "styleseat: https://www.styleseat.com/m/v/sunjiabrown",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-sunjiabrown",
+    "identityFingerprint": "handle:sunjiabrown",
+    "createdAt": "2026-05-28T16:16:49.466Z",
+    "updatedAt": "2026-05-28T16:18:49.999Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  },
+  {
+    "source": {
+      "sourceType": "styleseat_harvest",
+      "batchId": "batch-1779985008623-2hzti5",
+      "sourceHandle": "yamahconstance",
+      "sourceDisplayName": "Afrocentric Braiding Salon LLC"
+    },
+    "vertical": "beauty",
+    "sourcePlatform": "styleseat_harvest",
+    "sourceTool": "styleseat_harvest",
+    "sourceHashtag": "braids",
+    "sourceHashtags": [
+      "braids"
+    ],
+    "sourcePath": "Beauty / Styleseat / Styleseat harvest / 2026-05-28 / #braids",
+    "runId": "styleseat-1779985126050-suizn",
+    "harvestDate": "2026-05-28",
+    "identity": {
+      "name": "Afrocentric Braiding Salon LLC",
+      "handle": "yamahconstance",
+      "categoryGuess": "Braider",
+      "locationGuess": "Denver, CO"
+    },
+    "educationType": null,
+    "audienceType": null,
+    "sourceTopic": null,
+    "platforms": [
+      "styleseat",
+      "styleseat_harvest",
+      "instagram",
+      "glossgenius",
+      "stan"
+    ],
+    "bestMatch": {
+      "platform": "styleseat",
+      "url": "https://www.styleseat.com/m/v/yamahconstance",
+      "confidence": 75,
+      "matchReason": "StyleSeat listing — 31 reviews"
+    },
+    "services": [
+      "Consultation",
+      "Loc Style",
+      "Tracking / Single Track Sew-In",
+      "Takedown",
+      "Kid's Braids make sure you be specific of what kind of braids. This is just the starting price. So please call me when you make the appointment.",
+      "Lash",
+      "Nail",
+      "Hair",
+      "Brow",
+      "Massage",
+      "Makeup",
+      "Tattoo",
+      "Piercing",
+      "Booking",
+      "Appointment",
+      "Appointments",
+      "Services"
+    ],
+    "allMatchedUrls": [
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/v/yamahconstance",
+        "confidence": 75,
+        "matchReason": "StyleSeat listing — 31 reviews"
+      },
+      {
+        "platform": "glossgenius",
+        "url": "https://afrocentricbraiding.glossgenius.com",
+        "confidence": 65,
+        "matchReason": "exact handle in URL · services: lash, nail, hair, brow · location: la"
+      },
+      {
+        "platform": "styleseat",
+        "url": "https://www.styleseat.com/m/afrocentricbraiding",
+        "confidence": 50,
+        "matchReason": "exact handle in URL · services: hair, booking, appointment, appointments"
+      },
+      {
+        "platform": "stan",
+        "url": "https://stan.store/afrocentricbraiding",
+        "confidence": 35,
+        "matchReason": "exact handle in URL"
+      }
+    ],
+    "evidence": [
+      {
+        "type": "styleseat_profile",
+        "source": "styleseat_harvest",
+        "url": "https://www.styleseat.com/m/v/yamahconstance",
+        "label": "Afrocentric Braiding Salon LLC",
+        "city": "Denver, CO",
+        "state": "CO",
+        "serviceCategory": "braids",
+        "confidence": 0.65
+      },
+      "StyleSeat: https://www.styleseat.com/m/v/yamahconstance",
+      "31 StyleSeat reviews",
+      "Rating: 4.7419/5",
+      "specialty: Consultation",
+      "specialty: Loc Style",
+      "specialty: Tracking / Single Track Sew-In",
+      "specialty: Takedown",
+      "specialty: Kid's Braids make sure you be specific of what kind of braids. This is just the starting price. So please call me when you make the appointment.",
+      "Bio: Afrocentric Braiding Salon LLC",
+      "styleseat: https://www.styleseat.com/m/v/yamahconstance",
+      "Title: \"All-In-One Salon, Spa & Medspa Software | GlossGenius\"",
+      "IG link present: https://www.instagram.com/glossgenius/",
+      "Description: \"The all-in-one booking, payments, and business management software used by salons, spas, medspas, and other beauty and w\"",
+      "Title: \"StyleSeat - Online Booking for Hair Stylists & Beauty Professionals\"",
+      "Description: \"StyleSeat is the online destination for beauty & wellness professionals and clients. Professionals can showcase their wo\"",
+      "Title: \"Stan - Your Creator Store\""
+    ],
+    "confidence": {
+      "identityMatch": 0,
+      "bookingMatch": 0,
+      "categoryMatch": 60,
+      "locationMatch": 60,
+      "overall": 75
+    },
+    "suggestedValidationStatus": "needs_review",
+    "prospectId": "prospect-yamahconstance",
+    "identityFingerprint": "handle:yamahconstance",
+    "createdAt": "2026-05-28T16:16:49.468Z",
+    "updatedAt": "2026-05-28T16:18:50.000Z",
+    "validationStatus": "needs_review",
+    "archiveReason": null,
+    "status": "styleseat_discovered",
+    "notes": "verificationState=discovered; igStatus=unresolved"
+  }
+]

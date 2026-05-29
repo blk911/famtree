@@ -1,0 +1,559 @@
+[
+  {
+    "styleseatId": "ss-1741652",
+    "name": "Courtney Frazier(DENVER)",
+    "slug": "courtneyfrazier2",
+    "styleseatUrl": "https://www.styleseat.com/m/v/courtneyfrazier2",
+    "city": "Denver",
+    "state": "CO",
+    "categories": [
+      "hair",
+      "braids",
+      "locs"
+    ],
+    "specialties": [
+      "Edge Brush",
+      "Edge Control",
+      "Braid Mousse",
+      "Consultation",
+      "Braid Bonnet"
+    ],
+    "bio": "Barbie Soul Braids",
+    "services": [
+      {
+        "name": "Edge Brush",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Edge Control",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Braid Mousse",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Consultation",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Braid Bonnet",
+        "price": null,
+        "duration": null
+      }
+    ],
+    "reviewCount": 134,
+    "rating": 4.9627,
+    "imageUrl": "static/uploads/2022/07/22/14280202_5b18ab07",
+    "priceRange": null,
+    "isIndependent": true,
+    "harvestDate": "2026-05-28",
+    "batchId": "styleseat-search-1779981184770",
+    "discoveryMode": "direct_url",
+    "seedUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+    "sourceUrl": "https://www.styleseat.com/m/v/courtneyfrazier2",
+    "rawText": "{\"0_name\":\"Courtney Frazier(DENVER)\",\"0_score\":4.5324216,\"1_business\":0.54118,\"1_client\":0.6605299130049171,\"1_proximity\":0.7661907028692096,\"autocharge_enabled\":true,\"available_hours_week_1\":47.499722222222225,\"available_hours_week_2\":73.24972222222223,\"average_rating\":4.9627,\"bookings_l30\":0,\"clicks_l30\":301,\"cover_photo\":\"static/uploads/2021/08/10/10786549_e8ed8648\",\"creation_time\":\"Sat, 24 Jul 2021 16:16:32 GMT\",\"fraudulent\":false,\"groups\":[],\"has_business_hours\":true,\"id\":1741652,\"impressions_l30\":6556,\"is_currently_in_penalty_for_ncd_timeouts\":false,\"is_not_currently_in_penalty_for_thresh_violation\":true,\"matched_salon\":{\"active_subscription\":true,\"autocharge_enabled\":false,\"average_rating\":4.9627,\"creation_time\":\"Mon, 24 Oct 2022 22:11:24 GMT\",\"geo_distance\":[4.349269294796695],\"groups\":[],\"id\":2008829,\"join_field\":{\"name\":\"salon\"},\"location\":{\"address1\":\"3330 E 1st Ave\",\"address2\":\"47\",\"city\":\"Denver\",\"computed_city\":\"Denver\",\"computed_neighborhood\":\"Cherry Creek\",\"computed_state\":\"CO\",\"distance\":2.7030884367909853,\"geo_point\":\"39.7175907,-104.9479084\",\"phone_number\":\"\",\"state\":\"CO\",\"zipcode\":\"80206\"},\"mobile_business\":false,\"name\":\"Barbie Soul Braids\",\"new_pro_search_boost_end\":\"Tue, 17 Aug 2021 00:25:25 GMT\",\"new_pro_search_boost_num_attributed_appointments\":0,\"new_pro_search_boost_start\":\"Tue, 10 Aug 2021 00:25:25 GMT\",\"num_client_appointments\":13,\"num_photos\":475,\"num_pro_appointments\":0,\"num_ratings\":134,\"num_recommendations\":0,\"num_total_appointments\":1117,\"num_videos\":0,\"online_bookable\":true,\"salonified\":false,\"vanity_url\":\"barbiesoulbraids-denver3-co\"},\"matched_services\":[{\"blurb\":\"All artists need brushes?\",\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":15,\"estimated_service_category\":\"uncategorized\",\"id\":7404771,\"images\":[\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/10/10786629_995be290_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/10/10786630_c32899a9_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/10/10786632_dbcedadb_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/10/10786636_37cd91fc_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/10/10786623_9d3b8aac_300x300.jpg\"],\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-1741652\"},\"matched_queries\":[\"salon_name\"],\"name\":\"Edge Brush\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":3,\"pro_id\":1741652,\"pro_name\":\"Courtney Frazier(DENVER)\",\"pro_ncc_segment\":\"ncc_user\",\"profession\":\"Stylist\",\"provided_category\":\"Skincare\",\"query_score\":0.055711027,\"salon_id\":2008829,\"salon_name\":\"Barbie Soul Braids\",\"std_name\":\"Skincare Consultation\"},{\"blurb\":\"Tame and control edges like a goddess\",\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":15,\"estimated_service_category\":\"uncategorized\",\"id\":7404770,\"images\":[\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/10/10786629_995be290_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/10/10786630_c32899a9_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/10/10786632_dbcedadb_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/10/10786636_37cd91fc_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/10/10786623_9d3b8aac_300x300.jpg\"],\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-1741652\"},\"matched_queries\":[\"salon_name\"],\"name\":\"Edge Control\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":6,\"pro_id\":1741652,\"pro_name\":\"Courtney Frazier(DENVER)\",\"pro_ncc_segment\":\"ncc_user\",\"profession\":\"Stylist\",\"provided_category\":\"Image Consulting\",\"query_score\":0.054948315,\"salon_id\":2008829,\"salon_name\":\"Barbie Soul Braids\",\"std_name\":\"Fashion Consulting\"},{\"blurb\":\"Argon oil foam\",\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":15,\"estimated_service_category\":\"uncategorized\",\"id\":7404773,\"images\":[\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/03/26/13198254_ff08d34f_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/03/12/13078538_8b77a134_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/03/15/13104538_a58cd9a5_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/03/04/13005557_db925bf1_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/10/28/11692859_a4fd18ee_300x300.jpg\"],\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-1741652\"},\"matched_queries\":[\"service_exact\",\"salon_name\"],\"name\":\"Braid Mousse\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":7,\"pro_id\":1741652,\"pro_name\":\"Courtney Frazier(DENVER)\",\"pro_ncc_segment\":\"ncc_user\",\"profession\":\"Stylist\",\"pr",
+    "imageCount": 2
+  },
+  {
+    "styleseatId": "ss-2313632",
+    "name": "Agie  Paul",
+    "slug": "agiepaul",
+    "styleseatUrl": "https://www.styleseat.com/m/v/agiepaul",
+    "city": "Denver",
+    "state": "CO",
+    "categories": [
+      "hair",
+      "braids",
+      "locs"
+    ],
+    "specialties": [
+      "Medium Goddess Braids",
+      "Kid's corn rows 6-12yrs",
+      "Kid's stitch braids",
+      "Fulani Braids/ Tribal braids",
+      "Crochet Braids"
+    ],
+    "bio": "Agies Golden Touch Beauty",
+    "services": [
+      {
+        "name": "Medium Goddess Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Kid's corn rows 6-12yrs",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Kid's stitch braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Fulani Braids/ Tribal braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Crochet Braids",
+        "price": null,
+        "duration": null
+      }
+    ],
+    "reviewCount": 28,
+    "rating": 5,
+    "imageUrl": "static/uploads/2025/01/17/18351864_3fdeb29a",
+    "priceRange": null,
+    "isIndependent": true,
+    "harvestDate": "2026-05-28",
+    "batchId": "styleseat-search-1779981184770",
+    "discoveryMode": "direct_url",
+    "seedUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+    "sourceUrl": "https://www.styleseat.com/m/v/agiepaul",
+    "rawText": "{\"0_name\":\"Agie  Paul\",\"0_score\":4.488048,\"1_business\":0.837628,\"1_client\":0.5993220338983052,\"1_proximity\":0.53884323343961,\"autocharge_enabled\":true,\"available_hours_week_1\":143.9163888888889,\"available_hours_week_2\":143.9163888888889,\"average_rating\":5,\"bookings_l30\":0,\"clicks_l30\":246,\"cover_photo\":\"static/uploads/2024/11/30/18239628_f7cad8c0\",\"creation_time\":\"Sat, 30 Nov 2024 17:59:19 GMT\",\"fraudulent\":false,\"groups\":[],\"has_business_hours\":true,\"id\":2313632,\"impressions_l30\":7269,\"is_currently_in_penalty_for_ncd_timeouts\":false,\"is_not_currently_in_penalty_for_thresh_violation\":true,\"matched_salon\":{\"active_subscription\":true,\"autocharge_enabled\":false,\"average_rating\":5,\"creation_time\":\"Sat, 30 Nov 2024 18:00:05 GMT\",\"geo_distance\":[10.097792369689225],\"groups\":[],\"id\":2313633,\"join_field\":{\"name\":\"salon\"},\"location\":{\"address1\":\"8674 E 48th Ave\",\"address2\":\"\",\"city\":\"Denver\",\"computed_city\":\"Denver\",\"computed_neighborhood\":\"Northeast\",\"computed_state\":\"CO\",\"distance\":6.275818750583732,\"geo_point\":\"39.783543,-104.8872069\",\"phone_number\":\"7202906225\",\"state\":\"CO\",\"zipcode\":\"80238\"},\"mobile_business\":false,\"name\":\"Agies Golden Touch Beauty\",\"new_pro_search_boost_end\":null,\"new_pro_search_boost_num_attributed_appointments\":0,\"new_pro_search_boost_start\":null,\"num_client_appointments\":8,\"num_photos\":286,\"num_pro_appointments\":0,\"num_ratings\":28,\"num_recommendations\":0,\"num_total_appointments\":234,\"num_videos\":3,\"online_bookable\":true,\"salonified\":false,\"vanity_url\":\"agiesgoldentouchbeauty-denver-co\"},\"matched_services\":[{\"blurb\":\"Default length is mid- lower back depending on your height. Depending on the amount of hair you have the appointment will go over 7 hours if longer than mid back. Available colors (1. 1B, 2, 4). If you need any other color please Let me know.\",\"clip_images\":[{\"image_id\":19055907,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/10/13/19055907_d78a051e_300x300.jpg\"},{\"image_id\":18939075,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/08/29/18939075_0e697cab_300x300.jpg\"},{\"image_id\":18681161,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/06/02/18681161_f29a6055_300x300.jpg\"},{\"image_id\":18973346,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/09/10/18973346_b6748cfc_300x300.jpg\"},{\"image_id\":18239629,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/11/30/18239629_c0e41164_300x300.jpg\"},{\"image_id\":18681159,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/06/02/18681159_3d66e9f1_300x300.jpg\"},{\"image_id\":18973365,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/09/10/18973365_4ec01d19_300x300.jpg\"},{\"image_id\":18681157,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/06/02/18681157_bddb9958_300x300.jpg\"},{\"image_id\":18571110,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/21/18571110_3e9ab2a9_300x300.jpg\"},{\"image_id\":18939062,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/08/29/18939062_5775f4bd_300x300.jpg\"},{\"image_id\":18973366,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/09/10/18973366_e4a8d9f5_300x300.jpg\"},{\"image_id\":18939085,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/08/29/18939085_3ce708b8_300x300.jpg\"},{\"image_id\":18681155,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/06/02/18681155_5314f62b_300x300.jpg\"},{\"image_id\":18973364,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/09/10/18973364_e3c3c604_300x300.jpg\"},{\"image_id\":18973445,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/09/10/18973445_dea63d62_300x300.jpg\"},{\"image_id\":18939084,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/08/29/18939084_45348af9_300x300.jpg\"},{\"image_id\":18939070,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/08/29/18939070_dea06431_300x300.jpg\"},{\"image_id\":18973350,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/09/10/18973350_af36d04a_300x300.jpg\"},{\"image_id\":18973440,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/09/10/18973440_eab1afd3_300x300.jpg\"},{\"image_id\":18681161,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/06/02/18681161_f29a6055_300x300.jpg\"}],\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":420,\"estimated_service_category\":\"uncategorized\",\"id\":11253516,\"is_ncd_eligible\":true,\"is_online_bookable\":tr",
+    "imageCount": 2
+  },
+  {
+    "styleseatId": "ss-2306452",
+    "name": "Tatiana Henderson",
+    "slug": "tatianahenderson3",
+    "styleseatUrl": "https://www.styleseat.com/m/v/tatianahenderson3",
+    "city": "Denver",
+    "state": "CO",
+    "categories": [
+      "hair",
+      "braids",
+      "locs"
+    ],
+    "specialties": [
+      "Male braided style"
+    ],
+    "bio": "T.Latrice Hair & Beauty",
+    "services": [
+      {
+        "name": "Male braided style",
+        "price": null,
+        "duration": null
+      }
+    ],
+    "reviewCount": 50,
+    "rating": 4.9,
+    "imageUrl": "static/uploads/2024/11/07/18186972_53f57154",
+    "priceRange": null,
+    "isIndependent": true,
+    "harvestDate": "2026-05-28",
+    "batchId": "styleseat-search-1779981184770",
+    "discoveryMode": "direct_url",
+    "seedUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+    "sourceUrl": "https://www.styleseat.com/m/v/tatianahenderson3",
+    "rawText": "{\"0_name\":\"Tatiana Henderson\",\"0_score\":4.436633,\"1_business\":0.6119595087117966,\"1_client\":0.47624482154066905,\"1_proximity\":0.6717414752224474,\"autocharge_enabled\":true,\"available_hours_week_1\":30.33222222222222,\"available_hours_week_2\":46.999722222222225,\"average_rating\":4.9,\"bookings_l30\":1,\"clicks_l30\":249,\"cover_photo\":\"static/uploads/2024/11/07/18186949_10a6cf1c\",\"creation_time\":\"Fri, 01 Nov 2024 20:27:36 GMT\",\"fraudulent\":false,\"groups\":[],\"has_business_hours\":true,\"id\":2306452,\"impressions_l30\":3045,\"is_currently_in_penalty_for_ncd_timeouts\":false,\"is_not_currently_in_penalty_for_thresh_violation\":true,\"matched_salon\":{\"active_subscription\":true,\"autocharge_enabled\":false,\"average_rating\":4.9,\"creation_time\":\"Fri, 01 Nov 2024 20:28:34 GMT\",\"geo_distance\":[6.497700474227142],\"groups\":[],\"id\":2306453,\"join_field\":{\"name\":\"salon\"},\"location\":{\"address1\":\"1152 S Colorado Blvd\",\"address2\":\"Suite 209\",\"city\":\"Denver\",\"computed_city\":\"Denver\",\"computed_neighborhood\":\"East\",\"computed_state\":\"CO\",\"distance\":4.038347093988279,\"geo_point\":\"39.695531,-104.9398208\",\"phone_number\":null,\"state\":\"CO\",\"zipcode\":\"80246\"},\"mobile_business\":false,\"name\":\"T.Latrice Hair & Beauty\",\"new_pro_search_boost_end\":null,\"new_pro_search_boost_num_attributed_appointments\":0,\"new_pro_search_boost_start\":null,\"num_client_appointments\":20,\"num_photos\":46,\"num_pro_appointments\":7,\"num_ratings\":50,\"num_recommendations\":0,\"num_total_appointments\":531,\"num_videos\":5,\"online_bookable\":true,\"salonified\":false,\"vanity_url\":\"tlatricehairbeauty-denver-co\"},\"matched_services\":[{\"blurb\":\"We'll talk about what look you want and bring your braids to life. Price varies on style\",\"clip_images\":[{\"image_id\":18592464,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592464_c5b59c91_300x300.jpg\"},{\"image_id\":18325129,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/01/07/18325129_1f9403e1_300x300.jpg\"},{\"image_id\":18592468,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592468_18f9d190_300x300.jpg\"},{\"image_id\":18592471,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592471_fe34631e_300x300.jpg\"},{\"image_id\":18592467,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592467_11d265b4_300x300.jpg\"},{\"image_id\":18592469,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592469_6cdc3c99_300x300.jpg\"},{\"image_id\":18592465,\"image_source\":\"pro\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592465_76d414eb_300x300.jpg\"},{\"image_id\":18592464,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592464_c5b59c91_300x300.jpg\"},{\"image_id\":18592471,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592471_fe34631e_300x300.jpg\"},{\"image_id\":18592467,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592467_11d265b4_300x300.jpg\"},{\"image_id\":18592469,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592469_6cdc3c99_300x300.jpg\"},{\"image_id\":18325129,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/01/07/18325129_1f9403e1_300x300.jpg\"},{\"image_id\":18592468,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592468_18f9d190_300x300.jpg\"},{\"image_id\":18592465,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/29/18592465_76d414eb_300x300.jpg\"},{\"image_id\":18278167,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/12/16/18278167_471a0a7b_300x300.jpg\"},{\"image_id\":18437511,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/02/23/18437511_4b86824b_300x300.jpg\"},{\"image_id\":18325125,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/01/07/18325125_8cdbf758_300x300.jpg\"}],\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":120,\"estimated_service_category\":\"uncategorized\",\"id\":11255665,\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-2306452\"},\"matched_queries\":[\"service_exact\",\"std_name\"],\"name\":\"Male braided style\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":17,\"popularity_percentage\":0,\"price\":65,\"pro_id\":2306452,\"pro_name\":\"Tatiana Henderson\",\"pro_ncc_segment\":\"ncc_adopter\",\"profession\":\"Stylist\",\"provided_category\":\"Braids\",\"query_score\":0.031692486,\"salon_id\":2306453,\"salon_name\":\"T.Latrice Hair & Beauty\",\"std_name\":\"Braids\"}],\"name\":\"Tatiana Henderson\",\"ncc_monetization_rate\":0.45,\"ncd_enabled\":true,\"net_rev_per_ncc_appt\":19,\"new_pro",
+    "imageCount": 2
+  },
+  {
+    "styleseatId": "ss-2418527",
+    "name": "Danielle Gomez",
+    "slug": "daniellegomez7",
+    "styleseatUrl": "https://www.styleseat.com/m/v/daniellegomez7",
+    "city": "Denver",
+    "state": "CO",
+    "categories": [
+      "hair",
+      "braids",
+      "barber",
+      "locs",
+      "brows"
+    ],
+    "specialties": [
+      "Beard Trim",
+      "Eyebrow Trim",
+      "Travel Fee",
+      "Kid’s Cut",
+      "Women's Trim"
+    ],
+    "bio": "Braided by QUEEN",
+    "services": [
+      {
+        "name": "Beard Trim",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Eyebrow Trim",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Travel Fee",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Kid’s Cut",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Women's Trim",
+        "price": null,
+        "duration": null
+      }
+    ],
+    "reviewCount": 13,
+    "rating": 5,
+    "imageUrl": "static/uploads/2026/03/16/19340665_4ba2b97f",
+    "priceRange": null,
+    "isIndependent": true,
+    "harvestDate": "2026-05-28",
+    "batchId": "styleseat-search-1779981184770",
+    "discoveryMode": "direct_url",
+    "seedUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+    "sourceUrl": "https://www.styleseat.com/m/v/daniellegomez7",
+    "rawText": "{\"0_name\":\"Danielle Gomez\",\"0_score\":4.430959,\"1_business\":0.6686,\"1_client\":0.44648820733566497,\"1_proximity\":0.5735654438863869,\"autocharge_enabled\":true,\"available_hours_week_1\":47.999722222222225,\"available_hours_week_2\":47.999722222222225,\"average_rating\":5,\"bookings_l30\":0,\"clicks_l30\":60,\"cover_photo\":\"static/uploads/2026/03/15/19340446_9647af27\",\"creation_time\":\"Sun, 15 Mar 2026 23:07:25 GMT\",\"fraudulent\":false,\"groups\":[],\"has_business_hours\":true,\"id\":2418527,\"impressions_l30\":1983,\"is_currently_in_penalty_for_ncd_timeouts\":false,\"is_not_currently_in_penalty_for_thresh_violation\":true,\"matched_salon\":{\"active_subscription\":true,\"autocharge_enabled\":false,\"average_rating\":5,\"creation_time\":\"Sun, 15 Mar 2026 23:24:13 GMT\",\"geo_distance\":[9.07798113188242],\"groups\":[],\"id\":2418530,\"join_field\":{\"name\":\"salon\"},\"location\":{\"address1\":\"2890 W Cornell Ave\",\"address2\":\"\",\"city\":\"Denver\",\"computed_city\":\"Denver\",\"computed_neighborhood\":\"College View\",\"computed_state\":\"CO\",\"distance\":5.642001946477577,\"geo_point\":\"39.6617281,-105.0237716\",\"phone_number\":\"3035050481\",\"state\":\"CO\",\"zipcode\":\"80236\"},\"mobile_business\":false,\"name\":\"Braided by QUEEN\",\"new_pro_search_boost_end\":\"Sat, 18 Apr 2026 22:00:41 GMT\",\"new_pro_search_boost_num_attributed_appointments\":1,\"new_pro_search_boost_start\":\"Thu, 19 Mar 2026 22:00:41 GMT\",\"num_client_appointments\":1,\"num_photos\":47,\"num_pro_appointments\":1,\"num_ratings\":13,\"num_recommendations\":0,\"num_total_appointments\":26,\"num_videos\":9,\"online_bookable\":true,\"salonified\":false,\"vanity_url\":\"braidedbyqueen-denver-co\"},\"matched_services\":[{\"blurb\":\"\",\"clip_images\":[{\"image_id\":19480873,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/23/19480873_be1cb361_300x300.jpg\"},{\"image_id\":19480872,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/23/19480872_69f4be85_300x300.jpg\"},{\"image_id\":19480870,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/23/19480870_82a0cb56_300x300.jpg\"},{\"image_id\":19450478,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/09/19450478_8dff8c51_300x300.jpg\"},{\"image_id\":19450477,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/09/19450477_da7e3e15_300x300.jpg\"}],\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":45,\"estimated_service_category\":\"uncategorized\",\"id\":11964369,\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-2418527\"},\"matched_queries\":[\"salon_name\"],\"name\":\"Beard Trim\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":15,\"pro_id\":2418527,\"pro_name\":\"Danielle Gomez\",\"pro_ncc_segment\":\"ncc_adopter\",\"profession\":\"Stylist\",\"provided_category\":\"Barber\",\"query_score\":0.0571741,\"salon_id\":2418530,\"salon_name\":\"Braided by QUEEN\",\"std_name\":\"Beard Trim\"},{\"blurb\":\"Clean up brows\",\"clip_images\":[{\"image_id\":19480873,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/23/19480873_be1cb361_300x300.jpg\"},{\"image_id\":19480872,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/23/19480872_69f4be85_300x300.jpg\"},{\"image_id\":19480870,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/23/19480870_82a0cb56_300x300.jpg\"},{\"image_id\":19450478,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/09/19450478_8dff8c51_300x300.jpg\"},{\"image_id\":19450477,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/09/19450477_da7e3e15_300x300.jpg\"}],\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":15,\"estimated_service_category\":\"uncategorized\",\"id\":11964372,\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-2418527\"},\"matched_queries\":[\"salon_name\"],\"name\":\"Eyebrow Trim\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":15,\"pro_id\":2418527,\"pro_name\":\"Danielle Gomez\",\"pro_ncc_segment\":\"ncc_adopter\",\"profession\":\"Stylist\",\"provided_category\":\"Eyebrows\",\"query_score\":0.0571741,\"salon_id\":2418530,\"salon_name\":\"Braided by QUEEN\",\"std_name\":\"Eyebrow Trim\"},{\"blurb\":\"Looking for a house call or on-site stylist? I'll come to you! Travel fees vary based on location, gas, and tolls.\",\"clip_images\":[{\"image_id\":19480873,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/23/19480873_be1cb361_300x300.jpg\"},{\"image_id\":19480872,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/23/19480872_69f4be85_300x300.jpg\"},{\"image_id\":19480870,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.n",
+    "imageCount": 2
+  },
+  {
+    "styleseatId": "ss-1706867",
+    "name": "Nesha",
+    "slug": "braidsbynesha",
+    "styleseatUrl": "https://www.styleseat.com/m/v/braidsbynesha",
+    "city": "Aurora",
+    "state": "CO",
+    "categories": [
+      "hair",
+      "braids",
+      "locs"
+    ],
+    "specialties": [
+      "2 Kid Stitch Braids",
+      "2 Braids",
+      "4 Stitch Braids",
+      "Twisties/ Starter Locs",
+      "Natural Freestyle"
+    ],
+    "bio": "Braids By Nesha",
+    "services": [
+      {
+        "name": "2 Kid Stitch Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "2 Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "4 Stitch Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Twisties/ Starter Locs",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Natural Freestyle",
+        "price": null,
+        "duration": null
+      }
+    ],
+    "reviewCount": 266,
+    "rating": 4.9737,
+    "imageUrl": "static/uploads/2021/06/04/10124678_f6659f8e",
+    "priceRange": null,
+    "isIndependent": true,
+    "harvestDate": "2026-05-28",
+    "batchId": "styleseat-search-1779981184770",
+    "discoveryMode": "direct_url",
+    "seedUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+    "sourceUrl": "https://www.styleseat.com/m/v/braidsbynesha",
+    "rawText": "{\"0_name\":\"Nesha\",\"0_score\":4.426786,\"1_business\":0.6968768,\"1_client\":0.7097279863005401,\"1_proximity\":0.3666162575149836,\"autocharge_enabled\":true,\"available_hours_week_1\":65.62194444444445,\"available_hours_week_2\":89.18305555555555,\"average_rating\":4.9737,\"bookings_l30\":0,\"clicks_l30\":212,\"cover_photo\":\"static/uploads/2021/06/14/10224945_84affcb6\",\"creation_time\":\"Fri, 04 Jun 2021 03:36:36 GMT\",\"fraudulent\":false,\"groups\":[],\"has_business_hours\":true,\"id\":1706867,\"impressions_l30\":4840,\"is_currently_in_penalty_for_ncd_timeouts\":false,\"is_not_currently_in_penalty_for_thresh_violation\":true,\"matched_salon\":{\"active_subscription\":true,\"autocharge_enabled\":false,\"average_rating\":4.9737,\"creation_time\":\"Fri, 04 Jun 2021 03:37:17 GMT\",\"geo_distance\":[16.386904928287088],\"groups\":[],\"id\":1706868,\"join_field\":{\"name\":\"salon\"},\"location\":{\"address1\":\"4848 Chambers Rd\",\"address2\":\"\",\"city\":\"Aurora\",\"computed_city\":\"Denver\",\"computed_neighborhood\":\"Northeast\",\"computed_state\":\"CO\",\"distance\":10.184527612359906,\"geo_point\":\"39.7860407,-104.8085275\",\"phone_number\":\"5572330880\",\"state\":\"CO\",\"zipcode\":\"80239\"},\"mobile_business\":false,\"name\":\"Braids By Nesha\",\"new_pro_search_boost_end\":null,\"new_pro_search_boost_num_attributed_appointments\":0,\"new_pro_search_boost_start\":null,\"num_client_appointments\":7,\"num_photos\":270,\"num_pro_appointments\":0,\"num_ratings\":266,\"num_recommendations\":0,\"num_total_appointments\":2530,\"num_videos\":6,\"online_bookable\":true,\"salonified\":false,\"vanity_url\":\"braidsbynesha-aurora-co\"},\"matched_services\":[{\"blurb\":\"\",\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":45,\"estimated_service_category\":\"uncategorized\",\"id\":7038928,\"images\":[\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/06/14/10225018_ea6629ce_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/06/14/10225002_201fdf6d_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/06/14/10225017_879c109b_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/28/10989079_9008b8a9_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/09/02/11044740_d0dc6977_300x300.jpg\"],\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-1706867\"},\"matched_queries\":[\"service_exact\",\"salon_name\"],\"name\":\"2 Kid Stitch Braids\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":50,\"pro_id\":1706867,\"pro_name\":\"Nesha\",\"pro_ncc_segment\":\"ncc_adopter\",\"profession\":\"Stylist\",\"provided_category\":\"Braids\",\"query_score\":0.04827769,\"salon_id\":1706868,\"salon_name\":\"Braids By Nesha\",\"std_name\":\"Cornrows\"},{\"blurb\":\"\",\"clip_images\":[{\"image_id\":18712600,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/06/10/18712600_280e7a6b_300x300.jpg\"},{\"image_id\":16329371,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2023/06/07/16329371_131bb429_300x300.jpg\"},{\"image_id\":10963386,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/26/10963386_8891a356_300x300.jpg\"},{\"image_id\":11740930,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/11/02/11740930_ee0f3ec2_300x300.jpg\"},{\"image_id\":10872639,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/18/10872639_132a1236_300x300.jpg\"},{\"image_id\":10224998,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/06/14/10224998_2e6b083e_300x300.jpg\"},{\"image_id\":11312883,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/09/27/11312883_bdb517fc_300x300.jpg\"},{\"image_id\":10224992,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/06/14/10224992_10eff148_300x300.jpg\"},{\"image_id\":12268810,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/12/22/12268810_6bb1a946_300x300.jpg\"},{\"image_id\":13307475,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/04/06/13307475_62082472_300x300.jpg\"},{\"image_id\":19044393,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/10/09/19044393_42635ce9_300x300.jpg\"},{\"image_id\":14867908,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/10/11/14867908_d45a1018_300x300.jpg\"},{\"image_id\":15546944,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2023/01/24/15546944_fd49e5cb_300x300.jpg\"},{\"image_id\":15179635,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/11/27/15179635_c494a331_300x300.jpg\"},{\"image_id\":11746949,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/11/02/11746949_3180e379_300x300.jpg\"},{\"image_id\":11740929,\"image_source\":\"ml\",\"image",
+    "imageCount": 2
+  },
+  {
+    "styleseatId": "ss-1973685",
+    "name": "Hair by Quin LLC",
+    "slug": "kasongoquingmailcomkasongoquingmailcom",
+    "styleseatUrl": "https://www.styleseat.com/m/v/kasongoquingmailcomkasongoquingmailcom",
+    "city": "Denver",
+    "state": "CO",
+    "categories": [
+      "hair",
+      "braids",
+      "locs"
+    ],
+    "specialties": [
+      "Bob French curls Braids",
+      "Fulani braids",
+      "Kid's Braids",
+      "Crochet Braids",
+      "Lemonade braids"
+    ],
+    "bio": "Hairbyquin",
+    "services": [
+      {
+        "name": "Bob French curls Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Fulani braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Kid's Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Crochet Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Lemonade braids",
+        "price": null,
+        "duration": null
+      }
+    ],
+    "reviewCount": 25,
+    "rating": 4.56,
+    "imageUrl": "static/uploads/2023/04/29/16090517_2b61f6ef",
+    "priceRange": null,
+    "isIndependent": true,
+    "harvestDate": "2026-05-28",
+    "batchId": "styleseat-search-1779981184770",
+    "discoveryMode": "direct_url",
+    "seedUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+    "sourceUrl": "https://www.styleseat.com/m/v/kasongoquingmailcomkasongoquingmailcom",
+    "rawText": "{\"0_name\":\"Hair by Quin LLC\",\"0_score\":4.425379,\"1_business\":0.8268028438520492,\"1_client\":0.552296699661017,\"1_proximity\":0.42244556489699975,\"autocharge_enabled\":true,\"available_hours_week_1\":110.49972222222223,\"available_hours_week_2\":111.24972222222223,\"average_rating\":4.56,\"bookings_l30\":1,\"clicks_l30\":225,\"cover_photo\":\"static/uploads/2022/09/04/14624567_3e86591a\",\"creation_time\":\"Tue, 09 Aug 2022 18:56:11 GMT\",\"fraudulent\":false,\"groups\":[],\"has_business_hours\":true,\"id\":1973685,\"impressions_l30\":5304,\"is_currently_in_penalty_for_ncd_timeouts\":false,\"is_not_currently_in_penalty_for_thresh_violation\":true,\"matched_salon\":{\"active_subscription\":true,\"autocharge_enabled\":false,\"average_rating\":4.56,\"creation_time\":\"Thu, 08 Sep 2022 16:39:14 GMT\",\"geo_distance\":[14.07210642761613],\"groups\":[],\"id\":1985615,\"join_field\":{\"name\":\"salon\"},\"location\":{\"address1\":\"3480 S Galena St b 2, Denver, CO 80231\",\"address2\":\"8\",\"city\":\"Denver\",\"computed_city\":\"Denver\",\"computed_neighborhood\":\"Southeast\",\"computed_state\":\"CO\",\"distance\":8.74587099292488,\"geo_point\":\"39.6543526,-104.8682662\",\"phone_number\":\"7208096363\",\"state\":\"CO\",\"zipcode\":\"80231\"},\"mobile_business\":false,\"name\":\"Hairbyquin\",\"new_pro_search_boost_end\":\"Tue, 13 Sep 2022 13:27:13 GMT\",\"new_pro_search_boost_num_attributed_appointments\":2,\"new_pro_search_boost_start\":\"Fri, 09 Sep 2022 16:39:14 GMT\",\"num_client_appointments\":8,\"num_photos\":100,\"num_pro_appointments\":0,\"num_ratings\":25,\"num_recommendations\":0,\"num_total_appointments\":398,\"num_videos\":0,\"online_bookable\":true,\"salonified\":false,\"vanity_url\":\"hairbyquin-denver-co\"},\"matched_services\":[{\"blurb\":\"\",\"clip_images\":[{\"image_id\":18582608,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/25/18582608_c5f43b96_300x300.jpg\"},{\"image_id\":14624600,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/09/04/14624600_303e6f10_300x300.jpg\"},{\"image_id\":18251182,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/12/05/18251182_d6e364bd_300x300.jpg\"},{\"image_id\":16535298,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2023/07/10/16535298_2470dbe5_300x300.jpg\"},{\"image_id\":17756461,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/06/19/17756461_b5eb64a7_300x300.jpg\"},{\"image_id\":18260686,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/12/09/18260686_51252ef2_300x300.jpg\"},{\"image_id\":18490315,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/03/18/18490315_a17eff6f_300x300.jpg\"},{\"image_id\":18636028,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/05/16/18636028_5abaaf82_300x300.jpg\"},{\"image_id\":18285733,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/12/20/18285733_7012ea8e_300x300.jpg\"},{\"image_id\":18285731,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/12/20/18285731_113a7198_300x300.jpg\"},{\"image_id\":18681656,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/06/02/18681656_b3acd8ef_300x300.jpg\"},{\"image_id\":14624568,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/09/04/14624568_eac718e5_300x300.jpg\"},{\"image_id\":14624602,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/09/04/14624602_93c7b466_300x300.jpg\"},{\"image_id\":18104502,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/10/06/18104502_207092e5_300x300.jpg\"},{\"image_id\":18251184,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/12/05/18251184_567dfd96_300x300.jpg\"},{\"image_id\":18624013,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/05/11/18624013_f3b03c9d_300x300.jpg\"},{\"image_id\":18624015,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/05/11/18624015_8362ba81_300x300.jpg\"},{\"image_id\":18387537,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/02/01/18387537_ad9483b9_300x300.jpg\"},{\"image_id\":18827790,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/07/19/18827790_9cf0f339_300x300.jpg\"},{\"image_id\":19030673,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/10/03/19030673_99ac67d3_300x300.jpg\"}],\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":360,\"estimated_service_category\":\"uncategorized\",\"id\":11183837,\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-1973685\"},\"matched_queries\":[\"service_exact\",\"std_name\"],\"name\":\"Bob French curls Braids\",\"new_pro_search_boost_num_attributed_appoint",
+    "imageCount": 2
+  },
+  {
+    "styleseatId": "ss-2320012",
+    "name": "Cherifa Traore",
+    "slug": "cherifatraore",
+    "styleseatUrl": "https://www.styleseat.com/m/v/cherifatraore",
+    "city": "Denver",
+    "state": "CO",
+    "categories": [
+      "hair",
+      "braids",
+      "locs"
+    ],
+    "specialties": [
+      "Ghana Braids",
+      "Braids Tutorial",
+      "Braids Lesson",
+      "Kid's Braids",
+      "Tree Braids"
+    ],
+    "bio": "Nelly’s Hair Shine",
+    "services": [
+      {
+        "name": "Ghana Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Braids Tutorial",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Braids Lesson",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Kid's Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Tree Braids",
+        "price": null,
+        "duration": null
+      }
+    ],
+    "reviewCount": 9,
+    "rating": 5,
+    "imageUrl": "static/uploads/2024/12/30/18305022_8f524727",
+    "priceRange": null,
+    "isIndependent": true,
+    "harvestDate": "2026-05-28",
+    "batchId": "styleseat-search-1779981184770",
+    "discoveryMode": "direct_url",
+    "seedUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+    "sourceUrl": "https://www.styleseat.com/m/v/cherifatraore",
+    "rawText": "{\"0_name\":\"Cherifa Traore\",\"0_score\":4.422638,\"1_business\":0.7028445714285715,\"1_client\":0.42500061653663346,\"1_proximity\":0.5933279557110527,\"autocharge_enabled\":true,\"available_hours_week_1\":40.917500000000004,\"available_hours_week_2\":43.33222222222222,\"average_rating\":5,\"bookings_l30\":0,\"clicks_l30\":118,\"cover_photo\":\"static/uploads/2024/12/30/18304990_a42071d7\",\"creation_time\":\"Mon, 30 Dec 2024 13:51:30 GMT\",\"fraudulent\":false,\"groups\":[],\"has_business_hours\":true,\"id\":2320012,\"impressions_l30\":2156,\"is_currently_in_penalty_for_ncd_timeouts\":false,\"is_not_currently_in_penalty_for_thresh_violation\":true,\"matched_salon\":{\"active_subscription\":true,\"autocharge_enabled\":false,\"average_rating\":5,\"creation_time\":\"Mon, 30 Dec 2024 13:52:21 GMT\",\"geo_distance\":[8.524773475847047],\"groups\":[],\"id\":2320013,\"join_field\":{\"name\":\"salon\"},\"location\":{\"address1\":\"8269 E 23rd Ave\",\"address2\":\"\",\"city\":\"Denver\",\"computed_city\":\"Denver\",\"computed_neighborhood\":\"Northeast\",\"computed_state\":\"CO\",\"distance\":5.2981811534164365,\"geo_point\":\"39.7515463,-104.8918931\",\"phone_number\":null,\"state\":\"CO\",\"zipcode\":\"80238\"},\"mobile_business\":false,\"name\":\"Nelly’s Hair Shine\",\"new_pro_search_boost_end\":\"Tue, 07 Jan 2025 14:17:55 GMT\",\"new_pro_search_boost_num_attributed_appointments\":1,\"new_pro_search_boost_start\":\"Tue, 31 Dec 2024 14:17:55 GMT\",\"num_client_appointments\":3,\"num_photos\":63,\"num_pro_appointments\":2,\"num_ratings\":9,\"num_recommendations\":0,\"num_total_appointments\":110,\"num_videos\":8,\"online_bookable\":true,\"salonified\":false,\"search_boost_duration_days\":7,\"search_boost_start_date\":\"Thu, 09 Jan 2025 04:08:24 GMT\",\"vanity_url\":\"nellyshairshine-denver-co\"},\"matched_services\":[{\"blurb\":\"Hair is not provided, so if you have any questions about the type of hair to get, please reach out :)\\nCan’t wait to meet you!\\n\\n$50 and up!\\n2 Ghana braids for $50!\\nPlease, reach out for prices\",\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":150,\"estimated_service_category\":\"uncategorized\",\"id\":11480218,\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-2320012\"},\"matched_queries\":[\"service_exact\",\"std_name\"],\"name\":\"Ghana Braids\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":50,\"pro_id\":2320012,\"pro_name\":\"Cherifa Traore\",\"pro_ncc_segment\":\"ncc_adopter\",\"profession\":\"Stylist\",\"provided_category\":\"Braids\",\"query_score\":0.03712923,\"salon_id\":2320013,\"salon_name\":\"Nelly’s Hair Shine\",\"std_name\":\"Ghana Braids\"},{\"blurb\":\"Reach out for consultation. We will discuss what you struggle most with, and I will make a clear personalized video step by step explanation to send it to you.\",\"clip_images\":[{\"image_id\":19475444,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/21/19475441_7e5f22f2_300x300.jpg\"},{\"image_id\":18567719,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/19/18567719_e7fc5af1_300x300.jpg\"},{\"image_id\":18567718,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/19/18567718_3bb1bdd5_300x300.jpg\"},{\"image_id\":18567717,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/19/18567717_554c8328_300x300.jpg\"},{\"image_id\":18567716,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/19/18567716_c9568887_300x300.jpg\"}],\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":120,\"estimated_service_category\":\"uncategorized\",\"id\":11872665,\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-2320012\"},\"matched_queries\":[\"service_exact\",\"std_name\"],\"name\":\"Braids Tutorial\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":50,\"pro_id\":2320012,\"pro_name\":\"Cherifa Traore\",\"pro_ncc_segment\":\"ncc_adopter\",\"profession\":\"Stylist\",\"provided_category\":\"Tutorial\",\"query_score\":0.03712923,\"salon_id\":2320013,\"salon_name\":\"Nelly’s Hair Shine\",\"std_name\":\"Braids Tutorial\"},{\"blurb\":\"1h in person step by step braiding private lesson. This will be one on one ! Just you and me.\",\"clip_images\":[{\"image_id\":19475444,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/21/19475441_7e5f22f2_300x300.jpg\"},{\"image_id\":18567719,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/19/18567719_e7fc5af1_300x300.jpg\"},{\"image_id\":18567718,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/19/18567718_3bb1bdd5_300x300.jpg\"},{\"image_id\":18567717,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/04/19/18567717_554c8328_300x300.jpg\"},{\"image_id\":18567716,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2025/",
+    "imageCount": 2
+  },
+  {
+    "styleseatId": "ss-1444488",
+    "name": "Nae",
+    "slug": "kolefacx",
+    "styleseatUrl": "https://www.styleseat.com/m/v/kolefacx",
+    "city": "Denver",
+    "state": "CO",
+    "categories": [
+      "hair",
+      "braids",
+      "locs"
+    ],
+    "specialties": [
+      "Braid Touchuo",
+      "Crochet Braids",
+      "Natural Plaits",
+      "Tribal Braids",
+      "Fulani Braids"
+    ],
+    "bio": "Kolefacx & Co.",
+    "services": [
+      {
+        "name": "Braid Touchuo",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Crochet Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Natural Plaits",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Tribal Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Fulani Braids",
+        "price": null,
+        "duration": null
+      }
+    ],
+    "reviewCount": 16,
+    "rating": 4.625,
+    "imageUrl": "static/uploads/2026/01/30/19272172_4a939b2b",
+    "priceRange": null,
+    "isIndependent": true,
+    "harvestDate": "2026-05-28",
+    "batchId": "styleseat-search-1779981184770",
+    "discoveryMode": "direct_url",
+    "seedUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+    "sourceUrl": "https://www.styleseat.com/m/v/kolefacx",
+    "rawText": "{\"0_name\":\"Nae\",\"0_score\":4.4110274,\"1_business\":0.5100231323550408,\"1_client\":0.3827886652542373,\"1_proximity\":0.750339845587196,\"autocharge_enabled\":true,\"available_hours_week_1\":31.5,\"available_hours_week_2\":40.5,\"average_rating\":4.625,\"bookings_l30\":0,\"clicks_l30\":164,\"cover_photo\":\"static/uploads/2021/07/29/10658982_621a71d9\",\"creation_time\":\"Fri, 29 Mar 2019 11:53:34 GMT\",\"fraudulent\":false,\"groups\":[],\"has_business_hours\":true,\"id\":1444488,\"impressions_l30\":3149,\"is_currently_in_penalty_for_ncd_timeouts\":false,\"is_not_currently_in_penalty_for_thresh_violation\":true,\"matched_salon\":{\"active_subscription\":true,\"autocharge_enabled\":false,\"average_rating\":4.625,\"creation_time\":\"Thu, 29 Jul 2021 07:10:36 GMT\",\"geo_distance\":[4.6906611084904055],\"groups\":[],\"id\":1745511,\"join_field\":{\"name\":\"salon\"},\"location\":{\"address1\":\"2859 Colorado Blvd\",\"address2\":\"Hairworks\",\"city\":\"Denver\",\"computed_city\":\"Denver\",\"computed_neighborhood\":\"Skyland\",\"computed_state\":\"CO\",\"distance\":2.91526482814817,\"geo_point\":\"39.7576127,-104.9409366\",\"phone_number\":\"3035911621\",\"state\":\"CO\",\"zipcode\":\"80207\"},\"mobile_business\":false,\"name\":\"Kolefacx & Co.\",\"new_pro_search_boost_end\":\"Wed, 08 Dec 2021 20:14:53 GMT\",\"new_pro_search_boost_num_attributed_appointments\":0,\"new_pro_search_boost_start\":\"Wed, 01 Dec 2021 20:14:53 GMT\",\"num_client_appointments\":5,\"num_photos\":78,\"num_pro_appointments\":0,\"num_ratings\":16,\"num_recommendations\":0,\"num_total_appointments\":234,\"num_videos\":0,\"online_bookable\":true,\"salonified\":false,\"vanity_url\":\"kolefacxco-denver-co\"},\"matched_services\":[{\"blurb\":\"\",\"clip_images\":[{\"image_id\":17507552,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/05/17507552_93c762e9_300x300.jpg\"},{\"image_id\":17507551,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/05/17507551_07aaa39e_300x300.jpg\"},{\"image_id\":17507550,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/05/17507550_ef6a47a4_300x300.jpg\"},{\"image_id\":17507549,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/05/17507549_1627a58d_300x300.jpg\"},{\"image_id\":16620952,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2023/07/24/16620952_b91fcd5f_300x300.jpg\"}],\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":105,\"estimated_service_category\":\"uncategorized\",\"id\":11896805,\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-1444488\"},\"matched_queries\":[\"service_exact\",\"std_name\"],\"name\":\"Braid Touchuo\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":65,\"pro_id\":1444488,\"pro_name\":\"Nae\",\"pro_ncc_segment\":\"ncc_user\",\"profession\":\"Stylist\",\"provided_category\":\"Style\",\"query_score\":0.033315405,\"salon_id\":1745511,\"salon_name\":\"Kolefacx & Co.\",\"std_name\":\"Braid Bar Style\"},{\"blurb\":\"\",\"clip_images\":[{\"image_id\":15297754,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/12/15/15297754_0b19ec34_300x300.jpg\"},{\"image_id\":14079865,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/06/28/14079865_f6d62a71_300x300.jpg\"},{\"image_id\":14079860,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/06/28/14079860_02430700_300x300.jpg\"},{\"image_id\":10764081,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/07/10764081_822c9717_300x300.jpg\"},{\"image_id\":10764080,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/08/07/10764080_8dedf34a_300x300.jpg\"},{\"image_id\":12080288,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2021/12/03/12080288_3415c034_300x300.jpg\"},{\"image_id\":14079859,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/06/28/14079859_f51e7e86_300x300.jpg\"},{\"image_id\":15297748,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2022/12/15/15297748_111e45af_300x300.jpg\"},{\"image_id\":17507550,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/05/17507550_ef6a47a4_300x300.jpg\"},{\"image_id\":17507549,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/05/17507549_1627a58d_300x300.jpg\"},{\"image_id\":15627184,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2023/02/06/15627184_7a6fc7a6_300x300.jpg\"},{\"image_id\":15627185,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2023/02/06/15627185_0c2590db_300x300.jpg\"},{\"image_id\":17507551,\"image_source\":\"ml\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/05/17507551_07aaa39e_300x300.jpg\"},{\"image_id\":1750755",
+    "imageCount": 2
+  },
+  {
+    "styleseatId": "ss-2420251",
+    "name": "Jessica Marsh",
+    "slug": "jessicahairandmakeupartistry",
+    "styleseatUrl": "https://www.styleseat.com/m/v/jessicahairandmakeupartistry",
+    "city": "Denver",
+    "state": "CO",
+    "categories": [
+      "hair",
+      "braids",
+      "locs",
+      "makeup",
+      "lashes",
+      "extensions"
+    ],
+    "specialties": [
+      "Braid Bar Style"
+    ],
+    "bio": "Jessica.Hairandmakeupartistry",
+    "services": [
+      {
+        "name": "Braid Bar Style",
+        "price": null,
+        "duration": null
+      }
+    ],
+    "reviewCount": 7,
+    "rating": 5,
+    "imageUrl": "static/uploads/2026/03/24/19357025_f111a7a8",
+    "priceRange": null,
+    "isIndependent": true,
+    "harvestDate": "2026-05-28",
+    "batchId": "styleseat-search-1779981184770",
+    "discoveryMode": "direct_url",
+    "seedUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+    "sourceUrl": "https://www.styleseat.com/m/v/jessicahairandmakeupartistry",
+    "rawText": "{\"0_name\":\"Jessica Marsh\",\"0_score\":4.405597,\"1_business\":0.29550960000000004,\"1_client\":0.37566698053986186,\"1_proximity\":0.9231410858618259,\"autocharge_enabled\":true,\"available_hours_week_1\":30.24972222222222,\"available_hours_week_2\":24.99972222222222,\"average_rating\":5,\"bookings_l30\":0,\"clicks_l30\":12,\"cover_photo\":\"static/uploads/2026/03/24/19357017_3531f363\",\"creation_time\":\"Tue, 24 Mar 2026 21:42:55 GMT\",\"fraudulent\":false,\"groups\":[],\"has_business_hours\":true,\"id\":2420251,\"impressions_l30\":9428,\"is_currently_in_penalty_for_ncd_timeouts\":false,\"is_not_currently_in_penalty_for_thresh_violation\":true,\"matched_salon\":{\"active_subscription\":true,\"autocharge_enabled\":false,\"average_rating\":5,\"creation_time\":\"Tue, 24 Mar 2026 21:43:30 GMT\",\"geo_distance\":[1.3060210447193537],\"groups\":[],\"id\":2420252,\"join_field\":{\"name\":\"salon\"},\"location\":{\"address1\":\"821 Santa Fe Dr\",\"address2\":\"\",\"city\":\"Denver\",\"computed_city\":\"Denver\",\"computed_neighborhood\":\"Lincoln Park\",\"computed_state\":\"CO\",\"distance\":0.8116973553258879,\"geo_point\":\"39.72943739999999,-104.9987916\",\"phone_number\":null,\"state\":\"CO\",\"zipcode\":\"80204\"},\"mobile_business\":false,\"name\":\"Jessica.Hairandmakeupartistry\",\"new_pro_search_boost_end\":\"Thu, 07 May 2026 15:12:08 GMT\",\"new_pro_search_boost_num_attributed_appointments\":1,\"new_pro_search_boost_start\":\"Tue, 07 Apr 2026 15:12:08 GMT\",\"num_client_appointments\":0,\"num_photos\":160,\"num_pro_appointments\":0,\"num_ratings\":7,\"num_recommendations\":0,\"num_total_appointments\":0,\"num_videos\":0,\"online_bookable\":true,\"salonified\":false,\"vanity_url\":\"jessicahairandmakeupartistry-denver-co\"},\"matched_services\":[{\"blurb\":\"Common Braid Bar Style Offerings:\\nSignature Styles: Many bars feature a signature look, such as a double Dutch braid or a, which is a two-strand twist that looks like a French braid.\\nFestival Hair: Edgy and high-volume styles like bubble braids or high-attitude, intricate designs tailored for music festivals or concerts.\\nTemporary Flair: Inclusion of hair tinsel, colored extensions, or glitter to customize the look.\",\"clip_images\":[{\"image_id\":19472201,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/20/19472201_608e77b5_300x300.jpg\"},{\"image_id\":19472197,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/20/19472197_790e31f5_300x300.jpg\"},{\"image_id\":19472196,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/20/19472196_1e34ce10_300x300.jpg\"},{\"image_id\":19472195,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/05/20/19472195_dc0dab2a_300x300.jpg\"},{\"image_id\":19382496,\"image_source\":\"default\",\"image_url\":\"https://d220aniogakg8b.cloudfront.net/static/uploads/2026/04/07/19382496_a5ac2e5d_300x300.jpg\"}],\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":105,\"estimated_service_category\":\"uncategorized\",\"id\":11976721,\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-2420251\"},\"matched_queries\":[\"service_exact\",\"std_name\"],\"name\":\"Braid Bar Style\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":85,\"pro_id\":2420251,\"pro_name\":\"Jessica Marsh\",\"pro_ncc_segment\":\"low_ncc_volume\",\"profession\":\"Cosmetologist\",\"provided_category\":\"Style\",\"query_score\":0.025392532,\"salon_id\":2420252,\"salon_name\":\"Jessica.Hairandmakeupartistry\",\"std_name\":\"Braid Bar Style\"}],\"name\":\"Jessica Marsh\",\"ncc_monetization_rate\":0.26,\"ncd_enabled\":true,\"net_rev_per_ncc_appt\":9.01,\"new_pro_search_boost_end\":\"Thu, 07 May 2026 15:12:08 GMT\",\"new_pro_search_boost_num_attributed_appointments\":1,\"new_pro_search_boost_start\":\"Tue, 07 Apr 2026 15:12:08 GMT\",\"num_client_appointments\":0,\"num_photos\":160,\"num_pro_appointments\":0,\"num_pro_ncc_appointments_declined_l60\":0,\"num_pro_ncc_appointments_l60\":1,\"num_pro_ncc_appointments_timedout_declined_l60\":0,\"num_ratings\":7,\"num_recommendations\":0,\"num_total_appointments\":0,\"num_videos\":0,\"online_bookable\":true,\"payment_frequency\":0.6,\"payments_are_enabled\":true,\"popular_categories\":[],\"pro_complete\":{\"contexts\":{\"active_subscription\":[\"True\"]},\"input\":[\"Jessica Marsh\",\"Jessica.Hairandmakeupartistry\"],\"weight\":0},\"pro_ncc_segment\":\"low_ncc_volume\",\"profile_photo\":\"static/uploads/2026/03/24/19357025_f111a7a8\",\"removed_from_search_permanently\":false,\"reviews\":[],\"salon_id\":2420252,\"service_ids\":[11976714,11976715,11976716,11976717,11976718,11976719,11976721,11976722,11976723,11976724,11976725,11976726,11976727,11976728,12018274],\"top_pro\":false,\"top_services\":[{\"count\":1,\"service\":\"Cluster Lash Application\"}],\"uniq_visit_days\":0,\"vanity_url\":\"jessicahairandmakeupartistry\",\"weights\":\"favoring proximity\"}",
+    "imageCount": 2
+  },
+  {
+    "styleseatId": "ss-2239586",
+    "name": "Estella Gracious",
+    "slug": "estellagracious",
+    "styleseatUrl": "https://www.styleseat.com/m/v/estellagracious",
+    "city": "Denver",
+    "state": "CO",
+    "categories": [
+      "hair",
+      "braids",
+      "locs"
+    ],
+    "specialties": [
+      "Kid's Braids",
+      "Braids",
+      "Box Braids",
+      "Ghana Braids",
+      "Tree Braids"
+    ],
+    "bio": "Beauty Inspired by Estella Gracious",
+    "services": [
+      {
+        "name": "Kid's Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Box Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Ghana Braids",
+        "price": null,
+        "duration": null
+      },
+      {
+        "name": "Tree Braids",
+        "price": null,
+        "duration": null
+      }
+    ],
+    "reviewCount": 11,
+    "rating": 5,
+    "imageUrl": "static/uploads/2024/04/12/17534079_de47d158",
+    "priceRange": null,
+    "isIndependent": true,
+    "harvestDate": "2026-05-28",
+    "batchId": "styleseat-search-1779981184770",
+    "discoveryMode": "direct_url",
+    "seedUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+    "sourceUrl": "https://www.styleseat.com/m/v/estellagracious",
+    "rawText": "{\"0_name\":\"Estella Gracious\",\"0_score\":4.403507,\"1_business\":0.6862056,\"1_client\":0.4864559232355843,\"1_proximity\":0.518170416191432,\"autocharge_enabled\":true,\"available_hours_week_1\":59.74972222222222,\"available_hours_week_2\":59.74972222222222,\"average_rating\":5,\"bookings_l30\":1,\"clicks_l30\":156,\"cover_photo\":\"static/uploads/2024/04/11/17530316_74f8b14d\",\"creation_time\":\"Thu, 11 Apr 2024 21:48:25 GMT\",\"fraudulent\":false,\"groups\":[],\"has_business_hours\":true,\"id\":2239586,\"impressions_l30\":3490,\"is_currently_in_penalty_for_ncd_timeouts\":false,\"is_not_currently_in_penalty_for_thresh_violation\":true,\"matched_salon\":{\"active_subscription\":true,\"autocharge_enabled\":false,\"average_rating\":5,\"creation_time\":\"Thu, 11 Apr 2024 21:49:07 GMT\",\"geo_distance\":[10.736658915549109],\"groups\":[],\"id\":2239588,\"join_field\":{\"name\":\"salon\"},\"location\":{\"address1\":\"10000 E Alameda Ave\",\"address2\":\"\",\"city\":\"Denver\",\"computed_city\":\"Denver\",\"computed_neighborhood\":\"Windsor\",\"computed_state\":\"CO\",\"distance\":6.672876889713554,\"geo_point\":\"39.7082896,-104.8713668\",\"phone_number\":\"3035204306\",\"state\":\"CO\",\"zipcode\":\"80247\"},\"mobile_business\":false,\"name\":\"Beauty Inspired by Estella Gracious\",\"new_pro_search_boost_end\":\"Fri, 19 Apr 2024 22:23:30 GMT\",\"new_pro_search_boost_num_attributed_appointments\":0,\"new_pro_search_boost_start\":\"Fri, 12 Apr 2024 22:23:30 GMT\",\"num_client_appointments\":3,\"num_photos\":60,\"num_pro_appointments\":0,\"num_ratings\":11,\"num_recommendations\":0,\"num_total_appointments\":39,\"num_videos\":3,\"online_bookable\":true,\"salonified\":false,\"vanity_url\":\"beautyinspiredbyestellagracious-denver-co\"},\"matched_services\":[{\"blurb\":\"Braids for the little ones in your life.\",\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":120,\"estimated_service_category\":\"uncategorized\",\"id\":10718810,\"images\":[\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/11/17530316_74f8b14d_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/12/17534150_47bb7cb2_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/12/17534148_15d60b44_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/12/17534075_9b201011_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/11/17530384_6420c4e6_300x300.jpg\"],\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-2239586\"},\"matched_queries\":[\"service_exact\",\"std_name\"],\"name\":\"Kid's Braids\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":60,\"pro_id\":2239586,\"pro_name\":\"Estella Gracious\",\"pro_ncc_segment\":\"ncc_adopter\",\"profession\":\"Stylist\",\"provided_category\":\"Kids\",\"query_score\":0.03458686,\"salon_id\":2239588,\"salon_name\":\"Beauty Inspired by Estella Gracious\",\"std_name\":\"Kid's Braids\"},{\"blurb\":\"We'll talk about what look you want and bring your braids to life.\",\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":150,\"estimated_service_category\":\"uncategorized\",\"id\":10718832,\"images\":[\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/12/17534150_47bb7cb2_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/12/17534148_15d60b44_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/12/17534075_9b201011_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/11/17530384_6420c4e6_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/11/17530316_74f8b14d_300x300.jpg\"],\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-2239586\"},\"matched_queries\":[\"service_exact\",\"std_name\"],\"name\":\"Braids\",\"new_pro_search_boost_num_attributed_appointments\":0,\"num_service_images\":0,\"popularity_percentage\":0,\"price\":100,\"pro_id\":2239586,\"pro_name\":\"Estella Gracious\",\"pro_ncc_segment\":\"ncc_adopter\",\"profession\":\"Stylist\",\"provided_category\":\"Braids\",\"query_score\":0.028135398,\"salon_id\":2239588,\"salon_name\":\"Beauty Inspired by Estella Gracious\",\"std_name\":\"Braids\"},{\"blurb\":\"Protective and trendy, this braid style parts sections of your hair in boxes for a tiled pattern part and even braids.\",\"discount_quantity\":0,\"discount_type\":\"None\",\"duration\":240,\"estimated_service_category\":\"uncategorized\",\"id\":10718801,\"images\":[\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/12/17534150_47bb7cb2_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/12/17534148_15d60b44_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/12/17534075_9b201011_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/11/17530384_6420c4e6_300x300.jpg\",\"https://d220aniogakg8b.cloudfront.net/static/uploads/2024/04/11/17530316_74f8b14d_300x300.jpg\"],\"is_ncd_eligible\":true,\"is_online_bookable\":true,\"join_field\":{\"name\":\"service\",\"parent\":\"pro-2239586\"},\"matched_queries\":[\"service_exact\",\"std_name\"],\"name\":\"Box Braids\",\"new_pro_search_boost_num_attributed_appoi",
+    "imageCount": 2
+  }
+]

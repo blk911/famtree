@@ -1,0 +1,104 @@
+[
+  {
+    "raw": "https://www.styleseat.com",
+    "normalizedUrl": "https://www.styleseat.com/",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "https://search.styleseat.com",
+    "normalizedUrl": "https://search.styleseat.com/",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/favicon-16x16.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/favicon-16x16.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/favicon-32x32.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/favicon-32x32.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/favicon-96x96.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/favicon-96x96.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/android-chrome-192x192.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/android-chrome-192x192.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/android-chrome-512x512.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/android-chrome-512x512.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/apple-touch-icon-57x57.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-57x57.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/apple-touch-icon-60x60.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-60x60.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/apple-touch-icon-72x72.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-72x72.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/apple-touch-icon-76x76.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-76x76.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/apple-touch-icon-114x114.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-114x114.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/apple-touch-icon-120x120.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-120x120.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/apple-touch-icon-144x144.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-144x144.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/apple-touch-icon-152x152.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-152x152.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "/favicons/apple-touch-icon-180x180.png",
+    "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-180x180.png",
+    "source": "anchor",
+    "classification": "unknown"
+  },
+  {
+    "raw": "//www.styleseat.com/styles/application.c21fe9d852027a1ec574.css",
+    "normalizedUrl": "https://www.styleseat.com/styles/application.c21fe9d852027a1ec574.css",
+    "source": "anchor",
+    "classification": "unknown"
+  }
+]

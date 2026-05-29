@@ -1,0 +1,58 @@
+{
+  "runId": "styleseat-1779975755951-45rgn",
+  "createdAt": "2026-05-28T13:42:35.951Z",
+  "discoveryMode": "aggregator_crawl",
+  "sourceUrl": "https://www.styleseat.com/m/",
+  "seedUrls": [
+    "https://www.styleseat.com/m/"
+  ],
+  "marketSearchInput": null,
+  "market": "StyleSeat",
+  "categories": [],
+  "crawlDepth": 1,
+  "maxOperators": 5,
+  "resolverMode": "fast",
+  "mode": "harvest_only",
+  "pipelineMode": "harvest_only",
+  "totals": {
+    "crawledUrls": 1,
+    "profileUrls": 0,
+    "harvested": 0,
+    "normalized": 0,
+    "igCandidates": 0,
+    "resolverMerged": 0,
+    "prospectsCreated": 0,
+    "prospectsUpdated": 0,
+    "unresolved": 0,
+    "failed": 0
+  },
+  "artifactPaths": {
+    "crawl": "runs/styleseat-1779975755951-45rgn/crawl.json",
+    "raw": "runs/styleseat-1779975755951-45rgn/raw.json",
+    "normalized": "runs/styleseat-1779975755951-45rgn/normalized.json",
+    "resolver": "runs/styleseat-1779975755951-45rgn/resolver.json",
+    "prospects": "runs/styleseat-1779975755951-45rgn/prospects.json",
+    "failures": "runs/styleseat-1779975755951-45rgn/failures.json",
+    "summary": "runs/styleseat-1779975755951-45rgn/summary.json",
+    "log": "runs/styleseat-1779975755951-45rgn/log.json",
+    "market-intelligence": "runs/styleseat-1779975755951-45rgn/market-intelligence.json",
+    "operator-scores": "runs/styleseat-1779975755951-45rgn/operator-scores.json",
+    "market-clusters": "runs/styleseat-1779975755951-45rgn/market-clusters.json"
+  },
+  "discoveredMarkets": [],
+  "discoveredCategories": [
+    "hair"
+  ],
+  "notes": [
+    "No profiles found from aggregator root. Try a direct search URL. Examples: https://www.styleseat.com/m/search/denver-co/braids, https://www.styleseat.com/m/search/houston-tx/hair, https://www.styleseat.com/m/search/atlanta-ga/locs",
+    "Rendered extraction unavailable: Cannot find package 'playwright' imported from C:\\dev\\famtree\\.next\\server\\app\\api\\admin\\studios\\styleseat\\run\\route.js",
+    "No profiles found from aggregator root. Try a direct search URL.",
+    "No harvested operators: identity assembler and prospect upsert skipped."
+  ],
+  "intelligenceSummary": {
+    "topMarkets": [],
+    "topCategories": [],
+    "topOperators": [],
+    "recommendationCount": 1
+  }
+}

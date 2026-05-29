@@ -1,0 +1,9 @@
+[
+  {
+    "at": "2026-05-28T20:58:35.718Z",
+    "mode": "harvest_only",
+    "resolverMode": "fast",
+    "backend": "json",
+    "message": "StyleSeat run completed"
+  }
+]

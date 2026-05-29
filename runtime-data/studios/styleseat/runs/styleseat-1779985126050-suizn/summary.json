@@ -1,0 +1,90 @@
+{
+  "runId": "styleseat-1779985126050-suizn",
+  "createdAt": "2026-05-28T16:18:46.050Z",
+  "discoveryMode": "direct_url",
+  "sourceUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+  "seedUrls": [
+    "https://www.styleseat.com/m/search/denver-co/braids"
+  ],
+  "marketSearchInput": null,
+  "market": "Denver, CO",
+  "categories": [],
+  "crawlDepth": 1,
+  "maxOperators": 25,
+  "resolverMode": "fast",
+  "mode": "full_pipeline",
+  "pipelineMode": "full_pipeline",
+  "totals": {
+    "crawledUrls": 1,
+    "profileUrls": 25,
+    "internalApiUrlsTried": 1,
+    "internalApiUrlsSucceeded": 1,
+    "internalApiUrlsFailed": 0,
+    "internalApiRecords": 25,
+    "harvested": 25,
+    "normalized": 25,
+    "igCandidates": 25,
+    "resolverMerged": 25,
+    "prospectsCreated": 0,
+    "prospectsUpdated": 25,
+    "prospectsAttempted": 25,
+    "prospectsSkipped": 0,
+    "prospectsFailed": 0,
+    "unresolved": 0,
+    "failed": 0
+  },
+  "artifactPaths": {
+    "crawl": "runs/styleseat-1779985126050-suizn/crawl.json",
+    "raw": "runs/styleseat-1779985126050-suizn/raw.json",
+    "normalized": "runs/styleseat-1779985126050-suizn/normalized.json",
+    "resolver": "runs/styleseat-1779985126050-suizn/resolver.json",
+    "prospects": "runs/styleseat-1779985126050-suizn/prospects.json",
+    "failures": "runs/styleseat-1779985126050-suizn/failures.json",
+    "summary": "runs/styleseat-1779985126050-suizn/summary.json",
+    "log": "runs/styleseat-1779985126050-suizn/log.json",
+    "market-intelligence": "runs/styleseat-1779985126050-suizn/market-intelligence.json",
+    "operator-scores": "runs/styleseat-1779985126050-suizn/operator-scores.json",
+    "market-clusters": "runs/styleseat-1779985126050-suizn/market-clusters.json",
+    "prospect-persistence-audit": "runs/styleseat-1779985126050-suizn/prospect-persistence-audit.json"
+  },
+  "discoveredMarkets": [
+    "Denver, CO",
+    "Aurora, CO"
+  ],
+  "discoveredCategories": [
+    "braids",
+    "locs",
+    "extensions",
+    "hair"
+  ],
+  "extractionSource": "internal_api",
+  "persistenceAuditSummary": {
+    "attempted": 25,
+    "created": 0,
+    "updated": 25,
+    "skipped": 0,
+    "failed": 0,
+    "topSkipReasons": []
+  },
+  "notes": [],
+  "intelligenceSummary": {
+    "topMarkets": [
+      "Aurora, CO (100)",
+      "Denver, CO (93)"
+    ],
+    "topCategories": [
+      "braids (25)",
+      "hair (3)",
+      "extensions (3)",
+      "locs (2)"
+    ],
+    "topOperators": [
+      "Trichologist Angela (Licensed) (100)",
+      "Renee Malone (100)",
+      "Stephanie (100)",
+      "Hair Theory&CO/Nadine (100)",
+      "Jacqueline Childs 720-949-5020 (100)"
+    ],
+    "recommendationCount": 4
+  }
+}

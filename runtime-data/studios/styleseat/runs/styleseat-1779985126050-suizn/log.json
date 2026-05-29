@@ -1,0 +1,9 @@
+[
+  {
+    "at": "2026-05-28T16:18:46.050Z",
+    "mode": "full_pipeline",
+    "resolverMode": "fast",
+    "backend": "json",
+    "message": "StyleSeat run completed"
+  }
+]

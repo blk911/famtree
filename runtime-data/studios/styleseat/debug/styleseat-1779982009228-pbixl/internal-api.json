@@ -1,0 +1,164 @@
+{
+  "sourceUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+  "parsedSearch": {
+    "city": "Denver",
+    "state": "CO",
+    "categorySlug": "braids",
+    "category": "Braids",
+    "categoryKey": "braids",
+    "marketSlug": "denver-co",
+    "loc": "Denver, CO",
+    "lat": 39.7392,
+    "lon": -104.9903
+  },
+  "apiUrlsTried": [
+    "https://search.styleseat.com/api/v3.0/salons.json?query=braids&loc=Denver%2C+CO&lat=39.7392&lon=-104.9903&size=10&from=0&date=2026-05-28"
+  ],
+  "apiUrlsSucceeded": [
+    "https://search.styleseat.com/api/v3.0/salons.json?query=braids&loc=Denver%2C+CO&lat=39.7392&lon=-104.9903&size=10&from=0&date=2026-05-28"
+  ],
+  "apiUrlsFailed": [],
+  "selectedApiPattern": "https://search.styleseat.com/api/v3.0/salons.json",
+  "resultCount": 10,
+  "sampleRecordKeys": [
+    "0_name",
+    "0_score",
+    "1_business",
+    "1_client",
+    "1_proximity",
+    "autocharge_enabled",
+    "available_hours_week_1",
+    "available_hours_week_2",
+    "average_rating",
+    "bookings_l30",
+    "clicks_l30",
+    "cover_photo",
+    "creation_time",
+    "fraudulent",
+    "groups",
+    "has_business_hours",
+    "id",
+    "impressions_l30",
+    "is_currently_in_penalty_for_ncd_timeouts",
+    "is_not_currently_in_penalty_for_thresh_violation",
+    "matched_salon",
+    "matched_services",
+    "name",
+    "ncc_monetization_rate",
+    "ncd_enabled",
+    "net_rev_per_ncc_appt",
+    "new_pro_search_boost_end",
+    "new_pro_search_boost_num_attributed_appointments",
+    "new_pro_search_boost_start",
+    "num_client_appointments",
+    "num_photos",
+    "num_pro_appointments",
+    "num_pro_ncc_appointments_declined_l60",
+    "num_pro_ncc_appointments_l60",
+    "num_pro_ncc_appointments_timedout_declined_l60",
+    "num_ratings",
+    "num_recommendations",
+    "num_total_appointments",
+    "num_videos",
+    "online_bookable",
+    "payment_frequency",
+    "payments_are_enabled",
+    "popular_categories",
+    "pro_complete",
+    "pro_ncc_segment",
+    "profile_photo",
+    "removed_from_search_permanently",
+    "reviews",
+    "salon_id",
+    "service_ids",
+    "top_pro",
+    "top_services",
+    "uniq_visit_days",
+    "vanity_url",
+    "weights"
+  ],
+  "sampleMappedRecords": [
+    {
+      "displayName": "Courtney Frazier(DENVER)",
+      "profileUrl": "https://www.styleseat.com/m/v/courtneyfrazier2",
+      "city": "Denver",
+      "state": "CO",
+      "categories": [
+        "braids"
+      ],
+      "specialties": [
+        "Edge Brush",
+        "Edge Control",
+        "Braid Mousse",
+        "Consultation",
+        "Braid Bonnet"
+      ],
+      "extractionSource": "internal_api"
+    },
+    {
+      "displayName": "Agie  Paul",
+      "profileUrl": "https://www.styleseat.com/m/v/agiepaul",
+      "city": "Denver",
+      "state": "CO",
+      "categories": [
+        "braids"
+      ],
+      "specialties": [
+        "Medium Goddess Braids",
+        "Kid's corn rows 6-12yrs",
+        "Kid's stitch braids",
+        "Fulani Braids/ Tribal braids",
+        "Crochet Braids"
+      ],
+      "extractionSource": "internal_api"
+    },
+    {
+      "displayName": "Tatiana Henderson",
+      "profileUrl": "https://www.styleseat.com/m/v/tatianahenderson3",
+      "city": "Denver",
+      "state": "CO",
+      "categories": [
+        "braids"
+      ],
+      "specialties": [
+        "Male braided style"
+      ],
+      "extractionSource": "internal_api"
+    },
+    {
+      "displayName": "Danielle Gomez",
+      "profileUrl": "https://www.styleseat.com/m/v/daniellegomez7",
+      "city": "Denver",
+      "state": "CO",
+      "categories": [
+        "braids"
+      ],
+      "specialties": [
+        "Beard Trim",
+        "Eyebrow Trim",
+        "Travel Fee",
+        "Kid’s Cut",
+        "Women's Trim"
+      ],
+      "extractionSource": "internal_api"
+    },
+    {
+      "displayName": "Nesha",
+      "profileUrl": "https://www.styleseat.com/m/v/braidsbynesha",
+      "city": "Aurora",
+      "state": "CO",
+      "categories": [
+        "braids",
+        "locs"
+      ],
+      "specialties": [
+        "2 Kid Stitch Braids",
+        "2 Braids",
+        "4 Stitch Braids",
+        "Twisties/ Starter Locs",
+        "Natural Freestyle"
+      ],
+      "extractionSource": "internal_api"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "runId": "styleseat-1779981198680-f954w",
+  "createdAt": "2026-05-28T15:13:18.680Z",
+  "discoveryMode": "aggregator_crawl",
+  "sourceUrl": "https://www.styleseat.com/m/",
+  "seedUrls": [
+    "https://www.styleseat.com/m/"
+  ],
+  "marketSearchInput": null,
+  "market": "StyleSeat",
+  "categories": [],
+  "crawlDepth": 1,
+  "maxOperators": 5,
+  "resolverMode": "fast",
+  "mode": "harvest_only",
+  "pipelineMode": "harvest_only",
+  "totals": {
+    "crawledUrls": 1,
+    "profileUrls": 0,
+    "harvested": 0,
+    "normalized": 0,
+    "igCandidates": 0,
+    "resolverMerged": 0,
+    "prospectsCreated": 0,
+    "prospectsUpdated": 0,
+    "unresolved": 0,
+    "failed": 0
+  },
+  "artifactPaths": {
+    "crawl": "runs/styleseat-1779981198680-f954w/crawl.json",
+    "raw": "runs/styleseat-1779981198680-f954w/raw.json",
+    "normalized": "runs/styleseat-1779981198680-f954w/normalized.json",
+    "resolver": "runs/styleseat-1779981198680-f954w/resolver.json",
+    "prospects": "runs/styleseat-1779981198680-f954w/prospects.json",
+    "failures": "runs/styleseat-1779981198680-f954w/failures.json",
+    "summary": "runs/styleseat-1779981198680-f954w/summary.json",
+    "log": "runs/styleseat-1779981198680-f954w/log.json",
+    "market-intelligence": "runs/styleseat-1779981198680-f954w/market-intelligence.json",
+    "operator-scores": "runs/styleseat-1779981198680-f954w/operator-scores.json",
+    "market-clusters": "runs/styleseat-1779981198680-f954w/market-clusters.json"
+  },
+  "discoveredMarkets": [],
+  "discoveredCategories": [
+    "hair"
+  ],
+  "notes": [
+    "No profiles found from aggregator root. Try a direct search URL. Examples: https://www.styleseat.com/m/search/denver-co/braids, https://www.styleseat.com/m/search/houston-tx/hair, https://www.styleseat.com/m/search/atlanta-ga/locs",
+    "Rendered DOM fallback skipped; set STYLESEAT_ENABLE_RENDERED_FALLBACK=true after diagnostics prove browser rendering is required.",
+    "No profiles found from aggregator root. Try a direct search URL.",
+    "No harvested operators: identity assembler and prospect upsert skipped."
+  ],
+  "intelligenceSummary": {
+    "topMarkets": [],
+    "topCategories": [],
+    "topOperators": [],
+    "recommendationCount": 1
+  }
+}

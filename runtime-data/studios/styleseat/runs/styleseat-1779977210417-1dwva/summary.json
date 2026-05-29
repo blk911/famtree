@@ -1,0 +1,80 @@
+{
+  "runId": "styleseat-1779977210417-1dwva",
+  "createdAt": "2026-05-28T14:06:50.417Z",
+  "discoveryMode": "direct_url",
+  "sourceUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+  "seedUrls": [
+    "https://www.styleseat.com/m/search/denver-co/braids"
+  ],
+  "marketSearchInput": null,
+  "market": "Denver, CO",
+  "categories": [],
+  "crawlDepth": 1,
+  "maxOperators": 10,
+  "resolverMode": "fast",
+  "mode": "harvest_only",
+  "pipelineMode": "harvest_only",
+  "totals": {
+    "crawledUrls": 1,
+    "profileUrls": 10,
+    "harvested": 10,
+    "normalized": 10,
+    "igCandidates": 0,
+    "resolverMerged": 0,
+    "prospectsCreated": 0,
+    "prospectsUpdated": 0,
+    "unresolved": 10,
+    "failed": 0
+  },
+  "artifactPaths": {
+    "crawl": "runs/styleseat-1779977210417-1dwva/crawl.json",
+    "raw": "runs/styleseat-1779977210417-1dwva/raw.json",
+    "normalized": "runs/styleseat-1779977210417-1dwva/normalized.json",
+    "resolver": "runs/styleseat-1779977210417-1dwva/resolver.json",
+    "prospects": "runs/styleseat-1779977210417-1dwva/prospects.json",
+    "failures": "runs/styleseat-1779977210417-1dwva/failures.json",
+    "summary": "runs/styleseat-1779977210417-1dwva/summary.json",
+    "log": "runs/styleseat-1779977210417-1dwva/log.json",
+    "market-intelligence": "runs/styleseat-1779977210417-1dwva/market-intelligence.json",
+    "operator-scores": "runs/styleseat-1779977210417-1dwva/operator-scores.json",
+    "market-clusters": "runs/styleseat-1779977210417-1dwva/market-clusters.json"
+  },
+  "discoveredMarkets": [
+    "Denver, CO",
+    "Aurora, CO"
+  ],
+  "discoveredCategories": [
+    "hair",
+    "braids",
+    "locs",
+    "lashes",
+    "barber",
+    "brows",
+    "makeup",
+    "extensions"
+  ],
+  "notes": [
+    "Harvest-only mode: identity assembler and prospect upsert skipped."
+  ],
+  "intelligenceSummary": {
+    "topMarkets": [
+      "Denver, CO (66)",
+      "Aurora, CO (53)"
+    ],
+    "topCategories": [
+      "braids (10)",
+      "locs (10)",
+      "hair (9)",
+      "lashes (2)",
+      "barber (1)"
+    ],
+    "topOperators": [
+      "Tatiana Henderson (75)",
+      "Courtney Frazier(DENVER) (71)",
+      "Nesha (71)",
+      "Jessica Marsh (68)",
+      "Agie  Paul (66)"
+    ],
+    "recommendationCount": 6
+  }
+}

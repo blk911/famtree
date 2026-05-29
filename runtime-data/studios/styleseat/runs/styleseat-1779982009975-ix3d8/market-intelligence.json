@@ -1,0 +1,605 @@
+{
+  "runId": "styleseat-1779982009975-ix3d8",
+  "createdAt": "2026-05-28T15:26:50.281Z",
+  "markets": [
+    {
+      "market": "Denver, CO",
+      "city": "Denver",
+      "state": "CO",
+      "operatorCount": 8,
+      "categoryCounts": {
+        "hair": 8,
+        "braids": 3,
+        "lashes": 1,
+        "locs": 1,
+        "extensions": 1
+      },
+      "topSpecialties": [
+        "(returning clients only) silkpress for thicker hair",
+        "(returning clients only) silk press with cut (thicker and or longer hair)",
+        "knotless braids (100% human hair)",
+        "cornrows( w/ added braiding hair)",
+        "goddess/ boho braids(100% human hair)"
+      ],
+      "topServiceKeywords": [
+        "mobile",
+        "braids",
+        "extensions",
+        "natural hair",
+        "locs"
+      ],
+      "activeIGPercent": 0,
+      "avgReviewCount": 299,
+      "avgImageCount": 2,
+      "mobileOperatorPercent": 100,
+      "suiteOperatorPercent": 25,
+      "unresolvedPercent": 100,
+      "marketScore": 73,
+      "summary": "High independent operator density"
+    },
+    {
+      "market": "Aurora, CO",
+      "city": "Aurora",
+      "state": "CO",
+      "operatorCount": 1,
+      "categoryCounts": {
+        "hair": 1
+      },
+      "topSpecialties": [
+        "kid's hair cut",
+        "hair mask/masque (conditioning)",
+        "extra time/thick/long hair/tinder scalp",
+        "ponytail w/ hair added (read discription, please)",
+        "loc retwist (fine hair crochet)"
+      ],
+      "topServiceKeywords": [
+        "mobile"
+      ],
+      "activeIGPercent": 0,
+      "avgReviewCount": 435,
+      "avgImageCount": 2,
+      "mobileOperatorPercent": 100,
+      "suiteOperatorPercent": 0,
+      "unresolvedPercent": 100,
+      "marketScore": 53,
+      "summary": "Early signal market that needs deeper crawl coverage"
+    },
+    {
+      "market": "Wheat Ridge, CO",
+      "city": "Wheat Ridge",
+      "state": "CO",
+      "operatorCount": 1,
+      "categoryCounts": {
+        "hair": 1
+      },
+      "topSpecialties": [
+        "bang trim",
+        "brow wax",
+        "deep conditioning treatment",
+        "kids cut",
+        "norvel spray tan"
+      ],
+      "topServiceKeywords": [
+        "brow",
+        "mobile"
+      ],
+      "activeIGPercent": 0,
+      "avgReviewCount": 328,
+      "avgImageCount": 2,
+      "mobileOperatorPercent": 100,
+      "suiteOperatorPercent": 0,
+      "unresolvedPercent": 100,
+      "marketScore": 53,
+      "summary": "Early signal market that needs deeper crawl coverage"
+    }
+  ],
+  "categories": [
+    {
+      "category": "hair",
+      "count": 10,
+      "marketDistribution": {
+        "Denver, CO": 8,
+        "Aurora, CO": 1,
+        "Wheat Ridge, CO": 1
+      },
+      "IGActivePercent": 0,
+      "avgReviews": 315,
+      "topMarkets": [
+        "Denver, CO",
+        "Aurora, CO",
+        "Wheat Ridge, CO"
+      ],
+      "growthSignals": [
+        "mobile operator signal",
+        "suite renter signal",
+        "premium review density",
+        "visible category density"
+      ],
+      "score": 67
+    },
+    {
+      "category": "braids",
+      "count": 3,
+      "marketDistribution": {
+        "Denver, CO": 3
+      },
+      "IGActivePercent": 0,
+      "avgReviews": 56,
+      "topMarkets": [
+        "Denver, CO"
+      ],
+      "growthSignals": [
+        "mobile operator signal",
+        "premium review density"
+      ],
+      "score": 36
+    },
+    {
+      "category": "lashes",
+      "count": 1,
+      "marketDistribution": {
+        "Denver, CO": 1
+      },
+      "IGActivePercent": 0,
+      "avgReviews": 50,
+      "topMarkets": [
+        "Denver, CO"
+      ],
+      "growthSignals": [
+        "mobile operator signal",
+        "suite renter signal",
+        "premium review density"
+      ],
+      "score": 28
+    },
+    {
+      "category": "locs",
+      "count": 1,
+      "marketDistribution": {
+        "Denver, CO": 1
+      },
+      "IGActivePercent": 0,
+      "avgReviews": 25,
+      "topMarkets": [
+        "Denver, CO"
+      ],
+      "growthSignals": [
+        "mobile operator signal"
+      ],
+      "score": 21
+    },
+    {
+      "category": "extensions",
+      "count": 1,
+      "marketDistribution": {
+        "Denver, CO": 1
+      },
+      "IGActivePercent": 0,
+      "avgReviews": 1,
+      "topMarkets": [
+        "Denver, CO"
+      ],
+      "growthSignals": [
+        "mobile operator signal"
+      ],
+      "score": 9
+    }
+  ],
+  "operators": [
+    {
+      "operatorId": "ss-1741652",
+      "name": "Courtney Frazier(DENVER)",
+      "city": "Denver",
+      "state": "CO",
+      "market": "Denver, CO",
+      "categories": [
+        "hair",
+        "braids"
+      ],
+      "specialties": [
+        "Knotless Braids (100% human hair)",
+        "Cornrows( W/ Added Braiding Hair)",
+        "Goddess/ Boho Braids(100% HUMAN HAIR)",
+        "Goddess/ Boho Braids(100% Human Hair LEAVE OUT ONLY)"
+      ],
+      "score": 76,
+      "resolverConfidence": 0,
+      "labels": [
+        "creator_candidate",
+        "premium_operator",
+        "independent_brand",
+        "likely_mobile"
+      ],
+      "signals": [
+        "134 reviews",
+        "2 images",
+        "extensions",
+        "ig",
+        "book",
+        "mobile"
+      ],
+      "igHandleFound": null,
+      "prospectId": null
+    },
+    {
+      "operatorId": "ss-1070104",
+      "name": "Marc Pierre",
+      "city": "Denver",
+      "state": "CO",
+      "market": "Denver, CO",
+      "categories": [
+        "hair"
+      ],
+      "specialties": [
+        "Cut with bigen hair color",
+        "Toddler cuts ages 1-4 : )",
+        "Line up w/Taper fade  haircut",
+        "Quick touch up after cut",
+        "Line up"
+      ],
+      "score": 76,
+      "resolverConfidence": 0,
+      "labels": [
+        "creator_candidate",
+        "premium_operator",
+        "independent_brand",
+        "likely_suite_renter",
+        "likely_mobile"
+      ],
+      "signals": [
+        "2013 reviews",
+        "2 images",
+        "studio",
+        "ig",
+        "book",
+        "mobile"
+      ],
+      "igHandleFound": null,
+      "prospectId": null
+    },
+    {
+      "operatorId": "ss-2306452",
+      "name": "Tatiana Henderson",
+      "city": "Denver",
+      "state": "CO",
+      "market": "Denver, CO",
+      "categories": [
+        "hair",
+        "lashes"
+      ],
+      "specialties": [
+        "Strip Lashes",
+        "Lip Wax",
+        "Eyebrow Wax",
+        "Underarm Wax",
+        "Chin Wax"
+      ],
+      "score": 75,
+      "resolverConfidence": 0,
+      "labels": [
+        "creator_candidate",
+        "premium_operator",
+        "independent_brand",
+        "likely_suite_renter",
+        "likely_mobile"
+      ],
+      "signals": [
+        "50 reviews",
+        "2 images",
+        "suite",
+        "ig",
+        "book",
+        "mobile"
+      ],
+      "igHandleFound": null,
+      "prospectId": null
+    },
+    {
+      "operatorId": "ss-1173464",
+      "name": "Channing Monae",
+      "city": "Denver",
+      "state": "CO",
+      "market": "Denver, CO",
+      "categories": [
+        "hair"
+      ],
+      "specialties": [
+        "(RETURNING CLIENTS ONLY) Silkpress for thicker hair",
+        "(RETURNING CLIENTS ONLY) Silk press with Cut (THICKER AND OR LONGER HAIR)"
+      ],
+      "score": 71,
+      "resolverConfidence": 0,
+      "labels": [
+        "creator_candidate",
+        "premium_operator",
+        "independent_brand",
+        "likely_mobile"
+      ],
+      "signals": [
+        "131 reviews",
+        "2 images",
+        "ig",
+        "book",
+        "mobile"
+      ],
+      "igHandleFound": null,
+      "prospectId": null
+    },
+    {
+      "operatorId": "ss-1182292",
+      "name": "Starr",
+      "city": "Aurora",
+      "state": "CO",
+      "market": "Aurora, CO",
+      "categories": [
+        "hair"
+      ],
+      "specialties": [
+        "Kid's Hair Cut",
+        "Hair Mask/Masque (conditioning)",
+        "Extra Time/Thick/Long hair/Tinder Scalp",
+        "Ponytail w/ hair added (read discription, please)",
+        "Loc Retwist (Fine Hair Crochet)"
+      ],
+      "score": 71,
+      "resolverConfidence": 0,
+      "labels": [
+        "creator_candidate",
+        "premium_operator",
+        "independent_brand",
+        "likely_mobile"
+      ],
+      "signals": [
+        "435 reviews",
+        "2 images",
+        "ig",
+        "book",
+        "mobile"
+      ],
+      "igHandleFound": null,
+      "prospectId": null
+    },
+    {
+      "operatorId": "ss-932116",
+      "name": "Karly Murray",
+      "city": "Wheat Ridge",
+      "state": "CO",
+      "market": "Wheat Ridge, CO",
+      "categories": [
+        "hair"
+      ],
+      "specialties": [
+        "Bang Trim",
+        "Brow Wax",
+        "Deep Conditioning Treatment",
+        "Kids Cut",
+        "Norvel Spray tan"
+      ],
+      "score": 71,
+      "resolverConfidence": 0,
+      "labels": [
+        "creator_candidate",
+        "premium_operator",
+        "independent_brand",
+        "likely_mobile"
+      ],
+      "signals": [
+        "328 reviews",
+        "2 images",
+        "ig",
+        "book",
+        "mobile"
+      ],
+      "igHandleFound": null,
+      "prospectId": null
+    },
+    {
+      "operatorId": "ss-2313632",
+      "name": "Agie  Paul",
+      "city": "Denver",
+      "state": "CO",
+      "market": "Denver, CO",
+      "categories": [
+        "hair"
+      ],
+      "specialties": [
+        "Loc Re-twist with 2 Strand twist short hair"
+      ],
+      "score": 66,
+      "resolverConfidence": 0,
+      "labels": [
+        "independent_brand",
+        "likely_mobile",
+        "emerging_creator"
+      ],
+      "signals": [
+        "28 reviews",
+        "2 images",
+        "ig",
+        "book",
+        "mobile"
+      ],
+      "igHandleFound": null,
+      "prospectId": null
+    },
+    {
+      "operatorId": "ss-1973685",
+      "name": "Hair by Quin LLC",
+      "city": "Denver",
+      "state": "CO",
+      "market": "Denver, CO",
+      "categories": [
+        "hair",
+        "braids",
+        "locs"
+      ],
+      "specialties": [
+        "Consultation",
+        "Takedown",
+        "Bob French curls Braids",
+        "Loc retwist",
+        "Starter locs"
+      ],
+      "score": 66,
+      "resolverConfidence": 0,
+      "labels": [
+        "independent_brand",
+        "likely_mobile",
+        "emerging_creator"
+      ],
+      "signals": [
+        "25 reviews",
+        "2 images",
+        "ig",
+        "book",
+        "mobile"
+      ],
+      "igHandleFound": null,
+      "prospectId": null
+    },
+    {
+      "operatorId": "ss-2320012",
+      "name": "Cherifa Traore",
+      "city": "Denver",
+      "state": "CO",
+      "market": "Denver, CO",
+      "categories": [
+        "hair",
+        "braids"
+      ],
+      "specialties": [
+        "Gift card",
+        "Twists Lesson",
+        "Ghana Braids",
+        "Virtual Twist Out",
+        "Braids Tutorial"
+      ],
+      "score": 65,
+      "resolverConfidence": 0,
+      "labels": [
+        "independent_brand",
+        "likely_mobile",
+        "emerging_creator"
+      ],
+      "signals": [
+        "9 reviews",
+        "2 images",
+        "extensions",
+        "ig",
+        "book",
+        "mobile"
+      ],
+      "igHandleFound": null,
+      "prospectId": null
+    },
+    {
+      "operatorId": "ss-2431731",
+      "name": "Mandie Pewett",
+      "city": "Denver",
+      "state": "CO",
+      "market": "Denver, CO",
+      "categories": [
+        "hair",
+        "extensions"
+      ],
+      "specialties": [
+        "Extension hair",
+        "Hair Extensions Maintenance"
+      ],
+      "score": 55,
+      "resolverConfidence": 0,
+      "labels": [
+        "independent_brand",
+        "likely_mobile",
+        "emerging_creator"
+      ],
+      "signals": [
+        "1 reviews",
+        "2 images",
+        "extensions",
+        "ig",
+        "book",
+        "mobile"
+      ],
+      "igHandleFound": null,
+      "prospectId": null
+    }
+  ],
+  "clusters": [
+    {
+      "market": "Denver, CO",
+      "dominantCategories": [
+        "hair",
+        "braids",
+        "lashes",
+        "locs"
+      ],
+      "ecosystemType": "Multicultural Creator Dense",
+      "operatorCount": 8,
+      "avgSocialSignal": 0,
+      "score": 73,
+      "signals": [
+        "8 operators",
+        "0% IG active",
+        "299 avg reviews",
+        "100% mobile indicators",
+        "25% suite/studio indicators"
+      ]
+    },
+    {
+      "market": "Aurora, CO",
+      "dominantCategories": [
+        "hair"
+      ],
+      "ecosystemType": "Mobile Operator Network",
+      "operatorCount": 1,
+      "avgSocialSignal": 0,
+      "score": 53,
+      "signals": [
+        "1 operators",
+        "0% IG active",
+        "435 avg reviews",
+        "100% mobile indicators"
+      ]
+    },
+    {
+      "market": "Wheat Ridge, CO",
+      "dominantCategories": [
+        "hair"
+      ],
+      "ecosystemType": "Mobile Operator Network",
+      "operatorCount": 1,
+      "avgSocialSignal": 0,
+      "score": 53,
+      "signals": [
+        "1 operators",
+        "0% IG active",
+        "328 avg reviews",
+        "100% mobile indicators"
+      ]
+    }
+  ],
+  "insights": [
+    "Denver, CO shows hair, braids, lashes specialization density with a market score of 73.",
+    "Denver, CO operators show elevated mobile stylist indicators.",
+    "Denver, CO has a high unresolved rate and needs deeper identity resolution.",
+    "Aurora, CO shows hair specialization density with a market score of 53.",
+    "Aurora, CO operators show elevated mobile stylist indicators.",
+    "Aurora, CO has a high unresolved rate and needs deeper identity resolution.",
+    "Wheat Ridge, CO shows hair specialization density with a market score of 53.",
+    "Wheat Ridge, CO operators show elevated mobile stylist indicators.",
+    "Wheat Ridge, CO has a high unresolved rate and needs deeper identity resolution.",
+    "hair is the strongest visible category across Denver, CO, Aurora, CO, Wheat Ridge, CO."
+  ],
+  "recommendations": [
+    "Denver, CO hair ecosystem is under-resolved; run deep resolver mode.",
+    "Denver, CO operators have low social linkage; prioritize direct profile URL harvests.",
+    "High premium creator density detected in Denver, CO.",
+    "Aurora, CO hair ecosystem is under-resolved; run deep resolver mode.",
+    "Aurora, CO operators have low social linkage; prioritize direct profile URL harvests.",
+    "High premium creator density detected in Aurora, CO.",
+    "Wheat Ridge, CO hair ecosystem is under-resolved; run deep resolver mode.",
+    "Wheat Ridge, CO operators have low social linkage; prioritize direct profile URL harvests.",
+    "High premium creator density detected in Wheat Ridge, CO."
+  ]
+}

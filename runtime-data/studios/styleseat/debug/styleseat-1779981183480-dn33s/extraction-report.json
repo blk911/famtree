@@ -1,0 +1,21 @@
+{
+  "runId": "styleseat-1779981183480-dn33s",
+  "url": "https://www.styleseat.com/m/search/denver-co/braids",
+  "finalUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+  "createdAt": "2026-05-28T15:13:04.144Z",
+  "fetchedAt": "2026-05-28T15:13:04.137Z",
+  "statusCode": 200,
+  "htmlLength": 128329,
+  "staticAnchorCount": 17,
+  "internalStyleSeatLinkCount": 17,
+  "profileLikeLinkCount": 0,
+  "jsonScriptCount": 0,
+  "jsonLdCount": 0,
+  "nextDataFound": false,
+  "nextFlightFound": false,
+  "embeddedCandidateCount": 0,
+  "networkHintCount": 61,
+  "likelyExtractionSource": "internal_api",
+  "recommendation": "Investigate internal API hints.",
+  "debugArtifactPath": "C:\\dev\\famtree\\runtime-data\\studios\\styleseat\\debug\\styleseat-1779981183480-dn33s"
+}

@@ -1,0 +1,27 @@
+{
+  "nextDataFound": false,
+  "nextFlightFound": false,
+  "embeddedJson": [],
+  "candidateObjects": [],
+  "nextFlight": {
+    "links": [],
+    "possibleProfileSlugs": [],
+    "readableSnippets": [
+      "https://www.styleseat.com",
+      "https://search.styleseat.com",
+      "pushState",
+      "replaceState",
+      "onreadystatechange",
+      "}generateTraceContextStateHeader(e,t,r,n,i){return i+",
+      "tracestate",
+      "pushState-end",
+      "replaceState-end",
+      "popstate",
+      "//www.styleseat.com/scripts/runtime.bb1360bca81958c03175.js",
+      "//www.styleseat.com/scripts/6678.74f583293d8d4da65f2e.js",
+      "//www.styleseat.com/scripts/application.10ffa116938fa5b41ff1.js",
+      "//www.styleseat.com/styles/application.c21fe9d852027a1ec574.css",
+      "styleseat"
+    ]
+  }
+}

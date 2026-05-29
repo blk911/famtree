@@ -1,0 +1,104 @@
+{
+  "sourceUrl": "https://www.styleseat.com/m/search/denver-co/braids",
+  "totals": {
+    "allInternalLinks": 18,
+    "profile": 0,
+    "search": 0,
+    "category": 0,
+    "booking": 0,
+    "login": 0,
+    "unknown": 18
+  },
+  "links": [
+    {
+      "href": "https://www.styleseat.com",
+      "normalizedUrl": "https://www.styleseat.com/",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "https://search.styleseat.com",
+      "normalizedUrl": "https://search.styleseat.com/",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/",
+      "normalizedUrl": "https://www.styleseat.com/",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/favicon-16x16.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/favicon-16x16.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/favicon-32x32.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/favicon-32x32.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/favicon-96x96.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/favicon-96x96.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/android-chrome-192x192.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/android-chrome-192x192.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/android-chrome-512x512.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/android-chrome-512x512.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/apple-touch-icon-57x57.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-57x57.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/apple-touch-icon-60x60.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-60x60.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/apple-touch-icon-72x72.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-72x72.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/apple-touch-icon-76x76.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-76x76.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/apple-touch-icon-114x114.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-114x114.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/apple-touch-icon-120x120.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-120x120.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/apple-touch-icon-144x144.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-144x144.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/apple-touch-icon-152x152.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-152x152.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "/favicons/apple-touch-icon-180x180.png",
+      "normalizedUrl": "https://www.styleseat.com/favicons/apple-touch-icon-180x180.png",
+      "classifiedType": "unknown"
+    },
+    {
+      "href": "//www.styleseat.com/styles/application.c21fe9d852027a1ec574.css",
+      "normalizedUrl": "https://www.styleseat.com/styles/application.c21fe9d852027a1ec574.css",
+      "classifiedType": "unknown"
+    }
+  ]
+}
