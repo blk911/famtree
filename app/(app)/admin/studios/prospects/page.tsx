@@ -368,6 +368,7 @@ export default function ProspectsPage() {
   const [selectedMarkets, setSelectedMarkets] = useState<MarketKey[]>([]);
   const [selectedSubtypes, setSelectedSubtypes] = useState<string[]>([]);
   const [selectedSubtypeAllMarkets, setSelectedSubtypeAllMarkets] = useState<MarketKey[]>([]);
+  const [relationshipAllSelected, setRelationshipAllSelected] = useState(true);
   const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<RelationshipOpportunityType[]>([]);
   const [openMarketDropdown, setOpenMarketDropdown] = useState<MarketKey | null>(null);
   const [relationshipDropdownOpen, setRelationshipDropdownOpen] = useState(false);
@@ -501,7 +502,8 @@ export default function ProspectsPage() {
           return false;
         }
       }
-      if (selectedRelationshipTypes.length > 0 && !selectedRelationshipTypes.includes((p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType)) return false;
+      if (!relationshipAllSelected && selectedRelationshipTypes.length === 0) return false;
+      if (!relationshipAllSelected && selectedRelationshipTypes.length > 0 && !selectedRelationshipTypes.includes((p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType)) return false;
       return true;
     });
 
@@ -522,7 +524,7 @@ export default function ProspectsPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return rows;
-  }, [prospects, selectedMarketCategories, selectedMarkets, selectedSubtypes, selectedSubtypeAllMarkets, selectedSubtypesByMarket, selectedRelationshipTypes, sortKey, sortDir]);
+  }, [prospects, selectedMarketCategories, selectedMarkets, selectedSubtypes, selectedSubtypeAllMarkets, selectedSubtypesByMarket, relationshipAllSelected, selectedRelationshipTypes, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
@@ -542,6 +544,7 @@ export default function ProspectsPage() {
     setSelectedMarkets([]);
     setSelectedSubtypes([]);
     setSelectedSubtypeAllMarkets([]);
+    setRelationshipAllSelected(true);
     setSelectedRelationshipTypes([]);
     setOpenMarketDropdown(null);
     setRelationshipDropdownOpen(false);
@@ -573,6 +576,11 @@ export default function ProspectsPage() {
     setRelationshipDropdownOpen(false);
   }
   function toggleMarketSubtypeAll(marketKey: MarketKey, subtypes: string[]) {
+    if (selectedSubtypeAllMarkets.includes(marketKey)) {
+      setSelectedSubtypeAllMarkets(selectedSubtypeAllMarkets.filter((item) => item !== marketKey));
+      setSelectedSubtypes(selectedSubtypes.filter((subtype) => !subtypes.includes(subtype)));
+      return;
+    }
     setSelectedSubtypeAllMarkets(unique([...selectedSubtypeAllMarkets, marketKey]));
     setSelectedSubtypes(selectedSubtypes.filter((subtype) => !subtypes.includes(subtype)));
   }
@@ -583,33 +591,44 @@ export default function ProspectsPage() {
     const withoutSubtype = selectedSubtypes.filter((item) => item !== subtype);
     setSelectedSubtypeAllMarkets(selectedSubtypeAllMarkets.filter((item) => item !== marketKey));
     if (selected) {
-      if (currentMarketSubtypes.length <= 1) {
-        setSelectedSubtypes(withoutSubtype);
-        setSelectedSubtypeAllMarkets(unique([...selectedSubtypeAllMarkets.filter((item) => item !== marketKey), marketKey]));
-      } else {
-        setSelectedSubtypes(withoutSubtype);
-      }
+      setSelectedSubtypes(withoutSubtype);
     } else {
       setSelectedSubtypes([...withoutSubtype, subtype]);
     }
   }
+  function toggleRelationshipAll() {
+    if (relationshipAllSelected) {
+      setRelationshipAllSelected(false);
+      setSelectedRelationshipTypes([]);
+      return;
+    }
+    setRelationshipAllSelected(true);
+    setSelectedRelationshipTypes([]);
+  }
   function toggleRelationshipType(type: RelationshipOpportunityType) {
+    setRelationshipAllSelected(false);
     toggleValue(type, selectedRelationshipTypes, setSelectedRelationshipTypes);
   }
-  const relationshipSummary = selectedRelationshipTypes.length
+  const relationshipSummary = relationshipAllSelected
+    ? "All"
+    : selectedRelationshipTypes.length
     ? selectedRelationshipTypes.map((t) => RELATIONSHIP_OPPORTUNITY_LABELS[t]).join(", ")
-    : "All";
+    : "None";
   const subtypeSummary = useMemo(() => {
-    if (selectedSubtypes.length === 0 && selectedSubtypeAllMarkets.length === 0) return "All";
+    if (selectedMarkets.length === 0 && selectedSubtypes.length === 0 && selectedSubtypeAllMarkets.length === 0) return "All";
+    if (selectedMarkets.length > 0 && selectedSubtypes.length === 0 && selectedSubtypeAllMarkets.length === 0) return "None";
     if (selectedMarkets.length > 0 && selectedSubtypes.length === 0 && selectedMarkets.every((market) => selectedSubtypeAllMarkets.includes(market))) return "All";
     const allLabels = MARKET_DEFINITIONS
       .filter((market) => selectedSubtypeAllMarkets.includes(market.key))
       .map((market) => `${market.label}: All`);
     const subtypeLabels = selectedSubtypes.map(friendlySubtypeLabel);
-    return [...allLabels, ...subtypeLabels].join(", ");
-  }, [selectedMarkets, selectedSubtypes, selectedSubtypeAllMarkets]);
+    const noneLabels = MARKET_DEFINITIONS
+      .filter((market) => selectedMarkets.includes(market.key) && !selectedSubtypeAllMarkets.includes(market.key) && (selectedSubtypesByMarket[market.key] ?? []).length === 0)
+      .map((market) => `${market.label}: None`);
+    return [...allLabels, ...subtypeLabels, ...noneLabels].join(", ");
+  }, [selectedMarkets, selectedSubtypes, selectedSubtypeAllMarkets, selectedSubtypesByMarket]);
   const hasFilters = fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" || fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" || fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all";
-  const hasWorkflowSelection = selectedMarkets.length > 0 || selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0 || selectedRelationshipTypes.length > 0;
+  const hasWorkflowSelection = selectedMarkets.length > 0 || selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0 || !relationshipAllSelected || selectedRelationshipTypes.length > 0;
   const canCreateCampaign = visible.length > 0 && (hasWorkflowSelection || hasFilters);
 
   const thS: React.CSSProperties = {
@@ -770,8 +789,8 @@ export default function ProspectsPage() {
                     <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, fontSize: 11, fontWeight: 850, color: "#1c1917", cursor: "pointer" }}>
                       <input
                         type="checkbox"
-                        checked={selectedRelationshipTypes.length === 0}
-                        onChange={() => setSelectedRelationshipTypes([])}
+                        checked={relationshipAllSelected}
+                        onChange={toggleRelationshipAll}
                       />
                       All
                     </label>
