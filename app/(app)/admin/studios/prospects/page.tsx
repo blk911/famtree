@@ -369,6 +369,8 @@ export default function ProspectsPage() {
   const [selectedSubtypes, setSelectedSubtypes] = useState<string[]>([]);
   const [selectedSubtypeAllMarkets, setSelectedSubtypeAllMarkets] = useState<MarketKey[]>([]);
   const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<RelationshipOpportunityType[]>([]);
+  const [openMarketDropdown, setOpenMarketDropdown] = useState<MarketKey | null>(null);
+  const [relationshipDropdownOpen, setRelationshipDropdownOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [campaignOpen, setCampaignOpen] = useState(false);
   const pageSize = 100;
@@ -437,10 +439,9 @@ export default function ProspectsPage() {
   }, [prospects]);
 
   const subtypesByMarket = useMemo(() => {
-    const entries: Array<{ market: typeof MARKET_DEFINITIONS[number]; subtypes: string[] }> = [];
-    const marketPool = MARKET_DEFINITIONS.filter((market) => selectedMarkets.includes(market.key));
+    const entries: Record<MarketKey, { market: typeof MARKET_DEFINITIONS[number]; subtypes: string[] }> = {} as Record<MarketKey, { market: typeof MARKET_DEFINITIONS[number]; subtypes: string[] }>;
 
-    for (const market of marketPool) {
+    for (const market of MARKET_DEFINITIONS) {
       const taxonomySubtypes = market.categories.flatMap((category) => BUSINESS_SUBCATEGORIES[category] ?? []);
       const prospectSubtypes = prospects
         .filter((p) => market.categories.includes(p.businessCategory as BusinessCategory))
@@ -448,11 +449,11 @@ export default function ProspectsPage() {
         .filter(Boolean) as string[];
       const subtypes = unique([...(MARKET_SUBTYPE_HINTS[market.key] ?? []), ...taxonomySubtypes, ...prospectSubtypes])
         .sort((a, b) => friendlySubtypeLabel(a).localeCompare(friendlySubtypeLabel(b)));
-      if (subtypes.length > 0) entries.push({ market, subtypes });
+      entries[market.key] = { market, subtypes };
     }
 
     return entries;
-  }, [prospects, selectedMarkets]);
+  }, [prospects]);
 
   const subtypeCountsByMarket = useMemo(() => {
     const counts = Object.fromEntries(MARKET_DEFINITIONS.map((market) => [market.key, {}])) as Record<MarketKey, Record<string, number>>;
@@ -471,7 +472,7 @@ export default function ProspectsPage() {
       return acc;
     }, {} as Record<MarketKey, string[]>);
     for (const subtype of selectedSubtypes) {
-      const owningMarket = subtypesByMarket.find(({ subtypes }) => subtypes.includes(subtype))?.market.key;
+      const owningMarket = MARKET_DEFINITIONS.find((market) => subtypesByMarket[market.key]?.subtypes.includes(subtype))?.key;
       if (owningMarket) grouped[owningMarket].push(subtype);
     }
     return grouped;
@@ -542,36 +543,67 @@ export default function ProspectsPage() {
     setSelectedSubtypes([]);
     setSelectedSubtypeAllMarkets([]);
     setSelectedRelationshipTypes([]);
+    setOpenMarketDropdown(null);
+    setRelationshipDropdownOpen(false);
   }
   function toggleValue<T extends string>(value: T, values: T[], setter: (next: T[]) => void) {
     setter(values.includes(value) ? values.filter((item) => item !== value) : [...values, value]);
   }
-  function toggleMarket(market: typeof MARKET_DEFINITIONS[number]) {
-    if (selectedMarkets.includes(market.key)) {
-      setSelectedMarkets(selectedMarkets.filter((item) => item !== market.key));
-      setSelectedSubtypes(selectedSubtypes.filter((subtype) => {
-        const belongsToMarket = market.categories.some((category) => (BUSINESS_SUBCATEGORIES[category] ?? []).includes(subtype))
-          || (MARKET_SUBTYPE_HINTS[market.key] ?? []).includes(subtype);
-        return !belongsToMarket;
-      }));
-      setSelectedSubtypeAllMarkets(selectedSubtypeAllMarkets.filter((item) => item !== market.key));
-    } else {
+  function marketSubtypeBelongsTo(market: typeof MARKET_DEFINITIONS[number], subtype: string) {
+    return market.categories.some((category) => (BUSINESS_SUBCATEGORIES[category] ?? []).includes(subtype))
+      || (MARKET_SUBTYPE_HINTS[market.key] ?? []).includes(subtype);
+  }
+  function clearMarketSelection(market: typeof MARKET_DEFINITIONS[number]) {
+    setSelectedMarkets(selectedMarkets.filter((item) => item !== market.key));
+    setSelectedSubtypes(selectedSubtypes.filter((subtype) => !marketSubtypeBelongsTo(market, subtype)));
+    setSelectedSubtypeAllMarkets(selectedSubtypeAllMarkets.filter((item) => item !== market.key));
+    if (openMarketDropdown === market.key) setOpenMarketDropdown(null);
+  }
+  function handleMarketButtonClick(market: typeof MARKET_DEFINITIONS[number]) {
+    const selected = selectedMarkets.includes(market.key);
+    if (selected && openMarketDropdown === market.key) {
+      clearMarketSelection(market);
+      return;
+    }
+    if (!selected) {
       setSelectedMarkets([...selectedMarkets, market.key]);
       setSelectedSubtypeAllMarkets(unique([...selectedSubtypeAllMarkets, market.key]));
     }
+    setOpenMarketDropdown(market.key);
+    setRelationshipDropdownOpen(false);
   }
   function toggleMarketSubtypeAll(marketKey: MarketKey, subtypes: string[]) {
     const selected = selectedSubtypeAllMarkets.includes(marketKey);
-    setSelectedSubtypeAllMarkets(selected
-      ? selectedSubtypeAllMarkets.filter((item) => item !== marketKey)
-      : [...selectedSubtypeAllMarkets, marketKey]
-    );
-    if (!selected) setSelectedSubtypes(selectedSubtypes.filter((subtype) => !subtypes.includes(subtype)));
+    if (selected) {
+      setSelectedSubtypeAllMarkets(selectedSubtypeAllMarkets.filter((item) => item !== marketKey));
+      return;
+    }
+    setSelectedSubtypeAllMarkets([...selectedSubtypeAllMarkets, marketKey]);
+    setSelectedSubtypes(selectedSubtypes.filter((subtype) => !subtypes.includes(subtype)));
   }
   function toggleMarketSubtype(marketKey: MarketKey, subtype: string) {
+    const marketSubtypes = subtypesByMarket[marketKey]?.subtypes ?? [];
+    const currentMarketSubtypes = selectedSubtypes.filter((item) => marketSubtypes.includes(item));
+    const selected = currentMarketSubtypes.includes(subtype);
+    const withoutSubtype = selectedSubtypes.filter((item) => item !== subtype);
     setSelectedSubtypeAllMarkets(selectedSubtypeAllMarkets.filter((item) => item !== marketKey));
-    toggleValue(subtype, selectedSubtypes, setSelectedSubtypes);
+    if (selected) {
+      if (currentMarketSubtypes.length <= 1) {
+        setSelectedSubtypes(withoutSubtype);
+        setSelectedSubtypeAllMarkets(unique([...selectedSubtypeAllMarkets.filter((item) => item !== marketKey), marketKey]));
+      } else {
+        setSelectedSubtypes(withoutSubtype);
+      }
+    } else {
+      setSelectedSubtypes([...withoutSubtype, subtype]);
+    }
   }
+  function toggleRelationshipType(type: RelationshipOpportunityType) {
+    toggleValue(type, selectedRelationshipTypes, setSelectedRelationshipTypes);
+  }
+  const relationshipSummary = selectedRelationshipTypes.length
+    ? selectedRelationshipTypes.map((t) => RELATIONSHIP_OPPORTUNITY_LABELS[t]).join(", ")
+    : "All";
   const subtypeSummary = useMemo(() => {
     if (selectedSubtypes.length === 0 && selectedSubtypeAllMarkets.length === 0) return "All";
     if (selectedMarkets.length > 0 && selectedSubtypes.length === 0 && selectedMarkets.every((market) => selectedSubtypeAllMarkets.includes(market))) return "All";
@@ -677,67 +709,42 @@ export default function ProspectsPage() {
               {MARKET_DEFINITIONS.map((market) => {
                 const selected = selectedMarkets.includes(market.key);
                 const count = marketCounts[market.key] ?? 0;
+                const marketSubtypes = subtypesByMarket[market.key]?.subtypes ?? [];
+                const marketSpecific = selectedSubtypesByMarket[market.key] ?? [];
+                const allSelected = selectedSubtypeAllMarkets.includes(market.key);
+                const open = openMarketDropdown === market.key;
                 return (
-                  <button key={market.key} onClick={() => toggleMarket(market)}
-                    style={{
-                      border: selected ? "1px solid #9d174d" : "1px solid #e7e5e4",
-                      background: selected ? "#fdf2f8" : "#fff",
-                      color: selected ? "#9d174d" : "#57534e",
-                      borderRadius: 9, padding: "7px 9px", fontSize: 11, fontWeight: 800, cursor: "pointer",
-                    }}>
-                    {market.label} <span style={{ color: selected ? "#be185d" : "#a8a29e" }}>{count}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 12 }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 7 }}>
-                <div style={{ fontSize: 11, fontWeight: 850, color: "#1c1917" }}>Subtypes</div>
-                <div style={{ fontSize: 10, color: "#a8a29e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  Subtypes: {subtypeSummary}
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "flex-start" }}>
-                {selectedMarkets.length === 0 ? (
-                  <span style={{ fontSize: 11, color: "#a8a29e" }}>Select a market to choose subtypes.</span>
-                ) : subtypesByMarket.length === 0 ? (
-                  <span style={{ fontSize: 11, color: "#a8a29e" }}>No subtypes yet.</span>
-                ) : subtypesByMarket.map(({ market, subtypes }) => {
-                  const marketSpecific = selectedSubtypesByMarket[market.key] ?? [];
-                  const allSelected = selectedSubtypeAllMarkets.includes(market.key);
-                  return (
-                    <details key={market.key} style={{ position: "relative" }}>
-                      <summary style={{
-                        listStyle: "none", border: marketSpecific.length > 0 || selectedSubtypeAllMarkets.includes(market.key) ? "1px solid #0369a1" : "1px solid #e7e5e4",
-                        background: marketSpecific.length > 0 || selectedSubtypeAllMarkets.includes(market.key) ? "#eff6ff" : "#fff",
-                        color: marketSpecific.length > 0 || selectedSubtypeAllMarkets.includes(market.key) ? "#0369a1" : "#57534e",
-                        borderRadius: 9, padding: "7px 9px", fontSize: 10, fontWeight: 850, cursor: "pointer",
+                  <div key={market.key} style={{ position: "relative" }}>
+                    <button onClick={() => handleMarketButtonClick(market)}
+                      style={{
+                        border: selected ? "1px solid #9d174d" : "1px solid #e7e5e4",
+                        background: selected ? "#fdf2f8" : "#fff",
+                        color: selected ? "#9d174d" : "#57534e",
+                        borderRadius: 9, padding: "7px 9px", fontSize: 11, fontWeight: 800, cursor: "pointer",
                       }}>
-                        {market.label} Subtypes <span style={{ color: "#a8a29e" }}>▼</span>
-                      </summary>
+                      {market.label} <span style={{ color: selected ? "#be185d" : "#a8a29e" }}>{count}</span> <span style={{ color: "#a8a29e" }}>▼</span>
+                    </button>
+                    {open && (
                       <div style={{
-                        position: "absolute", zIndex: 5, top: 32, left: 0, width: 250, maxHeight: 290, overflow: "auto",
+                        position: "absolute", zIndex: 12, top: 34, left: 0, width: 250, maxHeight: 290, overflow: "auto",
                         background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, boxShadow: "0 14px 35px rgba(28,25,23,0.14)", padding: 8,
                       }}>
                         <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, fontSize: 11, fontWeight: 850, color: "#1c1917", cursor: "pointer" }}>
                           <input
                             type="checkbox"
                             checked={allSelected}
-                            onChange={() => toggleMarketSubtypeAll(market.key, subtypes)}
+                            onChange={() => toggleMarketSubtypeAll(market.key, marketSubtypes)}
                           />
                           All
                         </label>
                         <div style={{ height: 1, background: "#f0ede8", margin: "4px 0" }} />
-                        {subtypes.map((subtype) => {
-                          const selected = selectedSubtypes.includes(subtype) && !selectedSubtypeAllMarkets.includes(market.key);
+                        {marketSubtypes.map((subtype) => {
+                          const subtypeSelected = marketSpecific.includes(subtype) && !allSelected;
                           return (
                             <label key={subtype} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 7, fontSize: 11, color: "#57534e", cursor: "pointer" }}>
                               <input
                                 type="checkbox"
-                                checked={selected}
+                                checked={subtypeSelected}
                                 onChange={() => toggleMarketSubtype(market.key, subtype)}
                               />
                               <span style={{ flex: 1 }}>{friendlySubtypeLabel(subtype)}</span>
@@ -746,29 +753,55 @@ export default function ProspectsPage() {
                           );
                         })}
                       </div>
-                    </details>
-                  );
-                })}
-              </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            <div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ fontSize: 11, color: "#78716c", minWidth: 240 }}>
+              <strong style={{ color: "#1c1917" }}>Subtypes:</strong> {subtypeSummary}
+            </div>
+            <div style={{ position: "relative" }}>
               <div style={{ fontSize: 11, fontWeight: 850, color: "#1c1917", marginBottom: 7 }}>Relationship Type</div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {RELATIONSHIP_FILTERS.map((entry) => {
-                  const selected = selectedRelationshipTypes.includes(entry.value);
-                  return (
-                    <button key={entry.value} onClick={() => toggleValue(entry.value, selectedRelationshipTypes, setSelectedRelationshipTypes)}
-                      style={{
-                        border: selected ? "1px solid #15803d" : "1px solid #e7e5e4",
-                        background: selected ? "#f0fdf4" : "#fff",
-                        color: selected ? "#15803d" : "#57534e",
-                        borderRadius: 999, padding: "5px 8px", fontSize: 10, fontWeight: 800, cursor: "pointer",
-                      }}>
-                      {entry.label} <span style={{ color: "#a8a29e" }}>{relationshipCounts[entry.value] ?? 0}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <button onClick={() => { setRelationshipDropdownOpen((v) => !v); setOpenMarketDropdown(null); }}
+                style={{
+                  border: selectedRelationshipTypes.length ? "1px solid #15803d" : "1px solid #e7e5e4",
+                  background: selectedRelationshipTypes.length ? "#f0fdf4" : "#fff",
+                  color: selectedRelationshipTypes.length ? "#15803d" : "#57534e",
+                  borderRadius: 9, padding: "7px 9px", fontSize: 11, fontWeight: 850, cursor: "pointer",
+                }}>
+                Relationship Type <span style={{ color: "#a8a29e" }}>▼</span>
+              </button>
+              {relationshipDropdownOpen && (
+                <div style={{
+                  position: "absolute", zIndex: 12, top: 56, right: 0, width: 285, maxHeight: 320, overflow: "auto",
+                  background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, boxShadow: "0 14px 35px rgba(28,25,23,0.14)", padding: 8,
+                }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, fontSize: 11, fontWeight: 850, color: "#1c1917", cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedRelationshipTypes.length === 0}
+                      onChange={() => setSelectedRelationshipTypes([])}
+                    />
+                    All
+                  </label>
+                  <div style={{ height: 1, background: "#f0ede8", margin: "4px 0" }} />
+                  {RELATIONSHIP_FILTERS.map((entry) => (
+                    <label key={entry.value} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 7, fontSize: 11, color: "#57534e", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRelationshipTypes.includes(entry.value)}
+                        onChange={() => toggleRelationshipType(entry.value)}
+                      />
+                      <span style={{ flex: 1 }}>{entry.label}</span>
+                      <span style={{ color: "#a8a29e", fontWeight: 800 }}>{relationshipCounts[entry.value] ?? 0}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -780,7 +813,7 @@ export default function ProspectsPage() {
               <strong style={{ color: "#fff" }}>Selected</strong>
               {" "}Market: {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "All"}
               {" "}· Subtypes: {subtypeSummary}
-              {" "}· Relationship: {selectedRelationshipTypes.length ? selectedRelationshipTypes.map((t) => RELATIONSHIP_OPPORTUNITY_LABELS[t]).join(", ") : "All"}
+              {" "}· Relationship: {relationshipSummary}
             </div>
             <div style={{ marginLeft: "auto", fontSize: 11, color: "#d6d3d1" }}>
               Records: <strong style={{ color: "#fff" }}>{visible.length}</strong> · Avg Opportunity: <strong style={{ color: "#fff" }}>{avgOpportunity}</strong>
