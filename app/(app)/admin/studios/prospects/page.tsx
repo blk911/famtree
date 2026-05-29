@@ -490,16 +490,16 @@ export default function ProspectsPage() {
 
   const visible = useMemo(() => {
     let rows = prospects.filter((p) => {
-      if (selectedMarkets.length === 0) return false;
-
       const marketKey = marketForCategory(p.businessCategory).key;
       const marketSpecificSubtypes = selectedSubtypesByMarket[marketKey] ?? [];
       const marketAllSelected = selectedSubtypeAllMarkets.includes(marketKey);
+      const subtypeFilterActive = !marketAllSelected && marketSpecificSubtypes.length > 0;
+      const relationshipFilterActive = selectedRelationshipTypes.length > 0;
 
-      if (!selectedMarketCategories.includes(p.businessCategory as BusinessCategory)) return false;
-      if (!marketAllSelected && !marketSpecificSubtypes.includes(p.businessSubcategory ?? "")) return false;
+      if (selectedMarkets.length > 0 && !selectedMarketCategories.includes(p.businessCategory as BusinessCategory)) return false;
+      if (subtypeFilterActive && !marketSpecificSubtypes.includes(p.businessSubcategory ?? "")) return false;
 
-      if (!relationshipAllSelected && selectedRelationshipTypes.length > 0 && !selectedRelationshipTypes.includes((p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType)) return false;
+      if (relationshipFilterActive && !selectedRelationshipTypes.includes((p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType)) return false;
       return true;
     });
 
@@ -521,7 +521,7 @@ export default function ProspectsPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return rows;
-  }, [prospects, selectedMarketCategories, selectedMarkets, selectedSubtypeAllMarkets, selectedSubtypesByMarket, relationshipAllSelected, selectedRelationshipTypes, sortKey, sortDir]);
+  }, [prospects, selectedMarketCategories, selectedMarkets, selectedSubtypeAllMarkets, selectedSubtypesByMarket, selectedRelationshipTypes, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
@@ -610,20 +610,15 @@ export default function ProspectsPage() {
     ? "All"
     : selectedRelationshipTypes.length
     ? selectedRelationshipTypes.map((t) => RELATIONSHIP_OPPORTUNITY_LABELS[t]).join(", ")
-    : "None";
+    : "All";
   const subtypeSummary = useMemo(() => {
-    if (selectedMarkets.length === 0) return "None";
-    if (selectedMarkets.length > 0 && selectedSubtypes.length === 0 && selectedSubtypeAllMarkets.length === 0) return "None";
-    if (selectedMarkets.length > 0 && selectedSubtypes.length === 0 && selectedMarkets.every((market) => selectedSubtypeAllMarkets.includes(market))) return "All";
+    if (selectedSubtypes.length === 0) return "All";
     const allLabels = MARKET_DEFINITIONS
       .filter((market) => selectedSubtypeAllMarkets.includes(market.key))
       .map((market) => `${market.label}: All`);
     const subtypeLabels = selectedSubtypes.map(friendlySubtypeLabel);
-    const noneLabels = MARKET_DEFINITIONS
-      .filter((market) => selectedMarkets.includes(market.key) && !selectedSubtypeAllMarkets.includes(market.key) && (selectedSubtypesByMarket[market.key] ?? []).length === 0)
-      .map((market) => `${market.label}: None`);
-    return [...allLabels, ...subtypeLabels, ...noneLabels].join(", ");
-  }, [selectedMarkets, selectedSubtypes, selectedSubtypeAllMarkets, selectedSubtypesByMarket]);
+    return [...allLabels, ...subtypeLabels].join(", ");
+  }, [selectedSubtypes, selectedSubtypeAllMarkets]);
   const hasFilters = fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" || fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" || fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all";
   const hasWorkflowSelection = selectedMarkets.length > 0 || selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0 || !relationshipAllSelected || selectedRelationshipTypes.length > 0;
   const canCreateCampaign = visible.length > 0 && (hasWorkflowSelection || hasFilters);
@@ -815,7 +810,7 @@ export default function ProspectsPage() {
           }}>
             <div style={{ fontSize: 11, color: "#d6d3d1" }}>
               <strong style={{ color: "#fff" }}>Selected</strong>
-              {" "}Market: {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "None"}
+              {" "}Market: {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "All"}
               {" "}· Subtypes: {subtypeSummary}
               {" "}· Relationship: {relationshipSummary}
             </div>
@@ -929,7 +924,7 @@ export default function ProspectsPage() {
             <div style={{ display: "grid", gap: 8, fontSize: 12, color: "#57534e" }}>
               <div><strong style={{ color: "#1c1917" }}>Suggested name:</strong> {suggestedCampaignName}</div>
               <div><strong style={{ color: "#1c1917" }}>Records:</strong> {visible.length}</div>
-              <div><strong style={{ color: "#1c1917" }}>Markets:</strong> {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "None"}</div>
+              <div><strong style={{ color: "#1c1917" }}>Markets:</strong> {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "All selected records"}</div>
               <div><strong style={{ color: "#1c1917" }}>Subtypes:</strong> {subtypeSummary}</div>
               <div><strong style={{ color: "#1c1917" }}>Offer fit tags:</strong> {selectedOfferFitTags.length ? selectedOfferFitTags.map(tagLabel).join(", ") : "None detected yet"}</div>
             </div>
@@ -948,7 +943,7 @@ export default function ProspectsPage() {
         <div style={{ textAlign: "center", padding: "48px 0", color: "#a8a29e" }}>Loading…</div>
       ) : visible.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 0", color: "#a8a29e", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, fontSize: 13 }}>
-          {total === 0 ? "No prospects yet — run Hashtag Harvest to start discovering education creators." : selectedMarkets.length === 0 ? "Select a market to show prospects." : "No prospects match the current filters."}
+          {total === 0 ? "No prospects yet — run Hashtag Harvest to start discovering education creators." : "No prospects match the current filters."}
         </div>
       ) : (
         <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, overflow: "hidden" }}>
