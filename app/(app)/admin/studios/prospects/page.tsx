@@ -490,16 +490,14 @@ export default function ProspectsPage() {
 
   const visible = useMemo(() => {
     let rows = prospects.filter((p) => {
+      if (selectedMarkets.length === 0) return false;
+
       const marketKey = marketForCategory(p.businessCategory).key;
       const marketSpecificSubtypes = selectedSubtypesByMarket[marketKey] ?? [];
       const marketAllSelected = selectedSubtypeAllMarkets.includes(marketKey);
 
-      if (selectedMarkets.length > 0) {
-        if (!selectedMarketCategories.includes(p.businessCategory as BusinessCategory)) return false;
-        if (!marketAllSelected && !marketSpecificSubtypes.includes(p.businessSubcategory ?? "")) return false;
-      } else if (selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0) {
-        if (!marketAllSelected && !selectedSubtypes.includes(p.businessSubcategory ?? "")) return false;
-      }
+      if (!selectedMarketCategories.includes(p.businessCategory as BusinessCategory)) return false;
+      if (!marketAllSelected && !marketSpecificSubtypes.includes(p.businessSubcategory ?? "")) return false;
 
       if (!relationshipAllSelected && selectedRelationshipTypes.length === 0) return false;
       if (!relationshipAllSelected && selectedRelationshipTypes.length > 0 && !selectedRelationshipTypes.includes((p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType)) return false;
@@ -524,7 +522,7 @@ export default function ProspectsPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return rows;
-  }, [prospects, selectedMarketCategories, selectedMarkets, selectedSubtypes, selectedSubtypeAllMarkets, selectedSubtypesByMarket, relationshipAllSelected, selectedRelationshipTypes, sortKey, sortDir]);
+  }, [prospects, selectedMarketCategories, selectedMarkets, selectedSubtypeAllMarkets, selectedSubtypesByMarket, relationshipAllSelected, selectedRelationshipTypes, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
@@ -615,7 +613,7 @@ export default function ProspectsPage() {
     ? selectedRelationshipTypes.map((t) => RELATIONSHIP_OPPORTUNITY_LABELS[t]).join(", ")
     : "None";
   const subtypeSummary = useMemo(() => {
-    if (selectedMarkets.length === 0 && selectedSubtypes.length === 0 && selectedSubtypeAllMarkets.length === 0) return "All";
+    if (selectedMarkets.length === 0) return "None";
     if (selectedMarkets.length > 0 && selectedSubtypes.length === 0 && selectedSubtypeAllMarkets.length === 0) return "None";
     if (selectedMarkets.length > 0 && selectedSubtypes.length === 0 && selectedMarkets.every((market) => selectedSubtypeAllMarkets.includes(market))) return "All";
     const allLabels = MARKET_DEFINITIONS
@@ -818,7 +816,7 @@ export default function ProspectsPage() {
           }}>
             <div style={{ fontSize: 11, color: "#d6d3d1" }}>
               <strong style={{ color: "#fff" }}>Selected</strong>
-              {" "}Market: {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "All"}
+              {" "}Market: {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "None"}
               {" "}· Subtypes: {subtypeSummary}
               {" "}· Relationship: {relationshipSummary}
             </div>
@@ -932,7 +930,7 @@ export default function ProspectsPage() {
             <div style={{ display: "grid", gap: 8, fontSize: 12, color: "#57534e" }}>
               <div><strong style={{ color: "#1c1917" }}>Suggested name:</strong> {suggestedCampaignName}</div>
               <div><strong style={{ color: "#1c1917" }}>Records:</strong> {visible.length}</div>
-              <div><strong style={{ color: "#1c1917" }}>Markets:</strong> {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "All selected records"}</div>
+              <div><strong style={{ color: "#1c1917" }}>Markets:</strong> {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "None"}</div>
               <div><strong style={{ color: "#1c1917" }}>Subtypes:</strong> {subtypeSummary}</div>
               <div><strong style={{ color: "#1c1917" }}>Offer fit tags:</strong> {selectedOfferFitTags.length ? selectedOfferFitTags.map(tagLabel).join(", ") : "None detected yet"}</div>
             </div>
@@ -951,7 +949,7 @@ export default function ProspectsPage() {
         <div style={{ textAlign: "center", padding: "48px 0", color: "#a8a29e" }}>Loading…</div>
       ) : visible.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 0", color: "#a8a29e", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, fontSize: 13 }}>
-          {total === 0 ? "No prospects yet — run Hashtag Harvest to start discovering education creators." : "No prospects match the current filters."}
+          {total === 0 ? "No prospects yet — run Hashtag Harvest to start discovering education creators." : selectedMarkets.length === 0 ? "Select a market to show prospects." : "No prospects match the current filters."}
         </div>
       ) : (
         <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, overflow: "hidden" }}>
