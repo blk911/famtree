@@ -964,11 +964,11 @@ export default function ProspectsPage() {
                   ["businessCategory","Market"],
                   [null,              "Subtype"],
                   ["opportunityScore","Opportunity"],
+                  [null,              "Location"],
                   [null,              "Relationship"],
                   [null,              "Offer Fit Tags"],
                   [null,              "Platform Signals"],
                   [null,              "Best URL"],
-                  [null,              "Location"],
                   ["validationStatus","Status"],
                 ] as [SortKey | null, string][]).map(([key, label]) => (
                   <th key={label} style={thS} onClick={() => key && toggleSort(key)}>
@@ -1005,6 +1005,7 @@ export default function ProspectsPage() {
                           {p.overallOpportunityScore ?? <span style={{ color: "#d6d3d1" }}>—</span>}
                         </span>
                       </td>
+                      <td style={tdS}>{p.identity.locationGuess ?? <span style={{ color: "#d6d3d1" }}>—</span>}</td>
                       <td style={tdS}>
                         {p.relationshipOpportunityType ? (
                           <span style={{ fontSize: 10, background: "#eff6ff", color: "#1d4ed8", borderRadius: 20, padding: "2px 7px", fontWeight: 700 }}>
@@ -1039,7 +1040,6 @@ export default function ProspectsPage() {
                           </a>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
-                      <td style={tdS}>{p.identity.locationGuess ?? <span style={{ color: "#d6d3d1" }}>—</span>}</td>
                       <td style={tdS}>
                         <ValidationBadge vs={p.validationStatus} />
                       </td>
