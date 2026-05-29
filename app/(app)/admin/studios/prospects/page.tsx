@@ -573,12 +573,7 @@ export default function ProspectsPage() {
     setRelationshipDropdownOpen(false);
   }
   function toggleMarketSubtypeAll(marketKey: MarketKey, subtypes: string[]) {
-    const selected = selectedSubtypeAllMarkets.includes(marketKey);
-    if (selected) {
-      setSelectedSubtypeAllMarkets(selectedSubtypeAllMarkets.filter((item) => item !== marketKey));
-      return;
-    }
-    setSelectedSubtypeAllMarkets([...selectedSubtypeAllMarkets, marketKey]);
+    setSelectedSubtypeAllMarkets(unique([...selectedSubtypeAllMarkets, marketKey]));
     setSelectedSubtypes(selectedSubtypes.filter((subtype) => !subtypes.includes(subtype)));
   }
   function toggleMarketSubtype(marketKey: MarketKey, subtype: string) {
@@ -757,6 +752,44 @@ export default function ProspectsPage() {
                   </div>
                 );
               })}
+              <div style={{ position: "relative" }}>
+                <button onClick={() => { setRelationshipDropdownOpen((v) => !v); setOpenMarketDropdown(null); }}
+                  style={{
+                    border: selectedRelationshipTypes.length ? "1px solid #15803d" : "1px solid #e7e5e4",
+                    background: selectedRelationshipTypes.length ? "#f0fdf4" : "#fff",
+                    color: selectedRelationshipTypes.length ? "#15803d" : "#57534e",
+                    borderRadius: 9, padding: "7px 9px", fontSize: 11, fontWeight: 850, cursor: "pointer",
+                  }}>
+                  Relationship Type <span style={{ color: "#a8a29e" }}>▼</span>
+                </button>
+                {relationshipDropdownOpen && (
+                  <div style={{
+                    position: "absolute", zIndex: 12, top: 34, right: 0, width: 285, maxHeight: 320, overflow: "auto",
+                    background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, boxShadow: "0 14px 35px rgba(28,25,23,0.14)", padding: 8,
+                  }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, fontSize: 11, fontWeight: 850, color: "#1c1917", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRelationshipTypes.length === 0}
+                        onChange={() => setSelectedRelationshipTypes([])}
+                      />
+                      All
+                    </label>
+                    <div style={{ height: 1, background: "#f0ede8", margin: "4px 0" }} />
+                    {RELATIONSHIP_FILTERS.map((entry) => (
+                      <label key={entry.value} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 7, fontSize: 11, color: "#57534e", cursor: "pointer" }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedRelationshipTypes.includes(entry.value)}
+                          onChange={() => toggleRelationshipType(entry.value)}
+                        />
+                        <span style={{ flex: 1 }}>{entry.label}</span>
+                        <span style={{ color: "#a8a29e", fontWeight: 800 }}>{relationshipCounts[entry.value] ?? 0}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -764,44 +797,8 @@ export default function ProspectsPage() {
             <div style={{ fontSize: 11, color: "#78716c", minWidth: 240 }}>
               <strong style={{ color: "#1c1917" }}>Subtypes:</strong> {subtypeSummary}
             </div>
-            <div style={{ position: "relative" }}>
-              <div style={{ fontSize: 11, fontWeight: 850, color: "#1c1917", marginBottom: 7 }}>Relationship Type</div>
-              <button onClick={() => { setRelationshipDropdownOpen((v) => !v); setOpenMarketDropdown(null); }}
-                style={{
-                  border: selectedRelationshipTypes.length ? "1px solid #15803d" : "1px solid #e7e5e4",
-                  background: selectedRelationshipTypes.length ? "#f0fdf4" : "#fff",
-                  color: selectedRelationshipTypes.length ? "#15803d" : "#57534e",
-                  borderRadius: 9, padding: "7px 9px", fontSize: 11, fontWeight: 850, cursor: "pointer",
-                }}>
-                Relationship Type <span style={{ color: "#a8a29e" }}>▼</span>
-              </button>
-              {relationshipDropdownOpen && (
-                <div style={{
-                  position: "absolute", zIndex: 12, top: 56, right: 0, width: 285, maxHeight: 320, overflow: "auto",
-                  background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, boxShadow: "0 14px 35px rgba(28,25,23,0.14)", padding: 8,
-                }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, fontSize: 11, fontWeight: 850, color: "#1c1917", cursor: "pointer" }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedRelationshipTypes.length === 0}
-                      onChange={() => setSelectedRelationshipTypes([])}
-                    />
-                    All
-                  </label>
-                  <div style={{ height: 1, background: "#f0ede8", margin: "4px 0" }} />
-                  {RELATIONSHIP_FILTERS.map((entry) => (
-                    <label key={entry.value} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 7, fontSize: 11, color: "#57534e", cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedRelationshipTypes.includes(entry.value)}
-                        onChange={() => toggleRelationshipType(entry.value)}
-                      />
-                      <span style={{ flex: 1 }}>{entry.label}</span>
-                      <span style={{ color: "#a8a29e", fontWeight: 800 }}>{relationshipCounts[entry.value] ?? 0}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
+            <div style={{ fontSize: 11, color: "#78716c", minWidth: 220 }}>
+              <strong style={{ color: "#1c1917" }}>Relationship:</strong> {relationshipSummary}
             </div>
           </div>
 
