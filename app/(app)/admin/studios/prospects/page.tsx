@@ -70,28 +70,14 @@ type MarketKey =
   | "fitness_wellness"
   | "education"
   | "artists_creators"
-  | "pet_services"
-  | "wedding_events"
-  | "home_services"
-  | "music_performing_arts"
-  | "medical_aesthetics"
-  | "coaching_consulting"
-  | "retail_makers"
-  | "other_unknown";
+  | "misc";
 
 const MARKET_DEFINITIONS: Array<{ key: MarketKey; label: string; categories: BusinessCategory[] }> = [
-  { key: "personal_care", label: "Personal Care", categories: ["beauty_personal_care"] },
-  { key: "fitness_wellness", label: "Fitness & Wellness", categories: ["fitness_wellness"] },
+  { key: "personal_care", label: "Personal Care", categories: ["beauty_personal_care", "medical_aesthetic"] },
+  { key: "fitness_wellness", label: "Fitness / Wellness", categories: ["fitness_wellness"] },
   { key: "education", label: "Education", categories: ["education_tutor", "homeschool_microschool"] },
-  { key: "artists_creators", label: "Artists & Creators", categories: ["artist_creator", "photographer_videographer"] },
-  { key: "pet_services", label: "Pet Services", categories: ["pet_services"] },
-  { key: "wedding_events", label: "Wedding & Events", categories: ["wedding_events"] },
-  { key: "home_services", label: "Home Services", categories: ["home_services"] },
-  { key: "music_performing_arts", label: "Music & Performing Arts", categories: ["music_performing_arts"] },
-  { key: "medical_aesthetics", label: "Medical Aesthetics", categories: ["medical_aesthetic"] },
-  { key: "coaching_consulting", label: "Coaching & Consulting", categories: ["coach_consultant"] },
-  { key: "retail_makers", label: "Retail / Makers", categories: ["retail_maker"] },
-  { key: "other_unknown", label: "Other / Unknown", categories: ["unknown"] },
+  { key: "artists_creators", label: "Artists / Creators", categories: ["artist_creator", "photographer_videographer", "music_performing_arts", "retail_maker"] },
+  { key: "misc", label: "Misc", categories: ["pet_services", "wedding_events", "coach_consultant", "home_services", "food_hospitality", "unknown"] },
 ];
 
 const RELATIONSHIP_FILTERS: Array<{ value: RelationshipOpportunityType; label: string }> = [
@@ -106,7 +92,17 @@ const RELATIONSHIP_FILTERS: Array<{ value: RelationshipOpportunityType; label: s
 ];
 
 const EXTRA_SUBTYPE_LABELS: Record<string, string> = {
+  artist: "Artist",
+  event_vendor: "Event Vendor",
   esthetics: "Esthetics",
+  medical_aesthetics: "Medical Aesthetics",
+  musician: "Musician",
+  other_unknown: "Other / Unknown",
+  pet_services: "Pet Services",
+  retail_maker: "Retail / Maker",
+  videographer: "Videographer",
+  wellness_coach: "Wellness Coach",
+  wedding_planner: "Wedding Planner",
   waxing: "Waxing",
   homeschool: "Homeschool",
   microschool: "Microschool",
@@ -115,12 +111,11 @@ const EXTRA_SUBTYPE_LABELS: Record<string, string> = {
 };
 
 const MARKET_SUBTYPE_HINTS: Partial<Record<MarketKey, string[]>> = {
-  personal_care: ["nails", "hair", "esthetics", "makeup", "lashes", "barber", "waxing"],
-  fitness_wellness: ["personal_trainer", "yoga", "pilates", "nutrition", "sports_coach"],
+  personal_care: ["nails", "hair", "barber", "esthetics", "lashes", "makeup", "braids", "extensions", "medical_aesthetics"],
+  fitness_wellness: ["personal_trainer", "yoga", "pilates", "nutrition", "sports_coach", "wellness_coach"],
   education: ["tutor", "math_tutor", "science_tutor", "reading_tutor", "test_prep", "homeschool", "microschool", "music_teacher", "coding_teacher"],
-  artists_creators: ["artist", "watercolor_artist", "illustrator", "photographer", "sculptor", "digital_artist", "maker", "craft_artist"],
-  pet_services: ["dog_trainer", "groomer", "boarding", "breeder", "vet_adjacent"],
-  wedding_events: ["photographer", "planner", "florist", "makeup", "venue", "caterer"],
+  artists_creators: ["artist", "painter", "watercolor_artist", "illustrator", "digital_artist", "photographer", "videographer", "maker", "craft_artist", "musician"],
+  misc: ["pet_services", "dog_trainer", "groomer", "wedding_planner", "event_vendor", "home_services", "coach_consultant", "retail_maker", "other_unknown"],
 };
 
 function marketForCategory(category?: string | null): typeof MARKET_DEFINITIONS[number] {
@@ -443,9 +438,7 @@ export default function ProspectsPage() {
 
   const subtypesByMarket = useMemo(() => {
     const entries: Array<{ market: typeof MARKET_DEFINITIONS[number]; subtypes: string[] }> = [];
-    const marketPool = selectedMarkets.length > 0
-      ? MARKET_DEFINITIONS.filter((market) => selectedMarkets.includes(market.key))
-      : MARKET_DEFINITIONS;
+    const marketPool = MARKET_DEFINITIONS.filter((market) => selectedMarkets.includes(market.key));
 
     for (const market of marketPool) {
       const taxonomySubtypes = market.categories.flatMap((category) => BUSINESS_SUBCATEGORIES[category] ?? []);
@@ -502,7 +495,7 @@ export default function ProspectsPage() {
       const hasAnySubtypeSelection = selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0;
       if (hasAnySubtypeSelection) {
         if (selectedMarkets.length > 0) {
-          if (!marketAllSelected && marketSpecificSubtypes.length > 0 && !marketSpecificSubtypes.includes(p.businessSubcategory ?? "")) return false;
+          if (!marketAllSelected && !marketSpecificSubtypes.includes(p.businessSubcategory ?? "")) return false;
         } else if (!marketAllSelected && !selectedSubtypes.includes(p.businessSubcategory ?? "")) {
           return false;
         }
@@ -564,6 +557,7 @@ export default function ProspectsPage() {
       setSelectedSubtypeAllMarkets(selectedSubtypeAllMarkets.filter((item) => item !== market.key));
     } else {
       setSelectedMarkets([...selectedMarkets, market.key]);
+      setSelectedSubtypeAllMarkets(unique([...selectedSubtypeAllMarkets, market.key]));
     }
   }
   function toggleMarketSubtypeAll(marketKey: MarketKey, subtypes: string[]) {
@@ -580,12 +574,13 @@ export default function ProspectsPage() {
   }
   const subtypeSummary = useMemo(() => {
     if (selectedSubtypes.length === 0 && selectedSubtypeAllMarkets.length === 0) return "All";
+    if (selectedMarkets.length > 0 && selectedSubtypes.length === 0 && selectedMarkets.every((market) => selectedSubtypeAllMarkets.includes(market))) return "All";
     const allLabels = MARKET_DEFINITIONS
       .filter((market) => selectedSubtypeAllMarkets.includes(market.key))
       .map((market) => `${market.label}: All`);
     const subtypeLabels = selectedSubtypes.map(friendlySubtypeLabel);
     return [...allLabels, ...subtypeLabels].join(", ");
-  }, [selectedSubtypes, selectedSubtypeAllMarkets]);
+  }, [selectedMarkets, selectedSubtypes, selectedSubtypeAllMarkets]);
   const hasFilters = fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" || fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" || fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all";
   const hasWorkflowSelection = selectedMarkets.length > 0 || selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0 || selectedRelationshipTypes.length > 0;
   const canCreateCampaign = visible.length > 0 && (hasWorkflowSelection || hasFilters);
@@ -706,11 +701,13 @@ export default function ProspectsPage() {
                 </div>
               </div>
               <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "flex-start" }}>
-                {subtypesByMarket.length === 0 ? (
+                {selectedMarkets.length === 0 ? (
+                  <span style={{ fontSize: 11, color: "#a8a29e" }}>Select a market to choose subtypes.</span>
+                ) : subtypesByMarket.length === 0 ? (
                   <span style={{ fontSize: 11, color: "#a8a29e" }}>No subtypes yet.</span>
                 ) : subtypesByMarket.map(({ market, subtypes }) => {
                   const marketSpecific = selectedSubtypesByMarket[market.key] ?? [];
-                  const allSelected = selectedSubtypeAllMarkets.includes(market.key) || marketSpecific.length === 0;
+                  const allSelected = selectedSubtypeAllMarkets.includes(market.key);
                   return (
                     <details key={market.key} style={{ position: "relative" }}>
                       <summary style={{
