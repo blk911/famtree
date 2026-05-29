@@ -7,7 +7,8 @@ import { Fragment, useState, useEffect, useMemo } from "react";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import type { ProspectRecord, ProspectStatus, ProspectListResponse } from "@/lib/studios/prospects/types";
 import { PROSPECT_STATUS_LABELS, PROSPECT_STATUS_COLORS } from "@/lib/studios/prospects/types";
-import { BUSINESS_CATEGORIES, BUSINESS_CATEGORY_LABELS, RELATIONSHIP_OPPORTUNITY_LABELS, RELATIONSHIP_OPPORTUNITY_TYPES } from "@/lib/studios/prospects/opportunity-taxonomy";
+import { BUSINESS_CATEGORIES, BUSINESS_CATEGORY_LABELS, BUSINESS_SUBCATEGORIES, RELATIONSHIP_OPPORTUNITY_LABELS, RELATIONSHIP_OPPORTUNITY_TYPES } from "@/lib/studios/prospects/opportunity-taxonomy";
+import type { BusinessCategory, RelationshipOpportunityType } from "@/lib/studios/prospects/opportunity-taxonomy";
 import {
   VALIDATION_STATUS_LABELS,
   VALIDATION_STATUS_COLORS,
@@ -61,7 +62,72 @@ function evidenceLabel(e: ProspectRecord["evidence"][number]): string {
 }
 
 function tagLabel(value: string): string {
-  return value.replace(/_/g, " ");
+  return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+type MarketKey =
+  | "personal_care"
+  | "fitness_wellness"
+  | "education"
+  | "artists_creators"
+  | "pet_services"
+  | "wedding_events"
+  | "home_services"
+  | "music_performing_arts"
+  | "medical_aesthetics"
+  | "coaching_consulting"
+  | "retail_makers"
+  | "other_unknown";
+
+const MARKET_DEFINITIONS: Array<{ key: MarketKey; label: string; categories: BusinessCategory[] }> = [
+  { key: "personal_care", label: "Personal Care", categories: ["beauty_personal_care"] },
+  { key: "fitness_wellness", label: "Fitness & Wellness", categories: ["fitness_wellness"] },
+  { key: "education", label: "Education", categories: ["education_tutor", "homeschool_microschool"] },
+  { key: "artists_creators", label: "Artists & Creators", categories: ["artist_creator", "photographer_videographer"] },
+  { key: "pet_services", label: "Pet Services", categories: ["pet_services"] },
+  { key: "wedding_events", label: "Wedding & Events", categories: ["wedding_events"] },
+  { key: "home_services", label: "Home Services", categories: ["home_services"] },
+  { key: "music_performing_arts", label: "Music & Performing Arts", categories: ["music_performing_arts"] },
+  { key: "medical_aesthetics", label: "Medical Aesthetics", categories: ["medical_aesthetic"] },
+  { key: "coaching_consulting", label: "Coaching & Consulting", categories: ["coach_consultant"] },
+  { key: "retail_makers", label: "Retail / Makers", categories: ["retail_maker"] },
+  { key: "other_unknown", label: "Other / Unknown", categories: ["unknown"] },
+];
+
+const RELATIONSHIP_FILTERS: Array<{ value: RelationshipOpportunityType; label: string }> = [
+  { value: "appointment_operator", label: "Appointment Operators" },
+  { value: "class_workshop_operator", label: "Class / Workshop Operators" },
+  { value: "audience_operator", label: "Audience Operators" },
+  { value: "community_operator", label: "Community Operators" },
+  { value: "commerce_operator", label: "Commerce Operators" },
+  { value: "content_operator", label: "Content Operators" },
+  { value: "relationship_operator", label: "Relationship Operators" },
+  { value: "low_fit_unknown", label: "Unknown / Low Fit" },
+];
+
+const EXTRA_SUBTYPE_LABELS: Record<string, string> = {
+  esthetics: "Esthetics",
+  waxing: "Waxing",
+  homeschool: "Homeschool",
+  microschool: "Microschool",
+  photographer: "Photographer",
+};
+
+function marketForCategory(category?: string | null): typeof MARKET_DEFINITIONS[number] {
+  return MARKET_DEFINITIONS.find((market) => market.categories.includes(category as BusinessCategory)) ?? MARKET_DEFINITIONS[MARKET_DEFINITIONS.length - 1];
+}
+
+function friendlyMarketLabel(category?: string | null): string {
+  return marketForCategory(category).label;
+}
+
+function friendlySubtypeLabel(value?: string | null): string {
+  if (!value) return "Unknown";
+  return EXTRA_SUBTYPE_LABELS[value] ?? tagLabel(value);
+}
+
+function unique<T>(values: T[]): T[] {
+  return Array.from(new Set(values));
 }
 
 // ─── Expanded detail ──────────────────────────────────────────────────────────
@@ -294,6 +360,11 @@ export default function ProspectsPage() {
   const [fMinOpp, setFMinOpp] = useState(0);
   const [fPlatformSignal, setFPlatformSignal] = useState("all");
   const [fOfferFitTag, setFOfferFitTag] = useState("all");
+  const [selectedMarkets, setSelectedMarkets] = useState<MarketKey[]>([]);
+  const [selectedSubtypes, setSelectedSubtypes] = useState<string[]>([]);
+  const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<RelationshipOpportunityType[]>([]);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [campaignOpen, setCampaignOpen] = useState(false);
   const pageSize = 100;
 
   useEffect(() => {
@@ -341,8 +412,63 @@ export default function ProspectsPage() {
   const platformSignals = useMemo(() => Array.from(new Set(prospects.flatMap((p) => p.platformSignals ?? []))).sort(), [prospects]);
   const offerFitTags = useMemo(() => Array.from(new Set(prospects.flatMap((p) => p.offerFitTags ?? []))).sort(), [prospects]);
 
+  const selectedMarketCategories = useMemo(() => {
+    if (selectedMarkets.length === 0) return [];
+    return MARKET_DEFINITIONS
+      .filter((market) => selectedMarkets.includes(market.key))
+      .flatMap((market) => market.categories);
+  }, [selectedMarkets]);
+
+  const selectedMarketLabels = useMemo(
+    () => MARKET_DEFINITIONS.filter((market) => selectedMarkets.includes(market.key)).map((market) => market.label),
+    [selectedMarkets]
+  );
+
+  const marketCounts = useMemo(() => {
+    const counts: Record<MarketKey, number> = Object.fromEntries(MARKET_DEFINITIONS.map((market) => [market.key, 0])) as Record<MarketKey, number>;
+    for (const prospect of prospects) counts[marketForCategory(prospect.businessCategory).key]++;
+    return counts;
+  }, [prospects]);
+
+  const availableSubtypes = useMemo(() => {
+    const categoryPool = selectedMarketCategories.length > 0
+      ? selectedMarketCategories
+      : unique(prospects.map((p) => p.businessCategory).filter(Boolean) as BusinessCategory[]);
+    const taxonomySubtypes = categoryPool.flatMap((category) => BUSINESS_SUBCATEGORIES[category] ?? []);
+    const prospectSubtypes = prospects
+      .filter((p) => selectedMarketCategories.length === 0 || selectedMarketCategories.includes(p.businessCategory as BusinessCategory))
+      .map((p) => p.businessSubcategory)
+      .filter(Boolean) as string[];
+    return unique([...taxonomySubtypes, ...prospectSubtypes]).sort((a, b) => friendlySubtypeLabel(a).localeCompare(friendlySubtypeLabel(b)));
+  }, [prospects, selectedMarketCategories]);
+
+  const subtypeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const prospect of prospects) {
+      if (selectedMarketCategories.length > 0 && !selectedMarketCategories.includes(prospect.businessCategory as BusinessCategory)) continue;
+      const subtype = prospect.businessSubcategory;
+      if (!subtype) continue;
+      counts[subtype] = (counts[subtype] ?? 0) + 1;
+    }
+    return counts;
+  }, [prospects, selectedMarketCategories]);
+
+  const relationshipCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const prospect of prospects) {
+      const type = prospect.relationshipOpportunityType ?? "low_fit_unknown";
+      counts[type] = (counts[type] ?? 0) + 1;
+    }
+    return counts;
+  }, [prospects]);
+
   const visible = useMemo(() => {
-    let rows = [...prospects];
+    let rows = prospects.filter((p) => {
+      if (selectedMarketCategories.length > 0 && !selectedMarketCategories.includes(p.businessCategory as BusinessCategory)) return false;
+      if (selectedSubtypes.length > 0 && !selectedSubtypes.includes(p.businessSubcategory ?? "")) return false;
+      if (selectedRelationshipTypes.length > 0 && !selectedRelationshipTypes.includes((p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType)) return false;
+      return true;
+    });
 
     rows.sort((a, b) => {
       let av: string | number = "", bv: string | number = "";
@@ -361,7 +487,7 @@ export default function ProspectsPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return rows;
-  }, [prospects, sortKey, sortDir]);
+  }, [prospects, selectedMarketCategories, selectedSubtypes, selectedRelationshipTypes, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
@@ -377,7 +503,17 @@ export default function ProspectsPage() {
     setFHashtag("all"); setFPlatform("all"); setFMinConf(0);
     setFBusinessCategory("all"); setFOpportunityType("all"); setFMinOpp(0); setFPlatformSignal("all"); setFOfferFitTag("all");
   }
+  function clearWorkflowSelection() {
+    setSelectedMarkets([]);
+    setSelectedSubtypes([]);
+    setSelectedRelationshipTypes([]);
+  }
+  function toggleValue<T extends string>(value: T, values: T[], setter: (next: T[]) => void) {
+    setter(values.includes(value) ? values.filter((item) => item !== value) : [...values, value]);
+  }
   const hasFilters = fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" || fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" || fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all";
+  const hasWorkflowSelection = selectedMarkets.length > 0 || selectedSubtypes.length > 0 || selectedRelationshipTypes.length > 0;
+  const canCreateCampaign = visible.length > 0 && (hasWorkflowSelection || hasFilters);
 
   const thS: React.CSSProperties = {
     textAlign: "left", padding: "8px 10px", fontSize: 10, fontWeight: 700,
@@ -395,10 +531,21 @@ export default function ProspectsPage() {
 
   // Stats
   const total       = totalCount;
-  const priority    = prospects.filter((p) => p.validationStatus === "priority").length;
-  const edRelevant  = prospects.filter((p) => p.validationStatus === "education_relevant").length;
   const needsReview = prospects.filter((p) => (p.validationStatus ?? "new") === "needs_review").length;
-  const archived    = prospects.filter((p) => p.validationStatus === "archive").length;
+  const distinctMarkets = unique(prospects.map((p) => marketForCategory(p.businessCategory).key)).length;
+  const distinctSubtypes = unique(prospects.map((p) => p.businessSubcategory).filter(Boolean) as string[]).length;
+  const relationshipOperators = prospects.filter((p) => (p.relationshipOpportunityType ?? "low_fit_unknown") !== "low_fit_unknown").length;
+  const campaignReady = visible.filter((p) => (p.overallOpportunityScore ?? 0) >= 60 && p.validationStatus !== "archive").length;
+  const highOpportunity = visible.filter((p) => (p.overallOpportunityScore ?? 0) >= 75).length;
+  const avgOpportunity = visible.length
+    ? Math.round(visible.reduce((sum, p) => sum + (p.overallOpportunityScore ?? 0), 0) / visible.length)
+    : 0;
+  const selectedOfferFitTags = unique(visible.flatMap((p) => p.offerFitTags ?? [])).slice(0, 8);
+  const suggestedCampaignName = selectedMarketLabels.length > 0
+    ? `${selectedMarketLabels.join(" + ")}${selectedRelationshipTypes.length === 1 ? ` - ${RELATIONSHIP_OPPORTUNITY_LABELS[selectedRelationshipTypes[0]]}` : ""}`
+    : visible.some((p) => p.businessCategory === "education_tutor" || p.businessCategory === "homeschool_microschool")
+      ? "Education Tutors - Parent Network"
+      : "Relationship Operator Working Set";
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
@@ -407,29 +554,140 @@ export default function ProspectsPage() {
       {/* Header */}
       <div style={{ marginBottom: 6 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>
-          Discovered Entities Under Review
+          Prospect Market Intelligence
         </h1>
         <p style={{ fontSize: 12, color: "#a8a29e", margin: 0, maxWidth: 680, lineHeight: 1.5 }}>
-          Prospects are not sales-ready leads. This is the working repository for discovered education accounts — tutors, microschools, parent communities, curriculum sellers, and related entities. Validate, enrich, score, activate, or archive from here.
+          Find the market, isolate relationship operators, then build a campaign around the right offer.
         </p>
       </div>
 
-      {/* Stats */}
+      {/* Workflow */}
       {!loading && (
-        <div style={{ display: "flex", gap: 10, margin: "16px 0", flexWrap: "wrap" }}>
-          {[
-            { label: "Total",             val: total,       color: "#1c1917" },
-            { label: "Priority",          val: priority,    color: "#15803d" },
-            { label: "Education Relevant",val: edRelevant,  color: "#6d28d9" },
-            { label: "Needs Review",      val: needsReview, color: "#b45309" },
-            { label: "Archived",          val: archived,    color: "#a8a29e" },
-            { label: "High Opportunity",  val: prospects.filter((p) => (p.overallOpportunityScore ?? 0) >= 65).length, color: "#9d174d" },
-          ].map(({ label, val, color }) => (
-            <div key={label} style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, padding: "8px 14px", textAlign: "center" }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color }}>{val}</div>
-              <div style={{ fontSize: 9, color: "#a8a29e", fontWeight: 700, letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{label.toUpperCase()}</div>
+        <div style={{ margin: "16px 0", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, padding: 14 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 850, color: "#1c1917" }}>Market Intelligence</div>
+              <div style={{ fontSize: 12, color: "#78716c", marginTop: 2 }}>
+                Find the market, isolate relationship operators, then build a campaign around the right offer.
+              </div>
             </div>
-          ))}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+              {["Find Market", "Find Relationship Operators", "Create Campaign"].map((step, i) => (
+                <div key={step} style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "6px 9px", borderRadius: 999,
+                  background: i === 0 ? "#fdf2f8" : "#f5f5f4", color: i === 0 ? "#9d174d" : "#57534e",
+                  fontSize: 11, fontWeight: 800,
+                }}>
+                  <span style={{ width: 18, height: 18, display: "grid", placeItems: "center", borderRadius: 999, background: "#fff", border: "1px solid #e7e5e4" }}>{i + 1}</span>
+                  {step}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: 8, marginBottom: 14 }}>
+            {[
+              { label: "Markets", val: distinctMarkets, color: "#1c1917" },
+              { label: "Subtypes", val: distinctSubtypes, color: "#57534e" },
+              { label: "Relationship Operators", val: relationshipOperators, color: "#0369a1" },
+              { label: "Campaign Ready", val: campaignReady, color: "#15803d" },
+              { label: "High Opportunity", val: highOpportunity, color: "#9d174d" },
+              { label: "Needs Review", val: needsReview, color: "#b45309" },
+            ].map(({ label, val, color }) => (
+              <div key={label} style={{ background: "#fafaf9", border: "1px solid #ede9e4", borderRadius: 10, padding: "9px 10px" }}>
+                <div style={{ fontSize: 20, fontWeight: 850, color }}>{val}</div>
+                <div style={{ fontSize: 9, color: "#a8a29e", fontWeight: 800, letterSpacing: "0.04em" }}>{label.toUpperCase()}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 850, color: "#1c1917", marginBottom: 7 }}>Business Type / Market</div>
+            <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+              {MARKET_DEFINITIONS.map((market) => {
+                const selected = selectedMarkets.includes(market.key);
+                const count = marketCounts[market.key] ?? 0;
+                return (
+                  <button key={market.key} onClick={() => toggleValue(market.key, selectedMarkets, setSelectedMarkets)}
+                    style={{
+                      border: selected ? "1px solid #9d174d" : "1px solid #e7e5e4",
+                      background: selected ? "#fdf2f8" : "#fff",
+                      color: selected ? "#9d174d" : "#57534e",
+                      borderRadius: 9, padding: "7px 9px", fontSize: 11, fontWeight: 800, cursor: "pointer",
+                    }}>
+                    {market.label} <span style={{ color: selected ? "#be185d" : "#a8a29e" }}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 850, color: "#1c1917", marginBottom: 7 }}>Subtype</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {availableSubtypes.length === 0 ? (
+                  <span style={{ fontSize: 11, color: "#a8a29e" }}>No subtypes yet.</span>
+                ) : availableSubtypes.map((subtype) => {
+                  const selected = selectedSubtypes.includes(subtype);
+                  return (
+                    <button key={subtype} onClick={() => toggleValue(subtype, selectedSubtypes, setSelectedSubtypes)}
+                      style={{
+                        border: selected ? "1px solid #0369a1" : "1px solid #e7e5e4",
+                        background: selected ? "#eff6ff" : "#fff",
+                        color: selected ? "#0369a1" : "#57534e",
+                        borderRadius: 999, padding: "5px 8px", fontSize: 10, fontWeight: 800, cursor: "pointer",
+                      }}>
+                      {friendlySubtypeLabel(subtype)} <span style={{ color: "#a8a29e" }}>{subtypeCounts[subtype] ?? 0}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 850, color: "#1c1917", marginBottom: 7 }}>Relationship Type</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {RELATIONSHIP_FILTERS.map((entry) => {
+                  const selected = selectedRelationshipTypes.includes(entry.value);
+                  return (
+                    <button key={entry.value} onClick={() => toggleValue(entry.value, selectedRelationshipTypes, setSelectedRelationshipTypes)}
+                      style={{
+                        border: selected ? "1px solid #15803d" : "1px solid #e7e5e4",
+                        background: selected ? "#f0fdf4" : "#fff",
+                        color: selected ? "#15803d" : "#57534e",
+                        borderRadius: 999, padding: "5px 8px", fontSize: 10, fontWeight: 800, cursor: "pointer",
+                      }}>
+                      {entry.label} <span style={{ color: "#a8a29e" }}>{relationshipCounts[entry.value] ?? 0}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            marginTop: 14, padding: "10px 12px", border: "1px solid #e7e5e4", borderRadius: 10,
+            background: "#1c1917", color: "#fff", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
+          }}>
+            <div style={{ fontSize: 11, color: "#d6d3d1" }}>
+              <strong style={{ color: "#fff" }}>Selected</strong>
+              {" "}Market: {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "All"}
+              {" "}· Subtypes: {selectedSubtypes.length ? selectedSubtypes.map(friendlySubtypeLabel).join(", ") : "All"}
+              {" "}· Relationship: {selectedRelationshipTypes.length ? selectedRelationshipTypes.map((t) => RELATIONSHIP_OPPORTUNITY_LABELS[t]).join(", ") : "All"}
+            </div>
+            <div style={{ marginLeft: "auto", fontSize: 11, color: "#d6d3d1" }}>
+              Records: <strong style={{ color: "#fff" }}>{visible.length}</strong> · Avg Opportunity: <strong style={{ color: "#fff" }}>{avgOpportunity}</strong>
+            </div>
+            {hasWorkflowSelection && (
+              <button onClick={clearWorkflowSelection} style={{ border: "1px solid #57534e", background: "transparent", color: "#fff", borderRadius: 8, padding: "6px 9px", fontSize: 11, fontWeight: 800, cursor: "pointer" }}>
+                Clear Selection
+              </button>
+            )}
+            <button onClick={() => setCampaignOpen(true)} disabled={!canCreateCampaign}
+              style={{ border: "none", background: !canCreateCampaign ? "#57534e" : "#fce7f3", color: !canCreateCampaign ? "#d6d3d1" : "#9d174d", borderRadius: 8, padding: "6px 10px", fontSize: 11, fontWeight: 850, cursor: !canCreateCampaign ? "not-allowed" : "pointer" }}>
+              Create Campaign
+            </button>
+          </div>
         </div>
       )}
 
@@ -440,8 +698,15 @@ export default function ProspectsPage() {
         </div>
       )}
 
-      {/* Filters */}
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14, background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "10px 12px", alignItems: "center" }}>
+      {/* Advanced filters */}
+      <div style={{ marginBottom: 14, background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "10px 12px" }}>
+        <button onClick={() => setAdvancedOpen((v) => !v)}
+          style={{ width: "100%", border: "none", background: "transparent", padding: 0, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
+          <span style={{ fontSize: 12, fontWeight: 850, color: "#1c1917" }}>Advanced Filters</span>
+          <span style={{ fontSize: 11, color: "#a8a29e" }}>{advancedOpen ? "Hide" : "Show"} · {visible.length} shown · {totalCount} matching</span>
+        </button>
+      {advancedOpen && (
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10, alignItems: "center" }}>
         <select value={fValidation} onChange={(e) => setFValidation(e.target.value as ValidationStatus | "all")} style={selS}>
           <option value="all">All validation</option>
           {(Object.keys(VALIDATION_STATUS_LABELS) as ValidationStatus[]).map((s) => (
@@ -501,8 +766,32 @@ export default function ProspectsPage() {
             Clear
           </button>
         )}
-        <span style={{ marginLeft: "auto", fontSize: 11, color: "#a8a29e" }}>{visible.length} shown · {totalCount} matching</span>
       </div>
+      )}
+      </div>
+
+      {campaignOpen && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(28, 25, 23, 0.45)", zIndex: 50, display: "grid", placeItems: "center", padding: 20 }}>
+          <div style={{ width: "min(560px, 100%)", background: "#fff", borderRadius: 14, border: "1px solid #e7e5e4", boxShadow: "0 20px 70px rgba(0,0,0,0.25)", padding: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start", marginBottom: 10 }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 18, color: "#1c1917" }}>Create Campaign</h2>
+                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#78716c", lineHeight: 1.45 }}>
+                  Campaign creation will use the current working set. Persistence and outreach steps come next.
+                </p>
+              </div>
+              <button onClick={() => setCampaignOpen(false)} style={{ border: "none", background: "#f5f5f4", borderRadius: 8, padding: "6px 9px", cursor: "pointer", fontWeight: 800 }}>Close</button>
+            </div>
+            <div style={{ display: "grid", gap: 8, fontSize: 12, color: "#57534e" }}>
+              <div><strong style={{ color: "#1c1917" }}>Suggested name:</strong> {suggestedCampaignName}</div>
+              <div><strong style={{ color: "#1c1917" }}>Records:</strong> {visible.length}</div>
+              <div><strong style={{ color: "#1c1917" }}>Markets:</strong> {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "All selected records"}</div>
+              <div><strong style={{ color: "#1c1917" }}>Subtypes:</strong> {selectedSubtypes.length ? selectedSubtypes.map(friendlySubtypeLabel).join(", ") : "All"}</div>
+              <div><strong style={{ color: "#1c1917" }}>Offer fit tags:</strong> {selectedOfferFitTags.length ? selectedOfferFitTags.map(tagLabel).join(", ") : "None detected yet"}</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {backendWarnings.length > 0 && (
         <div style={{ marginBottom: 14, padding: "10px 14px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, fontSize: 12, color: "#92400e" }}>
@@ -525,15 +814,14 @@ export default function ProspectsPage() {
                 {([
                   ["handle",          "@Handle"],
                   ["name",            "Name"],
-                  [null,              "Source #"],
-                  ["educationType",   "Ed. Type"],
-                  ["businessCategory","Business"],
-                  ["opportunityScore","Opp."],
-                  [null,              "Audience"],
-                  ["platform",        "Platform"],
+                  ["businessCategory","Market"],
+                  [null,              "Subtype"],
+                  ["opportunityScore","Opportunity"],
+                  [null,              "Relationship"],
+                  [null,              "Offer Fit Tags"],
+                  [null,              "Platform Signals"],
                   [null,              "Best URL"],
                   [null,              "Location"],
-                  ["confidence",      "Conf."],
                   ["validationStatus","Status"],
                 ] as [SortKey | null, string][]).map(([key, label]) => (
                   <th key={label} style={thS} onClick={() => key && toggleSort(key)}>
@@ -557,43 +845,42 @@ export default function ProspectsPage() {
                         </a>
                       </td>
                       <td style={tdS}>{p.identity.name !== p.identity.handle ? p.identity.name : <span style={{ color: "#d6d3d1" }}>—</span>}</td>
-                      <td style={{ ...tdS, fontSize: 10, color: "#9d174d" }}>
-                        {p.sourceHashtag ? `#${p.sourceHashtag}` : <span style={{ color: "#d6d3d1" }}>—</span>}
-                      </td>
-                      <td style={tdS}>
-                        {p.educationType ? (
-                          <span style={{ fontSize: 10, background: "#ede9fe", color: "#6d28d9", borderRadius: 20, padding: "2px 7px", fontWeight: 700 }}>
-                            {EDUCATION_TYPE_LABELS[p.educationType] ?? p.educationType}
-                          </span>
-                        ) : <span style={{ color: "#d6d3d1" }}>—</span>}
-                      </td>
                       <td style={tdS}>
                         {p.businessCategory ? (
                           <span style={{ fontSize: 10, background: "#fce7f3", color: "#9d174d", borderRadius: 20, padding: "2px 7px", fontWeight: 700 }}>
-                            {BUSINESS_CATEGORY_LABELS[p.businessCategory as keyof typeof BUSINESS_CATEGORY_LABELS] ?? tagLabel(String(p.businessCategory))}
+                            {friendlyMarketLabel(p.businessCategory)}
                           </span>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
+                      <td style={tdS}>{p.businessSubcategory ? friendlySubtypeLabel(p.businessSubcategory) : <span style={{ color: "#d6d3d1" }}>—</span>}</td>
                       <td style={tdS}>
-                        <span style={{ fontWeight: 800, color: confColor(p.overallOpportunityScore ?? 0) }}>
+                        <span style={{ fontSize: 18, fontWeight: 900, color: confColor(p.overallOpportunityScore ?? 0) }}>
                           {p.overallOpportunityScore ?? <span style={{ color: "#d6d3d1" }}>—</span>}
                         </span>
-                        {p.relationshipOpportunityType && (
-                          <div style={{ fontSize: 9, color: "#78716c", marginTop: 2 }}>{tagLabel(String(p.relationshipOpportunityType))}</div>
-                        )}
                       </td>
                       <td style={tdS}>
-                        {p.audienceType ? (
-                          <span style={{ fontSize: 10, background: "#dbeafe", color: "#1d4ed8", borderRadius: 20, padding: "2px 7px", fontWeight: 700 }}>
-                            {AUDIENCE_TYPE_LABELS[p.audienceType] ?? p.audienceType}
+                        {p.relationshipOpportunityType ? (
+                          <span style={{ fontSize: 10, background: "#eff6ff", color: "#1d4ed8", borderRadius: 20, padding: "2px 7px", fontWeight: 700 }}>
+                            {RELATIONSHIP_OPPORTUNITY_LABELS[p.relationshipOpportunityType as RelationshipOpportunityType] ?? tagLabel(String(p.relationshipOpportunityType))}
                           </span>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
-                      <td style={tdS}>
-                        {p.bestMatch ? (
-                          <span style={{ fontSize: 10, fontWeight: 700, background: "#f5f5f4", color: "#78716c", borderRadius: 4, padding: "2px 6px" }}>
-                            {p.bestMatch.platform}
-                          </span>
+                      <td style={{ ...tdS, maxWidth: 190 }}>
+                        {(p.offerFitTags ?? []).length > 0 ? (
+                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                            {(p.offerFitTags ?? []).slice(0, 3).map((tag) => (
+                              <span key={tag} style={{ fontSize: 9, background: "#f0fdf4", color: "#15803d", borderRadius: 20, padding: "2px 6px", fontWeight: 700 }}>{tagLabel(tag)}</span>
+                            ))}
+                          </div>
+                        ) : <span style={{ color: "#d6d3d1" }}>—</span>}
+                      </td>
+                      <td style={{ ...tdS, maxWidth: 170 }}>
+                        {(p.platformSignals ?? []).length > 0 ? (
+                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                            {(p.platformSignals ?? []).slice(0, 3).map((signal) => (
+                              <span key={signal} style={{ fontSize: 9, background: "#f5f5f4", color: "#57534e", borderRadius: 20, padding: "2px 6px", fontWeight: 700 }}>{tagLabel(signal)}</span>
+                            ))}
+                          </div>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
                       <td style={{ ...tdS, maxWidth: 160 }}>
@@ -607,17 +894,12 @@ export default function ProspectsPage() {
                       </td>
                       <td style={tdS}>{p.identity.locationGuess ?? <span style={{ color: "#d6d3d1" }}>—</span>}</td>
                       <td style={tdS}>
-                        <span style={{ fontWeight: 700, fontSize: 12, color: confColor(p.confidence.overall) }}>
-                          {p.confidence.overall || <span style={{ color: "#d6d3d1" }}>—</span>}
-                        </span>
-                      </td>
-                      <td style={tdS}>
                         <ValidationBadge vs={p.validationStatus} />
                       </td>
                     </tr>
                     {isExpanded && (
                       <tr key={`${p.prospectId}-detail`}>
-                        <td colSpan={12} style={{ padding: 0 }}>
+                        <td colSpan={11} style={{ padding: 0 }}>
                           <ProspectDetail prospect={p} onSaved={(updated) => setProspects((prev) => prev.map((x) => x.prospectId === updated.prospectId ? updated : x))} />
                         </td>
                       </tr>
