@@ -48,11 +48,24 @@ export interface ResolvedProfile {
   evidenceSnippets: string[];
 }
 
+/** A candidate URL that was tested but rejected during resolution. */
+export interface RejectedCandidate {
+  url: string;
+  platform: string;
+  /** Why it was rejected: "not_found" | "dead_page_or_low_score" | "appointment_platform_unverified" |
+   *  "display_name_confirmed" (should not appear here) | "fetch_error" | "low_score_or_dead" */
+  reason: string;
+}
+
 export interface StubResolutionResult {
   seed: IgSeed;
-  resolvedProfiles: ResolvedProfile[];  // all matches, sorted by score
+  resolvedProfiles: ResolvedProfile[];  // confirmed matches only, sorted by score
   bestMatch: ResolvedProfile | null;
   status: "resolved" | "partial" | "unresolved";
+  /** All candidate URLs that were tested in this resolution pass */
+  candidateUrlsTested?: string[];
+  /** Candidates that were fetched but rejected (not_found, unverified, low_score, etc.) */
+  rejectedCandidates?: RejectedCandidate[];
 }
 
 // ─── API shapes ───────────────────────────────────────────────────────────────

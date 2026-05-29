@@ -5,7 +5,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
-import type { ProspectRecord, ProspectStatus, MatchedUrl, ProspectEvidence } from "./types";
+import type { ProspectRecord, ProspectStatus, MatchedUrl, ProspectEvidence, ProspectBestMatch } from "./types";
 import type { ValidationStatus } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import { classifyRelationshipOpportunity } from "./opportunity-classifier";
 
@@ -162,6 +162,18 @@ export function mergeEvidence(a: ProspectEvidence[], b: ProspectEvidence[], cap 
   return Array.from(map.values()).slice(0, cap);
 }
 
+export function mergeRejectedUrls(
+  a: Array<{ url: string; platform: string; reason: string }>,
+  b: Array<{ url: string; platform: string; reason: string }>,
+  cap = 100,
+): Array<{ url: string; platform: string; reason: string }> {
+  const map = new Map<string, { url: string; platform: string; reason: string }>();
+  for (const item of [...a, ...b]) {
+    if (!map.has(item.url)) map.set(item.url, item);
+  }
+  return Array.from(map.values()).slice(0, cap);
+}
+
 // ─── Human-set field guard ────────────────────────────────────────────────────
 
 export function isHumanSetValidationStatus(vs: ValidationStatus | undefined): boolean {
@@ -280,6 +292,8 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
       services:  mergeStrings(existing.services, incoming.services),
       allMatchedUrls: mergeMatchedUrls(existing.allMatchedUrls, incoming.allMatchedUrls),
       evidence:  mergeEvidence(existing.evidence, incoming.evidence, 20),
+      candidateUrlsTested: mergeStrings(existing.candidateUrlsTested ?? [], incoming.candidateUrlsTested ?? [], 200),
+      rejectedCandidateUrls: mergeRejectedUrls(existing.rejectedCandidateUrls ?? [], incoming.rejectedCandidateUrls ?? []),
       confidence:
         incoming.confidence.overall > existing.confidence.overall
           ? incoming.confidence

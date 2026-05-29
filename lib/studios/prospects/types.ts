@@ -185,9 +185,16 @@ export interface ProspectRecord {
   /** All detected external platforms */
   platforms: string[];
   services: string[];
+  /** Confirmed matched URLs only — unverified generated candidates are excluded */
   allMatchedUrls: MatchedUrl[];
   evidence: ProspectEvidence[];
   confidence: ProspectConfidenceBreakdown;
+
+  // ── URL verification diagnostics (set by resolver, read-only) ────────────────
+  /** All candidate URLs that were tested during resolution (for debugging) */
+  candidateUrlsTested?: string[];
+  /** Candidates that were fetched but rejected before becoming evidence */
+  rejectedCandidateUrls?: Array<{ url: string; platform: string; reason: string }>;
 
   // ── Human-managed CRM ────────────────────────────────────────────────────────
   /** CRM workflow status — NEVER overwritten by re-runs */

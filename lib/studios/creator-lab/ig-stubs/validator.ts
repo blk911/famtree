@@ -1,7 +1,8 @@
 // lib/studios/creator-lab/ig-stubs/validator.ts
 // Fetches candidate URLs, extracts signals, and produces heuristic confidence scores.
 
-import type { IgSeed, CandidateFetch, ResolvedProfile } from "./types";
+import type { IgSeed, CandidateFetch, ResolvedProfile, RejectedCandidate } from "./types";
+import { APPOINTMENT_PLATFORMS } from "./url-patterns";
 import type { CandidateUrl } from "./url-patterns";
 
 const FETCH_TIMEOUT_MS = 8_000;
@@ -137,6 +138,11 @@ export async function fetchCandidate(candidate: CandidateUrl): Promise<Candidate
 export function scoreCandidate(
   seed: IgSeed,
   fetched: CandidateFetch,
+  /** Pass true when this URL was machine-generated (not found in source evidence).
+   *  Generated URLs do NOT receive the +35 "handle in URL" bonus — we put the handle there,
+   *  so it is a circular signal. They may still receive the +15 "handle in page text" bonus
+   *  if the handle actually appears in the fetched page content. */
+  isGenerated = false,
 ): ResolvedProfile | null {
   if (!fetched.ok) return null;
 
@@ -167,10 +173,14 @@ export function scoreCandidate(
   const evidence: string[] = [];
 
   // ── Handle match ──────────────────────────────────────────────────────────
-  if (fetched.url.toLowerCase().includes(handleClean)) {
+  // IMPORTANT: For generated URLs we do NOT award the +35 "exact handle in URL" bonus.
+  // The handle is in the URL because we constructed it that way — it is a circular signal
+  // and would artificially inflate confidence for unverified profiles.
+  if (!isGenerated && fetched.url.toLowerCase().includes(handleClean)) {
     score += 35;
     reasons.push("exact handle in URL");
   } else if (fullText.includes(handleClean)) {
+    // Handle present in the actual page content — real signal regardless of generation
     score += 15;
     reasons.push("handle in page text");
   }
@@ -273,24 +283,120 @@ export function scoreCandidate(
   };
 }
 
-// ─── Fast resolve: fetch all candidates in parallel, score heuristically ──────
+// ─── Appointment-platform verification for generated candidates ───────────────
+
+/**
+ * For a machine-generated appointment-platform URL (e.g. styleseat.com/m/{handle}),
+ * verify that the fetched page actually belongs to this creator before accepting it
+ * as confirmed evidence.
+ *
+ * Verification passes when the fetched page contains:
+ *   - An Instagram backlink pointing to the same handle  ← strongest signal
+ *   - OR the creator's display name in prominent text    ← reasonable signal
+ *
+ * A URL that passes ONLY the handle-in-URL check is NOT verified — that signal
+ * is circular because we constructed the URL ourselves.
+ */
+export function verifyGeneratedAppointmentCandidate(
+  seed: IgSeed,
+  fetched: CandidateFetch,
+  scored: ResolvedProfile | null,
+): { confirmed: boolean; reason: string } {
+  if (!fetched.ok) return { confirmed: false, reason: "not_found" };
+  if (scored === null) return { confirmed: false, reason: "dead_page_or_low_score" };
+
+  // IG backlink pointing to the exact same handle
+  const handleLow = seed.handle.toLowerCase();
+  const igBacklink = fetched.instagramLinks.find(
+    (l) =>
+      l.toLowerCase().includes(`instagram.com/${handleLow}`) ||
+      l.toLowerCase().includes(`instagram.com/@${handleLow}`)
+  );
+  if (igBacklink) return { confirmed: true, reason: "ig_backlink_confirmed" };
+
+  // Display name found in page text (must be > 3 chars to avoid false positives)
+  const nameClean = seed.displayName.toLowerCase().trim();
+  if (nameClean.length > 3) {
+    const searchText = [fetched.title, fetched.description, fetched.bodyText]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    if (searchText.includes(nameClean)) {
+      return { confirmed: true, reason: "display_name_confirmed" };
+    }
+  }
+
+  return { confirmed: false, reason: "appointment_platform_unverified" };
+}
+
+// ─── Fast resolve (tracked): fetch + score + verify, returning diagnostic data ─
+
+export interface ResolveTrackedResult {
+  /** Candidates that passed scoring AND (for generated appointment platforms) verification */
+  confirmedProfiles: ResolvedProfile[];
+  /** Candidates that were tested but rejected, with reason */
+  rejectedCandidates: RejectedCandidate[];
+  /** All candidate URLs that were submitted for testing */
+  candidateUrlsTested: string[];
+}
+
+export async function fastResolveTracked(
+  seed: IgSeed,
+  candidates: CandidateUrl[],
+): Promise<ResolveTrackedResult> {
+  const fetchResults = await Promise.allSettled(
+    candidates.map((c) => fetchCandidate(c))
+  );
+
+  const confirmedProfiles: ResolvedProfile[] = [];
+  const rejectedCandidates: RejectedCandidate[] = [];
+  const candidateUrlsTested = candidates.map((c) => c.url);
+
+  for (let i = 0; i < fetchResults.length; i++) {
+    const result = fetchResults[i];
+    const candidate = candidates[i];
+    const isGenerated = candidate.isGenerated ?? false;
+
+    if (result.status !== "fulfilled") {
+      rejectedCandidates.push({ url: candidate.url, platform: candidate.platform, reason: "fetch_error" });
+      continue;
+    }
+
+    const fetched = result.value;
+    const scored = scoreCandidate(seed, fetched, isGenerated);
+
+    // Generated appointment-platform URLs require additional identity verification.
+    // Without it we would save URLs we constructed ourselves as confirmed matches.
+    if (isGenerated && APPOINTMENT_PLATFORMS.has(candidate.platform)) {
+      const verification = verifyGeneratedAppointmentCandidate(seed, fetched, scored);
+      if (!verification.confirmed) {
+        rejectedCandidates.push({ url: candidate.url, platform: candidate.platform, reason: verification.reason });
+        continue;
+      }
+    }
+
+    if (scored) {
+      confirmedProfiles.push(scored);
+    } else {
+      rejectedCandidates.push({ url: candidate.url, platform: candidate.platform, reason: "low_score_or_dead" });
+    }
+  }
+
+  return {
+    confirmedProfiles: confirmedProfiles.sort((a, b) => b.confidenceScore - a.confidenceScore),
+    rejectedCandidates,
+    candidateUrlsTested,
+  };
+}
+
+// ─── Fast resolve: backward-compatible wrapper around fastResolveTracked ──────
 
 export async function fastResolve(
   seed: IgSeed,
   candidates: CandidateUrl[],
 ): Promise<ResolvedProfile[]> {
-  const fetchResults = await Promise.allSettled(
-    candidates.map((c) => fetchCandidate(c))
-  );
-
-  const profiles: ResolvedProfile[] = [];
-  for (const result of fetchResults) {
-    if (result.status !== "fulfilled") continue;
-    const scored = scoreCandidate(seed, result.value);
-    if (scored) profiles.push(scored);
-  }
-
-  return profiles.sort((a, b) => b.confidenceScore - a.confidenceScore);
+  const tracked = await fastResolveTracked(seed, candidates);
+  return tracked.confirmedProfiles;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

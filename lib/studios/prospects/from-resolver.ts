@@ -143,6 +143,8 @@ export function resultToProspect(
     allMatchedUrls,
     evidence,
     confidence: computeConfidence(result.seed.handle, profiles),
+    candidateUrlsTested: result.candidateUrlsTested ?? [],
+    rejectedCandidateUrls: result.rejectedCandidates ?? [],
     suggestedValidationStatus: "new",
   };
 }

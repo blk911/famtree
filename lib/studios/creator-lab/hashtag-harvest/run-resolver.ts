@@ -8,12 +8,12 @@
 //              races on the flat JSON store (EPERM on Windows / data loss).
 
 import { generateCandidateUrls } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
-import { fastResolve } from "@/lib/studios/creator-lab/ig-stubs/validator";
+import { fastResolveTracked } from "@/lib/studios/creator-lab/ig-stubs/validator";
 import { upsertProspect } from "@/lib/studios/prospects/store";
 import { resultToProspect, seedToProspect } from "@/lib/studios/prospects/from-resolver";
 import { buildProspectSourcePath } from "@/lib/studios/prospects/source-path";
 import type { HarvestContext } from "@/lib/studios/prospects/from-resolver";
-import type { ResolveMode, IgSeed, StubResolutionResult, ResolvedProfile } from "@/lib/studios/creator-lab/ig-stubs/types";
+import type { ResolveMode, IgSeed, StubResolutionResult, ResolvedProfile, RejectedCandidate } from "@/lib/studios/creator-lab/ig-stubs/types";
 import type { UpsertInput } from "@/lib/studios/prospects/store";
 import type {
   HarvestedCreatorSeed,
@@ -34,6 +34,8 @@ interface ResolvedSeed {
   validProfiles: ResolvedProfile[];
   bestMatch: ResolvedProfile | null;
   status: StubResolutionResult["status"];
+  candidateUrlsTested: string[];
+  rejectedCandidates: RejectedCandidate[];
   upsertInput: UpsertInput;
 }
 
@@ -68,10 +70,20 @@ export async function runResolverForSeeds(
       const candidates = generateCandidateUrls(seed.handle);
 
       let profiles: ResolvedProfile[] = [];
+      let candidateUrlsTested: string[] = candidates.map((c) => c.url);
+      let rejectedCandidates: RejectedCandidate[] = [];
+
       try {
-        profiles = deepResolve
-          ? await deepResolve(igSeed, candidates)
-          : await fastResolve(igSeed, candidates);
+        if (deepResolve) {
+          // Deep resolve uses AI analysis; it does its own candidate management internally.
+          // Diagnostic tracking is not available in this path.
+          profiles = await deepResolve(igSeed, candidates);
+        } else {
+          const tracked = await fastResolveTracked(igSeed, candidates);
+          profiles = tracked.confirmedProfiles;
+          candidateUrlsTested = tracked.candidateUrlsTested;
+          rejectedCandidates = tracked.rejectedCandidates;
+        }
       } catch {
         profiles = [];
       }
@@ -100,6 +112,8 @@ export async function runResolverForSeeds(
         resolvedProfiles: validProfiles,
         bestMatch,
         status,
+        candidateUrlsTested,
+        rejectedCandidates,
       };
 
       let upsertInput: UpsertInput;
@@ -134,7 +148,7 @@ export async function runResolverForSeeds(
         upsertInput = seedToProspect(seed, ctx);
       }
 
-      return { seed, validProfiles, bestMatch, status, upsertInput };
+      return { seed, validProfiles, bestMatch, status, candidateUrlsTested, rejectedCandidates, upsertInput };
     })
   );
 

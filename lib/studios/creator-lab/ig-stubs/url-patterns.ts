@@ -4,7 +4,24 @@
 export interface CandidateUrl {
   platform: string;
   url: string;
+  /** True when this URL was machine-generated from the handle pattern (not found in source evidence).
+   *  Generated URLs require positive identity verification before being saved as matched evidence. */
+  isGenerated?: boolean;
 }
+
+/** Appointment platforms where unverified generated URLs pose a contamination risk.
+ *  A generated URL on one of these platforms must be positively verified (IG backlink
+ *  or display-name match) before being treated as a confirmed match. */
+export const APPOINTMENT_PLATFORMS = new Set([
+  "glossgenius",
+  "vagaro",
+  "styleseat",
+  "booksy",
+  "fresha",
+  "squareup",
+  "acuity",
+  "mindbody",
+]);
 
 // ─── Handle transforms ────────────────────────────────────────────────────────
 
@@ -34,31 +51,31 @@ export function generateCandidateUrls(handle: string): CandidateUrl[] {
 
   const raw: CandidateUrl[] = [
     // GlossGenius — beauty booking, subdomain style
-    { platform: "glossgenius", url: `https://${h}.glossgenius.com` },
-    { platform: "glossgenius", url: `https://${dl}.glossgenius.com` },
-    { platform: "glossgenius", url: `https://${ul}.glossgenius.com` },
-    { platform: "glossgenius", url: `https://${hl}.glossgenius.com` },
+    { platform: "glossgenius", url: `https://${h}.glossgenius.com`,  isGenerated: true },
+    { platform: "glossgenius", url: `https://${dl}.glossgenius.com`, isGenerated: true },
+    { platform: "glossgenius", url: `https://${ul}.glossgenius.com`, isGenerated: true },
+    { platform: "glossgenius", url: `https://${hl}.glossgenius.com`, isGenerated: true },
 
     // Vagaro — salon/spa booking
-    { platform: "vagaro", url: `https://www.vagaro.com/${h}` },
-    { platform: "vagaro", url: `https://www.vagaro.com/${ul}` },
+    { platform: "vagaro", url: `https://www.vagaro.com/${h}`,  isGenerated: true },
+    { platform: "vagaro", url: `https://www.vagaro.com/${ul}`, isGenerated: true },
 
     // StyleSeat
-    { platform: "styleseat", url: `https://www.styleseat.com/m/${h}` },
-    { platform: "styleseat", url: `https://www.styleseat.com/m/${ul}` },
+    { platform: "styleseat", url: `https://www.styleseat.com/m/${h}`,  isGenerated: true },
+    { platform: "styleseat", url: `https://www.styleseat.com/m/${ul}`, isGenerated: true },
 
     // Booksy
-    { platform: "booksy", url: `https://booksy.com/en-us/${h}` },
-    { platform: "booksy", url: `https://booksy.com/en-us/search` },
+    { platform: "booksy", url: `https://booksy.com/en-us/${h}`,    isGenerated: true },
+    { platform: "booksy", url: `https://booksy.com/en-us/search`, isGenerated: true },
 
-    // Link-in-bio
-    { platform: "linktree",   url: `https://linktr.ee/${h}` },
-    { platform: "beacons",    url: `https://beacons.ai/${h}` },
-    { platform: "stan",       url: `https://stan.store/${h}` },
+    // Link-in-bio (lower verification risk — not appointment booking)
+    { platform: "linktree",   url: `https://linktr.ee/${h}`,    isGenerated: true },
+    { platform: "beacons",    url: `https://beacons.ai/${h}`,   isGenerated: true },
+    { platform: "stan",       url: `https://stan.store/${h}`,   isGenerated: true },
 
     // Square Online
-    { platform: "square",     url: `https://${h}.square.site` },
-    { platform: "square",     url: `https://${ul}.square.site` },
+    { platform: "square",     url: `https://${h}.square.site`,  isGenerated: true },
+    { platform: "square",     url: `https://${ul}.square.site`, isGenerated: true },
   ];
 
   // Deduplicate by URL
