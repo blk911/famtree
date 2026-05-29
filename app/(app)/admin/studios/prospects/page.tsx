@@ -793,15 +793,6 @@ export default function ProspectsPage() {
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-            <div style={{ fontSize: 11, color: "#78716c", minWidth: 240 }}>
-              <strong style={{ color: "#1c1917" }}>Subtypes:</strong> {subtypeSummary}
-            </div>
-            <div style={{ fontSize: 11, color: "#78716c", minWidth: 220 }}>
-              <strong style={{ color: "#1c1917" }}>Relationship:</strong> {relationshipSummary}
-            </div>
-          </div>
-
           <div style={{
             marginTop: 14, padding: "10px 12px", border: "1px solid #e7e5e4", borderRadius: 10,
             background: "#1c1917", color: "#fff", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
