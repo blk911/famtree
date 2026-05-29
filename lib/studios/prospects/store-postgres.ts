@@ -9,6 +9,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import type { ProspectRecord, ProspectStatus, MatchedUrl, ProspectEvidence } from "./types";
 import type { ValidationStatus } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
+import { classifyRelationshipOpportunity } from "./opportunity-classifier";
 import {
   normalizeHandle,
   generateProspectId,
@@ -58,6 +59,32 @@ interface DbProspectRow {
   educationType: string | null;
   audienceType: string | null;
   sourceTopic: string | null;
+  business_category?: string | null;
+  business_subcategory?: string | null;
+  relationship_opportunity_type?: string | null;
+  relationship_score?: number | null;
+  audience_score?: number | null;
+  operational_data_score?: number | null;
+  community_score?: number | null;
+  overall_opportunity_score?: number | null;
+  offer_fit_tags?: unknown;
+  platform_signals?: unknown;
+  category_confidence?: number | null;
+  classification_notes?: unknown;
+  classification_locked?: boolean | null;
+  businessCategory?: string | null;
+  businessSubcategory?: string | null;
+  relationshipOpportunityType?: string | null;
+  relationshipScore?: number | null;
+  audienceScore?: number | null;
+  operationalDataScore?: number | null;
+  communityScore?: number | null;
+  overallOpportunityScore?: number | null;
+  offerFitTags?: unknown;
+  platformSignals?: unknown;
+  categoryConfidence?: number | null;
+  classificationNotes?: unknown;
+  classificationLocked?: boolean | null;
   validationStatus: string;
   archiveReason: string | null;
   status: string;
@@ -65,6 +92,13 @@ interface DbProspectRow {
   createdAt: Date | string;
   updatedAt: Date | string;
 }
+
+type ClassificationFields = Pick<ProspectRecord,
+  "businessCategory" | "businessSubcategory" | "relationshipOpportunityType" |
+  "relationshipScore" | "audienceScore" | "operationalDataScore" | "communityScore" |
+  "overallOpportunityScore" | "offerFitTags" | "platformSignals" | "categoryConfidence" |
+  "classificationNotes" | "classificationLocked"
+>;
 
 // ─── Row ↔ ProspectRecord ────────────────────────────────────────────────────
 
@@ -136,10 +170,70 @@ function rowToRecord(row: DbProspectRow): ProspectRecord {
     educationType:    (row.educationType  as ProspectRecord["educationType"])  ?? null,
     audienceType:     (row.audienceType   as ProspectRecord["audienceType"])   ?? null,
     sourceTopic:      row.sourceTopic     ?? null,
+    businessCategory: row.business_category ?? row.businessCategory ?? null,
+    businessSubcategory: row.business_subcategory ?? row.businessSubcategory ?? null,
+    relationshipOpportunityType: row.relationship_opportunity_type ?? row.relationshipOpportunityType ?? null,
+    relationshipScore: row.relationship_score ?? row.relationshipScore ?? null,
+    audienceScore: row.audience_score ?? row.audienceScore ?? null,
+    operationalDataScore: row.operational_data_score ?? row.operationalDataScore ?? null,
+    communityScore: row.community_score ?? row.communityScore ?? null,
+    overallOpportunityScore: row.overall_opportunity_score ?? row.overallOpportunityScore ?? null,
+    offerFitTags: parseJsonCol<string[]>(row.offer_fit_tags ?? row.offerFitTags),
+    platformSignals: parseJsonCol<string[]>(row.platform_signals ?? row.platformSignals),
+    categoryConfidence: row.category_confidence ?? row.categoryConfidence ?? null,
+    classificationNotes: parseJsonCol<string[]>(row.classification_notes ?? row.classificationNotes),
+    classificationLocked: row.classification_locked ?? row.classificationLocked ?? false,
     validationStatus: row.validationStatus as ValidationStatus,
     archiveReason:    row.archiveReason   ?? null,
     status:           row.status          as ProspectStatus,
     notes:            row.notes,
+  };
+}
+
+function buildClassification(record: Partial<ProspectRecord> & UpsertInput): ClassificationFields {
+  if (record.classificationLocked) return {};
+  return classifyRelationshipOpportunity({
+    handle: record.identity?.handle,
+    displayName: record.identity?.name,
+    description: [
+      record.identity?.categoryGuess,
+      record.sourceTopic,
+      ...(record.services ?? []),
+    ].filter(Boolean).join(" "),
+    sourceHashtags: record.sourceHashtags,
+    sourcePath: record.sourcePath,
+    bestUrl: record.bestMatch?.url,
+    allMatchedUrls: record.allMatchedUrls?.map((url) => url.url),
+    platforms: record.platforms,
+    evidence: record.evidence,
+    vertical: record.vertical,
+    category: record.identity?.categoryGuess ?? undefined,
+    educationType: record.educationType,
+    audienceType: record.audienceType,
+  });
+}
+
+function mergeClassification(existing: ProspectRecord, incoming: UpsertInput): ClassificationFields {
+  if (existing.classificationLocked) {
+    return {
+      businessCategory: existing.businessCategory,
+      businessSubcategory: existing.businessSubcategory,
+      relationshipOpportunityType: existing.relationshipOpportunityType,
+      relationshipScore: existing.relationshipScore,
+      audienceScore: existing.audienceScore,
+      operationalDataScore: existing.operationalDataScore,
+      communityScore: existing.communityScore,
+      overallOpportunityScore: existing.overallOpportunityScore,
+      offerFitTags: existing.offerFitTags ?? [],
+      platformSignals: existing.platformSignals ?? [],
+      categoryConfidence: existing.categoryConfidence,
+      classificationNotes: existing.classificationNotes ?? [],
+      classificationLocked: existing.classificationLocked,
+    };
+  }
+  return {
+    ...buildClassification(incoming),
+    classificationLocked: incoming.classificationLocked ?? existing.classificationLocked ?? false,
   };
 }
 
@@ -231,6 +325,7 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
 
     const merged: ProspectRecord = {
       ...existingRecord,
+      ...mergeClassification(existingRecord, incoming),
       identityFingerprint: existingRecord.identityFingerprint || incomingFingerprint,
       updatedAt: now,
       identity: {
@@ -277,6 +372,19 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
         "educationType"    = ${merged.educationType},
         "audienceType"     = ${merged.audienceType},
         "sourceTopic"      = ${merged.sourceTopic},
+        "business_category" = ${merged.businessCategory ?? null},
+        "business_subcategory" = ${merged.businessSubcategory ?? null},
+        "relationship_opportunity_type" = ${merged.relationshipOpportunityType ?? null},
+        "relationship_score" = ${merged.relationshipScore ?? null},
+        "audience_score" = ${merged.audienceScore ?? null},
+        "operational_data_score" = ${merged.operationalDataScore ?? null},
+        "community_score" = ${merged.communityScore ?? null},
+        "overall_opportunity_score" = ${merged.overallOpportunityScore ?? null},
+        "offer_fit_tags" = ${JSON.stringify(merged.offerFitTags ?? [])}::jsonb,
+        "platform_signals" = ${JSON.stringify(merged.platformSignals ?? [])}::jsonb,
+        "category_confidence" = ${merged.categoryConfidence ?? null},
+        "classification_notes" = ${JSON.stringify(merged.classificationNotes ?? [])}::jsonb,
+        "classification_locked" = ${merged.classificationLocked ?? false},
         "vertical"         = ${merged.vertical},
         "sourcePlatform"   = ${merged.sourcePlatform},
         "sourceTool"       = ${merged.sourceTool},
@@ -307,6 +415,7 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
   // ── New record ────────────────────────────────────────────────────────────────
   const newRecord: ProspectRecord = {
     ...incoming,
+    ...buildClassification(incoming),
     prospectId:     generateProspectId(incoming.identity.handle),
     identityFingerprint: incomingFingerprint,
     createdAt:      now,
@@ -339,6 +448,10 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
       "allMatchedUrls", "services", "evidence",
       "confIdentity", "confBooking", "confCategory", "confLocation", "confOverall",
       "educationType", "audienceType", "sourceTopic",
+      "business_category", "business_subcategory", "relationship_opportunity_type",
+      "relationship_score", "audience_score", "operational_data_score", "community_score",
+      "overall_opportunity_score", "offer_fit_tags", "platform_signals", "category_confidence",
+      "classification_notes", "classification_locked",
       "validationStatus", "archiveReason", "status", "notes",
       "createdAt", "updatedAt"
     ) VALUES (
@@ -376,6 +489,19 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
       ${newRecord.educationType},
       ${newRecord.audienceType},
       ${newRecord.sourceTopic},
+      ${newRecord.businessCategory ?? null},
+      ${newRecord.businessSubcategory ?? null},
+      ${newRecord.relationshipOpportunityType ?? null},
+      ${newRecord.relationshipScore ?? null},
+      ${newRecord.audienceScore ?? null},
+      ${newRecord.operationalDataScore ?? null},
+      ${newRecord.communityScore ?? null},
+      ${newRecord.overallOpportunityScore ?? null},
+      ${JSON.stringify(newRecord.offerFitTags ?? [])}::jsonb,
+      ${JSON.stringify(newRecord.platformSignals ?? [])}::jsonb,
+      ${newRecord.categoryConfidence ?? null},
+      ${JSON.stringify(newRecord.classificationNotes ?? [])}::jsonb,
+      ${newRecord.classificationLocked ?? false},
       ${newRecord.validationStatus},
       ${newRecord.archiveReason},
       ${newRecord.status},
@@ -386,6 +512,40 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
   `;
 
   return newRecord;
+}
+
+export async function updateProspectClassificationPostgres(
+  prospectId: string,
+  patch: ClassificationFields
+): Promise<ProspectRecord | null> {
+  const rows = await prisma.$queryRaw<DbProspectRow[]>`
+    SELECT * FROM studio_prospects WHERE id = ${prospectId} LIMIT 1
+  `;
+  if (rows.length === 0) return null;
+
+  await prisma.$executeRaw`
+    UPDATE studio_prospects SET
+      "business_category" = ${patch.businessCategory ?? null},
+      "business_subcategory" = ${patch.businessSubcategory ?? null},
+      "relationship_opportunity_type" = ${patch.relationshipOpportunityType ?? null},
+      "relationship_score" = ${patch.relationshipScore ?? null},
+      "audience_score" = ${patch.audienceScore ?? null},
+      "operational_data_score" = ${patch.operationalDataScore ?? null},
+      "community_score" = ${patch.communityScore ?? null},
+      "overall_opportunity_score" = ${patch.overallOpportunityScore ?? null},
+      "offer_fit_tags" = ${JSON.stringify(patch.offerFitTags ?? [])}::jsonb,
+      "platform_signals" = ${JSON.stringify(patch.platformSignals ?? [])}::jsonb,
+      "category_confidence" = ${patch.categoryConfidence ?? null},
+      "classification_notes" = ${JSON.stringify(patch.classificationNotes ?? [])}::jsonb,
+      "classification_locked" = ${patch.classificationLocked ?? false},
+      "updatedAt" = NOW()
+    WHERE id = ${prospectId}
+  `;
+
+  const updated = await prisma.$queryRaw<DbProspectRow[]>`
+    SELECT * FROM studio_prospects WHERE id = ${prospectId} LIMIT 1
+  `;
+  return updated[0] ? rowToRecord(updated[0]) : null;
 }
 
 // ─── Update (admin patch) ─────────────────────────────────────────────────────
@@ -469,6 +629,21 @@ export async function filterProspectsPostgres(filter: ProspectFilter): Promise<P
 
   if (filter.minConfidence !== undefined)
     conditions.push(Prisma.sql`"confOverall" >= ${filter.minConfidence}`);
+
+  if (filter.businessCategory)
+    conditions.push(Prisma.sql`"business_category" = ${filter.businessCategory}`);
+
+  if (filter.relationshipOpportunityType)
+    conditions.push(Prisma.sql`"relationship_opportunity_type" = ${filter.relationshipOpportunityType}`);
+
+  if (filter.minOpportunityScore !== undefined)
+    conditions.push(Prisma.sql`COALESCE("overall_opportunity_score", 0) >= ${filter.minOpportunityScore}`);
+
+  if (filter.platformSignal)
+    conditions.push(Prisma.sql`"platform_signals"::jsonb ? ${filter.platformSignal}`);
+
+  if (filter.offerFitTag)
+    conditions.push(Prisma.sql`"offer_fit_tags"::jsonb ? ${filter.offerFitTag}`);
 
   const where =
     conditions.length > 0

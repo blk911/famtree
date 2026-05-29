@@ -1389,6 +1389,21 @@ model StudioProspect {
   audienceType  String?
   sourceTopic   String?
 
+  // ── Relationship opportunity classification ──────────────────────────────
+  businessCategory             String? @map("business_category")
+  businessSubcategory          String? @map("business_subcategory")
+  relationshipOpportunityType  String? @map("relationship_opportunity_type")
+  relationshipScore            Int?    @map("relationship_score")
+  audienceScore                Int?    @map("audience_score")
+  operationalDataScore         Int?    @map("operational_data_score")
+  communityScore               Int?    @map("community_score")
+  overallOpportunityScore      Int?    @map("overall_opportunity_score")
+  offerFitTags                 Json?   @map("offer_fit_tags")
+  platformSignals              Json?   @map("platform_signals")
+  categoryConfidence           Int?    @map("category_confidence")
+  classificationNotes          Json?   @map("classification_notes")
+  classificationLocked         Boolean @default(false) @map("classification_locked")
+
   // ── Human-managed CRM (NEVER overwritten by reruns) ───────────────────────
   validationStatus String @default("new")
   archiveReason    String?
@@ -1405,6 +1420,9 @@ model StudioProspect {
   @@index([validationStatus])
   @@index([educationType])
   @@index([audienceType])
+  @@index([businessCategory])
+  @@index([relationshipOpportunityType])
+  @@index([overallOpportunityScore])
   @@index([handle])
   @@index([identityFingerprint])
   @@index([bestMatchUrl])

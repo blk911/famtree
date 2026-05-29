@@ -17,6 +17,7 @@ import {
   getJsonStorePath,
   upsertProspectJson,
   updateProspectJson,
+  updateProspectClassificationJson,
   listProspectsJson,
   filterProspectsJson,
   countProspectsJson,
@@ -103,6 +104,23 @@ export async function updateProspect(
     return updateProspectPostgres(prospectId, patch);
   }
   return updateProspectJson(prospectId, patch);
+}
+
+export async function updateProspectClassification(
+  prospectId: string,
+  patch: Partial<Pick<ProspectRecord,
+    "businessCategory" | "businessSubcategory" | "relationshipOpportunityType" |
+    "relationshipScore" | "audienceScore" | "operationalDataScore" | "communityScore" |
+    "overallOpportunityScore" | "offerFitTags" | "platformSignals" | "categoryConfidence" |
+    "classificationNotes" | "classificationLocked"
+  >>
+): Promise<ProspectRecord | null> {
+  const backend = await resolveBackend();
+  if (backend === "postgres") {
+    const { updateProspectClassificationPostgres } = await import("./store-postgres");
+    return updateProspectClassificationPostgres(prospectId, patch);
+  }
+  return updateProspectClassificationJson(prospectId, patch);
 }
 
 export async function listProspects(): Promise<ProspectRecord[]> {

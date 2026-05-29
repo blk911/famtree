@@ -12,6 +12,11 @@
 //   platform         — e.g. "glossgenius"
 //   location         — substring match on locationGuess
 //   minConfidence    — integer 0-100
+//   businessCategory — relationship-opportunity business category
+//   relationshipOpportunityType — appointment_operator, audience_operator, etc.
+//   minOpportunityScore — integer 0-100
+//   platformSignal   — appointment_platform, commerce_platform, etc.
+//   offerFitTag      — referral_engine, parent_network, etc.
 //   sourceType       — e.g. "education_directory_import"
 //   sourcePlatform   — e.g. "directory_import"
 //   sourceTool       — e.g. "hashtag_harvest"
@@ -46,6 +51,7 @@ export async function GET(req: NextRequest) {
     const sp = req.nextUrl.searchParams;
 
     const minConf = sp.get("minConfidence");
+    const minOpportunityScore = sp.get("minOpportunityScore");
     const pageSize = clampInt(sp.get("pageSize") ?? sp.get("limit"), 100, 1, 500);
     const page = clampInt(sp.get("page"), 1, 1, 1000000);
     const offset = sp.has("offset")
@@ -62,6 +68,11 @@ export async function GET(req: NextRequest) {
       platform:        sp.get("platform")          ?? undefined,
       location:        sp.get("location")          ?? undefined,
       minConfidence:   minConf !== null ? Number(minConf) : undefined,
+      businessCategory: sp.get("businessCategory") ?? undefined,
+      relationshipOpportunityType: sp.get("relationshipOpportunityType") ?? undefined,
+      minOpportunityScore: minOpportunityScore !== null ? Number(minOpportunityScore) : undefined,
+      platformSignal:  sp.get("platformSignal")    ?? undefined,
+      offerFitTag:     sp.get("offerFitTag")       ?? undefined,
       sourceType:      sp.get("sourceType")        ?? undefined,
       sourcePlatform:  sp.get("sourcePlatform")    ?? undefined,
       sourceTool:      sp.get("sourceTool")         ?? undefined,

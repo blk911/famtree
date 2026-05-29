@@ -7,6 +7,7 @@ import { Fragment, useState, useEffect, useMemo } from "react";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import type { ProspectRecord, ProspectStatus, ProspectListResponse } from "@/lib/studios/prospects/types";
 import { PROSPECT_STATUS_LABELS, PROSPECT_STATUS_COLORS } from "@/lib/studios/prospects/types";
+import { BUSINESS_CATEGORIES, BUSINESS_CATEGORY_LABELS, RELATIONSHIP_OPPORTUNITY_LABELS, RELATIONSHIP_OPPORTUNITY_TYPES } from "@/lib/studios/prospects/opportunity-taxonomy";
 import {
   VALIDATION_STATUS_LABELS,
   VALIDATION_STATUS_COLORS,
@@ -57,6 +58,10 @@ function evidenceLabel(e: ProspectRecord["evidence"][number]): string {
     e.serviceCategory,
     e.url,
   ].filter(Boolean).join(" | ");
+}
+
+function tagLabel(value: string): string {
+  return value.replace(/_/g, " ");
 }
 
 // ─── Expanded detail ──────────────────────────────────────────────────────────
@@ -148,6 +153,47 @@ function ProspectDetail({ prospect, onSaved }: {
             </div>
           )}
 
+          {/* Opportunity classification */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 5 }}>RELATIONSHIP OPPORTUNITY</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 7 }}>
+              {prospect.businessCategory && (
+                <span style={{ fontSize: 10, background: "#fce7f3", color: "#9d174d", borderRadius: 20, padding: "2px 8px", fontWeight: 700 }}>
+                  {BUSINESS_CATEGORY_LABELS[prospect.businessCategory as keyof typeof BUSINESS_CATEGORY_LABELS] ?? tagLabel(String(prospect.businessCategory))}
+                </span>
+              )}
+              {prospect.relationshipOpportunityType && (
+                <span style={{ fontSize: 10, background: "#eff6ff", color: "#1d4ed8", borderRadius: 20, padding: "2px 8px", fontWeight: 700 }}>
+                  {RELATIONSHIP_OPPORTUNITY_LABELS[prospect.relationshipOpportunityType as keyof typeof RELATIONSHIP_OPPORTUNITY_LABELS] ?? tagLabel(String(prospect.relationshipOpportunityType))}
+                </span>
+              )}
+              {(prospect.offerFitTags ?? []).slice(0, 5).map((tag) => (
+                <span key={tag} style={{ fontSize: 10, background: "#f0fdf4", color: "#15803d", borderRadius: 20, padding: "2px 8px", fontWeight: 700 }}>
+                  {tagLabel(tag)}
+                </span>
+              ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 6 }}>
+              {[
+                ["Overall", prospect.overallOpportunityScore],
+                ["Rel", prospect.relationshipScore],
+                ["Audience", prospect.audienceScore],
+                ["Ops", prospect.operationalDataScore],
+                ["Community", prospect.communityScore],
+              ].map(([label, val]) => (
+                <div key={String(label)} style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 6, padding: "5px 6px", textAlign: "center" }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: confColor(Number(val ?? 0)) }}>{val ?? "—"}</div>
+                  <div style={{ fontSize: 8, color: "#a8a29e", fontWeight: 700 }}>{label}</div>
+                </div>
+              ))}
+            </div>
+            {(prospect.platformSignals ?? []).length > 0 && (
+              <div style={{ marginTop: 7, fontSize: 10, color: "#78716c" }}>
+                Signals: {(prospect.platformSignals ?? []).map(tagLabel).join(", ")}
+              </div>
+            )}
+          </div>
+
           {/* Evidence */}
           {prospect.evidence.length > 0 && (
             <div>
@@ -223,7 +269,7 @@ function ProspectDetail({ prospect, onSaved }: {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-type SortKey = "name" | "handle" | "educationType" | "platform" | "confidence" | "validationStatus" | "createdAt";
+type SortKey = "name" | "handle" | "educationType" | "businessCategory" | "opportunityScore" | "platform" | "confidence" | "validationStatus" | "createdAt";
 
 export default function ProspectsPage() {
   const [prospects, setProspects]   = useState<ProspectRecord[]>([]);
@@ -243,6 +289,11 @@ export default function ProspectsPage() {
   const [fHashtag, setFHashtag]           = useState("all");
   const [fPlatform, setFPlatform]         = useState("all");
   const [fMinConf, setFMinConf]           = useState(0);
+  const [fBusinessCategory, setFBusinessCategory] = useState("all");
+  const [fOpportunityType, setFOpportunityType] = useState("all");
+  const [fMinOpp, setFMinOpp] = useState(0);
+  const [fPlatformSignal, setFPlatformSignal] = useState("all");
+  const [fOfferFitTag, setFOfferFitTag] = useState("all");
   const pageSize = 100;
 
   useEffect(() => {
@@ -255,6 +306,11 @@ export default function ProspectsPage() {
     if (fHashtag !== "all") params.set("sourceHashtag", fHashtag);
     if (fPlatform !== "all") params.set("platform", fPlatform);
     if (fMinConf > 0) params.set("minConfidence", String(fMinConf));
+    if (fBusinessCategory !== "all") params.set("businessCategory", fBusinessCategory);
+    if (fOpportunityType !== "all") params.set("relationshipOpportunityType", fOpportunityType);
+    if (fMinOpp > 0) params.set("minOpportunityScore", String(fMinOpp));
+    if (fPlatformSignal !== "all") params.set("platformSignal", fPlatformSignal);
+    if (fOfferFitTag !== "all") params.set("offerFitTag", fOfferFitTag);
 
     setLoading(true);
     setFetchError(null);
@@ -273,15 +329,17 @@ export default function ProspectsPage() {
       })
       .catch((e) => setFetchError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
-  }, [offset, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf]);
+  }, [offset, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag]);
 
   useEffect(() => {
     setOffset(0);
-  }, [fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf]);
+  }, [fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag]);
 
   // Derive filter options
   const hashtags  = useMemo(() => Array.from(new Set(prospects.map((p) => p.sourceHashtag).filter(Boolean) as string[])).sort(), [prospects]);
   const platforms = useMemo(() => Array.from(new Set(prospects.map((p) => p.bestMatch?.platform).filter(Boolean) as string[])).sort(), [prospects]);
+  const platformSignals = useMemo(() => Array.from(new Set(prospects.flatMap((p) => p.platformSignals ?? []))).sort(), [prospects]);
+  const offerFitTags = useMemo(() => Array.from(new Set(prospects.flatMap((p) => p.offerFitTags ?? []))).sort(), [prospects]);
 
   const visible = useMemo(() => {
     let rows = [...prospects];
@@ -292,6 +350,8 @@ export default function ProspectsPage() {
         case "name":             av = a.identity.name;              bv = b.identity.name; break;
         case "handle":           av = a.identity.handle;            bv = b.identity.handle; break;
         case "educationType":    av = a.educationType ?? "";        bv = b.educationType ?? ""; break;
+        case "businessCategory": av = a.businessCategory ?? "";     bv = b.businessCategory ?? ""; break;
+        case "opportunityScore": av = a.overallOpportunityScore ?? 0; bv = b.overallOpportunityScore ?? 0; break;
         case "platform":         av = a.bestMatch?.platform ?? "";  bv = b.bestMatch?.platform ?? ""; break;
         case "confidence":       av = a.confidence.overall;         bv = b.confidence.overall; break;
         case "validationStatus": av = a.validationStatus ?? "new";  bv = b.validationStatus ?? "new"; break;
@@ -315,8 +375,9 @@ export default function ProspectsPage() {
   function clearFilters() {
     setFValidation("all"); setFEducationType("all"); setFAudienceType("all");
     setFHashtag("all"); setFPlatform("all"); setFMinConf(0);
+    setFBusinessCategory("all"); setFOpportunityType("all"); setFMinOpp(0); setFPlatformSignal("all"); setFOfferFitTag("all");
   }
-  const hasFilters = fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" || fPlatform !== "all" || fMinConf > 0;
+  const hasFilters = fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" || fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" || fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all";
 
   const thS: React.CSSProperties = {
     textAlign: "left", padding: "8px 10px", fontSize: 10, fontWeight: 700,
@@ -362,6 +423,7 @@ export default function ProspectsPage() {
             { label: "Education Relevant",val: edRelevant,  color: "#6d28d9" },
             { label: "Needs Review",      val: needsReview, color: "#b45309" },
             { label: "Archived",          val: archived,    color: "#a8a29e" },
+            { label: "High Opportunity",  val: prospects.filter((p) => (p.overallOpportunityScore ?? 0) >= 65).length, color: "#9d174d" },
           ].map(({ label, val, color }) => (
             <div key={label} style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, padding: "8px 14px", textAlign: "center" }}>
               <div style={{ fontSize: 20, fontWeight: 800, color }}>{val}</div>
@@ -412,6 +474,28 @@ export default function ProspectsPage() {
           <option value={50}>≥ 50</option>
           <option value={65}>≥ 65</option>
         </select>
+        <select value={fBusinessCategory} onChange={(e) => setFBusinessCategory(e.target.value)} style={selS}>
+          <option value="all">All business categories</option>
+          {BUSINESS_CATEGORIES.map((c) => <option key={c} value={c}>{BUSINESS_CATEGORY_LABELS[c]}</option>)}
+        </select>
+        <select value={fOpportunityType} onChange={(e) => setFOpportunityType(e.target.value)} style={selS}>
+          <option value="all">All opportunity types</option>
+          {RELATIONSHIP_OPPORTUNITY_TYPES.map((t) => <option key={t} value={t}>{RELATIONSHIP_OPPORTUNITY_LABELS[t]}</option>)}
+        </select>
+        <select value={fMinOpp} onChange={(e) => setFMinOpp(Number(e.target.value))} style={selS}>
+          <option value={0}>Any opp. score</option>
+          <option value={40}>≥ 40</option>
+          <option value={60}>≥ 60</option>
+          <option value={75}>≥ 75</option>
+        </select>
+        <select value={fPlatformSignal} onChange={(e) => setFPlatformSignal(e.target.value)} style={selS}>
+          <option value="all">All platform signals</option>
+          {platformSignals.map((p) => <option key={p} value={p}>{tagLabel(p)}</option>)}
+        </select>
+        <select value={fOfferFitTag} onChange={(e) => setFOfferFitTag(e.target.value)} style={selS}>
+          <option value="all">All offer tags</option>
+          {offerFitTags.map((p) => <option key={p} value={p}>{tagLabel(p)}</option>)}
+        </select>
         {hasFilters && (
           <button onClick={clearFilters} style={{ fontSize: 11, color: "#9d174d", background: "none", border: "none", cursor: "pointer", fontWeight: 700 }}>
             Clear
@@ -443,6 +527,8 @@ export default function ProspectsPage() {
                   ["name",            "Name"],
                   [null,              "Source #"],
                   ["educationType",   "Ed. Type"],
+                  ["businessCategory","Business"],
+                  ["opportunityScore","Opp."],
                   [null,              "Audience"],
                   ["platform",        "Platform"],
                   [null,              "Best URL"],
@@ -482,6 +568,21 @@ export default function ProspectsPage() {
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
                       <td style={tdS}>
+                        {p.businessCategory ? (
+                          <span style={{ fontSize: 10, background: "#fce7f3", color: "#9d174d", borderRadius: 20, padding: "2px 7px", fontWeight: 700 }}>
+                            {BUSINESS_CATEGORY_LABELS[p.businessCategory as keyof typeof BUSINESS_CATEGORY_LABELS] ?? tagLabel(String(p.businessCategory))}
+                          </span>
+                        ) : <span style={{ color: "#d6d3d1" }}>—</span>}
+                      </td>
+                      <td style={tdS}>
+                        <span style={{ fontWeight: 800, color: confColor(p.overallOpportunityScore ?? 0) }}>
+                          {p.overallOpportunityScore ?? <span style={{ color: "#d6d3d1" }}>—</span>}
+                        </span>
+                        {p.relationshipOpportunityType && (
+                          <div style={{ fontSize: 9, color: "#78716c", marginTop: 2 }}>{tagLabel(String(p.relationshipOpportunityType))}</div>
+                        )}
+                      </td>
+                      <td style={tdS}>
                         {p.audienceType ? (
                           <span style={{ fontSize: 10, background: "#dbeafe", color: "#1d4ed8", borderRadius: 20, padding: "2px 7px", fontWeight: 700 }}>
                             {AUDIENCE_TYPE_LABELS[p.audienceType] ?? p.audienceType}
@@ -516,7 +617,7 @@ export default function ProspectsPage() {
                     </tr>
                     {isExpanded && (
                       <tr key={`${p.prospectId}-detail`}>
-                        <td colSpan={10} style={{ padding: 0 }}>
+                        <td colSpan={12} style={{ padding: 0 }}>
                           <ProspectDetail prospect={p} onSaved={(updated) => setProspects((prev) => prev.map((x) => x.prospectId === updated.prospectId ? updated : x))} />
                         </td>
                       </tr>

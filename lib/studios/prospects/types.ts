@@ -7,6 +7,8 @@ import type {
   AudienceType,
   ValidationStatus,
 } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
+import type { BusinessCategory, RelationshipOpportunityType } from "./opportunity-taxonomy";
+import type { PlatformSignal } from "./platform-signals";
 
 // Re-export for consumers that only import from this module
 export type { EducationType, AudienceType, ValidationStatus };
@@ -153,6 +155,21 @@ export interface ProspectRecord {
   educationType: EducationType | null;
   audienceType: AudienceType | null;
   sourceTopic: string | null;
+
+  // ── Relationship opportunity classification ────────────────────────────────
+  businessCategory?: BusinessCategory | string | null;
+  businessSubcategory?: string | null;
+  relationshipOpportunityType?: RelationshipOpportunityType | string | null;
+  relationshipScore?: number | null;
+  audienceScore?: number | null;
+  operationalDataScore?: number | null;
+  communityScore?: number | null;
+  overallOpportunityScore?: number | null;
+  offerFitTags?: string[];
+  platformSignals?: PlatformSignal[] | string[];
+  categoryConfidence?: number | null;
+  classificationNotes?: string[];
+  classificationLocked?: boolean;
 
   // ── Intelligence status ──────────────────────────────────────────────────────
   /**

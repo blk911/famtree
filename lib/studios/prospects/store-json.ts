@@ -7,6 +7,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { ProspectRecord, ProspectStatus, MatchedUrl, ProspectEvidence } from "./types";
 import type { ValidationStatus } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
+import { classifyRelationshipOpportunity } from "./opportunity-classifier";
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp/studios-prospects"
@@ -60,6 +61,60 @@ function withGeneratedFields(record: ProspectRecord): ProspectRecord {
       bestMatchUrl: record.bestMatch?.url,
       sourcePlatform: record.sourcePlatform,
     }),
+  };
+}
+
+type ClassificationFields = Pick<ProspectRecord,
+  "businessCategory" | "businessSubcategory" | "relationshipOpportunityType" |
+  "relationshipScore" | "audienceScore" | "operationalDataScore" | "communityScore" |
+  "overallOpportunityScore" | "offerFitTags" | "platformSignals" | "categoryConfidence" |
+  "classificationNotes" | "classificationLocked"
+>;
+
+function buildClassification(record: Partial<ProspectRecord> & UpsertInput): ClassificationFields {
+  if (record.classificationLocked) return {};
+  return classifyRelationshipOpportunity({
+    handle: record.identity?.handle,
+    displayName: record.identity?.name,
+    description: [
+      record.identity?.categoryGuess,
+      record.sourceTopic,
+      ...(record.services ?? []),
+    ].filter(Boolean).join(" "),
+    sourceHashtags: record.sourceHashtags,
+    sourcePath: record.sourcePath,
+    bestUrl: record.bestMatch?.url,
+    allMatchedUrls: record.allMatchedUrls?.map((url) => url.url),
+    platforms: record.platforms,
+    evidence: record.evidence,
+    vertical: record.vertical,
+    category: record.identity?.categoryGuess ?? undefined,
+    educationType: record.educationType,
+    audienceType: record.audienceType,
+  });
+}
+
+function mergeClassification(existing: ProspectRecord, incoming: UpsertInput): ClassificationFields {
+  if (existing.classificationLocked) {
+    return {
+      businessCategory: existing.businessCategory,
+      businessSubcategory: existing.businessSubcategory,
+      relationshipOpportunityType: existing.relationshipOpportunityType,
+      relationshipScore: existing.relationshipScore,
+      audienceScore: existing.audienceScore,
+      operationalDataScore: existing.operationalDataScore,
+      communityScore: existing.communityScore,
+      overallOpportunityScore: existing.overallOpportunityScore,
+      offerFitTags: existing.offerFitTags ?? [],
+      platformSignals: existing.platformSignals ?? [],
+      categoryConfidence: existing.categoryConfidence,
+      classificationNotes: existing.classificationNotes ?? [],
+      classificationLocked: existing.classificationLocked,
+    };
+  }
+  return {
+    ...buildClassification(incoming),
+    classificationLocked: incoming.classificationLocked ?? existing.classificationLocked ?? false,
   };
 }
 
@@ -133,6 +188,11 @@ export interface ProspectFilter {
   platform?: string;
   location?: string;       // substring match on identity.locationGuess
   minConfidence?: number;
+  businessCategory?: string;
+  relationshipOpportunityType?: string;
+  minOpportunityScore?: number;
+  platformSignal?: string;
+  offerFitTag?: string;
   sourceType?: string;     // e.g. "education_directory_import"
   sourcePlatform?: string; // e.g. "directory_import"
   sourceTool?: string;     // e.g. "education_directory_import"
@@ -187,6 +247,7 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
 
     const merged: ProspectRecord = {
       ...existing,
+      ...mergeClassification(existing, incoming),
       identityFingerprint: existing.identityFingerprint ?? incomingFingerprint,
       updatedAt: now,
       identity: {
@@ -237,6 +298,7 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
 
   const newRecord: ProspectRecord = {
     ...incoming,
+    ...buildClassification(incoming),
     prospectId: generateProspectId(incoming.identity.handle),
     identityFingerprint: incomingFingerprint,
     createdAt: now,
@@ -284,6 +346,24 @@ export async function updateProspectJson(
   return updated;
 }
 
+export async function updateProspectClassificationJson(
+  prospectId: string,
+  patch: ClassificationFields
+): Promise<ProspectRecord | null> {
+  const records = await loadAllProspects();
+  const idx = records.findIndex((r) => r.prospectId === prospectId);
+  if (idx < 0) return null;
+
+  const updated: ProspectRecord = {
+    ...records[idx],
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  };
+  records[idx] = updated;
+  await writeAllProspects(records);
+  return updated;
+}
+
 // ─── List ─────────────────────────────────────────────────────────────────────
 
 export async function listProspectsJson(): Promise<ProspectRecord[]> {
@@ -312,6 +392,11 @@ export async function filterProspectsJson(filter: ProspectFilter): Promise<Prosp
       if (!loc.includes(filter.location.toLowerCase()))                        return false;
     }
     if (filter.minConfidence !== undefined && p.confidence.overall < filter.minConfidence) return false;
+    if (filter.businessCategory && p.businessCategory !== filter.businessCategory) return false;
+    if (filter.relationshipOpportunityType && p.relationshipOpportunityType !== filter.relationshipOpportunityType) return false;
+    if (filter.minOpportunityScore !== undefined && (p.overallOpportunityScore ?? 0) < filter.minOpportunityScore) return false;
+    if (filter.platformSignal && !(p.platformSignals ?? []).includes(filter.platformSignal)) return false;
+    if (filter.offerFitTag && !(p.offerFitTags ?? []).includes(filter.offerFitTag)) return false;
     return true;
   });
 
