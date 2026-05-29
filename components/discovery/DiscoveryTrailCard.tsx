@@ -70,7 +70,7 @@ export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
         </div>
         <span
           style={{
-            fontSize: 12, fontWeight: 700, letterSpacing: "0.04em",
+            fontSize: 13, fontWeight: 700, letterSpacing: "0.04em",
             color: "rgba(255,255,255,0.88)",
             background: "rgba(0,0,0,0.32)",
             borderRadius: 20, padding: "3px 8px",
@@ -88,7 +88,7 @@ export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
           <h3
             style={{
               margin: "0 0 5px",
-              fontSize: 16, fontWeight: 900, letterSpacing: "-0.025em", lineHeight: 1.25,
+              fontSize: 18, fontWeight: 900, letterSpacing: "-0.025em", lineHeight: 1.25,
               color: "#1c1917",
             }}
           >
@@ -96,7 +96,7 @@ export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
           </h3>
           <p
             style={{
-              margin: 0, fontSize: 13, lineHeight: 1.5,
+              margin: 0, fontSize: 15, lineHeight: 1.5,
               color: "rgba(28,25,23,0.52)",
               display: "-webkit-box",
               WebkitLineClamp: 2,
@@ -122,7 +122,7 @@ export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
             <span key={step} style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <span
                 style={{
-                  fontSize: 12, fontWeight: 700, letterSpacing: "0.02em",
+                  fontSize: 13, fontWeight: 700, letterSpacing: "0.02em",
                   color: "rgba(28,25,23,0.68)",
                   background: "rgba(28,25,23,0.06)",
                   borderRadius: 6, padding: "2px 7px",
@@ -143,7 +143,7 @@ export function DiscoveryTrailCard({ trail, fullWidth = false }: Props) {
         <div>
           <span
             style={{
-              fontSize: 12, fontWeight: 700, letterSpacing: "0.04em",
+              fontSize: 13, fontWeight: 700, letterSpacing: "0.04em",
               borderRadius: 6, padding: "2px 8px",
               background: ageBadge.bg, color: ageBadge.text,
             }}

@@ -152,7 +152,7 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
         <h3
           style={{
             margin: "0 0 5px",
-            fontSize: 16, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.3,
+            fontSize: 18, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.3,
             color: "#1c1917",
             flex: 1,
           }}
@@ -162,7 +162,7 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
 
         <p
           style={{
-            margin: 0, fontSize: 14, lineHeight: 1.45,
+            margin: 0, fontSize: 15, lineHeight: 1.45,
             color: "rgba(28,25,23,0.50)",
             display: "-webkit-box",
             WebkitLineClamp: 2,
