@@ -68,6 +68,42 @@ const cases: Expected[] = [
     type: "relationship_operator",
     tags: ["event_sales", "referral_engine"],
   },
+  {
+    name: "artist with StyleSeat operational signal",
+    input: {
+      displayName: "Simone Livingston",
+      description: "StyleSeat booking page discovered during resolver search",
+      sourceHashtags: ["denverartist", "coloradoartist"],
+      evidence: [
+        "Caption: Oil pastels are turning into a favorite medium of mine",
+        "Category: Visual Art",
+        "Title: StyleSeat - Online Booking for Hair Stylists & Beauty Professionals",
+      ],
+      allMatchedUrls: ["https://www.styleseat.com/m/all_sorts_of_nonsense612"],
+      platforms: ["styleseat"],
+    },
+    category: "artist_creator",
+    type: "appointment_operator",
+    tags: ["appointment_fill", "collector_buyer_network"],
+    minOps: 60,
+  },
+  {
+    name: "trainer with StyleSeat operational signal",
+    input: {
+      displayName: "Alloy Broadway Park",
+      sourceHashtags: ["denvertrainer"],
+      evidence: [
+        "Category: Fitness & Wellness",
+        "Title: StyleSeat - Online Booking for Hair Stylists & Beauty Professionals",
+      ],
+      allMatchedUrls: ["https://www.styleseat.com/m/alloy.broadwaypark"],
+      platforms: ["styleseat"],
+    },
+    category: "fitness_wellness",
+    type: "appointment_operator",
+    tags: ["appointment_fill", "referral_engine"],
+    minOps: 60,
+  },
 ];
 
 let failures = 0;

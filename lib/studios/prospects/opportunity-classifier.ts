@@ -53,14 +53,40 @@ function has(text: string, terms: string[]): boolean {
   return terms.some((term) => text.includes(term));
 }
 
+function explicitSourceSignalText(input: RelationshipOpportunityInput): string {
+  const evidence = evidenceText(input.evidence).toLowerCase();
+  const categoryMatches = Array.from(evidence.matchAll(/category:\s*([^"\n\r]+)/g))
+    .map((match) => match[1])
+    .join(" ");
+
+  return [
+    input.sourcePath,
+    ...(input.sourceHashtags ?? []),
+    categoryMatches,
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+
 function deriveCategory(text: string, input: RelationshipOpportunityInput): { category: BusinessCategory; subcategory: string; confidence: number; notes: string[] } {
   const notes: string[] = [];
   const categoryText = [input.category, input.subcategory, input.vertical, input.educationType, input.audienceType, text].join(" ").toLowerCase();
+  const sourceSignalText = explicitSourceSignalText(input);
 
   const match = (category: BusinessCategory, subcategory: string, confidence: number, reason: string) => {
     notes.push(reason);
     return { category, subcategory, confidence, notes };
   };
+
+  if (has(sourceSignalText, ["visual art", "denverartist", "coloradoartist", "artist", "painting", "painter", "illustration", "oil pastel"])) {
+    const sub = has(sourceSignalText, ["watercolor"]) ? "watercolor_artist" : has(sourceSignalText, ["illustration"]) ? "illustrator" : has(sourceSignalText, ["painting", "painter", "oil pastel"]) ? "painter" : "artist";
+    return match("artist_creator", sub, 90, "Explicit artist or visual-art source signal detected");
+  }
+  if (has(sourceSignalText, ["fitness & wellness", "denvertrainer", "personal trainer", "fitness", "trainer", "gym"])) {
+    return match("fitness_wellness", has(sourceSignalText, ["yoga"]) ? "yoga" : "personal_trainer", 88, "Explicit fitness or trainer source signal detected");
+  }
+  if (has(sourceSignalText, ["math tutor", "science tutor", "reading tutor", "test prep", "homeschool", "tutor", "teacher"])) {
+    const sub = has(sourceSignalText, ["math"]) ? "math_tutor" : has(sourceSignalText, ["science"]) ? "science_tutor" : has(sourceSignalText, ["reading"]) ? "reading_tutor" : "tutor";
+    return match("education_tutor", sub, 88, "Explicit education or tutoring source signal detected");
+  }
 
   if (has(categoryText, ["dog trainer", "groomer", "pet", "boarding", "breeder", "puppy"])) return match("pet_services", has(categoryText, ["trainer"]) ? "dog_trainer" : "pet_services", 80, "Pet service signal detected");
   if (has(categoryText, ["math tutor", "science tutor", "reading tutor", "test prep", "tutor", "lesson", "teacher", "coding teacher"])) {
