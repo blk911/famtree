@@ -276,7 +276,7 @@ export default function DiscoveryHomePage() {
                     <h3
                       style={{
                         margin: "0 0 8px",
-                        fontSize: "clamp(19px, 2.3vw, 23px)",
+                        fontSize: "clamp(21px, 2.5vw, 26px)",
                         fontWeight: 900,
                         letterSpacing: "-0.03em",
                         color: "#1c1917",
@@ -286,7 +286,7 @@ export default function DiscoveryHomePage() {
                       {path.title}
                     </h3>
 
-                    <p style={{ margin: "0 0 16px", color: "rgba(28,25,23,0.55)", fontSize: 14, lineHeight: 1.58 }}>
+                    <p style={{ margin: "0 0 16px", color: "rgba(28,25,23,0.55)", fontSize: 15, lineHeight: 1.58 }}>
                       {path.subhead}
                     </p>
 
@@ -318,7 +318,7 @@ export default function DiscoveryHomePage() {
                         background: `${path.accent}10`,
                         color: path.accent,
                         padding: "8px 14px",
-                        fontSize: 13, fontWeight: 800, cursor: "pointer",
+                        fontSize: 14, fontWeight: 800, cursor: "pointer",
                       }}
                       aria-label={`Explore ${path.title}`}
                     >
