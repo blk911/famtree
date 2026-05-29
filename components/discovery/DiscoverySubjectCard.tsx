@@ -63,7 +63,7 @@ export function DiscoverySubjectCard({ subject }: Props) {
           <h2
             style={{
               margin: 0,
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: 900,
               color: "#fff",
               letterSpacing: "-0.03em",
@@ -89,7 +89,7 @@ export function DiscoverySubjectCard({ subject }: Props) {
           <p
             style={{
               margin: "0 0 14px",
-              fontSize: 12,
+              fontSize: 13,
               lineHeight: 1.55,
               color: "rgba(28,25,23,0.52)",
               flex: 1,
@@ -108,7 +108,7 @@ export function DiscoverySubjectCard({ subject }: Props) {
               <span
                 key={st.id}
                 style={{
-                  fontSize: 10, fontWeight: 600, letterSpacing: "0.02em",
+                  fontSize: 11, fontWeight: 600, letterSpacing: "0.02em",
                   color: subject.accentColor,
                   background: `${subject.accentColor}18`,
                   borderRadius: 6, padding: "2px 8px",
@@ -121,7 +121,7 @@ export function DiscoverySubjectCard({ subject }: Props) {
             {subject.subtopics.length > 3 && (
               <span
                 style={{
-                  fontSize: 10, fontWeight: 600, letterSpacing: "0.02em",
+                  fontSize: 11, fontWeight: 600, letterSpacing: "0.02em",
                   color: "rgba(28,25,23,0.38)",
                   borderRadius: 6, padding: "2px 8px",
                   border: "1px solid rgba(28,25,23,0.12)",
@@ -137,7 +137,7 @@ export function DiscoverySubjectCard({ subject }: Props) {
             <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
               <span
                 style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: 800,
                   letterSpacing: "0.04em",
                   color: "rgba(28,25,23,0.40)",
@@ -150,7 +150,7 @@ export function DiscoverySubjectCard({ subject }: Props) {
               <span
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 4,
-                  fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+                  fontSize: 11, fontWeight: 700, letterSpacing: "0.06em",
                   textTransform: "uppercase", color: "#16a34a",
                 }}
               >
@@ -162,7 +162,7 @@ export function DiscoverySubjectCard({ subject }: Props) {
             <span
               style={{
                 display: "inline-flex", alignItems: "center", gap: 5,
-                fontSize: 12, fontWeight: 800, letterSpacing: "-0.01em",
+                fontSize: 13, fontWeight: 800, letterSpacing: "-0.01em",
                 color: subject.accentColor,
               }}
             >

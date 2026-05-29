@@ -133,14 +133,14 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
       <div style={{ padding: "10px 12px 14px", flex: 1, display: "flex", flexDirection: "column" }}>
         {/* Type + age badges */}
         <div style={{ display: "flex", gap: 5, marginBottom: 7, flexWrap: "wrap", alignItems: "center" }}>
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.04em", color: typeColor }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.04em", color: typeColor }}>
             {item.itemType}
             {item.episodes ? ` · ${item.episodes} eps` : ""}
           </span>
           <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(28,25,23,0.18)", flexShrink: 0 }} />
           <span
             style={{
-              fontSize: 9, fontWeight: 700, letterSpacing: "0.04em",
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
               borderRadius: 5, padding: "1px 6px",
               background: ageBadge.bg, color: ageBadge.text,
             }}
@@ -152,7 +152,7 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
         <h3
           style={{
             margin: "0 0 5px",
-            fontSize: 13, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.3,
+            fontSize: 14, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.3,
             color: "#1c1917",
             flex: 1,
           }}
@@ -162,7 +162,7 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
 
         <p
           style={{
-            margin: 0, fontSize: 11, lineHeight: 1.45,
+            margin: 0, fontSize: 12, lineHeight: 1.45,
             color: "rgba(28,25,23,0.50)",
             display: "-webkit-box",
             WebkitLineClamp: 2,
@@ -178,7 +178,7 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
           <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
             <span
               style={{
-                fontSize: 9, fontWeight: 700, letterSpacing: "0.04em",
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
                 borderRadius: 5, padding: "2px 6px",
                 background: "rgba(28,25,23,0.06)",
                 color: "rgba(28,25,23,0.48)",
@@ -188,7 +188,7 @@ export function DiscoveryInvestigationCard({ item, onPlay, wide = false }: Props
             </span>
             <span
               style={{
-                fontSize: 9, fontWeight: 600,
+                fontSize: 10, fontWeight: 600,
                 color: "rgba(28,25,23,0.38)",
               }}
             >
