@@ -340,7 +340,7 @@ function ProspectDetail({ prospect, onSaved }: {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-type SortKey = "name" | "handle" | "educationType" | "businessCategory" | "opportunityScore" | "platform" | "confidence" | "validationStatus" | "createdAt";
+type SortKey = "name" | "handle" | "educationType" | "businessCategory" | "opportunityScore" | "location" | "platform" | "confidence" | "validationStatus" | "createdAt";
 
 export default function ProspectsPage() {
   const [prospects, setProspects]   = useState<ProspectRecord[]>([]);
@@ -515,6 +515,7 @@ export default function ProspectsPage() {
         case "educationType":    av = a.educationType ?? "";        bv = b.educationType ?? ""; break;
         case "businessCategory": av = a.businessCategory ?? "";     bv = b.businessCategory ?? ""; break;
         case "opportunityScore": av = a.overallOpportunityScore ?? 0; bv = b.overallOpportunityScore ?? 0; break;
+        case "location":         av = a.identity.locationGuess ?? ""; bv = b.identity.locationGuess ?? ""; break;
         case "platform":         av = a.bestMatch?.platform ?? "";  bv = b.bestMatch?.platform ?? ""; break;
         case "confidence":       av = a.confidence.overall;         bv = b.confidence.overall; break;
         case "validationStatus": av = a.validationStatus ?? "new";  bv = b.validationStatus ?? "new"; break;
@@ -964,7 +965,7 @@ export default function ProspectsPage() {
                   ["businessCategory","Market"],
                   [null,              "Subtype"],
                   ["opportunityScore","Opportunity"],
-                  [null,              "Location"],
+                  ["location",        "Location"],
                   [null,              "Relationship"],
                   [null,              "Offer Fit Tags"],
                   [null,              "Platform Signals"],
