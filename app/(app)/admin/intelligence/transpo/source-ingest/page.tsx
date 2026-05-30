@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { KeywordPackSelector } from "@/components/admin/intelligence/transpo/KeywordPackSelector";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 
 const SOURCE_TYPES = ["FMCSA", "SAFER", "CSV", "URL", "Text / PDF"] as const;
@@ -48,7 +49,7 @@ export default function TranspoSourceIngestPage() {
   // FMCSA test pull form state
   const [fmState, setFmState] = useState("CO");
   const [fmCity, setFmCity] = useState("");
-  const [fmKeyword, setFmKeyword] = useState("");
+  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [fmLimit, setFmLimit] = useState(10);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState("");
@@ -67,7 +68,7 @@ export default function TranspoSourceIngestPage() {
             market,
             state: fmState,
             city: fmCity,
-            keyword: fmKeyword,
+            keyword: selectedKeywords.join(", "),
             limit: fmLimit,
             notes,
           }),
@@ -154,14 +155,19 @@ export default function TranspoSourceIngestPage() {
         </p>
       </div>
 
-      {/* Form card */}
-      <div style={{
-        background: "#fff",
-        border: "1px solid #e7e5e4",
-        borderRadius: 14,
-        padding: "22px 24px",
-        maxWidth: 540,
-      }}>
+      {/* Two-column source control area */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 20, alignItems: "flex-start" }}>
+
+        {/* Left: source form */}
+        <div style={{
+          flex: "1 1 420px",
+          minWidth: 320,
+          maxWidth: 560,
+          background: "#fff",
+          border: "1px solid #e7e5e4",
+          borderRadius: 14,
+          padding: "22px 24px",
+        }}>
         <div style={{ display: "grid", gap: 18 }}>
 
           {/* Source type */}
@@ -226,17 +232,6 @@ export default function TranspoSourceIngestPage() {
                   value={fmCity}
                   onChange={(e) => setFmCity(e.target.value)}
                   placeholder="e.g. Denver"
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label style={labelStyle} htmlFor="transpo-fm-keyword">Keyword</label>
-                <input
-                  id="transpo-fm-keyword"
-                  type="text"
-                  value={fmKeyword}
-                  onChange={(e) => setFmKeyword(e.target.value)}
-                  placeholder="e.g. reefer, flatbed"
                   style={inputStyle}
                 />
               </div>
@@ -334,6 +329,15 @@ export default function TranspoSourceIngestPage() {
               </span>
             )}
           </div>
+        </div>
+        </div>
+
+        {/* Right: keyword packs */}
+        <div style={{ flex: "1 1 320px", minWidth: 280, maxWidth: 440 }}>
+          <KeywordPackSelector
+            selectedKeywords={selectedKeywords}
+            onChange={setSelectedKeywords}
+          />
         </div>
       </div>
 
