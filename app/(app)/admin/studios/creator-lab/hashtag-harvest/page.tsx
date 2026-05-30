@@ -489,7 +489,7 @@ function CreatorRow({
   const { seed } = result;
 
   const tdStyle: React.CSSProperties = {
-    padding: "8px 10px", fontSize: 12, color: "#57534e",
+    padding: "8px 10px", fontSize: 14, color: "#57534e",
     borderBottom: "1px solid #f5f5f4", verticalAlign: "middle",
   };
 
@@ -499,12 +499,12 @@ function CreatorRow({
         onClick={onToggle}
         style={{ cursor: "pointer", background: expanded ? "#fdf2f8" : "transparent" }}
       >
-        <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: 11, fontWeight: 700, color: "#1c1917" }}>
+        <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: 14, fontWeight: 700, color: "#1c1917" }}>
           @{seed.handle}
         </td>
         <td style={tdStyle}>{seed.displayName !== seed.handle ? seed.displayName : <span style={{ color: "#d6d3d1" }}>—</span>}</td>
-        <td style={{ ...tdStyle, fontSize: 10, color: "#9d174d" }}>#{seed.sourceHashtag}</td>
-        <td style={{ ...tdStyle, fontSize: 10 }}>
+        <td style={{ ...tdStyle, fontSize: 14, color: "#9d174d" }}>#{seed.sourceHashtag}</td>
+        <td style={{ ...tdStyle, fontSize: 14 }}>
           {seed.educationType
             ? <span style={{ background: "#ede9fe", color: "#6d28d9", borderRadius: 4, padding: "1px 6px", fontWeight: 700 }}>
                 {EDUCATION_TYPE_LABELS[seed.educationType] ?? seed.educationType}
@@ -522,8 +522,8 @@ function CreatorRow({
           ) : <span style={{ color: "#d6d3d1" }}>—</span>}
         </td>
         <td style={tdStyle}>{platformBadge(result.bestMatchPlatform) ?? <span style={{ color: "#d6d3d1" }}>—</span>}</td>
-        <td style={tdStyle}>{seed.detectedLocation ?? <span style={{ color: "#d6d3d1" }}>—</span>}</td>
-        <td style={tdStyle}>
+        <td style={{ ...tdStyle, fontSize: 12 }}>{seed.detectedLocation ?? <span style={{ color: "#d6d3d1" }}>—</span>}</td>
+        <td style={{ ...tdStyle, fontSize: 12 }}>
           <span style={{ fontWeight: 700, color: confColor(result.confidence) }}>
             {result.confidence || <span style={{ color: "#d6d3d1" }}>—</span>}
           </span>
@@ -531,7 +531,7 @@ function CreatorRow({
         <td style={tdStyle}>
           {result.prospectId ? (
             <a href="/admin/studios/prospects" onClick={(e) => e.stopPropagation()}
-              style={{ fontSize: 10, color: "#9d174d", fontWeight: 700, textDecoration: "none" }}>
+              style={{ fontSize: 14, color: "#9d174d", fontWeight: 700, textDecoration: "none" }}>
               Saved →
             </a>
           ) : result.saveError ? (
