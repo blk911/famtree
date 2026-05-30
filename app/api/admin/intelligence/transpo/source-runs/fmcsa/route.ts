@@ -11,11 +11,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
-import {
-  runFmcsaTestPull,
-  type FmcsaPullInput,
-  type FmcsaCarrierRecord,
-} from "@/lib/intelligence/transpo/sources/fmcsa-source";
+import { runFmcsaTestPull } from "@/lib/intelligence/transpo/sources/fmcsa-source";
+import type {
+  TranspoSourceRun,
+  TranspoSourceRunInput,
+} from "@/lib/intelligence/transpo/types";
 
 const RUNS_DIR = path.join(
   process.cwd(),
@@ -26,22 +26,11 @@ const RUNS_DIR = path.join(
 );
 const RUNS_FILE = path.join(RUNS_DIR, "fmcsa-runs.json");
 
-type SourceRun = {
-  id: string;
-  vertical: "transpo";
-  source: "fmcsa";
-  sourceMode: string;
-  input: FmcsaPullInput;
-  recordCount: number;
-  records: FmcsaCarrierRecord[];
-  createdAt: string;
-};
-
-async function readRuns(): Promise<SourceRun[]> {
+async function readRuns(): Promise<TranspoSourceRun[]> {
   try {
     const raw = await fs.readFile(RUNS_FILE, "utf8");
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as SourceRun[]) : [];
+    return Array.isArray(parsed) ? (parsed as TranspoSourceRun[]) : [];
   } catch {
     return [];
   }
@@ -66,7 +55,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const input: FmcsaPullInput = {
+    const input: TranspoSourceRunInput = {
       market,
       state: (body.state ?? "").trim() || undefined,
       city: (body.city ?? "").trim() || undefined,
@@ -80,7 +69,7 @@ export async function POST(req: NextRequest) {
 
     const { sourceMode, records } = await runFmcsaTestPull(input);
 
-    const run: SourceRun = {
+    const run: TranspoSourceRun = {
       id: `transpo-fmcsa-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
       vertical: "transpo",
       source: "fmcsa",

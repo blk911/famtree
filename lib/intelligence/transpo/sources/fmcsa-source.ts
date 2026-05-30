@@ -6,17 +6,18 @@
 // deterministic mock adapter (sourceMode "mock_fmcsa_test") so the source-ingest
 // UI has realistic data to render without a live integration.
 
-export type FmcsaPullInput = {
-  market?: string;
-  state?: string;
-  city?: string;
-  keyword?: string;
-  limit?: number;
-  notes?: string;
-};
+import type {
+  TranspoSourceRunInput,
+  TranspoSourceMode,
+  TranspoCarrierSourceRecord,
+} from "../types";
 
-export type FmcsaCarrierRecord = {
-  companyName: string;
+// FMCSA pulls accept the shared Transpo source-run input contract.
+export type FmcsaPullInput = TranspoSourceRunInput;
+
+// FMCSA test records are a concrete (fully-populated) form of the shared
+// carrier source record contract.
+export type FmcsaCarrierRecord = TranspoCarrierSourceRecord & {
   dotNumber: string;
   mcNumber: string;
   city: string;
@@ -30,7 +31,7 @@ export type FmcsaCarrierRecord = {
 };
 
 export type FmcsaPullResult = {
-  sourceMode: "mock_fmcsa_test";
+  sourceMode: Extract<TranspoSourceMode, "mock_fmcsa_test">;
   records: FmcsaCarrierRecord[];
 };
 

@@ -4,6 +4,7 @@
 // FMCSA/SAFER/DOT data, CSV upload, URL, or freetext/PDF source.
 
 import { useState } from "react";
+import Link from "next/link";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
 import { KeywordPackSelector } from "@/components/admin/intelligence/transpo/KeywordPackSelector";
@@ -378,6 +379,12 @@ export default function TranspoSourceIngestPage() {
             <span><strong style={{ color: "#1c1917" }}>Source mode:</strong> {lastRun.sourceMode}</span>
             <span><strong style={{ color: "#1c1917" }}>Records:</strong> {lastRun.recordCount}</span>
             <span><strong style={{ color: "#1c1917" }}>Created:</strong> {new Date(lastRun.createdAt).toLocaleString()}</span>
+            <Link
+              href="/admin/intelligence/transpo/source-runs"
+              style={{ color: "#1c1917", fontWeight: 700, textDecoration: "underline" }}
+            >
+              View Source Runs →
+            </Link>
           </div>
 
           <div style={{ overflowX: "auto" }}>
