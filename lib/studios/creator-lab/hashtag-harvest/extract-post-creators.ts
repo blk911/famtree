@@ -1,28 +1,12 @@
 // lib/studios/creator-lab/hashtag-harvest/extract-post-creators.ts
 // Extracts HarvestedCreatorSeed records from raw Apify post items.
+// Uses the vertical classifier router — no education-specific logic here.
 
 import type { ApifyPost, HarvestedCreatorSeed } from "./types";
-import { inferEducationType, inferAudienceType } from "./education-config";
+import { classify } from "./classifiers/index";
+import type { EducationType, AudienceType } from "./education-config";
 
-// ─── Category detection ───────────────────────────────────────────────────────
-
-const CATEGORY_KEYWORDS: Array<{ terms: string[]; category: string }> = [
-  { terms: ["lash", "lashes", "lashtech", "lashartist", "lashlift", "volumelash", "russianvolume"], category: "Lash & Brow" },
-  { terms: ["brow", "brows", "browlamination", "browtech", "microblading", "pmu", "permanentmakeup"], category: "Lash & Brow" },
-  { terms: ["inject", "injector", "botox", "filler", "dysport", "aestheticnurse", "medaesthetics", "aestheticmedicine"], category: "Medical Aesthetics" },
-  { terms: ["nailtech", "nailartist", "nails", "nailart", "gelnails", "acrylicnails", "manicure", "pedicure", "nailsalon"], category: "Nails" },
-  { terms: ["hairstylist", "haircolorist", "balayage", "highlights", "hairextensions", "keratin", "blondespecialist", "hairsalon"], category: "Hair" },
-  { terms: ["massage", "massagetherapist", "bodywork", "deeptissue"], category: "Massage" },
-  { terms: ["makeup", "mua", "makeupartist", "makeupartists", "bridalmakeup"], category: "Makeup" },
-  { terms: ["tattoo", "tattooist", "tattooartist", "tattooart", "fineline", "piercing"], category: "Tattoo & Body Art" },
-  { terms: ["esthetician", "esthetics", "facial", "skincare", "skintherapist", "dermaplaning", "waxing", "wax"], category: "Skin & Body" },
-  { terms: ["personaltrainer", "fitnesstrainer", "yogateacher", "pilates", "crossfit", "hiit", "fitnesscoach"], category: "Fitness & Wellness" },
-  { terms: ["nutritionist", "dietitian", "healthcoach", "wellness", "holistichealth"], category: "Health & Nutrition" },
-  { terms: ["salon", "salonowner", "beautyspace", "beautystudio", "beautyenthusiast"], category: "Beauty" },
-  { terms: ["ceramics", "pottery", "potter", "claystudio"], category: "Ceramics & Art" },
-  { terms: ["artist", "artgallery", "fineart", "artstudio", "visualartist", "painter"], category: "Visual Art" },
-  { terms: ["coach", "lifecoach", "businesscoach", "onlinecoach"], category: "Coaching" },
-];
+// ─── Location detection (shared across all verticals) ────────────────────────
 
 const LOCATION_KEYWORDS: Record<string, string> = {
   denver: "Denver, CO",
@@ -47,14 +31,6 @@ const LOCATION_KEYWORDS: Record<string, string> = {
   sf: "San Francisco, CA",
 };
 
-function detectCategory(text: string): string | null {
-  const lower = text.toLowerCase().replace(/[^a-z0-9\s]/g, "");
-  for (const { terms, category } of CATEGORY_KEYWORDS) {
-    if (terms.some((t) => lower.includes(t))) return category;
-  }
-  return null;
-}
-
 function detectLocation(text: string): string | null {
   const lower = text.toLowerCase();
   for (const [keyword, location] of Object.entries(LOCATION_KEYWORDS)) {
@@ -63,7 +39,7 @@ function detectLocation(text: string): string | null {
   return null;
 }
 
-// ─── Handle extraction ────────────────────────────────────────────────────────
+// ─── Handle / name / URL extraction ──────────────────────────────────────────
 
 function extractHandle(post: ApifyPost): string | null {
   const raw =
@@ -85,8 +61,8 @@ function extractDisplayName(post: ApifyPost, handle: string): string {
 }
 
 function extractPostUrl(post: ApifyPost): string | null {
-  if (post.url) return post.url;
-  if (post.postUrl) return post.postUrl;
+  if (post.url)       return post.url;
+  if (post.postUrl)   return post.postUrl;
   if (post.shortCode) return `https://www.instagram.com/p/${post.shortCode}/`;
   return null;
 }
@@ -100,14 +76,16 @@ function extractImageUrl(post: ApifyPost): string | null {
 /**
  * Extracts unique creator seeds from a batch of Apify posts for a single hashtag.
  * Deduplicates by handle within the batch.
+ * Routes classification through the vertical classifier (education, salon, …).
  */
 export function extractPostCreators(
   posts: ApifyPost[],
   sourceHashtag: string,
   marketHint: string,
   categoryHint: string,
+  verticalKey = "education",
 ): HarvestedCreatorSeed[] {
-  const seen = new Set<string>();
+  const seen  = new Set<string>();
   const seeds: HarvestedCreatorSeed[] = [];
 
   for (const post of posts) {
@@ -116,34 +94,52 @@ export function extractPostCreators(
     if (seen.has(handle)) continue;
     seen.add(handle);
 
-    const displayName = extractDisplayName(post, handle);
-    const caption = (post.caption ?? "").slice(0, 400);
+    const displayName    = extractDisplayName(post, handle);
+    const caption        = (post.caption ?? "").slice(0, 400);
     const captionSnippet = caption.slice(0, 200) || null;
-    const postHashtags = (post.hashtags ?? []).join(" ");
-    const fullText = `${displayName} ${caption} ${postHashtags} ${marketHint} ${categoryHint}`;
+    const postHashtags   = (post.hashtags ?? []).join(" ");
+    const fullText       = `${displayName} ${caption} ${postHashtags} ${marketHint} ${categoryHint}`;
 
-    const detectedCategory = detectCategory(fullText) ?? (categoryHint || null);
     const detectedLocation = detectLocation(fullText) ?? (marketHint || null);
-    const educationType = inferEducationType(sourceHashtag, caption);
-    const audienceType  = inferAudienceType(sourceHashtag, caption);
 
+    // ── Vertical-aware classification ─────────────────────────────────────────
+    const classification = classify(verticalKey, sourceHashtag, caption, fullText);
+
+    // ── Education backward compat fields ──────────────────────────────────────
+    // Only populated when the education classifier ran; null for all other verticals.
+    const educationType: EducationType | null =
+      verticalKey === "education" ? (classification.primaryType as EducationType) : null;
+    const audienceType: AudienceType | null =
+      verticalKey === "education" ? (classification.secondaryType as AudienceType) : null;
+
+    // ── Evidence trail ────────────────────────────────────────────────────────
     const evidence: string[] = [];
     if (captionSnippet) evidence.push(`Caption: "${captionSnippet.slice(0, 100)}"`);
-    if (detectedCategory) evidence.push(`Category: ${detectedCategory}`);
+    if (classification.primaryType && classification.primaryType !== "unknown")
+      evidence.push(`${verticalKey} type: ${classification.primaryLabel}`);
     if (detectedLocation) evidence.push(`Location: ${detectedLocation}`);
-    if (educationType && educationType !== "unknown") evidence.push(`Education type: ${educationType}`);
+    if (classification.classifierSignals.length)
+      evidence.push(`Signals: ${classification.classifierSignals.join(", ")}`);
     evidence.push(`Source hashtag: #${sourceHashtag}`);
 
     seeds.push({
       handle,
       displayName,
-      profileUrl: `https://www.instagram.com/${handle}/`,
+      profileUrl:    `https://www.instagram.com/${handle}/`,
       sourceHashtag,
       captionSnippet,
-      postUrl: extractPostUrl(post),
-      imageUrl: extractImageUrl(post),
-      detectedCategory,
+      postUrl:       extractPostUrl(post),
+      imageUrl:      extractImageUrl(post),
+      detectedCategory: categoryHint || null,
       detectedLocation,
+      // Vertical classification
+      verticalKey,
+      primaryType:       classification.primaryType,
+      secondaryType:     classification.secondaryType,
+      primaryLabel:      classification.primaryLabel,
+      secondaryLabel:    classification.secondaryLabel,
+      classifierSignals: classification.signals,
+      // Backward compat
       educationType,
       audienceType,
       evidence,

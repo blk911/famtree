@@ -36,6 +36,14 @@ export function normalizeCreators(seeds: HarvestedCreatorSeed[]): HarvestedCreat
       // Prefer specific over null
       detectedCategory: existing.detectedCategory ?? seed.detectedCategory,
       detectedLocation: existing.detectedLocation ?? seed.detectedLocation,
+      // Vertical classification — prefer non-unknown primaryType
+      verticalKey:       existing.verticalKey,
+      primaryType:       existing.primaryType !== "unknown" ? existing.primaryType : (seed.primaryType ?? existing.primaryType),
+      secondaryType:     existing.secondaryType !== "unknown" ? existing.secondaryType : (seed.secondaryType ?? existing.secondaryType),
+      primaryLabel:      existing.primaryLabel ?? seed.primaryLabel,
+      secondaryLabel:    existing.secondaryLabel ?? seed.secondaryLabel,
+      classifierSignals: Array.from(new Set([...existing.classifierSignals, ...seed.classifierSignals])),
+      // Education backward compat
       educationType: existing.educationType ?? seed.educationType,
       audienceType:  existing.audienceType  ?? seed.audienceType,
       // Merge evidence, dedupe

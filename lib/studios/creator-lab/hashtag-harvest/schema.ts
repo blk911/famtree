@@ -10,4 +10,5 @@ export const HarvestRunRequestSchema = z.object({
   category: z.string().max(80).default(""),
   maxPerHashtag: z.number().int().min(1).max(30).default(10),
   mode: z.enum(["fast", "deep"]).default("fast"),
+  verticalKey: z.enum(["education", "salon", "transpo", "hcare", "labs"]).default("education"),
 });

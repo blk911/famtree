@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     return err("Validation error", parsed.error.errors[0]?.message);
   }
 
-  const { hashtags, market, category, maxPerHashtag, mode } = parsed.data;
+  const { hashtags, market, category, maxPerHashtag, mode, verticalKey } = parsed.data;
   const runId   = generateRunId();
   const batchId = generateBatchId();
   const now     = new Date().toISOString();
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
           (hashtags.indexOf(hashtag) + 1) * maxPerHashtag
         );
 
-    allSeeds.push(...extractPostCreators(postsForTag, hashtag, market, category));
+    allSeeds.push(...extractPostCreators(postsForTag, hashtag, market, category, verticalKey));
   }
 
   // ── Step 3: Normalize / dedupe across all hashtags ──────────────────────────
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     batchId,
     hashtags,
     harvestDate: now.slice(0, 10),
-    vertical:       "education",
+    vertical:       verticalKey,
     sourcePlatform: "instagram",
     sourceTool:     "hashtag_harvest",
   };

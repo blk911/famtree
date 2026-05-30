@@ -5,22 +5,17 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
-import { parseHashtags } from "@/lib/studios/creator-lab/hashtag-harvest/normalize-creators";
+import { HarvestForm } from "@/components/studios/creator-lab/HarvestForm";
 import {
-  EDUCATION_HASHTAG_PRESET,
-  EDUCATION_HASHTAG_CLUSTERS,
-  EDUCATION_TYPE_LABELS,
-  AUDIENCE_TYPE_LABELS,
   VALIDATION_STATUS_LABELS,
   VALIDATION_STATUS_COLORS,
-  type EducationType,
-  type AudienceType,
   type ValidationStatus,
 } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import type {
   HashtagHarvestRun,
   HarvestedCreatorSeed,
   ResolverPipelineResult,
+  HarvestRunRequest,
   HarvestRunResponse,
   HarvestErrorResponse,
   SaveError,
@@ -28,7 +23,6 @@ import type {
 import type { ProspectRecord, ProspectListResponse } from "@/lib/studios/prospects/types";
 import { VALIDATION_STATUS_LABELS as VS_LABELS } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import { BUSINESS_CATEGORY_LABELS, RELATIONSHIP_OPPORTUNITY_LABELS } from "@/lib/studios/prospects/opportunity-taxonomy";
-import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -150,21 +144,19 @@ function ReportsView({
   }, []);
 
   // ── Run-level breakdowns (from this run's response) ───────────────────────────
-  const eduTypeCounts = results.reduce<Record<string, number>>((acc, r) => {
-    const et = r.seed.educationType ?? "unknown";
-    const label = EDUCATION_TYPE_LABELS[et as EducationType] ?? et;
+  const primaryTypeCounts = results.reduce<Record<string, number>>((acc, r) => {
+    const label = r.seed.primaryLabel ?? r.seed.primaryType ?? "unknown";
     acc[label] = (acc[label] ?? 0) + 1;
     return acc;
   }, {});
-  const eduTypeEntries = Object.entries(eduTypeCounts).sort((a, b) => b[1] - a[1]);
+  const primaryTypeEntries = Object.entries(primaryTypeCounts).sort((a, b) => b[1] - a[1]);
 
-  const audienceCounts = results.reduce<Record<string, number>>((acc, r) => {
-    const at = r.seed.audienceType ?? "unknown";
-    const label = AUDIENCE_TYPE_LABELS[at as AudienceType] ?? at;
+  const secondaryTypeCounts = results.reduce<Record<string, number>>((acc, r) => {
+    const label = r.seed.secondaryLabel ?? r.seed.secondaryType ?? "unknown";
     acc[label] = (acc[label] ?? 0) + 1;
     return acc;
   }, {});
-  const audienceEntries = Object.entries(audienceCounts).sort((a, b) => b[1] - a[1]);
+  const secondaryTypeEntries = Object.entries(secondaryTypeCounts).sort((a, b) => b[1] - a[1]);
 
   const hashtagCounts = results.reduce<Record<string, number>>((acc, r) => {
     const tag = `#${r.seed.sourceHashtag}`;
@@ -365,14 +357,14 @@ function ReportsView({
         {/* Left column */}
         <div>
           <BreakdownSection
-            title="EDUCATION TYPE (this run)"
-            entries={eduTypeEntries}
+            title="PRIMARY TYPE (this run)"
+            entries={primaryTypeEntries}
             total={total}
             color="#6d28d9"
           />
           <BreakdownSection
-            title="AUDIENCE TYPE (this run)"
-            entries={audienceEntries}
+            title="SUBTYPE (this run)"
+            entries={secondaryTypeEntries}
             total={total}
             color="#1d4ed8"
           />
@@ -499,9 +491,9 @@ function CreatorRow({
         <td style={tdStyle}>{seed.displayName !== seed.handle ? seed.displayName : <span style={{ color: "#d6d3d1" }}>—</span>}</td>
         <td style={{ ...tdStyle, fontSize: 14, color: "#9d174d" }}>#{seed.sourceHashtag}</td>
         <td style={{ ...tdStyle, fontSize: 14 }}>
-          {seed.educationType
+          {seed.primaryType && seed.primaryType !== "unknown"
             ? <span style={{ background: "#ede9fe", color: "#6d28d9", borderRadius: 4, padding: "1px 6px", fontWeight: 700 }}>
-                {EDUCATION_TYPE_LABELS[seed.educationType] ?? seed.educationType}
+                {seed.primaryLabel ?? seed.primaryType}
               </span>
             : <span style={{ color: "#d6d3d1" }}>—</span>}
         </td>
@@ -560,19 +552,19 @@ function CreatorRow({
                     ))}
                   </div>
                 )}
-                {seed.educationType && (
+                {seed.primaryType && seed.primaryType !== "unknown" && (
                   <div style={{ marginBottom: 6 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e" }}>EDU TYPE: </span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e" }}>TYPE: </span>
                     <span style={{ fontSize: 11, color: "#6d28d9", fontWeight: 600 }}>
-                      {EDUCATION_TYPE_LABELS[seed.educationType] ?? seed.educationType}
+                      {seed.primaryLabel ?? seed.primaryType}
                     </span>
                   </div>
                 )}
-                {seed.audienceType && (
+                {seed.secondaryType && seed.secondaryType !== "unknown" && (
                   <div style={{ marginBottom: 6 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e" }}>AUDIENCE: </span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e" }}>SUBTYPE: </span>
                     <span style={{ fontSize: 11, color: "#1d4ed8", fontWeight: 600 }}>
-                      {AUDIENCE_TYPE_LABELS[seed.audienceType] ?? seed.audienceType}
+                      {seed.secondaryLabel ?? seed.secondaryType}
                     </span>
                   </div>
                 )}
@@ -625,7 +617,7 @@ function CreatorRow({
 
 // ─── Results table ────────────────────────────────────────────────────────────
 
-type SortKey = "handle" | "displayname" | "hashtag" | "edutype" | "besturl" | "platform" | "location" | "confidence" | "prospect";
+type SortKey = "handle" | "displayname" | "hashtag" | "primarytype" | "besturl" | "platform" | "location" | "confidence" | "prospect";
 
 function ResultsTable({ creators, results }: { creators: HarvestedCreatorSeed[]; results: ResolverPipelineResult[] }) {
   const [expandedHandle, setExpandedHandle] = useState<string | null>(null);
@@ -633,17 +625,17 @@ function ResultsTable({ creators, results }: { creators: HarvestedCreatorSeed[];
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [filterHashtag, setFilterHashtag] = useState("all");
   const [filterPlatform, setFilterPlatform] = useState("all");
-  const [filterEduType, setFilterEduType] = useState("all");
+  const [filterPrimaryType, setFilterPrimaryType] = useState("all");
   const [filterMinConf, setFilterMinConf] = useState(0);
 
   const hashtags = Array.from(new Set(creators.map((c) => c.sourceHashtag))).sort();
   const platforms = Array.from(new Set(results.map((r) => r.bestMatchPlatform).filter(Boolean) as string[])).sort();
-  const eduTypes = Array.from(new Set(results.map((r) => r.seed.educationType).filter(Boolean) as EducationType[])).sort();
+  const primaryTypes = Array.from(new Set(results.map((r) => r.seed.primaryType).filter((t): t is string => !!t && t !== "unknown"))).sort();
 
   let filtered = [...results];
   if (filterHashtag !== "all") filtered = filtered.filter((r) => r.seed.sourceHashtag === filterHashtag);
   if (filterPlatform !== "all") filtered = filtered.filter((r) => r.bestMatchPlatform === filterPlatform);
-  if (filterEduType !== "all") filtered = filtered.filter((r) => r.seed.educationType === filterEduType);
+  if (filterPrimaryType !== "all") filtered = filtered.filter((r) => r.seed.primaryType === filterPrimaryType);
   if (filterMinConf > 0) filtered = filtered.filter((r) => r.confidence >= filterMinConf);
 
   filtered.sort((a, b) => {
@@ -652,7 +644,7 @@ function ResultsTable({ creators, results }: { creators: HarvestedCreatorSeed[];
       case "handle":      av = a.seed.handle;                 bv = b.seed.handle; break;
       case "displayname": av = a.seed.displayName ?? "";      bv = b.seed.displayName ?? ""; break;
       case "hashtag":     av = a.seed.sourceHashtag;          bv = b.seed.sourceHashtag; break;
-      case "edutype":     av = a.seed.educationType ?? "";    bv = b.seed.educationType ?? ""; break;
+      case "primarytype": av = a.seed.primaryType ?? "";      bv = b.seed.primaryType ?? ""; break;
       case "besturl":     av = a.bestMatchUrl ?? "";          bv = b.bestMatchUrl ?? ""; break;
       case "platform":    av = a.bestMatchPlatform ?? "";     bv = b.bestMatchPlatform ?? ""; break;
       case "location":    av = a.seed.detectedLocation ?? ""; bv = b.seed.detectedLocation ?? ""; break;
@@ -691,11 +683,12 @@ function ResultsTable({ creators, results }: { creators: HarvestedCreatorSeed[];
           <option value="all">All platforms</option>
           {platforms.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
-        <select value={filterEduType} onChange={(e) => setFilterEduType(e.target.value)} style={selectStyle}>
-          <option value="all">All edu types</option>
-          {eduTypes.map((et) => (
-            <option key={et} value={et}>{EDUCATION_TYPE_LABELS[et] ?? et}</option>
-          ))}
+        <select value={filterPrimaryType} onChange={(e) => setFilterPrimaryType(e.target.value)} style={selectStyle}>
+          <option value="all">All types</option>
+          {primaryTypes.map((pt) => {
+            const label = results.find((r) => r.seed.primaryType === pt)?.seed.primaryLabel ?? pt;
+            return <option key={pt} value={pt}>{label}</option>;
+          })}
         </select>
         <select value={filterMinConf} onChange={(e) => setFilterMinConf(Number(e.target.value))} style={selectStyle}>
           <option value={0}>Any confidence</option>
@@ -716,7 +709,7 @@ function ResultsTable({ creators, results }: { creators: HarvestedCreatorSeed[];
                 ["handle",      "Handle"],
                 ["displayname", "Display Name"],
                 ["hashtag",     "Hashtag"],
-                ["edutype",     "Edu Type"],
+                ["primarytype", "Type"],
                 ["besturl",     "Best URL"],
                 ["platform",    "Platform"],
                 ["location",    "Location"],
@@ -756,94 +749,15 @@ function ResultsTable({ creators, results }: { creators: HarvestedCreatorSeed[];
   );
 }
 
-// ─── Education preset panel ───────────────────────────────────────────────────
-
-function EducationPresetPanel({ onLoad }: { onLoad: (text: string) => void }) {
-  const [open, setOpen] = useState(false);
-
-  const presetText = EDUCATION_HASHTAG_PRESET.map((h) => `#${h}`).join("\n");
-
-  return (
-    <div style={{ marginTop: 10 }}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          fontSize: 11, fontWeight: 700, color: "#6d28d9", background: "#ede9fe",
-          border: "1px solid #c4b5fd", borderRadius: 6, padding: "4px 12px",
-          cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5,
-        }}
-      >
-        🎓 Harvest Presets {open ? "▲" : "▼"}
-      </button>
-
-      {open && (
-        <div style={{ marginTop: 8, background: "#faf5ff", border: "1px solid #e9d5ff",
-          borderRadius: 10, padding: "14px 16px" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#6d28d9", marginBottom: 10 }}>
-            {EDUCATION_HASHTAG_PRESET.length} education hashtags across {Object.keys(EDUCATION_HASHTAG_CLUSTERS).length} clusters
-          </div>
-          {Object.entries(EDUCATION_HASHTAG_CLUSTERS).map(([cluster, tags]) => (
-            <div key={cluster} style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 9, fontWeight: 700, color: "#a855f7", letterSpacing: "0.08em", marginBottom: 4 }}>
-                {cluster}
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                {tags.map((tag) => (
-                  <span key={tag} style={{
-                    fontSize: 10, background: "#ede9fe", color: "#7c3aed",
-                    borderRadius: 20, padding: "1px 8px", fontWeight: 600,
-                  }}>
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            <button
-              type="button"
-              onClick={() => { onLoad(presetText); setOpen(false); }}
-              style={{
-                padding: "6px 16px", borderRadius: 8, border: "none",
-                background: "#7c3aed", color: "#fff", fontWeight: 700,
-                fontSize: 12, cursor: "pointer",
-              }}
-            >
-              Load All {EDUCATION_HASHTAG_PRESET.length} Tags
-            </button>
-            <span style={{ fontSize: 11, color: "#a8a29e", alignSelf: "center" }}>
-              Replaces current textarea content
-            </span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-const PROGRESS_MSGS = [
-  "Connecting to Apify…",
-  "Harvesting hashtag posts…",
-  "Extracting creator signals…",
-  "Running resolver pipeline…",
-  "Matching booking profiles…",
-  "Upserting prospect records…",
-  "Finalising run…",
-];
-
 export default function HashtagHarvestPage() {
-  const [formKey, setFormKey] = useState(0);
-  const [hashtagText, setHashtagText] = useState("");
-  const [market, setMarket] = useState("");
-  const [category, setCategory] = useState("");
-  const [maxPerHashtag, setMaxPerHashtag] = useState(10);
-  const [mode, setMode] = useState<ResolveMode>("fast");
+  // Parent owns only run state. ALL form state lives inside <HarvestForm>.
+  // Incrementing runKey unmounts the old HarvestForm and mounts a fresh one —
+  // no manual field clearing needed, ever.
+  const [runKey,  setRunKey]  = useState(0);
   const [loading, setLoading] = useState(false);
-  const [progressIdx, setProgressIdx] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [error,   setError]   = useState<string | null>(null);
   const [runData, setRunData] = useState<{
     run: HashtagHarvestRun;
     creators: HarvestedCreatorSeed[];
@@ -852,25 +766,16 @@ export default function HashtagHarvestPage() {
   } | null>(null);
   const [resultsTab, setResultsTab] = useState<"creators" | "reports">("creators");
 
-  const parsedHashtags = parseHashtags(hashtagText);
-
-  async function handleRun() {
-    if (parsedHashtags.length === 0 || loading) return;
+  async function handleHarvestSubmit(params: HarvestRunRequest) {
     setLoading(true);
     setError(null);
     setRunData(null);
-    setProgressIdx(0);
     setResultsTab("creators");
-
-    const interval = setInterval(() => {
-      setProgressIdx((i) => (i + 1) % PROGRESS_MSGS.length);
-    }, 4000);
-
     try {
       const res = await fetch("/api/admin/studios/creator-lab/hashtag-harvest/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hashtags: parsedHashtags, market, category, maxPerHashtag, mode }),
+        body: JSON.stringify(params),
       });
       const data: HarvestRunResponse | HarvestErrorResponse = await res.json();
       if (!data.ok) {
@@ -882,28 +787,16 @@ export default function HashtagHarvestPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
-      clearInterval(interval);
       setLoading(false);
     }
   }
 
-  function handleReset() {
+  function handleNewHarvest() {
     setRunData(null);
     setError(null);
-    setHashtagText("");
-    setMarket("");
-    setCategory("");
-    setMaxPerHashtag(10);
-    setMode("fast");
-    setProgressIdx(0);
-    setResultsTab("creators");
-    setFormKey((k) => k + 1); // force full DOM teardown so controlled inputs can't hold stale values
+    setLoading(false);
+    setRunKey((k) => k + 1); // unmounts current HarvestForm → mounts fresh one
   }
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%", padding: "8px 12px", border: "1px solid #e7e5e4", borderRadius: 8,
-    fontSize: 13, color: "#1c1917", background: "#fff", boxSizing: "border-box", fontFamily: "inherit",
-  };
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
     padding: "6px 16px", borderRadius: 20, border: "none",
@@ -923,149 +816,25 @@ export default function HashtagHarvestPage() {
           Hashtag Harvest
         </h1>
         <p style={{ fontSize: 13, color: "#78716c", margin: 0 }}>
-          Harvest education creator signals from Instagram hashtags → resolver → prospect repository.
+          Harvest creator signals from Instagram hashtags across verticals → resolver → prospect repository.
         </p>
       </div>
 
-      {/* Input form */}
+      {/* Input form — HarvestForm owns all form state; incrementing runKey gives a clean slate */}
       {!runData && (
-        <div key={formKey} style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 16, padding: "24px", marginBottom: 24 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-
-            {/* Hashtags */}
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
-                HASHTAGS — ONE PER LINE OR COMMA-SEPARATED
-              </label>
-              <textarea
-                value={hashtagText}
-                onChange={(e) => setHashtagText(e.target.value)}
-                rows={5}
-                placeholder={"#homeschool\n#homeschoolmom\n#microschool\n#mathtutor\n#dyslexia"}
-                style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }}
-                disabled={loading}
-              />
-              {parsedHashtags.length > 0 && (
-                <div style={{ marginTop: 6, display: "flex", flexWrap: "wrap", gap: 4 }}>
-                  {parsedHashtags.map((h) => (
-                    <span key={h} style={{ fontSize: 10, background: "#fce7f3", color: "#9d174d", borderRadius: 20, padding: "2px 8px", fontWeight: 700 }}>
-                      #{h}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <EducationPresetPanel onLoad={(text) => setHashtagText(text)} />
-            </div>
-
-            {/* Market */}
-            <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
-                MARKET / CITY
-              </label>
-              <input type="text" value={market} onChange={(e) => setMarket(e.target.value)}
-                placeholder="Denver, CO" style={inputStyle} disabled={loading} />
-            </div>
-
-            {/* Category */}
-            <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
-                CATEGORY HINT
-              </label>
-              <input type="text" value={category} onChange={(e) => setCategory(e.target.value)}
-                placeholder="Homeschool, Tutor, STEM…" style={inputStyle} disabled={loading} />
-            </div>
-
-            {/* Max per hashtag */}
-            <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
-                MAX CREATORS PER HASHTAG
-              </label>
-              <select value={maxPerHashtag} onChange={(e) => setMaxPerHashtag(Number(e.target.value))}
-                style={{ ...inputStyle }} disabled={loading}>
-                {[5, 10, 15, 20, 30].map((n) => <option key={n} value={n}>{n}</option>)}
-              </select>
-            </div>
-
-            {/* Mode */}
-            <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
-                RESOLVER MODE
-              </label>
-              <div style={{ display: "flex", gap: 8 }}>
-                {(["fast", "deep"] as ResolveMode[]).map((m) => (
-                  <button key={m} type="button" onClick={() => setMode(m)} disabled={loading}
-                    style={{
-                      padding: "7px 16px", borderRadius: 20, border: "2px solid",
-                      borderColor: mode === m ? "#9d174d" : "#e7e5e4",
-                      background: mode === m ? "#9d174d" : "#fff",
-                      color: mode === m ? "#fff" : "#57534e",
-                      fontWeight: 700, fontSize: 12, cursor: "pointer",
-                    }}>
-                    {m === "fast" ? "⚡ Fast" : "🔬 Deep Research"}
-                  </button>
-                ))}
-              </div>
-              <div style={{ fontSize: 11, color: "#a8a29e", marginTop: 4 }}>
-                {mode === "fast" ? "URL pattern matching only. No AI spend." : "AI identity analysis on top candidates. Slower, higher accuracy."}
-              </div>
-            </div>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div style={{ marginTop: 16, padding: "10px 14px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, fontSize: 13, color: "#b91c1c" }}>
-              ❌ {error}
-            </div>
-          )}
-
-          {/* Progress */}
-          {loading && (
-            <div style={{ marginTop: 16, padding: "12px 16px", background: "#f5f5f4", borderRadius: 8, fontSize: 13, color: "#57534e" }}>
-              <span style={{ marginRight: 8 }}>⏳</span>{PROGRESS_MSGS[progressIdx]}
-              <div style={{ fontSize: 11, color: "#a8a29e", marginTop: 4 }}>
-                This can take 30–90 seconds. Apify is harvesting hashtag posts, then the resolver is matching booking profiles.
-              </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div style={{ display: "flex", gap: 10, marginTop: 20, alignItems: "center" }}>
-            <button
-              onClick={handleRun}
-              disabled={loading || parsedHashtags.length === 0}
-              style={{
-                padding: "10px 24px", borderRadius: 10, border: "none",
-                background: loading || parsedHashtags.length === 0 ? "#d6d3d1" : "#1c1917",
-                color: "#fff", fontWeight: 800, fontSize: 14, cursor: loading || parsedHashtags.length === 0 ? "not-allowed" : "pointer",
-              }}
-            >
-              {loading ? "Harvesting…" : `Harvest ${parsedHashtags.length > 0 ? parsedHashtags.length : ""} Hashtag${parsedHashtags.length !== 1 ? "s" : ""}`}
-            </button>
-            {(hashtagText || market || category) && !loading && (
-              <button
-                type="button"
-                onClick={handleReset}
-                style={{
-                  padding: "10px 16px", borderRadius: 10, border: "1px solid #e7e5e4",
-                  background: "#fff", color: "#78716c", fontWeight: 700, fontSize: 13, cursor: "pointer",
-                }}
-              >
-                Clear
-              </button>
-            )}
-            <Link href="/admin/studios/prospects"
-              style={{ fontSize: 12, fontWeight: 700, color: "#9d174d", textDecoration: "none" }}>
-              View Discovered Entities →
-            </Link>
-          </div>
-        </div>
+        <HarvestForm
+          key={runKey}
+          onSubmit={handleHarvestSubmit}
+          loading={loading}
+          error={error}
+        />
       )}
 
       {/* Results */}
       {runData && (
         <>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-            <button onClick={handleReset}
+            <button onClick={handleNewHarvest}
               style={{ fontSize: 12, color: "#9d174d", background: "none", border: "none", cursor: "pointer", fontWeight: 700 }}>
               ← New harvest
             </button>

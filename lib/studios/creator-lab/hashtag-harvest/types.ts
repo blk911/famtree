@@ -50,6 +50,14 @@ export interface HarvestedCreatorSeed {
   imageUrl: string | null;
   detectedCategory: string | null;
   detectedLocation: string | null;
+  // ── Vertical-aware classification (set by classify() router) ─────────────────
+  verticalKey: string;             // e.g. "education" | "salon"
+  primaryType: string | null;      // vertical-specific primary type (e.g. "tutor", "nails")
+  secondaryType: string | null;    // vertical-specific secondary type (e.g. "educator", "operator")
+  primaryLabel: string | null;     // human-readable label for primaryType
+  secondaryLabel: string | null;   // human-readable label for secondaryType
+  classifierSignals: string[];     // signals that drove the classification
+  // ── Education-specific (backward compat — set when verticalKey === "education") ──
   educationType: EducationType | null;
   audienceType: AudienceType | null;
   evidence: string[];
@@ -137,6 +145,7 @@ export interface HarvestRunRequest {
   category: string;
   maxPerHashtag: number;
   mode: ResolveMode;
+  verticalKey: string;
 }
 
 export interface HarvestRunResponse {
