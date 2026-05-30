@@ -13,6 +13,30 @@ type SourceType = (typeof SOURCE_TYPES)[number];
 
 type RunState = "idle" | "saving" | "saved" | "error";
 
+type FmcsaCarrierRecord = {
+  companyName: string;
+  dotNumber: string;
+  mcNumber: string;
+  city: string;
+  state: string;
+  phone: string;
+  fleetSize: number;
+  driverCount: number;
+  authorityStatus: string;
+  sourceUrl: string;
+  rawSource: string;
+};
+
+type FmcsaSourceRun = {
+  id: string;
+  vertical: string;
+  source: string;
+  sourceMode: string;
+  recordCount: number;
+  records: FmcsaCarrierRecord[];
+  createdAt: string;
+};
+
 export default function TranspoSourceIngestPage() {
   const [sourceType, setSourceType] = useState<SourceType>("FMCSA");
   const [market, setMarket] = useState("Colorado");
@@ -20,6 +44,51 @@ export default function TranspoSourceIngestPage() {
   const [runState, setRunState] = useState<RunState>("idle");
   const [lastRunId, setLastRunId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // FMCSA test pull form state
+  const [fmState, setFmState] = useState("CO");
+  const [fmCity, setFmCity] = useState("");
+  const [fmKeyword, setFmKeyword] = useState("");
+  const [fmLimit, setFmLimit] = useState(10);
+  const [isRunning, setIsRunning] = useState(false);
+  const [error, setError] = useState("");
+  const [lastRun, setLastRun] = useState<FmcsaSourceRun | null>(null);
+
+  async function handleRunFmcsaTestPull() {
+    setIsRunning(true);
+    setError("");
+    try {
+      const res = await fetch(
+        "/api/admin/intelligence/transpo/source-runs/fmcsa",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            market,
+            state: fmState,
+            city: fmCity,
+            keyword: fmKeyword,
+            limit: fmLimit,
+            notes,
+          }),
+        },
+      );
+      const data = (await res.json()) as {
+        ok: boolean;
+        run?: FmcsaSourceRun;
+        error?: string;
+      };
+      if (data.ok && data.run) {
+        setLastRun(data.run);
+      } else {
+        setError(data.error ?? "Unknown error");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setIsRunning(false);
+    }
+  }
 
   async function handleCreateRun() {
     setRunState("saving");
@@ -45,6 +114,8 @@ export default function TranspoSourceIngestPage() {
       setRunState("error");
     }
   }
+
+  const isFmcsa = sourceType === "FMCSA";
 
   const inputStyle: React.CSSProperties = {
     fontSize: 12,
@@ -133,6 +204,57 @@ export default function TranspoSourceIngestPage() {
             />
           </div>
 
+          {/* FMCSA test pull params */}
+          {isFmcsa && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div>
+                <label style={labelStyle} htmlFor="transpo-fm-state">State</label>
+                <input
+                  id="transpo-fm-state"
+                  type="text"
+                  value={fmState}
+                  onChange={(e) => setFmState(e.target.value)}
+                  placeholder="e.g. CO"
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={labelStyle} htmlFor="transpo-fm-city">City</label>
+                <input
+                  id="transpo-fm-city"
+                  type="text"
+                  value={fmCity}
+                  onChange={(e) => setFmCity(e.target.value)}
+                  placeholder="e.g. Denver"
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={labelStyle} htmlFor="transpo-fm-keyword">Keyword</label>
+                <input
+                  id="transpo-fm-keyword"
+                  type="text"
+                  value={fmKeyword}
+                  onChange={(e) => setFmKeyword(e.target.value)}
+                  placeholder="e.g. reefer, flatbed"
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={labelStyle} htmlFor="transpo-fm-limit">Limit</label>
+                <input
+                  id="transpo-fm-limit"
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={fmLimit}
+                  onChange={(e) => setFmLimit(Number(e.target.value))}
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Notes / source text */}
           <div>
             <label style={labelStyle} htmlFor="transpo-notes">
@@ -158,7 +280,30 @@ export default function TranspoSourceIngestPage() {
           </div>
 
           {/* CTA */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            {isFmcsa && (
+              <button
+                type="button"
+                onClick={handleRunFmcsaTestPull}
+                disabled={isRunning || !market.trim()}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 800,
+                  padding: "9px 20px",
+                  borderRadius: 9,
+                  border: "none",
+                  background: isRunning ? "#a8a29e" : "#1c1917",
+                  color: "#fff",
+                  cursor: isRunning ? "not-allowed" : "pointer",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                {isRunning ? "Running test pull..." : "Run FMCSA Test Pull"}
+              </button>
+            )}
+            {isFmcsa && error && (
+              <span style={{ fontSize: 11, color: "#dc2626" }}>✗ {error}</span>
+            )}
             <button
               type="button"
               onClick={handleCreateRun}
@@ -191,6 +336,73 @@ export default function TranspoSourceIngestPage() {
           </div>
         </div>
       </div>
+
+      {/* FMCSA test pull results */}
+      {isFmcsa && lastRun && (
+        <div style={{
+          marginTop: 28,
+          background: "#fff",
+          border: "1px solid #e7e5e4",
+          borderRadius: 14,
+          padding: "20px 22px",
+        }}>
+          {lastRun.sourceMode.startsWith("mock") && (
+            <div style={{
+              display: "inline-block",
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#92400e",
+              background: "#fef3c7",
+              border: "1px solid #fde68a",
+              borderRadius: 8,
+              padding: "5px 10px",
+              marginBottom: 14,
+            }}>
+              ⚠ Mock FMCSA test data — live source not connected yet.
+            </div>
+          )}
+
+          <div style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "6px 24px",
+            fontSize: 12,
+            color: "#57534e",
+            marginBottom: 16,
+          }}>
+            <span><strong style={{ color: "#1c1917" }}>Run ID:</strong> <code style={{ fontSize: 11 }}>{lastRun.id}</code></span>
+            <span><strong style={{ color: "#1c1917" }}>Source mode:</strong> {lastRun.sourceMode}</span>
+            <span><strong style={{ color: "#1c1917" }}>Records:</strong> {lastRun.recordCount}</span>
+            <span><strong style={{ color: "#1c1917" }}>Created:</strong> {new Date(lastRun.createdAt).toLocaleString()}</span>
+          </div>
+
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <thead>
+                <tr style={{ textAlign: "left", color: "#78716c", borderBottom: "1px solid #e7e5e4" }}>
+                  {["Company", "DOT", "MC", "City", "State", "Fleet", "Drivers", "Status"].map((h) => (
+                    <th key={h} style={{ padding: "8px 10px", fontWeight: 700, whiteSpace: "nowrap" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {lastRun.records.map((r, i) => (
+                  <tr key={`${r.dotNumber}-${i}`} style={{ borderBottom: "1px solid #f5f5f4", color: "#1c1917" }}>
+                    <td style={{ padding: "8px 10px" }}>{r.companyName}</td>
+                    <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{r.dotNumber}</td>
+                    <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{r.mcNumber}</td>
+                    <td style={{ padding: "8px 10px" }}>{r.city}</td>
+                    <td style={{ padding: "8px 10px" }}>{r.state}</td>
+                    <td style={{ padding: "8px 10px" }}>{r.fleetSize}</td>
+                    <td style={{ padding: "8px 10px" }}>{r.driverCount}</td>
+                    <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{r.authorityStatus}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Info panel */}
       <div style={{
