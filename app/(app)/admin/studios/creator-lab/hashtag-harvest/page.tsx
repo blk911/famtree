@@ -631,7 +631,7 @@ function CreatorRow({
 
 // ─── Results table ────────────────────────────────────────────────────────────
 
-type SortKey = "handle" | "hashtag" | "edutype" | "platform" | "confidence";
+type SortKey = "handle" | "displayname" | "hashtag" | "edutype" | "besturl" | "platform" | "location" | "confidence" | "prospect";
 
 function ResultsTable({ creators, results }: { creators: HarvestedCreatorSeed[]; results: ResolverPipelineResult[] }) {
   const [expandedHandle, setExpandedHandle] = useState<string | null>(null);
@@ -655,11 +655,15 @@ function ResultsTable({ creators, results }: { creators: HarvestedCreatorSeed[];
   filtered.sort((a, b) => {
     let av: string | number = "", bv: string | number = "";
     switch (sortKey) {
-      case "handle":     av = a.seed.handle;                                      bv = b.seed.handle; break;
-      case "hashtag":    av = a.seed.sourceHashtag;                               bv = b.seed.sourceHashtag; break;
-      case "edutype":    av = a.seed.educationType ?? "";                          bv = b.seed.educationType ?? ""; break;
-      case "platform":   av = a.bestMatchPlatform ?? "";                          bv = b.bestMatchPlatform ?? ""; break;
-      case "confidence": av = a.confidence;                                       bv = b.confidence; break;
+      case "handle":      av = a.seed.handle;                 bv = b.seed.handle; break;
+      case "displayname": av = a.seed.displayName ?? "";      bv = b.seed.displayName ?? ""; break;
+      case "hashtag":     av = a.seed.sourceHashtag;          bv = b.seed.sourceHashtag; break;
+      case "edutype":     av = a.seed.educationType ?? "";    bv = b.seed.educationType ?? ""; break;
+      case "besturl":     av = a.bestMatchUrl ?? "";          bv = b.bestMatchUrl ?? ""; break;
+      case "platform":    av = a.bestMatchPlatform ?? "";     bv = b.bestMatchPlatform ?? ""; break;
+      case "location":    av = a.seed.detectedLocation ?? ""; bv = b.seed.detectedLocation ?? ""; break;
+      case "confidence":  av = a.confidence;                  bv = b.confidence; break;
+      case "prospect":    av = a.prospectId ? 1 : 0;         bv = b.prospectId ? 1 : 0; break;
     }
     const cmp = typeof av === "number" ? av - (bv as number) : String(av).localeCompare(String(bv));
     return sortDir === "asc" ? cmp : -cmp;
@@ -667,7 +671,7 @@ function ResultsTable({ creators, results }: { creators: HarvestedCreatorSeed[];
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
-    else { setSortKey(key); setSortDir(key === "confidence" ? "desc" : "asc"); }
+    else { setSortKey(key); setSortDir(key === "confidence" || key === "prospect" ? "desc" : "asc"); }
   }
 
   const thStyle: React.CSSProperties = {
@@ -715,20 +719,22 @@ function ResultsTable({ creators, results }: { creators: HarvestedCreatorSeed[];
           <thead>
             <tr>
               {([
-                ["handle",     "Handle"],
-                [null,         "Display Name"],
-                ["hashtag",    "Hashtag"],
-                ["edutype",    "Edu Type"],
-                [null,         "Best URL"],
-                ["platform",   "Platform"],
-                [null,         "Location"],
-                ["confidence", "Conf."],
-                [null,         "Prospect"],
-              ] as [SortKey | null, string][]).map(([key, label]) => (
-                <th key={label} style={thStyle} onClick={() => key && toggleSort(key)}>
+                ["handle",      "Handle"],
+                ["displayname", "Display Name"],
+                ["hashtag",     "Hashtag"],
+                ["edutype",     "Edu Type"],
+                ["besturl",     "Best URL"],
+                ["platform",    "Platform"],
+                ["location",    "Location"],
+                ["confidence",  "Conf."],
+                ["prospect",    "Prospect"],
+              ] as [SortKey, string][]).map(([key, label]) => (
+                <th key={label} style={thStyle} onClick={() => toggleSort(key)}>
                   {label}
-                  {key && sortKey === key && <span style={{ color: "#9d174d" }}>{sortDir === "asc" ? " ↑" : " ↓"}</span>}
-                  {key && sortKey !== key && <span style={{ color: "#d6d3d1" }}> ↕</span>}
+                  {sortKey === key
+                    ? <span style={{ color: "#9d174d" }}>{sortDir === "asc" ? " ↑" : " ↓"}</span>
+                    : <span style={{ color: "#d6d3d1" }}> ↕</span>
+                  }
                 </th>
               ))}
             </tr>
@@ -774,7 +780,7 @@ function EducationPresetPanel({ onLoad }: { onLoad: (text: string) => void }) {
           cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5,
         }}
       >
-        🎓 Education Preset {open ? "▲" : "▼"}
+        🎓 Harvest Presets {open ? "▲" : "▼"}
       </button>
 
       {open && (
