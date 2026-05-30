@@ -946,8 +946,8 @@ export default function ProspectsPage() {
           {total === 0 ? "No prospects yet — run Hashtag Harvest to start discovering education creators." : "No prospects match the current filters."}
         </div>
       ) : (
-        <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, overflowX: "auto" }}>
-          <table style={{ width: "100%", minWidth: 1100, borderCollapse: "collapse" }}>
+        <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
                 {([
