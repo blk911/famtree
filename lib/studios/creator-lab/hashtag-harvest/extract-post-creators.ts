@@ -118,8 +118,8 @@ export function extractPostCreators(
     if (classification.primaryType && classification.primaryType !== "unknown")
       evidence.push(`${verticalKey} type: ${classification.primaryLabel}`);
     if (detectedLocation) evidence.push(`Location: ${detectedLocation}`);
-    if (classification.classifierSignals.length)
-      evidence.push(`Signals: ${classification.classifierSignals.join(", ")}`);
+    if (classification.signals.length)
+      evidence.push(`Signals: ${classification.signals.join(", ")}`);
     evidence.push(`Source hashtag: #${sourceHashtag}`);
 
     seeds.push({
