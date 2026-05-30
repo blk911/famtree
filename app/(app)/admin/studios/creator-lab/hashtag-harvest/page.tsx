@@ -434,12 +434,6 @@ function ReportsView({
             total={storedProspects.length}
             color="#15803d"
           />
-          <BreakdownSection
-            title="OFFER FIT TAGS — STORED REPOSITORY"
-            entries={offerFitEntries}
-            total={storedProspects.length}
-            color="#b45309"
-          />
           <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "16px 20px", marginBottom: 14 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 12 }}>
               TOP OPPORTUNITY SCORES — STORED REPOSITORY

@@ -340,7 +340,7 @@ function ProspectDetail({ prospect, onSaved }: {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-type SortKey = "name" | "handle" | "educationType" | "businessCategory" | "opportunityScore" | "location" | "platform" | "confidence" | "validationStatus" | "createdAt";
+type SortKey = "name" | "handle" | "educationType" | "businessCategory" | "opportunityScore" | "location" | "platform" | "confidence" | "validationStatus" | "createdAt" | "businessSubcategory" | "relationshipOpportunityType" | "platformSignals" | "bestUrl";
 
 export default function ProspectsPage() {
   const [prospects, setProspects]   = useState<ProspectRecord[]>([]);
@@ -514,8 +514,12 @@ export default function ProspectsPage() {
         case "location":         av = a.identity.locationGuess ?? ""; bv = b.identity.locationGuess ?? ""; break;
         case "platform":         av = a.bestMatch?.platform ?? "";  bv = b.bestMatch?.platform ?? ""; break;
         case "confidence":       av = a.confidence.overall;         bv = b.confidence.overall; break;
-        case "validationStatus": av = a.validationStatus ?? "new";  bv = b.validationStatus ?? "new"; break;
-        case "createdAt":        av = a.createdAt;                  bv = b.createdAt; break;
+        case "validationStatus":          av = a.validationStatus ?? "new";          bv = b.validationStatus ?? "new"; break;
+        case "createdAt":                 av = a.createdAt;                           bv = b.createdAt; break;
+        case "businessSubcategory":       av = a.businessSubcategory ?? "";           bv = b.businessSubcategory ?? ""; break;
+        case "relationshipOpportunityType": av = a.relationshipOpportunityType ?? ""; bv = b.relationshipOpportunityType ?? ""; break;
+        case "platformSignals":           av = (a.platformSignals ?? []).length;      bv = (b.platformSignals ?? []).length; break;
+        case "bestUrl":                   av = a.bestMatch?.url ?? "";                bv = b.bestMatch?.url ?? ""; break;
       }
       const cmp = typeof av === "number" ? av - (bv as number) : String(av).localeCompare(String(bv));
       return sortDir === "asc" ? cmp : -cmp;
@@ -896,10 +900,6 @@ export default function ProspectsPage() {
           <option value="all">All platform signals</option>
           {platformSignals.map((p) => <option key={p} value={p}>{tagLabel(p)}</option>)}
         </select>
-        <select value={fOfferFitTag} onChange={(e) => setFOfferFitTag(e.target.value)} style={selS}>
-          <option value="all">All offer tags</option>
-          {offerFitTags.map((p) => <option key={p} value={p}>{tagLabel(p)}</option>)}
-        </select>
         {hasFilters && (
           <button onClick={clearFilters} style={{ fontSize: 11, color: "#9d174d", background: "none", border: "none", cursor: "pointer", fontWeight: 700 }}>
             Clear
@@ -951,20 +951,19 @@ export default function ProspectsPage() {
             <thead>
               <tr>
                 {([
-                  ["handle",          "@Handle"],
-                  ["name",            "Name"],
-                  ["businessCategory","Market"],
-                  [null,              "Subtype"],
-                  ["opportunityScore","Opportunity"],
-                  ["location",        "Location"],
-                  [null,              "Relationship"],
-                  [null,              "Offer Fit Tags"],
-                  [null,              "Platform Signals"],
-                  [null,              "Best URL"],
-                  ["validationStatus","Status"],
-                ] as [SortKey | null, string][]).map(([key, label]) => (
-                  <th key={label} style={thS} onClick={() => key && toggleSort(key)}>
-                    {label}{key && si(key)}
+                  ["handle",                      "@Handle"],
+                  ["name",                        "Name"],
+                  ["businessCategory",            "Market"],
+                  ["businessSubcategory",         "Subtype"],
+                  ["opportunityScore",            "Opportunity"],
+                  ["location",                    "Location"],
+                  ["relationshipOpportunityType", "Relationship"],
+                  ["platformSignals",             "Platform Signals"],
+                  ["bestUrl",                     "Best URL"],
+                  ["validationStatus",            "Status"],
+                ] as [SortKey, string][]).map(([key, label]) => (
+                  <th key={label} style={thS} onClick={() => toggleSort(key)}>
+                    {label}{si(key)}
                   </th>
                 ))}
               </tr>
@@ -1005,15 +1004,6 @@ export default function ProspectsPage() {
                           </span>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
-                      <td style={{ ...tdS, maxWidth: 190 }}>
-                        {(p.offerFitTags ?? []).length > 0 ? (
-                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                            {(p.offerFitTags ?? []).slice(0, 3).map((tag) => (
-                              <span key={tag} style={{ fontSize: 9, background: "#f0fdf4", color: "#15803d", borderRadius: 20, padding: "2px 6px", fontWeight: 700 }}>{tagLabel(tag)}</span>
-                            ))}
-                          </div>
-                        ) : <span style={{ color: "#d6d3d1" }}>—</span>}
-                      </td>
                       <td style={{ ...tdS, maxWidth: 170 }}>
                         {(p.platformSignals ?? []).length > 0 ? (
                           <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
@@ -1038,7 +1028,7 @@ export default function ProspectsPage() {
                     </tr>
                     {isExpanded && (
                       <tr key={`${p.prospectId}-detail`}>
-                        <td colSpan={11} style={{ padding: 0 }}>
+                        <td colSpan={10} style={{ padding: 0 }}>
                           <ProspectDetail prospect={p} onSaved={(updated) => setProspects((prev) => prev.map((x) => x.prospectId === updated.prospectId ? updated : x))} />
                         </td>
                       </tr>
