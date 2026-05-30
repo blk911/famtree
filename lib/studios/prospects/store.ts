@@ -21,6 +21,7 @@ import {
   listProspectsJson,
   filterProspectsJson,
   countProspectsJson,
+  clearAllProspectsJson,
 } from "./store-json";
 
 // ─── Backend resolution ───────────────────────────────────────────────────────
@@ -148,6 +149,15 @@ export async function countProspects(): Promise<number> {
     return countProspectsPostgres();
   }
   return countProspectsJson();
+}
+
+export async function clearAllProspects(): Promise<number> {
+  const backend = await resolveBackend();
+  if (backend === "postgres") {
+    // Postgres clear not wired yet — fail safe rather than silently skip
+    throw new Error("clearAllProspects is not supported on the Postgres backend in this build.");
+  }
+  return clearAllProspectsJson();
 }
 
 // ─── Convenience: load all (used by migration script) ────────────────────────

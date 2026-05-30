@@ -423,3 +423,15 @@ export async function countProspectsJson(): Promise<number> {
   const records = await loadAllProspects();
   return records.length;
 }
+
+// ─── Clear all (testing / fresh-slate) ───────────────────────────────────────
+
+/** Wipes every record from the JSON store. Returns the number of records deleted.
+ *  DESTRUCTIVE — admin only. Preserves the file (writes empty array) so the
+ *  path stays valid for subsequent runs. */
+export async function clearAllProspectsJson(): Promise<number> {
+  const records = await loadAllProspects();
+  const count = records.length;
+  await writeAllProspects([]);
+  return count;
+}
