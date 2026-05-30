@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test:intelligence": "tsx scripts/test-intelligence-vertical-isolation.ts",
     "check:globals-css": "node scripts/check-globals-css-allowlist.mjs",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",

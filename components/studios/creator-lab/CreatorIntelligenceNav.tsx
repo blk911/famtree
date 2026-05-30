@@ -1,10 +1,11 @@
 "use client";
 // components/studios/creator-lab/CreatorIntelligenceNav.tsx
-// Shared subnav for all Creator Intelligence admin tools.
-// Thin, compact, horizontal. Active state highlighted.
+// Shared subnav for all Creator Intelligence / Salon vertical admin tools.
+// Renders the top IntelligenceMarketNav (vertical selector) above the tool rail.
 
 import Link from "next/link";
 import { useState } from "react";
+import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 
 export type CreatorIntelligenceTool =
   | "assembler"
@@ -169,7 +170,10 @@ export function CreatorIntelligenceNav({ current }: { current: CreatorIntelligen
   return (
     <div style={{ marginBottom: 22 }}>
 
-      {/* Parent breadcrumb */}
+      {/* Top-level vertical selector — Salon | Transpo | HCare | Labs */}
+      <IntelligenceMarketNav />
+
+      {/* Salon / Client-Centric tool breadcrumb */}
       <div style={{
         fontSize: 11,
         color: "#a8a29e",
@@ -183,7 +187,7 @@ export function CreatorIntelligenceNav({ current }: { current: CreatorIntelligen
           AIH Studios
         </Link>
         <span style={{ color: "#d6d3d1", fontSize: 10 }}>›</span>
-        <span style={{ color: "#44403c", fontWeight: 700 }}>Creator Intelligence</span>
+        <span style={{ color: "#44403c", fontWeight: 700 }}>Salon / Client-Centric Intelligence</span>
       </div>
 
       {/* Tool pill rail + Fresh Slate button */}
