@@ -771,8 +771,8 @@ function OperatorsTable({
         </span>
       </div>
 
-      <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, overflowX: "auto" }}>
+        <table style={{ width: "100%", minWidth: 840, borderCollapse: "collapse" }}>
           <thead>
             <tr>
               {["Name", "City", "Category", "Reviews", "StyleSeat", "IG Handle", "Conf.", "Status", "Prospect"].map((h) => (

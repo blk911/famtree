@@ -223,11 +223,11 @@ function ParsedPreview({ entries }: { entries: ParsedDirectoryEntry[] }) {
   };
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
+    <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, overflowX: "auto", marginBottom: 16 }}>
       <div style={{ padding: "12px 16px", background: "#f9f9f8", borderBottom: "1px solid #e7e5e4", fontSize: 10, fontWeight: 700, color: "#78716c", letterSpacing: "0.08em" }}>
         PARSED ENTRIES PREVIEW — {entries.length} entries
       </div>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <table style={{ width: "100%", minWidth: 700, borderCollapse: "collapse" }}>
         <thead>
           <tr>
             {["Format", "Name", "Location", "Category", "Edu Type", "Handle/URL", "Warnings"].map((h) => (
@@ -332,8 +332,8 @@ function ResultsTable({ results }: { results: IdentityAssemblerResult[] }) {
         <span style={{ fontSize: 11, color: "#a8a29e", marginLeft: "auto" }}>{filtered.length} of {results.length}</span>
       </div>
 
-      <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, overflowX: "auto" }}>
+        <table style={{ width: "100%", minWidth: 900, borderCollapse: "collapse" }}>
           <thead>
             <tr>
               {["Name", "Location", "Category", "IG Handle", "Conf.", "Cands.", "Status", "Best Match", "Prospect"].map((h) => (
