@@ -835,6 +835,7 @@ const PROGRESS_MSGS = [
 ];
 
 export default function HashtagHarvestPage() {
+  const [formKey, setFormKey] = useState(0);
   const [hashtagText, setHashtagText] = useState("");
   const [market, setMarket] = useState("");
   const [category, setCategory] = useState("");
@@ -896,6 +897,7 @@ export default function HashtagHarvestPage() {
     setMode("fast");
     setProgressIdx(0);
     setResultsTab("creators");
+    setFormKey((k) => k + 1); // force full DOM teardown so controlled inputs can't hold stale values
   }
 
   const inputStyle: React.CSSProperties = {
@@ -927,7 +929,7 @@ export default function HashtagHarvestPage() {
 
       {/* Input form */}
       {!runData && (
-        <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 16, padding: "24px", marginBottom: 24 }}>
+        <div key={formKey} style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 16, padding: "24px", marginBottom: 24 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
 
             {/* Hashtags */}
@@ -1039,6 +1041,18 @@ export default function HashtagHarvestPage() {
             >
               {loading ? "Harvesting…" : `Harvest ${parsedHashtags.length > 0 ? parsedHashtags.length : ""} Hashtag${parsedHashtags.length !== 1 ? "s" : ""}`}
             </button>
+            {(hashtagText || market || category) && !loading && (
+              <button
+                type="button"
+                onClick={handleReset}
+                style={{
+                  padding: "10px 16px", borderRadius: 10, border: "1px solid #e7e5e4",
+                  background: "#fff", color: "#78716c", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                }}
+              >
+                Clear
+              </button>
+            )}
             <Link href="/admin/studios/prospects"
               style={{ fontSize: 12, fontWeight: 700, color: "#9d174d", textDecoration: "none" }}>
               View Discovered Entities →
