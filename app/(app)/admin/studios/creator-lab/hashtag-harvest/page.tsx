@@ -895,6 +895,13 @@ export default function HashtagHarvestPage() {
   function handleReset() {
     setRunData(null);
     setError(null);
+    setHashtagText("");
+    setMarket("");
+    setCategory("");
+    setMaxPerHashtag(10);
+    setMode("fast");
+    setProgressIdx(0);
+    setResultsTab("creators");
   }
 
   const inputStyle: React.CSSProperties = {
