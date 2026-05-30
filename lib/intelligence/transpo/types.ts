@@ -54,6 +54,11 @@ export type TranspoSourceRun = {
   recordCount: number;
   records: TranspoCarrierSourceRecord[];
   createdAt: string;
+  // Optional provenance metadata (e.g. which FMCSA provider produced the run,
+  // and any human-readable status/diagnostic message). Optional so older
+  // persisted artifacts remain valid.
+  providerKind?: string;
+  message?: string;
 };
 
 export type TranspoEvidence = {

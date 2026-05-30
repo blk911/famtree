@@ -231,8 +231,14 @@ function FragmentRow({
               marginBottom: 12,
             }}>
               <span><strong style={{ color: "#1c1917" }}>Run ID:</strong> <code style={{ fontSize: 10 }}>{run.id}</code></span>
+              {run.providerKind && (
+                <span><strong style={{ color: "#1c1917" }}>Provider:</strong> {run.providerKind}</span>
+              )}
               {input.notes && (
                 <span><strong style={{ color: "#1c1917" }}>Notes:</strong> {input.notes}</span>
+              )}
+              {run.message && (
+                <span><strong style={{ color: "#1c1917" }}>Message:</strong> {run.message}</span>
               )}
             </div>
 

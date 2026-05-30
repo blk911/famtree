@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       notes: (body.notes ?? "").trim() || undefined,
     };
 
-    const { sourceMode, records } = await runFmcsaTestPull(input);
+    const { sourceMode, records, providerKind, message } = await runFmcsaTestPull(input);
 
     const run: TranspoSourceRun = {
       id: `transpo-fmcsa-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
@@ -78,6 +78,8 @@ export async function POST(req: NextRequest) {
       recordCount: records.length,
       records,
       createdAt: new Date().toISOString(),
+      providerKind,
+      ...(message ? { message } : {}),
     };
 
     await fs.mkdir(RUNS_DIR, { recursive: true });

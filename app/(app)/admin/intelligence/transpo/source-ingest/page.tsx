@@ -9,34 +9,24 @@ import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav"
 import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
 import { KeywordPackSelector } from "@/components/admin/intelligence/transpo/KeywordPackSelector";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
+import {
+  getTranspoSourceRegistry,
+  type TranspoSourceStatus,
+} from "@/lib/intelligence/transpo/source-registry";
+import type { TranspoSourceRun } from "@/lib/intelligence/transpo/types";
 
 const SOURCE_TYPES = ["FMCSA", "SAFER", "CSV", "URL", "Text / PDF"] as const;
 type SourceType = (typeof SOURCE_TYPES)[number];
 
 type RunState = "idle" | "saving" | "saved" | "error";
 
-type FmcsaCarrierRecord = {
-  companyName: string;
-  dotNumber: string;
-  mcNumber: string;
-  city: string;
-  state: string;
-  phone: string;
-  fleetSize: number;
-  driverCount: number;
-  authorityStatus: string;
-  sourceUrl: string;
-  rawSource: string;
-};
+type FmcsaSourceRun = TranspoSourceRun;
 
-type FmcsaSourceRun = {
-  id: string;
-  vertical: string;
-  source: string;
-  sourceMode: string;
-  recordCount: number;
-  records: FmcsaCarrierRecord[];
-  createdAt: string;
+const SOURCE_STATUS_COLORS: Record<TranspoSourceStatus, { fg: string; bg: string; border: string }> = {
+  mock: { fg: "#92400e", bg: "#fef3c7", border: "#fde68a" },
+  available: { fg: "#166534", bg: "#dcfce7", border: "#bbf7d0" },
+  placeholder: { fg: "#57534e", bg: "#f5f5f4", border: "#e7e5e4" },
+  disabled: { fg: "#991b1b", bg: "#fef2f2", border: "#fecaca" },
 };
 
 export default function TranspoSourceIngestPage() {
@@ -154,6 +144,56 @@ export default function TranspoSourceIngestPage() {
           text / PDF source. Each ingest creates a source run that feeds the
           Carrier Resolver and Market Harvest steps.
         </p>
+      </div>
+
+      {/* Source registry */}
+      <div style={{
+        background: "#fff",
+        border: "1px solid #e7e5e4",
+        borderRadius: 14,
+        padding: "14px 18px",
+        marginBottom: 20,
+      }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#57534e", letterSpacing: "0.03em", marginBottom: 10 }}>
+          SOURCES
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {getTranspoSourceRegistry().map((src) => {
+            const c = SOURCE_STATUS_COLORS[src.status];
+            return (
+              <div
+                key={src.id}
+                title={src.description}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 7,
+                  fontSize: 12,
+                  padding: "5px 10px",
+                  borderRadius: 20,
+                  border: "1px solid #e7e5e4",
+                  background: "#fafaf9",
+                  color: "#1c1917",
+                }}
+              >
+                <span style={{ fontWeight: 700 }}>{src.label}</span>
+                <span style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.03em",
+                  padding: "1px 6px",
+                  borderRadius: 10,
+                  color: c.fg,
+                  background: c.bg,
+                  border: `1px solid ${c.border}`,
+                }}>
+                  {src.status}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Two-column source control area */}
@@ -376,6 +416,9 @@ export default function TranspoSourceIngestPage() {
             marginBottom: 16,
           }}>
             <span><strong style={{ color: "#1c1917" }}>Run ID:</strong> <code style={{ fontSize: 11 }}>{lastRun.id}</code></span>
+            {lastRun.providerKind && (
+              <span><strong style={{ color: "#1c1917" }}>Provider:</strong> {lastRun.providerKind}</span>
+            )}
             <span><strong style={{ color: "#1c1917" }}>Source mode:</strong> {lastRun.sourceMode}</span>
             <span><strong style={{ color: "#1c1917" }}>Records:</strong> {lastRun.recordCount}</span>
             <span><strong style={{ color: "#1c1917" }}>Created:</strong> {new Date(lastRun.createdAt).toLocaleString()}</span>
@@ -387,6 +430,23 @@ export default function TranspoSourceIngestPage() {
             </Link>
           </div>
 
+          {lastRun.message && (
+            <div style={{
+              fontSize: 12,
+              color: "#57534e",
+              background: "#f9f9f8",
+              border: "1px solid #ede9e4",
+              borderRadius: 8,
+              padding: "8px 12px",
+              marginBottom: 14,
+            }}>
+              {lastRun.message}
+            </div>
+          )}
+
+          {lastRun.records.length === 0 ? (
+            <p style={{ fontSize: 12, color: "#a8a29e", margin: 0 }}>No records returned for this run.</p>
+          ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
@@ -398,20 +458,21 @@ export default function TranspoSourceIngestPage() {
               </thead>
               <tbody>
                 {lastRun.records.map((r, i) => (
-                  <tr key={`${r.dotNumber}-${i}`} style={{ borderBottom: "1px solid #f5f5f4", color: "#1c1917" }}>
+                  <tr key={`${r.dotNumber ?? r.companyName}-${i}`} style={{ borderBottom: "1px solid #f5f5f4", color: "#1c1917" }}>
                     <td style={{ padding: "8px 10px" }}>{r.companyName}</td>
-                    <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{r.dotNumber}</td>
-                    <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{r.mcNumber}</td>
-                    <td style={{ padding: "8px 10px" }}>{r.city}</td>
-                    <td style={{ padding: "8px 10px" }}>{r.state}</td>
-                    <td style={{ padding: "8px 10px" }}>{r.fleetSize}</td>
-                    <td style={{ padding: "8px 10px" }}>{r.driverCount}</td>
-                    <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{r.authorityStatus}</td>
+                    <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{r.dotNumber ?? "—"}</td>
+                    <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{r.mcNumber ?? "—"}</td>
+                    <td style={{ padding: "8px 10px" }}>{r.city ?? "—"}</td>
+                    <td style={{ padding: "8px 10px" }}>{r.state ?? "—"}</td>
+                    <td style={{ padding: "8px 10px" }}>{r.fleetSize ?? "—"}</td>
+                    <td style={{ padding: "8px 10px" }}>{r.driverCount ?? "—"}</td>
+                    <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{r.authorityStatus ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          )}
         </div>
       )}
 
