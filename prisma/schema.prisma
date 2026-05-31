@@ -1487,3 +1487,38 @@ model TranspoCarrierMaster {
   @@index([dotNumber], map: "transpo_carrier_master_dot")
   @@map("transpo_carrier_master")
 }
+
+model TranspoCarrierVerification {
+  id                 String   @id
+  carrierId          String?  @map("carrier_id")
+  carrierKey         String?  @map("carrier_key")
+  dotNumber          String?  @map("dot_number")
+  companyName        String?  @map("company_name")
+  city               String?
+  state              String?
+  googleFound        Boolean? @map("google_found")
+  googleRating       Decimal? @map("google_rating") @db.Decimal
+  googleReviewCount  Int?     @map("google_review_count")
+  googleWebsite      String?  @map("google_website")
+  googlePhone        String?  @map("google_phone")
+  bbbFound           Boolean? @map("bbb_found")
+  bbbRating          String?  @map("bbb_rating")
+  bbbComplaintCount  Int?     @map("bbb_complaint_count")
+  facebookFound      Boolean? @map("facebook_found")
+  facebookUrl        String?  @map("facebook_url")
+  stateEntityFound   Boolean? @map("state_entity_found")
+  entityStatus       String?  @map("entity_status")
+  formationDate      String?  @map("formation_date")
+  websiteFound       Boolean? @map("website_found")
+  websiteUrl         String?  @map("website_url")
+  addressType        String?  @map("address_type")
+  verificationScore  Int?     @map("verification_score")
+  verificationStatus String?  @map("verification_status")
+  notes              Json?
+  providersChecked   Json?    @map("providers_checked")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([carrierId], map: "transpo_carrier_verification_carrier")
+  @@map("transpo_carrier_verification")
+}

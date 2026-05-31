@@ -19,13 +19,15 @@ export const transpoConfig: VerticalConfig = {
     { id: "source-runs",   label: "Source Runs",      href: "/admin/intelligence/transpo/source-runs" },
     { id: "evidence",      label: "Evidence",         href: "/admin/intelligence/transpo/evidence" },
     { id: "resolver",      label: "Carrier Resolver", href: "/admin/intelligence/transpo/resolver" },
-    { id: "carriers",      label: "Carriers",         href: "/admin/intelligence/transpo/carriers" },
-    { id: "opportunities", label: "Opportunities",    href: "/admin/intelligence/transpo/opportunities" },
-    { id: "harvest",       label: "Market Harvest",   href: "/admin/intelligence/transpo/harvest" },
-    { id: "prospects",     label: "Red Dots",         href: "/admin/intelligence/transpo/prospects" },
+    { id: "carriers",        label: "Carriers",         href: "/admin/intelligence/transpo/carriers" },
+    { id: "verification",    label: "Verification",     href: "/admin/intelligence/transpo/verification" },
+    { id: "opportunities",   label: "Opportunities",    href: "/admin/intelligence/transpo/opportunities" },
+    { id: "market-dashboard", label: "Market Dashboard", href: "/admin/intelligence/transpo/market-dashboard" },
+    { id: "harvest",         label: "Market Harvest",   href: "/admin/intelligence/transpo/harvest" },
+    { id: "prospects",       label: "Red Dots",         href: "/admin/intelligence/transpo/prospects" },
   ],
 
-  enabledTools: ["source-ingest", "source-runs", "evidence", "resolver", "carriers", "opportunities", "harvest", "prospects"],
+  enabledTools: ["source-ingest", "source-runs", "evidence", "resolver", "carriers", "verification", "opportunities", "market-dashboard", "harvest", "prospects"],
 
   // Salon/personal-care tools are explicitly hidden from this vertical
   hiddenTools: [

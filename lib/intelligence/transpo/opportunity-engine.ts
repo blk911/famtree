@@ -1,22 +1,35 @@
 // lib/intelligence/transpo/opportunity-engine.ts
 // Transpo Opportunity Signal Engine.
 //
-// Input:  Carrier Master records (TranspoCarrierTarget[])
-// Output: Opportunity Records — each carrier scored against a set of
-//         buy-signals, with the matched signals and a recommended sales play.
+// Input:  Carrier Master records (+ optional carrier verifications)
+// Output: Opportunity Records — each carrier scored against buy-signals, with
+//         the matched signals and a recommended sales play.
 //
-// Pure, deterministic, side-effect free: the API route reads the carrier master
-// and runs these functions, so the engine stays trivially testable and reusable.
+// Pure, deterministic, side-effect free. Verification data is optional: when a
+// carrier has a verification row, extra public-presence signals are added.
 
 import type { TranspoCarrierTarget, TranspoSource } from "./types";
+import type {
+  TranspoCarrierVerification,
+  TranspoVerificationStatus,
+} from "./verification-types";
 
 export type TranspoOpportunitySignalId =
+  // Carrier-master signals
   | "active_authority"
   | "small_fleet"
   | "single_truck"
   | "missing_website"
   | "missing_social"
-  | "local_market";
+  | "local_market"
+  // Verification-derived signals
+  | "no_google_business"
+  | "low_reviews"
+  | "no_website_verified"
+  | "residential_address"
+  | "po_box_address"
+  | "unverified_public_presence"
+  | "verified_established";
 
 export type TranspoOpportunitySignal = {
   id: TranspoOpportunitySignalId;
@@ -28,12 +41,11 @@ export type TranspoOpportunityRecord = TranspoCarrierTarget & {
   score: number;
   signals: TranspoOpportunitySignal[];
   recommendedPlay: string;
+  // Verification context, surfaced when a verification row exists.
+  verificationScore?: number;
+  verificationStatus?: TranspoVerificationStatus;
 };
 
-// ── Signal weights ──────────────────────────────────────────────────────────
-// Higher weight = stronger pull toward a high-intent, easy-to-win prospect.
-// single_truck / small_fleet are mutually exclusive (a carrier is one or the
-// other), so the practical max is ~85 — we do not normalize to 100.
 const SIGNAL_DEFS: Record<TranspoOpportunitySignalId, { label: string; weight: number }> = {
   active_authority: { label: "Active authority", weight: 25 },
   single_truck: { label: "Single truck", weight: 20 },
@@ -41,6 +53,13 @@ const SIGNAL_DEFS: Record<TranspoOpportunitySignalId, { label: string; weight: n
   missing_website: { label: "No website", weight: 20 },
   missing_social: { label: "No social presence", weight: 10 },
   local_market: { label: "Local market", weight: 10 },
+  no_google_business: { label: "No Google Business", weight: 20 },
+  low_reviews: { label: "Low reviews", weight: 10 },
+  no_website_verified: { label: "No verified website", weight: 20 },
+  residential_address: { label: "Residential address", weight: 10 },
+  po_box_address: { label: "PO Box address", weight: 20 },
+  unverified_public_presence: { label: "Unverified presence", weight: 15 },
+  verified_established: { label: "Verified established", weight: -10 },
 };
 
 const SOCIAL_SOURCES: TranspoSource[] = ["linkedin", "facebook", "google_business"];
@@ -54,7 +73,6 @@ const SMALL_FLEET_MAX = 10;
 function isActiveAuthority(status?: string): boolean {
   const s = (status ?? "").trim().toLowerCase();
   if (!s) return false;
-  // FMCSA census uses short codes ("A" = active) plus free-text variants.
   return s === "a" || s.includes("active") || s.includes("authorized");
 }
 
@@ -70,30 +88,50 @@ function isLocalMarket(c: TranspoCarrierTarget): boolean {
   return Boolean((c.city ?? "").trim()) && Boolean((c.state ?? "").trim());
 }
 
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, n));
+}
+
 // ── Recommended play ──────────────────────────────────────────────────────────
 
 function recommendedPlayFor(ids: Set<TranspoOpportunitySignalId>): string {
   const single = ids.has("single_truck");
   const small = ids.has("small_fleet");
-  const noWeb = ids.has("missing_website");
-  const noSocial = ids.has("missing_social");
-  const active = ids.has("active_authority");
 
+  // Verification-driven plays take priority — they reflect concrete gaps.
+  if (ids.has("no_google_business") && ids.has("no_website_verified")) {
+    return "Digital visibility launch — website + Google Business Profile";
+  }
+  if (single && ids.has("residential_address")) {
+    return "Owner-operator credibility package";
+  }
+  if (ids.has("po_box_address")) {
+    return "Address trust and local presence verification";
+  }
+  if (ids.has("low_reviews")) {
+    return "Review/reputation growth package";
+  }
+
+  // Carrier-master fallbacks.
+  const noWeb = ids.has("missing_website") || ids.has("no_website_verified");
   if (noWeb && single) return "Owner-operator web launch — website + Google Business Profile";
   if (noWeb && small) return "Small-fleet digital launch — website + lead capture";
   if (single) return "Owner-operator starter — branding + booking page";
   if (small) return "Small-fleet growth package — site + dispatch/marketing";
   if (noWeb) return "Website launch offer";
-  if (noSocial) return "Social presence setup — LinkedIn / Google Business";
-  if (active) return "Active-authority nurture — monitor for growth";
+  if (ids.has("missing_social")) return "Social presence setup — LinkedIn / Google Business";
+
+  if (ids.has("verified_established")) return "Established carrier expansion audit";
+  if (ids.has("active_authority")) return "Active-authority nurture — monitor for growth";
   return "Monitor — insufficient opportunity signals";
 }
 
 // ── Scoring ──────────────────────────────────────────────────────────────────
 
-/** Score a single carrier against all opportunity signals. */
+/** Score a single carrier (+ optional verification) against all signals. */
 export function scoreCarrierOpportunity(
   carrier: TranspoCarrierTarget,
+  verification?: TranspoCarrierVerification,
 ): TranspoOpportunityRecord {
   const matched: TranspoOpportunitySignalId[] = [];
 
@@ -109,28 +147,67 @@ export function scoreCarrierOpportunity(
   if (!hasSocialPresence(carrier)) matched.push("missing_social");
   if (isLocalMarket(carrier)) matched.push("local_market");
 
+  // Verification-derived signals (only when a verification row is present).
+  if (verification) {
+    if (verification.googleFound === false) matched.push("no_google_business");
+    if (verification.googleFound === true && (verification.googleReviewCount ?? 0) < 10) {
+      matched.push("low_reviews");
+    }
+    if (verification.websiteFound === false) matched.push("no_website_verified");
+    if (verification.addressType === "residential") matched.push("residential_address");
+    if (verification.addressType === "po_box") matched.push("po_box_address");
+    if (
+      verification.verificationStatus === "not_found" ||
+      verification.verificationScore < 20
+    ) {
+      matched.push("unverified_public_presence");
+    }
+    if (verification.verificationScore >= 60) matched.push("verified_established");
+  }
+
   const signals: TranspoOpportunitySignal[] = matched.map((id) => ({
     id,
     label: SIGNAL_DEFS[id].label,
     weight: SIGNAL_DEFS[id].weight,
   }));
 
-  const score = signals.reduce((sum, s) => sum + s.weight, 0);
+  const score = clamp(
+    signals.reduce((sum, s) => sum + s.weight, 0),
+    0,
+    100,
+  );
   const recommendedPlay = recommendedPlayFor(new Set(matched));
 
-  return { ...carrier, score, signals, recommendedPlay };
+  return {
+    ...carrier,
+    score,
+    signals,
+    recommendedPlay,
+    ...(verification
+      ? {
+          verificationScore: verification.verificationScore,
+          verificationStatus: verification.verificationStatus,
+        }
+      : {}),
+  };
 }
 
 /**
  * Build opportunity records for every carrier, sorted highest score first.
- * Ties break by larger fleet last (smaller, more-winnable carriers float up),
- * then by most-recently-updated.
+ * `verifications` (optional) is keyed by carrierId; matching rows add
+ * public-presence signals to the score.
  */
 export function buildOpportunities(
   carriers: TranspoCarrierTarget[],
+  verifications?: Map<string, TranspoCarrierVerification> | TranspoCarrierVerification[],
 ): TranspoOpportunityRecord[] {
+  const byId =
+    verifications instanceof Map
+      ? verifications
+      : new Map((verifications ?? []).map((v) => [v.carrierId, v]));
+
   return carriers
-    .map(scoreCarrierOpportunity)
+    .map((c) => scoreCarrierOpportunity(c, byId.get(c.id)))
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       const fa = a.fleetSize ?? Number.MAX_SAFE_INTEGER;
