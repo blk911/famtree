@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
+import { CarrierOpportunityDrawer } from "@/components/admin/intelligence/transpo/CarrierOpportunityDrawer";
 import type { TranspoOpportunityRecord } from "@/lib/intelligence/transpo/opportunity-engine";
 
 function scoreColor(score: number): { fg: string; bg: string; bd: string } {
@@ -21,6 +22,7 @@ export default function TranspoOpportunitiesPage() {
   const [carrierCount, setCarrierCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedCarrierId, setSelectedCarrierId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -140,9 +142,13 @@ export default function TranspoOpportunitiesPage() {
                 {opportunities.map((o) => {
                   const sc = scoreColor(o.score);
                   return (
-                    <tr key={o.id} style={{ borderBottom: "1px solid #f5f5f4" }}>
+                    <tr
+                      key={o.id}
+                      onClick={() => setSelectedCarrierId(o.id)}
+                      style={{ borderBottom: "1px solid #f5f5f4", cursor: "pointer" }}
+                    >
                       <td style={cellStyle}>
-                        <div style={{ fontWeight: 600 }}>{o.companyName}</div>
+                        <div style={{ fontWeight: 600, color: "#3730a3" }}>{o.companyName}</div>
                         {(o.city || o.state) && (
                           <div style={{ fontSize: 10, color: "#a8a29e" }}>
                             {[o.city, o.state].filter(Boolean).join(", ")}
@@ -199,6 +205,12 @@ export default function TranspoOpportunitiesPage() {
           </div>
         </div>
       )}
+
+      <CarrierOpportunityDrawer
+        carrierId={selectedCarrierId}
+        open={selectedCarrierId !== null}
+        onClose={() => setSelectedCarrierId(null)}
+      />
     </div>
   );
 }

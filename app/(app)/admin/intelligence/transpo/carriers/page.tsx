@@ -7,12 +7,14 @@ import { useEffect, useState } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
+import { CarrierOpportunityDrawer } from "@/components/admin/intelligence/transpo/CarrierOpportunityDrawer";
 import type { TranspoCarrierTarget } from "@/lib/intelligence/transpo/types";
 
 export default function TranspoCarriersPage() {
   const [carriers, setCarriers] = useState<TranspoCarrierTarget[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedCarrierId, setSelectedCarrierId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -124,8 +126,12 @@ export default function TranspoCarriersPage() {
               </thead>
               <tbody>
                 {carriers.map((c) => (
-                  <tr key={c.id} style={{ borderBottom: "1px solid #f5f5f4" }}>
-                    <td style={cellStyle}>{c.companyName}</td>
+                  <tr
+                    key={c.id}
+                    onClick={() => setSelectedCarrierId(c.id)}
+                    style={{ borderBottom: "1px solid #f5f5f4", cursor: "pointer" }}
+                  >
+                    <td style={{ ...cellStyle, fontWeight: 600, color: "#3730a3" }}>{c.companyName}</td>
                     <td style={{ ...cellStyle, whiteSpace: "nowrap" }}>{c.dotNumber ?? "—"}</td>
                     <td style={{ ...cellStyle, whiteSpace: "nowrap" }}>{c.mcNumber ?? "—"}</td>
                     <td style={cellStyle}>{c.city ?? "—"}</td>
@@ -163,6 +169,12 @@ export default function TranspoCarriersPage() {
           </div>
         </div>
       )}
+
+      <CarrierOpportunityDrawer
+        carrierId={selectedCarrierId}
+        open={selectedCarrierId !== null}
+        onClose={() => setSelectedCarrierId(null)}
+      />
     </div>
   );
 }
