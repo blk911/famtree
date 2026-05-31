@@ -10,6 +10,8 @@ import type {
   TranspoVerificationProvider,
   TranspoVerificationStatus,
   TranspoAddressType,
+  TranspoWebsiteSignal,
+  TranspoWebsiteFetchStatus,
 } from "./verification-types";
 
 type GoogleMatchedBy = TranspoCarrierVerification["googleMatchedBy"];
@@ -44,6 +46,19 @@ interface DbVerificationRow {
   formation_date: string | null;
   website_found: boolean | null;
   website_url: string | null;
+  website_fetch_status: string | null;
+  website_http_status: number | null;
+  website_final_url: string | null;
+  website_title: string | null;
+  website_description: string | null;
+  website_signals: unknown;
+  website_pages_checked: unknown;
+  website_extracted_phones: unknown;
+  website_extracted_emails: unknown;
+  website_hiring_found: boolean | null;
+  website_owner_operator_found: boolean | null;
+  website_quote_request_found: boolean | null;
+  website_last_fetched_at: Date | string | null;
   address_type: string | null;
   verification_score: number | null;
   verification_status: string | null;
@@ -107,6 +122,19 @@ function rowToVerification(row: DbVerificationRow): TranspoCarrierVerification {
     formationDate: row.formation_date ?? undefined,
     websiteFound: row.website_found ?? undefined,
     websiteUrl: row.website_url ?? undefined,
+    websiteFetchStatus: (row.website_fetch_status ?? undefined) as TranspoWebsiteFetchStatus | undefined,
+    websiteHttpStatus: row.website_http_status ?? undefined,
+    websiteFinalUrl: row.website_final_url ?? undefined,
+    websiteTitle: row.website_title ?? undefined,
+    websiteDescription: row.website_description ?? undefined,
+    websiteSignals: parseJson<TranspoWebsiteSignal[]>(row.website_signals, []),
+    websitePagesChecked: parseJson<string[]>(row.website_pages_checked, []),
+    websiteExtractedPhones: parseJson<string[]>(row.website_extracted_phones, []),
+    websiteExtractedEmails: parseJson<string[]>(row.website_extracted_emails, []),
+    websiteHiringFound: row.website_hiring_found ?? undefined,
+    websiteOwnerOperatorFound: row.website_owner_operator_found ?? undefined,
+    websiteQuoteRequestFound: row.website_quote_request_found ?? undefined,
+    websiteLastFetchedAt: row.website_last_fetched_at ? toIso(row.website_last_fetched_at) : undefined,
     addressType: (row.address_type ?? undefined) as TranspoAddressType | undefined,
     verificationScore: row.verification_score ?? 0,
     verificationStatus: (row.verification_status ?? "placeholder") as TranspoVerificationStatus,
@@ -143,7 +171,13 @@ export async function writeVerificationsPostgres(
           bbb_found, bbb_rating, bbb_complaint_count,
           facebook_found, facebook_url,
           state_entity_found, entity_status, formation_date,
-          website_found, website_url, address_type,
+          website_found, website_url,
+          website_fetch_status, website_http_status, website_final_url,
+          website_title, website_description, website_signals, website_pages_checked,
+          website_extracted_phones, website_extracted_emails,
+          website_hiring_found, website_owner_operator_found, website_quote_request_found,
+          website_last_fetched_at,
+          address_type,
           verification_score, verification_status, notes, providers_checked,
           created_at, updated_at
         ) VALUES (
@@ -176,6 +210,19 @@ export async function writeVerificationsPostgres(
           ${v.formationDate ?? null},
           ${v.websiteFound ?? null},
           ${v.websiteUrl ?? null},
+          ${v.websiteFetchStatus ?? null},
+          ${v.websiteHttpStatus ?? null},
+          ${v.websiteFinalUrl ?? null},
+          ${v.websiteTitle ?? null},
+          ${v.websiteDescription ?? null},
+          ${JSON.stringify(v.websiteSignals ?? [])}::jsonb,
+          ${JSON.stringify(v.websitePagesChecked ?? [])}::jsonb,
+          ${JSON.stringify(v.websiteExtractedPhones ?? [])}::jsonb,
+          ${JSON.stringify(v.websiteExtractedEmails ?? [])}::jsonb,
+          ${v.websiteHiringFound ?? null},
+          ${v.websiteOwnerOperatorFound ?? null},
+          ${v.websiteQuoteRequestFound ?? null},
+          ${v.websiteLastFetchedAt ? new Date(v.websiteLastFetchedAt) : null},
           ${v.addressType ?? null},
           ${v.verificationScore ?? 0},
           ${v.verificationStatus},
@@ -212,6 +259,19 @@ export async function writeVerificationsPostgres(
           formation_date      = EXCLUDED.formation_date,
           website_found       = EXCLUDED.website_found,
           website_url         = EXCLUDED.website_url,
+          website_fetch_status        = EXCLUDED.website_fetch_status,
+          website_http_status         = EXCLUDED.website_http_status,
+          website_final_url           = EXCLUDED.website_final_url,
+          website_title               = EXCLUDED.website_title,
+          website_description         = EXCLUDED.website_description,
+          website_signals             = EXCLUDED.website_signals,
+          website_pages_checked       = EXCLUDED.website_pages_checked,
+          website_extracted_phones    = EXCLUDED.website_extracted_phones,
+          website_extracted_emails    = EXCLUDED.website_extracted_emails,
+          website_hiring_found        = EXCLUDED.website_hiring_found,
+          website_owner_operator_found = EXCLUDED.website_owner_operator_found,
+          website_quote_request_found = EXCLUDED.website_quote_request_found,
+          website_last_fetched_at     = EXCLUDED.website_last_fetched_at,
           address_type        = EXCLUDED.address_type,
           verification_score  = EXCLUDED.verification_score,
           verification_status = EXCLUDED.verification_status,

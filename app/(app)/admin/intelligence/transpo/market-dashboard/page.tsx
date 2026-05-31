@@ -105,6 +105,25 @@ export default function TranspoMarketDashboardPage() {
     ? (ratedVerifs.reduce((s, v) => s + (v.googleRating ?? 0), 0) / ratedVerifs.length).toFixed(1)
     : "—";
 
+  // Website crawl stats
+  const sitesCrawled = fVerifs.filter(
+    (v) => v.websiteFetchStatus === "fetched" || v.websiteFetchStatus === "partial",
+  ).length;
+  const hiringSignals = fVerifs.filter((v) => v.websiteHiringFound).length;
+  const ownerOperatorSignals = fVerifs.filter((v) => v.websiteOwnerOperatorFound).length;
+  const brokenOrParked = fVerifs.filter(
+    (v) =>
+      v.websiteFetchStatus === "failed" ||
+      (v.websiteSignals ?? []).includes("broken_site") ||
+      (v.websiteSignals ?? []).includes("parked_domain"),
+  ).length;
+  const sitesWithContact = fVerifs.filter(
+    (v) =>
+      (v.websiteSignals ?? []).includes("contact_page_found") ||
+      (v.websiteExtractedPhones?.length ?? 0) > 0 ||
+      (v.websiteExtractedEmails?.length ?? 0) > 0,
+  ).length;
+
   // Signal distribution
   const signalDist = useMemo(() => {
     const counts = new Map<string, { label: string; count: number }>();
@@ -236,6 +255,11 @@ export default function TranspoMarketDashboardPage() {
             {card("Low-confidence Google", googleLowConfidence)}
             {card("Google website found", googleWebsiteFound)}
             {card("Avg Google rating", avgGoogleRating)}
+            {card("Sites crawled", sitesCrawled)}
+            {card("Hiring signals", hiringSignals)}
+            {card("Owner-operator signals", ownerOperatorSignals)}
+            {card("Broken / parked sites", brokenOrParked)}
+            {card("Sites with contact info", sitesWithContact)}
             {card("Missing website", missingWebsite)}
             {card("Small fleets", smallFleets)}
             {card("Single-truck operators", singleTruck)}

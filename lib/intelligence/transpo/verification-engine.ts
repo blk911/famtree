@@ -17,6 +17,7 @@ import { verifyWithBbb } from "./verification/providers/bbb-provider";
 import { verifyWithFacebook } from "./verification/providers/facebook-provider";
 import { verifyWithWebsite } from "./verification/providers/website-provider";
 import { verifyWithAddressClassifier } from "./verification/providers/address-classifier-provider";
+import { crawlCarrierWebsite } from "./verification/providers/website-crawl-provider";
 
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
@@ -42,6 +43,17 @@ export function calculateVerificationScore(v: TranspoCarrierVerification): numbe
   if (v.bbbFound) s += 10;
   if (v.addressType === "po_box") s -= 20;
   if (v.addressType === "residential") s -= 10;
+  // Website crawl signals.
+  const wsig = new Set(v.websiteSignals ?? []);
+  if (wsig.has("homepage_found")) s += 10;
+  if (wsig.has("contact_page_found")) s += 10;
+  if ((v.websiteExtractedPhones?.length ?? 0) > 0) s += 10;
+  if ((v.websiteExtractedEmails?.length ?? 0) > 0) s += 10;
+  if (v.websiteQuoteRequestFound) s += 10;
+  if (wsig.has("hiring_language") || v.websiteHiringFound) s += 10;
+  if (wsig.has("owner_operator_language") || v.websiteOwnerOperatorFound) s += 10;
+  if (wsig.has("broken_site") || v.websiteFetchStatus === "failed") s -= 15;
+  if (wsig.has("parked_domain")) s -= 15;
   return clamp(s, 0, 100);
 }
 
@@ -58,10 +70,17 @@ function determineStatus(v: TranspoCarrierVerification): TranspoVerificationStat
   return "placeholder";
 }
 
+export type VerifyCarrierOptions = {
+  /** When true (default), crawl the carrier's website for content signals. */
+  enableWebsiteCrawl?: boolean;
+};
+
 /** Run all providers for one carrier and produce a complete verification. */
 export async function verifyCarrier(
   carrier: TranspoCarrierTarget,
+  options: VerifyCarrierOptions = {},
 ): Promise<TranspoCarrierVerification> {
+  const enableWebsiteCrawl = options.enableWebsiteCrawl ?? true;
   const now = new Date().toISOString();
   const carrierKey = carrierIdentityKey(carrier) ?? carrier.id;
   const base: TranspoCarrierVerification = {
@@ -109,6 +128,28 @@ export async function verifyCarrier(
       notes.push("Website resolved from Google Business profile.");
     }
 
+    // Website crawl (after the website + google providers have resolved a URL).
+    const hasCrawlableUrl = Boolean(
+      (carrier.website ?? "").trim() ||
+        (merged.websiteUrl ?? "").trim() ||
+        (merged.googleWebsite ?? "").trim(),
+    );
+    if (enableWebsiteCrawl && hasCrawlableUrl) {
+      const { notes: cNotes, providersChecked: cProviders, ...cFields } = await crawlCarrierWebsite(
+        carrier,
+        merged,
+      );
+      merged = { ...merged, ...cFields };
+      if (Array.isArray(cNotes)) notes.push(...cNotes);
+      if (Array.isArray(cProviders)) cProviders.forEach((p) => providers.add(p));
+    } else if (!enableWebsiteCrawl && hasCrawlableUrl) {
+      merged.websiteFetchStatus = "not_attempted";
+      notes.push("Website crawl disabled for this run.");
+    } else if (!hasCrawlableUrl) {
+      merged.websiteFetchStatus = "not_attempted";
+      notes.push("No website available for crawl.");
+    }
+
     merged.notes = notes;
     merged.providersChecked = Array.from(providers);
     merged.verificationScore = calculateVerificationScore(merged);
@@ -133,6 +174,8 @@ export async function verifyCarrier(
 export type VerifyCarriersOptions = {
   /** Cap how many carriers to verify in this batch. */
   limit?: number;
+  /** When true (default), crawl each carrier's website for content signals. */
+  enableWebsiteCrawl?: boolean;
 };
 
 /** Verify a batch of carriers sequentially (placeholder providers are cheap). */
@@ -145,9 +188,11 @@ export async function verifyCarriers(
       ? carriers.slice(0, options.limit)
       : carriers;
 
+  const enableWebsiteCrawl = options.enableWebsiteCrawl ?? true;
+
   const out: TranspoCarrierVerification[] = [];
   for (const carrier of slice) {
-    out.push(await verifyCarrier(carrier));
+    out.push(await verifyCarrier(carrier, { enableWebsiteCrawl }));
   }
   return out;
 }

@@ -47,6 +47,8 @@ export async function GET() {
   });
 }
 
+const CRAWL_CAP = 25;
+
 export async function POST(req: NextRequest) {
   const storePath = getVerificationStorePath();
   try {
@@ -54,6 +56,7 @@ export async function POST(req: NextRequest) {
       carrierIds?: string[];
       limit?: number;
       mode?: "all" | "selected" | "missing_only";
+      enableWebsiteCrawl?: boolean;
     };
     const mode = body.mode ?? "all";
 
@@ -96,7 +99,40 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const results = await verifyCarriers(selected, { limit: body.limit });
+    // Cap the verify set up front so we can control website-crawl volume.
+    const toVerify =
+      typeof body.limit === "number" && body.limit > 0 ? selected.slice(0, body.limit) : selected;
+
+    // Crawl default: enabled for small runs (<= CRAWL_CAP), disabled for large
+    // runs unless the caller explicitly opts in.
+    const crawlRequested =
+      typeof body.enableWebsiteCrawl === "boolean"
+        ? body.enableWebsiteCrawl
+        : toVerify.length <= CRAWL_CAP;
+
+    let results;
+    let crawlCapped = false;
+    if (crawlRequested && toVerify.length > CRAWL_CAP) {
+      // Cap crawls to the first CRAWL_CAP carriers; verify the rest without crawl.
+      crawlCapped = true;
+      const crawlBatch = toVerify.slice(0, CRAWL_CAP);
+      const restBatch = toVerify.slice(CRAWL_CAP);
+      const [crawled, rest] = await Promise.all([
+        verifyCarriers(crawlBatch, { enableWebsiteCrawl: true }),
+        verifyCarriers(restBatch, { enableWebsiteCrawl: false }),
+      ]);
+      results = [...crawled, ...rest];
+    } else {
+      results = await verifyCarriers(toVerify, { enableWebsiteCrawl: crawlRequested });
+    }
+
+    const crawledCount = results.filter(
+      (r) => r.websiteFetchStatus && r.websiteFetchStatus !== "not_attempted",
+    ).length;
+    const crawlFailedCount = results.filter(
+      (r) => r.websiteFetchStatus === "failed" || r.websiteFetchStatus === "blocked",
+    ).length;
+
     const upsert = await upsertCarrierVerifications(results);
 
     if (upsert.persistError) {
@@ -120,6 +156,12 @@ export async function POST(req: NextRequest) {
       updated: upsert.updated,
       verificationCount: upsert.verificationCount,
       googleProviderConnected: isGoogleProviderConnected(),
+      websiteCrawlEnabled: crawlRequested,
+      crawledCount,
+      crawlFailedCount,
+      ...(crawlCapped
+        ? { crawlCapped: true, crawlCapNote: `Website crawl capped to the first ${CRAWL_CAP} carriers.` }
+        : {}),
       results,
       storage: await storageInfo(),
       debug: { mode, carrierCount: carriers.length, storePath: upsert.path },

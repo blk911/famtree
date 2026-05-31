@@ -34,7 +34,14 @@ export type TranspoOpportunitySignalId =
   | "google_found_low_confidence"
   | "google_has_website"
   | "google_strong_presence"
-  | "no_google_reviews";
+  | "no_google_reviews"
+  // Website-crawl-derived signals
+  | "website_broken"
+  | "parked_domain"
+  | "hiring_site_signal"
+  | "owner_operator_site_signal"
+  | "quote_request_present"
+  | "no_contact_signal";
 
 export type TranspoOpportunitySignal = {
   id: TranspoOpportunitySignalId;
@@ -69,6 +76,12 @@ const SIGNAL_DEFS: Record<TranspoOpportunitySignalId, { label: string; weight: n
   google_has_website: { label: "Google website found", weight: -10 },
   google_strong_presence: { label: "Strong Google presence", weight: -15 },
   no_google_reviews: { label: "No Google reviews", weight: 10 },
+  website_broken: { label: "Website broken", weight: 15 },
+  parked_domain: { label: "Parked domain", weight: 25 },
+  hiring_site_signal: { label: "Hiring on site", weight: 20 },
+  owner_operator_site_signal: { label: "Owner-operator on site", weight: 20 },
+  quote_request_present: { label: "Quote request on site", weight: -10 },
+  no_contact_signal: { label: "No contact info on site", weight: 10 },
 };
 
 const SOCIAL_SOURCES: TranspoSource[] = ["linkedin", "facebook", "google_business"];
@@ -106,6 +119,23 @@ function clamp(n: number, lo: number, hi: number): number {
 function recommendedPlayFor(ids: Set<TranspoOpportunitySignalId>): string {
   const single = ids.has("single_truck");
   const small = ids.has("small_fleet");
+
+  // Website-crawl plays take top priority — they reflect concrete, observed gaps.
+  if (ids.has("parked_domain")) {
+    return "Dead-domain replacement package";
+  }
+  if (ids.has("website_broken")) {
+    return "Website repair / credibility rebuild";
+  }
+  if (ids.has("hiring_site_signal")) {
+    return "Driver recruiting funnel";
+  }
+  if (ids.has("owner_operator_site_signal")) {
+    return "Owner-operator recruiting funnel";
+  }
+  if (ids.has("no_contact_signal")) {
+    return "Contact conversion cleanup";
+  }
 
   // Verification-driven plays take priority — they reflect concrete gaps.
   if (ids.has("no_google_business") && ids.has("no_website_verified")) {
@@ -196,6 +226,25 @@ export function scoreCarrierOpportunity(
     }
     if (verification.googleFound === true && (verification.googleReviewCount ?? -1) === 0) {
       matched.push("no_google_reviews");
+    }
+
+    // Website-crawl signals.
+    const wsig = new Set(verification.websiteSignals ?? []);
+    if (verification.websiteFetchStatus === "failed" || wsig.has("broken_site")) {
+      matched.push("website_broken");
+    }
+    if (wsig.has("parked_domain")) matched.push("parked_domain");
+    if (verification.websiteHiringFound) matched.push("hiring_site_signal");
+    if (verification.websiteOwnerOperatorFound) matched.push("owner_operator_site_signal");
+    if (verification.websiteQuoteRequestFound) matched.push("quote_request_present");
+    const crawled =
+      verification.websiteFetchStatus === "fetched" || verification.websiteFetchStatus === "partial";
+    const hasContact =
+      wsig.has("contact_page_found") ||
+      (verification.websiteExtractedPhones?.length ?? 0) > 0 ||
+      (verification.websiteExtractedEmails?.length ?? 0) > 0;
+    if (verification.websiteFound && crawled && !hasContact) {
+      matched.push("no_contact_signal");
     }
   }
 

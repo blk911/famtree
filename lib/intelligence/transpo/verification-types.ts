@@ -27,6 +27,27 @@ export type TranspoAddressType =
   | "po_box"
   | "unknown";
 
+export type TranspoWebsiteSignal =
+  | "homepage_found"
+  | "contact_page_found"
+  | "careers_page_found"
+  | "hiring_language"
+  | "owner_operator_language"
+  | "quote_request"
+  | "service_area"
+  | "equipment_language"
+  | "safety_language"
+  | "broken_site"
+  | "parked_domain"
+  | "unknown";
+
+export type TranspoWebsiteFetchStatus =
+  | "not_attempted"
+  | "fetched"
+  | "partial"
+  | "failed"
+  | "blocked";
+
 export type TranspoCarrierVerification = {
   id: string;
   carrierId: string;
@@ -67,6 +88,21 @@ export type TranspoCarrierVerification = {
   // Website
   websiteFound?: boolean;
   websiteUrl?: string;
+
+  // Website crawl enrichment
+  websiteFetchStatus?: TranspoWebsiteFetchStatus;
+  websiteHttpStatus?: number;
+  websiteFinalUrl?: string;
+  websiteTitle?: string;
+  websiteDescription?: string;
+  websiteSignals?: TranspoWebsiteSignal[];
+  websitePagesChecked?: string[];
+  websiteExtractedPhones?: string[];
+  websiteExtractedEmails?: string[];
+  websiteHiringFound?: boolean;
+  websiteOwnerOperatorFound?: boolean;
+  websiteQuoteRequestFound?: boolean;
+  websiteLastFetchedAt?: string;
 
   // Address classification
   addressType?: TranspoAddressType;

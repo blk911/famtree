@@ -110,6 +110,21 @@ const DDL_STATEMENTS: string[] = [
     ADD COLUMN IF NOT EXISTS google_category text,
     ADD COLUMN IF NOT EXISTS google_match_confidence numeric,
     ADD COLUMN IF NOT EXISTS google_matched_by text`,
+  // Website crawl-enrichment columns (added idempotently).
+  `ALTER TABLE transpo_carrier_verification
+    ADD COLUMN IF NOT EXISTS website_fetch_status text,
+    ADD COLUMN IF NOT EXISTS website_http_status integer,
+    ADD COLUMN IF NOT EXISTS website_final_url text,
+    ADD COLUMN IF NOT EXISTS website_title text,
+    ADD COLUMN IF NOT EXISTS website_description text,
+    ADD COLUMN IF NOT EXISTS website_signals jsonb,
+    ADD COLUMN IF NOT EXISTS website_pages_checked jsonb,
+    ADD COLUMN IF NOT EXISTS website_extracted_phones jsonb,
+    ADD COLUMN IF NOT EXISTS website_extracted_emails jsonb,
+    ADD COLUMN IF NOT EXISTS website_hiring_found boolean,
+    ADD COLUMN IF NOT EXISTS website_owner_operator_found boolean,
+    ADD COLUMN IF NOT EXISTS website_quote_request_found boolean,
+    ADD COLUMN IF NOT EXISTS website_last_fetched_at timestamptz`,
 ];
 
 // Memoized per serverless isolate: ensure DDL runs at most once per instance.

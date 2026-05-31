@@ -51,6 +51,56 @@ function googleCellLabel(
   return { text: "—", color: "#d6d3d1" };
 }
 
+const FETCH_COLORS: Record<string, { fg: string; bg: string; bd: string }> = {
+  fetched: { fg: "#166534", bg: "#dcfce7", bd: "#bbf7d0" },
+  partial: { fg: "#92400e", bg: "#fef3c7", bd: "#fde68a" },
+  failed: { fg: "#991b1b", bg: "#fef2f2", bd: "#fecaca" },
+  blocked: { fg: "#991b1b", bg: "#fef2f2", bd: "#fecaca" },
+  not_attempted: { fg: "#78716c", bg: "#f5f5f4", bd: "#e7e5e4" },
+};
+
+function FetchBadge({ status }: { status?: string }) {
+  if (!status) return <span style={{ color: "#d6d3d1" }}>—</span>;
+  const c = FETCH_COLORS[status] ?? FETCH_COLORS.not_attempted;
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+      color: c.fg, background: c.bg, border: `1px solid ${c.bd}`, whiteSpace: "nowrap",
+    }}>
+      {status.replace(/_/g, " ")}
+    </span>
+  );
+}
+
+// Human chip labels for the website crawl signals we want to surface.
+const SITE_CHIPS: { test: (v: TranspoCarrierVerification) => boolean; label: string; tone: "pos" | "neg" }[] = [
+  { test: (v) => Boolean(v.websiteHiringFound), label: "hiring", tone: "pos" },
+  { test: (v) => Boolean(v.websiteOwnerOperatorFound), label: "owner operator", tone: "pos" },
+  { test: (v) => Boolean(v.websiteQuoteRequestFound), label: "quote", tone: "pos" },
+  { test: (v) => (v.websiteSignals ?? []).includes("contact_page_found"), label: "contact", tone: "pos" },
+  { test: (v) => (v.websiteSignals ?? []).includes("broken_site") || v.websiteFetchStatus === "failed", label: "broken", tone: "neg" },
+  { test: (v) => (v.websiteSignals ?? []).includes("parked_domain"), label: "parked", tone: "neg" },
+];
+
+function SiteChips({ v }: { v: TranspoCarrierVerification }) {
+  const chips = SITE_CHIPS.filter((c) => c.test(v));
+  if (chips.length === 0) return null;
+  return (
+    <span style={{ display: "inline-flex", gap: 4, flexWrap: "wrap", marginLeft: 6 }}>
+      {chips.map((c) => (
+        <span key={c.label} style={{
+          fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 20,
+          color: c.tone === "neg" ? "#991b1b" : "#3730a3",
+          background: c.tone === "neg" ? "#fef2f2" : "#eef2ff",
+          border: `1px solid ${c.tone === "neg" ? "#fecaca" : "#c7d2fe"}`,
+        }}>
+          {c.label}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 export default function TranspoVerificationPage() {
   const [verifications, setVerifications] = useState<TranspoCarrierVerification[]>([]);
   const [storage, setStorage] = useState<Storage | null>(null);
@@ -60,6 +110,7 @@ export default function TranspoVerificationPage() {
   const [busy, setBusy] = useState(false);
   const [runMsg, setRunMsg] = useState("");
   const [runErr, setRunErr] = useState("");
+  const [enableCrawl, setEnableCrawl] = useState(true);
 
   const load = useCallback(async () => {
     try {
@@ -95,7 +146,7 @@ export default function TranspoVerificationPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        body: JSON.stringify({ mode, ...(limit ? { limit } : {}) }),
+        body: JSON.stringify({ mode, enableWebsiteCrawl: enableCrawl, ...(limit ? { limit } : {}) }),
       });
       const data = (await res.json()) as {
         ok: boolean;
@@ -103,13 +154,21 @@ export default function TranspoVerificationPage() {
         created?: number;
         updated?: number;
         verificationCount?: number;
+        websiteCrawlEnabled?: boolean;
+        crawledCount?: number;
+        crawlFailedCount?: number;
+        crawlCapNote?: string;
         note?: string;
         error?: string;
         detail?: string;
         debug?: { persistError?: string; carrierCount?: number };
       };
       if (data.ok) {
-        const base = `Verified ${data.verified ?? 0} carrier(s): ${data.created ?? 0} created, ${data.updated ?? 0} updated. Total: ${data.verificationCount ?? 0}.`;
+        let base = `Verified ${data.verified ?? 0} carrier(s): ${data.created ?? 0} created, ${data.updated ?? 0} updated. Total: ${data.verificationCount ?? 0}.`;
+        if (data.websiteCrawlEnabled) {
+          base += ` Crawled ${data.crawledCount ?? 0} site(s)${(data.crawlFailedCount ?? 0) > 0 ? `, ${data.crawlFailedCount} failed/blocked` : ""}.`;
+        }
+        if (data.crawlCapNote) base += ` ${data.crawlCapNote}`;
         setRunMsg(data.note ? `${base} ${data.note}` : base);
         await load();
       } else {
@@ -209,9 +268,22 @@ export default function TranspoVerificationPage() {
         {btn("Verify Missing", () => runVerification("missing_only"))}
         {btn("Verify First 25", () => runVerification("all", 25))}
         {btn("Verify All Visible", () => runVerification("all"))}
+        <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "#57534e", cursor: "pointer" }}>
+          <input type="checkbox" checked={enableCrawl} onChange={(e) => setEnableCrawl(e.target.checked)} disabled={busy} />
+          Enable website crawl
+        </label>
         {runMsg && <span style={{ fontSize: 11, color: "#3730a3", fontWeight: 700 }}>✓ {runMsg}</span>}
         {runErr && <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 700 }}>✗ {runErr}</span>}
       </div>
+
+      {!enableCrawl && (
+        <div style={{
+          fontSize: 11, color: "#57534e", background: "#f5f5f4", border: "1px solid #e7e5e4",
+          borderRadius: 8, padding: "8px 12px", marginBottom: 10,
+        }}>
+          Website crawl is disabled — carriers will be verified without fetching their sites.
+        </div>
+      )}
 
       {!googleConnected && (
         <div style={{
@@ -268,7 +340,7 @@ export default function TranspoVerificationPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
                 <tr style={{ color: "#78716c", borderBottom: "1px solid #e7e5e4", background: "#fafaf9" }}>
-                  {["Company", "DOT", "City", "State", "Score", "Status", "Google", "Rating", "Match", "Website", "Maps", "BBB", "Facebook", "Address Type"].map((h) => (
+                  {["Company", "DOT", "City", "State", "Score", "Status", "Google", "Rating", "Match", "Website", "Maps", "BBB", "Facebook", "Address Type", "Site"].map((h) => (
                     <th key={h} style={hd}>{h}</th>
                   ))}
                 </tr>
@@ -317,10 +389,23 @@ export default function TranspoVerificationPage() {
                         <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.bbbFound} /></td>
                         <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.facebookFound} /></td>
                         <td style={{ ...cd, paddingBottom: 4, whiteSpace: "nowrap" }}>{v.addressType ?? "—"}</td>
+                        <td style={{ ...cd, paddingBottom: 4, whiteSpace: "nowrap" }}><FetchBadge status={v.websiteFetchStatus} /></td>
                       </tr>
-                      {/* Second line: notes span the full width so the row stays readable. */}
+                      {/* Second line: website crawl detail + notes span the full width. */}
                       <tr style={{ borderBottom: "1px solid #f0efed" }}>
-                        <td colSpan={14} style={{ padding: "0 12px 9px", fontSize: 11, color: "#78716c", lineHeight: 1.5 }}>
+                        <td colSpan={15} style={{ padding: "0 12px 9px", fontSize: 11, color: "#78716c", lineHeight: 1.6 }}>
+                          {(v.websiteTitle || (v.websiteSignals ?? []).length > 0 || (v.websiteExtractedPhones ?? []).length > 0 || (v.websiteExtractedEmails ?? []).length > 0) && (
+                            <div style={{ marginBottom: 2 }}>
+                              <span style={{ fontWeight: 700, color: "#a8a29e", marginRight: 6 }}>Site:</span>
+                              {v.websiteTitle ? <span style={{ color: "#44403c" }}>{v.websiteTitle}</span> : null}
+                              <SiteChips v={v} />
+                              {((v.websiteExtractedPhones ?? []).length > 0 || (v.websiteExtractedEmails ?? []).length > 0) && (
+                                <span style={{ marginLeft: 8, color: "#a8a29e" }}>
+                                  {(v.websiteExtractedPhones ?? []).length} phone(s), {(v.websiteExtractedEmails ?? []).length} email(s)
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <span style={{ fontWeight: 700, color: "#a8a29e", marginRight: 6 }}>Notes:</span>
                           {notes || "—"}
                         </td>
