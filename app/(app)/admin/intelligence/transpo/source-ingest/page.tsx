@@ -13,7 +13,7 @@ import {
   getTranspoSourceRegistry,
   type TranspoSourceStatus,
 } from "@/lib/intelligence/transpo/source-registry";
-import type { TranspoSourceRun } from "@/lib/intelligence/transpo/types";
+import type { TranspoSourceRun, TranspoEvidence } from "@/lib/intelligence/transpo/types";
 
 const SOURCE_TYPES = ["FMCSA", "SAFER", "CSV", "URL", "Text / PDF"] as const;
 type SourceType = (typeof SOURCE_TYPES)[number];
@@ -56,9 +56,82 @@ export default function TranspoSourceIngestPage() {
   const [error, setError] = useState("");
   const [lastRun, setLastRun] = useState<FmcsaSourceRun | null>(null);
 
+  // Inline evidence creation from the pull results panel.
+  const [evidenceCreating, setEvidenceCreating] = useState(false);
+  const [evidenceResult, setEvidenceResult] = useState("");
+  const [evidenceError, setEvidenceError] = useState("");
+  const [evidencePreviewRows, setEvidencePreviewRows] = useState<TranspoEvidence[]>([]);
+
+  function resetEvidenceState() {
+    setEvidenceCreating(false);
+    setEvidenceResult("");
+    setEvidenceError("");
+    setEvidencePreviewRows([]);
+  }
+
+  async function handleCreateEvidenceFromPull() {
+    if (!lastRun) return;
+    setEvidenceCreating(true);
+    setEvidenceResult("");
+    setEvidenceError("");
+    setEvidencePreviewRows([]);
+    try {
+      const res = await fetch("/api/admin/intelligence/transpo/evidence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        // Send the full run as a fallback: on Vercel the source-runs store may
+        // live in per-instance /tmp, so this invocation may not see it by id.
+        body: JSON.stringify({ runId: lastRun.id, run: lastRun }),
+      });
+      const data = (await res.json()) as {
+        ok: boolean;
+        created?: number;
+        skipped?: number;
+        evidenceCount?: number;
+        evidence?: TranspoEvidence[];
+        note?: string;
+        error?: string;
+        detail?: string;
+        debug?: {
+          runId?: string;
+          sourceRecordCount?: number;
+          builtEvidenceCount?: number;
+          evidenceStorePath?: string;
+          persistError?: string;
+        };
+      };
+      if (data.ok) {
+        const base = `Created ${data.created ?? 0} evidence items. Skipped ${data.skipped ?? 0}. Total evidence: ${data.evidenceCount ?? 0}.`;
+        setEvidenceResult(data.note ? `${base} ${data.note}` : base);
+        if (Array.isArray(data.evidence)) setEvidencePreviewRows(data.evidence);
+      } else {
+        const hints: string[] = [];
+        if (data.debug?.runId) hints.push(`runId: ${data.debug.runId}`);
+        if (typeof data.debug?.sourceRecordCount === "number") {
+          hints.push(`records: ${data.debug.sourceRecordCount}`);
+        }
+        if (typeof data.debug?.builtEvidenceCount === "number") {
+          hints.push(`built: ${data.debug.builtEvidenceCount}`);
+        }
+        if (data.debug?.evidenceStorePath) hints.push(`store: ${data.debug.evidenceStorePath}`);
+        if (data.debug?.persistError) hints.push(`persist: ${data.debug.persistError}`);
+        if (data.detail) hints.push(data.detail);
+        const baseErr = data.error ?? "Evidence build failed";
+        setEvidenceError(hints.length ? `${baseErr} (${hints.join(" · ")})` : baseErr);
+      }
+    } catch (e) {
+      setEvidenceError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setEvidenceCreating(false);
+    }
+  }
+
   async function handleRunFmcsaTestPull() {
     setIsRunning(true);
     setError("");
+    // A new pull invalidates any prior evidence creation state.
+    resetEvidenceState();
     try {
       const res = await fetch(
         "/api/admin/intelligence/transpo/source-runs/fmcsa",
@@ -513,6 +586,92 @@ export default function TranspoSourceIngestPage() {
               View Source Runs →
             </Link>
           </div>
+
+          {/* Inline evidence creation — skip the trip to Source Runs. */}
+          {lastRun.recordCount > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={handleCreateEvidenceFromPull}
+                  disabled={evidenceCreating}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    padding: "8px 16px",
+                    borderRadius: 9,
+                    border: "1px solid #c7d2fe",
+                    background: evidenceCreating ? "#e0e7ff" : "#eef2ff",
+                    color: "#3730a3",
+                    cursor: evidenceCreating ? "not-allowed" : "pointer",
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {evidenceCreating ? "Creating evidence…" : "Create Evidence from This Run"}
+                </button>
+                {evidenceResult && (
+                  <span style={{ fontSize: 11, color: "#3730a3", fontWeight: 700 }}>✓ {evidenceResult}</span>
+                )}
+                {evidenceError && (
+                  <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 700 }}>✗ {evidenceError}</span>
+                )}
+              </div>
+
+              {evidenceResult && (
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 8 }}>
+                  <Link
+                    href="/admin/intelligence/transpo/evidence"
+                    style={{ fontSize: 11, fontWeight: 700, color: "#1d4ed8", textDecoration: "underline" }}
+                  >
+                    View Evidence →
+                  </Link>
+                  <Link
+                    href="/admin/intelligence/transpo/resolver"
+                    style={{ fontSize: 11, fontWeight: 700, color: "#1d4ed8", textDecoration: "underline" }}
+                  >
+                    Resolve Carriers →
+                  </Link>
+                </div>
+              )}
+
+              {evidencePreviewRows.length > 0 && (
+                <div style={{
+                  marginTop: 12,
+                  border: "1px solid #c7d2fe",
+                  borderRadius: 10,
+                  background: "#f5f7ff",
+                  overflow: "hidden",
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "#3730a3", padding: "8px 12px", borderBottom: "1px solid #e0e7ff" }}>
+                    Created Evidence Preview — showing {Math.min(evidencePreviewRows.length, 10)} of {evidencePreviewRows.length}
+                  </div>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                      <thead>
+                        <tr style={{ textAlign: "left", color: "#6366f1", borderBottom: "1px solid #e0e7ff" }}>
+                          {["Carrier Key", "Type", "Value", "Confidence"].map((h) => (
+                            <th key={h} style={{ padding: "6px 12px", fontWeight: 700, whiteSpace: "nowrap" }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {evidencePreviewRows.slice(0, 10).map((ev) => (
+                          <tr key={ev.id} style={{ borderBottom: "1px solid #eef2ff" }}>
+                            <td style={{ padding: "6px 12px" }}><code style={{ fontSize: 10 }}>{ev.carrierKey}</code></td>
+                            <td style={{ padding: "6px 12px", whiteSpace: "nowrap" }}>{ev.evidenceType}</td>
+                            <td style={{ padding: "6px 12px" }}>{ev.value}</td>
+                            <td style={{ padding: "6px 12px", whiteSpace: "nowrap" }}>
+                              {typeof ev.confidence === "number" ? ev.confidence.toFixed(2) : "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {lastRun.message && (
             <div style={{
