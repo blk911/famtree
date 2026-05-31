@@ -35,7 +35,9 @@ export default function TranspoSourceRunsPage() {
     let active = true;
     (async () => {
       try {
-        const res = await fetch("/api/admin/intelligence/transpo/source-runs");
+        const res = await fetch("/api/admin/intelligence/transpo/source-runs", {
+          cache: "no-store",
+        });
         const data = (await res.json()) as {
           ok: boolean;
           runs?: TranspoSourceRun[];
@@ -190,6 +192,7 @@ function FragmentRow({
   const [evidenceBusy, setEvidenceBusy] = useState(false);
   const [evidenceMsg, setEvidenceMsg] = useState("");
   const [evidenceError, setEvidenceError] = useState("");
+  const [evidenceDone, setEvidenceDone] = useState(false);
 
   function toggleDot(dot: string) {
     setSelectedDots((prev) => {
@@ -258,11 +261,15 @@ function FragmentRow({
     setEvidenceBusy(true);
     setEvidenceMsg("");
     setEvidenceError("");
+    setEvidenceDone(false);
     try {
       const res = await fetch("/api/admin/intelligence/transpo/evidence", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ runId: run.id }),
+        cache: "no-store",
+        // Send the full run as a fallback: on Vercel the source-runs store lives
+        // in per-instance /tmp, so this invocation may not see the run by id.
+        body: JSON.stringify({ runId: run.id, run }),
       });
       const data = (await res.json()) as {
         ok: boolean;
@@ -271,17 +278,30 @@ function FragmentRow({
         evidenceCount?: number;
         error?: string;
         detail?: string;
-        debug?: { availableRunCount?: number };
+        debug?: {
+          availableRunCount?: number;
+          sourceRecordCount?: number;
+          builtEvidenceCount?: number;
+          persistError?: string;
+        };
       };
       if (data.ok) {
         setEvidenceMsg(
           `Created ${data.created ?? 0} evidence item(s), skipped ${data.skipped ?? 0}. Lake now holds ${data.evidenceCount ?? 0}.`,
         );
+        setEvidenceDone(true);
       } else {
         const hints: string[] = [];
         if (typeof data.debug?.availableRunCount === "number") {
           hints.push(`runs in store: ${data.debug.availableRunCount}`);
         }
+        if (typeof data.debug?.sourceRecordCount === "number") {
+          hints.push(`run records: ${data.debug.sourceRecordCount}`);
+        }
+        if (typeof data.debug?.builtEvidenceCount === "number") {
+          hints.push(`built: ${data.debug.builtEvidenceCount}`);
+        }
+        if (data.debug?.persistError) hints.push(`persist: ${data.debug.persistError}`);
         if (data.detail) hints.push(data.detail);
         const base = data.error ?? "Evidence build failed";
         setEvidenceError(hints.length ? `${base} (${hints.join(" · ")})` : base);
@@ -413,6 +433,21 @@ function FragmentRow({
               )}
               {evidenceMsg && (
                 <span style={{ fontSize: 11, color: "#3730a3", fontWeight: 700 }}>✓ {evidenceMsg}</span>
+              )}
+              {evidenceDone && (
+                <a
+                  href="/admin/intelligence/transpo/evidence"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#1d4ed8",
+                    textDecoration: "underline",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  View Evidence →
+                </a>
               )}
               {evidenceError && (
                 <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 700 }}>✗ {evidenceError}</span>

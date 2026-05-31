@@ -29,8 +29,8 @@ export default function TranspoResolverPage() {
   const refreshCounts = useCallback(async () => {
     try {
       const [evRes, carRes] = await Promise.all([
-        fetch("/api/admin/intelligence/transpo/evidence"),
-        fetch("/api/admin/intelligence/transpo/carriers"),
+        fetch("/api/admin/intelligence/transpo/evidence", { cache: "no-store" }),
+        fetch("/api/admin/intelligence/transpo/carriers", { cache: "no-store" }),
       ]);
       const ev = (await evRes.json()) as { ok: boolean; evidence?: unknown[] };
       const car = (await carRes.json()) as { ok: boolean; carriers?: unknown[] };

@@ -27,7 +27,9 @@ export default function TranspoEvidencePage() {
     let active = true;
     (async () => {
       try {
-        const res = await fetch("/api/admin/intelligence/transpo/evidence");
+        const res = await fetch("/api/admin/intelligence/transpo/evidence", {
+          cache: "no-store",
+        });
         const data = (await res.json()) as {
           ok: boolean;
           evidence?: TranspoEvidence[];

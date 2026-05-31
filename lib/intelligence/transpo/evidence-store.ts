@@ -27,12 +27,18 @@ export function getEvidenceFilePath(): string {
   return EVIDENCE_FILE;
 }
 
+/** Alias used by the evidence API debug payloads. */
+export function getEvidenceStorePath(): string {
+  return EVIDENCE_FILE;
+}
+
 type EvidenceType = TranspoEvidence["evidenceType"];
 
 export type AppendEvidenceResult = {
   created: number;
   skipped: number;
   evidenceCount: number;
+  path: string;
   persistError?: string;
 };
 
@@ -97,6 +103,7 @@ export async function appendTranspoEvidence(
     created,
     skipped,
     evidenceCount: next.length,
+    path: EVIDENCE_FILE,
     ...(persistError ? { persistError } : {}),
   };
 }
