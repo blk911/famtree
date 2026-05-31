@@ -219,13 +219,30 @@ function FragmentRow({
         total?: number;
         carrierCount?: number;
         error?: string;
+        detail?: string;
+        debug?: {
+          availableRunCount?: number;
+          sourceRecordCount?: number;
+          persistError?: string;
+        };
       };
       if (data.ok) {
         setPromoteMsg(
           `Promoted ${data.total ?? 0} record(s): ${data.created ?? 0} created, ${data.updated ?? 0} updated, ${data.skipped ?? 0} skipped. Carrier master now holds ${data.carrierCount ?? 0}.`,
         );
       } else {
-        setPromoteError(data.error ?? "Promotion failed");
+        // Surface the exact server error plus the most useful debug hint.
+        const hints: string[] = [];
+        if (typeof data.debug?.availableRunCount === "number") {
+          hints.push(`runs in store: ${data.debug.availableRunCount}`);
+        }
+        if (typeof data.debug?.sourceRecordCount === "number") {
+          hints.push(`run records: ${data.debug.sourceRecordCount}`);
+        }
+        if (data.debug?.persistError) hints.push(`persist: ${data.debug.persistError}`);
+        if (data.detail) hints.push(data.detail);
+        const base = data.error ?? "Promotion failed";
+        setPromoteError(hints.length ? `${base} (${hints.join(" · ")})` : base);
       }
     } catch (e) {
       setPromoteError(e instanceof Error ? e.message : String(e));
