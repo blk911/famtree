@@ -187,6 +187,9 @@ function FragmentRow({
   const [promoteMsg, setPromoteMsg] = useState("");
   const [promoteError, setPromoteError] = useState("");
   const [selectedDots, setSelectedDots] = useState<Set<string>>(new Set());
+  const [evidenceBusy, setEvidenceBusy] = useState(false);
+  const [evidenceMsg, setEvidenceMsg] = useState("");
+  const [evidenceError, setEvidenceError] = useState("");
 
   function toggleDot(dot: string) {
     setSelectedDots((prev) => {
@@ -248,6 +251,45 @@ function FragmentRow({
       setPromoteError(e instanceof Error ? e.message : String(e));
     } finally {
       setPromoting(false);
+    }
+  }
+
+  async function createEvidence() {
+    setEvidenceBusy(true);
+    setEvidenceMsg("");
+    setEvidenceError("");
+    try {
+      const res = await fetch("/api/admin/intelligence/transpo/evidence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ runId: run.id }),
+      });
+      const data = (await res.json()) as {
+        ok: boolean;
+        created?: number;
+        skipped?: number;
+        evidenceCount?: number;
+        error?: string;
+        detail?: string;
+        debug?: { availableRunCount?: number };
+      };
+      if (data.ok) {
+        setEvidenceMsg(
+          `Created ${data.created ?? 0} evidence item(s), skipped ${data.skipped ?? 0}. Lake now holds ${data.evidenceCount ?? 0}.`,
+        );
+      } else {
+        const hints: string[] = [];
+        if (typeof data.debug?.availableRunCount === "number") {
+          hints.push(`runs in store: ${data.debug.availableRunCount}`);
+        }
+        if (data.detail) hints.push(data.detail);
+        const base = data.error ?? "Evidence build failed";
+        setEvidenceError(hints.length ? `${base} (${hints.join(" · ")})` : base);
+      }
+    } catch (e) {
+      setEvidenceError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setEvidenceBusy(false);
     }
   }
 
@@ -346,11 +388,34 @@ function FragmentRow({
               >
                 Promote Selected ({selectedDots.size})
               </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); createEvidence(); }}
+                disabled={evidenceBusy || (run.records ?? []).length === 0}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "6px 14px",
+                  borderRadius: 8,
+                  border: "1px solid #c7d2fe",
+                  background: evidenceBusy || (run.records ?? []).length === 0 ? "#eef2ff" : "#eef2ff",
+                  color: (run.records ?? []).length === 0 ? "#a8a29e" : "#3730a3",
+                  cursor: evidenceBusy || (run.records ?? []).length === 0 ? "not-allowed" : "pointer",
+                }}
+              >
+                {evidenceBusy ? "Creating…" : "Create Evidence"}
+              </button>
               {promoteMsg && (
                 <span style={{ fontSize: 11, color: "#15803d", fontWeight: 700 }}>✓ {promoteMsg}</span>
               )}
               {promoteError && (
                 <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 700 }}>✗ {promoteError}</span>
+              )}
+              {evidenceMsg && (
+                <span style={{ fontSize: 11, color: "#3730a3", fontWeight: 700 }}>✓ {evidenceMsg}</span>
+              )}
+              {evidenceError && (
+                <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 700 }}>✗ {evidenceError}</span>
               )}
             </div>
 

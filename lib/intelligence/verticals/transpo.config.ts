@@ -17,13 +17,14 @@ export const transpoConfig: VerticalConfig = {
   navItems: [
     { id: "source-ingest", label: "Source Ingest",   href: "/admin/intelligence/transpo/source-ingest" },
     { id: "source-runs",   label: "Source Runs",      href: "/admin/intelligence/transpo/source-runs" },
-    { id: "carriers",      label: "Carriers",         href: "/admin/intelligence/transpo/carriers" },
+    { id: "evidence",      label: "Evidence",         href: "/admin/intelligence/transpo/evidence" },
     { id: "resolver",      label: "Carrier Resolver", href: "/admin/intelligence/transpo/resolver" },
+    { id: "carriers",      label: "Carriers",         href: "/admin/intelligence/transpo/carriers" },
     { id: "harvest",       label: "Market Harvest",   href: "/admin/intelligence/transpo/harvest" },
     { id: "prospects",     label: "Red Dots",         href: "/admin/intelligence/transpo/prospects" },
   ],
 
-  enabledTools: ["source-ingest", "source-runs", "carriers", "resolver", "harvest", "prospects"],
+  enabledTools: ["source-ingest", "source-runs", "evidence", "resolver", "carriers", "harvest", "prospects"],
 
   // Salon/personal-care tools are explicitly hidden from this vertical
   hiddenTools: [

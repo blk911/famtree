@@ -205,3 +205,74 @@ export async function upsertCarrierTargetsFromSourceRun(
     ...(persistError ? { persistError } : {}),
   };
 }
+
+/** Merge an already-resolved target into an existing master record. */
+function mergeResolvedTarget(
+  existing: TranspoCarrierTarget,
+  incoming: TranspoCarrierTarget,
+): TranspoCarrierTarget {
+  return {
+    ...existing,
+    companyName: incoming.companyName || existing.companyName,
+    dotNumber: incoming.dotNumber ?? existing.dotNumber,
+    mcNumber: incoming.mcNumber ?? existing.mcNumber,
+    city: incoming.city ?? existing.city,
+    state: incoming.state ?? existing.state,
+    phone: incoming.phone ?? existing.phone,
+    website: incoming.website ?? existing.website,
+    fleetSize: incoming.fleetSize ?? existing.fleetSize,
+    driverCount: incoming.driverCount ?? existing.driverCount,
+    authorityStatus: incoming.authorityStatus ?? existing.authorityStatus,
+    sources: Array.from(new Set<TranspoSource>([...existing.sources, ...incoming.sources])),
+    evidenceIds: Array.from(new Set<string>([...existing.evidenceIds, ...incoming.evidenceIds])),
+    updatedAt: incoming.updatedAt ?? existing.updatedAt,
+  };
+}
+
+/**
+ * Upsert resolved carrier targets (from the Carrier Resolver) into the master
+ * store, keyed by carrierIdentityKey. Existing carriers merge; new ones are
+ * added. Persists best-effort and returns a summary.
+ */
+export async function upsertResolvedCarrierTargets(
+  targets: TranspoCarrierTarget[],
+): Promise<PromotionSummary> {
+  const carriers = await readCarrierMaster();
+  const byKey = new Map<string, TranspoCarrierTarget>();
+  for (const c of carriers) {
+    const k = carrierIdentityKey(c);
+    if (k) byKey.set(k, c);
+  }
+
+  let created = 0;
+  let updated = 0;
+  let skipped = 0;
+
+  for (const target of targets) {
+    const key = carrierIdentityKey(target);
+    if (!key) {
+      skipped++;
+      continue;
+    }
+    const existing = byKey.get(key);
+    if (existing) {
+      byKey.set(key, mergeResolvedTarget(existing, target));
+      updated++;
+    } else {
+      byKey.set(key, target);
+      created++;
+    }
+  }
+
+  const next = Array.from(byKey.values());
+  const persistError = await writeCarrierMaster(next);
+
+  return {
+    created,
+    updated,
+    skipped,
+    total: targets.length,
+    carrierCount: next.length,
+    ...(persistError ? { persistError } : {}),
+  };
+}
