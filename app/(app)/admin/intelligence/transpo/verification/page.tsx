@@ -4,7 +4,7 @@
 // outreach. Reads GET /api/admin/intelligence/transpo/verification and runs
 // batches via POST.
 
-import { useEffect, useState, useCallback } from "react";
+import { Fragment, useEffect, useState, useCallback } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
@@ -227,7 +227,7 @@ export default function TranspoVerificationPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
                 <tr style={{ color: "#78716c", borderBottom: "1px solid #e7e5e4", background: "#fafaf9" }}>
-                  {["Company", "DOT", "City", "State", "Score", "Status", "Google", "Website", "BBB", "Facebook", "Address Type", "Notes"].map((h) => (
+                  {["Company", "DOT", "City", "State", "Score", "Status", "Google", "Website", "BBB", "Facebook", "Address Type"].map((h) => (
                     <th key={h} style={hd}>{h}</th>
                   ))}
                 </tr>
@@ -235,36 +235,43 @@ export default function TranspoVerificationPage() {
               <tbody>
                 {verifications.map((v) => {
                   const sc = STATUS_COLORS[v.verificationStatus] ?? STATUS_COLORS.placeholder;
+                  const notes = (v.notes ?? []).join(" · ");
                   return (
-                    <tr key={v.id} style={{ borderBottom: "1px solid #f5f5f4" }}>
-                      <td style={cd}>{v.companyName}</td>
-                      <td style={{ ...cd, whiteSpace: "nowrap" }}>{v.dotNumber ?? "—"}</td>
-                      <td style={cd}>{v.city ?? "—"}</td>
-                      <td style={cd}>{v.state ?? "—"}</td>
-                      <td style={{ ...cd, fontWeight: 800 }}>{v.verificationScore}</td>
-                      <td style={cd}>
-                        <span style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          padding: "2px 8px",
-                          borderRadius: 20,
-                          color: sc.fg,
-                          background: sc.bg,
-                          border: `1px solid ${sc.bd}`,
-                          whiteSpace: "nowrap",
-                        }}>
-                          {v.verificationStatus}
-                        </span>
-                      </td>
-                      <td style={cd}><YesNo value={v.googleFound} /></td>
-                      <td style={cd}><YesNo value={v.websiteFound} /></td>
-                      <td style={cd}><YesNo value={v.bbbFound} /></td>
-                      <td style={cd}><YesNo value={v.facebookFound} /></td>
-                      <td style={{ ...cd, whiteSpace: "nowrap" }}>{v.addressType ?? "—"}</td>
-                      <td style={{ ...cd, fontSize: 11, color: "#78716c", maxWidth: 260 }}>
-                        {(v.notes ?? []).join(" · ") || "—"}
-                      </td>
-                    </tr>
+                    <Fragment key={v.id}>
+                      <tr style={{ borderTop: "1px solid #f0efed" }}>
+                        <td style={{ ...cd, paddingBottom: 4 }}>{v.companyName}</td>
+                        <td style={{ ...cd, paddingBottom: 4, whiteSpace: "nowrap" }}>{v.dotNumber ?? "—"}</td>
+                        <td style={{ ...cd, paddingBottom: 4 }}>{v.city ?? "—"}</td>
+                        <td style={{ ...cd, paddingBottom: 4 }}>{v.state ?? "—"}</td>
+                        <td style={{ ...cd, paddingBottom: 4, fontWeight: 800 }}>{v.verificationScore}</td>
+                        <td style={{ ...cd, paddingBottom: 4 }}>
+                          <span style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            padding: "2px 8px",
+                            borderRadius: 20,
+                            color: sc.fg,
+                            background: sc.bg,
+                            border: `1px solid ${sc.bd}`,
+                            whiteSpace: "nowrap",
+                          }}>
+                            {v.verificationStatus}
+                          </span>
+                        </td>
+                        <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.googleFound} /></td>
+                        <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.websiteFound} /></td>
+                        <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.bbbFound} /></td>
+                        <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.facebookFound} /></td>
+                        <td style={{ ...cd, paddingBottom: 4, whiteSpace: "nowrap" }}>{v.addressType ?? "—"}</td>
+                      </tr>
+                      {/* Second line: notes span the full width so the row stays readable. */}
+                      <tr style={{ borderBottom: "1px solid #f0efed" }}>
+                        <td colSpan={11} style={{ padding: "0 12px 9px", fontSize: 11, color: "#78716c", lineHeight: 1.5 }}>
+                          <span style={{ fontWeight: 700, color: "#a8a29e", marginRight: 6 }}>Notes:</span>
+                          {notes || "—"}
+                        </td>
+                      </tr>
+                    </Fragment>
                   );
                 })}
               </tbody>
