@@ -93,12 +93,31 @@ async function ensureTranspoTables(): Promise<boolean> {
 
 let _resolvedBackend: TranspoBackend | null = null;
 
-/** Resolve (and memoize) the active backend. Falls back to JSON on any DB issue. */
+/**
+ * Resolve the active backend.
+ *
+ * Only a successful Postgres resolution is cached. If DATABASE_URL is present
+ * but the tables aren't ready yet (e.g. a cold-start connection blip), we return
+ * "json" WITHOUT caching so the next call retries Postgres — otherwise a single
+ * transient failure would strand a warm Lambda on ephemeral /tmp for its whole
+ * life, which is exactly the "evidence randomly disappears" symptom.
+ */
 export async function resolveTranspoBackend(): Promise<TranspoBackend> {
-  if (_resolvedBackend) return _resolvedBackend;
+  if (_resolvedBackend === "postgres") return "postgres";
+
+  if (!databaseUrlPresent()) {
+    _resolvedBackend = "json";
+    return "json";
+  }
+
   const ok = await ensureTranspoTables();
-  _resolvedBackend = ok ? "postgres" : "json";
-  return _resolvedBackend;
+  if (ok) {
+    _resolvedBackend = "postgres";
+    return "postgres";
+  }
+
+  // DB configured but not ready — do not pin; retry on the next call.
+  return "json";
 }
 
 export type TranspoBackendInfo = {
