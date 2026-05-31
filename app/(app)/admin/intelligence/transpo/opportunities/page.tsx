@@ -1,0 +1,204 @@
+"use client";
+// app/(app)/admin/intelligence/transpo/opportunities/page.tsx
+// Transpo Opportunities — carrier master scored by the Opportunity Signal
+// Engine, highest score first. Read-only view of
+// GET /api/admin/intelligence/transpo/opportunities.
+
+import { useEffect, useState } from "react";
+import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
+import type { TranspoOpportunityRecord } from "@/lib/intelligence/transpo/opportunity-engine";
+
+function scoreColor(score: number): { fg: string; bg: string; bd: string } {
+  if (score >= 60) return { fg: "#166534", bg: "#dcfce7", bd: "#bbf7d0" };
+  if (score >= 35) return { fg: "#92400e", bg: "#fef3c7", bd: "#fde68a" };
+  return { fg: "#57534e", bg: "#f5f5f4", bd: "#e7e5e4" };
+}
+
+export default function TranspoOpportunitiesPage() {
+  const [opportunities, setOpportunities] = useState<TranspoOpportunityRecord[]>([]);
+  const [carrierCount, setCarrierCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/intelligence/transpo/opportunities", {
+          cache: "no-store",
+        });
+        const data = (await res.json()) as {
+          ok: boolean;
+          opportunities?: TranspoOpportunityRecord[];
+          carrierCount?: number;
+          error?: string;
+        };
+        if (!active) return;
+        if (data.ok && Array.isArray(data.opportunities)) {
+          setOpportunities(data.opportunities);
+          setCarrierCount(data.carrierCount ?? data.opportunities.length);
+        } else {
+          setError(data.error ?? "Failed to load opportunities");
+        }
+      } catch (e) {
+        if (active) setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const headerCellStyle: React.CSSProperties = {
+    padding: "9px 12px",
+    fontWeight: 700,
+    whiteSpace: "nowrap",
+    textAlign: "left",
+  };
+  const cellStyle: React.CSSProperties = {
+    padding: "9px 12px",
+    color: "#1c1917",
+    verticalAlign: "top",
+  };
+
+  return (
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
+      <IntelligenceMarketNav />
+      <IntelligenceSubNav config={transpoConfig} currentTool="opportunities" />
+
+      {/* Header */}
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>
+          Opportunities
+        </h1>
+        <p style={{ fontSize: 12, color: "#78716c", margin: 0, maxWidth: 640, lineHeight: 1.55 }}>
+          Carrier master scored by buy-signals — active authority, fleet size,
+          missing web/social presence, and local market — with a recommended
+          sales play. Highest score first.
+        </p>
+      </div>
+
+      {loading ? (
+        <p style={{ fontSize: 13, color: "#78716c" }}>Scoring carriers…</p>
+      ) : error ? (
+        <div style={{
+          fontSize: 12,
+          color: "#dc2626",
+          background: "#fef2f2",
+          border: "1px solid #fecaca",
+          borderRadius: 10,
+          padding: "12px 16px",
+        }}>
+          ✗ {error}
+        </div>
+      ) : opportunities.length === 0 ? (
+        <div style={{
+          fontSize: 13,
+          color: "#78716c",
+          background: "#f9f9f8",
+          border: "1px solid #ede9e4",
+          borderRadius: 12,
+          padding: "28px 24px",
+          textAlign: "center",
+        }}>
+          <div style={{ fontWeight: 700, color: "#44403c", marginBottom: 4 }}>
+            No opportunities yet
+          </div>
+          Promote records into the <strong>Carrier Master</strong> first, then
+          opportunities are scored automatically.
+        </div>
+      ) : (
+        <div style={{
+          background: "#fff",
+          border: "1px solid #e7e5e4",
+          borderRadius: 14,
+          overflow: "hidden",
+        }}>
+          <div style={{
+            fontSize: 11,
+            color: "#78716c",
+            padding: "10px 14px",
+            borderBottom: "1px solid #f0efed",
+            background: "#fafaf9",
+          }}>
+            {opportunities.length} opportunit{opportunities.length === 1 ? "y" : "ies"} from {carrierCount} carrier{carrierCount === 1 ? "" : "s"}
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <thead>
+                <tr style={{ color: "#78716c", borderBottom: "1px solid #e7e5e4", background: "#fafaf9" }}>
+                  {["Company", "DOT", "Fleet", "Drivers", "Score", "Signals", "Recommended Play"].map((h) => (
+                    <th key={h} style={headerCellStyle}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {opportunities.map((o) => {
+                  const sc = scoreColor(o.score);
+                  return (
+                    <tr key={o.id} style={{ borderBottom: "1px solid #f5f5f4" }}>
+                      <td style={cellStyle}>
+                        <div style={{ fontWeight: 600 }}>{o.companyName}</div>
+                        {(o.city || o.state) && (
+                          <div style={{ fontSize: 10, color: "#a8a29e" }}>
+                            {[o.city, o.state].filter(Boolean).join(", ")}
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ ...cellStyle, whiteSpace: "nowrap" }}>{o.dotNumber ?? "—"}</td>
+                      <td style={cellStyle}>{o.fleetSize ?? "—"}</td>
+                      <td style={cellStyle}>{o.driverCount ?? "—"}</td>
+                      <td style={{ ...cellStyle, whiteSpace: "nowrap" }}>
+                        <span style={{
+                          display: "inline-block",
+                          minWidth: 30,
+                          textAlign: "center",
+                          fontSize: 12,
+                          fontWeight: 800,
+                          padding: "2px 8px",
+                          borderRadius: 20,
+                          color: sc.fg,
+                          background: sc.bg,
+                          border: `1px solid ${sc.bd}`,
+                        }}>
+                          {o.score}
+                        </span>
+                      </td>
+                      <td style={cellStyle}>
+                        <div style={{ display: "flex", gap: 4, flexWrap: "wrap", maxWidth: 280 }}>
+                          {o.signals.length === 0
+                            ? <span style={{ color: "#a8a29e" }}>—</span>
+                            : o.signals.map((s) => (
+                                <span key={s.id} title={`weight ${s.weight}`} style={{
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  padding: "2px 7px",
+                                  borderRadius: 20,
+                                  color: "#3730a3",
+                                  background: "#eef2ff",
+                                  border: "1px solid #c7d2fe",
+                                  whiteSpace: "nowrap",
+                                }}>
+                                  {s.label}
+                                </span>
+                              ))}
+                        </div>
+                      </td>
+                      <td style={{ ...cellStyle, fontSize: 11, color: "#44403c", maxWidth: 280 }}>
+                        {o.recommendedPlay}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
