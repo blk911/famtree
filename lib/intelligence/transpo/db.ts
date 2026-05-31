@@ -125,6 +125,16 @@ const DDL_STATEMENTS: string[] = [
     ADD COLUMN IF NOT EXISTS website_owner_operator_found boolean,
     ADD COLUMN IF NOT EXISTS website_quote_request_found boolean,
     ADD COLUMN IF NOT EXISTS website_last_fetched_at timestamptz`,
+  // State business-registry enrichment columns (added idempotently).
+  `ALTER TABLE transpo_carrier_verification
+    ADD COLUMN IF NOT EXISTS state_registry_provider text,
+    ADD COLUMN IF NOT EXISTS state_entity_name text,
+    ADD COLUMN IF NOT EXISTS state_entity_id text,
+    ADD COLUMN IF NOT EXISTS state_entity_url text,
+    ADD COLUMN IF NOT EXISTS entity_good_standing boolean,
+    ADD COLUMN IF NOT EXISTS entity_formation_date text,
+    ADD COLUMN IF NOT EXISTS entity_age_months integer,
+    ADD COLUMN IF NOT EXISTS state_name_match_confidence numeric`,
 ];
 
 // Memoized per serverless isolate: ensure DDL runs at most once per instance.

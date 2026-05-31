@@ -124,6 +124,18 @@ export default function TranspoMarketDashboardPage() {
       (v.websiteExtractedEmails?.length ?? 0) > 0,
   ).length;
 
+  // State registry stats
+  const newEntities = fVerifs.filter(
+    (v) => v.stateEntityFound === true && (v.entityAgeMonths ?? Infinity) <= 12,
+  ).length;
+  const goodStanding = fVerifs.filter((v) => v.entityGoodStanding === true).length;
+  const stateRegistryNotFound = fVerifs.filter((v) => v.stateEntityFound === false).length;
+  const entityCleanupOpps = fVerifs.filter(
+    (v) =>
+      (v.stateEntityFound === true && v.entityGoodStanding === false) ||
+      v.stateEntityFound === false,
+  ).length;
+
   // Signal distribution
   const signalDist = useMemo(() => {
     const counts = new Map<string, { label: string; count: number }>();
@@ -260,6 +272,10 @@ export default function TranspoMarketDashboardPage() {
             {card("Owner-operator signals", ownerOperatorSignals)}
             {card("Broken / parked sites", brokenOrParked)}
             {card("Sites with contact info", sitesWithContact)}
+            {card("New entities", newEntities)}
+            {card("Good standing", goodStanding)}
+            {card("State registry not found", stateRegistryNotFound)}
+            {card("Entity cleanup opportunities", entityCleanupOpps)}
             {card("Missing website", missingWebsite)}
             {card("Small fleets", smallFleets)}
             {card("Single-truck operators", singleTruck)}

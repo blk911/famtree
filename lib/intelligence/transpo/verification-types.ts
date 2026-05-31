@@ -84,6 +84,14 @@ export type TranspoCarrierVerification = {
   stateEntityFound?: boolean;
   entityStatus?: string;
   formationDate?: string;
+  stateRegistryProvider?: "colorado_sos" | "placeholder";
+  stateEntityName?: string;
+  stateEntityId?: string;
+  stateEntityUrl?: string;
+  entityGoodStanding?: boolean;
+  entityFormationDate?: string;
+  entityAgeMonths?: number;
+  stateNameMatchConfidence?: number;
 
   // Website
   websiteFound?: boolean;

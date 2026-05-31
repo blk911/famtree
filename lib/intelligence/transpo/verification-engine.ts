@@ -28,6 +28,20 @@ function isActiveEntity(status?: string): boolean {
   return s.includes("active") || s.includes("good standing");
 }
 
+function isInactiveEntity(status?: string): boolean {
+  const s = (status ?? "").trim().toLowerCase();
+  if (!s) return false;
+  return (
+    s.includes("delinquent") ||
+    s.includes("dissolved") ||
+    s.includes("withdrawn") ||
+    s.includes("revoked") ||
+    s.includes("expired") ||
+    s.includes("inactive") ||
+    s.includes("noncompliant")
+  );
+}
+
 /** Score a verification 0–100 from its collected signals. */
 export function calculateVerificationScore(v: TranspoCarrierVerification): number {
   let s = 0;
@@ -38,7 +52,9 @@ export function calculateVerificationScore(v: TranspoCarrierVerification): numbe
   if (v.websiteFound || (v.googleWebsite ?? "").trim()) s += 15;
   if ((v.googlePhone ?? "").trim()) s += 10;
   if (v.stateEntityFound) s += 15;
-  if (isActiveEntity(v.entityStatus)) s += 10;
+  if (v.entityGoodStanding || (v.entityGoodStanding === undefined && isActiveEntity(v.entityStatus))) s += 10;
+  if (v.stateEntityFound && (v.entityAgeMonths ?? Infinity) <= 12) s += 15;
+  if (v.stateEntityFound && isInactiveEntity(v.entityStatus)) s -= 10;
   if (v.facebookFound) s += 10;
   if (v.bbbFound) s += 10;
   if (v.addressType === "po_box") s -= 20;

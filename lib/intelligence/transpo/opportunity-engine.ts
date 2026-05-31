@@ -41,7 +41,12 @@ export type TranspoOpportunitySignalId =
   | "hiring_site_signal"
   | "owner_operator_site_signal"
   | "quote_request_present"
-  | "no_contact_signal";
+  | "no_contact_signal"
+  // State-registry-derived signals
+  | "new_state_entity"
+  | "state_registry_not_found"
+  | "state_entity_inactive"
+  | "strong_entity_match";
 
 export type TranspoOpportunitySignal = {
   id: TranspoOpportunitySignalId;
@@ -82,6 +87,10 @@ const SIGNAL_DEFS: Record<TranspoOpportunitySignalId, { label: string; weight: n
   owner_operator_site_signal: { label: "Owner-operator on site", weight: 20 },
   quote_request_present: { label: "Quote request on site", weight: -10 },
   no_contact_signal: { label: "No contact info on site", weight: 10 },
+  new_state_entity: { label: "New state entity", weight: 25 },
+  state_registry_not_found: { label: "State registry not found", weight: 10 },
+  state_entity_inactive: { label: "State entity inactive", weight: 20 },
+  strong_entity_match: { label: "Strong entity match", weight: -5 },
 };
 
 const SOCIAL_SOURCES: TranspoSource[] = ["linkedin", "facebook", "google_business"];
@@ -120,7 +129,18 @@ function recommendedPlayFor(ids: Set<TranspoOpportunitySignalId>): string {
   const single = ids.has("single_truck");
   const small = ids.has("small_fleet");
 
-  // Website-crawl plays take top priority — they reflect concrete, observed gaps.
+  // State-registry plays take top priority — formation/standing are concrete.
+  if (ids.has("new_state_entity")) {
+    return "New carrier launch package";
+  }
+  if (ids.has("state_entity_inactive")) {
+    return "Compliance/entity cleanup";
+  }
+  if (ids.has("state_registry_not_found")) {
+    return "Entity verification cleanup";
+  }
+
+  // Website-crawl plays — concrete, observed gaps.
   if (ids.has("parked_domain")) {
     return "Dead-domain replacement package";
   }
@@ -246,6 +266,16 @@ export function scoreCarrierOpportunity(
     if (verification.websiteFound && crawled && !hasContact) {
       matched.push("no_contact_signal");
     }
+
+    // State-registry signals.
+    if (verification.stateEntityFound === true && (verification.entityAgeMonths ?? Infinity) <= 12) {
+      matched.push("new_state_entity");
+    }
+    if (verification.stateEntityFound === false) matched.push("state_registry_not_found");
+    if (verification.stateEntityFound === true && verification.entityGoodStanding === false) {
+      matched.push("state_entity_inactive");
+    }
+    if ((verification.stateNameMatchConfidence ?? 0) >= 0.75) matched.push("strong_entity_match");
   }
 
   const signals: TranspoOpportunitySignal[] = matched.map((id) => ({

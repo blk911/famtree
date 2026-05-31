@@ -59,6 +59,20 @@ const FETCH_COLORS: Record<string, { fg: string; bg: string; bd: string }> = {
   not_attempted: { fg: "#78716c", bg: "#f5f5f4", bd: "#e7e5e4" },
 };
 
+function EntityBadge({ v }: { v: TranspoCarrierVerification }) {
+  if (v.stateEntityFound === true) {
+    if (v.entityGoodStanding === true) {
+      return <span style={{ color: "#166534", fontWeight: 700, whiteSpace: "nowrap" }}>Good Standing</span>;
+    }
+    if (v.entityGoodStanding === false) {
+      return <span style={{ color: "#b91c1c", fontWeight: 700, whiteSpace: "nowrap" }}>Inactive</span>;
+    }
+    return <span style={{ color: "#3730a3", fontWeight: 700 }}>Found</span>;
+  }
+  if (v.stateEntityFound === false) return <span style={{ color: "#a8a29e" }}>Not Found</span>;
+  return <span style={{ color: "#d6d3d1" }}>—</span>;
+}
+
 function FetchBadge({ status }: { status?: string }) {
   if (!status) return <span style={{ color: "#d6d3d1" }}>—</span>;
   const c = FETCH_COLORS[status] ?? FETCH_COLORS.not_attempted;
@@ -340,7 +354,7 @@ export default function TranspoVerificationPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
                 <tr style={{ color: "#78716c", borderBottom: "1px solid #e7e5e4", background: "#fafaf9" }}>
-                  {["Company", "DOT", "City", "State", "Score", "Status", "Google", "Rating", "Match", "Website", "Maps", "BBB", "Facebook", "Address Type", "Site"].map((h) => (
+                  {["Company", "DOT", "City", "State", "Score", "Status", "Google", "Rating", "Match", "Website", "Maps", "BBB", "Facebook", "Address Type", "Entity", "Site"].map((h) => (
                     <th key={h} style={hd}>{h}</th>
                   ))}
                 </tr>
@@ -389,11 +403,25 @@ export default function TranspoVerificationPage() {
                         <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.bbbFound} /></td>
                         <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.facebookFound} /></td>
                         <td style={{ ...cd, paddingBottom: 4, whiteSpace: "nowrap" }}>{v.addressType ?? "—"}</td>
+                        <td style={{ ...cd, paddingBottom: 4 }}><EntityBadge v={v} /></td>
                         <td style={{ ...cd, paddingBottom: 4, whiteSpace: "nowrap" }}><FetchBadge status={v.websiteFetchStatus} /></td>
                       </tr>
-                      {/* Second line: website crawl detail + notes span the full width. */}
+                      {/* Second line: state entity + website crawl detail + notes span the full width. */}
                       <tr style={{ borderBottom: "1px solid #f0efed" }}>
-                        <td colSpan={15} style={{ padding: "0 12px 9px", fontSize: 11, color: "#78716c", lineHeight: 1.6 }}>
+                        <td colSpan={16} style={{ padding: "0 12px 9px", fontSize: 11, color: "#78716c", lineHeight: 1.6 }}>
+                          {v.stateEntityFound === true && (
+                            <div style={{ marginBottom: 2 }}>
+                              <span style={{ fontWeight: 700, color: "#a8a29e", marginRight: 6 }}>Entity:</span>
+                              {v.stateEntityUrl ? (
+                                <ExtLink href={v.stateEntityUrl} label={v.stateEntityName || v.stateEntityId || "view"} />
+                              ) : (
+                                <span style={{ color: "#44403c" }}>{v.stateEntityName ?? "—"}</span>
+                              )}
+                              {v.entityFormationDate ? <span style={{ marginLeft: 8, color: "#a8a29e" }}>formed {v.entityFormationDate}</span> : null}
+                              {typeof v.entityAgeMonths === "number" ? <span style={{ marginLeft: 8, color: v.entityAgeMonths <= 12 ? "#b45309" : "#a8a29e" }}>{v.entityAgeMonths} mo old</span> : null}
+                              {typeof v.stateNameMatchConfidence === "number" ? <span style={{ marginLeft: 8, color: "#a8a29e" }}>{Math.round(v.stateNameMatchConfidence * 100)}% match</span> : null}
+                            </div>
+                          )}
                           {(v.websiteTitle || (v.websiteSignals ?? []).length > 0 || (v.websiteExtractedPhones ?? []).length > 0 || (v.websiteExtractedEmails ?? []).length > 0) && (
                             <div style={{ marginBottom: 2 }}>
                               <span style={{ fontWeight: 700, color: "#a8a29e", marginRight: 6 }}>Site:</span>

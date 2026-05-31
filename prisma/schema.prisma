@@ -1521,6 +1521,14 @@ model TranspoCarrierVerification {
   websiteOwnerOperatorFound Boolean? @map("website_owner_operator_found")
   websiteQuoteRequestFound Boolean? @map("website_quote_request_found")
   websiteLastFetchedAt DateTime? @map("website_last_fetched_at") @db.Timestamptz
+  stateRegistryProvider String? @map("state_registry_provider")
+  stateEntityName    String?  @map("state_entity_name")
+  stateEntityId      String?  @map("state_entity_id")
+  stateEntityUrl     String?  @map("state_entity_url")
+  entityGoodStanding Boolean? @map("entity_good_standing")
+  entityFormationDate String? @map("entity_formation_date")
+  entityAgeMonths    Int?     @map("entity_age_months")
+  stateNameMatchConfidence Decimal? @map("state_name_match_confidence") @db.Decimal
   bbbFound           Boolean? @map("bbb_found")
   bbbRating          String?  @map("bbb_rating")
   bbbComplaintCount  Int?     @map("bbb_complaint_count")

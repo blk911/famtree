@@ -44,6 +44,14 @@ interface DbVerificationRow {
   state_entity_found: boolean | null;
   entity_status: string | null;
   formation_date: string | null;
+  state_registry_provider: string | null;
+  state_entity_name: string | null;
+  state_entity_id: string | null;
+  state_entity_url: string | null;
+  entity_good_standing: boolean | null;
+  entity_formation_date: string | null;
+  entity_age_months: number | null;
+  state_name_match_confidence: number | string | null;
   website_found: boolean | null;
   website_url: string | null;
   website_fetch_status: string | null;
@@ -120,6 +128,15 @@ function rowToVerification(row: DbVerificationRow): TranspoCarrierVerification {
     stateEntityFound: row.state_entity_found ?? undefined,
     entityStatus: row.entity_status ?? undefined,
     formationDate: row.formation_date ?? undefined,
+    stateRegistryProvider: (row.state_registry_provider ?? undefined) as
+      | TranspoCarrierVerification["stateRegistryProvider"],
+    stateEntityName: row.state_entity_name ?? undefined,
+    stateEntityId: row.state_entity_id ?? undefined,
+    stateEntityUrl: row.state_entity_url ?? undefined,
+    entityGoodStanding: row.entity_good_standing ?? undefined,
+    entityFormationDate: row.entity_formation_date ?? undefined,
+    entityAgeMonths: row.entity_age_months ?? undefined,
+    stateNameMatchConfidence: optNum(row.state_name_match_confidence),
     websiteFound: row.website_found ?? undefined,
     websiteUrl: row.website_url ?? undefined,
     websiteFetchStatus: (row.website_fetch_status ?? undefined) as TranspoWebsiteFetchStatus | undefined,
@@ -171,6 +188,8 @@ export async function writeVerificationsPostgres(
           bbb_found, bbb_rating, bbb_complaint_count,
           facebook_found, facebook_url,
           state_entity_found, entity_status, formation_date,
+          state_registry_provider, state_entity_name, state_entity_id, state_entity_url,
+          entity_good_standing, entity_formation_date, entity_age_months, state_name_match_confidence,
           website_found, website_url,
           website_fetch_status, website_http_status, website_final_url,
           website_title, website_description, website_signals, website_pages_checked,
@@ -208,6 +227,14 @@ export async function writeVerificationsPostgres(
           ${v.stateEntityFound ?? null},
           ${v.entityStatus ?? null},
           ${v.formationDate ?? null},
+          ${v.stateRegistryProvider ?? null},
+          ${v.stateEntityName ?? null},
+          ${v.stateEntityId ?? null},
+          ${v.stateEntityUrl ?? null},
+          ${v.entityGoodStanding ?? null},
+          ${v.entityFormationDate ?? null},
+          ${v.entityAgeMonths ?? null},
+          ${v.stateNameMatchConfidence ?? null},
           ${v.websiteFound ?? null},
           ${v.websiteUrl ?? null},
           ${v.websiteFetchStatus ?? null},
@@ -257,6 +284,14 @@ export async function writeVerificationsPostgres(
           state_entity_found  = EXCLUDED.state_entity_found,
           entity_status       = EXCLUDED.entity_status,
           formation_date      = EXCLUDED.formation_date,
+          state_registry_provider     = EXCLUDED.state_registry_provider,
+          state_entity_name           = EXCLUDED.state_entity_name,
+          state_entity_id             = EXCLUDED.state_entity_id,
+          state_entity_url            = EXCLUDED.state_entity_url,
+          entity_good_standing        = EXCLUDED.entity_good_standing,
+          entity_formation_date       = EXCLUDED.entity_formation_date,
+          entity_age_months           = EXCLUDED.entity_age_months,
+          state_name_match_confidence = EXCLUDED.state_name_match_confidence,
           website_found       = EXCLUDED.website_found,
           website_url         = EXCLUDED.website_url,
           website_fetch_status        = EXCLUDED.website_fetch_status,
