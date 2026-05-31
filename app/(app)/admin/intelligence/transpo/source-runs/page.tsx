@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
-import type { TranspoSourceRun } from "@/lib/intelligence/transpo/types";
+import type { TranspoSourceRun, TranspoEvidence } from "@/lib/intelligence/transpo/types";
 
 type RunStatus = "Mock" | "Live" | "Imported" | "Unknown";
 
@@ -261,6 +261,7 @@ function FragmentRow({
   const [evidenceMsg, setEvidenceMsg] = useState("");
   const [evidenceError, setEvidenceError] = useState("");
   const [evidenceDone, setEvidenceDone] = useState(false);
+  const [evidencePreview, setEvidencePreview] = useState<TranspoEvidence[]>([]);
 
   function toggleDot(dot: string) {
     setSelectedDots((prev) => {
@@ -330,6 +331,7 @@ function FragmentRow({
     setEvidenceMsg("");
     setEvidenceError("");
     setEvidenceDone(false);
+    setEvidencePreview([]);
     try {
       const res = await fetch("/api/admin/intelligence/transpo/evidence", {
         method: "POST",
@@ -344,6 +346,8 @@ function FragmentRow({
         created?: number;
         skipped?: number;
         evidenceCount?: number;
+        evidence?: TranspoEvidence[];
+        note?: string;
         error?: string;
         detail?: string;
         debug?: {
@@ -354,10 +358,10 @@ function FragmentRow({
         };
       };
       if (data.ok) {
-        setEvidenceMsg(
-          `Created ${data.created ?? 0} evidence item(s), skipped ${data.skipped ?? 0}. Lake now holds ${data.evidenceCount ?? 0}.`,
-        );
+        const base = `Created ${data.created ?? 0} evidence item(s), skipped ${data.skipped ?? 0}. Lake now holds ${data.evidenceCount ?? 0}.`;
+        setEvidenceMsg(data.note ? `${base} ${data.note}` : base);
         setEvidenceDone(true);
+        if (Array.isArray(data.evidence)) setEvidencePreview(data.evidence);
       } else {
         const hints: string[] = [];
         if (typeof data.debug?.availableRunCount === "number") {
@@ -521,6 +525,43 @@ function FragmentRow({
                 <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 700 }}>✗ {evidenceError}</span>
               )}
             </div>
+
+            {evidencePreview.length > 0 && (
+              <div style={{
+                marginBottom: 14,
+                border: "1px solid #c7d2fe",
+                borderRadius: 10,
+                background: "#f5f7ff",
+                overflow: "hidden",
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "#3730a3", padding: "8px 12px", borderBottom: "1px solid #e0e7ff" }}>
+                  Created Evidence Preview — showing {Math.min(evidencePreview.length, 10)} of {evidencePreview.length}
+                </div>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                    <thead>
+                      <tr style={{ textAlign: "left", color: "#6366f1", borderBottom: "1px solid #e0e7ff" }}>
+                        {["Carrier Key", "Type", "Value", "Confidence"].map((h) => (
+                          <th key={h} style={{ padding: "6px 12px", fontWeight: 700, whiteSpace: "nowrap" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {evidencePreview.slice(0, 10).map((ev) => (
+                        <tr key={ev.id} style={{ borderBottom: "1px solid #eef2ff" }}>
+                          <td style={{ padding: "6px 12px" }}><code style={{ fontSize: 10 }}>{ev.carrierKey}</code></td>
+                          <td style={{ padding: "6px 12px", whiteSpace: "nowrap" }}>{ev.evidenceType}</td>
+                          <td style={{ padding: "6px 12px" }}>{ev.value}</td>
+                          <td style={{ padding: "6px 12px", whiteSpace: "nowrap" }}>
+                            {typeof ev.confidence === "number" ? ev.confidence.toFixed(2) : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {sampleRecords.length === 0 ? (
               <p style={{ fontSize: 11, color: "#a8a29e", margin: 0 }}>No records in this run.</p>

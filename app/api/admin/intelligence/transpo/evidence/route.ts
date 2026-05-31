@@ -22,6 +22,7 @@ import {
   buildEvidenceFromSourceRun,
   getEvidenceStorePath,
 } from "@/lib/intelligence/transpo/evidence-store";
+import { getTranspoBackendInfo } from "@/lib/intelligence/transpo/db";
 import type { TranspoSourceRun } from "@/lib/intelligence/transpo/types";
 
 function toTime(value: unknown): number {
@@ -39,10 +40,18 @@ function isUsableRun(run: unknown, runId: string): run is TranspoSourceRun {
   );
 }
 
+async function storageInfo() {
+  const info = await getTranspoBackendInfo();
+  const path = info.backend === "postgres" ? "postgres:transpo_evidence" : getEvidenceStorePath();
+  // JSON on Vercel lives in per-instance /tmp → not durable across invocations.
+  const ephemeral = info.backend === "json" && Boolean(process.env.VERCEL);
+  return { backend: info.backend, durable: info.durable, path, ephemeral };
+}
+
 export async function GET() {
   const evidence = await readTranspoEvidence();
   evidence.sort((a, b) => toTime(b.observedAt) - toTime(a.observedAt));
-  return NextResponse.json({ ok: true, evidence });
+  return NextResponse.json({ ok: true, evidence, storage: await storageInfo() });
 }
 
 export async function POST(req: NextRequest) {
@@ -141,12 +150,26 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // When nothing new was written, say exactly why (duplicates) instead of a
+    // silent "0 created".
+    const note =
+      result.created === 0
+        ? `All ${items.length} built evidence item(s) already existed (duplicates skipped).`
+        : undefined;
+
     return NextResponse.json({
       ok: true,
       created: result.created,
       skipped: result.skipped,
       evidenceCount: result.evidenceCount,
+      allEvidenceCount: result.evidenceCount,
       runId,
+      // The evidence built from THIS run — returned so the Source Runs page can
+      // show an immediate inline preview even when the lake read lands on a
+      // different (empty) /tmp instance on Vercel.
+      evidence: items,
+      ...(note ? { note } : {}),
+      storage: await storageInfo(),
       debug,
     });
   } catch (e) {

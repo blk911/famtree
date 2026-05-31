@@ -18,8 +18,16 @@ const TYPE_COLORS: Record<string, { fg: string; bg: string; bd: string }> = {
   website: { fg: "#1e40af", bg: "#dbeafe", bd: "#bfdbfe" },
 };
 
+type EvidenceStorage = {
+  backend: "postgres" | "json";
+  durable?: boolean;
+  path?: string;
+  ephemeral?: boolean;
+};
+
 export default function TranspoEvidencePage() {
   const [evidence, setEvidence] = useState<TranspoEvidence[]>([]);
+  const [storage, setStorage] = useState<EvidenceStorage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -33,9 +41,11 @@ export default function TranspoEvidencePage() {
         const data = (await res.json()) as {
           ok: boolean;
           evidence?: TranspoEvidence[];
+          storage?: EvidenceStorage;
           error?: string;
         };
         if (!active) return;
+        if (data.storage) setStorage(data.storage);
         if (data.ok && Array.isArray(data.evidence)) setEvidence(data.evidence);
         else setError(data.error ?? "Failed to load evidence");
       } catch (e) {
@@ -48,6 +58,8 @@ export default function TranspoEvidencePage() {
       active = false;
     };
   }, []);
+
+  const showEphemeralWarning = storage ? storage.backend !== "postgres" : false;
 
   const headerCellStyle: React.CSSProperties = {
     padding: "9px 12px",
@@ -73,7 +85,33 @@ export default function TranspoEvidencePage() {
         <p style={{ fontSize: 12, color: "#78716c", margin: 0, maxWidth: 640, lineHeight: 1.55 }}>
           Raw proof collected from source runs before carrier resolution.
         </p>
+        {storage && (
+          <p style={{ fontSize: 11, color: "#a8a29e", margin: "6px 0 0" }}>
+            Storage: <strong style={{ color: "#78716c" }}>
+              {storage.backend === "postgres" ? "Postgres (durable)" : "runtime JSON"}
+            </strong>
+            {storage.ephemeral ? " · ephemeral (per-instance /tmp)" : ""}
+            {storage.path ? ` · ${storage.path}` : ""}
+          </p>
+        )}
       </div>
+
+      {showEphemeralWarning && (
+        <div style={{
+          fontSize: 12,
+          color: "#9a3412",
+          background: "#fff7ed",
+          border: "1px solid #fed7aa",
+          borderRadius: 10,
+          padding: "10px 14px",
+          marginBottom: 16,
+          lineHeight: 1.5,
+        }}>
+          ⚠ Evidence storage is runtime-local on this deployment. Rows may not appear
+          across server invocations until durable storage is enabled. Use the
+          “Created Evidence Preview” on the Source Runs page for immediate proof.
+        </div>
+      )}
 
       {loading ? (
         <p style={{ fontSize: 13, color: "#78716c" }}>Loading evidence…</p>
