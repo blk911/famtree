@@ -183,6 +183,56 @@ function FragmentRow({
   onToggle: () => void;
 }) {
   const sampleRecords = (run.records ?? []).slice(0, 10);
+  const [promoting, setPromoting] = useState(false);
+  const [promoteMsg, setPromoteMsg] = useState("");
+  const [promoteError, setPromoteError] = useState("");
+  const [selectedDots, setSelectedDots] = useState<Set<string>>(new Set());
+
+  function toggleDot(dot: string) {
+    setSelectedDots((prev) => {
+      const next = new Set(prev);
+      if (next.has(dot)) next.delete(dot);
+      else next.add(dot);
+      return next;
+    });
+  }
+
+  async function promote(mode: "all" | "selected") {
+    setPromoting(true);
+    setPromoteMsg("");
+    setPromoteError("");
+    try {
+      const res = await fetch("/api/admin/intelligence/transpo/carriers/promote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          runId: run.id,
+          mode,
+          ...(mode === "selected" ? { dotNumbers: Array.from(selectedDots) } : {}),
+        }),
+      });
+      const data = (await res.json()) as {
+        ok: boolean;
+        created?: number;
+        updated?: number;
+        skipped?: number;
+        total?: number;
+        carrierCount?: number;
+        error?: string;
+      };
+      if (data.ok) {
+        setPromoteMsg(
+          `Promoted ${data.total ?? 0} record(s): ${data.created ?? 0} created, ${data.updated ?? 0} updated, ${data.skipped ?? 0} skipped. Carrier master now holds ${data.carrierCount ?? 0}.`,
+        );
+      } else {
+        setPromoteError(data.error ?? "Promotion failed");
+      }
+    } catch (e) {
+      setPromoteError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setPromoting(false);
+    }
+  }
 
   return (
     <>
@@ -243,16 +293,61 @@ function FragmentRow({
               )}
             </div>
 
+            {/* Promotion controls */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); promote("all"); }}
+                disabled={promoting || (run.records ?? []).length === 0}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 800,
+                  padding: "6px 14px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: promoting || (run.records ?? []).length === 0 ? "#a8a29e" : "#1c1917",
+                  color: "#fff",
+                  cursor: promoting || (run.records ?? []).length === 0 ? "not-allowed" : "pointer",
+                }}
+              >
+                {promoting ? "Promoting…" : "Promote All Records"}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); promote("selected"); }}
+                disabled={promoting || selectedDots.size === 0}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "6px 14px",
+                  borderRadius: 8,
+                  border: "1px solid #e7e5e4",
+                  background: "#fff",
+                  color: selectedDots.size === 0 ? "#a8a29e" : "#1c1917",
+                  cursor: promoting || selectedDots.size === 0 ? "not-allowed" : "pointer",
+                }}
+              >
+                Promote Selected ({selectedDots.size})
+              </button>
+              {promoteMsg && (
+                <span style={{ fontSize: 11, color: "#15803d", fontWeight: 700 }}>✓ {promoteMsg}</span>
+              )}
+              {promoteError && (
+                <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 700 }}>✗ {promoteError}</span>
+              )}
+            </div>
+
             {sampleRecords.length === 0 ? (
               <p style={{ fontSize: 11, color: "#a8a29e", margin: 0 }}>No records in this run.</p>
             ) : (
               <div style={{ overflowX: "auto" }}>
                 <div style={{ fontSize: 11, color: "#78716c", marginBottom: 6 }}>
-                  Sample records (showing {sampleRecords.length} of {run.recordCount})
+                  Sample records (showing {sampleRecords.length} of {run.recordCount}) — check rows to promote a selection
                 </div>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
                   <thead>
                     <tr style={{ textAlign: "left", color: "#a8a29e", borderBottom: "1px solid #e7e5e4" }}>
+                      <th style={{ padding: "6px 8px", width: 28 }} aria-label="Select" />
                       {["Company", "DOT", "MC", "City", "State", "Fleet", "Drivers", "Status"].map((h) => (
                         <th key={h} style={{ padding: "6px 8px", fontWeight: 700, whiteSpace: "nowrap" }}>{h}</th>
                       ))}
@@ -261,6 +356,16 @@ function FragmentRow({
                   <tbody>
                     {sampleRecords.map((r, i) => (
                       <tr key={`${r.dotNumber ?? r.companyName}-${i}`} style={{ borderBottom: "1px solid #f0efed", color: "#44403c" }}>
+                        <td style={{ padding: "6px 8px", textAlign: "center" }}>
+                          <input
+                            type="checkbox"
+                            disabled={!r.dotNumber}
+                            checked={!!r.dotNumber && selectedDots.has(r.dotNumber)}
+                            onChange={(e) => { e.stopPropagation(); if (r.dotNumber) toggleDot(r.dotNumber); }}
+                            onClick={(e) => e.stopPropagation()}
+                            title={r.dotNumber ? "Select for promotion" : "No DOT number — promote via Promote All"}
+                          />
+                        </td>
                         <td style={{ padding: "6px 8px" }}>{r.companyName}</td>
                         <td style={{ padding: "6px 8px", whiteSpace: "nowrap" }}>{r.dotNumber ?? "—"}</td>
                         <td style={{ padding: "6px 8px", whiteSpace: "nowrap" }}>{r.mcNumber ?? "—"}</td>
