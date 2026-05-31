@@ -135,6 +135,17 @@ const DDL_STATEMENTS: string[] = [
     ADD COLUMN IF NOT EXISTS entity_formation_date text,
     ADD COLUMN IF NOT EXISTS entity_age_months integer,
     ADD COLUMN IF NOT EXISTS state_name_match_confidence numeric`,
+  // Human review layer — one review row per carrier.
+  `CREATE TABLE IF NOT EXISTS transpo_carrier_reviews (
+    carrier_id text PRIMARY KEY,
+    review_status text,
+    review_notes text,
+    reviewed_by text,
+    reviewed_at timestamptz,
+    approved_at timestamptz,
+    rejected_at timestamptz,
+    updated_at timestamptz DEFAULT now()
+  )`,
 ];
 
 // Memoized per serverless isolate: ensure DDL runs at most once per instance.

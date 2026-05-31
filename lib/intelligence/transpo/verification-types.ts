@@ -19,6 +19,25 @@ export type TranspoVerificationStatus =
   | "placeholder"
   | "error";
 
+// Human review layer (after opportunity analysis).
+export type TranspoReviewStatus =
+  | "unreviewed"
+  | "approved"
+  | "rejected"
+  | "needs_verification"
+  | "watchlist";
+
+export type TranspoCarrierReview = {
+  carrierId: string;
+  reviewStatus: TranspoReviewStatus;
+  reviewNotes?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
+  updatedAt: string;
+};
+
 export type TranspoAddressType =
   | "industrial_yard"
   | "warehouse"

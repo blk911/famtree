@@ -10,12 +10,17 @@ import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import type { TranspoCarrierTarget } from "@/lib/intelligence/transpo/types";
 import type { TranspoOpportunityRecord } from "@/lib/intelligence/transpo/opportunity-engine";
-import type { TranspoCarrierVerification } from "@/lib/intelligence/transpo/verification-types";
+import type {
+  TranspoCarrierVerification,
+  TranspoCarrierReview,
+  TranspoReviewStatus,
+} from "@/lib/intelligence/transpo/verification-types";
 
 export default function TranspoMarketDashboardPage() {
   const [carriers, setCarriers] = useState<TranspoCarrierTarget[]>([]);
   const [opportunities, setOpportunities] = useState<TranspoOpportunityRecord[]>([]);
   const [verifications, setVerifications] = useState<TranspoCarrierVerification[]>([]);
+  const [reviews, setReviews] = useState<TranspoCarrierReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -26,14 +31,16 @@ export default function TranspoMarketDashboardPage() {
     let active = true;
     (async () => {
       try {
-        const [cRes, oRes, vRes] = await Promise.all([
+        const [cRes, oRes, vRes, rRes] = await Promise.all([
           fetch("/api/admin/intelligence/transpo/carriers", { cache: "no-store" }),
           fetch("/api/admin/intelligence/transpo/opportunities", { cache: "no-store" }),
           fetch("/api/admin/intelligence/transpo/verification", { cache: "no-store" }),
+          fetch("/api/admin/intelligence/transpo/reviews", { cache: "no-store" }),
         ]);
         const c = (await cRes.json()) as { ok: boolean; carriers?: TranspoCarrierTarget[]; error?: string };
         const o = (await oRes.json()) as { ok: boolean; opportunities?: TranspoOpportunityRecord[] };
         const v = (await vRes.json()) as { ok: boolean; verifications?: TranspoCarrierVerification[] };
+        const r = (await rRes.json()) as { ok: boolean; reviews?: TranspoCarrierReview[] };
         if (!active) return;
         if (!c.ok) {
           setError(c.error ?? "Failed to load carriers");
@@ -41,6 +48,7 @@ export default function TranspoMarketDashboardPage() {
           setCarriers(c.carriers ?? []);
           setOpportunities(o.opportunities ?? []);
           setVerifications(v.verifications ?? []);
+          setReviews(r.reviews ?? []);
         }
       } catch (e) {
         if (active) setError(e instanceof Error ? e.message : String(e));
@@ -135,6 +143,28 @@ export default function TranspoMarketDashboardPage() {
       (v.stateEntityFound === true && v.entityGoodStanding === false) ||
       v.stateEntityFound === false,
   ).length;
+
+  // Review stats — count reviews whose carrier is in the filtered scope.
+  const reviewCounts = useMemo(() => {
+    const inScope = new Set(fCarriers.map((c) => c.id));
+    const byStatus = new Map<TranspoReviewStatus, number>();
+    let reviewedTotal = 0;
+    for (const r of reviews) {
+      if (!inScope.has(r.carrierId)) continue;
+      reviewedTotal++;
+      byStatus.set(r.reviewStatus, (byStatus.get(r.reviewStatus) ?? 0) + 1);
+    }
+    const get = (s: TranspoReviewStatus) => byStatus.get(s) ?? 0;
+    // Unreviewed = carriers in scope with no (or "unreviewed") review row.
+    const unreviewed = inScope.size - (reviewedTotal - get("unreviewed"));
+    return {
+      approved: get("approved"),
+      needsVerification: get("needs_verification"),
+      watchlist: get("watchlist"),
+      rejected: get("rejected"),
+      unreviewed: Math.max(0, unreviewed),
+    };
+  }, [reviews, fCarriers]);
 
   // Signal distribution
   const signalDist = useMemo(() => {
@@ -280,6 +310,16 @@ export default function TranspoMarketDashboardPage() {
             {card("Small fleets", smallFleets)}
             {card("Single-truck operators", singleTruck)}
             {card("Avg opportunity score", avgOppScore)}
+          </div>
+
+          {/* Review stats */}
+          <h2 style={{ ...sectionTitle, marginTop: 4 }}>Human Review</h2>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
+            {card("Approved", reviewCounts.approved)}
+            {card("Needs verification", reviewCounts.needsVerification)}
+            {card("Watchlist", reviewCounts.watchlist)}
+            {card("Rejected", reviewCounts.rejected)}
+            {card("Unreviewed", reviewCounts.unreviewed)}
           </div>
 
           {/* Top opportunities */}

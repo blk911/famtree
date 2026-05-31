@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readCarrierMaster, carrierIdentityKey } from "@/lib/intelligence/transpo/carrier-master-store";
 import { readCarrierVerifications } from "@/lib/intelligence/transpo/verification-store";
 import { readTranspoEvidence } from "@/lib/intelligence/transpo/evidence-store";
+import { getCarrierReview } from "@/lib/intelligence/transpo/review-store";
 import { buildOpportunities } from "@/lib/intelligence/transpo/opportunity-engine";
 import type { TranspoCarrierTarget } from "@/lib/intelligence/transpo/types";
 import type { TranspoCarrierVerification } from "@/lib/intelligence/transpo/verification-types";
@@ -95,6 +96,7 @@ export async function GET(
 
     const sourceLinks = buildSourceLinks(carrier, verification);
     const notes = verification?.notes ?? [];
+    const review = (await getCarrierReview(carrier.id)) ?? null;
 
     return NextResponse.json({
       ok: true,
@@ -102,6 +104,7 @@ export async function GET(
       verification: verification ?? null,
       evidence: carrierEvidence,
       opportunity,
+      review,
       sourceLinks,
       notes,
     });

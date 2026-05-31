@@ -7,7 +7,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { TranspoCarrierTarget, TranspoEvidence } from "@/lib/intelligence/transpo/types";
-import type { TranspoCarrierVerification } from "@/lib/intelligence/transpo/verification-types";
+import type {
+  TranspoCarrierVerification,
+  TranspoCarrierReview,
+  TranspoReviewStatus,
+} from "@/lib/intelligence/transpo/verification-types";
 import type { TranspoOpportunityRecord } from "@/lib/intelligence/transpo/opportunity-engine";
 
 type SourceLink = { label: string; url: string };
@@ -18,6 +22,7 @@ type DetailResponse = {
   verification?: TranspoCarrierVerification | null;
   evidence?: TranspoEvidence[];
   opportunity?: TranspoOpportunityRecord | null;
+  review?: TranspoCarrierReview | null;
   sourceLinks?: SourceLink[];
   notes?: string[];
   error?: string;
@@ -29,9 +34,31 @@ type Props = {
   carrierId: string | null;
   open: boolean;
   onClose: () => void;
+  /** Called after a review is saved, so the parent list can refresh. */
+  onReviewed?: (carrierId: string, status: TranspoReviewStatus) => void;
 };
 
 const NA = "Not available";
+
+export const REVIEW_STATUS_META: Record<TranspoReviewStatus, { label: string; fg: string; bg: string; bd: string }> = {
+  unreviewed: { label: "Unreviewed", fg: "#57534e", bg: "#f5f5f4", bd: "#e7e5e4" },
+  approved: { label: "Approved", fg: "#166534", bg: "#dcfce7", bd: "#bbf7d0" },
+  needs_verification: { label: "Needs Verification", fg: "#92400e", bg: "#fef3c7", bd: "#fde68a" },
+  watchlist: { label: "Watchlist", fg: "#1e40af", bg: "#dbeafe", bd: "#bfdbfe" },
+  rejected: { label: "Rejected", fg: "#991b1b", bg: "#fef2f2", bd: "#fecaca" },
+};
+
+export function ReviewStatusBadge({ status }: { status?: TranspoReviewStatus }) {
+  const meta = REVIEW_STATUS_META[status ?? "unreviewed"];
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+      color: meta.fg, background: meta.bg, border: `1px solid ${meta.bd}`, whiteSpace: "nowrap",
+    }}>
+      {meta.label}
+    </span>
+  );
+}
 
 function scoreColor(score: number): { fg: string; bg: string; bd: string } {
   if (score >= 60) return { fg: "#166534", bg: "#dcfce7", bd: "#bbf7d0" };
@@ -96,10 +123,15 @@ function Chips({ items, tone = "indigo" }: { items: string[]; tone?: "indigo" | 
   );
 }
 
-export function CarrierOpportunityDrawer({ carrierId, open, onClose }: Props) {
+export function CarrierOpportunityDrawer({ carrierId, open, onClose, onReviewed }: Props) {
   const [data, setData] = useState<DetailResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [reviewStatus, setReviewStatus] = useState<TranspoReviewStatus>("unreviewed");
+  const [reviewNotes, setReviewNotes] = useState("");
+  const [savingReview, setSavingReview] = useState(false);
+  const [reviewMsg, setReviewMsg] = useState("");
+  const [reviewErr, setReviewErr] = useState("");
 
   // Escape closes.
   useEffect(() => {
@@ -121,8 +153,13 @@ export function CarrierOpportunityDrawer({ carrierId, open, onClose }: Props) {
         { cache: "no-store" },
       );
       const json = (await res.json()) as DetailResponse;
-      if (json.ok) setData(json);
-      else setError(json.error ?? json.detail ?? "Failed to load carrier detail");
+      if (json.ok) {
+        setData(json);
+        setReviewStatus(json.review?.reviewStatus ?? "unreviewed");
+        setReviewNotes(json.review?.reviewNotes ?? "");
+      } else {
+        setError(json.error ?? json.detail ?? "Failed to load carrier detail");
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -133,6 +170,38 @@ export function CarrierOpportunityDrawer({ carrierId, open, onClose }: Props) {
   useEffect(() => {
     if (open && carrierId) void load(carrierId);
   }, [open, carrierId, load]);
+
+  const submitReview = useCallback(
+    async (status: TranspoReviewStatus) => {
+      const id = data?.carrier?.id;
+      if (!id) return;
+      setSavingReview(true);
+      setReviewMsg("");
+      setReviewErr("");
+      try {
+        const res = await fetch("/api/admin/intelligence/transpo/reviews", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ carrierId: id, reviewStatus: status, reviewNotes }),
+        });
+        const json = (await res.json()) as { ok: boolean; review?: TranspoCarrierReview; error?: string };
+        if (json.ok && json.review) {
+          setReviewStatus(json.review.reviewStatus);
+          setData((prev) => (prev ? { ...prev, review: json.review } : prev));
+          setReviewMsg(`Marked ${REVIEW_STATUS_META[json.review.reviewStatus].label}.`);
+          onReviewed?.(id, json.review.reviewStatus);
+        } else {
+          setReviewErr(json.error ?? "Failed to save review");
+        }
+      } catch (e) {
+        setReviewErr(e instanceof Error ? e.message : String(e));
+      } finally {
+        setSavingReview(false);
+      }
+    },
+    [data?.carrier?.id, reviewNotes, onReviewed],
+  );
 
   if (!open) return null;
 
@@ -213,6 +282,49 @@ export function CarrierOpportunityDrawer({ carrierId, open, onClose }: Props) {
           <p style={{ fontSize: 13, color: "#78716c", padding: "18px" }}>No carrier data.</p>
         ) : (
           <div>
+            {/* Review action bar */}
+            <Section title="Review">
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                <span style={{ fontSize: 11, color: "#a8a29e", fontWeight: 600 }}>Current:</span>
+                <ReviewStatusBadge status={reviewStatus} />
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                {([
+                  { status: "approved" as const, label: "Approve Target", fg: "#166534", bd: "#bbf7d0", bg: "#dcfce7" },
+                  { status: "needs_verification" as const, label: "Needs More Verification", fg: "#92400e", bd: "#fde68a", bg: "#fffbeb" },
+                  { status: "watchlist" as const, label: "Watchlist", fg: "#1e40af", bd: "#bfdbfe", bg: "#eff6ff" },
+                  { status: "rejected" as const, label: "Reject", fg: "#991b1b", bd: "#fecaca", bg: "#fef2f2" },
+                ]).map((b) => (
+                  <button
+                    key={b.status}
+                    type="button"
+                    disabled={savingReview}
+                    onClick={() => submitReview(b.status)}
+                    style={{
+                      fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 8,
+                      border: `1px solid ${b.bd}`, background: reviewStatus === b.status ? b.bg : "#fff",
+                      color: b.fg, cursor: savingReview ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                value={reviewNotes}
+                onChange={(e) => setReviewNotes(e.target.value)}
+                placeholder="Review notes"
+                rows={2}
+                style={{
+                  width: "100%", fontSize: 12, padding: "8px 10px", borderRadius: 8,
+                  border: "1px solid #e7e5e4", color: "#1c1917", resize: "vertical", boxSizing: "border-box",
+                }}
+              />
+              {savingReview && <div style={{ fontSize: 11, color: "#78716c", marginTop: 4 }}>Saving…</div>}
+              {reviewMsg && <div style={{ fontSize: 11, color: "#166534", fontWeight: 700, marginTop: 4 }}>✓ {reviewMsg}</div>}
+              {reviewErr && <div style={{ fontSize: 11, color: "#dc2626", fontWeight: 700, marginTop: 4 }}>✗ {reviewErr}</div>}
+            </Section>
+
             {/* B. Identity / FMCSA */}
             <Section title="Identity / FMCSA">
               <Field label="Authority">{fmt(carrier.authorityStatus)}</Field>

@@ -1550,3 +1550,16 @@ model TranspoCarrierVerification {
   @@unique([carrierId], map: "transpo_carrier_verification_carrier")
   @@map("transpo_carrier_verification")
 }
+
+model TranspoCarrierReview {
+  carrierId    String    @id @map("carrier_id")
+  reviewStatus String?   @map("review_status")
+  reviewNotes  String?   @map("review_notes")
+  reviewedBy   String?   @map("reviewed_by")
+  reviewedAt   DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  approvedAt   DateTime? @map("approved_at") @db.Timestamptz(6)
+  rejectedAt   DateTime? @map("rejected_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("transpo_carrier_reviews")
+}
