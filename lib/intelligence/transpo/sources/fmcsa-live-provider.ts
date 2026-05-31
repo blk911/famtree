@@ -46,6 +46,7 @@ const FIELD_CANDIDATES = {
 // an unfiltered sample.
 const STATE_FILTER_COLUMN = "phy_state";
 const CITY_FILTER_COLUMN = "phy_city";
+const ORDER_COLUMN = "dot_number";
 
 type SocrataRow = Record<string, unknown>;
 
@@ -144,6 +145,10 @@ export function buildSocrataUrl(input: BuildUrlInput): string {
       const firstTerm = input.keyword.split(",")[0]?.trim();
       if (firstTerm) params.set("$q", firstTerm);
     }
+    // Deterministic ordering on the canonical DOT column (confirmed present on
+    // this dataset). Applied only to the filtered request; if rejected, the
+    // unfiltered fallback below omits $order entirely for maximum safety.
+    params.set("$order", `${ORDER_COLUMN} ASC`);
   }
 
   return `${ENDPOINT}?${params.toString()}`;
