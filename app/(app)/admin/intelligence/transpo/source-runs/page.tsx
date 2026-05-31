@@ -484,6 +484,11 @@ function FragmentRow({
                 type="button"
                 onClick={(e) => { e.stopPropagation(); createEvidence(); }}
                 disabled={evidenceBusy || (run.records ?? []).length === 0}
+                title={
+                  (run.records ?? []).length === 0
+                    ? "This run has no records (empty/manual run). Run an FMCSA pull to create a run with records, then create evidence from that run."
+                    : "Build evidence items from this run's records into the Evidence Lake"
+                }
                 style={{
                   fontSize: 11,
                   fontWeight: 700,

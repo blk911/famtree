@@ -401,33 +401,47 @@ export default function TranspoSourceIngestPage() {
             {isFmcsa && error && (
               <span style={{ fontSize: 11, color: "#dc2626" }}>✗ {error}</span>
             )}
-            <button
-              type="button"
-              onClick={handleCreateRun}
-              disabled={runState === "saving" || !market.trim()}
-              style={{
-                fontSize: 12,
-                fontWeight: 800,
-                padding: "9px 20px",
-                borderRadius: 9,
-                border: "none",
-                background: runState === "saving" ? "#a8a29e" : "#1c1917",
-                color: "#fff",
-                cursor: runState === "saving" ? "not-allowed" : "pointer",
-                letterSpacing: "0.02em",
-              }}
-            >
-              {runState === "saving" ? "Saving…" : "Create Source Run"}
-            </button>
+            {/* The FMCSA pull persists its own source run (with records), so the
+                manual "Create Source Run" action — which only writes an empty
+                0-record placeholder — is hidden for FMCSA to avoid cluttering
+                Source Runs with empty rows that can't produce evidence. */}
+            {!isFmcsa && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleCreateRun}
+                  disabled={runState === "saving" || !market.trim()}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    padding: "9px 20px",
+                    borderRadius: 9,
+                    border: "none",
+                    background: runState === "saving" ? "#a8a29e" : "#1c1917",
+                    color: "#fff",
+                    cursor: runState === "saving" ? "not-allowed" : "pointer",
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {runState === "saving" ? "Saving…" : "Create Source Run"}
+                </button>
 
-            {runState === "saved" && lastRunId && (
-              <span style={{ fontSize: 11, color: "#16a34a", fontWeight: 700 }}>
-                ✓ Run {lastRunId.slice(-8)} saved
-              </span>
+                {runState === "saved" && lastRunId && (
+                  <span style={{ fontSize: 11, color: "#16a34a", fontWeight: 700 }}>
+                    ✓ Run {lastRunId.slice(-8)} saved
+                  </span>
+                )}
+                {runState === "error" && (
+                  <span style={{ fontSize: 11, color: "#dc2626" }}>
+                    ✗ {errorMsg}
+                  </span>
+                )}
+              </>
             )}
-            {runState === "error" && (
-              <span style={{ fontSize: 11, color: "#dc2626" }}>
-                ✗ {errorMsg}
+            {isFmcsa && (
+              <span style={{ fontSize: 11, color: "#a8a29e" }}>
+                The test pull saves its own source run automatically — open{" "}
+                <strong style={{ color: "#78716c" }}>Source Runs</strong> to create evidence.
               </span>
             )}
           </div>
