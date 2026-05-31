@@ -665,6 +665,16 @@ export async function countProspectsPostgres(): Promise<number> {
   return Number(result[0]?.count ?? 0);
 }
 
+// ─── Clear all (testing / fresh-slate) ───────────────────────────────────────
+
+/** Deletes every row from studio_prospects. Returns the number of rows removed.
+ *  DESTRUCTIVE — admin only. */
+export async function clearAllProspectsPostgres(): Promise<number> {
+  const count = await countProspectsPostgres();
+  await prisma.$executeRaw`DELETE FROM studio_prospects`;
+  return count;
+}
+
 // ─── Table health check (used by auto-detection) ─────────────────────────────
 
 export async function checkPostgresTableExists(): Promise<boolean> {

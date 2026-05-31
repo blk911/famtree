@@ -374,7 +374,21 @@ export default function ProspectsPage() {
   const [relationshipDropdownOpen, setRelationshipDropdownOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [campaignOpen, setCampaignOpen] = useState(false);
+  const [refreshNonce, setRefreshNonce] = useState(0);
   const pageSize = 100;
+
+  // Fresh Slate (in CreatorIntelligenceNav) broadcasts this event after wiping
+  // the store. Re-fetch so the table, metric cards, and matching/shown counts
+  // reflect the now-empty store instead of stale in-memory rows.
+  useEffect(() => {
+    function onRefresh() {
+      setExpandedId(null);
+      setOffset(0);
+      setRefreshNonce((n) => n + 1);
+    }
+    window.addEventListener("salon-prospects:refresh", onRefresh);
+    return () => window.removeEventListener("salon-prospects:refresh", onRefresh);
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -409,7 +423,7 @@ export default function ProspectsPage() {
       })
       .catch((e) => setFetchError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
-  }, [offset, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag]);
+  }, [offset, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag, refreshNonce]);
 
   useEffect(() => {
     setOffset(0);

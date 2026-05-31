@@ -28,56 +28,89 @@ const TOOLS: { id: CreatorIntelligenceTool; label: string; href: string }[] = [
   { id: "runs",            label: "Runs",               href: "/admin/studios/runs" },
 ];
 
-type WipeState = "idle" | "counting" | "confirming" | "wiping" | "wiped";
+type WipeState = "idle" | "counting" | "confirming" | "wiping" | "wiped" | "error";
+
+type ClearedArtifact = { path: string; existed: boolean; action: string };
+type ClearAllResponse = {
+  ok: boolean;
+  phase?: "count" | "cleared";
+  count?: number;
+  cleared?: ClearedArtifact[];
+  remainingCounts?: { prospects: number; matching: number; shown: number };
+  error?: string;
+  detail?: string;
+};
+
+/** Notifies the Prospects page (and any salon prospect view) to re-fetch. */
+function broadcastProspectsRefresh() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("salon-prospects:refresh"));
+  }
+}
 
 function FreshSlateButton() {
   const [wipeState, setWipeState] = useState<WipeState>("idle");
   const [recordCount, setRecordCount] = useState<number>(0);
+  const [resultMessage, setResultMessage] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   async function handleFirstClick() {
     setWipeState("counting");
+    setErrorMessage("");
     try {
       const res = await fetch("/api/admin/studios/prospects/clear-all", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ confirm: false }),
+        body: JSON.stringify({ confirm: false, vertical: "salon" }),
       });
-      const data = await res.json() as { ok: boolean; count?: number };
+      const data = (await res.json()) as ClearAllResponse;
       if (data.ok) {
         setRecordCount(data.count ?? 0);
         setWipeState("confirming");
       } else {
-        setWipeState("idle");
+        setErrorMessage(data.error ?? data.detail ?? "Could not read prospect count.");
+        setWipeState("error");
       }
-    } catch {
-      setWipeState("idle");
+    } catch (e) {
+      setErrorMessage(e instanceof Error ? e.message : String(e));
+      setWipeState("error");
     }
   }
 
   async function handleConfirm() {
     setWipeState("wiping");
+    setErrorMessage("");
     try {
       const res = await fetch("/api/admin/studios/prospects/clear-all", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ confirm: true }),
+        body: JSON.stringify({ confirm: true, vertical: "salon" }),
       });
-      const data = await res.json() as { ok: boolean; count?: number };
+      const data = (await res.json()) as ClearAllResponse;
       if (data.ok) {
-        setRecordCount(data.count ?? 0);
+        const fileCount = data.cleared?.length ?? 0;
+        const remaining = data.remainingCounts?.prospects ?? 0;
+        setResultMessage(
+          `Fresh state cleared ${fileCount} file${fileCount === 1 ? "" : "s"}. ${remaining} prospect${remaining === 1 ? "" : "s"} remain.`,
+        );
         setWipeState("wiped");
-        setTimeout(() => setWipeState("idle"), 3500);
+        // Repair the data flow: force the prospects view to re-fetch the now-empty store.
+        broadcastProspectsRefresh();
+        setTimeout(() => setWipeState("idle"), 5000);
       } else {
-        setWipeState("idle");
+        setErrorMessage(data.error ?? data.detail ?? "Clear failed.");
+        setWipeState("error");
       }
-    } catch {
-      setWipeState("idle");
+    } catch (e) {
+      setErrorMessage(e instanceof Error ? e.message : String(e));
+      setWipeState("error");
     }
   }
 
   function handleCancel() {
     setWipeState("idle");
     setRecordCount(0);
+    setErrorMessage("");
   }
 
   if (wipeState === "idle") {
@@ -154,6 +187,32 @@ function FreshSlateButton() {
     );
   }
 
+  if (wipeState === "error") {
+    return (
+      <span style={{
+        display: "inline-flex", alignItems: "center", gap: 8,
+        fontSize: 11, fontWeight: 700, color: "#b91c1c",
+        background: "#fef2f2", border: "1px solid #fecaca",
+        borderRadius: 7, padding: "4px 10px", maxWidth: 360,
+      }}>
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          ✗ Fresh Slate failed — {errorMessage}
+        </span>
+        <button
+          type="button"
+          onClick={handleCancel}
+          style={{
+            fontSize: 11, fontWeight: 700, color: "#78716c",
+            background: "transparent", border: "1px solid #e7e5e4",
+            borderRadius: 5, padding: "2px 8px", cursor: "pointer", flexShrink: 0,
+          }}
+        >
+          Dismiss
+        </button>
+      </span>
+    );
+  }
+
   // "wiped"
   return (
     <span style={{
@@ -161,7 +220,7 @@ function FreshSlateButton() {
       background: "#f0fdf4", border: "1px solid #bbf7d0",
       borderRadius: 7, padding: "4px 10px",
     }}>
-      ✓ Wiped — {recordCount} record{recordCount !== 1 ? "s" : ""} removed
+      ✓ {resultMessage || `Wiped — ${recordCount} record${recordCount !== 1 ? "s" : ""} removed`}
     </span>
   );
 }
