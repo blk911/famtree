@@ -25,11 +25,21 @@ const STATUS_COLORS: Record<RunStatus, { fg: string; bg: string; border: string 
   Unknown: { fg: "#57534e", bg: "#f5f5f4", border: "#e7e5e4" },
 };
 
+type StorageStatus = {
+  durable: boolean;
+  backend: "postgres" | "json";
+  databaseUrlPresent: boolean;
+  sourceRunsCount: number;
+  evidenceCount: number;
+  carrierCount: number;
+};
+
 export default function TranspoSourceRunsPage() {
   const [runs, setRuns] = useState<TranspoSourceRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [storage, setStorage] = useState<StorageStatus | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -53,6 +63,33 @@ export default function TranspoSourceRunsPage() {
         if (active) setError(e instanceof Error ? e.message : String(e));
       } finally {
         if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/intelligence/transpo/storage/status", {
+          cache: "no-store",
+        });
+        const data = (await res.json()) as { ok: boolean } & Partial<StorageStatus>;
+        if (active && data.ok) {
+          setStorage({
+            durable: !!data.durable,
+            backend: data.backend ?? "json",
+            databaseUrlPresent: !!data.databaseUrlPresent,
+            sourceRunsCount: data.sourceRunsCount ?? 0,
+            evidenceCount: data.evidenceCount ?? 0,
+            carrierCount: data.carrierCount ?? 0,
+          });
+        }
+      } catch {
+        /* status is best-effort; ignore */
       }
     })();
     return () => {
@@ -88,11 +125,42 @@ export default function TranspoSourceRunsPage() {
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>
-          Transpo Source Runs
-        </h1>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1c1917", margin: 0 }}>
+            Transpo Source Runs
+          </h1>
+          {storage && (
+            <span
+              title={
+                storage.durable
+                  ? "Durable Postgres — survives across deployments and Lambda instances."
+                  : "JSON runtime fallback — per-instance /tmp on Vercel; not durable."
+              }
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "3px 10px",
+                borderRadius: 20,
+                color: storage.durable ? "#166534" : "#9a3412",
+                background: storage.durable ? "#dcfce7" : "#fff7ed",
+                border: `1px solid ${storage.durable ? "#bbf7d0" : "#fed7aa"}`,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {storage.durable
+                ? "Storage: Postgres durable"
+                : "Storage: JSON runtime fallback"}
+            </span>
+          )}
+        </div>
         <p style={{ fontSize: 12, color: "#78716c", margin: 0, maxWidth: 600, lineHeight: 1.55 }}>
           Review source pull history before wiring live carrier data.
+          {storage && (
+            <>
+              {" "}Backend: <strong>{storage.backend}</strong> · runs {storage.sourceRunsCount} ·
+              evidence {storage.evidenceCount} · carriers {storage.carrierCount}.
+            </>
+          )}
         </p>
       </div>
 

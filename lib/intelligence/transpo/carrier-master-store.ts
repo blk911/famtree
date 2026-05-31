@@ -15,6 +15,7 @@ import type {
   TranspoSource,
   TranspoSourceRun,
 } from "./types";
+import { resolveTranspoBackend } from "./db";
 
 const CARRIERS_DIR = process.env.VERCEL
   ? path.join("/tmp", "transpo-carriers")
@@ -38,6 +39,10 @@ export type PromotionSummary = {
 // ── IO ───────────────────────────────────────────────────────────────────────
 
 export async function readCarrierMaster(): Promise<TranspoCarrierTarget[]> {
+  if ((await resolveTranspoBackend()) === "postgres") {
+    const { readCarrierMasterPostgres } = await import("./carrier-master-postgres-store");
+    return readCarrierMasterPostgres();
+  }
   try {
     const raw = await fs.readFile(CARRIERS_FILE, "utf8");
     const parsed: unknown = JSON.parse(raw);
@@ -58,6 +63,10 @@ export async function readCarrierMaster(): Promise<TranspoCarrierTarget[]> {
 export async function writeCarrierMaster(
   carriers: TranspoCarrierTarget[],
 ): Promise<string | null> {
+  if ((await resolveTranspoBackend()) === "postgres") {
+    const { writeCarrierMasterPostgres } = await import("./carrier-master-postgres-store");
+    return writeCarrierMasterPostgres(carriers);
+  }
   try {
     await fs.mkdir(CARRIERS_DIR, { recursive: true });
     await fs.writeFile(CARRIERS_FILE, JSON.stringify(carriers, null, 2), "utf8");

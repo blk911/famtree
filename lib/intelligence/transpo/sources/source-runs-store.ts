@@ -1,15 +1,16 @@
 // lib/intelligence/transpo/sources/source-runs-store.ts
 // Shared persistence for Transpo FMCSA source-run artifacts.
 //
-// On Vercel the deployment filesystem is read-only, so writes go to /tmp (the
-// same strategy the salon prospect JSON store uses). Locally they persist under
-// runtime-data/. Reads and writes share one path resolver so the POST (write)
-// and GET (read) routes never diverge. appendRun() is best-effort and NEVER
-// throws — a read-only filesystem degrades to a returned warning, not a 500.
+// Backend: when DATABASE_URL is set this routes to durable Postgres
+// (transpo_source_runs); otherwise it uses the JSON runtime store. On Vercel the
+// deployment filesystem is read-only so JSON writes go to /tmp (per-instance,
+// ephemeral) — Postgres is the durable path. appendRun() is best-effort and
+// NEVER throws — failures degrade to a returned warning, not a 500.
 
 import { promises as fs } from "fs";
 import path from "path";
 import type { TranspoSourceRun } from "../types";
+import { resolveTranspoBackend } from "../db";
 
 const RUNS_DIR = process.env.VERCEL
   ? path.join("/tmp", "transpo-source-runs")
@@ -22,6 +23,10 @@ export function getRunsFilePath(): string {
 }
 
 export async function readRuns(): Promise<TranspoSourceRun[]> {
+  if ((await resolveTranspoBackend()) === "postgres") {
+    const { readRunsPostgres } = await import("../source-runs-postgres-store");
+    return readRunsPostgres();
+  }
   try {
     const raw = await fs.readFile(RUNS_FILE, "utf8");
     const parsed: unknown = JSON.parse(raw);
@@ -41,6 +46,10 @@ export async function readRuns(): Promise<TranspoSourceRun[]> {
  * Never throws — callers can persist-and-continue even on read-only filesystems.
  */
 export async function appendRun(run: TranspoSourceRun): Promise<string | null> {
+  if ((await resolveTranspoBackend()) === "postgres") {
+    const { appendRunPostgres } = await import("../source-runs-postgres-store");
+    return appendRunPostgres(run);
+  }
   try {
     await fs.mkdir(RUNS_DIR, { recursive: true });
     const runs = await readRuns();

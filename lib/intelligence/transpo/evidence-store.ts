@@ -16,6 +16,7 @@ import type {
   TranspoCarrierSourceRecord,
   TranspoSourceRun,
 } from "./types";
+import { resolveTranspoBackend } from "./db";
 
 const EVIDENCE_DIR = process.env.VERCEL
   ? path.join("/tmp", "transpo-evidence")
@@ -45,6 +46,10 @@ export type AppendEvidenceResult = {
 // ── IO ───────────────────────────────────────────────────────────────────────
 
 export async function readTranspoEvidence(): Promise<TranspoEvidence[]> {
+  if ((await resolveTranspoBackend()) === "postgres") {
+    const { readEvidencePostgres } = await import("./evidence-postgres-store");
+    return readEvidencePostgres();
+  }
   try {
     const raw = await fs.readFile(EVIDENCE_FILE, "utf8");
     const parsed: unknown = JSON.parse(raw);
@@ -81,6 +86,17 @@ export async function writeTranspoEvidence(
 export async function appendTranspoEvidence(
   evidenceItems: TranspoEvidence[],
 ): Promise<AppendEvidenceResult> {
+  if ((await resolveTranspoBackend()) === "postgres") {
+    const { appendEvidencePostgres } = await import("./evidence-postgres-store");
+    const r = await appendEvidencePostgres(evidenceItems);
+    return {
+      created: r.created,
+      skipped: r.skipped,
+      evidenceCount: r.evidenceCount,
+      path: "postgres:transpo_evidence",
+      ...(r.persistError ? { persistError: r.persistError } : {}),
+    };
+  }
   const existing = await readTranspoEvidence();
   const seen = new Set(existing.map(dedupKey));
   const next = [...existing];
