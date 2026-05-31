@@ -1430,3 +1430,60 @@ model StudioProspect {
   @@index([updatedAt(sort: Desc)])
   @@map("studio_prospects")
 }
+
+// ─────────────────────────────────────────────
+// TRANSPO INTELLIGENCE (durable stores)
+// Mirrors runtime-data/intelligence/transpo/sql/001_transpo_intelligence_tables.sql.
+// These MUST stay in the Prisma schema so `prisma db push` (Vercel build) manages
+// them rather than dropping them as untracked drift. Application code reads/writes
+// via raw SQL (lib/intelligence/transpo/*-postgres-store.ts); these models exist
+// purely to keep the schema authoritative.
+// ─────────────────────────────────────────────
+model TranspoSourceRun {
+  id           String   @id
+  source       String?
+  sourceMode   String?  @map("source_mode")
+  providerKind String?  @map("provider_kind")
+  input        Json?
+  recordCount  Int?     @map("record_count")
+  records      Json?
+  message      String?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("transpo_source_runs")
+}
+
+model TranspoEvidence {
+  id           String   @id
+  carrierKey   String?  @map("carrier_key")
+  source       String?
+  evidenceType String?  @map("evidence_type")
+  value        String?
+  confidence   Decimal? @db.Decimal
+  sourceUrl    String?  @map("source_url")
+  observedAt   DateTime @default(now()) @map("observed_at") @db.Timestamptz(6)
+
+  @@unique([carrierKey, source, evidenceType, value], map: "transpo_evidence_dedupe")
+  @@map("transpo_evidence")
+}
+
+model TranspoCarrierMaster {
+  id              String   @id
+  companyName     String?  @map("company_name")
+  dotNumber       String?  @map("dot_number")
+  mcNumber        String?  @map("mc_number")
+  city            String?
+  state           String?
+  phone           String?
+  website         String?
+  fleetSize       Int?     @map("fleet_size")
+  driverCount     Int?     @map("driver_count")
+  authorityStatus String?  @map("authority_status")
+  sources         Json?
+  evidenceIds     Json?    @map("evidence_ids")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([dotNumber], map: "transpo_carrier_master_dot")
+  @@map("transpo_carrier_master")
+}
