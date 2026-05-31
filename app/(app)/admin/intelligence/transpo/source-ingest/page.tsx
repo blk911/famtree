@@ -80,11 +80,20 @@ export default function TranspoSourceIngestPage() {
         ok: boolean;
         run?: FmcsaSourceRun;
         error?: string;
+        detail?: string;
       };
-      if (data.ok && data.run) {
-        setLastRun(data.run);
+      // Surface the run whenever it exists (even on ok:false) so the diagnostics
+      // panel shows providerKind / sourceMode / message / recordCount / DOTs.
+      if (data.run) setLastRun(data.run);
+      if (data.ok) {
+        setError("");
       } else {
-        setError(data.error ?? "Unknown error");
+        const parts = [
+          data.error ?? data.detail ?? "Unknown error",
+          data.run?.providerKind ? `provider: ${data.run.providerKind}` : null,
+          data.run?.sourceMode ? `mode: ${data.run.sourceMode}` : null,
+        ].filter(Boolean);
+        setError(parts.join(" · "));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

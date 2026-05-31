@@ -3,9 +3,10 @@
 // Socrata dataset on data.transportation.gov (dataset id: az4n-8mr2).
 //
 // No API key is required for the initial public test. Socrata column names vary
-// across dataset revisions, so all field access is defensive (pick() over a list
-// of candidate column names) and any failure — network, non-2xx, bad JSON, or a
-// rejected $where filter — degrades gracefully instead of throwing.
+// across dataset revisions, so the live query is ultra-safe ($limit + $q only,
+// no $where/$order), state/city filtering happens locally on mapped fields, and
+// any failure — network, non-2xx, bad JSON, timeout, or zero rows — degrades
+// gracefully with a detailed message instead of throwing.
 
 import type {
   TranspoSourceRunInput,
@@ -41,13 +42,6 @@ const FIELD_CANDIDATES = {
   authorityStatus: ["status", "authority_status", "operating_status", "entity_status", "status_code"],
 } as const;
 
-// Primary column guesses used to build a server-side $where. If these columns
-// do not exist on the dataset revision, Socrata returns 400 and we fall back to
-// an unfiltered sample.
-const STATE_FILTER_COLUMN = "phy_state";
-const CITY_FILTER_COLUMN = "phy_city";
-const ORDER_COLUMN = "dot_number";
-
 type SocrataRow = Record<string, unknown>;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -75,11 +69,6 @@ export function pick(row: SocrataRow, candidates: readonly string[]): string | u
     }
   }
   return undefined;
-}
-
-/** Escapes a value for safe inclusion inside a SoQL single-quoted literal. */
-function escapeSoql(value: string): string {
-  return value.replace(/'/g, "''");
 }
 
 /** Maps an arbitrary Socrata row into our durable carrier record shape. */
@@ -118,40 +107,43 @@ export function normalizeSocrataRow(row: SocrataRow): TranspoCarrierSourceRecord
 
 type BuildUrlInput = {
   limit: number;
-  state?: string;
-  city?: string;
   keyword?: string;
-  filtered: boolean;
 };
 
-/** Builds the Socrata request URL. When filtered is false, only $limit/$select
- *  are applied (the safe unfiltered fallback). */
+/**
+ * Builds an ultra-safe Socrata request URL.
+ *
+ * Deliberately avoids $where / $order (which fail when Socrata column names
+ * differ across dataset revisions). Only $select, $limit, and — when present —
+ * $q free-text search are used. State/city filtering is applied locally after
+ * the rows return, against the normalized mapped fields.
+ */
 export function buildSocrataUrl(input: BuildUrlInput): string {
   const params = new URLSearchParams();
   params.set("$select", "*");
   params.set("$limit", String(input.limit));
 
-  if (input.filtered) {
-    const clauses: string[] = [];
-    if (input.state) {
-      clauses.push(`upper(${STATE_FILTER_COLUMN})=upper('${escapeSoql(input.state)}')`);
-    }
-    if (input.city) {
-      clauses.push(`upper(${CITY_FILTER_COLUMN})=upper('${escapeSoql(input.city)}')`);
-    }
-    if (clauses.length > 0) params.set("$where", clauses.join(" AND "));
-    // Free-text search spans legal_name / dba_name / carrier_operation / etc.
-    if (input.keyword) {
-      const firstTerm = input.keyword.split(",")[0]?.trim();
-      if (firstTerm) params.set("$q", firstTerm);
-    }
-    // Deterministic ordering on the canonical DOT column (confirmed present on
-    // this dataset). Applied only to the filtered request; if rejected, the
-    // unfiltered fallback below omits $order entirely for maximum safety.
-    params.set("$order", `${ORDER_COLUMN} ASC`);
+  if (input.keyword) {
+    const firstTerm = input.keyword.split(",")[0]?.trim();
+    if (firstTerm) params.set("$q", firstTerm);
   }
 
   return `${ENDPOINT}?${params.toString()}`;
+}
+
+/** Local, case-insensitive state/city filter on already-mapped records. */
+function applyLocalFilters(
+  records: TranspoCarrierSourceRecord[],
+  state: string,
+  city: string,
+): TranspoCarrierSourceRecord[] {
+  const s = state.trim().toLowerCase();
+  const c = city.trim().toLowerCase();
+  return records.filter((r) => {
+    if (s && (r.state ?? "").toLowerCase() !== s) return false;
+    if (c && (r.city ?? "").toLowerCase() !== c) return false;
+    return true;
+  });
 }
 
 type FetchResult =
@@ -183,10 +175,6 @@ async function fetchSocrata(url: string): Promise<FetchResult> {
   }
 }
 
-function mapRows(rows: SocrataRow[], limit: number): TranspoCarrierSourceRecord[] {
-  return rows.slice(0, limit).map(normalizeSocrataRow);
-}
-
 function describeFilters(state: string, city: string, keyword: string): string {
   const parts: string[] = [];
   if (state) parts.push(`state=${state}`);
@@ -204,56 +192,82 @@ export async function runFmcsaLivePull(
   const state = (input.state ?? "").trim();
   const city = (input.city ?? "").trim();
   const keyword = (input.keyword ?? "").trim();
-  const hasFilters = Boolean(state || city || keyword);
+  const hasLocalFilters = Boolean(state || city);
 
-  // No filters → straight unfiltered sample.
-  if (!hasFilters) {
-    const res = await fetchSocrata(buildSocrataUrl({ limit, filtered: false }));
-    if (!res.ok) {
+  // Fetch a buffer larger than the requested limit so local state/city filtering
+  // still has candidates to work with, capped at the dataset/UI ceiling.
+  const bufferLimit = Math.min(Math.max(limit * 5, 25), MAX_LIMIT);
+  const filterLabel = describeFilters(state, city, keyword);
+
+  // (a) Primary ultra-safe query: $limit (+ $q for keyword). No $where/$order.
+  const primary = await fetchSocrata(buildSocrataUrl({ limit: bufferLimit, keyword }));
+
+  if (primary.ok) {
+    const mapped = primary.rows.map(normalizeSocrataRow);
+
+    if (hasLocalFilters) {
+      const localMatches = applyLocalFilters(mapped, state, city);
+      if (localMatches.length > 0) {
+        const records = localMatches.slice(0, limit);
+        return {
+          ok: true,
+          sourceMode: "live_api",
+          records,
+          message: `Live Company Census · endpoint=${ENDPOINT_LABEL} · filters=${filterLabel} · rows=${records.length}`,
+        };
+      }
+      // No local matches → return the unfiltered live sample with a clear note.
+      const sample = mapped.slice(0, limit);
+      if (sample.length > 0) {
+        return {
+          ok: true,
+          sourceMode: "live_api",
+          records: sample,
+          message: `No local matches after filtering; showing live Company Census sample. · endpoint=${ENDPOINT_LABEL} · attempted filters=${filterLabel} · rows=${sample.length}`,
+        };
+      }
+      // Primary returned zero rows entirely → fall through to bare fallback.
+    } else {
+      const records = mapped.slice(0, limit);
+      if (records.length > 0) {
+        return {
+          ok: true,
+          sourceMode: "live_api",
+          records,
+          message: `Live Company Census · endpoint=${ENDPOINT_LABEL} · filters=${filterLabel} · rows=${records.length}`,
+        };
+      }
+      // Zero rows → fall through to bare fallback.
+    }
+  }
+
+  // (b) Fallback: bare $limit query — no $q, no filters.
+  const fallback = await fetchSocrata(buildSocrataUrl({ limit: bufferLimit }));
+  if (fallback.ok) {
+    const records = fallback.rows.map(normalizeSocrataRow).slice(0, limit);
+    if (records.length > 0) {
+      const primaryNote = primary.ok ? "primary query returned 0 rows" : `primary query failed: ${primary.error}`;
       return {
-        ok: false,
+        ok: true,
         sourceMode: "live_api",
-        records: [],
-        message: `Live FMCSA Company Census request failed (${res.error}). endpoint=${ENDPOINT_LABEL}`,
+        records,
+        message: `Live provider fallback: returned unfiltered Company Census sample. (${primaryNote}) · endpoint=${ENDPOINT_LABEL} · rows=${records.length}`,
       };
     }
-    const records = mapRows(res.rows, limit);
-    return {
-      ok: records.length > 0,
-      sourceMode: "live_api",
-      records,
-      message: `Live Company Census · endpoint=${ENDPOINT_LABEL} · filters=none · rows=${records.length}`,
-    };
-  }
-
-  // Filtered attempt first.
-  const filtered = await fetchSocrata(buildSocrataUrl({ limit, state, city, keyword, filtered: true }));
-  if (filtered.ok) {
-    const records = mapRows(filtered.rows, limit);
-    return {
-      ok: true,
-      sourceMode: "live_api",
-      records,
-      message: `Live Company Census · endpoint=${ENDPOINT_LABEL} · filters=${describeFilters(state, city, keyword)} · rows=${records.length}`,
-    };
-  }
-
-  // Filter columns rejected (or request failed) → safe unfiltered fallback.
-  const fallback = await fetchSocrata(buildSocrataUrl({ limit, filtered: false }));
-  if (!fallback.ok) {
     return {
       ok: false,
       sourceMode: "live_api",
       records: [],
-      message: `Live FMCSA Company Census request failed (filtered: ${filtered.error}; fallback: ${fallback.error}). endpoint=${ENDPOINT_LABEL}`,
+      message: `Live FMCSA provider returned no records. Fallback unfiltered sample also returned 0 rows. endpoint=${ENDPOINT_LABEL}`,
     };
   }
 
-  const records = mapRows(fallback.rows, limit);
+  // Both requests failed (network blocked / timeout / non-2xx / bad JSON).
+  const reason = !primary.ok ? primary.error : fallback.error;
   return {
-    ok: records.length > 0,
+    ok: false,
     sourceMode: "live_api",
-    records,
-    message: `Live provider fallback: returned unfiltered Company Census sample. (filtered query rejected: ${filtered.error}) · endpoint=${ENDPOINT_LABEL} · attempted filters=${describeFilters(state, city, keyword)} · rows=${records.length}`,
+    records: [],
+    message: `Live FMCSA provider request failed (${reason}). No records returned. endpoint=${ENDPOINT_LABEL}`,
   };
 }

@@ -1,40 +1,28 @@
 // app/api/admin/intelligence/transpo/source-runs/fmcsa/route.ts
 // POST /api/admin/intelligence/transpo/source-runs/fmcsa
-// Runs a test FMCSA source pull and persists the resulting source run artifact.
+// Runs an FMCSA source pull and persists the resulting source run artifact.
 //
-// Body: { market: string, state?: string, city?: string, keyword?: string, limit?: number, notes?: string }
-// Response: { ok: true, run: SourceRun } | { ok: false, error: string }
+// Body: { market, state?, city?, keyword?, limit?, notes?, providerKind? }
+// Response:
+//   { ok: true,  run, debug }                  — provider returned records
+//   { ok: false, error, run, debug }           — provider failed gracefully (HTTP 200)
+//   { ok: false, error, detail } (HTTP 500)    — unexpected route exception only
+//
+// Provider failures (no rows, filter rejected, timeout, live unavailable, CSV
+// missing) are EXPECTED: they return HTTP 200 with the provider message surfaced
+// so the UI can show exact diagnostics. The run is still persisted (recordCount
+// may be 0) so it can be reviewed in Source Runs.
 
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
 import crypto from "crypto";
 import { runFmcsaTestPull } from "@/lib/intelligence/transpo/sources/fmcsa-source";
+import { appendRun } from "@/lib/intelligence/transpo/sources/source-runs-store";
 import type {
   TranspoSourceRun,
   TranspoSourceRunInput,
 } from "@/lib/intelligence/transpo/types";
-
-const RUNS_DIR = path.join(
-  process.cwd(),
-  "runtime-data",
-  "intelligence",
-  "transpo",
-  "source-runs",
-);
-const RUNS_FILE = path.join(RUNS_DIR, "fmcsa-runs.json");
-
-async function readRuns(): Promise<TranspoSourceRun[]> {
-  try {
-    const raw = await fs.readFile(RUNS_FILE, "utf8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as TranspoSourceRun[]) : [];
-  } catch {
-    return [];
-  }
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -69,10 +57,9 @@ export async function POST(req: NextRequest) {
     };
 
     // Provider resolution priority: request body → TRANSPO_FMCSA_PROVIDER → "mock".
-    const { sourceMode, records, providerKind, message } = await runFmcsaTestPull(
-      input,
-      body.providerKind,
-    );
+    // runFmcsaTestPull degrades gracefully and never throws for provider issues.
+    const result = await runFmcsaTestPull(input, body.providerKind);
+    const { ok, sourceMode, records, providerKind, message } = result;
 
     const run: TranspoSourceRun = {
       id: `transpo-fmcsa-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
@@ -87,13 +74,30 @@ export async function POST(req: NextRequest) {
       ...(message ? { message } : {}),
     };
 
-    await fs.mkdir(RUNS_DIR, { recursive: true });
-    const runs = await readRuns();
-    runs.push(run);
-    await fs.writeFile(RUNS_FILE, JSON.stringify(runs, null, 2), "utf8");
+    // Persist best-effort — a read-only filesystem must not fail the request.
+    const persistError = await appendRun(run);
 
-    return NextResponse.json({ ok: true, run });
+    const debug = {
+      providerKind,
+      sourceMode,
+      message: message ?? null,
+      recordCount: records.length,
+      endpoint: "data.transportation.gov az4n-8mr2",
+      ...(persistError ? { persistError } : {}),
+    };
+
+    if (!ok) {
+      return NextResponse.json({
+        ok: false,
+        error: message ?? "FMCSA provider returned no records.",
+        run,
+        debug,
+      });
+    }
+
+    return NextResponse.json({ ok: true, run, debug });
   } catch (e) {
+    // Only genuinely unexpected route exceptions reach here.
     const detail = e instanceof Error ? e.message : String(e);
     return NextResponse.json(
       { ok: false, error: "fmcsa test pull failed", detail },
