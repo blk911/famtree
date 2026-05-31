@@ -23,11 +23,24 @@ export type FmcsaProviderResult = {
   message?: string;
 };
 
-export function resolveFmcsaProviderKind(): FmcsaProviderKind {
-  const raw = (process.env.TRANSPO_FMCSA_PROVIDER ?? "mock").trim().toLowerCase();
-  if (raw === "csv") return "csv";
-  if (raw === "live") return "live";
-  return "mock";
+/** Coerce a raw string into a valid provider kind, or null if unrecognized. */
+function normalizeProviderKind(raw?: string | null): FmcsaProviderKind | null {
+  if (!raw) return null;
+  const v = raw.trim().toLowerCase();
+  if (v === "mock" || v === "csv" || v === "live") return v;
+  return null;
+}
+
+/**
+ * Resolve which FMCSA provider to use.
+ * Priority: explicit override (e.g. request body) → TRANSPO_FMCSA_PROVIDER → "mock".
+ */
+export function resolveFmcsaProviderKind(override?: string | null): FmcsaProviderKind {
+  return (
+    normalizeProviderKind(override) ??
+    normalizeProviderKind(process.env.TRANSPO_FMCSA_PROVIDER) ??
+    "mock"
+  );
 }
 
 // ── Mock provider (original deterministic test-pull behavior) ───────────────
@@ -145,8 +158,9 @@ function runFmcsaMockPull(input: TranspoSourceRunInput): FmcsaProviderResult {
 
 export async function runFmcsaProvider(
   input: TranspoSourceRunInput,
+  override?: string | null,
 ): Promise<FmcsaProviderResult> {
-  const kind = resolveFmcsaProviderKind();
+  const kind = resolveFmcsaProviderKind(override);
 
   if (kind === "csv") {
     const res = await runFmcsaCsvPull(input);

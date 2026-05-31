@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
       keyword?: string;
       limit?: number;
       notes?: string;
+      providerKind?: string;
     };
 
     const market = (body.market ?? "").trim();
@@ -67,7 +68,11 @@ export async function POST(req: NextRequest) {
       notes: (body.notes ?? "").trim() || undefined,
     };
 
-    const { sourceMode, records, providerKind, message } = await runFmcsaTestPull(input);
+    // Provider resolution priority: request body → TRANSPO_FMCSA_PROVIDER → "mock".
+    const { sourceMode, records, providerKind, message } = await runFmcsaTestPull(
+      input,
+      body.providerKind,
+    );
 
     const run: TranspoSourceRun = {
       id: `transpo-fmcsa-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,

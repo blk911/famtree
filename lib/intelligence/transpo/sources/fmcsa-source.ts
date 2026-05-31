@@ -32,10 +32,14 @@ export type FmcsaPullResult = FmcsaProviderResult;
  *
  * - mock (default): deterministic sample carriers, sourceMode "mock_fmcsa_test".
  * - csv: reads a local CSV import, sourceMode "csv_import".
- * - live: placeholder, returns ok:false with sourceMode "live_api".
+ * - live: read-only Data.Transportation.gov Company Census pull, sourceMode "live_api".
+ *
+ * An optional providerKind override (e.g. from the request body) takes priority
+ * over TRANSPO_FMCSA_PROVIDER; both fall back to "mock".
  */
 export async function runFmcsaTestPull(
   input: FmcsaPullInput,
+  providerKind?: string | null,
 ): Promise<FmcsaPullResult> {
-  return runFmcsaProvider(input);
+  return runFmcsaProvider(input, providerKind);
 }

@@ -132,7 +132,7 @@ export default function TranspoSourceRunsPage() {
               <thead>
                 <tr style={{ color: "#78716c", borderBottom: "1px solid #e7e5e4", background: "#fafaf9" }}>
                   <th style={{ ...headerCellStyle, width: 28 }} aria-label="Expand" />
-                  {["Date", "Source", "Mode", "Market", "State", "City", "Keywords", "Records", "Status"].map((h) => (
+                  {["Date", "Source", "Mode", "Provider", "Market", "State", "City", "Keywords", "Records", "Status"].map((h) => (
                     <th key={h} style={headerCellStyle}>{h}</th>
                   ))}
                 </tr>
@@ -198,6 +198,7 @@ function FragmentRow({
         </td>
         <td style={{ ...cellStyle, whiteSpace: "nowrap" }}>{run.source}</td>
         <td style={{ ...cellStyle, whiteSpace: "nowrap" }}>{run.sourceMode}</td>
+        <td style={{ ...cellStyle, whiteSpace: "nowrap" }}>{run.providerKind ?? "—"}</td>
         <td style={cellStyle}>{input.market || "—"}</td>
         <td style={cellStyle}>{input.state || "—"}</td>
         <td style={cellStyle}>{input.city || "—"}</td>
@@ -221,7 +222,7 @@ function FragmentRow({
 
       {isOpen && (
         <tr style={{ borderBottom: "1px solid #f5f5f4", background: "#fafaf9" }}>
-          <td colSpan={10} style={{ padding: "14px 18px 20px" }}>
+          <td colSpan={11} style={{ padding: "14px 18px 20px" }}>
             <div style={{
               display: "flex",
               flexWrap: "wrap",

@@ -18,6 +18,13 @@ import type { TranspoSourceRun } from "@/lib/intelligence/transpo/types";
 const SOURCE_TYPES = ["FMCSA", "SAFER", "CSV", "URL", "Text / PDF"] as const;
 type SourceType = (typeof SOURCE_TYPES)[number];
 
+const FMCSA_PROVIDERS = [
+  { id: "mock", label: "Mock" },
+  { id: "csv", label: "CSV" },
+  { id: "live", label: "Live" },
+] as const;
+type FmcsaProviderKind = (typeof FMCSA_PROVIDERS)[number]["id"];
+
 type RunState = "idle" | "saving" | "saved" | "error";
 
 type FmcsaSourceRun = TranspoSourceRun;
@@ -42,6 +49,9 @@ export default function TranspoSourceIngestPage() {
   const [fmCity, setFmCity] = useState("");
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [fmLimit, setFmLimit] = useState(10);
+  // Admin UI defaults to the live Company Census provider; failures degrade
+  // gracefully and the selector lets you switch to mock/csv without env changes.
+  const [fmProviderKind, setFmProviderKind] = useState<FmcsaProviderKind>("live");
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState("");
   const [lastRun, setLastRun] = useState<FmcsaSourceRun | null>(null);
@@ -62,6 +72,7 @@ export default function TranspoSourceIngestPage() {
             keyword: selectedKeywords.join(", "),
             limit: fmLimit,
             notes,
+            providerKind: fmProviderKind,
           }),
         },
       );
@@ -251,6 +262,47 @@ export default function TranspoSourceIngestPage() {
             />
           </div>
 
+          {/* FMCSA provider selector */}
+          {isFmcsa && (
+            <div>
+              <label style={labelStyle}>FMCSA Provider</label>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {FMCSA_PROVIDERS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setFmProviderKind(p.id)}
+                    style={{
+                      fontSize: 11,
+                      fontWeight: p.id === fmProviderKind ? 800 : 500,
+                      padding: "5px 14px",
+                      borderRadius: 20,
+                      border: p.id === fmProviderKind ? "1px solid #1c1917" : "1px solid #e7e5e4",
+                      background: p.id === fmProviderKind ? "#1c1917" : "#fff",
+                      color: p.id === fmProviderKind ? "#fff" : "#57534e",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              {fmProviderKind === "live" && (
+                <div style={{
+                  marginTop: 8,
+                  fontSize: 11,
+                  color: "#92400e",
+                  background: "#fffbeb",
+                  border: "1px solid #fde68a",
+                  borderRadius: 8,
+                  padding: "6px 10px",
+                }}>
+                  ⚠ Live Data.Transportation.gov Company Census pull. Limit is capped at 50.
+                </div>
+              )}
+            </div>
+          )}
+
           {/* FMCSA test pull params */}
           {isFmcsa && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
@@ -421,6 +473,15 @@ export default function TranspoSourceIngestPage() {
             )}
             <span><strong style={{ color: "#1c1917" }}>Source mode:</strong> {lastRun.sourceMode}</span>
             <span><strong style={{ color: "#1c1917" }}>Records:</strong> {lastRun.recordCount}</span>
+            {lastRun.records.length > 0 && (
+              <span>
+                <strong style={{ color: "#1c1917" }}>First DOTs:</strong>{" "}
+                {lastRun.records
+                  .slice(0, 3)
+                  .map((r) => r.dotNumber ?? "—")
+                  .join(", ")}
+              </span>
+            )}
             <span><strong style={{ color: "#1c1917" }}>Created:</strong> {new Date(lastRun.createdAt).toLocaleString()}</span>
             <Link
               href="/admin/intelligence/transpo/source-runs"
