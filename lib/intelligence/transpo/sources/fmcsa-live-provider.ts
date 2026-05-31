@@ -2,11 +2,13 @@
 // Live, read-only FMCSA provider backed by the USDOT "Company Census File"
 // Socrata dataset on data.transportation.gov (dataset id: az4n-8mr2).
 //
-// No API key is required for the initial public test. Socrata column names vary
-// across dataset revisions, so the live query is ultra-safe ($limit + $q only,
-// no $where/$order), state/city filtering happens locally on mapped fields, and
-// any failure — network, non-2xx, bad JSON, timeout, or zero rows — degrades
-// gracefully with a detailed message instead of throwing.
+// No API key is required for the public test. The primary query filters
+// server-side ($where on phy_state/phy_city, $q for keyword, $order by
+// dot_number) so state/city pulls return real, complete results from the full
+// dataset. If that query fails (column rejected, network) or returns 0 rows, it
+// degrades to an ultra-safe $limit sample with local filtering. Any failure —
+// network, non-2xx, bad JSON, timeout, or zero rows — returns a detailed
+// message instead of throwing.
 
 import type {
   TranspoSourceRunInput,
@@ -105,18 +107,33 @@ export function normalizeSocrataRow(row: SocrataRow): TranspoCarrierSourceRecord
   };
 }
 
+// Confirmed columns on dataset az4n-8mr2 (verified live).
+const STATE_FILTER_COLUMN = "phy_state";
+const CITY_FILTER_COLUMN = "phy_city";
+const ORDER_COLUMN = "dot_number";
+
+/** Escapes a value for safe inclusion inside a SoQL single-quoted literal. */
+function escapeSoql(value: string): string {
+  return value.replace(/'/g, "''");
+}
+
 type BuildUrlInput = {
   limit: number;
+  state?: string;
+  city?: string;
   keyword?: string;
+  /** When true, apply precise server-side $where/$order filtering across the
+   *  full dataset. When false, a bare $limit (+ $q) sample query for fallback. */
+  useWhere: boolean;
 };
 
 /**
- * Builds an ultra-safe Socrata request URL.
+ * Builds the Socrata request URL.
  *
- * Deliberately avoids $where / $order (which fail when Socrata column names
- * differ across dataset revisions). Only $select, $limit, and — when present —
- * $q free-text search are used. State/city filtering is applied locally after
- * the rows return, against the normalized mapped fields.
+ * Primary mode (useWhere=true): precise server-side filtering — $where on
+ * state/city, $q for keyword, $order by dot_number. Columns are confirmed for
+ * dataset az4n-8mr2; if a future revision rejects them the caller falls back to
+ * the ultra-safe sample (useWhere=false) + local filtering.
  */
 export function buildSocrataUrl(input: BuildUrlInput): string {
   const params = new URLSearchParams();
@@ -126,6 +143,18 @@ export function buildSocrataUrl(input: BuildUrlInput): string {
   if (input.keyword) {
     const firstTerm = input.keyword.split(",")[0]?.trim();
     if (firstTerm) params.set("$q", firstTerm);
+  }
+
+  if (input.useWhere) {
+    const clauses: string[] = [];
+    if (input.state) {
+      clauses.push(`upper(${STATE_FILTER_COLUMN})=upper('${escapeSoql(input.state)}')`);
+    }
+    if (input.city) {
+      clauses.push(`upper(${CITY_FILTER_COLUMN})=upper('${escapeSoql(input.city)}')`);
+    }
+    if (clauses.length > 0) params.set("$where", clauses.join(" AND "));
+    params.set("$order", `${ORDER_COLUMN} ASC`);
   }
 
   return `${ENDPOINT}?${params.toString()}`;
@@ -192,41 +221,56 @@ export async function runFmcsaLivePull(
   const state = (input.state ?? "").trim();
   const city = (input.city ?? "").trim();
   const keyword = (input.keyword ?? "").trim();
-  const hasLocalFilters = Boolean(state || city);
-
-  // Fetch a buffer larger than the requested limit so local state/city filtering
-  // still has candidates to work with, capped at the dataset/UI ceiling.
-  const bufferLimit = Math.min(Math.max(limit * 5, 25), MAX_LIMIT);
+  const hasFilters = Boolean(state || city);
   const filterLabel = describeFilters(state, city, keyword);
 
-  // (a) Primary ultra-safe query: $limit (+ $q for keyword). No $where/$order.
-  const primary = await fetchSocrata(buildSocrataUrl({ limit: bufferLimit, keyword }));
+  // (a) Primary: precise server-side filtering across the FULL dataset.
+  // This is what makes state/city pulls return real, complete results instead
+  // of whatever happened to land in a small sample window.
+  const primary = await fetchSocrata(
+    buildSocrataUrl({ limit, state, city, keyword, useWhere: true }),
+  );
+  if (primary.ok && primary.rows.length > 0) {
+    const records = primary.rows.map(normalizeSocrataRow).slice(0, limit);
+    return {
+      ok: true,
+      sourceMode: "live_api",
+      records,
+      message: `Live Company Census (server-side filter) · endpoint=${ENDPOINT_LABEL} · filters=${filterLabel} · rows=${records.length}`,
+    };
+  }
 
-  if (primary.ok) {
-    const mapped = primary.rows.map(normalizeSocrataRow);
+  // (b) Fallback: ultra-safe sample query + local filtering. Reached only if the
+  // server-side filter failed (column rejected / network) or returned 0 rows.
+  const bufferLimit = Math.min(Math.max(limit * 5, 25), MAX_LIMIT);
+  const primaryNote = primary.ok
+    ? "server-side filter returned 0 rows"
+    : `server-side filter failed: ${primary.error}`;
+  const fallback = await fetchSocrata(buildSocrataUrl({ limit: bufferLimit, useWhere: false }));
 
-    if (hasLocalFilters) {
-      const localMatches = applyLocalFilters(mapped, state, city);
-      if (localMatches.length > 0) {
-        const records = localMatches.slice(0, limit);
+  if (fallback.ok) {
+    const mapped = fallback.rows.map(normalizeSocrataRow);
+
+    if (hasFilters) {
+      const local = applyLocalFilters(mapped, state, city);
+      if (local.length > 0) {
+        const records = local.slice(0, limit);
         return {
           ok: true,
           sourceMode: "live_api",
           records,
-          message: `Live Company Census · endpoint=${ENDPOINT_LABEL} · filters=${filterLabel} · rows=${records.length}`,
+          message: `Live Company Census (local-filter fallback; ${primaryNote}) · filters=${filterLabel} · rows=${records.length}`,
         };
       }
-      // No local matches → return the unfiltered live sample with a clear note.
       const sample = mapped.slice(0, limit);
       if (sample.length > 0) {
         return {
           ok: true,
           sourceMode: "live_api",
           records: sample,
-          message: `No local matches after filtering; showing live Company Census sample. · endpoint=${ENDPOINT_LABEL} · attempted filters=${filterLabel} · rows=${sample.length}`,
+          message: `No matches after filtering; showing live Company Census sample. (${primaryNote}) · attempted filters=${filterLabel} · rows=${sample.length}`,
         };
       }
-      // Primary returned zero rows entirely → fall through to bare fallback.
     } else {
       const records = mapped.slice(0, limit);
       if (records.length > 0) {
@@ -234,31 +278,16 @@ export async function runFmcsaLivePull(
           ok: true,
           sourceMode: "live_api",
           records,
-          message: `Live Company Census · endpoint=${ENDPOINT_LABEL} · filters=${filterLabel} · rows=${records.length}`,
+          message: `Live Company Census sample · endpoint=${ENDPOINT_LABEL} · rows=${records.length}`,
         };
       }
-      // Zero rows → fall through to bare fallback.
     }
-  }
 
-  // (b) Fallback: bare $limit query — no $q, no filters.
-  const fallback = await fetchSocrata(buildSocrataUrl({ limit: bufferLimit }));
-  if (fallback.ok) {
-    const records = fallback.rows.map(normalizeSocrataRow).slice(0, limit);
-    if (records.length > 0) {
-      const primaryNote = primary.ok ? "primary query returned 0 rows" : `primary query failed: ${primary.error}`;
-      return {
-        ok: true,
-        sourceMode: "live_api",
-        records,
-        message: `Live provider fallback: returned unfiltered Company Census sample. (${primaryNote}) · endpoint=${ENDPOINT_LABEL} · rows=${records.length}`,
-      };
-    }
     return {
       ok: false,
       sourceMode: "live_api",
       records: [],
-      message: `Live FMCSA provider returned no records. Fallback unfiltered sample also returned 0 rows. endpoint=${ENDPOINT_LABEL}`,
+      message: `Live FMCSA provider returned no records. (${primaryNote}; fallback sample empty) endpoint=${ENDPOINT_LABEL}`,
     };
   }
 
