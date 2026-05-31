@@ -12,6 +12,8 @@ import type {
   TranspoAddressType,
 } from "./verification-types";
 
+type GoogleMatchedBy = TranspoCarrierVerification["googleMatchedBy"];
+
 interface DbVerificationRow {
   id: string;
   carrier_id: string | null;
@@ -25,6 +27,13 @@ interface DbVerificationRow {
   google_review_count: number | null;
   google_website: string | null;
   google_phone: string | null;
+  google_place_id: string | null;
+  google_maps_url: string | null;
+  google_address: string | null;
+  google_business_name: string | null;
+  google_category: string | null;
+  google_match_confidence: number | string | null;
+  google_matched_by: string | null;
   bbb_found: boolean | null;
   bbb_rating: string | null;
   bbb_complaint_count: number | null;
@@ -81,6 +90,13 @@ function rowToVerification(row: DbVerificationRow): TranspoCarrierVerification {
     googleReviewCount: row.google_review_count ?? undefined,
     googleWebsite: row.google_website ?? undefined,
     googlePhone: row.google_phone ?? undefined,
+    googlePlaceId: row.google_place_id ?? undefined,
+    googleMapsUrl: row.google_maps_url ?? undefined,
+    googleAddress: row.google_address ?? undefined,
+    googleBusinessName: row.google_business_name ?? undefined,
+    googleCategory: row.google_category ?? undefined,
+    googleMatchConfidence: optNum(row.google_match_confidence),
+    googleMatchedBy: (row.google_matched_by ?? undefined) as GoogleMatchedBy,
     bbbFound: row.bbb_found ?? undefined,
     bbbRating: row.bbb_rating ?? undefined,
     bbbComplaintCount: row.bbb_complaint_count ?? undefined,
@@ -122,6 +138,8 @@ export async function writeVerificationsPostgres(
         INSERT INTO transpo_carrier_verification (
           id, carrier_id, carrier_key, dot_number, company_name, city, state,
           google_found, google_rating, google_review_count, google_website, google_phone,
+          google_place_id, google_maps_url, google_address, google_business_name,
+          google_category, google_match_confidence, google_matched_by,
           bbb_found, bbb_rating, bbb_complaint_count,
           facebook_found, facebook_url,
           state_entity_found, entity_status, formation_date,
@@ -141,6 +159,13 @@ export async function writeVerificationsPostgres(
           ${v.googleReviewCount ?? null},
           ${v.googleWebsite ?? null},
           ${v.googlePhone ?? null},
+          ${v.googlePlaceId ?? null},
+          ${v.googleMapsUrl ?? null},
+          ${v.googleAddress ?? null},
+          ${v.googleBusinessName ?? null},
+          ${v.googleCategory ?? null},
+          ${v.googleMatchConfidence ?? null},
+          ${v.googleMatchedBy ?? null},
           ${v.bbbFound ?? null},
           ${v.bbbRating ?? null},
           ${v.bbbComplaintCount ?? null},
@@ -170,6 +195,13 @@ export async function writeVerificationsPostgres(
           google_review_count = EXCLUDED.google_review_count,
           google_website      = EXCLUDED.google_website,
           google_phone        = EXCLUDED.google_phone,
+          google_place_id        = EXCLUDED.google_place_id,
+          google_maps_url        = EXCLUDED.google_maps_url,
+          google_address         = EXCLUDED.google_address,
+          google_business_name   = EXCLUDED.google_business_name,
+          google_category        = EXCLUDED.google_category,
+          google_match_confidence = EXCLUDED.google_match_confidence,
+          google_matched_by      = EXCLUDED.google_matched_by,
           bbb_found           = EXCLUDED.bbb_found,
           bbb_rating          = EXCLUDED.bbb_rating,
           bbb_complaint_count = EXCLUDED.bbb_complaint_count,

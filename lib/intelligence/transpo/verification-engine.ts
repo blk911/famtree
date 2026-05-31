@@ -33,7 +33,9 @@ export function calculateVerificationScore(v: TranspoCarrierVerification): numbe
   if (v.googleFound) s += 25;
   if ((v.googleRating ?? 0) >= 4) s += 10;
   if ((v.googleReviewCount ?? 0) >= 10) s += 10;
-  if (v.websiteFound) s += 15;
+  if ((v.googleMatchConfidence ?? 0) >= 0.7) s += 10;
+  if (v.websiteFound || (v.googleWebsite ?? "").trim()) s += 15;
+  if ((v.googlePhone ?? "").trim()) s += 10;
   if (v.stateEntityFound) s += 15;
   if (isActiveEntity(v.entityStatus)) s += 10;
   if (v.facebookFound) s += 10;
@@ -97,6 +99,14 @@ export async function verifyCarrier(
       merged = { ...merged, ...fields };
       if (Array.isArray(pNotes)) notes.push(...pNotes);
       if (Array.isArray(pProviders)) pProviders.forEach((p) => providers.add(p));
+    }
+
+    // Website fallback: if the carrier had no website but Google found one,
+    // treat the Google website as the verified website.
+    if (!merged.websiteFound && (merged.googleWebsite ?? "").trim()) {
+      merged.websiteFound = true;
+      merged.websiteUrl = merged.websiteUrl || merged.googleWebsite;
+      notes.push("Website resolved from Google Business profile.");
     }
 
     merged.notes = notes;

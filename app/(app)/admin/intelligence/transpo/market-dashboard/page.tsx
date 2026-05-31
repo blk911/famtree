@@ -94,6 +94,17 @@ export default function TranspoMarketDashboardPage() {
     ? Math.round(fOpps.reduce((s, o) => s + o.score, 0) / fOpps.length)
     : 0;
 
+  // Google enrichment stats
+  const googleFound = fVerifs.filter((v) => v.googleFound === true).length;
+  const googleLowConfidence = fVerifs.filter(
+    (v) => v.googleFound === true && (v.googleMatchConfidence ?? 1) < 0.45,
+  ).length;
+  const googleWebsiteFound = fVerifs.filter((v) => (v.googleWebsite ?? "").trim()).length;
+  const ratedVerifs = fVerifs.filter((v) => typeof v.googleRating === "number");
+  const avgGoogleRating = ratedVerifs.length
+    ? (ratedVerifs.reduce((s, v) => s + (v.googleRating ?? 0), 0) / ratedVerifs.length).toFixed(1)
+    : "—";
+
   // Signal distribution
   const signalDist = useMemo(() => {
     const counts = new Map<string, { label: string; count: number }>();
@@ -220,7 +231,11 @@ export default function TranspoMarketDashboardPage() {
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
             {card("Total carriers", totalCarriers)}
             {card("Verified carriers", verifiedCarriers)}
+            {card("Google found", googleFound)}
             {card("Missing Google Business", missingGoogle)}
+            {card("Low-confidence Google", googleLowConfidence)}
+            {card("Google website found", googleWebsiteFound)}
+            {card("Avg Google rating", avgGoogleRating)}
             {card("Missing website", missingWebsite)}
             {card("Small fleets", smallFleets)}
             {card("Single-truck operators", singleTruck)}

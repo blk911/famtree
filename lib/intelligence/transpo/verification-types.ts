@@ -42,6 +42,13 @@ export type TranspoCarrierVerification = {
   googleReviewCount?: number;
   googleWebsite?: string;
   googlePhone?: string;
+  googlePlaceId?: string;
+  googleMapsUrl?: string;
+  googleAddress?: string;
+  googleBusinessName?: string;
+  googleCategory?: string;
+  googleMatchConfidence?: number;
+  googleMatchedBy?: "name_city_state" | "name_address" | "phone" | "unknown";
 
   // BBB
   bbbFound?: boolean;

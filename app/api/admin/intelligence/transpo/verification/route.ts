@@ -18,6 +18,7 @@ import {
 } from "@/lib/intelligence/transpo/verification-store";
 import { verifyCarriers } from "@/lib/intelligence/transpo/verification-engine";
 import { getTranspoBackendInfo } from "@/lib/intelligence/transpo/db";
+import { isGoogleProviderConnected } from "@/lib/intelligence/transpo/verification/providers/google-business-provider";
 
 function toTime(value: unknown): number {
   if (typeof value !== "string") return 0;
@@ -38,7 +39,12 @@ async function storageInfo() {
 export async function GET() {
   const verifications = await readCarrierVerifications();
   verifications.sort((a, b) => toTime(b.updatedAt) - toTime(a.updatedAt));
-  return NextResponse.json({ ok: true, verifications, storage: await storageInfo() });
+  return NextResponse.json({
+    ok: true,
+    verifications,
+    googleProviderConnected: isGoogleProviderConnected(),
+    storage: await storageInfo(),
+  });
 }
 
 export async function POST(req: NextRequest) {
@@ -84,6 +90,7 @@ export async function POST(req: NextRequest) {
           verificationCount: existing.length,
           results: [],
           note: "All carriers already have a verification row.",
+          googleProviderConnected: isGoogleProviderConnected(),
           storage: await storageInfo(),
         });
       }
@@ -112,6 +119,7 @@ export async function POST(req: NextRequest) {
       created: upsert.created,
       updated: upsert.updated,
       verificationCount: upsert.verificationCount,
+      googleProviderConnected: isGoogleProviderConnected(),
       results,
       storage: await storageInfo(),
       debug: { mode, carrierCount: carriers.length, storePath: upsert.path },

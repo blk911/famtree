@@ -29,9 +29,32 @@ function YesNo({ value }: { value?: boolean }) {
   return <span style={{ color: "#d6d3d1" }}>—</span>;
 }
 
+function ExtLink({ href, label }: { href?: string; label: string }) {
+  if (!href) return <span style={{ color: "#d6d3d1" }}>—</span>;
+  const safe = /^https?:\/\//i.test(href) ? href : `https://${href}`;
+  return (
+    <a href={safe} target="_blank" rel="noopener noreferrer"
+      style={{ color: "#4338ca", fontWeight: 600, textDecoration: "none", wordBreak: "break-all" }}>
+      {label}
+    </a>
+  );
+}
+
+/** Google presence cell: Found / Not Found / Placeholder (when key absent). */
+function googleCellLabel(
+  v: TranspoCarrierVerification,
+  connected: boolean,
+): { text: string; color: string } {
+  if (v.googleFound === true) return { text: "Found", color: "#166534" };
+  if (!connected) return { text: "Placeholder", color: "#a8a29e" };
+  if (v.googleFound === false) return { text: "Not Found", color: "#b91c1c" };
+  return { text: "—", color: "#d6d3d1" };
+}
+
 export default function TranspoVerificationPage() {
   const [verifications, setVerifications] = useState<TranspoCarrierVerification[]>([]);
   const [storage, setStorage] = useState<Storage | null>(null);
+  const [googleConnected, setGoogleConnected] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -45,9 +68,11 @@ export default function TranspoVerificationPage() {
         ok: boolean;
         verifications?: TranspoCarrierVerification[];
         storage?: Storage;
+        googleProviderConnected?: boolean;
         error?: string;
       };
       if (data.storage) setStorage(data.storage);
+      if (typeof data.googleProviderConnected === "boolean") setGoogleConnected(data.googleProviderConnected);
       if (data.ok && Array.isArray(data.verifications)) setVerifications(data.verifications);
       else setError(data.error ?? "Failed to load verifications");
     } catch (e) {
@@ -188,6 +213,22 @@ export default function TranspoVerificationPage() {
         {runErr && <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 700 }}>✗ {runErr}</span>}
       </div>
 
+      {!googleConnected && (
+        <div style={{
+          fontSize: 11,
+          color: "#9a3412",
+          background: "#fff7ed",
+          border: "1px solid #fed7aa",
+          borderRadius: 8,
+          padding: "8px 12px",
+          marginBottom: 10,
+          fontWeight: 600,
+        }}>
+          ⚠ Google Business live enrichment is not connected. Set <code>GOOGLE_MAPS_API_KEY</code> to
+          fetch ratings, reviews, website, and Maps links.
+        </div>
+      )}
+
       <div style={{
         fontSize: 11,
         color: "#92400e",
@@ -198,7 +239,7 @@ export default function TranspoVerificationPage() {
         marginBottom: 16,
       }}>
         ⚠ Some verification providers are placeholders until API credentials are connected
-        (Google Business, BBB, Facebook, state registry). Website and address signals are live.
+        (BBB, Facebook, state registry). Website and address signals are live.
       </div>
 
       {loading ? (
@@ -227,7 +268,7 @@ export default function TranspoVerificationPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
                 <tr style={{ color: "#78716c", borderBottom: "1px solid #e7e5e4", background: "#fafaf9" }}>
-                  {["Company", "DOT", "City", "State", "Score", "Status", "Google", "Website", "BBB", "Facebook", "Address Type"].map((h) => (
+                  {["Company", "DOT", "City", "State", "Score", "Status", "Google", "Rating", "Match", "Website", "Maps", "BBB", "Facebook", "Address Type"].map((h) => (
                     <th key={h} style={hd}>{h}</th>
                   ))}
                 </tr>
@@ -236,6 +277,16 @@ export default function TranspoVerificationPage() {
                 {verifications.map((v) => {
                   const sc = STATUS_COLORS[v.verificationStatus] ?? STATUS_COLORS.placeholder;
                   const notes = (v.notes ?? []).join(" · ");
+                  const g = googleCellLabel(v, googleConnected);
+                  const rating =
+                    typeof v.googleRating === "number"
+                      ? `${v.googleRating.toFixed(1)}${typeof v.googleReviewCount === "number" ? ` (${v.googleReviewCount})` : ""}`
+                      : "—";
+                  const match =
+                    typeof v.googleMatchConfidence === "number"
+                      ? `${Math.round(v.googleMatchConfidence * 100)}%`
+                      : "—";
+                  const websiteUrl = v.websiteUrl || v.googleWebsite;
                   return (
                     <Fragment key={v.id}>
                       <tr style={{ borderTop: "1px solid #f0efed" }}>
@@ -258,15 +309,18 @@ export default function TranspoVerificationPage() {
                             {v.verificationStatus}
                           </span>
                         </td>
-                        <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.googleFound} /></td>
-                        <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.websiteFound} /></td>
+                        <td style={{ ...cd, paddingBottom: 4, color: g.color, fontWeight: 700, whiteSpace: "nowrap" }}>{g.text}</td>
+                        <td style={{ ...cd, paddingBottom: 4, whiteSpace: "nowrap" }}>{rating}</td>
+                        <td style={{ ...cd, paddingBottom: 4, whiteSpace: "nowrap", color: typeof v.googleMatchConfidence === "number" && v.googleMatchConfidence < 0.45 ? "#b45309" : undefined }}>{match}</td>
+                        <td style={{ ...cd, paddingBottom: 4, maxWidth: 180 }}><ExtLink href={websiteUrl} label={websiteUrl ? websiteUrl.replace(/^https?:\/\//i, "") : ""} /></td>
+                        <td style={{ ...cd, paddingBottom: 4 }}><ExtLink href={v.googleMapsUrl} label="Maps" /></td>
                         <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.bbbFound} /></td>
                         <td style={{ ...cd, paddingBottom: 4 }}><YesNo value={v.facebookFound} /></td>
                         <td style={{ ...cd, paddingBottom: 4, whiteSpace: "nowrap" }}>{v.addressType ?? "—"}</td>
                       </tr>
                       {/* Second line: notes span the full width so the row stays readable. */}
                       <tr style={{ borderBottom: "1px solid #f0efed" }}>
-                        <td colSpan={11} style={{ padding: "0 12px 9px", fontSize: 11, color: "#78716c", lineHeight: 1.5 }}>
+                        <td colSpan={14} style={{ padding: "0 12px 9px", fontSize: 11, color: "#78716c", lineHeight: 1.5 }}>
                           <span style={{ fontWeight: 700, color: "#a8a29e", marginRight: 6 }}>Notes:</span>
                           {notes || "—"}
                         </td>

@@ -14,6 +14,7 @@ import { getTranspoBackendInfo } from "@/lib/intelligence/transpo/db";
 import { readRuns } from "@/lib/intelligence/transpo/sources/source-runs-store";
 import { readTranspoEvidence } from "@/lib/intelligence/transpo/evidence-store";
 import { readCarrierMaster } from "@/lib/intelligence/transpo/carrier-master-store";
+import { isGoogleProviderConnected } from "@/lib/intelligence/transpo/verification/providers/google-business-provider";
 
 export async function GET() {
   try {
@@ -32,6 +33,7 @@ export async function GET() {
       sourceRunsCount: runs.length,
       evidenceCount: evidence.length,
       carrierCount: carriers.length,
+      googleProviderConnected: isGoogleProviderConnected(),
     });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);

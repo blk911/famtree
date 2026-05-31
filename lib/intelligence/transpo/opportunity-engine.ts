@@ -29,7 +29,12 @@ export type TranspoOpportunitySignalId =
   | "residential_address"
   | "po_box_address"
   | "unverified_public_presence"
-  | "verified_established";
+  | "verified_established"
+  // Google-enrichment-derived signals
+  | "google_found_low_confidence"
+  | "google_has_website"
+  | "google_strong_presence"
+  | "no_google_reviews";
 
 export type TranspoOpportunitySignal = {
   id: TranspoOpportunitySignalId;
@@ -60,6 +65,10 @@ const SIGNAL_DEFS: Record<TranspoOpportunitySignalId, { label: string; weight: n
   po_box_address: { label: "PO Box address", weight: 20 },
   unverified_public_presence: { label: "Unverified presence", weight: 15 },
   verified_established: { label: "Verified established", weight: -10 },
+  google_found_low_confidence: { label: "Google match low confidence", weight: 10 },
+  google_has_website: { label: "Google website found", weight: -10 },
+  google_strong_presence: { label: "Strong Google presence", weight: -15 },
+  no_google_reviews: { label: "No Google reviews", weight: 10 },
 };
 
 const SOCIAL_SOURCES: TranspoSource[] = ["linkedin", "facebook", "google_business"];
@@ -102,6 +111,12 @@ function recommendedPlayFor(ids: Set<TranspoOpportunitySignalId>): string {
   if (ids.has("no_google_business") && ids.has("no_website_verified")) {
     return "Digital visibility launch — website + Google Business Profile";
   }
+  if (ids.has("google_found_low_confidence")) {
+    return "Listing cleanup — verify business name, address, and phone";
+  }
+  if (ids.has("no_google_reviews")) {
+    return "Review generation package";
+  }
   if (single && ids.has("residential_address")) {
     return "Owner-operator credibility package";
   }
@@ -110,6 +125,9 @@ function recommendedPlayFor(ids: Set<TranspoOpportunitySignalId>): string {
   }
   if (ids.has("low_reviews")) {
     return "Review/reputation growth package";
+  }
+  if (ids.has("google_strong_presence")) {
+    return "Established carrier expansion audit";
   }
 
   // Carrier-master fallbacks.
@@ -163,6 +181,22 @@ export function scoreCarrierOpportunity(
       matched.push("unverified_public_presence");
     }
     if (verification.verificationScore >= 60) matched.push("verified_established");
+
+    // Google-enrichment signals.
+    if (verification.googleFound === true && (verification.googleMatchConfidence ?? 1) < 0.45) {
+      matched.push("google_found_low_confidence");
+    }
+    if ((verification.googleWebsite ?? "").trim()) matched.push("google_has_website");
+    if (
+      verification.googleFound === true &&
+      (verification.googleRating ?? 0) >= 4 &&
+      (verification.googleReviewCount ?? 0) >= 10
+    ) {
+      matched.push("google_strong_presence");
+    }
+    if (verification.googleFound === true && (verification.googleReviewCount ?? -1) === 0) {
+      matched.push("no_google_reviews");
+    }
   }
 
   const signals: TranspoOpportunitySignal[] = matched.map((id) => ({

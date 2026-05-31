@@ -100,6 +100,16 @@ const DDL_STATEMENTS: string[] = [
   // De-dupe verification rows by carrier_id (one verification per carrier).
   `CREATE UNIQUE INDEX IF NOT EXISTS transpo_carrier_verification_carrier
     ON transpo_carrier_verification (carrier_id)`,
+  // Google Business live-enrichment columns (added idempotently for tables that
+  // pre-date the enrichment build).
+  `ALTER TABLE transpo_carrier_verification
+    ADD COLUMN IF NOT EXISTS google_place_id text,
+    ADD COLUMN IF NOT EXISTS google_maps_url text,
+    ADD COLUMN IF NOT EXISTS google_address text,
+    ADD COLUMN IF NOT EXISTS google_business_name text,
+    ADD COLUMN IF NOT EXISTS google_category text,
+    ADD COLUMN IF NOT EXISTS google_match_confidence numeric,
+    ADD COLUMN IF NOT EXISTS google_matched_by text`,
 ];
 
 // Memoized per serverless isolate: ensure DDL runs at most once per instance.
