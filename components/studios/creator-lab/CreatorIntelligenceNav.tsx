@@ -11,7 +11,6 @@ export type CreatorIntelligenceTool =
   | "assembler"
   | "ig-resolver"
   | "hashtag-harvest"
-  | "styleseat"
   | "prospects"
   | "runs";
 
@@ -19,7 +18,6 @@ const TOOL_TO_NAV_ID: Record<CreatorIntelligenceTool, string> = {
   assembler: "assembler",
   "ig-resolver": "resolver",
   "hashtag-harvest": "harvest",
-  styleseat: "styleseat",
   prospects: "prospects",
   runs: "runs",
 };

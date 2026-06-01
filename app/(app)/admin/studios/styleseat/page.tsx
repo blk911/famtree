@@ -5,7 +5,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
+import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
 import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import {
@@ -1402,7 +1403,10 @@ export default function StyleSeatDiscoveryPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <CreatorIntelligenceNav current="styleseat" />
+      <div style={{ marginBottom: 22 }}>
+        <IntelligenceMarketNav />
+        <IntelligenceSubNav config={salonConfig} showContextBadge={false} />
+      </div>
 
       <IntelligenceFeatureHeader
         title="StyleSeat Discovery"

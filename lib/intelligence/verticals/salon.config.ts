@@ -16,13 +16,13 @@ export const salonConfig: VerticalConfig = {
     { id: "assembler",  label: "Studio Assembler",     href: "/admin/studios/creator-lab" },
     { id: "resolver",   label: "IG Resolver",            href: "/admin/studios/creator-lab/ig-stubs" },
     { id: "harvest",    label: "Hashtag Harvest",        href: "/admin/studios/creator-lab/hashtag-harvest" },
-    { id: "styleseat",  label: "StyleSeat Discovery",    href: "/admin/studios/styleseat" },
+    // styleseat — hidden from menu for now; route /admin/studios/styleseat still exists
     { id: "prospects",  label: "Prospects",              href: "/admin/studios/prospects" },
     { id: "runs",       label: "Runs",                   href: "/admin/studios/runs" },
     { id: "backoffice", label: "Back Office Import",     href: "/admin/intelligence/salon/backoffice" },
   ],
 
-  enabledTools: ["assembler", "resolver", "harvest", "styleseat", "prospects", "runs", "backoffice"],
+  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice"],
   hiddenTools:  [],
 
   sourceLabels: {
