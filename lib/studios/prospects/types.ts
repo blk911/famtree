@@ -203,6 +203,18 @@ export interface ProspectRecord {
     | "error";
   ggCheckedUrls?: string[];
   ggResolverReason?: string;
+  providerResolverReason?: string;
+  providerDiscoveryDebug?: {
+    directUrlsScanned?: string[];
+    linkTrailUrlsScanned?: string[];
+    linkInBioFetched?: boolean;
+    providerDetectedFromDirect?: boolean;
+    providerDetectedFromLinkTrail?: boolean;
+    ggHandleAttempted?: boolean;
+    ggDisplayAttempted?: boolean;
+    ggCheckedUrls?: string[];
+    providerResolverReason?: string;
+  };
 
   // ── Intelligence status ──────────────────────────────────────────────────────
   /**

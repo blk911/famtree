@@ -8,7 +8,7 @@ import { SalonStorageBadge } from "@/components/admin/intelligence/salon/SalonSt
 import { SalonResolverStatusCard } from "@/components/admin/intelligence/salon/SalonResolverStatusCard";
 import { BookingProviderDetectionStrip } from "@/components/admin/intelligence/salon/BookingProviderDetectionStrip";
 import { GgResolverDiagnosticsCard } from "@/components/admin/intelligence/salon/GgResolverDiagnosticsCard";
-import { GgResolverBackfillButton } from "@/components/admin/intelligence/salon/GgResolverBackfillButton";
+import { ProviderDiscoveryBackfillButton } from "@/components/admin/intelligence/salon/ProviderDiscoveryBackfillButton";
 import type { HarvestAnalyticsPayload } from "@/lib/intelligence/salon/harvest-analytics";
 import type { ProviderDetectionSummary } from "@/lib/intelligence/salon/provider-detection-diagnostics";
 
@@ -110,7 +110,7 @@ export default function HarvestAnalyticsPage() {
             />
           ) : null}
 
-          <GgResolverBackfillButton limit={100} />
+          <ProviderDiscoveryBackfillButton limit={100} />
 
           <h3 style={{ fontSize: 14, fontWeight: 800, marginBottom: 10 }}>Per hashtag</h3>
           <div style={{ overflowX: "auto", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12 }}>

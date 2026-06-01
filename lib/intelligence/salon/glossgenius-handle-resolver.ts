@@ -126,9 +126,15 @@ function stripSalonPrefixWords(slug: string): string {
   return s.length >= 3 ? s : slug;
 }
 
+function displayNamePrimarySegment(displayName: string): string {
+  const pipe = displayName.split("|")[0]?.trim();
+  return pipe && pipe.length > 0 ? pipe : displayName.trim();
+}
+
 /** Display name → slug, dropping location tokens when safe. */
 export function slugFromDisplayName(displayName: string): string {
-  const words = displayName
+  const primary = displayNamePrimarySegment(displayName);
+  const words = primary
     .replace(/[^a-zA-Z0-9\s]/g, " ")
     .trim()
     .split(/\s+/)
@@ -139,6 +145,51 @@ export function slugFromDisplayName(displayName: string): string {
   if (words.length === 0) return "";
   const joined = words.join("");
   return normalizeGlossGeniusSlug(joined);
+}
+
+/** Conservative display-name slug variants (max a few). */
+export function generateDisplayNameGgCandidates(displayName: string): string[] {
+  const primary = displayNamePrimarySegment(displayName);
+  const words = primary
+    .replace(/[^a-zA-Z0-9\s]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.toLowerCase())
+    .filter((w) => !LOCATION_WORDS.has(w) && w.length > 1 && !/^(co|colorist|stylist|salon|studio)$/i.test(w));
+
+  const out = new Set<string>();
+  const full = slugFromDisplayName(displayName);
+  if (full.length >= 3) out.add(full);
+
+  if (words.length >= 2) {
+    const first = words[0];
+    const last = words[words.length - 1];
+    if (first && last && first !== last) {
+      out.add(normalizeGlossGeniusSlug(`${first}${last}`));
+      if (/hair|lash|nail|beauty/i.test(displayName)) {
+        out.add(normalizeGlossGeniusSlug(`${first}hair`));
+        out.add(normalizeGlossGeniusSlug(`${last}hair`));
+      }
+    }
+  }
+
+  return Array.from(out).filter((s) => s.length >= 3).slice(0, 4);
+}
+
+const BY_INFIX_PATTERN =
+  /^(.*?)(hair|nails|nail|lash|lashes|beauty|brow|esthetic)(?:by)([a-z0-9]+)$/i;
+
+/** Extract slugs from handles like nat20hairbycas → nat20hair, nat20haircas */
+function extractByInfixSlugs(normalizedHandle: string): string[] {
+  const m = normalizedHandle.match(BY_INFIX_PATTERN);
+  if (!m) return [];
+  const [, prefix, middle, suffix] = m;
+  const out: string[] = [];
+  if (prefix && middle) out.push(`${prefix}${middle}`);
+  if (prefix && middle && suffix) out.push(`${prefix}${middle}${suffix}`);
+  if (prefix && prefix.length >= 3) out.push(prefix);
+  return out.map((s) => normalizeGlossGeniusSlug(s)).filter((s) => s.length >= 3);
 }
 
 export function generateGlossGeniusSlugCandidates(raw: string): string[] {
@@ -161,8 +212,18 @@ export function generateGlossGeniusSlugCandidates(raw: string): string[] {
   add(lower.replace(/_/g, "").replace(/\./g, ""));
   add(lower.replace(/_+$/, ""));
 
+  for (const slug of extractByInfixSlugs(base)) {
+    out.add(slug);
+  }
+
+  // Trailing digit prefix strip: nat20hairbycas → try without leading digits block
+  const noLeadDigits = base.replace(/^[0-9]+/, "");
+  if (noLeadDigits.length >= 3) add(noLeadDigits);
+
   return Array.from(out);
 }
+
+const MAX_GG_CANDIDATES_TOTAL = 8;
 
 export function collectGlossGeniusCandidates(
   input: GlossGeniusHandleResolverInput,
@@ -170,7 +231,7 @@ export function collectGlossGeniusCandidates(
   const seen = new Set<string>();
   const out: Candidate[] = [];
   const push = (slug: string, source: Candidate["source"]) => {
-    if (!slug || slug.length < 3) return;
+    if (!slug || slug.length < 3 || out.length >= MAX_GG_CANDIDATES_TOTAL) return;
     const url = `https://${slug}.glossgenius.com/`;
     const key = url.toLowerCase();
     if (seen.has(key)) return;
@@ -182,15 +243,15 @@ export function collectGlossGeniusCandidates(
   if (handle) {
     for (const slug of generateGlossGeniusSlugCandidates(handle)) {
       push(slug, "handle_derived");
+      if (out.length >= MAX_GG_CANDIDATES_TOTAL) return out;
     }
   }
 
   const display = (input.displayName ?? "").trim();
-  if (display) {
-    const dnSlug = slugFromDisplayName(display);
-    if (dnSlug) push(dnSlug, "display_name_derived");
-    for (const slug of generateGlossGeniusSlugCandidates(display)) {
+  if (display && out.length < MAX_GG_CANDIDATES_TOTAL) {
+    for (const slug of generateDisplayNameGgCandidates(display)) {
       push(slug, "display_name_derived");
+      if (out.length >= MAX_GG_CANDIDATES_TOTAL) break;
     }
   }
 

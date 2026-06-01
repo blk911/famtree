@@ -224,8 +224,10 @@ export async function runResolverForSeeds(
         ...upsertInput,
         ...bookingFields,
         ggResolverStatus: gg.ggResolverStatus,
-        ggCheckedUrls: gg.ggCheckedUrls,
+        ggCheckedUrls: gg.ggCheckedUrls ?? bookingFields.ggCheckedUrls,
         ggResolverReason: gg.ggResolverReason,
+        providerResolverReason: bookingFields.providerResolverReason,
+        providerDiscoveryDebug: bookingFields.providerDiscoveryDebug,
       };
     }
 

@@ -38,6 +38,8 @@ type DetailResponse = {
     glossGeniusStatus?: string;
     ggResolverStatus?: string;
     ggResolverReason?: string;
+    providerResolverReason?: string;
+    providerDiscoveryDebug?: ProspectRecord["providerDiscoveryDebug"];
     ggCheckedUrls?: string[];
     noUrl?: boolean;
     noProvider?: boolean;
@@ -261,23 +263,72 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
 
             <section style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
-                GG RESOLVER
+                PROVIDER DISCOVERY DEBUG
               </div>
-              <Row label="GG Resolver Status">{na(p.ggResolverStatus ?? data?.notes?.ggResolverStatus)}</Row>
-              <Row label="Reason">{na(p.ggResolverReason ?? data?.notes?.ggResolverReason)}</Row>
-              <Row label="Checked URLs">
-                {((p.ggCheckedUrls ?? data?.notes?.ggCheckedUrls) ?? []).length > 0 ? (
-                  <ul style={{ margin: 0, paddingLeft: 16 }}>
-                    {((p.ggCheckedUrls ?? data?.notes?.ggCheckedUrls) ?? []).slice(0, 20).map((u) => (
-                      <li key={u} style={{ fontSize: 11 }}>
-                        <ExternalLink href={u} />
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  "Not available"
-                )}
-              </Row>
+              {(() => {
+                const dbg =
+                  p.providerDiscoveryDebug ?? data?.notes?.providerDiscoveryDebug;
+                const scanned = [
+                  ...(dbg?.directUrlsScanned ?? []),
+                  ...(dbg?.linkTrailUrlsScanned ?? lt?.linkTrailUrlsScanned ?? []),
+                ];
+                const uniqueScanned = Array.from(new Set(scanned));
+                return (
+                  <>
+                    <Row label="URLs scanned">
+                      {uniqueScanned.length > 0 ? (
+                        <ul style={{ margin: 0, paddingLeft: 16 }}>
+                          {uniqueScanned.slice(0, 15).map((u) => (
+                            <li key={u} style={{ fontSize: 11 }}>
+                              <ExternalLink href={u} />
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        "Not available"
+                      )}
+                    </Row>
+                    <Row label="Link-in-bio fetched?">
+                      {dbg?.linkInBioFetched ?? lt?.linkInBioPageFetched ? "Yes" : "No"}
+                    </Row>
+                    <Row label="Detection source">
+                      {dbg?.providerDetectedFromDirect
+                        ? "Direct URL"
+                        : dbg?.providerDetectedFromLinkTrail
+                          ? "Link trail"
+                          : p.bookingProviderSource
+                            ? na(p.bookingProviderSource)
+                            : "Not available"}
+                    </Row>
+                    <Row label="GG checked URLs">
+                      {((dbg?.ggCheckedUrls ?? p.ggCheckedUrls ?? data?.notes?.ggCheckedUrls) ?? [])
+                        .length > 0 ? (
+                        <ul style={{ margin: 0, paddingLeft: 16 }}>
+                          {(dbg?.ggCheckedUrls ?? p.ggCheckedUrls ?? [])
+                            .slice(0, 12)
+                            .map((u) => (
+                              <li key={u} style={{ fontSize: 11 }}>
+                                <ExternalLink href={u} />
+                              </li>
+                            ))}
+                        </ul>
+                      ) : (
+                        "Not available"
+                      )}
+                    </Row>
+                    <Row label="Reason">
+                      {na(
+                        p.providerResolverReason ??
+                          dbg?.providerResolverReason ??
+                          p.ggResolverReason,
+                      )}
+                    </Row>
+                    <Row label="GG resolver status">
+                      {na(p.ggResolverStatus ?? data?.notes?.ggResolverStatus)}
+                    </Row>
+                  </>
+                );
+              })()}
             </section>
 
             <section style={{ marginBottom: 20 }}>

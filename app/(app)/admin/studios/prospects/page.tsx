@@ -23,6 +23,7 @@ import { BookingProviderPill } from "@/components/admin/intelligence/salon/Booki
 import { BookingProviderSourceChip } from "@/components/admin/intelligence/salon/BookingProviderSourceChip";
 import { ProviderDetectionDetail } from "@/components/admin/intelligence/salon/ProviderDetectionDetail";
 import { SalonProspectDrawer } from "@/components/admin/intelligence/salon/SalonProspectDrawer";
+import { ProviderDiscoveryBackfillButton } from "@/components/admin/intelligence/salon/ProviderDiscoveryBackfillButton";
 import { SalonOperatorSummary } from "@/components/admin/intelligence/salon/SalonOperatorSummary";
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
@@ -658,6 +659,8 @@ export default function ProspectsPage() {
         config={salonConfig}
         showContext={false}
       />
+
+      <ProviderDiscoveryBackfillButton limit={250} />
 
       <SalonOperatorSummary
         compact

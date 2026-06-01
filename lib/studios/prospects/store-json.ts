@@ -79,6 +79,8 @@ export function applyBookingDetection(record: Partial<ProspectRecord> & UpsertIn
     allMatchedUrls: record.allMatchedUrls,
     platforms: record.platforms,
     evidence: record.evidence,
+    linkTrailUrls: record.linkTrailUrlsScanned,
+    linkTrailUrlsScanned: record.linkTrailUrlsScanned,
   });
   const existingScore = record.bookingProviderConfidence ?? 0;
   const newScore = detected.bookingProviderConfidence ?? 0;
@@ -352,6 +354,10 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
           : existing.ggCheckedUrls,
       ggResolverReason:
         incomingWithBooking.ggResolverReason ?? existing.ggResolverReason,
+      providerResolverReason:
+        incomingWithBooking.providerResolverReason ?? existing.providerResolverReason,
+      providerDiscoveryDebug:
+        incomingWithBooking.providerDiscoveryDebug ?? existing.providerDiscoveryDebug,
       // ALWAYS preserve human-set fields
       validationStatus: effectiveValidationStatus,
       archiveReason: existing.archiveReason ?? null,

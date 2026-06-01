@@ -57,13 +57,19 @@ export async function GET(_req: NextRequest, context: RouteContext) {
             .filter((e) => e.includes("glossgenius.com") || e.includes("checked"))
             .concat(providerDetection.evidence.filter((e) => e.includes("glossgenius")));
 
+    const pd = prospect.providerDiscoveryDebug;
+
     const notes = {
       outcome: providerDetection.outcome,
       reasonLabel: providerDetection.reasonLabel,
       glossGeniusStatus: providerDetection.glossGeniusStatusLabel,
       ggResolverStatus: prospect.ggResolverStatus ?? "not_attempted",
-      ggResolverReason: prospect.ggResolverReason,
-      ggCheckedUrls: Array.from(new Set(ggCheckedUrls ?? [])),
+      ggResolverReason: prospect.ggResolverReason ?? pd?.providerResolverReason,
+      providerResolverReason: prospect.providerResolverReason ?? pd?.providerResolverReason,
+      ggCheckedUrls: Array.from(
+        new Set([...(ggCheckedUrls ?? []), ...(pd?.ggCheckedUrls ?? [])]),
+      ),
+      providerDiscoveryDebug: pd,
       noUrl: !providerDetection.hasAnyUrl,
       noProvider: providerDetection.outcome !== "detected",
     };
