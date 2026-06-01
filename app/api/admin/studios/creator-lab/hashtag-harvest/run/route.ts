@@ -3,11 +3,12 @@
 // Runs the full hashtag harvest → resolver → prospect pipeline.
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 120; // Apify + resolver can take 60-90s combined
+export const maxDuration = 300; // Per-hashtag harvest (up to 100 posts × N tags) + full resolver
 
 import { NextRequest, NextResponse } from "next/server";
 import { HarvestRunRequestSchema } from "@/lib/studios/creator-lab/hashtag-harvest/schema";
 import { runApifyHashtagHarvest } from "@/lib/studios/creator-lab/hashtag-harvest/apify-client";
+import { computeHashtagHarvestStats, postsForHashtag } from "@/lib/studios/creator-lab/hashtag-harvest/compute-hashtag-stats";
 import { extractPostCreators } from "@/lib/studios/creator-lab/hashtag-harvest/extract-post-creators";
 import { normalizeCreators } from "@/lib/studios/creator-lab/hashtag-harvest/normalize-creators";
 import { runResolverForSeeds } from "@/lib/studios/creator-lab/hashtag-harvest/run-resolver";
@@ -53,21 +54,10 @@ export async function POST(req: NextRequest) {
     errors.push(apifyError);
   }
 
-  // ── Step 2: Extract creator seeds per-hashtag ───────────────────────────────
+  // ── Step 2: Extract creator seeds per-hashtag (independent cap per tag) ─────
   const allSeeds = [];
   for (const hashtag of hashtags) {
-    const hashtagPosts = posts.filter((p) => {
-      const tags = (p.hashtags ?? []).map((h: string) => h.toLowerCase().replace(/^#/, ""));
-      return tags.includes(hashtag.toLowerCase());
-    });
-
-    const postsForTag = hashtagPosts.length > 0
-      ? hashtagPosts
-      : posts.slice(
-          hashtags.indexOf(hashtag) * maxPerHashtag,
-          (hashtags.indexOf(hashtag) + 1) * maxPerHashtag
-        );
-
+    const postsForTag = postsForHashtag(posts, hashtag, maxPerHashtag);
     allSeeds.push(...extractPostCreators(postsForTag, hashtag, market, category, verticalKey));
   }
 
@@ -106,6 +96,15 @@ export async function POST(req: NextRequest) {
 
   const { results, savedCount, failedToSaveCount, saveErrors, upsertAttemptCount, savedProspectIds, savedHandles } = resolverResult;
 
+  const { perHashtag: hashtagStats, totals: hashtagStatsTotals } = computeHashtagHarvestStats(
+    hashtags,
+    posts,
+    allSeeds,
+    normalizedCreators,
+    results,
+    maxPerHashtag,
+  );
+
   // ── Step 4b: After-count for diagnostics ────────────────────────────────────
   const prospectsAfterCount = await countProspects();
   console.log(`[hashtag-harvest/run] prospects after: ${prospectsAfterCount} (delta: +${prospectsAfterCount - prospectsBeforeCount})`);
@@ -143,6 +142,8 @@ export async function POST(req: NextRequest) {
     upsertAttemptCount,
     savedProspectIds,
     savedHandles,
+    hashtagStats,
+    hashtagStatsTotals,
   };
 
   // ── Step 6: Persist run file ────────────────────────────────────────────────

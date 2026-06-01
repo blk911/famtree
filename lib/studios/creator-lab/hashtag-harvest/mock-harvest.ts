@@ -67,16 +67,18 @@ export function generateMockPosts(hashtags: string[], maxPerHashtag: number): Ap
   const posts: ApifyPost[] = [];
 
   for (const hashtag of hashtags) {
-    const handles = pickHandles(hashtag, maxPerHashtag);
-    for (const handle of handles) {
-      const caption = MOCK_CAPTIONS[Math.floor(Math.random() * MOCK_CAPTIONS.length)];
+    const baseHandles = pickHandles(hashtag, Math.min(maxPerHashtag, 20));
+    for (let i = 0; i < maxPerHashtag; i++) {
+      const base = baseHandles[i % baseHandles.length] ?? `creator${i}`;
+      const handle = i < baseHandles.length ? base : `${base}.m${i}`;
+      const caption = MOCK_CAPTIONS[i % MOCK_CAPTIONS.length];
       posts.push({
         ownerUsername: handle,
-        ownerFullName: MOCK_DISPLAY_NAMES[handle] ?? handle.replace(/[._]/g, " "),
+        ownerFullName: MOCK_DISPLAY_NAMES[base] ?? handle.replace(/[._]/g, " "),
         caption,
         hashtags: [hashtag, "homeschool", "education", "learningathome"],
-        url: `https://www.instagram.com/p/mock-${handle.slice(0, 8)}/`,
-        shortCode: `mock-${handle.slice(0, 8)}`,
+        url: `https://www.instagram.com/p/mock-${hashtag.slice(0, 6)}-${i}/`,
+        shortCode: `mock-${hashtag.slice(0, 6)}-${i}`,
         timestamp: new Date().toISOString(),
         likesCount: Math.floor(Math.random() * 500) + 10,
         commentsCount: Math.floor(Math.random() * 50) + 1,

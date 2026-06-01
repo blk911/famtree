@@ -13,6 +13,7 @@ import {
 } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import type {
   HashtagHarvestRun,
+  HashtagHarvestHashtagStats,
   HarvestedCreatorSeed,
   ResolverPipelineResult,
   HarvestRunRequest,
@@ -44,6 +45,64 @@ function platformBadge(platform: string | null) {
 
 function tagLabel(value: string): string {
   return value.replace(/_/g, " ");
+}
+
+// ─── Per-hashtag diagnostics ──────────────────────────────────────────────────
+
+function statLine(label: string, value: number) {
+  return (
+    <div style={{ fontSize: 12, color: "#57534e" }}>
+      <span style={{ fontWeight: 700, color: "#1c1917" }}>{label}:</span> {value}
+    </div>
+  );
+}
+
+function HashtagStatCard({ row }: { row: HashtagHarvestHashtagStats }) {
+  return (
+    <div style={{
+      background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12,
+      padding: "14px 16px", minWidth: 200, flex: "1 1 220px",
+    }}>
+      <div style={{ fontSize: 14, fontWeight: 800, color: "#9d174d", marginBottom: 8 }}>
+        #{row.hashtag}
+      </div>
+      {statLine("Posts", row.postsPulled)}
+      {statLine("Creators", row.creatorsFound)}
+      {statLine("Deduped", row.creatorsDeduped)}
+      {statLine("Providers", row.bookingProvidersFound)}
+      {statLine("Final Prospects", row.finalProspects)}
+    </div>
+  );
+}
+
+function HashtagDiagnosticsPanel({ run }: { run: HashtagHarvestRun }) {
+  const stats = run.hashtagStats;
+  const totals = run.hashtagStatsTotals;
+  if (!stats?.length || !totals) return null;
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 10 }}>
+        PER-HASHTAG HARVEST DIAGNOSTICS
+      </div>
+      <div style={{
+        background: "#fafaf9", border: "1px solid #e7e5e4", borderRadius: 12,
+        padding: "14px 18px", marginBottom: 12,
+      }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#57534e", marginBottom: 6 }}>Totals</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, fontSize: 12, color: "#57534e" }}>
+          <span><strong>Posts</strong> {totals.postsPulled}</span>
+          <span><strong>Creators</strong> {totals.creatorsFound}</span>
+          <span><strong>Deduped</strong> {totals.creatorsDeduped}</span>
+          <span><strong>Providers</strong> {totals.bookingProvidersFound}</span>
+          <span><strong>Final Prospects</strong> {totals.finalProspects}</span>
+        </div>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+        {stats.map((row) => <HashtagStatCard key={row.hashtag} row={row} />)}
+      </div>
+    </div>
+  );
 }
 
 // ─── Summary cards ────────────────────────────────────────────────────────────
@@ -219,6 +278,8 @@ function ReportsView({
 
   return (
     <div>
+      <HashtagDiagnosticsPanel run={run} />
+
       {/* Run summary band */}
       <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "16px 20px", marginBottom: 14 }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 12 }}>
@@ -857,6 +918,7 @@ export default function HashtagHarvestPage() {
           )}
 
           <SummaryCards run={runData.run} results={runData.results} />
+          <HashtagDiagnosticsPanel run={runData.run} />
 
           {/* Hard zero-save warning */}
           {runData.run.totalCreators > 0 && runData.run.savedCount === 0 && (

@@ -10,7 +10,7 @@ const APIFY_BASE = "https://api.apify.com/v2";
 const ACTOR_ID  = "apify~instagram-hashtag-scraper";
 
 // How long to wait for Apify to finish (seconds).
-// Vercel maxDuration is set to 120s; leave headroom for resolver phase.
+// Apify wait window; resolver runs after harvest (route maxDuration 300s).
 const WAIT_FOR_FINISH_SECS = 55;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -155,7 +155,11 @@ export async function runApifyHashtagHarvest(
 
   const { runId, datasetId, status } = runInfo;
 
-  const posts = await fetchDatasetItems(datasetId, token, maxPerHashtag * hashtags.length * 2);
+  const posts = await fetchDatasetItems(
+    datasetId,
+    token,
+    maxPerHashtag * hashtags.length + 50,
+  );
 
   if (status !== "SUCCEEDED" && posts.length === 0) {
     return {

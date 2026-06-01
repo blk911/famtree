@@ -94,12 +94,31 @@ export interface RunResolverResult {
   savedCount: number;
   failedToSaveCount: number;
   saveErrors: SaveError[];
-  /** How many seeds the upsert loop attempted (== capped.length) */
+  /** How many seeds the upsert loop attempted (== seeds.length) */
   upsertAttemptCount: number;
   /** prospectId of every successfully saved record */
   savedProspectIds: string[];
   /** @handle of every successfully saved record */
   savedHandles: string[];
+}
+
+// ─── Per-hashtag diagnostics ──────────────────────────────────────────────────
+
+export interface HashtagHarvestHashtagStats {
+  hashtag: string;
+  postsPulled: number;
+  creatorsFound: number;
+  creatorsDeduped: number;
+  bookingProvidersFound: number;
+  finalProspects: number;
+}
+
+export interface HashtagHarvestStatsTotals {
+  postsPulled: number;
+  creatorsFound: number;
+  creatorsDeduped: number;
+  bookingProvidersFound: number;
+  finalProspects: number;
 }
 
 // ─── Harvest run ──────────────────────────────────────────────────────────────
@@ -129,6 +148,9 @@ export interface HashtagHarvestRun {
   upsertAttemptCount: number;
   savedProspectIds: string[];
   savedHandles: string[];
+  /** Per-hashtag pipeline metrics + rolled-up totals */
+  hashtagStats?: HashtagHarvestHashtagStats[];
+  hashtagStatsTotals?: HashtagHarvestStatsTotals;
 }
 
 export interface HarvestRunFile {

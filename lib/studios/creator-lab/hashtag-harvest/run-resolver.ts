@@ -24,9 +24,6 @@ import type {
 
 export type { HarvestContext };
 
-// Max seeds to resolve per harvest run (cost / time guard)
-const MAX_RESOLVE = 40;
-
 // ─── Internal resolved-seed shape (phase 1 output) ───────────────────────────
 
 interface ResolvedSeed {
@@ -46,8 +43,6 @@ export async function runResolverForSeeds(
   mode: ResolveMode,
   ctx: HarvestContext,
 ): Promise<RunResolverResult> {
-  const capped = seeds.slice(0, MAX_RESOLVE);
-
   // Load deep-resolve module lazily (only in "deep" mode)
   let deepResolve: typeof import("@/lib/studios/creator-lab/ig-stubs/deep-research").deepResolve | null = null;
   if (mode === "deep") {
@@ -61,7 +56,7 @@ export async function runResolverForSeeds(
 
   // ── Phase 1: resolve all seeds in parallel (network I/O) ──────────────────
   const settled = await Promise.allSettled(
-    capped.map(async (seed): Promise<ResolvedSeed> => {
+    seeds.map(async (seed): Promise<ResolvedSeed> => {
       const igSeed: IgSeed = {
         handle: seed.handle,
         displayName: seed.displayName,
@@ -168,7 +163,7 @@ export async function runResolverForSeeds(
 
   for (let i = 0; i < settled.length; i++) {
     const s = settled[i];
-    const original = capped[i];
+    const original = seeds[i];
 
     // Resolution itself failed — still record it, nothing to upsert
     if (s.status === "rejected") {

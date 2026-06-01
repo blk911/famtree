@@ -7,6 +7,9 @@
     },
     "app/api/profile/posts/blob-upload/route.ts": {
       "maxDuration": 60
+    },
+    "app/api/admin/studios/creator-lab/hashtag-harvest/run/route.ts": {
+      "maxDuration": 300
     }
   }
 }

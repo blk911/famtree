@@ -14,6 +14,7 @@ import {
   SALON_HASHTAG_CLUSTERS,
   SALON_HASHTAG_PRESET,
 } from "@/lib/studios/creator-lab/hashtag-harvest/classifiers/salon";
+import { DEFAULT_MAX_POSTS_PER_HASHTAG } from "@/lib/studios/creator-lab/hashtag-harvest/limits";
 import type { HarvestRunRequest } from "@/lib/studios/creator-lab/hashtag-harvest/types";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 
@@ -115,7 +116,7 @@ export function HarvestForm({ onSubmit, loading, error }: HarvestFormProps) {
   const [hashtagText,    setHashtagText]    = useState("");
   const [market,         setMarket]         = useState("");
   const [category,       setCategory]       = useState("");
-  const [maxPerHashtag,  setMaxPerHashtag]  = useState(10);
+  const [maxPerHashtag,  setMaxPerHashtag]  = useState(DEFAULT_MAX_POSTS_PER_HASHTAG);
   const [mode,           setMode]           = useState<ResolveMode>("fast");
   const [presetOpen,     setPresetOpen]     = useState(false);
   const [progressIdx,    setProgressIdx]    = useState(0);
@@ -149,7 +150,7 @@ export function HarvestForm({ onSubmit, loading, error }: HarvestFormProps) {
     setHashtagText("");
     setMarket("");
     setCategory("");
-    setMaxPerHashtag(10);
+    setMaxPerHashtag(DEFAULT_MAX_POSTS_PER_HASHTAG);
     setMode("fast");
     setPresetOpen(false);
   }
@@ -301,13 +302,13 @@ export function HarvestForm({ onSubmit, loading, error }: HarvestFormProps) {
         {/* Max per hashtag */}
         <div>
           <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 6 }}>
-            MAX CREATORS PER HASHTAG
+            MAX POSTS PER HASHTAG
           </label>
           <select
             value={maxPerHashtag} onChange={(e) => setMaxPerHashtag(Number(e.target.value))}
             style={{ ...inputStyle }} disabled={loading}
           >
-            {[5, 10, 15, 20, 30].map((n) => <option key={n} value={n}>{n}</option>)}
+            {[25, 50, 75, 100].map((n) => <option key={n} value={n}>{n}</option>)}
           </select>
         </div>
 
