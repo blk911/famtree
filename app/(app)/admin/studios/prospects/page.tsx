@@ -9,8 +9,8 @@ import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatur
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import type { ProspectRecord, ProspectStatus, ProspectListResponse } from "@/lib/studios/prospects/types";
 import { PROSPECT_STATUS_LABELS, PROSPECT_STATUS_COLORS } from "@/lib/studios/prospects/types";
-import { BUSINESS_CATEGORIES, BUSINESS_CATEGORY_LABELS, BUSINESS_SUBCATEGORIES, RELATIONSHIP_OPPORTUNITY_LABELS, RELATIONSHIP_OPPORTUNITY_TYPES } from "@/lib/studios/prospects/opportunity-taxonomy";
-import type { BusinessCategory, RelationshipOpportunityType } from "@/lib/studios/prospects/opportunity-taxonomy";
+import { BUSINESS_CATEGORY_LABELS, RELATIONSHIP_OPPORTUNITY_LABELS } from "@/lib/studios/prospects/opportunity-taxonomy";
+import type { RelationshipOpportunityType } from "@/lib/studios/prospects/opportunity-taxonomy";
 import {
   VALIDATION_STATUS_LABELS,
   VALIDATION_STATUS_COLORS,
@@ -22,10 +22,8 @@ import type { ValidationStatus, EducationType, AudienceType } from "@/lib/studio
 import { BookingProviderPill } from "@/components/admin/intelligence/salon/BookingProviderPill";
 import { BookingProviderSourceChip } from "@/components/admin/intelligence/salon/BookingProviderSourceChip";
 import { ProviderDetectionDetail } from "@/components/admin/intelligence/salon/ProviderDetectionDetail";
-import { SalonStorageBadge } from "@/components/admin/intelligence/salon/SalonStorageBadge";
 import { SalonProspectDrawer } from "@/components/admin/intelligence/salon/SalonProspectDrawer";
 import { SalonOperatorSummary } from "@/components/admin/intelligence/salon/SalonOperatorSummary";
-import { SalonPipelineStatus } from "@/components/admin/intelligence/salon/SalonPipelineStatus";
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
 
@@ -76,20 +74,48 @@ function tagLabel(value: string): string {
   return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-type MarketKey =
-  | "personal_care"
-  | "fitness_wellness"
-  | "education"
-  | "artists_creators"
-  | "misc";
+type SalonCategoryKey =
+  | "hair"
+  | "nails"
+  | "esthetics"
+  | "brows"
+  | "lashes"
+  | "massage"
+  | "barber"
+  | "salon_suite"
+  | "spa";
 
-const MARKET_DEFINITIONS: Array<{ key: MarketKey; label: string; categories: BusinessCategory[] }> = [
-  { key: "personal_care", label: "Personal Care", categories: ["beauty_personal_care", "medical_aesthetic"] },
-  { key: "fitness_wellness", label: "Fitness / Wellness", categories: ["fitness_wellness"] },
-  { key: "education", label: "Education", categories: ["education_tutor", "homeschool_microschool"] },
-  { key: "artists_creators", label: "Artists / Creators", categories: ["artist_creator", "photographer_videographer", "music_performing_arts", "retail_maker"] },
-  { key: "misc", label: "Misc", categories: ["pet_services", "wedding_events", "coach_consultant", "home_services", "food_hospitality", "unknown"] },
+const SALON_CATEGORIES: Array<{
+  key: SalonCategoryKey;
+  label: string;
+  subtypes: string[];
+  categoryGuesses: string[];
+}> = [
+  { key: "hair", label: "Hair", subtypes: ["hair", "braids", "extensions", "colorist"], categoryGuesses: ["hair"] },
+  { key: "nails", label: "Nails", subtypes: ["nails"], categoryGuesses: ["nail"] },
+  { key: "esthetics", label: "Esthetics", subtypes: ["esthetics", "medical_aesthetics", "waxing"], categoryGuesses: ["esthetic", "skin", "medical aesthetic"] },
+  { key: "brows", label: "Brows", subtypes: ["brows", "brow"], categoryGuesses: ["brow"] },
+  { key: "lashes", label: "Lashes", subtypes: ["lashes", "lash"], categoryGuesses: ["lash"] },
+  { key: "massage", label: "Massage", subtypes: ["massage"], categoryGuesses: ["massage"] },
+  { key: "barber", label: "Barber", subtypes: ["barber"], categoryGuesses: ["barber"] },
+  { key: "salon_suite", label: "Salon Suite", subtypes: ["salon_suite", "suite"], categoryGuesses: ["salon suite", "suite"] },
+  { key: "spa", label: "Spa", subtypes: ["spa"], categoryGuesses: ["spa"] },
 ];
+
+function prospectMatchesSalonCategory(p: ProspectRecord, key: SalonCategoryKey): boolean {
+  const def = SALON_CATEGORIES.find((c) => c.key === key);
+  if (!def) return false;
+  const sub = (p.businessSubcategory ?? "").toLowerCase();
+  const guess = (p.identity.categoryGuess ?? "").toLowerCase();
+  if (def.subtypes.some((s) => sub.includes(s))) return true;
+  if (def.categoryGuesses.some((g) => guess.includes(g))) return true;
+  return false;
+}
+
+function salonCategoryLabel(p: ProspectRecord): string {
+  const hit = SALON_CATEGORIES.find((c) => prospectMatchesSalonCategory(p, c.key));
+  return hit?.label ?? (p.businessSubcategory ? friendlySubtypeLabel(p.businessSubcategory) : "");
+}
 
 const RELATIONSHIP_FILTERS: Array<{ value: RelationshipOpportunityType; label: string }> = [
   { value: "appointment_operator", label: "Appointment Operators" },
@@ -120,22 +146,6 @@ const EXTRA_SUBTYPE_LABELS: Record<string, string> = {
   photographer: "Photographer",
   tutor: "Tutor",
 };
-
-const MARKET_SUBTYPE_HINTS: Partial<Record<MarketKey, string[]>> = {
-  personal_care: ["nails", "hair", "barber", "esthetics", "lashes", "makeup", "braids", "extensions", "medical_aesthetics"],
-  fitness_wellness: ["personal_trainer", "yoga", "pilates", "nutrition", "sports_coach", "wellness_coach"],
-  education: ["tutor", "math_tutor", "science_tutor", "reading_tutor", "test_prep", "homeschool", "microschool", "music_teacher", "coding_teacher"],
-  artists_creators: ["artist", "painter", "watercolor_artist", "illustrator", "digital_artist", "photographer", "videographer", "maker", "craft_artist", "musician"],
-  misc: ["pet_services", "dog_trainer", "groomer", "wedding_planner", "event_vendor", "home_services", "coach_consultant", "retail_maker", "other_unknown"],
-};
-
-function marketForCategory(category?: string | null): typeof MARKET_DEFINITIONS[number] {
-  return MARKET_DEFINITIONS.find((market) => market.categories.includes(category as BusinessCategory)) ?? MARKET_DEFINITIONS[MARKET_DEFINITIONS.length - 1];
-}
-
-function friendlyMarketLabel(category?: string | null): string {
-  return marketForCategory(category).label;
-}
 
 function friendlySubtypeLabel(value?: string | null): string {
   if (!value) return "Unknown";
@@ -395,15 +405,11 @@ export default function ProspectsPage() {
   const [drawerProspectId, setDrawerProspectId] = useState<string | null>(null);
   const [statsProspects, setStatsProspects] = useState<ProspectRecord[]>([]);
   const [statsTotal, setStatsTotal] = useState(0);
-  const [selectedMarkets, setSelectedMarkets] = useState<MarketKey[]>([]);
-  const [selectedSubtypes, setSelectedSubtypes] = useState<string[]>([]);
-  const [selectedSubtypeAllMarkets, setSelectedSubtypeAllMarkets] = useState<MarketKey[]>([]);
+  const [selectedSalonCategories, setSelectedSalonCategories] = useState<SalonCategoryKey[]>([]);
   const [relationshipAllSelected, setRelationshipAllSelected] = useState(true);
   const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<RelationshipOpportunityType[]>([]);
-  const [openMarketDropdown, setOpenMarketDropdown] = useState<MarketKey | null>(null);
   const [relationshipDropdownOpen, setRelationshipDropdownOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [campaignOpen, setCampaignOpen] = useState(false);
   const [refreshNonce, setRefreshNonce] = useState(0);
   const pageSize = 100;
 
@@ -485,63 +491,15 @@ export default function ProspectsPage() {
   const platformSignals = useMemo(() => Array.from(new Set(prospects.flatMap((p) => p.platformSignals ?? []))).sort(), [prospects]);
   const offerFitTags = useMemo(() => Array.from(new Set(prospects.flatMap((p) => p.offerFitTags ?? []))).sort(), [prospects]);
 
-  const selectedMarketCategories = useMemo(() => {
-    if (selectedMarkets.length === 0) return [];
-    return MARKET_DEFINITIONS
-      .filter((market) => selectedMarkets.includes(market.key))
-      .flatMap((market) => market.categories);
-  }, [selectedMarkets]);
-
-  const selectedMarketLabels = useMemo(
-    () => MARKET_DEFINITIONS.filter((market) => selectedMarkets.includes(market.key)).map((market) => market.label),
-    [selectedMarkets]
-  );
-
-  const marketCounts = useMemo(() => {
-    const counts: Record<MarketKey, number> = Object.fromEntries(MARKET_DEFINITIONS.map((market) => [market.key, 0])) as Record<MarketKey, number>;
-    for (const prospect of prospects) counts[marketForCategory(prospect.businessCategory).key]++;
-    return counts;
-  }, [prospects]);
-
-  const subtypesByMarket = useMemo(() => {
-    const entries: Record<MarketKey, { market: typeof MARKET_DEFINITIONS[number]; subtypes: string[] }> = {} as Record<MarketKey, { market: typeof MARKET_DEFINITIONS[number]; subtypes: string[] }>;
-
-    for (const market of MARKET_DEFINITIONS) {
-      const taxonomySubtypes = market.categories.flatMap((category) => BUSINESS_SUBCATEGORIES[category] ?? []);
-      const prospectSubtypes = prospects
-        .filter((p) => market.categories.includes(p.businessCategory as BusinessCategory))
-        .map((p) => p.businessSubcategory)
-        .filter(Boolean) as string[];
-      const subtypes = unique([...(MARKET_SUBTYPE_HINTS[market.key] ?? []), ...taxonomySubtypes, ...prospectSubtypes])
-        .sort((a, b) => friendlySubtypeLabel(a).localeCompare(friendlySubtypeLabel(b)));
-      entries[market.key] = { market, subtypes };
-    }
-
-    return entries;
-  }, [prospects]);
-
-  const subtypeCountsByMarket = useMemo(() => {
-    const counts = Object.fromEntries(MARKET_DEFINITIONS.map((market) => [market.key, {}])) as Record<MarketKey, Record<string, number>>;
+  const salonCategoryCounts = useMemo(() => {
+    const counts = Object.fromEntries(SALON_CATEGORIES.map((c) => [c.key, 0])) as Record<SalonCategoryKey, number>;
     for (const prospect of prospects) {
-      const subtype = prospect.businessSubcategory;
-      if (!subtype) continue;
-      const marketKey = marketForCategory(prospect.businessCategory).key;
-      counts[marketKey][subtype] = (counts[marketKey][subtype] ?? 0) + 1;
+      for (const cat of SALON_CATEGORIES) {
+        if (prospectMatchesSalonCategory(prospect, cat.key)) counts[cat.key]++;
+      }
     }
     return counts;
   }, [prospects]);
-
-  const selectedSubtypesByMarket = useMemo(() => {
-    const grouped = MARKET_DEFINITIONS.reduce((acc, market) => {
-      acc[market.key] = [];
-      return acc;
-    }, {} as Record<MarketKey, string[]>);
-    for (const subtype of selectedSubtypes) {
-      const owningMarket = MARKET_DEFINITIONS.find((market) => subtypesByMarket[market.key]?.subtypes.includes(subtype))?.key;
-      if (owningMarket) grouped[owningMarket].push(subtype);
-    }
-    return grouped;
-  }, [selectedSubtypes, subtypesByMarket]);
 
   const relationshipCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -554,16 +512,23 @@ export default function ProspectsPage() {
 
   const visible = useMemo(() => {
     let rows = prospects.filter((p) => {
-      const marketKey = marketForCategory(p.businessCategory).key;
-      const marketSpecificSubtypes = selectedSubtypesByMarket[marketKey] ?? [];
-      const marketAllSelected = selectedSubtypeAllMarkets.includes(marketKey);
-      const subtypeFilterActive = !marketAllSelected && marketSpecificSubtypes.length > 0;
       const relationshipFilterActive = selectedRelationshipTypes.length > 0;
 
-      if (selectedMarkets.length > 0 && !selectedMarketCategories.includes(p.businessCategory as BusinessCategory)) return false;
-      if (subtypeFilterActive && !marketSpecificSubtypes.includes(p.businessSubcategory ?? "")) return false;
+      if (
+        selectedSalonCategories.length > 0 &&
+        !selectedSalonCategories.some((key) => prospectMatchesSalonCategory(p, key))
+      ) {
+        return false;
+      }
 
-      if (relationshipFilterActive && !selectedRelationshipTypes.includes((p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType)) return false;
+      if (
+        relationshipFilterActive &&
+        !selectedRelationshipTypes.includes(
+          (p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType,
+        )
+      ) {
+        return false;
+      }
 
       return true;
     });
@@ -590,7 +555,7 @@ export default function ProspectsPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return rows;
-  }, [prospects, selectedMarketCategories, selectedMarkets, selectedSubtypeAllMarkets, selectedSubtypesByMarket, selectedRelationshipTypes, sortKey, sortDir]);
+  }, [prospects, selectedSalonCategories, selectedRelationshipTypes, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
@@ -608,60 +573,17 @@ export default function ProspectsPage() {
     setFBookingProvider("all"); setFBookingSource("all"); setFImportCandidate(false); setFConfidenceBucket("all");
   }
   function clearWorkflowSelection() {
-    setSelectedMarkets([]);
-    setSelectedSubtypes([]);
-    setSelectedSubtypeAllMarkets([]);
+    setSelectedSalonCategories([]);
     setRelationshipAllSelected(true);
     setSelectedRelationshipTypes([]);
-    setOpenMarketDropdown(null);
     setRelationshipDropdownOpen(false);
   }
   function toggleValue<T extends string>(value: T, values: T[], setter: (next: T[]) => void) {
     setter(values.includes(value) ? values.filter((item) => item !== value) : [...values, value]);
   }
-  function marketSubtypeBelongsTo(market: typeof MARKET_DEFINITIONS[number], subtype: string) {
-    return market.categories.some((category) => (BUSINESS_SUBCATEGORIES[category] ?? []).includes(subtype))
-      || (MARKET_SUBTYPE_HINTS[market.key] ?? []).includes(subtype);
-  }
-  function clearMarketSelection(market: typeof MARKET_DEFINITIONS[number]) {
-    setSelectedMarkets(selectedMarkets.filter((item) => item !== market.key));
-    setSelectedSubtypes(selectedSubtypes.filter((subtype) => !marketSubtypeBelongsTo(market, subtype)));
-    setSelectedSubtypeAllMarkets(selectedSubtypeAllMarkets.filter((item) => item !== market.key));
-    if (openMarketDropdown === market.key) setOpenMarketDropdown(null);
-  }
-  function handleMarketButtonClick(market: typeof MARKET_DEFINITIONS[number]) {
-    const selected = selectedMarkets.includes(market.key);
-    if (selected && openMarketDropdown === market.key) {
-      clearMarketSelection(market);
-      return;
-    }
-    if (!selected) {
-      setSelectedMarkets([...selectedMarkets, market.key]);
-      setSelectedSubtypeAllMarkets(unique([...selectedSubtypeAllMarkets, market.key]));
-    }
-    setOpenMarketDropdown(market.key);
+  function toggleSalonCategory(key: SalonCategoryKey) {
+    toggleValue(key, selectedSalonCategories, setSelectedSalonCategories);
     setRelationshipDropdownOpen(false);
-  }
-  function toggleMarketSubtypeAll(marketKey: MarketKey, subtypes: string[]) {
-    if (selectedSubtypeAllMarkets.includes(marketKey)) {
-      setSelectedSubtypeAllMarkets(selectedSubtypeAllMarkets.filter((item) => item !== marketKey));
-      setSelectedSubtypes(selectedSubtypes.filter((subtype) => !subtypes.includes(subtype)));
-      return;
-    }
-    setSelectedSubtypeAllMarkets(unique([...selectedSubtypeAllMarkets, marketKey]));
-    setSelectedSubtypes(selectedSubtypes.filter((subtype) => !subtypes.includes(subtype)));
-  }
-  function toggleMarketSubtype(marketKey: MarketKey, subtype: string) {
-    const marketSubtypes = subtypesByMarket[marketKey]?.subtypes ?? [];
-    const currentMarketSubtypes = selectedSubtypes.filter((item) => marketSubtypes.includes(item));
-    const selected = currentMarketSubtypes.includes(subtype);
-    const withoutSubtype = selectedSubtypes.filter((item) => item !== subtype);
-    setSelectedSubtypeAllMarkets(selectedSubtypeAllMarkets.filter((item) => item !== marketKey));
-    if (selected) {
-      setSelectedSubtypes(withoutSubtype);
-    } else {
-      setSelectedSubtypes([...withoutSubtype, subtype]);
-    }
   }
   function toggleRelationshipAll() {
     if (relationshipAllSelected) {
@@ -681,23 +603,21 @@ export default function ProspectsPage() {
     : selectedRelationshipTypes.length
     ? selectedRelationshipTypes.map((t) => RELATIONSHIP_OPPORTUNITY_LABELS[t]).join(", ")
     : "All";
-  const subtypeSummary = useMemo(() => {
-    if (selectedSubtypes.length === 0) return "All";
-    const allLabels = MARKET_DEFINITIONS
-      .filter((market) => selectedSubtypeAllMarkets.includes(market.key))
-      .map((market) => `${market.label}: All`);
-    const subtypeLabels = selectedSubtypes.map(friendlySubtypeLabel);
-    return [...allLabels, ...subtypeLabels].join(", ");
-  }, [selectedSubtypes, selectedSubtypeAllMarkets]);
+  const salonCategorySummary = useMemo(() => {
+    if (selectedSalonCategories.length === 0) return "All categories";
+    return selectedSalonCategories
+      .map((key) => SALON_CATEGORIES.find((c) => c.key === key)?.label ?? key)
+      .join(", ");
+  }, [selectedSalonCategories]);
   const hasFilters =
     fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" ||
     fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" ||
     fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all" || fBookingProvider !== "all" ||
     fBookingSource !== "all" || fImportCandidate || fConfidenceBucket !== "all";
   const hasWorkflowSelection =
-    selectedMarkets.length > 0 || selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0 ||
-    !relationshipAllSelected || selectedRelationshipTypes.length > 0;
-  const canCreateCampaign = visible.length > 0 && (hasWorkflowSelection || hasFilters);
+    selectedSalonCategories.length > 0 ||
+    !relationshipAllSelected ||
+    selectedRelationshipTypes.length > 0;
 
   const operatorMetrics = useMemo(() => {
     const pool = statsProspects.length > 0 ? statsProspects : prospects;
@@ -727,29 +647,25 @@ export default function ProspectsPage() {
   };
 
   const total = totalCount;
-  const selectedOfferFitTags = unique(visible.flatMap((p) => p.offerFitTags ?? [])).slice(0, 8);
-  const avgOpportunity = visible.length
-    ? Math.round(visible.reduce((sum, p) => sum + (p.overallOpportunityScore ?? 0), 0) / visible.length)
-    : 0;
-  const suggestedCampaignName = selectedMarketLabels.length > 0
-    ? `${selectedMarketLabels.join(" + ")}${selectedRelationshipTypes.length === 1 ? ` - ${RELATIONSHIP_OPPORTUNITY_LABELS[selectedRelationshipTypes[0]]}` : ""}`
-    : visible.some((p) => p.businessCategory === "education_tutor" || p.businessCategory === "homeschool_microschool")
-      ? "Education Tutors - Parent Network"
-      : "Relationship Operator Working Set";
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 20px 40px" }}>
       <CreatorIntelligenceNav current="prospects" />
 
       <IntelligenceFeatureHeader
         title="Prospects"
-        description="Salon prospect repository — find the market, isolate relationship operators, then build a campaign around the right offer."
+        description="Salon operator screen — filter, review, and act on harvested creators."
         config={salonConfig}
+        showContext={false}
       />
 
-      <SalonStorageBadge />
-
       <SalonOperatorSummary
+        compact
+        pipeline={[
+          { label: "Source", value: operatorMetrics.total },
+          { label: "Qualified", value: operatorMetrics.relationshipOperators },
+          { label: "Campaign", value: operatorMetrics.campaignReady },
+        ]}
         pills={[
           { label: "Prospects", value: operatorMetrics.total, color: "#1c1917" },
           { label: "Relationship Operators", value: operatorMetrics.relationshipOperators, color: "#0369a1" },
@@ -759,76 +675,39 @@ export default function ProspectsPage() {
         ]}
       />
 
-      <SalonPipelineStatus
-        steps={[
-          { label: "Source", value: operatorMetrics.total },
-          { label: "Resolved", value: operatorMetrics.enriched },
-          { label: "Qualified", value: operatorMetrics.relationshipOperators },
-          { label: "Import Candidates", value: operatorMetrics.importCandidates },
-          { label: "Campaign Ready", value: operatorMetrics.campaignReady },
-        ]}
-      />
-
-      <div style={{ marginBottom: 14, background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "12px 14px" }}>
-        <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 10 }}>
-          FILTERS
-        </div>
-        <div style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 11, fontWeight: 850, color: "#1c1917", marginBottom: 7 }}>Business Type / Market</div>
-            <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-              {MARKET_DEFINITIONS.map((market) => {
-                const selected = selectedMarkets.includes(market.key);
-                const count = marketCounts[market.key] ?? 0;
-                const marketSubtypes = subtypesByMarket[market.key]?.subtypes ?? [];
-                const marketSpecific = selectedSubtypesByMarket[market.key] ?? [];
-                const allSelected = selectedSubtypeAllMarkets.includes(market.key);
-                const open = openMarketDropdown === market.key;
+      <div style={{ marginBottom: 10, background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, padding: "10px 12px" }}>
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 6 }}>
+            SALON CATEGORY
+          </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {SALON_CATEGORIES.map((cat) => {
+                const selected = selectedSalonCategories.includes(cat.key);
+                const count = salonCategoryCounts[cat.key] ?? 0;
                 return (
-                  <div key={market.key} style={{ position: "relative" }}>
-                    <button onClick={() => handleMarketButtonClick(market)}
-                      style={{
-                        border: selected ? "1px solid #9d174d" : "1px solid #e7e5e4",
-                        background: selected ? "#fdf2f8" : "#fff",
-                        color: selected ? "#9d174d" : "#57534e",
-                        borderRadius: 9, padding: "7px 9px", fontSize: 11, fontWeight: 800, cursor: "pointer",
-                      }}>
-                      {market.label} <span style={{ color: selected ? "#be185d" : "#a8a29e" }}>{count}</span> <span style={{ color: "#a8a29e" }}>▼</span>
-                    </button>
-                    {open && (
-                      <div style={{
-                        position: "absolute", zIndex: 12, top: 34, left: 0, width: 250, maxHeight: 290, overflow: "auto",
-                        background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, boxShadow: "0 14px 35px rgba(28,25,23,0.14)", padding: 8,
-                      }}>
-                        <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, fontSize: 11, fontWeight: 850, color: "#1c1917", cursor: "pointer" }}>
-                          <input
-                            type="checkbox"
-                            checked={allSelected}
-                            onChange={() => toggleMarketSubtypeAll(market.key, marketSubtypes)}
-                          />
-                          All
-                        </label>
-                        <div style={{ height: 1, background: "#f0ede8", margin: "4px 0" }} />
-                        {marketSubtypes.map((subtype) => {
-                          const subtypeSelected = marketSpecific.includes(subtype) && !allSelected;
-                          return (
-                            <label key={subtype} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 7, fontSize: 11, color: "#57534e", cursor: "pointer" }}>
-                              <input
-                                type="checkbox"
-                                checked={subtypeSelected}
-                                onChange={() => toggleMarketSubtype(market.key, subtype)}
-                              />
-                              <span style={{ flex: 1 }}>{friendlySubtypeLabel(subtype)}</span>
-                              <span style={{ color: "#a8a29e", fontWeight: 800 }}>{subtypeCountsByMarket[market.key]?.[subtype] ?? 0}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => toggleSalonCategory(cat.key)}
+                    style={{
+                      border: selected ? "1px solid #9d174d" : "1px solid #e7e5e4",
+                      background: selected ? "#fdf2f8" : "#fff",
+                      color: selected ? "#9d174d" : "#57534e",
+                      borderRadius: 999,
+                      padding: "5px 10px",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {cat.label} <span style={{ color: selected ? "#be185d" : "#a8a29e" }}>{count}</span>
+                  </button>
                 );
               })}
               <div style={{ position: "relative" }}>
-                <button onClick={() => { setRelationshipDropdownOpen((v) => !v); setOpenMarketDropdown(null); }}
+                <button
+                  type="button"
+                  onClick={() => setRelationshipDropdownOpen((v) => !v)}
                   style={{
                     border: selectedRelationshipTypes.length ? "1px solid #15803d" : "1px solid #e7e5e4",
                     background: selectedRelationshipTypes.length ? "#f0fdf4" : "#fff",
@@ -911,24 +790,6 @@ export default function ProspectsPage() {
               Clear all
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => setCampaignOpen(true)}
-            disabled={!canCreateCampaign}
-            style={{
-              marginLeft: "auto",
-              border: "none",
-              background: !canCreateCampaign ? "#e7e5e4" : "#fce7f3",
-              color: !canCreateCampaign ? "#a8a29e" : "#9d174d",
-              borderRadius: 8,
-              padding: "6px 10px",
-              fontSize: 11,
-              fontWeight: 850,
-              cursor: !canCreateCampaign ? "not-allowed" : "pointer",
-            }}
-          >
-            Create campaign
-          </button>
         </div>
 
         {advancedOpen && (
@@ -962,9 +823,9 @@ export default function ProspectsPage() {
           </div>
         )}
 
-        <div style={{ marginTop: 8, fontSize: 11, color: "#a8a29e" }}>
+        <div style={{ marginTop: 6, fontSize: 11, color: "#a8a29e" }}>
           {visible.length} shown · {totalCount} matching
-          {hasWorkflowSelection ? ` · ${subtypeSummary} · ${relationshipSummary}` : ""}
+          {hasWorkflowSelection ? ` · ${salonCategorySummary} · ${relationshipSummary}` : ""}
         </div>
       </div>
 
@@ -972,29 +833,6 @@ export default function ProspectsPage() {
       {fetchError && (
         <div style={{ marginBottom: 14, padding: "10px 14px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, fontSize: 13, color: "#b91c1c" }}>
           ❌ Failed to load prospects: {fetchError}
-        </div>
-      )}
-
-      {campaignOpen && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(28, 25, 23, 0.45)", zIndex: 50, display: "grid", placeItems: "center", padding: 20 }}>
-          <div style={{ width: "min(560px, 100%)", background: "#fff", borderRadius: 14, border: "1px solid #e7e5e4", boxShadow: "0 20px 70px rgba(0,0,0,0.25)", padding: 18 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start", marginBottom: 10 }}>
-              <div>
-                <h2 style={{ margin: 0, fontSize: 18, color: "#1c1917" }}>Create Campaign</h2>
-                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#78716c", lineHeight: 1.45 }}>
-                  Campaign creation will use the current working set. Persistence and outreach steps come next.
-                </p>
-              </div>
-              <button onClick={() => setCampaignOpen(false)} style={{ border: "none", background: "#f5f5f4", borderRadius: 8, padding: "6px 9px", cursor: "pointer", fontWeight: 800 }}>Close</button>
-            </div>
-            <div style={{ display: "grid", gap: 8, fontSize: 12, color: "#57534e" }}>
-              <div><strong style={{ color: "#1c1917" }}>Suggested name:</strong> {suggestedCampaignName}</div>
-              <div><strong style={{ color: "#1c1917" }}>Records:</strong> {visible.length}</div>
-              <div><strong style={{ color: "#1c1917" }}>Markets:</strong> {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "All selected records"}</div>
-              <div><strong style={{ color: "#1c1917" }}>Subtypes:</strong> {subtypeSummary}</div>
-              <div><strong style={{ color: "#1c1917" }}>Offer fit tags:</strong> {selectedOfferFitTags.length ? selectedOfferFitTags.map(tagLabel).join(", ") : "None detected yet"}</div>
-            </div>
-          </div>
         </div>
       )}
 
@@ -1019,7 +857,7 @@ export default function ProspectsPage() {
                 {([
                   ["handle",                      "@Handle"],
                   ["name",                        "Name"],
-                  ["businessCategory",            "Market"],
+                  ["businessCategory",            "Category"],
                   ["businessSubcategory",         "Subtype"],
                   ["opportunityScore",            "Opportunity"],
                   ["location",                    "Location"],
@@ -1057,9 +895,9 @@ export default function ProspectsPage() {
                       </td>
                       <td style={tdS}>{p.identity.name !== p.identity.handle ? p.identity.name : <span style={{ color: "#d6d3d1" }}>—</span>}</td>
                       <td style={tdS}>
-                        {p.businessCategory ? (
+                        {salonCategoryLabel(p) ? (
                           <span style={{ fontSize: 10, background: "#fce7f3", color: "#9d174d", borderRadius: 20, padding: "2px 7px", fontWeight: 700 }}>
-                            {friendlyMarketLabel(p.businessCategory)}
+                            {salonCategoryLabel(p)}
                           </span>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
@@ -1147,9 +985,6 @@ export default function ProspectsPage() {
         onClose={() => setDrawerProspectId(null)}
       />
 
-      <div style={{ marginTop: 12, fontSize: 11, color: "#d6d3d1", textAlign: "right" }}>
-        Salon vertical · Admin only · Archive does not delete
-      </div>
     </div>
   );
 }
