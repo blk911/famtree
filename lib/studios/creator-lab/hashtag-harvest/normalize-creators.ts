@@ -73,9 +73,9 @@ export function normalizeHashtag(raw: string): string {
  */
 export function parseHashtags(raw: string): string[] {
   const normalized = raw
-    .split(/[\r\n,]+/)
+    .split(/[\s,\r\n]+/)
     .map((h) => normalizeHashtag(h))
-    .filter((h) => h.length > 0 && h.length <= 80);
+    .filter((h) => h.length > 0 && h.length <= 80 && !h.includes(" "));
 
   return Array.from(new Set(normalized));
 }

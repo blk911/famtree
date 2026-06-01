@@ -20,6 +20,11 @@ export interface ApifyPost {
   // content
   caption?: string;
   hashtags?: string[];
+  /** Apify: explore URL used to fetch this post (primary hashtag attribution). */
+  inputUrl?: string;
+  searchHashtag?: string;
+  /** Set when harvesting one tag per Apify run. */
+  _harvestHashtag?: string;
 
   // links
   url?: string;
@@ -178,16 +183,49 @@ export interface HarvestRunRequest {
   runPublicDiscovery?: boolean;
 }
 
+export type HashtagHarvestPerTagDiagnostic = {
+  hashtag: string;
+  requestedLimit: number;
+  postsReturned: number;
+  creatorsExtracted: number;
+  prospectsCreated: number;
+  prospectsUpdated: number;
+  droppedByDedupe: number;
+  droppedByFilter: number;
+  providerDiscoveryWarnings: string[];
+  apifyError?: string;
+};
+
+export type HashtagHarvestDiagnosticsPayload = {
+  hashtagsParsed: number;
+  perHashtag: HashtagHarvestPerTagDiagnostic[];
+  totals: {
+    postsReturned: number;
+    creatorsExtracted: number;
+    prospectsCreated: number;
+    prospectsUpdated: number;
+    droppedByDedupe: number;
+  };
+  warnings: string[];
+  errors: string[];
+  apifyConnected: boolean;
+  apifyActorRunIds: string[];
+};
+
 export interface HarvestRunResponse {
   ok: true;
   run: HashtagHarvestRun;
   creators: HarvestedCreatorSeed[];
   results: ResolverPipelineResult[];
   saveErrors: SaveError[];
+  hashtagsParsed: number;
+  diagnostics: HashtagHarvestDiagnosticsPayload;
 }
 
 export interface HarvestErrorResponse {
   ok: false;
   error: string;
   detail?: string;
+  hashtagsParsed?: number;
+  diagnostics?: HashtagHarvestDiagnosticsPayload;
 }

@@ -5,15 +5,13 @@
 
 import type { ApifyPost } from "./types";
 import { generateMockPosts } from "./mock-harvest"; // used only when HARVEST_MOCK=true
+import { normalizeHashtag } from "./normalize-creators";
 
 const APIFY_BASE = "https://api.apify.com/v2";
 const ACTOR_ID  = "apify~instagram-hashtag-scraper";
 
 // How long to wait for Apify to finish (seconds).
-// Apify wait window; resolver runs after harvest (route maxDuration 300s).
 const WAIT_FOR_FINISH_SECS = 55;
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function apifyUrl(path: string, token: string): string {
   const sep = path.includes("?") ? "&" : "?";
@@ -32,8 +30,6 @@ async function apifyFetch(url: string, init?: RequestInit): Promise<Response> {
   });
 }
 
-// ─── Start run (with waitForFinish) ──────────────────────────────────────────
-
 interface ApifyRunResult {
   id: string;
   status: string;
@@ -51,7 +47,7 @@ async function startRun(
   );
 
   const body = JSON.stringify({
-    hashtags: hashtags.map((h) => h.replace(/^#/, "").toLowerCase().trim()),
+    hashtags: hashtags.map((h) => normalizeHashtag(h)),
     resultsType: "posts",
     resultsLimit: maxPerHashtag,
   });
@@ -67,7 +63,6 @@ async function startRun(
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     console.error(`[apify-client] start run HTTP ${res.status}:`, text.slice(0, 200));
-    // Return a typed error so callers can surface the HTTP status to the admin
     return { runId: "", datasetId: "", status: "FAILED", startError: `HTTP ${res.status}: ${text.slice(0, 120)}` };
   }
 
@@ -80,8 +75,6 @@ async function startRun(
 
   return { runId: run.id, datasetId: run.defaultDatasetId, status: run.status };
 }
-
-// ─── Fetch dataset items ──────────────────────────────────────────────────────
 
 async function fetchDatasetItems(
   datasetId: string,
@@ -112,62 +105,107 @@ async function fetchDatasetItems(
   }
 }
 
-// ─── Public API ───────────────────────────────────────────────────────────────
+function tagPostsForHashtag(posts: ApifyPost[], hashtag: string): ApifyPost[] {
+  const norm = normalizeHashtag(hashtag);
+  return posts.map((p) => ({
+    ...p,
+    _harvestHashtag: norm,
+    inputUrl: p.inputUrl ?? `https://www.instagram.com/explore/tags/${norm}`,
+  }));
+}
 
 export interface ApifyHarvestResult {
   posts: ApifyPost[];
   actorRunId: string | null;
+  actorRunIds: string[];
   error: string | null;
+  perHashtagErrors: Record<string, string | undefined>;
+  apifyConnected: boolean;
 }
 
 /**
- * Runs the Apify Instagram hashtag scraper and returns raw post items.
- * Gracefully handles missing token, network errors, actor failures.
+ * Runs the Apify Instagram hashtag scraper — one actor run per hashtag so
+ * resultsLimit applies per tag and posts are attributed via inputUrl / _harvestHashtag.
  */
 export async function runApifyHashtagHarvest(
   hashtags: string[],
   maxPerHashtag: number,
 ): Promise<ApifyHarvestResult> {
-  // Dev mock mode — set HARVEST_MOCK=true in .env.local to skip Apify entirely
+  const perHashtagErrors: Record<string, string | undefined> = {};
+  const actorRunIds: string[] = [];
+  const allPosts: ApifyPost[] = [];
+
   if (process.env.HARVEST_MOCK === "true") {
     const posts = generateMockPosts(hashtags, maxPerHashtag);
-    return { posts, actorRunId: "mock-run", error: null };
+    return {
+      posts,
+      actorRunId: "mock-run",
+      actorRunIds: ["mock-run"],
+      error: null,
+      perHashtagErrors: {},
+      apifyConnected: true,
+    };
   }
 
-  const token = process.env.APIFY_TOKEN;
+  const token = process.env.APIFY_TOKEN?.trim();
 
   if (!token) {
     return {
       posts: [],
       actorRunId: null,
-      error: "APIFY_TOKEN is not set. Add it to Vercel → Settings → Environment Variables.",
+      actorRunIds: [],
+      error:
+        "APIFY_TOKEN is not set. Add APIFY_TOKEN to .env.local (dev) or Vercel environment variables.",
+      perHashtagErrors: Object.fromEntries(hashtags.map((h) => [h, "APIFY_TOKEN missing"])),
+      apifyConnected: false,
     };
   }
 
-  const runInfo = await startRun(hashtags, maxPerHashtag, token);
-  if (!runInfo || runInfo.startError) {
-    return {
-      posts: [],
-      actorRunId: null,
-      error: `Apify actor run failed — ${runInfo?.startError ?? "network error or unexpected response"}`,
-    };
+  const errors: string[] = [];
+
+  for (const rawTag of hashtags) {
+    const hashtag = normalizeHashtag(rawTag);
+    if (!hashtag) continue;
+
+    const runInfo = await startRun([hashtag], maxPerHashtag, token);
+    if (!runInfo || runInfo.startError) {
+      const msg = runInfo?.startError ?? "Apify run failed to start (network or invalid response)";
+      perHashtagErrors[hashtag] = msg;
+      errors.push(`#${hashtag}: ${msg}`);
+      continue;
+    }
+
+    actorRunIds.push(runInfo.runId);
+
+    const tagPosts = await fetchDatasetItems(
+      runInfo.datasetId,
+      token,
+      maxPerHashtag + 10,
+    );
+
+    if (runInfo.status !== "SUCCEEDED" && tagPosts.length === 0) {
+      const msg = `Apify run status: ${runInfo.status}. No items returned.`;
+      perHashtagErrors[hashtag] = msg;
+      errors.push(`#${hashtag}: ${msg}`);
+      continue;
+    }
+
+    allPosts.push(...tagPostsForHashtag(tagPosts, hashtag));
   }
 
-  const { runId, datasetId, status } = runInfo;
+  const combinedError =
+    errors.length > 0
+      ? errors.join(" | ")
+      : allPosts.length === 0
+        ? "Apify returned zero posts for all hashtags. Check APIFY_TOKEN, actor quota, or hashtag visibility."
+        : null;
 
-  const posts = await fetchDatasetItems(
-    datasetId,
-    token,
-    maxPerHashtag * hashtags.length + 50,
-  );
-
-  if (status !== "SUCCEEDED" && posts.length === 0) {
-    return {
-      posts: [],
-      actorRunId: runId,
-      error: `Apify run status: ${status}. No items returned.`,
-    };
-  }
-
-  return { posts, actorRunId: runId, error: null };
+  return {
+    posts: allPosts,
+    actorRunId: actorRunIds[0] ?? null,
+    actorRunIds,
+    error: combinedError,
+    perHashtagErrors,
+    apifyConnected: true,
+  };
 }

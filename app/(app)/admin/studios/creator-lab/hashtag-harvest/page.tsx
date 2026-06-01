@@ -24,6 +24,7 @@ import type {
   HarvestRunRequest,
   HarvestRunResponse,
   HarvestErrorResponse,
+  HashtagHarvestDiagnosticsPayload,
   SaveError,
 } from "@/lib/studios/creator-lab/hashtag-harvest/types";
 import type { ProspectRecord, ProspectListResponse } from "@/lib/studios/prospects/types";
@@ -76,6 +77,86 @@ function HashtagStatCard({ row }: { row: HashtagHarvestHashtagStats }) {
       {statLine("Deduped", row.creatorsDeduped)}
       {statLine("Providers", row.bookingProvidersFound)}
       {statLine("Final Prospects", row.finalProspects)}
+    </div>
+  );
+}
+
+function HarvestDiagnosticsSummary({
+  diagnostics,
+}: {
+  diagnostics: HashtagHarvestDiagnosticsPayload;
+}) {
+  const zeroPosts = diagnostics.perHashtag.every((r) => r.postsReturned === 0);
+
+  return (
+    <div
+      style={{
+        marginBottom: 20,
+        padding: "14px 18px",
+        background: zeroPosts ? "#fef2f2" : "#f0fdf4",
+        border: `1px solid ${zeroPosts ? "#fecaca" : "#bbf7d0"}`,
+        borderRadius: 12,
+      }}
+    >
+      <div style={{ fontSize: 11, fontWeight: 800, color: "#57534e", marginBottom: 8 }}>
+        HARVEST DIAGNOSTICS
+      </div>
+      <div style={{ fontSize: 12, color: "#44403c", marginBottom: 10 }}>
+        <strong>{diagnostics.hashtagsParsed}</strong> hashtag(s) parsed · Apify{" "}
+        {diagnostics.apifyConnected ? "connected" : "not connected"}
+        {diagnostics.apifyActorRunIds.length > 0
+          ? ` · run(s): ${diagnostics.apifyActorRunIds.slice(0, 3).join(", ")}`
+          : ""}
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, fontSize: 12, marginBottom: 12 }}>
+        <span><strong>Posts</strong> {diagnostics.totals.postsReturned}</span>
+        <span><strong>Creators</strong> {diagnostics.totals.creatorsExtracted}</span>
+        <span><strong>Prospects saved</strong> {diagnostics.totals.prospectsCreated}</span>
+        <span><strong>Dedupe dropped</strong> {diagnostics.totals.droppedByDedupe}</span>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+        {diagnostics.perHashtag.map((row) => (
+          <div
+            key={row.hashtag}
+            style={{
+              background: "#fff",
+              border: "1px solid #e7e5e4",
+              borderRadius: 10,
+              padding: "10px 12px",
+              minWidth: 200,
+              flex: "1 1 220px",
+            }}
+          >
+            <div style={{ fontWeight: 800, color: "#9d174d", marginBottom: 6 }}>#{row.hashtag}</div>
+            <div style={{ fontSize: 11, color: "#57534e", lineHeight: 1.5 }}>
+              Limit {row.requestedLimit} · Posts {row.postsReturned} · Creators{" "}
+              {row.creatorsExtracted} · Saved {row.prospectsCreated}
+            </div>
+            {row.apifyError ? (
+              <div style={{ fontSize: 11, color: "#b91c1c", marginTop: 6 }}>{row.apifyError}</div>
+            ) : null}
+            {row.postsReturned === 0 && !row.apifyError ? (
+              <div style={{ fontSize: 11, color: "#b45309", marginTop: 6 }}>
+                Zero posts — check hashtag or Apify quota.
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+      {diagnostics.errors.length > 0 ? (
+        <div style={{ marginTop: 10 }}>
+          {diagnostics.errors.map((e, i) => (
+            <div key={i} style={{ fontSize: 12, color: "#b91c1c" }}>Error: {e}</div>
+          ))}
+        </div>
+      ) : null}
+      {diagnostics.warnings.length > 0 ? (
+        <div style={{ marginTop: 8 }}>
+          {diagnostics.warnings.map((w, i) => (
+            <div key={i} style={{ fontSize: 12, color: "#92400e" }}>Warning: {w}</div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -808,13 +889,17 @@ export default function HashtagHarvestPage() {
     creators: HarvestedCreatorSeed[];
     results: ResolverPipelineResult[];
     saveErrors: SaveError[];
+    diagnostics: HashtagHarvestDiagnosticsPayload;
   } | null>(null);
+  const [failedDiagnostics, setFailedDiagnostics] =
+    useState<HashtagHarvestDiagnosticsPayload | null>(null);
   const [resultsTab, setResultsTab] = useState<"creators" | "reports">("creators");
 
   async function handleHarvestSubmit(params: HarvestRunRequest) {
     setLoading(true);
     setError(null);
     setRunData(null);
+    setFailedDiagnostics(null);
     setResultsTab("creators");
     try {
       const res = await fetch("/api/admin/studios/creator-lab/hashtag-harvest/run", {
@@ -824,11 +909,23 @@ export default function HashtagHarvestPage() {
       });
       const data: HarvestRunResponse | HarvestErrorResponse = await res.json();
       if (!data.ok) {
-        setError(`${(data as HarvestErrorResponse).error}${(data as HarvestErrorResponse).detail ? ` — ${(data as HarvestErrorResponse).detail}` : ""}`);
+        const fail = data as HarvestErrorResponse;
+        setError(
+          `${fail.error}${fail.detail ? ` — ${fail.detail}` : ""}${
+            fail.hashtagsParsed != null ? ` (${fail.hashtagsParsed} hashtags parsed)` : ""
+          }`,
+        );
+        if (fail.diagnostics) setFailedDiagnostics(fail.diagnostics);
         return;
       }
       const ok = data as HarvestRunResponse;
-      setRunData({ run: ok.run, creators: ok.creators, results: ok.results, saveErrors: ok.saveErrors ?? [] });
+      setRunData({
+        run: ok.run,
+        creators: ok.creators,
+        results: ok.results,
+        saveErrors: ok.saveErrors ?? [],
+        diagnostics: ok.diagnostics,
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
@@ -839,6 +936,7 @@ export default function HashtagHarvestPage() {
   function handleNewHarvest() {
     setRunData(null);
     setError(null);
+    setFailedDiagnostics(null);
     setLoading(false);
     setRunKey((k) => k + 1); // unmounts current HarvestForm → mounts fresh one
   }
@@ -865,12 +963,15 @@ export default function HashtagHarvestPage() {
 
       {/* Input form — HarvestForm owns all form state; incrementing runKey gives a clean slate */}
       {!runData && (
-        <HarvestForm
-          key={runKey}
-          onSubmit={handleHarvestSubmit}
-          loading={loading}
-          error={error}
-        />
+        <>
+          <HarvestForm
+            key={runKey}
+            onSubmit={handleHarvestSubmit}
+            loading={loading}
+            error={error}
+          />
+          {failedDiagnostics ? <HarvestDiagnosticsSummary diagnostics={failedDiagnostics} /> : null}
+        </>
       )}
 
       {/* Results */}
@@ -899,6 +1000,7 @@ export default function HashtagHarvestPage() {
             </div>
           )}
 
+          <HarvestDiagnosticsSummary diagnostics={runData.diagnostics} />
           <SummaryCards run={runData.run} results={runData.results} />
           <HashtagDiagnosticsPanel run={runData.run} />
 

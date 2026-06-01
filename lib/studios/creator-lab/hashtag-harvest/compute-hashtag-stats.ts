@@ -2,7 +2,9 @@
 // Per-hashtag harvest diagnostics (posts, creators, dedupe, providers, prospects).
 
 import { detectBookingFromProspectTrail } from "@/lib/intelligence/salon/booking-from-trail";
-import { normalizeHashtag } from "./normalize-creators";
+import { postsForHashtag } from "./post-hashtag-match";
+
+export { postsForHashtag };
 import type {
   ApifyPost,
   HarvestedCreatorSeed,
@@ -13,19 +15,6 @@ import type {
 
 function handleKey(handle: string): string {
   return handle.toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-/** Posts attributed to a hashtag, capped per tag (no global partition). */
-export function postsForHashtag(
-  posts: ApifyPost[],
-  hashtag: string,
-  limit: number,
-): ApifyPost[] {
-  const norm = normalizeHashtag(hashtag);
-  const matched = posts.filter((p) =>
-    (p.hashtags ?? []).map((h) => normalizeHashtag(h)).includes(norm),
-  );
-  return matched.slice(0, limit);
 }
 
 function seedHasBookingProvider(seed: HarvestedCreatorSeed): boolean {

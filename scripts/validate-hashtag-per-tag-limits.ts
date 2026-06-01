@@ -5,10 +5,9 @@
 import { generateMockPosts } from "../lib/studios/creator-lab/hashtag-harvest/mock-harvest";
 import { extractPostCreators } from "../lib/studios/creator-lab/hashtag-harvest/extract-post-creators";
 import { normalizeCreators } from "../lib/studios/creator-lab/hashtag-harvest/normalize-creators";
-import {
-  computeHashtagHarvestStats,
-  postsForHashtag,
-} from "../lib/studios/creator-lab/hashtag-harvest/compute-hashtag-stats";
+import { computeHashtagHarvestStats } from "../lib/studios/creator-lab/hashtag-harvest/compute-hashtag-stats";
+import { postsForHashtag } from "../lib/studios/creator-lab/hashtag-harvest/post-hashtag-match";
+import { parseHashtags } from "../lib/studios/creator-lab/hashtag-harvest/normalize-creators";
 import { DEFAULT_MAX_POSTS_PER_HASHTAG } from "../lib/studios/creator-lab/hashtag-harvest/limits";
 
 const hashtags = ["denvernails", "nailtech", "hairstylist"];
@@ -50,6 +49,30 @@ if (totals.postsPulled !== maxPerHashtag * hashtags.length) {
 if (normalized.length < hashtags.length) {
   console.error("FAIL: normalize collapsed all hashtags into too few seeds");
   ok = false;
+}
+
+const apifyShaped = [
+  {
+    ownerUsername: "testnail",
+    inputUrl: "https://www.instagram.com/explore/tags/denvernails",
+    hashtags: ["nailart", "gelnails"],
+    caption: "Denver nails",
+  },
+] as import("../lib/studios/creator-lab/hashtag-harvest/types").ApifyPost[];
+const inputUrlMatch = postsForHashtag(apifyShaped, "denvernails", 100);
+if (inputUrlMatch.length !== 1) {
+  console.error("FAIL inputUrl attribution: expected 1 post, got", inputUrlMatch.length);
+  ok = false;
+} else {
+  console.log("OK inputUrl: post attributed via explore/tags URL (not caption hashtags)");
+}
+
+const spaceParsed = parseHashtags("#denvernails #denvernailtech #denvernailartist");
+if (spaceParsed.length !== 3) {
+  console.error(`FAIL parseHashtags spaces: expected 3, got ${spaceParsed.length}`);
+  ok = false;
+} else {
+  console.log("OK parseHashtags: space-separated line → 3 tags");
 }
 
 console.log(ok ? "\nValidation passed." : "\nValidation failed.");

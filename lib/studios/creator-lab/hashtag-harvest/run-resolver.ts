@@ -219,26 +219,34 @@ export async function runResolverForSeeds(
     if (salonHarvest && ggRun) {
       const runPublicSearch =
         resolverOptions?.runPublicDiscovery === true && i < 50;
-      const { bookingFields, gg, runDelta } = await applyGgSalonEnrichment(
-        upsertInputToGgEnrichInput(upsertInput),
-        {
-          index: i,
-          maxProbes: ggMaxProbes,
-          runGgOnAllDeduped,
-          runPublicSearch,
-          forceSearch: runPublicSearch,
-        },
-      );
-      mergeGgRunDiagnostics(ggRun, runDelta);
-      upsertInput = {
-        ...upsertInput,
-        ...bookingFields,
-        ggResolverStatus: gg.ggResolverStatus,
-        ggCheckedUrls: gg.ggCheckedUrls ?? bookingFields.ggCheckedUrls,
-        ggResolverReason: gg.ggResolverReason,
-        providerResolverReason: bookingFields.providerResolverReason,
-        providerDiscoveryDebug: bookingFields.providerDiscoveryDebug,
-      };
+      try {
+        const { bookingFields, gg, runDelta } = await applyGgSalonEnrichment(
+          upsertInputToGgEnrichInput(upsertInput),
+          {
+            index: i,
+            maxProbes: ggMaxProbes,
+            runGgOnAllDeduped,
+            runPublicSearch,
+            forceSearch: runPublicSearch,
+          },
+        );
+        mergeGgRunDiagnostics(ggRun, runDelta);
+        upsertInput = {
+          ...upsertInput,
+          ...bookingFields,
+          ggResolverStatus: gg.ggResolverStatus,
+          ggCheckedUrls: gg.ggCheckedUrls ?? bookingFields.ggCheckedUrls,
+          ggResolverReason: gg.ggResolverReason,
+          providerResolverReason: bookingFields.providerResolverReason,
+          providerDiscoveryDebug: bookingFields.providerDiscoveryDebug,
+        };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        upsertInput.ggResolverReason = `provider_discovery_skipped: ${msg}`;
+        if (ggRun) {
+          mergeGgRunDiagnostics(ggRun, { ggError: 1 });
+        }
+      }
     }
 
     let prospectId: string | null = null;
