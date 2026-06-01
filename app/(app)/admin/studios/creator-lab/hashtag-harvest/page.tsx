@@ -28,7 +28,7 @@ import type {
 } from "@/lib/studios/creator-lab/hashtag-harvest/types";
 import type { ProspectRecord, ProspectListResponse } from "@/lib/studios/prospects/types";
 import { VALIDATION_STATUS_LABELS as VS_LABELS } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
-import { BUSINESS_CATEGORY_LABELS, RELATIONSHIP_OPPORTUNITY_LABELS } from "@/lib/studios/prospects/opportunity-taxonomy";
+import { BUSINESS_CATEGORY_LABELS } from "@/lib/studios/prospects/opportunity-taxonomy";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -274,23 +274,10 @@ function ReportsView({
     acc[key] = (acc[key] ?? 0) + 1;
     return acc;
   }, {})).sort((a, b) => b[1] - a[1]);
-  const opportunityTypeEntries = Object.entries(storedProspects.reduce<Record<string, number>>((acc, p) => {
-    const key = p.relationshipOpportunityType ? (RELATIONSHIP_OPPORTUNITY_LABELS[p.relationshipOpportunityType as keyof typeof RELATIONSHIP_OPPORTUNITY_LABELS] ?? tagLabel(String(p.relationshipOpportunityType))) : "unknown";
-    acc[key] = (acc[key] ?? 0) + 1;
-    return acc;
-  }, {})).sort((a, b) => b[1] - a[1]);
   const platformSignalEntries = Object.entries(storedProspects.reduce<Record<string, number>>((acc, p) => {
     for (const signal of p.platformSignals ?? []) acc[tagLabel(signal)] = (acc[tagLabel(signal)] ?? 0) + 1;
     return acc;
   }, {})).sort((a, b) => b[1] - a[1]);
-  const offerFitEntries = Object.entries(storedProspects.reduce<Record<string, number>>((acc, p) => {
-    for (const tag of p.offerFitTags ?? []) acc[tagLabel(tag)] = (acc[tagLabel(tag)] ?? 0) + 1;
-    return acc;
-  }, {})).sort((a, b) => b[1] - a[1]).slice(0, 12);
-  const topOpportunityProspects = [...storedProspects]
-    .sort((a, b) => (b.overallOpportunityScore ?? 0) - (a.overallOpportunityScore ?? 0))
-    .slice(0, 8);
-
   const total = results.length;
 
   return (
@@ -452,12 +439,6 @@ function ReportsView({
             total={storedProspects.length}
             color="#9d174d"
           />
-          <BreakdownSection
-            title="RELATIONSHIP OPPORTUNITY TYPE — STORED REPOSITORY"
-            entries={opportunityTypeEntries}
-            total={storedProspects.length}
-            color="#1d4ed8"
-          />
           {/* Confidence histogram */}
           <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "16px 20px", marginBottom: 14 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 12 }}>
@@ -504,20 +485,6 @@ function ReportsView({
             total={storedProspects.length}
             color="#15803d"
           />
-          <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "16px 20px", marginBottom: 14 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", marginBottom: 12 }}>
-              TOP OPPORTUNITY SCORES — STORED REPOSITORY
-            </div>
-            {topOpportunityProspects.length === 0 ? (
-              <div style={{ fontSize: 12, color: "#d6d3d1" }}>No opportunity scores yet</div>
-            ) : topOpportunityProspects.map((p) => (
-              <div key={p.prospectId} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, fontSize: 11 }}>
-                <span style={{ width: 32, fontWeight: 800, color: confColor(p.overallOpportunityScore ?? 0) }}>{p.overallOpportunityScore ?? 0}</span>
-                <span style={{ flex: 1, color: "#1c1917", fontWeight: 700 }}>{p.identity.name || `@${p.identity.handle}`}</span>
-                <span style={{ color: "#78716c" }}>{tagLabel(String(p.businessCategory ?? "unknown"))}</span>
-              </div>
-            ))}
-          </div>
           {locationEntries.length > 0 && (
             <BreakdownSection
               title="DETECTED LOCATION — TOP 15 (this run)"

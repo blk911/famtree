@@ -9,8 +9,6 @@ import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatur
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import type { ProspectRecord, ProspectStatus, ProspectListResponse } from "@/lib/studios/prospects/types";
 import { PROSPECT_STATUS_LABELS, PROSPECT_STATUS_COLORS } from "@/lib/studios/prospects/types";
-import { BUSINESS_CATEGORY_LABELS, RELATIONSHIP_OPPORTUNITY_LABELS } from "@/lib/studios/prospects/opportunity-taxonomy";
-import type { RelationshipOpportunityType } from "@/lib/studios/prospects/opportunity-taxonomy";
 import {
   VALIDATION_STATUS_LABELS,
   VALIDATION_STATUS_COLORS,
@@ -24,6 +22,7 @@ import { BookingProviderSourceChip } from "@/components/admin/intelligence/salon
 import { ProviderDetectionDetail } from "@/components/admin/intelligence/salon/ProviderDetectionDetail";
 import { SalonProspectDrawer } from "@/components/admin/intelligence/salon/SalonProspectDrawer";
 import { ProviderDiscoveryBackfillButton } from "@/components/admin/intelligence/salon/ProviderDiscoveryBackfillButton";
+import { AdvancedIntelligenceSection } from "@/components/admin/intelligence/salon/AdvancedIntelligenceSection";
 import { SalonOperatorSummary } from "@/components/admin/intelligence/salon/SalonOperatorSummary";
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
@@ -117,17 +116,6 @@ function salonCategoryLabel(p: ProspectRecord): string {
   const hit = SALON_CATEGORIES.find((c) => prospectMatchesSalonCategory(p, c.key));
   return hit?.label ?? (p.businessSubcategory ? friendlySubtypeLabel(p.businessSubcategory) : "");
 }
-
-const RELATIONSHIP_FILTERS: Array<{ value: RelationshipOpportunityType; label: string }> = [
-  { value: "appointment_operator", label: "Appointment Operators" },
-  { value: "class_workshop_operator", label: "Class / Workshop Operators" },
-  { value: "audience_operator", label: "Audience Operators" },
-  { value: "community_operator", label: "Community Operators" },
-  { value: "commerce_operator", label: "Commerce Operators" },
-  { value: "content_operator", label: "Content Operators" },
-  { value: "relationship_operator", label: "Relationship Operators" },
-  { value: "low_fit_unknown", label: "Unknown / Low Fit" },
-];
 
 const EXTRA_SUBTYPE_LABELS: Record<string, string> = {
   artist: "Artist",
@@ -246,45 +234,8 @@ function ProspectDetail({ prospect, onSaved }: {
             </div>
           )}
 
-          {/* Opportunity classification */}
+          <AdvancedIntelligenceSection prospect={prospect} />
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 5 }}>RELATIONSHIP OPPORTUNITY</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 7 }}>
-              {prospect.businessCategory && (
-                <span style={{ fontSize: 10, background: "#fce7f3", color: "#9d174d", borderRadius: 20, padding: "2px 8px", fontWeight: 700 }}>
-                  {BUSINESS_CATEGORY_LABELS[prospect.businessCategory as keyof typeof BUSINESS_CATEGORY_LABELS] ?? tagLabel(String(prospect.businessCategory))}
-                </span>
-              )}
-              {prospect.relationshipOpportunityType && (
-                <span style={{ fontSize: 10, background: "#eff6ff", color: "#1d4ed8", borderRadius: 20, padding: "2px 8px", fontWeight: 700 }}>
-                  {RELATIONSHIP_OPPORTUNITY_LABELS[prospect.relationshipOpportunityType as keyof typeof RELATIONSHIP_OPPORTUNITY_LABELS] ?? tagLabel(String(prospect.relationshipOpportunityType))}
-                </span>
-              )}
-              {(prospect.offerFitTags ?? []).slice(0, 5).map((tag) => (
-                <span key={tag} style={{ fontSize: 10, background: "#f0fdf4", color: "#15803d", borderRadius: 20, padding: "2px 8px", fontWeight: 700 }}>
-                  {tagLabel(tag)}
-                </span>
-              ))}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 6 }}>
-              {[
-                ["Overall", prospect.overallOpportunityScore],
-                ["Rel", prospect.relationshipScore],
-                ["Audience", prospect.audienceScore],
-                ["Ops", prospect.operationalDataScore],
-                ["Community", prospect.communityScore],
-              ].map(([label, val]) => (
-                <div key={String(label)} style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 6, padding: "5px 6px", textAlign: "center" }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: confColor(Number(val ?? 0)) }}>{val ?? "—"}</div>
-                  <div style={{ fontSize: 8, color: "#a8a29e", fontWeight: 700 }}>{label}</div>
-                </div>
-              ))}
-            </div>
-            {(prospect.platformSignals ?? []).length > 0 && (
-              <div style={{ marginTop: 7, fontSize: 10, color: "#78716c" }}>
-                Signals: {(prospect.platformSignals ?? []).map(tagLabel).join(", ")}
-              </div>
-            )}
             <ProviderDetectionDetail prospect={prospect} variant="panel" />
           </div>
 
@@ -363,7 +314,14 @@ function ProspectDetail({ prospect, onSaved }: {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-type SortKey = "name" | "handle" | "educationType" | "businessCategory" | "opportunityScore" | "location" | "platform" | "confidence" | "validationStatus" | "createdAt" | "businessSubcategory" | "relationshipOpportunityType" | "bookingProvider" | "bestUrl";
+type SortKey =
+  | "handle"
+  | "name"
+  | "businessCategory"
+  | "bookingProvider"
+  | "bookingProviderSource"
+  | "validationStatus"
+  | "createdAt";
 
 const BOOKING_PROVIDER_FILTERS = [
   { value: "all", label: "All booking providers" },
@@ -395,8 +353,6 @@ export default function ProspectsPage() {
   const [fPlatform, setFPlatform]         = useState("all");
   const [fMinConf, setFMinConf]           = useState(0);
   const [fBusinessCategory, setFBusinessCategory] = useState("all");
-  const [fOpportunityType, setFOpportunityType] = useState("all");
-  const [fMinOpp, setFMinOpp] = useState(0);
   const [fPlatformSignal, setFPlatformSignal] = useState("all");
   const [fOfferFitTag, setFOfferFitTag] = useState("all");
   const [fBookingProvider, setFBookingProvider] = useState("all");
@@ -407,9 +363,6 @@ export default function ProspectsPage() {
   const [statsProspects, setStatsProspects] = useState<ProspectRecord[]>([]);
   const [statsTotal, setStatsTotal] = useState(0);
   const [selectedSalonCategories, setSelectedSalonCategories] = useState<SalonCategoryKey[]>([]);
-  const [relationshipAllSelected, setRelationshipAllSelected] = useState(true);
-  const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<RelationshipOpportunityType[]>([]);
-  const [relationshipDropdownOpen, setRelationshipDropdownOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [refreshNonce, setRefreshNonce] = useState(0);
   const pageSize = 100;
@@ -454,8 +407,6 @@ export default function ProspectsPage() {
     if (fPlatform !== "all") params.set("platform", fPlatform);
     if (fMinConf > 0) params.set("minConfidence", String(fMinConf));
     if (fBusinessCategory !== "all") params.set("businessCategory", fBusinessCategory);
-    if (fOpportunityType !== "all") params.set("relationshipOpportunityType", fOpportunityType);
-    if (fMinOpp > 0) params.set("minOpportunityScore", String(fMinOpp));
     if (fPlatformSignal !== "all") params.set("platformSignal", fPlatformSignal);
     if (fOfferFitTag !== "all") params.set("offerFitTag", fOfferFitTag);
     if (fBookingProvider !== "all") params.set("bookingProvider", fBookingProvider);
@@ -480,11 +431,11 @@ export default function ProspectsPage() {
       })
       .catch((e) => setFetchError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
-  }, [offset, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag, fBookingProvider, fBookingSource, fImportCandidate, fConfidenceBucket, refreshNonce]);
+  }, [offset, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fPlatformSignal, fOfferFitTag, fBookingProvider, fBookingSource, fImportCandidate, fConfidenceBucket, refreshNonce]);
 
   useEffect(() => {
     setOffset(0);
-  }, [fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag, fBookingProvider, fBookingSource, fImportCandidate, fConfidenceBucket]);
+  }, [fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fPlatformSignal, fOfferFitTag, fBookingProvider, fBookingSource, fImportCandidate, fConfidenceBucket]);
 
   // Derive filter options
   const hashtags  = useMemo(() => Array.from(new Set(prospects.map((p) => p.sourceHashtag).filter(Boolean) as string[])).sort(), [prospects]);
@@ -502,31 +453,11 @@ export default function ProspectsPage() {
     return counts;
   }, [prospects]);
 
-  const relationshipCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const prospect of prospects) {
-      const type = prospect.relationshipOpportunityType ?? "low_fit_unknown";
-      counts[type] = (counts[type] ?? 0) + 1;
-    }
-    return counts;
-  }, [prospects]);
-
   const visible = useMemo(() => {
     let rows = prospects.filter((p) => {
-      const relationshipFilterActive = selectedRelationshipTypes.length > 0;
-
       if (
         selectedSalonCategories.length > 0 &&
         !selectedSalonCategories.some((key) => prospectMatchesSalonCategory(p, key))
-      ) {
-        return false;
-      }
-
-      if (
-        relationshipFilterActive &&
-        !selectedRelationshipTypes.includes(
-          (p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType,
-        )
       ) {
         return false;
       }
@@ -537,30 +468,23 @@ export default function ProspectsPage() {
     rows.sort((a, b) => {
       let av: string | number = "", bv: string | number = "";
       switch (sortKey) {
-        case "name":             av = a.identity.name;              bv = b.identity.name; break;
-        case "handle":           av = a.identity.handle;            bv = b.identity.handle; break;
-        case "educationType":    av = a.educationType ?? "";        bv = b.educationType ?? ""; break;
-        case "businessCategory": av = a.businessCategory ?? "";     bv = b.businessCategory ?? ""; break;
-        case "opportunityScore": av = a.overallOpportunityScore ?? 0; bv = b.overallOpportunityScore ?? 0; break;
-        case "location":         av = a.identity.locationGuess ?? ""; bv = b.identity.locationGuess ?? ""; break;
-        case "platform":         av = a.bestMatch?.platform ?? "";  bv = b.bestMatch?.platform ?? ""; break;
-        case "confidence":       av = a.confidence.overall;         bv = b.confidence.overall; break;
-        case "validationStatus":          av = a.validationStatus ?? "new";          bv = b.validationStatus ?? "new"; break;
-        case "createdAt":                 av = a.createdAt;                           bv = b.createdAt; break;
-        case "businessSubcategory":       av = a.businessSubcategory ?? "";           bv = b.businessSubcategory ?? ""; break;
-        case "relationshipOpportunityType": av = a.relationshipOpportunityType ?? ""; bv = b.relationshipOpportunityType ?? ""; break;
-        case "bookingProvider":           av = a.bookingProvider ?? "";               bv = b.bookingProvider ?? ""; break;
-        case "bestUrl":                   av = a.bestMatch?.url ?? "";                bv = b.bestMatch?.url ?? ""; break;
+        case "handle": av = a.identity.handle; bv = b.identity.handle; break;
+        case "name": av = a.identity.name; bv = b.identity.name; break;
+        case "businessCategory": av = salonCategoryLabel(a); bv = salonCategoryLabel(b); break;
+        case "bookingProvider": av = a.bookingProvider ?? ""; bv = b.bookingProvider ?? ""; break;
+        case "bookingProviderSource": av = a.bookingProviderSource ?? ""; bv = b.bookingProviderSource ?? ""; break;
+        case "validationStatus": av = a.validationStatus ?? "new"; bv = b.validationStatus ?? "new"; break;
+        case "createdAt": av = a.createdAt; bv = b.createdAt; break;
       }
-      const cmp = typeof av === "number" ? av - (bv as number) : String(av).localeCompare(String(bv));
+      const cmp = String(av).localeCompare(String(bv));
       return sortDir === "asc" ? cmp : -cmp;
     });
     return rows;
-  }, [prospects, selectedSalonCategories, selectedRelationshipTypes, sortKey, sortDir]);
+  }, [prospects, selectedSalonCategories, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
-    else { setSortKey(key); setSortDir(key === "confidence" ? "desc" : "asc"); }
+    else { setSortKey(key); setSortDir("asc"); }
   }
   function si(key: SortKey) {
     if (sortKey !== key) return <span style={{ color: "#d6d3d1" }}> ↕</span>;
@@ -570,40 +494,18 @@ export default function ProspectsPage() {
   function clearFilters() {
     setFValidation("all"); setFEducationType("all"); setFAudienceType("all");
     setFHashtag("all"); setFPlatform("all"); setFMinConf(0);
-    setFBusinessCategory("all"); setFOpportunityType("all"); setFMinOpp(0); setFPlatformSignal("all"); setFOfferFitTag("all");
+    setFBusinessCategory("all"); setFPlatformSignal("all"); setFOfferFitTag("all");
     setFBookingProvider("all"); setFBookingSource("all"); setFImportCandidate(false); setFConfidenceBucket("all");
   }
   function clearWorkflowSelection() {
     setSelectedSalonCategories([]);
-    setRelationshipAllSelected(true);
-    setSelectedRelationshipTypes([]);
-    setRelationshipDropdownOpen(false);
   }
   function toggleValue<T extends string>(value: T, values: T[], setter: (next: T[]) => void) {
     setter(values.includes(value) ? values.filter((item) => item !== value) : [...values, value]);
   }
   function toggleSalonCategory(key: SalonCategoryKey) {
     toggleValue(key, selectedSalonCategories, setSelectedSalonCategories);
-    setRelationshipDropdownOpen(false);
   }
-  function toggleRelationshipAll() {
-    if (relationshipAllSelected) {
-      setRelationshipAllSelected(false);
-      setSelectedRelationshipTypes([]);
-      return;
-    }
-    setRelationshipAllSelected(true);
-    setSelectedRelationshipTypes([]);
-  }
-  function toggleRelationshipType(type: RelationshipOpportunityType) {
-    setRelationshipAllSelected(false);
-    toggleValue(type, selectedRelationshipTypes, setSelectedRelationshipTypes);
-  }
-  const relationshipSummary = relationshipAllSelected
-    ? "All"
-    : selectedRelationshipTypes.length
-    ? selectedRelationshipTypes.map((t) => RELATIONSHIP_OPPORTUNITY_LABELS[t]).join(", ")
-    : "All";
   const salonCategorySummary = useMemo(() => {
     if (selectedSalonCategories.length === 0) return "All categories";
     return selectedSalonCategories
@@ -612,13 +514,10 @@ export default function ProspectsPage() {
   }, [selectedSalonCategories]);
   const hasFilters =
     fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" ||
-    fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" ||
-    fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all" || fBookingProvider !== "all" ||
+    fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" ||
+    fPlatformSignal !== "all" || fOfferFitTag !== "all" || fBookingProvider !== "all" ||
     fBookingSource !== "all" || fImportCandidate || fConfidenceBucket !== "all";
-  const hasWorkflowSelection =
-    selectedSalonCategories.length > 0 ||
-    !relationshipAllSelected ||
-    selectedRelationshipTypes.length > 0;
+  const hasWorkflowSelection = selectedSalonCategories.length > 0;
 
   const operatorMetrics = useMemo(() => {
     const pool = statsProspects.length > 0 ? statsProspects : prospects;
@@ -664,11 +563,6 @@ export default function ProspectsPage() {
 
       <SalonOperatorSummary
         compact
-        pipeline={[
-          { label: "Source", value: operatorMetrics.total },
-          { label: "Qualified", value: operatorMetrics.relationshipOperators },
-          { label: "Campaign", value: operatorMetrics.campaignReady },
-        ]}
         pills={[
           { label: "Prospects", value: operatorMetrics.total, color: "#1c1917" },
           { label: "Relationship Operators", value: operatorMetrics.relationshipOperators, color: "#0369a1" },
@@ -707,46 +601,6 @@ export default function ProspectsPage() {
                   </button>
                 );
               })}
-              <div style={{ position: "relative" }}>
-                <button
-                  type="button"
-                  onClick={() => setRelationshipDropdownOpen((v) => !v)}
-                  style={{
-                    border: selectedRelationshipTypes.length ? "1px solid #15803d" : "1px solid #e7e5e4",
-                    background: selectedRelationshipTypes.length ? "#f0fdf4" : "#fff",
-                    color: selectedRelationshipTypes.length ? "#15803d" : "#57534e",
-                    borderRadius: 9, padding: "7px 9px", fontSize: 11, fontWeight: 850, cursor: "pointer",
-                  }}>
-                  Relationship Type <span style={{ color: "#a8a29e" }}>▼</span>
-                </button>
-                {relationshipDropdownOpen && (
-                  <div style={{
-                    position: "absolute", zIndex: 12, top: 34, right: 0, width: 285, maxHeight: 320, overflow: "auto",
-                    background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, boxShadow: "0 14px 35px rgba(28,25,23,0.14)", padding: 8,
-                  }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, fontSize: 11, fontWeight: 850, color: "#1c1917", cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        checked={relationshipAllSelected}
-                        onChange={toggleRelationshipAll}
-                      />
-                      All
-                    </label>
-                    <div style={{ height: 1, background: "#f0ede8", margin: "4px 0" }} />
-                    {RELATIONSHIP_FILTERS.map((entry) => (
-                      <label key={entry.value} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 7, fontSize: 11, color: "#57534e", cursor: "pointer" }}>
-                        <input
-                          type="checkbox"
-                          checked={selectedRelationshipTypes.includes(entry.value)}
-                          onChange={() => toggleRelationshipType(entry.value)}
-                        />
-                        <span style={{ flex: 1 }}>{entry.label}</span>
-                        <span style={{ color: "#a8a29e", fontWeight: 800 }}>{relationshipCounts[entry.value] ?? 0}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
         </div>
 
@@ -817,18 +671,12 @@ export default function ProspectsPage() {
               <option value={50}>≥ 50</option>
               <option value={65}>≥ 65</option>
             </select>
-            <select value={fMinOpp} onChange={(e) => setFMinOpp(Number(e.target.value))} style={selS}>
-              <option value={0}>Any opp. score</option>
-              <option value={40}>≥ 40</option>
-              <option value={60}>≥ 60</option>
-              <option value={75}>≥ 75</option>
-            </select>
           </div>
         )}
 
         <div style={{ marginTop: 6, fontSize: 11, color: "#a8a29e" }}>
           {visible.length} shown · {totalCount} matching
-          {hasWorkflowSelection ? ` · ${salonCategorySummary} · ${relationshipSummary}` : ""}
+          {hasWorkflowSelection ? ` · ${salonCategorySummary}` : ""}
         </div>
       </div>
 
@@ -858,16 +706,11 @@ export default function ProspectsPage() {
             <thead>
               <tr>
                 {([
-                  ["handle",                      "@Handle"],
-                  ["name",                        "Name"],
-                  ["businessCategory",            "Category"],
-                  ["businessSubcategory",         "Subtype"],
-                  ["opportunityScore",            "Opportunity"],
-                  ["location",                    "Location"],
-                  ["relationshipOpportunityType", "Relationship"],
-                  ["bookingProvider",             "Booking Provider"],
-                  ["bestUrl",                     "Best URL"],
-                  ["validationStatus",            "Status"],
+                  ["handle", "Identity"],
+                  ["businessCategory", "Category"],
+                  ["bookingProvider", "Booking Provider"],
+                  ["bookingProviderSource", "Provider Source"],
+                  ["validationStatus", "Status"],
                 ] as [SortKey, string][]).map(([key, label]) => (
                   <th key={label} style={thS} onClick={() => toggleSort(key)}>
                     {label}{si(key)}
@@ -883,20 +726,24 @@ export default function ProspectsPage() {
                     <tr key={p.prospectId}
                       onClick={() => setExpandedId(isExpanded ? null : p.prospectId)}
                       style={{ cursor: "pointer", background: isExpanded ? "#fdf2f8" : "transparent" }}>
-                      <td style={{ ...tdS, fontFamily: "monospace", fontSize: 11, fontWeight: 700, color: "#1c1917" }}>
-                        <a href={`https://instagram.com/${p.identity.handle}`} target="_blank" rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()} style={{ color: "#1c1917", textDecoration: "none" }}>
-                          @{p.identity.handle}
-                        </a>
+                      <td style={{ ...tdS, color: "#1c1917" }}>
+                        <div style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>
+                          <a href={`https://instagram.com/${p.identity.handle}`} target="_blank" rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()} style={{ color: "#1c1917", textDecoration: "none" }}>
+                            @{p.identity.handle}
+                          </a>
+                        </div>
+                        {p.identity.name !== p.identity.handle ? (
+                          <div style={{ fontSize: 11, color: "#57534e", marginTop: 2 }}>{p.identity.name}</div>
+                        ) : null}
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); setDrawerProspectId(p.prospectId); }}
-                          style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, color: "#9d174d", background: "none", border: "none", cursor: "pointer" }}
+                          style={{ marginTop: 4, fontSize: 9, fontWeight: 700, color: "#9d174d", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                         >
                           View
                         </button>
                       </td>
-                      <td style={tdS}>{p.identity.name !== p.identity.handle ? p.identity.name : <span style={{ color: "#d6d3d1" }}>—</span>}</td>
                       <td style={tdS}>
                         {salonCategoryLabel(p) ? (
                           <span style={{ fontSize: 10, background: "#fce7f3", color: "#9d174d", borderRadius: 20, padding: "2px 7px", fontWeight: 700 }}>
@@ -904,42 +751,28 @@ export default function ProspectsPage() {
                           </span>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
-                      <td style={tdS}>{p.businessSubcategory ? friendlySubtypeLabel(p.businessSubcategory) : <span style={{ color: "#d6d3d1" }}>—</span>}</td>
-                      <td style={tdS}>
-                        <span style={{ fontSize: 18, fontWeight: 900, color: confColor(p.overallOpportunityScore ?? 0) }}>
-                          {p.overallOpportunityScore ?? <span style={{ color: "#d6d3d1" }}>—</span>}
-                        </span>
+                      <td style={{ ...tdS, maxWidth: 200 }}>
+                        <BookingProviderPill
+                          provider={p.bookingProvider}
+                          label={
+                            p.bookingProviderLabel ??
+                            (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)
+                          }
+                          bookingUrl={p.bookingUrl ?? p.bestMatch?.url}
+                          showImportChip={false}
+                        />
                       </td>
-                      <td style={tdS}>{p.identity.locationGuess ?? <span style={{ color: "#d6d3d1" }}>—</span>}</td>
                       <td style={tdS}>
-                        {p.relationshipOpportunityType ? (
-                          <span style={{ fontSize: 10, background: "#eff6ff", color: "#1d4ed8", borderRadius: 20, padding: "2px 7px", fontWeight: 700 }}>
-                            {RELATIONSHIP_OPPORTUNITY_LABELS[p.relationshipOpportunityType as RelationshipOpportunityType] ?? tagLabel(String(p.relationshipOpportunityType))}
+                        <BookingProviderSourceChip prospect={p} />
+                      </td>
+                      <td style={tdS}>
+                        {isSalonImportCandidate(p) ? (
+                          <span style={{ fontSize: 10, fontWeight: 800, color: "#15803d", background: "#f0fdf4", borderRadius: 20, padding: "2px 8px" }}>
+                            Yes
                           </span>
-                        ) : <span style={{ color: "#d6d3d1" }}>—</span>}
-                      </td>
-                      <td style={{ ...tdS, maxWidth: 220 }}>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
-                          <BookingProviderPill
-                            provider={p.bookingProvider}
-                            label={
-                              p.bookingProviderLabel ??
-                              (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)
-                            }
-                            bookingUrl={p.bookingUrl ?? p.bestMatch?.url}
-                            showImportChip={isSalonImportCandidate(p)}
-                          />
-                          <BookingProviderSourceChip prospect={p} />
-                        </div>
-                      </td>
-                      <td style={{ ...tdS, maxWidth: 160 }}>
-                        {p.bestMatch ? (
-                          <a href={p.bestMatch.url} target="_blank" rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            style={{ color: "#0284c7", textDecoration: "none", fontSize: 11, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {p.bestMatch.url}
-                          </a>
-                        ) : <span style={{ color: "#d6d3d1" }}>—</span>}
+                        ) : (
+                          <span style={{ color: "#d6d3d1" }}>—</span>
+                        )}
                       </td>
                       <td style={tdS}>
                         <ValidationBadge vs={p.validationStatus} />
@@ -947,7 +780,7 @@ export default function ProspectsPage() {
                     </tr>
                     {isExpanded && (
                       <tr key={`${p.prospectId}-detail`}>
-                        <td colSpan={10} style={{ padding: 0 }}>
+                        <td colSpan={6} style={{ padding: 0 }}>
                           <ProspectDetail prospect={p} onSaved={(updated) => setProspects((prev) => prev.map((x) => x.prospectId === updated.prospectId ? updated : x))} />
                         </td>
                       </tr>

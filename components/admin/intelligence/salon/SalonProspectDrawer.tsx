@@ -3,6 +3,7 @@
 import { useEffect, useCallback, useState } from "react";
 import { BookingProviderPill } from "./BookingProviderPill";
 import { BookingProviderSourceChip } from "./BookingProviderSourceChip";
+import { AdvancedIntelligenceSection } from "./AdvancedIntelligenceSection";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 
 type DetailResponse = {
@@ -155,9 +156,11 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
               @{p?.identity.handle ?? prospectId}
             </div>
             <div style={{ fontSize: 13, color: "#57534e" }}>{p?.identity.name ?? "Not available"}</div>
-            <div style={{ fontSize: 11, color: "#78716c", marginTop: 4 }}>
-              {na(p?.identity.locationGuess)} · Score {na(p?.overallOpportunityScore)}
-            </div>
+            {p?.identity.locationGuess ? (
+              <div style={{ fontSize: 11, color: "#78716c", marginTop: 4 }}>
+                {p.identity.locationGuess}
+              </div>
+            ) : null}
             {data?.opportunity?.importCandidate ? (
               <span
                 style={{
@@ -331,18 +334,11 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
               })()}
             </section>
 
-            <section style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
-                OPPORTUNITY
-              </div>
-              <Row label="Tags">
-                {(data?.opportunity?.tags ?? []).length > 0
-                  ? (data?.opportunity?.tags ?? []).join(", ")
-                  : "Not available"}
-              </Row>
-              <Row label="Recommended play">{na(data?.opportunity?.recommendedPlay)}</Row>
-              <Row label="Relationship">{na(data?.opportunity?.relationshipLabel)}</Row>
-            </section>
+            <AdvancedIntelligenceSection
+              prospect={p}
+              recommendedPlay={data?.opportunity?.recommendedPlay}
+              opportunityNotes={(p.classificationNotes ?? []).join(" · ") || undefined}
+            />
 
             <section style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>

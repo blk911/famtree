@@ -144,7 +144,7 @@ export default function ImportCandidatesPage() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr style={{ background: "#fafaf9", textAlign: "left" }}>
-                {["Prospect", "Provider", "Source", "Conf.", "Location", "Booking URL", "Opportunity", "Updated"].map((h) => (
+                {["Prospect", "Provider", "Source", "Conf.", "Import", "Booking URL", "Updated"].map((h) => (
                   <th key={h} style={thStyle}>{h}</th>
                 ))}
               </tr>
@@ -172,7 +172,7 @@ export default function ImportCandidatesPage() {
                     <BookingProviderSourceChip prospect={p} />
                   </td>
                   <td style={tdStyle}>{p.bookingProviderConfidence ?? "—"}</td>
-                  <td style={tdStyle}>{p.identity.locationGuess ?? "—"}</td>
+                  <td style={tdStyle}>Yes</td>
                   <td style={tdStyle}>
                     {p.bookingUrl ? (
                       <a
@@ -188,7 +188,6 @@ export default function ImportCandidatesPage() {
                       "—"
                     )}
                   </td>
-                  <td style={tdStyle}>{p.overallOpportunityScore ?? "—"}</td>
                   <td style={tdStyle}>{new Date(p.updatedAt).toLocaleDateString()}</td>
                 </tr>
               ))}
