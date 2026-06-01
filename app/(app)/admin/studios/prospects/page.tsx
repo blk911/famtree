@@ -20,7 +20,12 @@ import {
 } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import type { ValidationStatus, EducationType, AudienceType } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import { BookingProviderPill } from "@/components/admin/intelligence/salon/BookingProviderPill";
+import { BookingProviderSourceChip } from "@/components/admin/intelligence/salon/BookingProviderSourceChip";
 import { ProviderDetectionDetail } from "@/components/admin/intelligence/salon/ProviderDetectionDetail";
+import { SalonStorageBadge } from "@/components/admin/intelligence/salon/SalonStorageBadge";
+import { SalonResolverStatusCard } from "@/components/admin/intelligence/salon/SalonResolverStatusCard";
+import { SalonProspectDrawer } from "@/components/admin/intelligence/salon/SalonProspectDrawer";
+import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
 import {
   analyzeProspectProviderDetection,
@@ -398,7 +403,11 @@ export default function ProspectsPage() {
   const [fPlatformSignal, setFPlatformSignal] = useState("all");
   const [fOfferFitTag, setFOfferFitTag] = useState("all");
   const [fBookingProvider, setFBookingProvider] = useState("all");
+  const [fBookingSource, setFBookingSource] = useState("all");
+  const [fImportCandidate, setFImportCandidate] = useState(false);
+  const [fConfidenceBucket, setFConfidenceBucket] = useState("all");
   const [fProviderDetection, setFProviderDetection] = useState<ProviderDetectionFilterKey>("all");
+  const [drawerProspectId, setDrawerProspectId] = useState<string | null>(null);
   const [providerDiagSummary, setProviderDiagSummary] = useState<ProviderDetectionSummary | null>(null);
   const [hoverProspectId, setHoverProspectId] = useState<string | null>(null);
   const [selectedMarkets, setSelectedMarkets] = useState<MarketKey[]>([]);
@@ -454,6 +463,9 @@ export default function ProspectsPage() {
     if (fPlatformSignal !== "all") params.set("platformSignal", fPlatformSignal);
     if (fOfferFitTag !== "all") params.set("offerFitTag", fOfferFitTag);
     if (fBookingProvider !== "all") params.set("bookingProvider", fBookingProvider);
+    if (fBookingSource !== "all") params.set("bookingProviderSource", fBookingSource);
+    if (fImportCandidate) params.set("importCandidate", "true");
+    if (fConfidenceBucket !== "all") params.set("confidenceBucket", fConfidenceBucket);
 
     setLoading(true);
     setFetchError(null);
@@ -472,11 +484,11 @@ export default function ProspectsPage() {
       })
       .catch((e) => setFetchError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
-  }, [offset, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag, fBookingProvider, refreshNonce]);
+  }, [offset, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag, fBookingProvider, fBookingSource, fImportCandidate, fConfidenceBucket, refreshNonce]);
 
   useEffect(() => {
     setOffset(0);
-  }, [fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag, fBookingProvider]);
+  }, [fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag, fBookingProvider, fBookingSource, fImportCandidate, fConfidenceBucket]);
 
   // Derive filter options
   const hashtags  = useMemo(() => Array.from(new Set(prospects.map((p) => p.sourceHashtag).filter(Boolean) as string[])).sort(), [prospects]);
@@ -615,7 +627,9 @@ export default function ProspectsPage() {
   function clearFilters() {
     setFValidation("all"); setFEducationType("all"); setFAudienceType("all");
     setFHashtag("all"); setFPlatform("all"); setFMinConf(0);
-    setFBusinessCategory("all"); setFOpportunityType("all"); setFMinOpp(0); setFPlatformSignal("all"); setFOfferFitTag("all"); setFBookingProvider("all"); setFProviderDetection("all");
+    setFBusinessCategory("all"); setFOpportunityType("all"); setFMinOpp(0); setFPlatformSignal("all"); setFOfferFitTag("all");
+    setFBookingProvider("all"); setFBookingSource("all"); setFImportCandidate(false); setFConfidenceBucket("all");
+    setFProviderDetection("all");
   }
   function clearWorkflowSelection() {
     setSelectedMarkets([]);
@@ -748,6 +762,19 @@ export default function ProspectsPage() {
         title="Prospects"
         description="Salon prospect repository — find the market, isolate relationship operators, then build a campaign around the right offer."
         config={salonConfig}
+      />
+
+      <SalonStorageBadge />
+
+      <SalonResolverStatusCard
+        title="Provider diagnostics"
+        providerFound={detectionStats.providerDetected}
+        ggDirect={detectionStats.ggDirect}
+        ggLinkInBio={detectionStats.ggLinkInBio}
+        ggHandleMatch={detectionStats.ggHandleMatch}
+        ggDisplayMatch={detectionStats.ggDisplayMatch}
+        importCandidates={detectionStats.importCandidates}
+        unknown={detectionStats.unknownNoProvider}
       />
 
       {/* Workflow */}
@@ -1013,6 +1040,27 @@ export default function ProspectsPage() {
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
+        <select value={fBookingSource} onChange={(e) => setFBookingSource(e.target.value)} style={selS}>
+          <option value="all">All sources</option>
+          <option value="direct_url">Direct</option>
+          <option value="link_in_bio">Link-in-Bio</option>
+          <option value="handle_derived">Handle Match</option>
+          <option value="display_name_derived">Display Match</option>
+        </select>
+        <select value={fConfidenceBucket} onChange={(e) => setFConfidenceBucket(e.target.value)} style={selS}>
+          <option value="all">Any provider conf.</option>
+          <option value="high">High (≥75)</option>
+          <option value="medium">Medium (50–74)</option>
+          <option value="low">Low (&lt;50)</option>
+        </select>
+        <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, color: "#57534e" }}>
+          <input
+            type="checkbox"
+            checked={fImportCandidate}
+            onChange={(e) => setFImportCandidate(e.target.checked)}
+          />
+          Import candidate only
+        </label>
         <select
           value={fProviderDetection}
           onChange={(e) => setFProviderDetection(e.target.value as ProviderDetectionFilterKey)}
@@ -1105,6 +1153,13 @@ export default function ProspectsPage() {
                           onClick={(e) => e.stopPropagation()} style={{ color: "#1c1917", textDecoration: "none" }}>
                           @{p.identity.handle}
                         </a>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setDrawerProspectId(p.prospectId); }}
+                          style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, color: "#9d174d", background: "none", border: "none", cursor: "pointer" }}
+                        >
+                          View
+                        </button>
                       </td>
                       <td style={tdS}>{p.identity.name !== p.identity.handle ? p.identity.name : <span style={{ color: "#d6d3d1" }}>—</span>}</td>
                       <td style={tdS}>
@@ -1133,20 +1188,19 @@ export default function ProspectsPage() {
                         onMouseEnter={() => setHoverProspectId(p.prospectId)}
                         onMouseLeave={() => setHoverProspectId((id) => (id === p.prospectId ? null : id))}
                       >
-                        <BookingProviderPill
-                          provider={p.bookingProvider}
-                          label={
-                            detectionByProspectId.get(p.prospectId)?.providerLabel ??
-                            p.bookingProviderLabel ??
-                            (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)
-                          }
-                          bookingUrl={p.bookingUrl ?? p.bestMatch?.url}
-                          sourceHint={
-                            detectionByProspectId.get(p.prospectId)?.bookingProviderSource === "handle_derived"
-                              ? "(Handle Match)"
-                              : null
-                          }
-                        />
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
+                          <BookingProviderPill
+                            provider={p.bookingProvider}
+                            label={
+                              detectionByProspectId.get(p.prospectId)?.providerLabel ??
+                              p.bookingProviderLabel ??
+                              (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)
+                            }
+                            bookingUrl={p.bookingUrl ?? p.bestMatch?.url}
+                            showImportChip={isSalonImportCandidate(p)}
+                          />
+                          <BookingProviderSourceChip prospect={p} />
+                        </div>
                         {detectionByProspectId.get(p.prospectId)?.outcome !== "detected" ? (
                           <div style={{ fontSize: 9, color: "#b45309", marginTop: 3, fontWeight: 700 }}>
                             {detectionByProspectId.get(p.prospectId)?.reasonLabel}
@@ -1225,8 +1279,14 @@ export default function ProspectsPage() {
         </div>
       )}
 
+      <SalonProspectDrawer
+        prospectId={drawerProspectId}
+        open={Boolean(drawerProspectId)}
+        onClose={() => setDrawerProspectId(null)}
+      />
+
       <div style={{ marginTop: 12, fontSize: 11, color: "#d6d3d1", textAlign: "right" }}>
-        Education vertical · Admin only · Archive does not delete
+        Salon vertical · Admin only · Archive does not delete
       </div>
     </div>
   );

@@ -1,17 +1,18 @@
 // lib/studios/creator-lab/hashtag-harvest/run-resolver.ts
 // Feeds HarvestedCreatorSeed records into the IG Stub resolver pipeline,
 // upserts ALL seeds as prospects (resolved or not), and returns results.
-//
-// Architecture: two-phase.
-//   Phase 1 — URL resolution runs in PARALLEL (network-bound, expensive).
-//   Phase 2 — File upserts run SEQUENTIALLY to prevent concurrent write
-//              races on the flat JSON store (EPERM on Windows / data loss).
 
 import { generateCandidateUrls } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
 import { fastResolveTracked } from "@/lib/studios/creator-lab/ig-stubs/validator";
 import { upsertProspect } from "@/lib/studios/prospects/store";
 import { resultToProspect, seedToProspect } from "@/lib/studios/prospects/from-resolver";
 import { buildProspectSourcePath } from "@/lib/studios/prospects/source-path";
+import { enrichSalonBookingProvider } from "@/lib/intelligence/salon/enrich-booking-provider";
+import {
+  emptySalonResolverDiagnostics,
+  tallySalonResolverUpsert,
+  type SalonResolverRunDiagnostics,
+} from "@/lib/intelligence/salon/salon-resolver-diagnostics";
 import type { HarvestContext } from "@/lib/studios/prospects/from-resolver";
 import type { ResolveMode, IgSeed, StubResolutionResult, ResolvedProfile, RejectedCandidate } from "@/lib/studios/creator-lab/ig-stubs/types";
 import type { UpsertInput } from "@/lib/studios/prospects/store";
@@ -24,7 +25,7 @@ import type {
 
 export type { HarvestContext };
 
-// ─── Internal resolved-seed shape (phase 1 output) ───────────────────────────
+const MAX_GG_PROBES_PER_HARVEST = 100;
 
 interface ResolvedSeed {
   seed: HarvestedCreatorSeed;
@@ -34,16 +35,16 @@ interface ResolvedSeed {
   candidateUrlsTested: string[];
   rejectedCandidates: RejectedCandidate[];
   upsertInput: UpsertInput;
+  resolved: boolean;
 }
-
-// ─── Main entry ───────────────────────────────────────────────────────────────
 
 export async function runResolverForSeeds(
   seeds: HarvestedCreatorSeed[],
   mode: ResolveMode,
   ctx: HarvestContext,
-): Promise<RunResolverResult> {
-  // Load deep-resolve module lazily (only in "deep" mode)
+): Promise<RunResolverResult & { resolverDiagnostics?: SalonResolverRunDiagnostics }> {
+  const salonHarvest = ctx.vertical === "salon";
+
   let deepResolve: typeof import("@/lib/studios/creator-lab/ig-stubs/deep-research").deepResolve | null = null;
   if (mode === "deep") {
     try {
@@ -54,9 +55,8 @@ export async function runResolverForSeeds(
     }
   }
 
-  // ── Phase 1: resolve all seeds in parallel (network I/O) ──────────────────
   const settled = await Promise.allSettled(
-    seeds.map(async (seed): Promise<ResolvedSeed> => {
+    seeds.map(async (seed, seedIndex): Promise<ResolvedSeed> => {
       const igSeed: IgSeed = {
         handle: seed.handle,
         displayName: seed.displayName,
@@ -71,8 +71,6 @@ export async function runResolverForSeeds(
 
       try {
         if (deepResolve) {
-          // Deep resolve uses AI analysis; it does its own candidate management internally.
-          // Diagnostic tracking is not available in this path.
           profiles = await deepResolve(igSeed, candidates);
         } else {
           const tracked = await fastResolveTracked(igSeed, candidates);
@@ -103,7 +101,6 @@ export async function runResolverForSeeds(
         hashtag:    seed.sourceHashtag,
       });
 
-      // Build upsert input (pure transform, no I/O) so phase 2 is trivially serialisable
       const stubResult: StubResolutionResult = {
         seed: igSeed,
         resolvedProfiles: validProfiles,
@@ -114,45 +111,71 @@ export async function runResolverForSeeds(
         linkTrailUrls,
       };
 
+      const enableGg = salonHarvest && seedIndex < MAX_GG_PROBES_PER_HARVEST;
+
       let upsertInput: UpsertInput;
-      const resolved = await resultToProspect(stubResult, ctx.batchId, {
-        enableHandleDerivedGlossGenius: false,
+      const resolvedInput = await resultToProspect(stubResult, ctx.batchId, {
+        enableHandleDerivedGlossGenius: enableGg,
       });
 
-      if (resolved) {
-        resolved.vertical       = ctx.vertical;
-        resolved.sourcePlatform = ctx.sourcePlatform;
-        resolved.sourceTool     = ctx.sourceTool;
-        resolved.sourceHashtag  = seed.sourceHashtag;
-        resolved.sourceHashtags = [seed.sourceHashtag];
-        resolved.sourcePath     = sourcePath;
-        resolved.runId          = ctx.runId;
-        resolved.harvestDate    = ctx.harvestDate;
-        resolved.educationType  = seed.educationType ?? null;
-        resolved.audienceType   = seed.audienceType  ?? null;
-        resolved.platforms      = Array.from(new Set(validProfiles.map((p) => p.platform)));
-        resolved.suggestedValidationStatus = "education_relevant";
+      if (resolvedInput) {
+        resolvedInput.vertical       = ctx.vertical;
+        resolvedInput.sourcePlatform = ctx.sourcePlatform;
+        resolvedInput.sourceTool     = ctx.sourceTool;
+        resolvedInput.sourceHashtag  = seed.sourceHashtag;
+        resolvedInput.sourceHashtags = [seed.sourceHashtag];
+        resolvedInput.sourcePath     = sourcePath;
+        resolvedInput.runId          = ctx.runId;
+        resolvedInput.harvestDate    = ctx.harvestDate;
+        resolvedInput.educationType  = seed.educationType ?? null;
+        resolvedInput.audienceType   = seed.audienceType  ?? null;
+        resolvedInput.platforms      = Array.from(new Set(validProfiles.map((p) => p.platform)));
+        resolvedInput.suggestedValidationStatus = salonHarvest ? "new" : "education_relevant";
 
-        if (seed.detectedCategory && !resolved.identity.categoryGuess)
-          resolved.identity.categoryGuess = seed.detectedCategory;
-        if (seed.detectedLocation && !resolved.identity.locationGuess)
-          resolved.identity.locationGuess = seed.detectedLocation;
+        if (seed.detectedCategory && !resolvedInput.identity.categoryGuess)
+          resolvedInput.identity.categoryGuess = seed.detectedCategory;
+        if (seed.detectedLocation && !resolvedInput.identity.locationGuess)
+          resolvedInput.identity.locationGuess = seed.detectedLocation;
 
-        resolved.evidence = Array.from(
-          new Set([...seed.evidence, ...resolved.evidence])
+        resolvedInput.evidence = Array.from(
+          new Set([...seed.evidence, ...resolvedInput.evidence]),
         ).slice(0, 15);
 
-        upsertInput = resolved;
+        upsertInput = resolvedInput;
       } else {
-        // Unresolved — still save, but as needs_review
         upsertInput = seedToProspect(seed, ctx);
+        if (salonHarvest && enableGg) {
+          try {
+            const extra = await enrichSalonBookingProvider(
+              {
+                evidence: seed.evidence,
+                linkTrailUrls: [],
+                instagramHandle: seed.handle,
+                displayName: seed.displayName,
+                bio: seed.evidence.join(" "),
+              },
+              { enableHandleDerivedGlossGenius: true },
+            );
+            Object.assign(upsertInput, extra);
+          } catch {
+            // GG failure must not fail harvest
+          }
+        }
       }
 
-      return { seed, validProfiles, bestMatch, status, candidateUrlsTested, rejectedCandidates, upsertInput };
-    })
+      return {
+        seed,
+        validProfiles,
+        bestMatch,
+        status,
+        candidateUrlsTested,
+        rejectedCandidates,
+        upsertInput,
+        resolved: status === "resolved" || status === "partial",
+      };
+    }),
   );
 
-  // ── Phase 2: upsert prospects SEQUENTIALLY (file I/O — no concurrent writes) ──
   const results: ResolverPipelineResult[] = [];
   const saveErrors: SaveError[] = [];
   const savedProspectIds: string[] = [];
@@ -160,14 +183,16 @@ export async function runResolverForSeeds(
   let savedCount = 0;
   let failedToSaveCount = 0;
   const upsertAttemptCount = settled.filter((s) => s.status === "fulfilled").length;
-
-  console.log(`[run-resolver] Phase 2: attempting ${upsertAttemptCount} upserts (${settled.filter(s => s.status === "rejected").length} phase-1 rejections skipped)`);
+  const resolverDiagnostics = salonHarvest ? emptySalonResolverDiagnostics() : undefined;
+  if (resolverDiagnostics) {
+    resolverDiagnostics.harvested = seeds.length;
+    resolverDiagnostics.deduped = seeds.length;
+  }
 
   for (let i = 0; i < settled.length; i++) {
     const s = settled[i];
     const original = seeds[i];
 
-    // Resolution itself failed — still record it, nothing to upsert
     if (s.status === "rejected") {
       const msg = s.reason instanceof Error ? s.reason.message : "resolution error";
       results.push({
@@ -181,22 +206,24 @@ export async function runResolverForSeeds(
         notes: msg,
         saveError: null,
       });
+      if (resolverDiagnostics) resolverDiagnostics.unknown = (resolverDiagnostics.unknown ?? 0) + 1;
       continue;
     }
 
-    const { seed, validProfiles, bestMatch, status, upsertInput } = s.value;
+    const { seed, validProfiles, bestMatch, status, upsertInput, resolved } = s.value;
 
     let prospectId: string | null = null;
     let saveError: string | null = null;
 
-    console.log(`[run-resolver] upserting [${i + 1}/${upsertAttemptCount}] @${seed.handle} (${seed.sourceHashtag})`);
     try {
       const saved = await upsertProspect(upsertInput);
       prospectId = saved.prospectId;
       savedCount++;
       savedProspectIds.push(saved.prospectId);
       savedHandles.push(seed.handle);
-      console.log(`[run-resolver] ✓ saved @${seed.handle} → ${saved.prospectId}`);
+      if (resolverDiagnostics) {
+        tallySalonResolverUpsert(resolverDiagnostics, upsertInput, resolved);
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       saveError = msg;
@@ -207,8 +234,7 @@ export async function runResolverForSeeds(
         platform: bestMatch?.platform ?? null,
         message: msg,
       });
-      // Log server-side so nothing is silent in the server console
-      console.error(`[run-resolver] ✗ upsert failed for @${seed.handle} (${seed.sourceHashtag}):`, e);
+      if (resolverDiagnostics) resolverDiagnostics.unknown = (resolverDiagnostics.unknown ?? 0) + 1;
     }
 
     results.push({
@@ -224,7 +250,14 @@ export async function runResolverForSeeds(
     });
   }
 
-  console.log(`[run-resolver] Phase 2 complete: ${savedCount} saved, ${failedToSaveCount} failed, ${upsertAttemptCount} attempted`);
-
-  return { results, savedCount, failedToSaveCount, saveErrors, upsertAttemptCount, savedProspectIds, savedHandles };
+  return {
+    results,
+    savedCount,
+    failedToSaveCount,
+    saveErrors,
+    upsertAttemptCount,
+    savedProspectIds,
+    savedHandles,
+    resolverDiagnostics,
+  };
 }

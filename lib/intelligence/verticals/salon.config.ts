@@ -20,9 +20,11 @@ export const salonConfig: VerticalConfig = {
     { id: "prospects",  label: "Prospects",              href: "/admin/studios/prospects" },
     { id: "runs",       label: "Runs",                   href: "/admin/studios/runs" },
     { id: "backoffice", label: "Back Office Import",     href: "/admin/intelligence/salon/backoffice" },
+    { id: "import_candidates", label: "Import Candidates", href: "/admin/studios/import-candidates" },
+    { id: "harvest_analytics", label: "Harvest Analytics", href: "/admin/studios/harvest-analytics" },
   ],
 
-  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice"],
+  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice", "import_candidates", "harvest_analytics"],
   hiddenTools:  [],
 
   sourceLabels: {

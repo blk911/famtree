@@ -21,6 +21,7 @@ import {
   applyBookingDetection,
 } from "./store-json";
 import { enrichProspectBookingIfMissing } from "@/lib/intelligence/salon/booking-from-trail";
+import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import type { UpsertInput, ProspectFilter } from "./store-json";
 
 // ─── DB row shape (mirrors studio_prospects columns) ─────────────────────────
@@ -92,6 +93,7 @@ interface DbProspectRow {
   booking_url?: string | null;
   booking_provider_confidence?: number | null;
   booking_provider_evidence?: unknown;
+  booking_provider_source?: string | null;
   bookingProvider?: string | null;
   bookingProviderLabel?: string | null;
   bookingUrl?: string | null;
@@ -200,6 +202,7 @@ function rowToRecord(row: DbProspectRow): ProspectRecord {
     bookingUrl: row.booking_url ?? row.bookingUrl ?? undefined,
     bookingProviderConfidence: row.booking_provider_confidence ?? row.bookingProviderConfidence ?? undefined,
     bookingProviderEvidence: parseJsonCol<string[]>(row.booking_provider_evidence ?? row.bookingProviderEvidence),
+    bookingProviderSource: (row.booking_provider_source ?? undefined) as ProspectRecord["bookingProviderSource"],
     validationStatus: row.validationStatus as ValidationStatus,
     archiveReason:    row.archiveReason   ?? null,
     status:           row.status          as ProspectStatus,
@@ -387,6 +390,8 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
         incomingWithBooking.bookingProviderEvidence ?? [],
         12,
       ),
+      bookingProviderSource:
+        incomingWithBooking.bookingProviderSource ?? existingRecord.bookingProviderSource,
       // ── Human-set fields: NEVER overwrite ──────────────────────────────────
       validationStatus: effectiveValidationStatus,
       archiveReason:    existingRecord.archiveReason ?? null,
@@ -691,6 +696,24 @@ export async function filterProspectsPostgres(filter: ProspectFilter): Promise<P
       const bp = p.bookingProvider ?? "unknown";
       if (filter.bookingProvider === "unknown") return !p.bookingProvider || bp === "unknown";
       return bp === filter.bookingProvider;
+    });
+  }
+  if (filter.bookingProviderSource) {
+    const want = filter.bookingProviderSource === "link_trail" ? "link_in_bio" : filter.bookingProviderSource;
+    records = records.filter((p) => {
+      const src = p.bookingProviderSource === "link_trail" ? "link_in_bio" : p.bookingProviderSource;
+      return src === want;
+    });
+  }
+  if (filter.importCandidateOnly) {
+    records = records.filter((p) => isSalonImportCandidate(p));
+  }
+  if (filter.confidenceBucket) {
+    records = records.filter((p) => {
+      const c = p.bookingProviderConfidence ?? 0;
+      if (filter.confidenceBucket === "high") return c >= 75;
+      if (filter.confidenceBucket === "medium") return c >= 50 && c < 75;
+      return c < 50;
     });
   }
   return records;

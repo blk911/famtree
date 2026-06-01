@@ -151,6 +151,19 @@ export interface HashtagHarvestRun {
   /** Per-hashtag pipeline metrics + rolled-up totals */
   hashtagStats?: HashtagHarvestHashtagStats[];
   hashtagStatsTotals?: HashtagHarvestStatsTotals;
+  /** Salon resolver / provider discovery rollup (salon harvests only) */
+  resolverDiagnostics?: {
+    harvested?: number;
+    deduped?: number;
+    resolved?: number;
+    providerFound?: number;
+    ggDirect?: number;
+    ggLinkInBio?: number;
+    ggHandleMatch?: number;
+    ggDisplayMatch?: number;
+    importCandidates?: number;
+    unknown?: number;
+  };
 }
 
 export interface HarvestRunFile {

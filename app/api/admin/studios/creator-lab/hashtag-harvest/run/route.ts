@@ -95,7 +95,16 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { results, savedCount, failedToSaveCount, saveErrors, upsertAttemptCount, savedProspectIds, savedHandles } = resolverResult;
+  const {
+    results,
+    savedCount,
+    failedToSaveCount,
+    saveErrors,
+    upsertAttemptCount,
+    savedProspectIds,
+    savedHandles,
+    resolverDiagnostics,
+  } = resolverResult;
 
   const { perHashtag: hashtagStats, totals: hashtagStatsTotals } = computeHashtagHarvestStats(
     hashtags,
@@ -145,6 +154,7 @@ export async function POST(req: NextRequest) {
     savedHandles,
     hashtagStats,
     hashtagStatsTotals,
+    resolverDiagnostics: verticalKey === "salon" ? resolverDiagnostics : undefined,
   };
 
   // ── Step 6: Persist run file ────────────────────────────────────────────────

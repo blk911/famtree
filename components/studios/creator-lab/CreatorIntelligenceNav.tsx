@@ -12,7 +12,9 @@ export type CreatorIntelligenceTool =
   | "ig-resolver"
   | "hashtag-harvest"
   | "prospects"
-  | "runs";
+  | "runs"
+  | "import-candidates"
+  | "harvest-analytics";
 
 const TOOL_TO_NAV_ID: Record<CreatorIntelligenceTool, string> = {
   assembler: "assembler",
@@ -20,6 +22,8 @@ const TOOL_TO_NAV_ID: Record<CreatorIntelligenceTool, string> = {
   "hashtag-harvest": "harvest",
   prospects: "prospects",
   runs: "runs",
+  "import-candidates": "import_candidates",
+  "harvest-analytics": "harvest_analytics",
 };
 
 type WipeState = "idle" | "counting" | "confirming" | "wiping" | "wiped" | "error";

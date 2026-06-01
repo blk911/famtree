@@ -178,7 +178,13 @@ export interface ProspectRecord {
   bookingProviderConfidence?: number;
   bookingProviderEvidence?: string[];
   /** How the booking provider was discovered (direct URL, link-in-bio trail, or GG handle probe). */
-  bookingProviderSource?: "direct_url" | "link_trail" | "handle_derived";
+  bookingProviderSource?:
+    | "direct_url"
+    | "link_in_bio"
+    | "link_trail"
+    | "handle_derived"
+    | "display_name_derived"
+    | "unknown";
   /** IG profile URL (external bio link is not scraped). */
   linkInBioUrl?: string;
   linkInBioPageFetched?: boolean;

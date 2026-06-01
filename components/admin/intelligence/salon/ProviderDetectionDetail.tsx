@@ -72,9 +72,13 @@ export function ProviderDetectionDetail({
             label={d.providerLabel}
             bookingUrl={d.bestUrl}
             sourceHint={
-              d.provider === "glossgenius" && d.bookingProviderSource === "handle_derived"
+              d.bookingProviderSource === "handle_derived"
                 ? "(Handle Match)"
-                : null
+                : d.bookingProviderSource === "display_name_derived"
+                  ? "(Display Match)"
+                  : d.bookingProviderSource === "link_in_bio"
+                    ? "(Link-in-Bio)"
+                    : null
             }
             showImportChip
           />

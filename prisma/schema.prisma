@@ -1409,6 +1409,7 @@ model StudioProspect {
   bookingUrl                 String? @map("booking_url")
   bookingProviderConfidence  Int?    @map("booking_provider_confidence")
   bookingProviderEvidence    Json?   @map("booking_provider_evidence")
+  bookingProviderSource      String? @map("booking_provider_source")
 
   // ── Human-managed CRM (NEVER overwritten by reruns) ───────────────────────
   validationStatus String @default("new")

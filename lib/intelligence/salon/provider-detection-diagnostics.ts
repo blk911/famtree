@@ -10,17 +10,16 @@ import {
 } from "./provider-detector";
 import {
   glossGeniusResolverStatus,
+  GLOSSGENIUS_RESOLVER_STATUS_LABELS,
+  type BookingProviderSource,
   type GlossGeniusResolverStatus,
 } from "./enrich-booking-provider";
+import { isSalonImportCandidate } from "./import-candidate";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 
 export type { GlossGeniusResolverStatus };
 
-export const GLOSSGENIUS_STATUS_LABELS: Record<GlossGeniusResolverStatus, string> = {
-  gg_direct: "GG Direct",
-  gg_handle_match: "GG Handle Match",
-  gg_not_found: "GG Not Found",
-};
+export { GLOSSGENIUS_RESOLVER_STATUS_LABELS as GLOSSGENIUS_STATUS_LABELS } from "./enrich-booking-provider";
 
 export type ProviderDetectionOutcome =
   | "detected"
@@ -62,7 +61,7 @@ export type ProspectProviderDetectionDiagnostics = {
   hasLinkInBioUrl: boolean;
   glossGeniusStatus: GlossGeniusResolverStatus;
   glossGeniusStatusLabel: string;
-  bookingProviderSource?: ProspectRecord["bookingProviderSource"];
+  bookingProviderSource?: BookingProviderSource;
 };
 
 const BOOKING_HINT_HOSTS = [
@@ -128,17 +127,33 @@ function inferLinkInBioFetched(
   return tested;
 }
 
+function toBookingProviderSource(
+  src?: ProspectRecord["bookingProviderSource"],
+): BookingProviderSource | undefined {
+  if (!src || src === "unknown") return src === "unknown" ? "unknown" : undefined;
+  if (src === "link_trail") return "link_in_bio";
+  return src as BookingProviderSource;
+}
+
 function parseBookingProviderSource(
   prospect: ProspectRecord,
-): ProspectRecord["bookingProviderSource"] | undefined {
-  if (prospect.bookingProviderSource) return prospect.bookingProviderSource;
+): BookingProviderSource | undefined {
+  if (prospect.bookingProviderSource) {
+    return toBookingProviderSource(prospect.bookingProviderSource);
+  }
   const line = (prospect.bookingProviderEvidence ?? []).find((e) =>
     e.startsWith("providerSource:"),
   );
   if (!line) return undefined;
   const raw = line.split(":")[1]?.trim();
-  if (raw === "handle_derived" || raw === "direct_url" || raw === "link_trail") {
-    return raw;
+  if (
+    raw === "handle_derived" ||
+    raw === "display_name_derived" ||
+    raw === "direct_url" ||
+    raw === "link_in_bio" ||
+    raw === "link_trail"
+  ) {
+    return toBookingProviderSource(raw as ProspectRecord["bookingProviderSource"]);
   }
   return undefined;
 }
@@ -161,7 +176,7 @@ function buildGlossGeniusDiagnostics(
   );
   return {
     glossGeniusStatus: status,
-    glossGeniusStatusLabel: GLOSSGENIUS_STATUS_LABELS[status],
+    glossGeniusStatusLabel: GLOSSGENIUS_RESOLVER_STATUS_LABELS[status],
     bookingProviderSource,
   };
 }
@@ -342,6 +357,11 @@ export type ProviderDetectionSummary = {
   vagaro: number;
   square: number;
   unknownNoProvider: number;
+  ggDirect: number;
+  ggLinkInBio: number;
+  ggHandleMatch: number;
+  ggDisplayMatch: number;
+  importCandidates: number;
 };
 
 export function summarizeProviderDetection(
@@ -355,6 +375,11 @@ export function summarizeProviderDetection(
   let vagaro = 0;
   let square = 0;
   let unknownNoProvider = 0;
+  let ggDirect = 0;
+  let ggLinkInBio = 0;
+  let ggHandleMatch = 0;
+  let ggDisplayMatch = 0;
+  let importCandidates = 0;
 
   for (const p of prospects) {
     const d = analyzeProspectProviderDetection(p);
@@ -366,9 +391,14 @@ export function summarizeProviderDetection(
       if (d.provider === "glossgenius") glossgenius++;
       else if (d.provider === "vagaro") vagaro++;
       else if (d.provider === "square") square++;
+      if (d.glossGeniusStatus === "gg_direct") ggDirect++;
+      if (d.glossGeniusStatus === "gg_link_in_bio") ggLinkInBio++;
+      if (d.glossGeniusStatus === "gg_handle_match") ggHandleMatch++;
+      if (d.glossGeniusStatus === "gg_display_match") ggDisplayMatch++;
     } else {
       unknownNoProvider++;
     }
+    if (isSalonImportCandidate(p)) importCandidates++;
   }
 
   return {
@@ -381,6 +411,11 @@ export function summarizeProviderDetection(
     vagaro,
     square,
     unknownNoProvider,
+    ggDirect,
+    ggLinkInBio,
+    ggHandleMatch,
+    ggDisplayMatch,
+    importCandidates,
   };
 }
 

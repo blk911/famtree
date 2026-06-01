@@ -8,6 +8,8 @@ import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/Creator
 import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import { HarvestForm } from "@/components/studios/creator-lab/HarvestForm";
+import { SalonStorageBadge } from "@/components/admin/intelligence/salon/SalonStorageBadge";
+import { SalonResolverStatusCard } from "@/components/admin/intelligence/salon/SalonResolverStatusCard";
 import {
   VALIDATION_STATUS_LABELS,
   VALIDATION_STATUS_COLORS,
@@ -84,6 +86,15 @@ function HashtagDiagnosticsPanel({ run }: { run: HashtagHarvestRun }) {
 
   return (
     <div style={{ marginBottom: 20 }}>
+      {run.resolverDiagnostics ? (
+        <SalonResolverStatusCard
+          title="Resolver status"
+          harvested={run.resolverDiagnostics.harvested ?? run.totalCreators}
+          deduped={run.resolverDiagnostics.deduped ?? run.totalCreators}
+          resolved={run.resolverDiagnostics.resolved ?? run.totalResolved}
+          {...run.resolverDiagnostics}
+        />
+      ) : null}
       <div style={{ fontSize: 10, fontWeight: 700, color: "#78716c", letterSpacing: "0.07em", marginBottom: 10 }}>
         PER-HASHTAG HARVEST DIAGNOSTICS
       </div>
@@ -878,6 +889,8 @@ export default function HashtagHarvestPage() {
         description="Harvest Salon / Client-Centric creator signals from Instagram hashtags, then resolve them into salon prospect records."
         config={salonConfig}
       />
+
+      <SalonStorageBadge />
 
       {/* Input form — HarvestForm owns all form state; incrementing runKey gives a clean slate */}
       {!runData && (

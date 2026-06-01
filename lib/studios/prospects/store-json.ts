@@ -9,6 +9,7 @@ import type { ProspectRecord, ProspectStatus, MatchedUrl, ProspectEvidence, Pros
 import type { ValidationStatus } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import { classifyRelationshipOpportunity } from "./opportunity-classifier";
 import { detectBookingFromProspectTrail, enrichProspectBookingIfMissing } from "@/lib/intelligence/salon/booking-from-trail";
+import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp/studios-prospects"
@@ -224,6 +225,9 @@ export interface ProspectFilter {
   platformSignal?: string;
   offerFitTag?: string;
   bookingProvider?: string;
+  bookingProviderSource?: string;
+  importCandidateOnly?: boolean;
+  confidenceBucket?: "high" | "medium" | "low";
   sourceType?: string;     // e.g. "education_directory_import"
   sourcePlatform?: string; // e.g. "directory_import"
   sourceTool?: string;     // e.g. "education_directory_import"
@@ -464,6 +468,18 @@ export async function filterProspectsJson(filter: ProspectFilter): Promise<Prosp
       } else if (bp !== filter.bookingProvider) {
         return false;
       }
+    }
+    if (filter.bookingProviderSource) {
+      const src = p.bookingProviderSource === "link_trail" ? "link_in_bio" : p.bookingProviderSource;
+      const want = filter.bookingProviderSource === "link_trail" ? "link_in_bio" : filter.bookingProviderSource;
+      if (src !== want) return false;
+    }
+    if (filter.importCandidateOnly && !isSalonImportCandidate(p)) return false;
+    if (filter.confidenceBucket) {
+      const c = p.bookingProviderConfidence ?? 0;
+      if (filter.confidenceBucket === "high" && c < 75) return false;
+      if (filter.confidenceBucket === "medium" && (c < 50 || c >= 75)) return false;
+      if (filter.confidenceBucket === "low" && c >= 50) return false;
     }
     return true;
   });

@@ -75,6 +75,14 @@ export async function GET(req: NextRequest) {
       platformSignal:  sp.get("platformSignal")    ?? undefined,
       offerFitTag:     sp.get("offerFitTag")       ?? undefined,
       bookingProvider: sp.get("bookingProvider")  ?? undefined,
+      bookingProviderSource: sp.get("bookingProviderSource") ?? undefined,
+      importCandidateOnly: sp.get("importCandidate") === "true",
+      confidenceBucket:
+        sp.get("confidenceBucket") === "high" ||
+        sp.get("confidenceBucket") === "medium" ||
+        sp.get("confidenceBucket") === "low"
+          ? (sp.get("confidenceBucket") as "high" | "medium" | "low")
+          : undefined,
       sourceType:      sp.get("sourceType")        ?? undefined,
       sourcePlatform:  sp.get("sourcePlatform")    ?? undefined,
       sourceTool:      sp.get("sourceTool")         ?? undefined,
