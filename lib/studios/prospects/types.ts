@@ -61,7 +61,8 @@ export interface ProspectSource {
     | "hashtag_harvest"
     | "styleseat_harvest"
     | "education_seed_import"
-    | "education_directory_import";
+    | "education_directory_import"
+    | "ggen_seed_discovery";
   batchId: string;
   sourceHandle: string;
   sourceDisplayName: string;
