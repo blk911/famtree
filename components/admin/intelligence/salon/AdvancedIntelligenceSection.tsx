@@ -1,9 +1,6 @@
 "use client";
 
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
-import { RELATIONSHIP_OPPORTUNITY_LABELS } from "@/lib/studios/prospects/opportunity-taxonomy";
-import type { RelationshipOpportunityType } from "@/lib/studios/prospects/opportunity-taxonomy";
-
 function tagLabel(value: string): string {
   return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -33,11 +30,6 @@ export function AdvancedIntelligenceSection({
     ),
     ...(prospect.offerFitTags ?? []).map(tagLabel),
   ];
-  const relationshipLabel = prospect.relationshipOpportunityType
-    ? RELATIONSHIP_OPPORTUNITY_LABELS[
-        prospect.relationshipOpportunityType as RelationshipOpportunityType
-      ] ?? tagLabel(String(prospect.relationshipOpportunityType))
-    : null;
   const notes =
     opportunityNotes ??
     ((prospect.classificationNotes ?? []).join(" · ") || null);
@@ -70,9 +62,6 @@ export function AdvancedIntelligenceSection({
           <span style={{ fontWeight: 800, color: confColor(score ?? 0) }}>
             {score ?? "—"}
           </span>
-          {relationshipLabel ? (
-            <span style={{ marginLeft: 8, color: "#78716c" }}>({relationshipLabel})</span>
-          ) : null}
         </div>
         <div style={{ marginBottom: 6 }}>
           <span style={{ fontWeight: 700, color: "#a8a29e" }}>Signals: </span>

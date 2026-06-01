@@ -320,6 +320,7 @@ type SortKey =
   | "businessCategory"
   | "bookingProvider"
   | "bookingProviderSource"
+  | "importCandidate"
   | "validationStatus"
   | "createdAt";
 
@@ -473,6 +474,13 @@ export default function ProspectsPage() {
         case "businessCategory": av = salonCategoryLabel(a); bv = salonCategoryLabel(b); break;
         case "bookingProvider": av = a.bookingProvider ?? ""; bv = b.bookingProvider ?? ""; break;
         case "bookingProviderSource": av = a.bookingProviderSource ?? ""; bv = b.bookingProviderSource ?? ""; break;
+        case "importCandidate": {
+          const ai = isSalonImportCandidate(a) ? 1 : 0;
+          const bi = isSalonImportCandidate(b) ? 1 : 0;
+          av = ai;
+          bv = bi;
+          break;
+        }
         case "validationStatus": av = a.validationStatus ?? "new"; bv = b.validationStatus ?? "new"; break;
         case "createdAt": av = a.createdAt; bv = b.createdAt; break;
       }
@@ -710,6 +718,7 @@ export default function ProspectsPage() {
                   ["businessCategory", "Category"],
                   ["bookingProvider", "Booking Provider"],
                   ["bookingProviderSource", "Provider Source"],
+                  ["importCandidate", "Import Candidate"],
                   ["validationStatus", "Status"],
                 ] as [SortKey, string][]).map(([key, label]) => (
                   <th key={label} style={thS} onClick={() => toggleSort(key)}>
@@ -780,7 +789,7 @@ export default function ProspectsPage() {
                     </tr>
                     {isExpanded && (
                       <tr key={`${p.prospectId}-detail`}>
-                        <td colSpan={6} style={{ padding: 0 }}>
+                        <td colSpan={7} style={{ padding: 0 }}>
                           <ProspectDetail prospect={p} onSaved={(updated) => setProspects((prev) => prev.map((x) => x.prospectId === updated.prospectId ? updated : x))} />
                         </td>
                       </tr>
