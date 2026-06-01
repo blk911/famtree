@@ -33,17 +33,6 @@ interface VerticalOption {
 
 const VERTICAL_OPTIONS: VerticalOption[] = [
   {
-    key: "education",
-    label: "Education",
-    icon: "🎓",
-    available: true,
-    clusters: EDUCATION_HASHTAG_CLUSTERS,
-    preset: EDUCATION_HASHTAG_PRESET,
-    placeholderHashtags: "#homeschool\n#homeschoolmom\n#microschool\n#mathtutor\n#dyslexia",
-    placeholderMarket:   "Denver, CO",
-    placeholderCategory: "Homeschool, Tutor, STEM…",
-  },
-  {
     key: "salon",
     label: "Salon / Client-Centric",
     icon: "💈",
@@ -53,6 +42,17 @@ const VERTICAL_OPTIONS: VerticalOption[] = [
     placeholderHashtags: "#hairstylist\n#nailtech\n#esthetician\n#salonsuite\n#behindthechair",
     placeholderMarket:   "Denver, CO",
     placeholderCategory: "Hair, Nails, Esthetics…",
+  },
+  {
+    key: "education",
+    label: "Education",
+    icon: "🎓",
+    available: true,
+    clusters: EDUCATION_HASHTAG_CLUSTERS,
+    preset: EDUCATION_HASHTAG_PRESET,
+    placeholderHashtags: "#homeschool\n#homeschoolmom\n#microschool\n#mathtutor\n#dyslexia",
+    placeholderMarket:   "Denver, CO",
+    placeholderCategory: "Homeschool, Tutor, STEM…",
   },
   {
     key: "transpo",
@@ -111,7 +111,7 @@ export interface HarvestFormProps {
 
 export function HarvestForm({ onSubmit, loading, error }: HarvestFormProps) {
   // All form state lives here. Parent never touches it.
-  const [verticalKey,    setVerticalKey]    = useState("education");
+  const [verticalKey,    setVerticalKey]    = useState("salon");
   const [hashtagText,    setHashtagText]    = useState("");
   const [market,         setMarket]         = useState("");
   const [category,       setCategory]       = useState("");
