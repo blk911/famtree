@@ -50,17 +50,20 @@ export async function GET(_req: NextRequest, context: RouteContext) {
       importCandidate: isSalonImportCandidate(prospect),
     };
 
-    const ggCheckedUrls = (prospect.bookingProviderEvidence ?? [])
-      .filter((e) => e.includes("glossgenius.com") || e.includes("checked"))
-      .concat(
-        providerDetection.evidence.filter((e) => e.includes("glossgenius")),
-      );
+    const ggCheckedUrls =
+      (prospect.ggCheckedUrls?.length ?? 0) > 0
+        ? prospect.ggCheckedUrls!
+        : (prospect.bookingProviderEvidence ?? [])
+            .filter((e) => e.includes("glossgenius.com") || e.includes("checked"))
+            .concat(providerDetection.evidence.filter((e) => e.includes("glossgenius")));
 
     const notes = {
       outcome: providerDetection.outcome,
       reasonLabel: providerDetection.reasonLabel,
       glossGeniusStatus: providerDetection.glossGeniusStatusLabel,
-      ggCheckedUrls: Array.from(new Set(ggCheckedUrls)),
+      ggResolverStatus: prospect.ggResolverStatus ?? "not_attempted",
+      ggResolverReason: prospect.ggResolverReason,
+      ggCheckedUrls: Array.from(new Set(ggCheckedUrls ?? [])),
       noUrl: !providerDetection.hasAnyUrl,
       noProvider: providerDetection.outcome !== "detected",
     };

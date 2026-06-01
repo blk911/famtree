@@ -36,6 +36,8 @@ type DetailResponse = {
   notes?: {
     reasonLabel?: string;
     glossGeniusStatus?: string;
+    ggResolverStatus?: string;
+    ggResolverReason?: string;
     ggCheckedUrls?: string[];
     noUrl?: boolean;
     noProvider?: boolean;
@@ -255,6 +257,27 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                 )}
               </Row>
               <Row label="GlossGenius status">{na(pd?.glossGeniusStatusLabel ?? data?.notes?.glossGeniusStatus)}</Row>
+            </section>
+
+            <section style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+                GG RESOLVER
+              </div>
+              <Row label="GG Resolver Status">{na(p.ggResolverStatus ?? data?.notes?.ggResolverStatus)}</Row>
+              <Row label="Reason">{na(p.ggResolverReason ?? data?.notes?.ggResolverReason)}</Row>
+              <Row label="Checked URLs">
+                {((p.ggCheckedUrls ?? data?.notes?.ggCheckedUrls) ?? []).length > 0 ? (
+                  <ul style={{ margin: 0, paddingLeft: 16 }}>
+                    {((p.ggCheckedUrls ?? data?.notes?.ggCheckedUrls) ?? []).slice(0, 20).map((u) => (
+                      <li key={u} style={{ fontSize: 11 }}>
+                        <ExternalLink href={u} />
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  "Not available"
+                )}
+              </Row>
             </section>
 
             <section style={{ marginBottom: 20 }}>

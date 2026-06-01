@@ -152,18 +152,7 @@ export interface HashtagHarvestRun {
   hashtagStats?: HashtagHarvestHashtagStats[];
   hashtagStatsTotals?: HashtagHarvestStatsTotals;
   /** Salon resolver / provider discovery rollup (salon harvests only) */
-  resolverDiagnostics?: {
-    harvested?: number;
-    deduped?: number;
-    resolved?: number;
-    providerFound?: number;
-    ggDirect?: number;
-    ggLinkInBio?: number;
-    ggHandleMatch?: number;
-    ggDisplayMatch?: number;
-    importCandidates?: number;
-    unknown?: number;
-  };
+  resolverDiagnostics?: import("@/lib/intelligence/salon/salon-resolver-diagnostics").SalonResolverRunDiagnostics;
 }
 
 export interface HarvestRunFile {
@@ -181,6 +170,10 @@ export interface HarvestRunRequest {
   maxPerHashtag: number;
   mode: ResolveMode;
   verticalKey: string;
+  /** Run GG resolver on all deduped prospects (no cap). */
+  runGgOnAllDeduped?: boolean;
+  /** Max GG probes per harvest when runGgOnAllDeduped is false (default 250). */
+  ggMaxProbes?: number;
 }
 
 export interface HarvestRunResponse {

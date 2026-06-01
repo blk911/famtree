@@ -7,12 +7,20 @@ import { fastResolveTracked } from "@/lib/studios/creator-lab/ig-stubs/validator
 import { upsertProspect } from "@/lib/studios/prospects/store";
 import { resultToProspect, seedToProspect } from "@/lib/studios/prospects/from-resolver";
 import { buildProspectSourcePath } from "@/lib/studios/prospects/source-path";
-import { enrichSalonBookingProvider } from "@/lib/intelligence/salon/enrich-booking-provider";
 import {
   emptySalonResolverDiagnostics,
   tallySalonResolverUpsert,
   type SalonResolverRunDiagnostics,
 } from "@/lib/intelligence/salon/salon-resolver-diagnostics";
+import {
+  applyGgSalonEnrichment,
+  upsertInputToGgEnrichInput,
+} from "@/lib/intelligence/salon/apply-gg-enrichment";
+import {
+  DEFAULT_GG_RESOLVER_CAP,
+  emptyGgRunDiagnostics,
+  mergeGgRunDiagnostics,
+} from "@/lib/intelligence/salon/gg-resolver-types";
 import type { HarvestContext } from "@/lib/studios/prospects/from-resolver";
 import type { ResolveMode, IgSeed, StubResolutionResult, ResolvedProfile, RejectedCandidate } from "@/lib/studios/creator-lab/ig-stubs/types";
 import type { UpsertInput } from "@/lib/studios/prospects/store";
@@ -25,7 +33,12 @@ import type {
 
 export type { HarvestContext };
 
-const MAX_GG_PROBES_PER_HARVEST = 100;
+export type RunResolverOptions = {
+  /** Max GG probes per harvest (default 250). Ignored when runGgOnAllDeduped is true. */
+  ggMaxProbes?: number;
+  /** Probe GlossGenius for every deduped prospect (no cap). */
+  runGgOnAllDeduped?: boolean;
+};
 
 interface ResolvedSeed {
   seed: HarvestedCreatorSeed;
@@ -42,8 +55,11 @@ export async function runResolverForSeeds(
   seeds: HarvestedCreatorSeed[],
   mode: ResolveMode,
   ctx: HarvestContext,
+  resolverOptions?: RunResolverOptions,
 ): Promise<RunResolverResult & { resolverDiagnostics?: SalonResolverRunDiagnostics }> {
   const salonHarvest = ctx.vertical === "salon";
+  const ggMaxProbes = resolverOptions?.ggMaxProbes ?? DEFAULT_GG_RESOLVER_CAP;
+  const runGgOnAllDeduped = resolverOptions?.runGgOnAllDeduped ?? false;
 
   let deepResolve: typeof import("@/lib/studios/creator-lab/ig-stubs/deep-research").deepResolve | null = null;
   if (mode === "deep") {
@@ -55,8 +71,9 @@ export async function runResolverForSeeds(
     }
   }
 
+  // Phase 1: parallel IG resolution + trail-only booking (no GG probes)
   const settled = await Promise.allSettled(
-    seeds.map(async (seed, seedIndex): Promise<ResolvedSeed> => {
+    seeds.map(async (seed): Promise<ResolvedSeed> => {
       const igSeed: IgSeed = {
         handle: seed.handle,
         displayName: seed.displayName,
@@ -111,11 +128,9 @@ export async function runResolverForSeeds(
         linkTrailUrls,
       };
 
-      const enableGg = salonHarvest && seedIndex < MAX_GG_PROBES_PER_HARVEST;
-
       let upsertInput: UpsertInput;
       const resolvedInput = await resultToProspect(stubResult, ctx.batchId, {
-        enableHandleDerivedGlossGenius: enableGg,
+        enableHandleDerivedGlossGenius: false,
       });
 
       if (resolvedInput) {
@@ -144,23 +159,6 @@ export async function runResolverForSeeds(
         upsertInput = resolvedInput;
       } else {
         upsertInput = seedToProspect(seed, ctx);
-        if (salonHarvest && enableGg) {
-          try {
-            const extra = await enrichSalonBookingProvider(
-              {
-                evidence: seed.evidence,
-                linkTrailUrls: [],
-                instagramHandle: seed.handle,
-                displayName: seed.displayName,
-                bio: seed.evidence.join(" "),
-              },
-              { enableHandleDerivedGlossGenius: true },
-            );
-            Object.assign(upsertInput, extra);
-          } catch {
-            // GG failure must not fail harvest
-          }
-        }
       }
 
       return {
@@ -184,11 +182,15 @@ export async function runResolverForSeeds(
   let failedToSaveCount = 0;
   const upsertAttemptCount = settled.filter((s) => s.status === "fulfilled").length;
   const resolverDiagnostics = salonHarvest ? emptySalonResolverDiagnostics() : undefined;
+  const ggRun = salonHarvest ? emptyGgRunDiagnostics() : null;
+
   if (resolverDiagnostics) {
     resolverDiagnostics.harvested = seeds.length;
     resolverDiagnostics.deduped = seeds.length;
+    if (ggRun) ggRun.dedupedProspects = seeds.length;
   }
 
+  // Phase 2: sequential GG enrichment on deduped prospects (salon only)
   for (let i = 0; i < settled.length; i++) {
     const s = settled[i];
     const original = seeds[i];
@@ -210,7 +212,22 @@ export async function runResolverForSeeds(
       continue;
     }
 
-    const { seed, validProfiles, bestMatch, status, upsertInput, resolved } = s.value;
+    let { seed, validProfiles, bestMatch, status, upsertInput, resolved } = s.value;
+
+    if (salonHarvest && ggRun) {
+      const { bookingFields, gg, runDelta } = await applyGgSalonEnrichment(
+        upsertInputToGgEnrichInput(upsertInput),
+        { index: i, maxProbes: ggMaxProbes, runGgOnAllDeduped },
+      );
+      mergeGgRunDiagnostics(ggRun, runDelta);
+      upsertInput = {
+        ...upsertInput,
+        ...bookingFields,
+        ggResolverStatus: gg.ggResolverStatus,
+        ggCheckedUrls: gg.ggCheckedUrls,
+        ggResolverReason: gg.ggResolverReason,
+      };
+    }
 
     let prospectId: string | null = null;
     let saveError: string | null = null;
@@ -248,6 +265,10 @@ export async function runResolverForSeeds(
       notes: bestMatch?.matchReason ?? "",
       saveError,
     });
+  }
+
+  if (resolverDiagnostics && ggRun) {
+    Object.assign(resolverDiagnostics, ggRun);
   }
 
   return {

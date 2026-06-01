@@ -190,6 +190,20 @@ export interface ProspectRecord {
   linkInBioPageFetched?: boolean;
   linkTrailUrlsScanned?: string[];
 
+  /** GlossGenius handle resolver outcome (salon harvest / backfill). */
+  ggResolverStatus?:
+    | "not_attempted"
+    | "skipped_existing_provider"
+    | "skipped_no_handle"
+    | "skipped_cap"
+    | "attempted_not_found"
+    | "found_handle"
+    | "found_display"
+    | "timeout"
+    | "error";
+  ggCheckedUrls?: string[];
+  ggResolverReason?: string;
+
   // ── Intelligence status ──────────────────────────────────────────────────────
   /**
    * Intelligence/validation classification — system-assigned, human-overridable.

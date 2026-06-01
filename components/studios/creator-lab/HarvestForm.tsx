@@ -36,6 +36,7 @@ export function HarvestForm({ onSubmit, loading, error }: HarvestFormProps) {
   const [category,       setCategory]       = useState("");
   const [maxPerHashtag,  setMaxPerHashtag]  = useState(DEFAULT_MAX_POSTS_PER_HASHTAG);
   const [mode,           setMode]           = useState<ResolveMode>("fast");
+  const [runGgOnAll,     setRunGgOnAll]     = useState(false);
   const [presetOpen,     setPresetOpen]     = useState(false);
   const [progressIdx,    setProgressIdx]    = useState(0);
 
@@ -60,6 +61,7 @@ export function HarvestForm({ onSubmit, loading, error }: HarvestFormProps) {
       maxPerHashtag,
       mode,
       verticalKey: SALON_VERTICAL_KEY,
+      runGgOnAllDeduped: runGgOnAll,
     });
   }
 
@@ -69,6 +71,7 @@ export function HarvestForm({ onSubmit, loading, error }: HarvestFormProps) {
     setCategory("");
     setMaxPerHashtag(DEFAULT_MAX_POSTS_PER_HASHTAG);
     setMode("fast");
+    setRunGgOnAll(false);
     setPresetOpen(false);
   }
 
@@ -218,6 +221,33 @@ export function HarvestForm({ onSubmit, loading, error }: HarvestFormProps) {
               ? "URL pattern matching only. No AI spend."
               : "AI identity analysis on top candidates. Slower, higher accuracy."}
           </div>
+        </div>
+
+        <div style={{ gridColumn: "1 / -1" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 8,
+              fontSize: 12,
+              color: "#44403c",
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={runGgOnAll}
+              onChange={(e) => setRunGgOnAll(e.target.checked)}
+              disabled={loading}
+              style={{ marginTop: 2 }}
+            />
+            <span>
+              <strong>Run GG resolver on all deduped prospects</strong>
+              <span style={{ display: "block", fontSize: 11, color: "#a8a29e", marginTop: 2 }}>
+                Default cap is 250 GlossGenius probes per harvest. Enable this to probe every deduped creator (slower).
+              </span>
+            </span>
+          </label>
         </div>
       </div>
 

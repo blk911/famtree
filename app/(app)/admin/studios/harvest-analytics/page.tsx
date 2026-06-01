@@ -7,6 +7,8 @@ import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import { SalonStorageBadge } from "@/components/admin/intelligence/salon/SalonStorageBadge";
 import { SalonResolverStatusCard } from "@/components/admin/intelligence/salon/SalonResolverStatusCard";
 import { BookingProviderDetectionStrip } from "@/components/admin/intelligence/salon/BookingProviderDetectionStrip";
+import { GgResolverDiagnosticsCard } from "@/components/admin/intelligence/salon/GgResolverDiagnosticsCard";
+import { GgResolverBackfillButton } from "@/components/admin/intelligence/salon/GgResolverBackfillButton";
 import type { HarvestAnalyticsPayload } from "@/lib/intelligence/salon/harvest-analytics";
 import type { ProviderDetectionSummary } from "@/lib/intelligence/salon/provider-detection-diagnostics";
 
@@ -100,6 +102,15 @@ export default function HarvestAnalyticsPage() {
               <BookingProviderDetectionStrip summary={providerSummary} />
             </>
           ) : null}
+
+          {data?.recentRuns?.[0]?.resolverDiagnostics ? (
+            <GgResolverDiagnosticsCard
+              title="Latest harvest — GlossGenius resolver"
+              {...data.recentRuns[0].resolverDiagnostics}
+            />
+          ) : null}
+
+          <GgResolverBackfillButton limit={100} />
 
           <h3 style={{ fontSize: 14, fontWeight: 800, marginBottom: 10 }}>Per hashtag</h3>
           <div style={{ overflowX: "auto", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12 }}>

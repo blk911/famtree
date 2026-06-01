@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     return err("Validation error", parsed.error.errors[0]?.message);
   }
 
-  const { hashtags, market, category, maxPerHashtag, mode } = parsed.data;
+  const { hashtags, market, category, maxPerHashtag, mode, runGgOnAllDeduped, ggMaxProbes } = parsed.data;
   const verticalKey = "salon";
   const runId   = generateRunId();
   const batchId = generateBatchId();
@@ -87,7 +87,10 @@ export async function POST(req: NextRequest) {
 
   if (normalizedCreators.length > 0) {
     try {
-      resolverResult = await runResolverForSeeds(normalizedCreators, mode, harvestCtx);
+      resolverResult = await runResolverForSeeds(normalizedCreators, mode, harvestCtx, {
+        runGgOnAllDeduped,
+        ggMaxProbes,
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       errors.push(`Resolver error: ${msg}`);

@@ -344,6 +344,14 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
         incomingWithBooking.linkTrailUrlsScanned ?? [],
         50,
       ),
+      ggResolverStatus:
+        incomingWithBooking.ggResolverStatus ?? existing.ggResolverStatus,
+      ggCheckedUrls:
+        (incomingWithBooking.ggCheckedUrls?.length ?? 0) > 0
+          ? incomingWithBooking.ggCheckedUrls
+          : existing.ggCheckedUrls,
+      ggResolverReason:
+        incomingWithBooking.ggResolverReason ?? existing.ggResolverReason,
       // ALWAYS preserve human-set fields
       validationStatus: effectiveValidationStatus,
       archiveReason: existing.archiveReason ?? null,

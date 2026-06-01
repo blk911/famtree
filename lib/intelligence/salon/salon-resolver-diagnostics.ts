@@ -5,6 +5,7 @@ import type { UpsertInput } from "@/lib/studios/prospects/store";
 import { isSalonImportCandidate } from "./import-candidate";
 import { glossGeniusResolverStatus } from "./enrich-booking-provider";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
+import { emptyGgRunDiagnostics, type GgResolverRunDiagnostics } from "./gg-resolver-types";
 
 export type SalonResolverRunDiagnostics = {
   harvested?: number;
@@ -17,7 +18,7 @@ export type SalonResolverRunDiagnostics = {
   ggDisplayMatch?: number;
   importCandidates?: number;
   unknown?: number;
-};
+} & Partial<GgResolverRunDiagnostics>;
 
 export function emptySalonResolverDiagnostics(): SalonResolverRunDiagnostics {
   return {
@@ -96,4 +97,60 @@ export function tallySalonResolverUpsert(
   } else {
     diag.unknown = (diag.unknown ?? 0) + 1;
   }
+}
+
+/** Roll up per-prospect GG fields for compact admin views. */
+export function tallyGgFromProspects(
+  prospects: Array<{
+    ggResolverStatus?: string;
+    ggCheckedUrls?: string[];
+  }>,
+): GgResolverRunDiagnostics {
+  const d = emptyGgRunDiagnostics();
+  d.dedupedProspects = prospects.length;
+  for (const p of prospects) {
+    const urls = p.ggCheckedUrls?.length ?? 0;
+    d.ggCheckedUrlsCount += urls;
+    switch (p.ggResolverStatus) {
+      case "skipped_existing_provider":
+        d.ggSkippedProviderAlreadyDetected++;
+        d.ggEligibleProspects++;
+        break;
+      case "skipped_no_handle":
+        d.ggSkippedNoHandle++;
+        break;
+      case "skipped_cap":
+        d.ggSkippedCap++;
+        d.ggEligibleProspects++;
+        break;
+      case "found_handle":
+        d.ggFoundHandle++;
+        d.ggAttemptedHandle++;
+        d.ggEligibleProspects++;
+        break;
+      case "found_display":
+        d.ggFoundDisplay++;
+        d.ggAttemptedDisplay++;
+        d.ggEligibleProspects++;
+        break;
+      case "attempted_not_found":
+        d.ggNotFound++;
+        d.ggAttemptedHandle++;
+        d.ggEligibleProspects++;
+        break;
+      case "timeout":
+        d.ggTimeout++;
+        d.ggAttemptedHandle++;
+        d.ggEligibleProspects++;
+        break;
+      case "error":
+        d.ggError++;
+        d.ggAttemptedHandle++;
+        d.ggEligibleProspects++;
+        break;
+      default:
+        break;
+    }
+  }
+  return d;
 }

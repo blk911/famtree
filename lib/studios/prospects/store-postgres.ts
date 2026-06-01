@@ -94,6 +94,9 @@ interface DbProspectRow {
   booking_provider_confidence?: number | null;
   booking_provider_evidence?: unknown;
   booking_provider_source?: string | null;
+  gg_resolver_status?: string | null;
+  gg_checked_urls?: unknown;
+  gg_resolver_reason?: string | null;
   bookingProvider?: string | null;
   bookingProviderLabel?: string | null;
   bookingUrl?: string | null;
@@ -203,6 +206,9 @@ function rowToRecord(row: DbProspectRow): ProspectRecord {
     bookingProviderConfidence: row.booking_provider_confidence ?? row.bookingProviderConfidence ?? undefined,
     bookingProviderEvidence: parseJsonCol<string[]>(row.booking_provider_evidence ?? row.bookingProviderEvidence),
     bookingProviderSource: (row.booking_provider_source ?? undefined) as ProspectRecord["bookingProviderSource"],
+    ggResolverStatus: (row.gg_resolver_status ?? undefined) as ProspectRecord["ggResolverStatus"],
+    ggCheckedUrls: parseJsonCol<string[]>(row.gg_checked_urls),
+    ggResolverReason: row.gg_resolver_reason ?? undefined,
     validationStatus: row.validationStatus as ValidationStatus,
     archiveReason:    row.archiveReason   ?? null,
     status:           row.status          as ProspectStatus,
@@ -392,6 +398,14 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
       ),
       bookingProviderSource:
         incomingWithBooking.bookingProviderSource ?? existingRecord.bookingProviderSource,
+      ggResolverStatus:
+        incomingWithBooking.ggResolverStatus ?? existingRecord.ggResolverStatus,
+      ggCheckedUrls:
+        (incomingWithBooking.ggCheckedUrls?.length ?? 0) > 0
+          ? incomingWithBooking.ggCheckedUrls
+          : existingRecord.ggCheckedUrls,
+      ggResolverReason:
+        incomingWithBooking.ggResolverReason ?? existingRecord.ggResolverReason,
       // ── Human-set fields: NEVER overwrite ──────────────────────────────────
       validationStatus: effectiveValidationStatus,
       archiveReason:    existingRecord.archiveReason ?? null,
@@ -442,7 +456,16 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
         "confBooking"      = ${merged.confidence.bookingMatch},
         "confCategory"     = ${merged.confidence.categoryMatch},
         "confLocation"     = ${merged.confidence.locationMatch},
-        "confOverall"      = ${merged.confidence.overall}
+        "confOverall"      = ${merged.confidence.overall},
+        "booking_provider" = ${merged.bookingProvider ?? null},
+        "booking_provider_label" = ${merged.bookingProviderLabel ?? null},
+        "booking_url" = ${merged.bookingUrl ?? null},
+        "booking_provider_confidence" = ${merged.bookingProviderConfidence ?? null},
+        "booking_provider_evidence" = ${JSON.stringify(merged.bookingProviderEvidence ?? [])}::jsonb,
+        "booking_provider_source" = ${merged.bookingProviderSource ?? null},
+        "gg_resolver_status" = ${merged.ggResolverStatus ?? null},
+        "gg_checked_urls" = ${JSON.stringify(merged.ggCheckedUrls ?? [])}::jsonb,
+        "gg_resolver_reason" = ${merged.ggResolverReason ?? null}
       WHERE id = ${existing.id}
     `;
 
@@ -489,6 +512,9 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
       "relationship_score", "audience_score", "operational_data_score", "community_score",
       "overall_opportunity_score", "offer_fit_tags", "platform_signals", "category_confidence",
       "classification_notes", "classification_locked",
+      "booking_provider", "booking_provider_label", "booking_url",
+      "booking_provider_confidence", "booking_provider_evidence", "booking_provider_source",
+      "gg_resolver_status", "gg_checked_urls", "gg_resolver_reason",
       "validationStatus", "archiveReason", "status", "notes",
       "createdAt", "updatedAt"
     ) VALUES (
@@ -539,6 +565,15 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
       ${newRecord.categoryConfidence ?? null},
       ${JSON.stringify(newRecord.classificationNotes ?? [])}::jsonb,
       ${newRecord.classificationLocked ?? false},
+      ${newRecord.bookingProvider ?? null},
+      ${newRecord.bookingProviderLabel ?? null},
+      ${newRecord.bookingUrl ?? null},
+      ${newRecord.bookingProviderConfidence ?? null},
+      ${JSON.stringify(newRecord.bookingProviderEvidence ?? [])}::jsonb,
+      ${newRecord.bookingProviderSource ?? null},
+      ${newRecord.ggResolverStatus ?? null},
+      ${JSON.stringify(newRecord.ggCheckedUrls ?? [])}::jsonb,
+      ${newRecord.ggResolverReason ?? null},
       ${newRecord.validationStatus},
       ${newRecord.archiveReason},
       ${newRecord.status},

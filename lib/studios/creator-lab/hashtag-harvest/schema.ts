@@ -20,4 +20,6 @@ export const HarvestRunRequestSchema = z.object({
     .default(DEFAULT_MAX_POSTS_PER_HASHTAG),
   mode: z.enum(["fast", "deep"]).default("fast"),
   verticalKey: z.enum(["education", "salon", "transpo", "hcare", "labs"]).default("salon"),
+  runGgOnAllDeduped: z.boolean().optional().default(false),
+  ggMaxProbes: z.number().int().min(1).max(2000).optional(),
 });

@@ -1,0 +1,27 @@
+---
+description: Communication style for routine git commit/push — suppress security/carve-out narration
+alwaysApply: true
+---
+
+# Push narration style (routine commits/pushes)
+
+The maintainer does not want the boilerplate security/carve-out status line on
+routine code pushes. For all future mods:
+
+- After a **routine** `git commit` / `git push`, **do not** narrate lines like
+  "No security/carve-out triggers, so this was a routine push" or
+  "no triggers apply". Just report what was committed/pushed (commit hash,
+  branch, files) and move on.
+- This is a **communication-only** preference. It does **not** weaken the
+  security gate.
+
+## Gate logic is unchanged
+
+- `security-git-push-gate.mdc` and `production-carveouts.mdc` still apply in full.
+- If a **real trigger** appears in the staged/added set (e.g. `.env`/secrets,
+  `lib/auth/**`, `middleware.ts`, `lib/trust/**`, `lib/aihsafe/**`,
+  `prisma/schema.prisma` user/session changes, destructive `scripts/**`,
+  `never0`/`sec/`/`security/`, or a `TaiKos` carve-out), still **stop and
+  prompt** for explicit yes/no before committing/pushing.
+- The suppression only covers the *narration* on pushes that did **not** hit a
+  trigger.

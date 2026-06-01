@@ -2,6 +2,7 @@
 // Probe probable {slug}.glossgenius.com pages from public IG handles / display names.
 
 import { getBookingProviderLabel } from "./provider-detector";
+import type { GgCandidateDescriptor, GgProbeLogEntry } from "./gg-resolver-types";
 
 const FETCH_TIMEOUT_MS = 5_000;
 const MAX_RESPONSE_BYTES = 500_000;
@@ -13,7 +14,57 @@ const GG_MARKERS = [
   "services",
   "appointment",
   "schedule",
+  "provider",
+  "business",
 ] as const;
+
+const SALON_STRIP_WORDS = [
+  "hair",
+  "nails",
+  "nail",
+  "beauty",
+  "esthetic",
+  "esthetics",
+  "lashes",
+  "lash",
+  "brows",
+  "brow",
+  "studio",
+  "salon",
+  "spa",
+];
+
+const LOCATION_WORDS = new Set([
+  "nyc",
+  "la",
+  "atl",
+  "dfw",
+  "dallas",
+  "houston",
+  "austin",
+  "miami",
+  "chicago",
+  "denver",
+  "seattle",
+  "phoenix",
+  "vegas",
+  "orlando",
+  "tampa",
+  "charlotte",
+  "nashville",
+  "portland",
+  "sandiego",
+  "san",
+  "diego",
+  "francisco",
+  "angeles",
+  "york",
+  "brooklyn",
+  "texas",
+  "florida",
+  "california",
+  "georgia",
+]);
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
@@ -38,9 +89,13 @@ export type GlossGeniusHandleResolverResult = {
   evidence: string[];
   checkedUrls: string[];
   reason?: string;
+  candidates?: GgCandidateDescriptor[];
+  probeLog?: GgProbeLogEntry[];
+  statusCodes?: number[];
+  markersFound?: string[];
 };
 
-type Candidate = { url: string; source: "handle_derived" | "display_name_derived" };
+type Candidate = GgCandidateDescriptor;
 
 /** Normalize handle/slug: lowercase, letters+numbers only. */
 export function normalizeGlossGeniusSlug(raw: string): string {
@@ -52,15 +107,38 @@ export function normalizeGlossGeniusSlug(raw: string): string {
   return stripped.length >= 3 ? stripped : s;
 }
 
-/** Display name → slug: "Blended By Brandi" → blendedbybrandi */
+function stripSalonPrefixWords(slug: string): string {
+  let s = slug;
+  let changed = true;
+  while (changed && s.length >= 5) {
+    changed = false;
+    for (const word of SALON_STRIP_WORDS) {
+      if (s.startsWith(word) && s.length > word.length + 3) {
+        s = s.slice(word.length);
+        changed = true;
+      }
+      if (s.endsWith(word) && s.length > word.length + 3) {
+        s = s.slice(0, -word.length);
+        changed = true;
+      }
+    }
+  }
+  return s.length >= 3 ? s : slug;
+}
+
+/** Display name → slug, dropping location tokens when safe. */
 export function slugFromDisplayName(displayName: string): string {
   const words = displayName
     .replace(/[^a-zA-Z0-9\s]/g, " ")
     .trim()
     .split(/\s+/)
-    .filter(Boolean);
+    .filter(Boolean)
+    .map((w) => w.toLowerCase())
+    .filter((w) => !LOCATION_WORDS.has(w) && w.length > 1);
+
   if (words.length === 0) return "";
-  return normalizeGlossGeniusSlug(words.join(""));
+  const joined = words.join("");
+  return normalizeGlossGeniusSlug(joined);
 }
 
 export function generateGlossGeniusSlugCandidates(raw: string): string[] {
@@ -71,17 +149,24 @@ export function generateGlossGeniusSlugCandidates(raw: string): string[] {
   const add = (s: string) => {
     const slug = normalizeGlossGeniusSlug(s);
     if (slug.length >= 3) out.add(slug);
+    const stripped = stripSalonPrefixWords(slug);
+    if (stripped.length >= 3) out.add(stripped);
   };
 
   add(base);
-  add(raw.replace(/^@+/, "").toLowerCase().replace(/_/g, ""));
-  add(raw.replace(/^@+/, "").toLowerCase().replace(/\./g, ""));
-  add(raw.replace(/^@+/, "").toLowerCase().replace(/_/g, "").replace(/\./g, ""));
+  const lower = raw.replace(/^@+/, "").toLowerCase().trim();
+  add(lower);
+  add(lower.replace(/_/g, ""));
+  add(lower.replace(/\./g, ""));
+  add(lower.replace(/_/g, "").replace(/\./g, ""));
+  add(lower.replace(/_+$/, ""));
 
   return Array.from(out);
 }
 
-function collectCandidates(input: GlossGeniusHandleResolverInput): Candidate[] {
+export function collectGlossGeniusCandidates(
+  input: GlossGeniusHandleResolverInput,
+): GgCandidateDescriptor[] {
   const seen = new Set<string>();
   const out: Candidate[] = [];
   const push = (slug: string, source: Candidate["source"]) => {
@@ -90,7 +175,7 @@ function collectCandidates(input: GlossGeniusHandleResolverInput): Candidate[] {
     const key = url.toLowerCase();
     if (seen.has(key)) return;
     seen.add(key);
-    out.push({ url, source });
+    out.push({ url, slug, source });
   };
 
   const handle = (input.instagramHandle ?? "").trim();
@@ -101,9 +186,9 @@ function collectCandidates(input: GlossGeniusHandleResolverInput): Candidate[] {
   }
 
   const display = (input.displayName ?? "").trim();
-  if (display && display.toLowerCase() !== handle.toLowerCase()) {
+  if (display) {
     const dnSlug = slugFromDisplayName(display);
-    push(dnSlug, "display_name_derived");
+    if (dnSlug) push(dnSlug, "display_name_derived");
     for (const slug of generateGlossGeniusSlugCandidates(display)) {
       push(slug, "display_name_derived");
     }
@@ -134,28 +219,60 @@ function hasGlossGeniusPublicUrl(urls: string[]): boolean {
   return urls.some((u) => /glossgenius\.com/i.test(u));
 }
 
-function markersInBody(body: string): string[] {
-  const hay = body.toLowerCase();
+function markersInBody(body: string, titleHint?: string): string[] {
+  const hay = `${body} ${titleHint ?? ""}`.toLowerCase();
   return GG_MARKERS.filter((m) => hay.includes(m));
 }
 
-function isValidGlossGeniusPage(body: string, httpStatus: number, finalUrl: string): boolean {
-  if (httpStatus < 200 || httpStatus >= 400) return false;
-  if (!/glossgenius/i.test(finalUrl) && !/glossgenius/i.test(body)) return false;
-  const markers = markersInBody(body);
-  return markers.length >= 1;
+function titleFromHtml(body: string): string {
+  const m = body.match(/<title[^>]*>([^<]+)<\/title>/i);
+  return m?.[1]?.trim() ?? "";
 }
 
-function confidenceForMatch(
-  markers: string[],
-  source: Candidate["source"],
-  redirected: boolean,
-): number {
+function evaluateProbe(
+  fetched: { httpStatus: number; finalUrl: string; body: string; timedOut: boolean },
+  candidate: Candidate,
+): { valid: boolean; confidence: number; markers: string[]; weakHostOnly: boolean } {
+  if (fetched.timedOut) {
+    return { valid: false, confidence: 0, markers: [], weakHostOnly: false };
+  }
+
+  const status = fetched.httpStatus;
+  const okStatus = status >= 200 && status < 400;
+  const hostGg =
+    /glossgenius\.com/i.test(fetched.finalUrl) ||
+    /glossgenius\.com/i.test(candidate.url);
+
+  if (!okStatus || !hostGg) {
+    return { valid: false, confidence: 0, markers: [], weakHostOnly: false };
+  }
+
+  const title = titleFromHtml(fetched.body);
+  const markers = markersInBody(fetched.body, title);
   const strong = markers.includes("glossgenius") && markers.length >= 2;
-  if (strong) return source === "handle_derived" ? 95 : 85;
-  if (redirected && /glossgenius/i.test(markers.join(" "))) return 75;
-  if (markers.length >= 1) return source === "display_name_derived" ? 85 : 75;
-  return 0;
+  const hasBookingMarker = markers.some((m) =>
+    ["book", "booking", "services", "appointment", "schedule"].includes(m),
+  );
+
+  if (strong || (markers.includes("glossgenius") && hasBookingMarker)) {
+    const conf =
+      candidate.source === "handle_derived"
+        ? markers.length >= 3
+          ? 95
+          : 88
+        : 85;
+    return { valid: true, confidence: conf, markers, weakHostOnly: false };
+  }
+
+  if (hostGg && fetched.body.length === 0 && okStatus) {
+    return { valid: true, confidence: 62, markers: ["glossgenius-host"], weakHostOnly: true };
+  }
+
+  if (hostGg && okStatus) {
+    return { valid: true, confidence: 58, markers: markers.length ? markers : ["glossgenius-host"], weakHostOnly: true };
+  }
+
+  return { valid: false, confidence: 0, markers, weakHostOnly: false };
 }
 
 async function readBodyLimited(res: Response): Promise<string> {
@@ -172,9 +289,11 @@ async function fetchPage(url: string): Promise<{
   httpStatus: number;
   finalUrl: string;
   body: string;
+  timedOut: boolean;
+  fetchError: boolean;
 }> {
   if (!url.startsWith("https://")) {
-    return { httpStatus: 0, finalUrl: url, body: "" };
+    return { httpStatus: 0, finalUrl: url, body: "", timedOut: false, fetchError: true };
   }
 
   const controller = new AbortController();
@@ -212,66 +331,152 @@ async function fetchPage(url: string): Promise<{
     clearTimeout(timer);
     const finalUrl = res.url || url;
     const httpStatus = res.status;
-    if (!res.ok) return { httpStatus, finalUrl, body: "" };
+    if (!res.ok) return { httpStatus, finalUrl, body: "", timedOut: false, fetchError: false };
     const body = await readBodyLimited(res);
-    return { httpStatus, finalUrl, body };
-  } catch {
+    return { httpStatus, finalUrl, body, timedOut: false, fetchError: false };
+  } catch (e) {
     clearTimeout(timer);
-    return { httpStatus: 0, finalUrl: url, body: "" };
+    const timedOut = e instanceof Error && e.name === "AbortError";
+    return { httpStatus: 0, finalUrl: url, body: "", timedOut, fetchError: !timedOut };
   }
 }
 
-async function probeCandidate(candidate: Candidate): Promise<GlossGeniusHandleResolverResult | null> {
+async function probeCandidateFull(candidate: Candidate): Promise<{
+  hit: GlossGeniusHandleResolverResult | null;
+  log: GgProbeLogEntry;
+}> {
   const fetched = await fetchPage(candidate.url);
-  const redirected = fetched.finalUrl.toLowerCase() !== candidate.url.toLowerCase();
-  if (!isValidGlossGeniusPage(fetched.body, fetched.httpStatus, fetched.finalUrl)) {
-    return null;
+  const evald = evaluateProbe(fetched, candidate);
+
+  const log: GgProbeLogEntry = {
+    url: candidate.url,
+    httpStatus: fetched.httpStatus,
+    finalUrl: fetched.finalUrl,
+    markersFound: evald.markers,
+    error: fetched.timedOut
+      ? "timeout"
+      : fetched.fetchError
+        ? "fetch_error"
+        : undefined,
+  };
+
+  if (!evald.valid) {
+    return { hit: null, log };
   }
 
-  const markers = markersInBody(fetched.body);
-  const confidence = confidenceForMatch(markers, candidate.source, redirected);
-  if (confidence <= 0) return null;
-
-  const slug = candidate.url.replace(/^https:\/\//, "").replace(/\.glossgenius\.com\/?$/, "");
   const bookingUrl = (fetched.finalUrl || candidate.url).replace(/\/+$/, "");
-
   return {
-    found: true,
-    provider: "glossgenius",
-    providerLabel: "GlossGenius",
-    bookingUrl,
-    confidence,
-    source: candidate.source,
-    evidence: [
-      `providerSource: ${candidate.source}`,
-      `glossgenius slug match: ${slug}.glossgenius.com`,
-      `page markers: ${markers.join(", ")}`,
-      redirected ? "redirected to GlossGenius" : "direct subdomain",
-    ],
-    checkedUrls: [candidate.url],
+    hit: {
+      found: true,
+      provider: "glossgenius",
+      providerLabel: "GlossGenius",
+      bookingUrl,
+      confidence: evald.confidence,
+      source: candidate.source,
+      evidence: [
+        `providerSource: ${candidate.source}`,
+        `glossgenius slug match: ${candidate.slug}.glossgenius.com`,
+        `page markers: ${evald.markers.join(", ")}`,
+        evald.weakHostOnly ? "weak host-only match (2xx glossgenius.com)" : "strong marker match",
+      ],
+      checkedUrls: [candidate.url],
+      reason: evald.weakHostOnly ? "weak_host_match" : "found",
+    },
+    log,
   };
 }
 
-async function runPool<T, R>(
-  items: T[],
-  limit: number,
-  fn: (item: T) => Promise<R | null>,
-): Promise<R | null> {
+async function runPoolCandidates(
+  candidates: Candidate[],
+  stopOnFirstHit: boolean,
+): Promise<{
+  hit: GlossGeniusHandleResolverResult | null;
+  probeLog: GgProbeLogEntry[];
+}> {
+  const probeLog: GgProbeLogEntry[] = [];
+  let hit: GlossGeniusHandleResolverResult | null = null;
   let index = 0;
-  let found: R | null = null;
 
   async function worker(): Promise<void> {
-    while (!found && index < items.length) {
+    while (index < candidates.length) {
+      if (stopOnFirstHit && hit) return;
       const i = index++;
-      const item = items[i];
-      const result = await fn(item);
-      if (result) found = result;
+      const { hit: candidateHit, log } = await probeCandidateFull(candidates[i]);
+      probeLog.push(log);
+      if (candidateHit && !hit) {
+        hit = {
+          ...candidateHit,
+          checkedUrls: candidates.map((c) => c.url),
+          probeLog: [...probeLog],
+        };
+      }
     }
   }
 
-  const workers = Array.from({ length: Math.min(limit, items.length) }, () => worker());
+  const workers = Array.from(
+    { length: Math.min(MAX_CONCURRENT, candidates.length) },
+    () => worker(),
+  );
   await Promise.all(workers);
-  return found;
+
+  return { hit, probeLog };
+}
+
+/**
+ * Probe all candidates and return full debug log (test endpoint).
+ */
+export async function debugGlossGeniusResolver(
+  input: GlossGeniusHandleResolverInput,
+): Promise<GlossGeniusHandleResolverResult> {
+  const candidates = collectGlossGeniusCandidates(input);
+  if (candidates.length === 0) {
+    return emptyResult([], [], "no_candidates");
+  }
+
+  const { hit, probeLog } = await runPoolCandidates(candidates, false);
+  const statusCodes = probeLog.map((p) => p.httpStatus);
+  const markersFound = Array.from(new Set(probeLog.flatMap((p) => p.markersFound)));
+
+  if (hit) {
+    return {
+      ...hit,
+      candidates,
+      probeLog,
+      statusCodes,
+      markersFound,
+      checkedUrls: candidates.map((c) => c.url),
+    };
+  }
+
+  const hadTimeout = probeLog.some((p) => p.error === "timeout");
+  return {
+    ...emptyResult(
+      candidates.map((c) => c.url),
+      probeLog,
+      hadTimeout ? "timeout" : "not_found",
+    ),
+    candidates,
+    statusCodes,
+    markersFound,
+  };
+}
+
+function emptyResult(
+  checkedUrls: string[],
+  probeLog: GgProbeLogEntry[],
+  reason: string,
+): GlossGeniusHandleResolverResult {
+  return {
+    found: false,
+    provider: null,
+    providerLabel: null,
+    confidence: 0,
+    source: "none",
+    evidence: [],
+    checkedUrls,
+    probeLog,
+    reason,
+  };
 }
 
 /**
@@ -281,55 +486,41 @@ export async function resolveGlossGeniusFromHandle(
   input: GlossGeniusHandleResolverInput,
   options?: { publicUrls?: string[] },
 ): Promise<GlossGeniusHandleResolverResult> {
-  const checkedUrls: string[] = [];
   const publicUrls = options?.publicUrls ?? [];
   if (hasGlossGeniusPublicUrl(publicUrls)) {
-    return {
-      found: false,
-      provider: null,
-      providerLabel: null,
-      confidence: 0,
-      source: "none",
-      evidence: [],
-      checkedUrls,
-      reason: "provider_already_detected",
-    };
+    return emptyResult([], [], "provider_already_detected");
   }
 
-  const candidates = collectCandidates(input);
+  const candidates = collectGlossGeniusCandidates(input);
   if (candidates.length === 0) {
+    return emptyResult([], [], "no_handle");
+  }
+
+  const { hit, probeLog } = await runPoolCandidates(candidates, true);
+  const checkedUrls = candidates.map((c) => c.url);
+
+  if (hit) {
     return {
-      found: false,
-      provider: null,
-      providerLabel: null,
-      confidence: 0,
-      source: "none",
-      evidence: [],
+      ...hit,
+      candidates,
+      probeLog,
+      statusCodes: probeLog.map((p) => p.httpStatus),
+      markersFound: Array.from(new Set(probeLog.flatMap((p) => p.markersFound))),
       checkedUrls,
-      reason: "not_found",
     };
   }
 
-  for (const c of candidates) checkedUrls.push(c.url);
-
-  const hit = await runPool(candidates, MAX_CONCURRENT, probeCandidate);
-  if (hit) {
-    return { ...hit, checkedUrls };
-  }
+  const hadTimeout = probeLog.some((p) => p.error === "timeout");
+  const hadError = probeLog.some((p) => p.error === "fetch_error");
 
   return {
-    found: false,
-    provider: null,
-    providerLabel: null,
-    confidence: 0,
-    source: "none",
-    evidence: [],
-    checkedUrls,
-    reason: "not_found",
+    ...emptyResult(checkedUrls, probeLog, hadTimeout ? "timeout" : hadError ? "error" : "not_found"),
+    candidates,
+    statusCodes: probeLog.map((p) => p.httpStatus),
+    markersFound: Array.from(new Set(probeLog.flatMap((p) => p.markersFound))),
   };
 }
 
-/** @deprecated Use resolveGlossGeniusFromHandle — kept for internal enrich mapping */
 export function legacyGlossGeniusEnrichFields(
   result: GlossGeniusHandleResolverResult,
 ): {
