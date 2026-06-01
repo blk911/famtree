@@ -1404,6 +1404,12 @@ model StudioProspect {
   classificationNotes          Json?   @map("classification_notes")
   classificationLocked         Boolean @default(false) @map("classification_locked")
 
+  bookingProvider            String? @map("booking_provider")
+  bookingProviderLabel       String? @map("booking_provider_label")
+  bookingUrl                 String? @map("booking_url")
+  bookingProviderConfidence  Int?    @map("booking_provider_confidence")
+  bookingProviderEvidence    Json?   @map("booking_provider_evidence")
+
   // ── Human-managed CRM (NEVER overwritten by reruns) ───────────────────────
   validationStatus String @default("new")
   archiveReason    String?
@@ -1562,4 +1568,20 @@ model TranspoCarrierReview {
   updatedAt    DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@map("transpo_carrier_reviews")
+}
+
+model SalonBackofficeImportRun {
+  id                String   @id
+  provider          String?
+  entity            String?
+  fileName          String?  @map("file_name")
+  rowCount          Int?     @map("row_count")
+  mappedCount       Int?     @map("mapped_count")
+  unmappedHeaders   Json?    @map("unmapped_headers")
+  schemaConfidence  String?  @map("schema_confidence")
+  normalizedPreview Json?    @map("normalized_preview")
+  report            Json?
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("salon_backoffice_import_runs")
 }
