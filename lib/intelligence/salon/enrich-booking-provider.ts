@@ -17,6 +17,9 @@ export type BookingProviderSource =
   | "link_in_bio"
   | "handle_derived"
   | "display_name_derived"
+  | "google_search"
+  | "website_crawl"
+  | "public_web"
   | "unknown";
 
 export type EnrichedProspectBookingFields = ProspectBookingFields & {

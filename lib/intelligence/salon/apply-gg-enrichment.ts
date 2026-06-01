@@ -9,11 +9,14 @@ import {
   type GgResolverRunDiagnostics,
   type ProspectGgResolverStatus,
 } from "./gg-resolver-types";
-import {
-  enrichSalonProviderDiscovery,
-  type SalonProviderDiscoveryInput,
-} from "./salon-provider-discovery";
+import type { SalonProviderDiscoveryInput } from "./salon-provider-discovery";
 import type { EnrichedProspectBookingFields } from "./enrich-booking-provider";
+import {
+  discoverSalonPublicPresence,
+  mapDiscoveryToBookingFields,
+} from "./public-presence/discovery-engine";
+import { upsertPresenceResults } from "./public-presence/presence-store";
+import type { SalonPublicPresenceDiscoveryResult } from "./public-presence/types";
 
 export type GgEnrichmentInput = SalonProviderDiscoveryInput;
 
@@ -27,6 +30,8 @@ export type ApplyGgOptions = {
   index: number;
   maxProbes?: number;
   runGgOnAllDeduped?: boolean;
+  runPublicSearch?: boolean;
+  forceSearch?: boolean;
 };
 
 export type SalonBookingEnrichmentFields = EnrichedProspectBookingFields &
@@ -64,13 +69,67 @@ export function upsertInputToGgEnrichInput(upsert: UpsertInput): GgEnrichmentInp
   };
 }
 
-function runDeltaFromResult(
-  result: Awaited<ReturnType<typeof enrichSalonProviderDiscovery>>,
+export type SalonDiscoveryEnrichmentResult = {
+  discovery: SalonPublicPresenceDiscoveryResult;
+  bookingFields: SalonBookingEnrichmentFields;
+  providerDiscoveryDebug: NonNullable<SalonBookingEnrichmentFields["providerDiscoveryDebug"]>;
+  ggResolverStatus: ProspectGgResolverStatus;
+  ggResolverReason?: string;
+};
+
+function discoveryToLegacyResult(
+  discovery: SalonPublicPresenceDiscoveryResult,
+  enableGg: boolean,
+): SalonDiscoveryEnrichmentResult {
+  const mapped = mapDiscoveryToBookingFields(discovery);
+  const d = discovery.diagnostics;
+  const best = discovery.bestProvider;
+  const ggAttempted = d.ggFallbackAttempted;
+  const ggFound = d.ggFallbackFound;
+
+  const providerDiscoveryDebug = {
+    directUrlsScanned: [] as string[],
+    linkTrailUrlsScanned: [] as string[],
+    linkInBioFetched: d.linkTrailUrlsScanned > 0,
+    providerDetectedFromDirect: best?.source === "ig_direct_url",
+    providerDetectedFromLinkTrail: best?.source === "link_in_bio",
+    ggHandleAttempted: ggAttempted && best?.source === "provider_guess",
+    ggDisplayAttempted: false,
+    ggCheckedUrls: best?.ggCandidateUrls ?? [],
+    providerResolverReason:
+      mapped.providerResolverReason ?? `public_presence:${best?.source ?? "none"}`,
+  };
+
+  let ggResolverStatus: ProspectGgResolverStatus = "not_attempted";
+  if (!enableGg && !ggAttempted) ggResolverStatus = "skipped_cap";
+  else if (mapped.bookingProvider && best?.source !== "provider_guess") {
+    ggResolverStatus = "skipped_existing_provider";
+  } else if (ggFound) ggResolverStatus = "found_handle";
+  else if (ggAttempted) ggResolverStatus = "attempted_not_found";
+
+  return {
+    discovery,
+    bookingFields: {
+      ...mapped,
+      providerDiscoveryDebug,
+      providerResolverReason: mapped.providerResolverReason,
+      ggCandidateUrls: best?.ggCandidateUrls,
+      ggValidatedUrl: best?.ggValidatedUrl,
+      ggValidationStatus: best?.ggValidationStatus as SalonBookingEnrichmentFields["ggValidationStatus"],
+    },
+    providerDiscoveryDebug,
+    ggResolverStatus,
+    ggResolverReason: mapped.providerResolverReason,
+  };
+}
+
+function runDeltaFromDiscovery(
+  legacy: SalonDiscoveryEnrichmentResult,
   ggSkippedCap: boolean,
 ): Partial<GgResolverRunDiagnostics> {
-  const d = result.providerDiscoveryDebug;
+  const d = legacy.providerDiscoveryDebug;
   const delta: Partial<GgResolverRunDiagnostics> = {
-    ggCheckedUrlsCount: d.ggCheckedUrls.length,
+    ggCheckedUrlsCount: d.ggCheckedUrls?.length ?? 0,
   };
 
   if (ggSkippedCap) {
@@ -78,14 +137,17 @@ function runDeltaFromResult(
     return delta;
   }
 
-  if (result.bookingProvider && result.ggResolverStatus === "skipped_existing_provider") {
+  if (
+    legacy.bookingFields.bookingProvider &&
+    legacy.ggResolverStatus === "skipped_existing_provider"
+  ) {
     delta.ggSkippedProviderAlreadyDetected = 1;
     delta.ggEligibleProspects = 1;
     return delta;
   }
 
-  if (!d.ggHandleAttempted && !d.ggDisplayAttempted && !result.bookingProvider) {
-    if (result.ggResolverStatus === "skipped_no_handle") {
+  if (!d.ggHandleAttempted && !d.ggDisplayAttempted && !legacy.bookingFields.bookingProvider) {
+    if (legacy.ggResolverStatus === "skipped_no_handle") {
       delta.ggSkippedNoHandle = 1;
     }
     return delta;
@@ -96,40 +158,45 @@ function runDeltaFromResult(
   if (d.ggHandleAttempted) delta.ggAttemptedHandle = 1;
   if (d.ggDisplayAttempted) delta.ggAttemptedDisplay = 1;
 
-  const candidatesTested = result.ggCandidateUrls?.length ?? d.ggCheckedUrls.length;
+  const candidatesTested =
+    legacy.bookingFields.ggCandidateUrls?.length ?? d.ggCheckedUrls?.length ?? 0;
   if (candidatesTested > 0) {
     delta.ggCandidatesTested = (delta.ggCandidatesTested ?? 0) + candidatesTested;
   }
 
-  if (result.ggValidationStatus === "confirmed_client_page") {
+  const vs = legacy.bookingFields.ggValidationStatus;
+  if (vs === "confirmed_client_page") {
     delta.ggConfirmedClientPages = 1;
-    if (result.ggResolverStatus === "found_display") delta.ggFoundDisplay = 1;
+    if (legacy.ggResolverStatus === "found_display") delta.ggFoundDisplay = 1;
     else delta.ggFoundHandle = 1;
-  } else if (
-    result.ggValidationStatus === "generic_glossgenius_page" ||
-    result.ggValidationStatus === "redirect_home"
-  ) {
+  } else if (vs === "generic_glossgenius_page" || vs === "redirect_home") {
     delta.ggGenericHomepage = 1;
-  } else if (result.ggValidationStatus === "not_found") {
+  } else if (vs === "not_found") {
     delta.ggNotFound = 1;
-  } else if (result.ggValidationStatus === "timeout" || result.ggResolverStatus === "timeout") {
+  } else if (vs === "timeout" || legacy.ggResolverStatus === "timeout") {
     delta.ggTimeouts = 1;
     delta.ggTimeout = 1;
-  } else if (result.ggResolverStatus === "found_handle") {
+  } else if (legacy.ggResolverStatus === "found_handle") {
     delta.ggFoundHandle = 1;
-  } else if (result.ggResolverStatus === "found_display") {
+  } else if (legacy.ggResolverStatus === "found_display") {
     delta.ggFoundDisplay = 1;
-  } else if (result.ggResolverStatus === "attempted_not_found" || result.ggResolverStatus === "candidate_only") {
+  } else if (
+    legacy.ggResolverStatus === "attempted_not_found" ||
+    legacy.ggResolverStatus === "candidate_only"
+  ) {
     delta.ggNotFound = 1;
-  } else if (result.ggResolverStatus === "generic_homepage") {
+  } else if (legacy.ggResolverStatus === "generic_homepage") {
     delta.ggGenericHomepage = 1;
-  } else if (result.ggResolverStatus === "error") {
+  } else if (legacy.ggResolverStatus === "error") {
     delta.ggError = 1;
   }
 
   if (d.providerDetectedFromDirect || d.providerDetectedFromLinkTrail) {
     delta.ggSkippedProviderAlreadyDetected = 0;
-    if (result.bookingProvider && result.ggResolverStatus === "skipped_existing_provider") {
+    if (
+      legacy.bookingFields.bookingProvider &&
+      legacy.ggResolverStatus === "skipped_existing_provider"
+    ) {
       delta.ggSkippedProviderAlreadyDetected = 1;
     }
   }
@@ -146,7 +213,7 @@ export async function applyGgSalonEnrichment(
 ): Promise<{
   bookingFields: SalonBookingEnrichmentFields;
   gg: GgProspectDiagnostics;
-  result: Awaited<ReturnType<typeof enrichSalonProviderDiscovery>>;
+  result: SalonDiscoveryEnrichmentResult;
   runDelta: Partial<GgResolverRunDiagnostics>;
 }> {
   const maxProbes = options.runGgOnAllDeduped
@@ -155,14 +222,32 @@ export async function applyGgSalonEnrichment(
 
   const handle = (input.instagramHandle ?? "").replace(/^@+/, "").trim();
   if (!handle) {
-    const emptyDiscovery = await enrichSalonProviderDiscovery(
-      { instagramHandle: "", displayName: input.displayName },
-      { enableGgFallback: false },
+    const empty = discoveryToLegacyResult(
+      {
+        identity: {
+          extractedKeywords: [],
+          searchQueries: [],
+        },
+        presenceResults: [],
+        diagnostics: {
+          directUrlsScanned: 0,
+          linkTrailUrlsScanned: 0,
+          searchQueriesRun: 0,
+          searchResultsScanned: 0,
+          providerUrlsFound: 0,
+          websiteUrlsFound: 0,
+          ggFallbackAttempted: false,
+          ggFallbackFound: false,
+          searchProvider: "disabled",
+          errors: [],
+        },
+      },
+      false,
     );
     return {
       bookingFields: {},
       gg: { ggResolverStatus: "skipped_no_handle", ggResolverReason: "no_instagram_handle" },
-      result: emptyDiscovery,
+      result: empty,
       runDelta: { ggSkippedNoHandle: 1 },
     };
   }
@@ -170,47 +255,67 @@ export async function applyGgSalonEnrichment(
   const ggSkippedCap = !options.runGgOnAllDeduped && options.index >= maxProbes;
   const enableGg = !ggSkippedCap;
 
-  const result = await enrichSalonProviderDiscovery(input, {
-    enableGgFallback: enableGg,
-  });
+  const discovery = await discoverSalonPublicPresence(
+    {
+      prospectId: undefined,
+      instagramHandle: handle,
+      displayName: input.displayName,
+      bio: input.bio,
+      website: input.website,
+      bioUrl: input.bioUrl,
+      bestMatchUrl: input.bestMatchUrl,
+      allMatchedUrls: input.allMatchedUrls,
+      linkTrailUrls: input.linkTrailUrls,
+      linkTrailUrlsScanned: input.linkTrailUrlsScanned,
+      linkInBioUrl: input.linkInBioUrl,
+      linkInBioPageFetched: input.linkInBioPageFetched,
+      evidence: input.evidence,
+      bookingProvider: input.bookingProvider,
+      bookingProviderConfidence: input.bookingProviderConfidence,
+      bookingProviderSource: input.bookingProviderSource,
+      bookingUrl: input.bookingUrl,
+    },
+    {
+      enableGgFallback: enableGg,
+      enableSearch: options.runPublicSearch ?? false,
+      forceSearch: options.forceSearch,
+    },
+  );
 
-  const {
-    providerDiscoveryDebug,
-    ggResolverStatus,
-    ggResolverReason,
-    ggCheckedUrls,
-    ggCandidateUrls,
-    ggValidatedUrl,
-    ggValidationStatus,
-    ...bookingFields
-  } = result;
+  if (discovery.presenceResults.length > 0) {
+    try {
+      await upsertPresenceResults(discovery.presenceResults);
+    } catch {
+      // non-fatal
+    }
+  }
+
+  const legacy = discoveryToLegacyResult(discovery, enableGg);
 
   return {
-    bookingFields: {
-      ...bookingFields,
-      providerResolverReason: providerDiscoveryDebug.providerResolverReason,
-      providerDiscoveryDebug,
-      ggCandidateUrls,
-      ggValidatedUrl,
-      ggValidationStatus,
-    },
+    bookingFields: legacy.bookingFields,
     gg: {
       ggResolverStatus: ggSkippedCap
         ? "skipped_cap"
-        : (ggResolverStatus ?? "not_attempted"),
-      ggCheckedUrls: providerDiscoveryDebug.ggCheckedUrls,
+        : legacy.ggResolverStatus,
+      ggCheckedUrls: legacy.providerDiscoveryDebug.ggCheckedUrls,
       ggResolverReason: ggSkippedCap
         ? `cap_exceeded_index_${options.index}_max_${maxProbes}`
-        : ggResolverReason,
+        : legacy.ggResolverReason,
     },
-    result,
-    runDelta: runDeltaFromResult(result, ggSkippedCap),
+    result: legacy,
+    runDelta: runDeltaFromDiscovery(legacy, ggSkippedCap),
   };
 }
 
 export async function runGgPassForUpserts(
   upserts: UpsertInput[],
-  options?: { maxProbes?: number; runGgOnAllDeduped?: boolean },
+  options?: {
+    maxProbes?: number;
+    runGgOnAllDeduped?: boolean;
+    runPublicSearch?: boolean;
+    forceSearch?: boolean;
+  },
 ): Promise<{ upserts: UpsertInput[]; ggRun: GgResolverRunDiagnostics }> {
   const ggRun = emptyGgRunDiagnostics();
   ggRun.dedupedProspects = upserts.length;
@@ -224,6 +329,8 @@ export async function runGgPassForUpserts(
         index: i,
         maxProbes: options?.maxProbes,
         runGgOnAllDeduped: options?.runGgOnAllDeduped,
+        runPublicSearch: options?.runPublicSearch,
+        forceSearch: options?.forceSearch,
       },
     );
     mergeGgRunDiagnostics(ggRun, runDelta);
@@ -232,9 +339,9 @@ export async function runGgPassForUpserts(
       ...bookingFields,
       ggResolverStatus: gg.ggResolverStatus,
       ggCheckedUrls: gg.ggCheckedUrls,
-      ggCandidateUrls: enrichResult.ggCandidateUrls,
-      ggValidatedUrl: enrichResult.ggValidatedUrl,
-      ggValidationStatus: enrichResult.ggValidationStatus,
+      ggCandidateUrls: enrichResult.bookingFields.ggCandidateUrls,
+      ggValidatedUrl: enrichResult.bookingFields.ggValidatedUrl,
+      ggValidationStatus: enrichResult.bookingFields.ggValidationStatus,
       ggResolverReason: gg.ggResolverReason,
     });
   }

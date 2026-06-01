@@ -128,6 +128,9 @@ export default function ImportCandidatesPage() {
           <option value="link_in_bio">Link-in-Bio</option>
           <option value="handle_derived">Handle Match</option>
           <option value="display_name_derived">Display Match</option>
+          <option value="google_search">Search Match</option>
+          <option value="website_crawl">Website Link</option>
+          <option value="public_web">Public Web</option>
         </select>
         <select value={fConfidence} onChange={(e) => setFConfidence(e.target.value)} style={selectStyle}>
           <option value="all">Confidence: All</option>

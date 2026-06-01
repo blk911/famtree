@@ -174,6 +174,8 @@ export interface HarvestRunRequest {
   runGgOnAllDeduped?: boolean;
   /** Max GG probes per harvest when runGgOnAllDeduped is false (default 250). */
   ggMaxProbes?: number;
+  /** Run public web search discovery after harvest (uses search API credits, max 50). */
+  runPublicDiscovery?: boolean;
 }
 
 export interface HarvestRunResponse {

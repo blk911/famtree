@@ -9,6 +9,9 @@ export type BookingProviderSourceKey =
   | "link_trail"
   | "handle_derived"
   | "display_name_derived"
+  | "google_search"
+  | "website_crawl"
+  | "public_web"
   | "unknown";
 
 export const BOOKING_PROVIDER_SOURCE_LABELS: Record<BookingProviderSourceKey, string> = {
@@ -17,6 +20,9 @@ export const BOOKING_PROVIDER_SOURCE_LABELS: Record<BookingProviderSourceKey, st
   link_trail: "Link-in-Bio",
   handle_derived: "Handle Match",
   display_name_derived: "Display Match",
+  google_search: "Search Match",
+  website_crawl: "Website Link",
+  public_web: "Public Web",
   unknown: "Unknown",
 };
 

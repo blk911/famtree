@@ -38,6 +38,8 @@ export type RunResolverOptions = {
   ggMaxProbes?: number;
   /** Probe GlossGenius for every deduped prospect (no cap). */
   runGgOnAllDeduped?: boolean;
+  /** Run SerpAPI / Google CSE on up to 50 deduped prospects after trail resolution. */
+  runPublicDiscovery?: boolean;
 };
 
 interface ResolvedSeed {
@@ -215,9 +217,17 @@ export async function runResolverForSeeds(
     let { seed, validProfiles, bestMatch, status, upsertInput, resolved } = s.value;
 
     if (salonHarvest && ggRun) {
+      const runPublicSearch =
+        resolverOptions?.runPublicDiscovery === true && i < 50;
       const { bookingFields, gg, runDelta } = await applyGgSalonEnrichment(
         upsertInputToGgEnrichInput(upsertInput),
-        { index: i, maxProbes: ggMaxProbes, runGgOnAllDeduped },
+        {
+          index: i,
+          maxProbes: ggMaxProbes,
+          runGgOnAllDeduped,
+          runPublicSearch,
+          forceSearch: runPublicSearch,
+        },
       );
       mergeGgRunDiagnostics(ggRun, runDelta);
       upsertInput = {

@@ -8,6 +8,8 @@ import { enrichProspectBookingIfMissing } from "@/lib/intelligence/salon/booking
 import { analyzeProspectProviderDetection } from "@/lib/intelligence/salon/provider-detection-diagnostics";
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import { RELATIONSHIP_OPPORTUNITY_LABELS } from "@/lib/studios/prospects/opportunity-taxonomy";
+import { buildSalonIdentityPacket, prospectToPublicPresenceInput } from "@/lib/intelligence/salon/public-presence/identity-extractor";
+import { listPresenceResults } from "@/lib/intelligence/salon/public-presence/presence-store";
 
 type RouteContext = { params: Promise<{ prospectId: string }> };
 
@@ -81,6 +83,23 @@ export async function GET(_req: NextRequest, context: RouteContext) {
       website: prospect.bestMatch?.url,
     };
 
+    const identity = buildSalonIdentityPacket(prospectToPublicPresenceInput(prospect));
+    const storedResults = await listPresenceResults({ prospectId, limit: 30 });
+    const publicPresence = {
+      identity,
+      results: storedResults,
+      bestProvider: prospect.bookingProvider
+        ? {
+            provider: prospect.bookingProvider,
+            source: prospect.bookingProviderSource ?? "unknown",
+            confidence: prospect.bookingProviderConfidence ?? 0,
+            bookingUrl: prospect.bookingUrl ?? "",
+            evidence: prospect.bookingProviderEvidence ?? [],
+          }
+        : undefined,
+      diagnostics: { errors: [] as string[] },
+    };
+
     return NextResponse.json({
       ok: true,
       prospect,
@@ -89,6 +108,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
       opportunity,
       sourceLinks,
       notes,
+      publicPresence,
     });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);

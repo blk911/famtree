@@ -185,6 +185,9 @@ export interface ProspectRecord {
     | "link_trail"
     | "handle_derived"
     | "display_name_derived"
+    | "google_search"
+    | "website_crawl"
+    | "public_web"
     | "unknown";
   /** IG profile URL (external bio link is not scraped). */
   linkInBioUrl?: string;

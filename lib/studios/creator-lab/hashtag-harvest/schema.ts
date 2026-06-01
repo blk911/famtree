@@ -22,4 +22,5 @@ export const HarvestRunRequestSchema = z.object({
   verticalKey: z.enum(["education", "salon", "transpo", "hcare", "labs"]).default("salon"),
   runGgOnAllDeduped: z.boolean().optional().default(false),
   ggMaxProbes: z.number().int().min(1).max(2000).optional(),
+  runPublicDiscovery: z.boolean().optional().default(false),
 });

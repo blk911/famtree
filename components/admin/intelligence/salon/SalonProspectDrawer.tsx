@@ -83,20 +83,53 @@ function na(value?: string | number | null) {
   return String(value);
 }
 
+type PresencePayload = {
+  identity?: {
+    displayName?: string;
+    extractedPersonName?: string;
+    extractedBusinessName?: string;
+    extractedKeywords?: string[];
+    searchQueries?: string[];
+    city?: string;
+    state?: string;
+  };
+  results?: Array<{
+    source: string;
+    urlType: string;
+    url: string;
+    provider?: string;
+    confidence: number;
+    evidence?: string[];
+  }>;
+  bestProvider?: {
+    provider: string;
+    source: string;
+    confidence: number;
+    bookingUrl: string;
+    evidence?: string[];
+  };
+  diagnostics?: { errors?: string[]; searchMessage?: string };
+};
+
 export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
   const [data, setData] = useState<DetailResponse | null>(null);
+  const [presence, setPresence] = useState<PresencePayload | null>(null);
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
     if (!prospectId) return;
     setLoading(true);
+    setPresence(null);
     try {
       const res = await fetch(
         `/api/admin/intelligence/salon/prospects/${encodeURIComponent(prospectId)}/detail`,
         { cache: "no-store" },
       );
-      const json = (await res.json()) as DetailResponse;
-      if (json.ok) setData(json);
+      const json = (await res.json()) as DetailResponse & { publicPresence?: PresencePayload };
+      if (json.ok) {
+        setData(json);
+        if (json.publicPresence) setPresence(json.publicPresence);
+      }
     } catch {
       setData(null);
     } finally {
@@ -308,6 +341,68 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                 </div>
               ) : null}
             </section>
+
+            {presence ? (
+              <section style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+                  PUBLIC PRESENCE
+                </div>
+                {presence.identity ? (
+                  <>
+                    <Row label="Person name">{na(presence.identity.extractedPersonName)}</Row>
+                    <Row label="Business name">{na(presence.identity.extractedBusinessName)}</Row>
+                    <Row label="Keywords">
+                      {(presence.identity.extractedKeywords ?? []).join(", ") || "Not available"}
+                    </Row>
+                    <Row label="Search queries">
+                      {(presence.identity.searchQueries ?? []).length > 0 ? (
+                        <ul style={{ margin: 0, paddingLeft: 16 }}>
+                          {(presence.identity.searchQueries ?? []).map((q) => (
+                            <li key={q} style={{ fontSize: 11 }}>{q}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        "Not available"
+                      )}
+                    </Row>
+                  </>
+                ) : null}
+                {presence.bestProvider ? (
+                  <>
+                    <Row label="Best provider">{na(presence.bestProvider.provider)}</Row>
+                    <Row label="Source">{na(presence.bestProvider.source)}</Row>
+                    <Row label="Confidence">{na(presence.bestProvider.confidence)}</Row>
+                    <Row label="Booking URL">
+                      <ExternalLink href={presence.bestProvider.bookingUrl} />
+                    </Row>
+                  </>
+                ) : (
+                  <Row label="Provider decision">
+                    {p.bookingProvider
+                      ? `${p.bookingProvider} (${p.bookingProviderSource ?? "unknown"})`
+                      : "No provider"}
+                  </Row>
+                )}
+                <Row label="Presence URLs">
+                  {(presence.results ?? []).length > 0 ? (
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                      {(presence.results ?? []).slice(0, 12).map((r) => (
+                        <li key={`${r.source}-${r.url}`} style={{ fontSize: 11, marginBottom: 4 }}>
+                          <span style={{ color: "#78716c" }}>{r.urlType}</span> ·{" "}
+                          <ExternalLink href={r.url} label={r.url.slice(0, 40)} />
+                          {r.provider ? ` · ${r.provider}` : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    "Not available"
+                  )}
+                </Row>
+                {(presence.diagnostics?.errors ?? []).length > 0 ? (
+                  <Row label="Errors">{(presence.diagnostics?.errors ?? []).join("; ")}</Row>
+                ) : null}
+              </section>
+            ) : null}
 
             <section style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>

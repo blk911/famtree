@@ -27,6 +27,10 @@ export type HarvestAnalyticsTotals = {
   ggGenericHomepage: number;
   ggNotFound: number;
   ggTimeouts: number;
+  searchProvidersFound: number;
+  websiteProvidersFound: number;
+  ggFallbackProvidersFound: number;
+  unknownAfterSearch: number;
 };
 
 export type HarvestAnalyticsHashtagRow = HashtagHarvestHashtagStats & {
@@ -69,6 +73,10 @@ export async function buildHarvestAnalytics(): Promise<HarvestAnalyticsPayload> 
   let ggGenericHomepage = 0;
   let ggNotFound = 0;
   let ggTimeouts = 0;
+  let searchProvidersFound = 0;
+  let websiteProvidersFound = 0;
+  let ggFallbackProvidersFound = 0;
+  let unknownAfterSearch = 0;
 
   for (const p of salonProspects) {
     const d = analyzeProspectProviderDetection(p);
@@ -93,6 +101,22 @@ export async function buildHarvestAnalytics(): Promise<HarvestAnalyticsPayload> 
       if (d.glossGeniusStatus === "gg_display_match") ggDisplayMatches++;
     }
     if (isSalonImportCandidate(p)) importCandidates++;
+    const src = p.bookingProviderSource;
+    if (p.bookingProvider && src === "google_search") searchProvidersFound++;
+    if (p.bookingProvider && src === "website_crawl") websiteProvidersFound++;
+    if (
+      p.bookingProvider &&
+      (src === "handle_derived" || src === "display_name_derived")
+    ) {
+      ggFallbackProvidersFound++;
+    }
+    if (
+      !p.bookingProvider &&
+      (p.providerResolverReason?.includes("search") ||
+        p.providerDiscoveryDebug?.providerResolverReason?.includes("search"))
+    ) {
+      unknownAfterSearch++;
+    }
   }
 
   const totalDeduped = runs.reduce((n, f) => n + (f.run.totalCreators ?? 0), 0);
@@ -159,6 +183,10 @@ export async function buildHarvestAnalytics(): Promise<HarvestAnalyticsPayload> 
     ggGenericHomepage,
     ggNotFound,
     ggTimeouts,
+    searchProvidersFound,
+    websiteProvidersFound,
+    ggFallbackProvidersFound,
+    unknownAfterSearch,
   };
 
   return {

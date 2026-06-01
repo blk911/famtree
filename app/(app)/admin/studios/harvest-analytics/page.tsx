@@ -70,6 +70,10 @@ export default function HarvestAnalyticsPage() {
               ["GG generic/home", t.ggGenericHomepage],
               ["GG not found", t.ggNotFound],
               ["GG timeouts", t.ggTimeouts],
+              ["Search providers", t.searchProvidersFound],
+              ["Website providers", t.websiteProvidersFound],
+              ["GG fallback found", t.ggFallbackProvidersFound],
+              ["Unknown after search", t.unknownAfterSearch],
             ].map(([label, val]) => (
               <div
                 key={String(label)}

@@ -152,7 +152,10 @@ function parseBookingProviderSource(
     raw === "display_name_derived" ||
     raw === "direct_url" ||
     raw === "link_in_bio" ||
-    raw === "link_trail"
+    raw === "link_trail" ||
+    raw === "google_search" ||
+    raw === "website_crawl" ||
+    raw === "public_web"
   ) {
     return toBookingProviderSource(raw as ProspectRecord["bookingProviderSource"]);
   }

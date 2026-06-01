@@ -141,11 +141,17 @@ export async function discoverGgenForSeed(
       for (const url of urls) {
         const det = detectSalonBookingProvider(url);
         if (det?.provider !== "glossgenius") continue;
-        const conf = confidenceToNumber(det.confidence);
+        const validation = await validateGlossGeniusPage({
+          url: det.bookingUrl ?? url,
+          displayNameHint: seed.businessName,
+          discoverySource: "direct_url",
+        });
+        if (!validation.confirmed) continue;
+        const conf = validation.suggestedConfidence;
         const merged: GgenSeedDiscoveryResult = {
           ...base,
           ...hitFromProbe(
-            det.bookingUrl ?? url,
+            validation.finalUrl,
             Math.max(conf, IMPORT_CONFIDENCE_MIN),
             "seed_search",
             [`search hit: ${url}`, ...det.evidence],
