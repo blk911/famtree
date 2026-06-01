@@ -9,6 +9,8 @@ import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatur
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import type { ProspectRecord, ProspectStatus, ProspectListResponse } from "@/lib/studios/prospects/types";
 import { PROSPECT_STATUS_LABELS, PROSPECT_STATUS_COLORS } from "@/lib/studios/prospects/types";
+import { BUSINESS_CATEGORY_LABELS, RELATIONSHIP_OPPORTUNITY_LABELS } from "@/lib/studios/prospects/opportunity-taxonomy";
+import type { RelationshipOpportunityType } from "@/lib/studios/prospects/opportunity-taxonomy";
 import {
   VALIDATION_STATUS_LABELS,
   VALIDATION_STATUS_COLORS,
@@ -22,7 +24,6 @@ import { BookingProviderSourceChip } from "@/components/admin/intelligence/salon
 import { ProviderDetectionDetail } from "@/components/admin/intelligence/salon/ProviderDetectionDetail";
 import { SalonProspectDrawer } from "@/components/admin/intelligence/salon/SalonProspectDrawer";
 import { ProviderDiscoveryBackfillButton } from "@/components/admin/intelligence/salon/ProviderDiscoveryBackfillButton";
-import { AdvancedIntelligenceSection } from "@/components/admin/intelligence/salon/AdvancedIntelligenceSection";
 import { SalonOperatorSummary } from "@/components/admin/intelligence/salon/SalonOperatorSummary";
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
@@ -234,8 +235,45 @@ function ProspectDetail({ prospect, onSaved }: {
             </div>
           )}
 
-          <AdvancedIntelligenceSection prospect={prospect} />
+          {/* Opportunity classification */}
           <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 5 }}>RELATIONSHIP OPPORTUNITY</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 7 }}>
+              {prospect.businessCategory && (
+                <span style={{ fontSize: 10, background: "#fce7f3", color: "#9d174d", borderRadius: 20, padding: "2px 8px", fontWeight: 700 }}>
+                  {BUSINESS_CATEGORY_LABELS[prospect.businessCategory as keyof typeof BUSINESS_CATEGORY_LABELS] ?? tagLabel(String(prospect.businessCategory))}
+                </span>
+              )}
+              {prospect.relationshipOpportunityType && (
+                <span style={{ fontSize: 10, background: "#eff6ff", color: "#1d4ed8", borderRadius: 20, padding: "2px 8px", fontWeight: 700 }}>
+                  {RELATIONSHIP_OPPORTUNITY_LABELS[prospect.relationshipOpportunityType as keyof typeof RELATIONSHIP_OPPORTUNITY_LABELS] ?? tagLabel(String(prospect.relationshipOpportunityType))}
+                </span>
+              )}
+              {(prospect.offerFitTags ?? []).slice(0, 5).map((tag) => (
+                <span key={tag} style={{ fontSize: 10, background: "#f0fdf4", color: "#15803d", borderRadius: 20, padding: "2px 8px", fontWeight: 700 }}>
+                  {tagLabel(tag)}
+                </span>
+              ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 6 }}>
+              {[
+                ["Overall", prospect.overallOpportunityScore],
+                ["Rel", prospect.relationshipScore],
+                ["Audience", prospect.audienceScore],
+                ["Ops", prospect.operationalDataScore],
+                ["Community", prospect.communityScore],
+              ].map(([label, val]) => (
+                <div key={String(label)} style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 6, padding: "5px 6px", textAlign: "center" }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: confColor(Number(val ?? 0)) }}>{val ?? "—"}</div>
+                  <div style={{ fontSize: 8, color: "#a8a29e", fontWeight: 700 }}>{label}</div>
+                </div>
+              ))}
+            </div>
+            {(prospect.platformSignals ?? []).length > 0 && (
+              <div style={{ marginTop: 7, fontSize: 10, color: "#78716c" }}>
+                Signals: {(prospect.platformSignals ?? []).map(tagLabel).join(", ")}
+              </div>
+            )}
             <ProviderDetectionDetail prospect={prospect} variant="panel" />
           </div>
 
@@ -314,15 +352,7 @@ function ProspectDetail({ prospect, onSaved }: {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-type SortKey =
-  | "handle"
-  | "name"
-  | "businessCategory"
-  | "bookingProvider"
-  | "bookingProviderSource"
-  | "importCandidate"
-  | "validationStatus"
-  | "createdAt";
+type SortKey = "name" | "handle" | "educationType" | "businessCategory" | "location" | "platform" | "confidence" | "validationStatus" | "createdAt" | "businessSubcategory" | "bookingProvider" | "bestUrl";
 
 const BOOKING_PROVIDER_FILTERS = [
   { value: "all", label: "All booking providers" },
@@ -469,22 +499,20 @@ export default function ProspectsPage() {
     rows.sort((a, b) => {
       let av: string | number = "", bv: string | number = "";
       switch (sortKey) {
-        case "handle": av = a.identity.handle; bv = b.identity.handle; break;
-        case "name": av = a.identity.name; bv = b.identity.name; break;
-        case "businessCategory": av = salonCategoryLabel(a); bv = salonCategoryLabel(b); break;
-        case "bookingProvider": av = a.bookingProvider ?? ""; bv = b.bookingProvider ?? ""; break;
-        case "bookingProviderSource": av = a.bookingProviderSource ?? ""; bv = b.bookingProviderSource ?? ""; break;
-        case "importCandidate": {
-          const ai = isSalonImportCandidate(a) ? 1 : 0;
-          const bi = isSalonImportCandidate(b) ? 1 : 0;
-          av = ai;
-          bv = bi;
-          break;
-        }
-        case "validationStatus": av = a.validationStatus ?? "new"; bv = b.validationStatus ?? "new"; break;
-        case "createdAt": av = a.createdAt; bv = b.createdAt; break;
+        case "name":             av = a.identity.name;              bv = b.identity.name; break;
+        case "handle":           av = a.identity.handle;            bv = b.identity.handle; break;
+        case "educationType":    av = a.educationType ?? "";        bv = b.educationType ?? ""; break;
+        case "businessCategory": av = a.businessCategory ?? "";     bv = b.businessCategory ?? ""; break;
+        case "location":         av = a.identity.locationGuess ?? ""; bv = b.identity.locationGuess ?? ""; break;
+        case "platform":         av = a.bestMatch?.platform ?? "";  bv = b.bestMatch?.platform ?? ""; break;
+        case "confidence":       av = a.confidence.overall;         bv = b.confidence.overall; break;
+        case "validationStatus":          av = a.validationStatus ?? "new";          bv = b.validationStatus ?? "new"; break;
+        case "createdAt":                 av = a.createdAt;                           bv = b.createdAt; break;
+        case "businessSubcategory":       av = a.businessSubcategory ?? "";           bv = b.businessSubcategory ?? ""; break;
+        case "bookingProvider":           av = a.bookingProvider ?? "";               bv = b.bookingProvider ?? ""; break;
+        case "bestUrl":                   av = a.bestMatch?.url ?? "";                bv = b.bestMatch?.url ?? ""; break;
       }
-      const cmp = String(av).localeCompare(String(bv));
+      const cmp = typeof av === "number" ? av - (bv as number) : String(av).localeCompare(String(bv));
       return sortDir === "asc" ? cmp : -cmp;
     });
     return rows;
@@ -492,7 +520,7 @@ export default function ProspectsPage() {
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
-    else { setSortKey(key); setSortDir("asc"); }
+    else { setSortKey(key); setSortDir(key === "confidence" ? "desc" : "asc"); }
   }
   function si(key: SortKey) {
     if (sortKey !== key) return <span style={{ color: "#d6d3d1" }}> ↕</span>;
@@ -564,13 +592,18 @@ export default function ProspectsPage() {
         title="Prospects"
         description="Salon operator screen — filter, review, and act on harvested creators."
         config={salonConfig}
-        showContext={false}
+        showContext={true}
       />
 
       <ProviderDiscoveryBackfillButton limit={250} />
 
       <SalonOperatorSummary
         compact
+        pipeline={[
+          { label: "Source", value: operatorMetrics.total },
+          { label: "Qualified", value: operatorMetrics.relationshipOperators },
+          { label: "Campaign", value: operatorMetrics.campaignReady },
+        ]}
         pills={[
           { label: "Prospects", value: operatorMetrics.total, color: "#1c1917" },
           { label: "Relationship Operators", value: operatorMetrics.relationshipOperators, color: "#0369a1" },
@@ -714,12 +747,14 @@ export default function ProspectsPage() {
             <thead>
               <tr>
                 {([
-                  ["handle", "Identity"],
-                  ["businessCategory", "Category"],
-                  ["bookingProvider", "Booking Provider"],
-                  ["bookingProviderSource", "Provider Source"],
-                  ["importCandidate", "Import Candidate"],
-                  ["validationStatus", "Status"],
+                  ["handle",                      "@Handle"],
+                  ["name",                        "Name"],
+                  ["businessCategory",            "Category"],
+                  ["businessSubcategory",         "Subtype"],
+                  ["location",                    "Location"],
+                  ["bookingProvider",             "Booking Provider"],
+                  ["bestUrl",                     "Best URL"],
+                  ["validationStatus",            "Status"],
                 ] as [SortKey, string][]).map(([key, label]) => (
                   <th key={label} style={thS} onClick={() => toggleSort(key)}>
                     {label}{si(key)}
@@ -735,24 +770,20 @@ export default function ProspectsPage() {
                     <tr key={p.prospectId}
                       onClick={() => setExpandedId(isExpanded ? null : p.prospectId)}
                       style={{ cursor: "pointer", background: isExpanded ? "#fdf2f8" : "transparent" }}>
-                      <td style={{ ...tdS, color: "#1c1917" }}>
-                        <div style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>
-                          <a href={`https://instagram.com/${p.identity.handle}`} target="_blank" rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()} style={{ color: "#1c1917", textDecoration: "none" }}>
-                            @{p.identity.handle}
-                          </a>
-                        </div>
-                        {p.identity.name !== p.identity.handle ? (
-                          <div style={{ fontSize: 11, color: "#57534e", marginTop: 2 }}>{p.identity.name}</div>
-                        ) : null}
+                      <td style={{ ...tdS, fontFamily: "monospace", fontSize: 11, fontWeight: 700, color: "#1c1917" }}>
+                        <a href={`https://instagram.com/${p.identity.handle}`} target="_blank" rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()} style={{ color: "#1c1917", textDecoration: "none" }}>
+                          @{p.identity.handle}
+                        </a>
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); setDrawerProspectId(p.prospectId); }}
-                          style={{ marginTop: 4, fontSize: 9, fontWeight: 700, color: "#9d174d", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                          style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, color: "#9d174d", background: "none", border: "none", cursor: "pointer" }}
                         >
                           View
                         </button>
                       </td>
+                      <td style={tdS}>{p.identity.name !== p.identity.handle ? p.identity.name : <span style={{ color: "#d6d3d1" }}>—</span>}</td>
                       <td style={tdS}>
                         {salonCategoryLabel(p) ? (
                           <span style={{ fontSize: 10, background: "#fce7f3", color: "#9d174d", borderRadius: 20, padding: "2px 7px", fontWeight: 700 }}>
@@ -760,28 +791,30 @@ export default function ProspectsPage() {
                           </span>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
-                      <td style={{ ...tdS, maxWidth: 200 }}>
-                        <BookingProviderPill
-                          provider={p.bookingProvider}
-                          label={
-                            p.bookingProviderLabel ??
-                            (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)
-                          }
-                          bookingUrl={p.bookingUrl ?? p.bestMatch?.url}
-                          showImportChip={false}
-                        />
+                      <td style={tdS}>{p.businessSubcategory ? friendlySubtypeLabel(p.businessSubcategory) : <span style={{ color: "#d6d3d1" }}>—</span>}</td>
+                      <td style={tdS}>{p.identity.locationGuess ?? <span style={{ color: "#d6d3d1" }}>—</span>}</td>
+                      <td style={{ ...tdS, maxWidth: 220 }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
+                          <BookingProviderPill
+                            provider={p.bookingProvider}
+                            label={
+                              p.bookingProviderLabel ??
+                              (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)
+                            }
+                            bookingUrl={p.bookingUrl ?? p.bestMatch?.url}
+                            showImportChip={isSalonImportCandidate(p)}
+                          />
+                          <BookingProviderSourceChip prospect={p} />
+                        </div>
                       </td>
-                      <td style={tdS}>
-                        <BookingProviderSourceChip prospect={p} />
-                      </td>
-                      <td style={tdS}>
-                        {isSalonImportCandidate(p) ? (
-                          <span style={{ fontSize: 10, fontWeight: 800, color: "#15803d", background: "#f0fdf4", borderRadius: 20, padding: "2px 8px" }}>
-                            Yes
-                          </span>
-                        ) : (
-                          <span style={{ color: "#d6d3d1" }}>—</span>
-                        )}
+                      <td style={{ ...tdS, maxWidth: 160 }}>
+                        {p.bestMatch ? (
+                          <a href={p.bestMatch.url} target="_blank" rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ color: "#0284c7", textDecoration: "none", fontSize: 11, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {p.bestMatch.url}
+                          </a>
+                        ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
                       <td style={tdS}>
                         <ValidationBadge vs={p.validationStatus} />
@@ -789,7 +822,7 @@ export default function ProspectsPage() {
                     </tr>
                     {isExpanded && (
                       <tr key={`${p.prospectId}-detail`}>
-                        <td colSpan={7} style={{ padding: 0 }}>
+                        <td colSpan={8} style={{ padding: 0 }}>
                           <ProspectDetail prospect={p} onSaved={(updated) => setProspects((prev) => prev.map((x) => x.prospectId === updated.prospectId ? updated : x))} />
                         </td>
                       </tr>
