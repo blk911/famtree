@@ -151,21 +151,46 @@ const DDL_STATEMENTS: string[] = [
 // Memoized per serverless isolate: ensure DDL runs at most once per instance.
 let _ensurePromise: Promise<boolean> | null = null;
 
+/**
+ * Decide whether Postgres is usable for this isolate and bring the schema up to
+ * date. Bulletproofing rules (durability is the priority — data must never be
+ * silently stranded on ephemeral /tmp when a real database is configured):
+ *
+ *   1. The gate for "use Postgres" is CONNECTIVITY (a trivial `SELECT 1`), NOT
+ *      whether every DDL statement succeeded. A reachable database is durable;
+ *      a single failed migration statement must not demote the whole process to
+ *      ephemeral JSON and split writes/reads across two backends.
+ *   2. DDL runs per-statement and best-effort. `CREATE TABLE/INDEX IF NOT EXISTS`
+ *      and `ADD COLUMN IF NOT EXISTS` are idempotent; a racing/transient failure
+ *      on one statement is swallowed so the rest still apply.
+ *   3. Only a genuine connectivity failure returns false (and is not cached), so
+ *      a cold-start blip retries on the next call instead of pinning JSON.
+ */
 async function ensureTranspoTables(): Promise<boolean> {
   if (!databaseUrlPresent()) return false;
   if (_ensurePromise) return _ensurePromise;
 
   _ensurePromise = (async () => {
+    // Connectivity probe — the real gate for durable Postgres.
     try {
-      for (const stmt of DDL_STATEMENTS) {
-        await prisma.$executeRawUnsafe(stmt);
-      }
-      return true;
+      await prisma.$executeRawUnsafe("SELECT 1");
     } catch {
-      // Reset so a transient failure can be retried on the next call.
+      // Reset so a transient connection failure can be retried on the next call.
       _ensurePromise = null;
       return false;
     }
+
+    // Best-effort, per-statement idempotent schema sync. One failing statement
+    // must NOT disable durable storage for the whole isolate.
+    for (const stmt of DDL_STATEMENTS) {
+      try {
+        await prisma.$executeRawUnsafe(stmt);
+      } catch {
+        // Idempotent DDL: table/column likely already exists, or a concurrent
+        // ensure won the race. Safe to ignore — connectivity already confirmed.
+      }
+    }
+    return true;
   })();
 
   return _ensurePromise;
@@ -177,10 +202,12 @@ let _resolvedBackend: TranspoBackend | null = null;
  * Resolve the active backend.
  *
  * Only a successful Postgres resolution is cached. If DATABASE_URL is present
- * but the tables aren't ready yet (e.g. a cold-start connection blip), we return
+ * but the database is unreachable (a cold-start connection blip), we return
  * "json" WITHOUT caching so the next call retries Postgres — otherwise a single
  * transient failure would strand a warm Lambda on ephemeral /tmp for its whole
- * life, which is exactly the "evidence randomly disappears" symptom.
+ * life, which is exactly the "evidence randomly disappears" symptom. Note the
+ * gate is connectivity, not DDL success (see ensureTranspoTables), so an
+ * idempotent migration hiccup can never demote a reachable DB to JSON.
  */
 export async function resolveTranspoBackend(): Promise<TranspoBackend> {
   if (_resolvedBackend === "postgres") return "postgres";
@@ -196,7 +223,7 @@ export async function resolveTranspoBackend(): Promise<TranspoBackend> {
     return "postgres";
   }
 
-  // DB configured but not ready — do not pin; retry on the next call.
+  // DB configured but unreachable — do not pin; retry on the next call.
   return "json";
 }
 
