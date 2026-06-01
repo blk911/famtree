@@ -6,17 +6,23 @@ import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatur
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import { SalonStorageBadge } from "@/components/admin/intelligence/salon/SalonStorageBadge";
 import { SalonResolverStatusCard } from "@/components/admin/intelligence/salon/SalonResolverStatusCard";
+import { BookingProviderDetectionStrip } from "@/components/admin/intelligence/salon/BookingProviderDetectionStrip";
 import type { HarvestAnalyticsPayload } from "@/lib/intelligence/salon/harvest-analytics";
+import type { ProviderDetectionSummary } from "@/lib/intelligence/salon/provider-detection-diagnostics";
 
 export default function HarvestAnalyticsPage() {
   const [data, setData] = useState<HarvestAnalyticsPayload | null>(null);
+  const [providerSummary, setProviderSummary] = useState<ProviderDetectionSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/intelligence/salon/harvest-analytics", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d: { ok: boolean } & HarvestAnalyticsPayload) => {
-        if (d.ok) setData(d);
+    Promise.all([
+      fetch("/api/admin/intelligence/salon/harvest-analytics", { cache: "no-store" }).then((r) => r.json()),
+      fetch("/api/admin/studios/prospects/provider-diagnostics", { cache: "no-store" }).then((r) => r.json()),
+    ])
+      .then(([harvest, diag]) => {
+        if (harvest.ok) setData(harvest as HarvestAnalyticsPayload & { ok: boolean });
+        if (diag.ok && diag.summary) setProviderSummary(diag.summary);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -28,7 +34,7 @@ export default function HarvestAnalyticsPage() {
       <CreatorIntelligenceNav current="harvest-analytics" />
       <IntelligenceFeatureHeader
         title="Harvest Analytics"
-        description="Hashtag harvest coverage and booking provider discovery across salon runs."
+        description="Analyze hashtag harvest quality, resolver coverage, and booking provider discovery."
         config={salonConfig}
       />
       <SalonStorageBadge />
@@ -39,19 +45,6 @@ export default function HarvestAnalyticsPage() {
         <div style={{ fontSize: 13, color: "#78716c" }}>No harvest data yet.</div>
       ) : (
         <>
-          <SalonResolverStatusCard
-            title="Salon totals (prospects)"
-            harvested={t.totalCreatorsFound}
-            deduped={t.totalDedupedProspects}
-            providerFound={t.providersDetected}
-            ggDirect={t.ggDirect}
-            ggLinkInBio={t.ggLinkInBio}
-            ggHandleMatch={t.ggHandleMatches}
-            ggDisplayMatch={t.ggDisplayMatches}
-            importCandidates={t.importCandidates}
-            unknown={Math.max(0, t.totalDedupedProspects - t.providersDetected)}
-          />
-
           <div
             style={{
               display: "grid",
@@ -85,6 +78,28 @@ export default function HarvestAnalyticsPage() {
               </div>
             ))}
           </div>
+
+          {providerSummary ? (
+            <>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#1c1917", marginBottom: 12 }}>
+                Provider Discovery Diagnostics
+              </div>
+              <SalonResolverStatusCard
+                title="Resolver coverage (salon prospects)"
+                harvested={t.totalCreatorsFound}
+                deduped={t.totalDedupedProspects}
+                resolved={t.providersDetected}
+                providerFound={t.providersDetected}
+                ggDirect={t.ggDirect}
+                ggLinkInBio={t.ggLinkInBio}
+                ggHandleMatch={t.ggHandleMatches}
+                ggDisplayMatch={t.ggDisplayMatches}
+                importCandidates={t.importCandidates}
+                unknown={providerSummary.unknownNoProvider}
+              />
+              <BookingProviderDetectionStrip summary={providerSummary} />
+            </>
+          ) : null}
 
           <h3 style={{ fontSize: 14, fontWeight: 800, marginBottom: 10 }}>Per hashtag</h3>
           <div style={{ overflowX: "auto", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12 }}>

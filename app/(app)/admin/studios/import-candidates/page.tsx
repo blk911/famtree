@@ -6,17 +6,29 @@ import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatur
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import { SalonStorageBadge } from "@/components/admin/intelligence/salon/SalonStorageBadge";
 import { SalonProspectDrawer } from "@/components/admin/intelligence/salon/SalonProspectDrawer";
+import { SalonOperatorSummary } from "@/components/admin/intelligence/salon/SalonOperatorSummary";
 import { BookingProviderPill } from "@/components/admin/intelligence/salon/BookingProviderPill";
 import { BookingProviderSourceChip } from "@/components/admin/intelligence/salon/BookingProviderSourceChip";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
+import type { ProviderDetectionSummary } from "@/lib/intelligence/salon/provider-detection-diagnostics";
 
 export default function ImportCandidatesPage() {
   const [prospects, setProspects] = useState<ProspectRecord[]>([]);
+  const [providerSummary, setProviderSummary] = useState<ProviderDetectionSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [fProvider, setFProvider] = useState("all");
   const [fSource, setFSource] = useState("all");
   const [fConfidence, setFConfidence] = useState("all");
   const [drawerId, setDrawerId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/studios/prospects/provider-diagnostics", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d: { ok: boolean; summary?: ProviderDetectionSummary }) => {
+        if (d.ok && d.summary) setProviderSummary(d.summary);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -32,17 +44,72 @@ export default function ImportCandidatesPage() {
       .finally(() => setLoading(false));
   }, [fProvider, fSource, fConfidence]);
 
-  const countLabel = useMemo(() => `${prospects.length} candidate(s)`, [prospects.length]);
+  const providerCounts = useMemo(() => {
+    const counts = { glossgenius: 0, vagaro: 0, square: 0, unknown: 0 };
+    for (const p of prospects) {
+      const key = (p.bookingProvider ?? "unknown").toLowerCase();
+      if (key === "glossgenius") counts.glossgenius++;
+      else if (key === "vagaro") counts.vagaro++;
+      else if (key === "square") counts.square++;
+      else counts.unknown++;
+    }
+    return counts;
+  }, [prospects]);
+
+  const summaryPills = useMemo(() => {
+    const total = prospects.length;
+    if (providerSummary) {
+      return [
+        { label: "Import Candidates", value: total, color: "#15803d" },
+        { label: "GlossGenius", value: providerSummary.glossgenius, color: "#9d174d" },
+        { label: "Vagaro", value: providerSummary.vagaro, color: "#1d4ed8" },
+        { label: "Square", value: providerSummary.square, color: "#1c1917" },
+        { label: "Unknown", value: providerSummary.unknownNoProvider, color: "#b45309" },
+      ];
+    }
+    return [
+      { label: "Import Candidates", value: total, color: "#15803d" },
+      { label: "GlossGenius", value: providerCounts.glossgenius, color: "#9d174d" },
+      { label: "Vagaro", value: providerCounts.vagaro, color: "#1d4ed8" },
+      { label: "Square", value: providerCounts.square, color: "#1c1917" },
+      { label: "Unknown", value: providerCounts.unknown, color: "#b45309" },
+    ];
+  }, [prospects.length, providerSummary, providerCounts]);
 
   return (
     <div style={{ padding: "24px 28px 48px", maxWidth: 1200, margin: "0 auto" }}>
       <CreatorIntelligenceNav current="import-candidates" />
       <IntelligenceFeatureHeader
         title="Import Candidates"
-        description="Prospects ready for back-office import or Hidden Money Report (GlossGenius & Vagaro prioritized)."
+        description="Booking-provider opportunities for back-office import and Hidden Money Reports."
         config={salonConfig}
       />
       <SalonStorageBadge />
+
+      <SalonOperatorSummary pills={summaryPills} />
+
+      {providerSummary ? (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+            PROVIDER INTELLIGENCE (STORE)
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 11, color: "#57534e" }}>
+            {[
+              ["Provider detected", providerSummary.providerDetected],
+              ["GG handle match", providerSummary.ggHandleMatch],
+              ["GG display match", providerSummary.ggDisplayMatch],
+              ["Link-in-bio fetched", providerSummary.linkInBioPagesFetched],
+            ].map(([label, val]) => (
+              <span
+                key={label}
+                style={{ background: "#f5f5f4", border: "1px solid #e7e5e4", borderRadius: 8, padding: "6px 10px" }}
+              >
+                <strong>{label}:</strong> {val}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
         <select value={fProvider} onChange={(e) => setFProvider(e.target.value)} style={selectStyle}>
@@ -68,7 +135,6 @@ export default function ImportCandidatesPage() {
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
-        <span style={{ fontSize: 12, color: "#78716c", alignSelf: "center" }}>{countLabel}</span>
       </div>
 
       {loading ? (

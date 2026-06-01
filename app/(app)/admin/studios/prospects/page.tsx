@@ -23,25 +23,11 @@ import { BookingProviderPill } from "@/components/admin/intelligence/salon/Booki
 import { BookingProviderSourceChip } from "@/components/admin/intelligence/salon/BookingProviderSourceChip";
 import { ProviderDetectionDetail } from "@/components/admin/intelligence/salon/ProviderDetectionDetail";
 import { SalonStorageBadge } from "@/components/admin/intelligence/salon/SalonStorageBadge";
-import { SalonResolverStatusCard } from "@/components/admin/intelligence/salon/SalonResolverStatusCard";
 import { SalonProspectDrawer } from "@/components/admin/intelligence/salon/SalonProspectDrawer";
+import { SalonOperatorSummary } from "@/components/admin/intelligence/salon/SalonOperatorSummary";
+import { SalonPipelineStatus } from "@/components/admin/intelligence/salon/SalonPipelineStatus";
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
-import {
-  analyzeProspectProviderDetection,
-  matchesProviderDetectionFilter,
-  summarizeProviderDetection,
-  type ProviderDetectionFilterKey,
-  type ProviderDetectionSummary,
-} from "@/lib/intelligence/salon/provider-detection-diagnostics";
-
-const PROVIDER_DETECTION_FILTERS: Array<{ value: ProviderDetectionFilterKey; label: string }> = [
-  { value: "all", label: "All" },
-  { value: "detected", label: "Detected" },
-  { value: "no_public_url", label: "No URL" },
-  { value: "link_page_not_fetched", label: "Link Page Not Fetched" },
-  { value: "no_provider_found", label: "No Provider Found" },
-];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -406,10 +392,9 @@ export default function ProspectsPage() {
   const [fBookingSource, setFBookingSource] = useState("all");
   const [fImportCandidate, setFImportCandidate] = useState(false);
   const [fConfidenceBucket, setFConfidenceBucket] = useState("all");
-  const [fProviderDetection, setFProviderDetection] = useState<ProviderDetectionFilterKey>("all");
   const [drawerProspectId, setDrawerProspectId] = useState<string | null>(null);
-  const [providerDiagSummary, setProviderDiagSummary] = useState<ProviderDetectionSummary | null>(null);
-  const [hoverProspectId, setHoverProspectId] = useState<string | null>(null);
+  const [statsProspects, setStatsProspects] = useState<ProspectRecord[]>([]);
+  const [statsTotal, setStatsTotal] = useState(0);
   const [selectedMarkets, setSelectedMarkets] = useState<MarketKey[]>([]);
   const [selectedSubtypes, setSelectedSubtypes] = useState<string[]>([]);
   const [selectedSubtypeAllMarkets, setSelectedSubtypeAllMarkets] = useState<MarketKey[]>([]);
@@ -436,13 +421,17 @@ export default function ProspectsPage() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/admin/studios/prospects/provider-diagnostics", { cache: "no-store" })
+    fetch("/api/admin/studios/prospects/list?vertical=salon&limit=500", { cache: "no-store" })
       .then(async (r) => {
-        const data = (await r.json()) as { ok: boolean; summary?: ProviderDetectionSummary };
-        if (data.ok && data.summary) setProviderDiagSummary(data.summary);
+        const data = (await r.json()) as ProspectListResponse;
+        if (data.ok) {
+          setStatsProspects(data.prospects ?? []);
+          setStatsTotal(data.total ?? data.prospects?.length ?? 0);
+        }
       })
       .catch(() => {
-        // Summary is optional; page-level counts fall back to loaded rows.
+        setStatsProspects([]);
+        setStatsTotal(0);
       });
   }, [refreshNonce]);
 
@@ -563,14 +552,6 @@ export default function ProspectsPage() {
     return counts;
   }, [prospects]);
 
-  const detectionByProspectId = useMemo(() => {
-    const map = new Map<string, ReturnType<typeof analyzeProspectProviderDetection>>();
-    for (const p of prospects) {
-      map.set(p.prospectId, analyzeProspectProviderDetection(p));
-    }
-    return map;
-  }, [prospects]);
-
   const visible = useMemo(() => {
     let rows = prospects.filter((p) => {
       const marketKey = marketForCategory(p.businessCategory).key;
@@ -584,10 +565,6 @@ export default function ProspectsPage() {
 
       if (relationshipFilterActive && !selectedRelationshipTypes.includes((p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType)) return false;
 
-      if (fProviderDetection !== "all") {
-        const diag = detectionByProspectId.get(p.prospectId);
-        if (!diag || !matchesProviderDetectionFilter(diag, fProviderDetection)) return false;
-      }
       return true;
     });
 
@@ -613,7 +590,7 @@ export default function ProspectsPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return rows;
-  }, [prospects, selectedMarketCategories, selectedMarkets, selectedSubtypeAllMarkets, selectedSubtypesByMarket, selectedRelationshipTypes, fProviderDetection, detectionByProspectId, sortKey, sortDir]);
+  }, [prospects, selectedMarketCategories, selectedMarkets, selectedSubtypeAllMarkets, selectedSubtypesByMarket, selectedRelationshipTypes, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
@@ -629,7 +606,6 @@ export default function ProspectsPage() {
     setFHashtag("all"); setFPlatform("all"); setFMinConf(0);
     setFBusinessCategory("all"); setFOpportunityType("all"); setFMinOpp(0); setFPlatformSignal("all"); setFOfferFitTag("all");
     setFBookingProvider("all"); setFBookingSource("all"); setFImportCandidate(false); setFConfidenceBucket("all");
-    setFProviderDetection("all");
   }
   function clearWorkflowSelection() {
     setSelectedMarkets([]);
@@ -713,14 +689,28 @@ export default function ProspectsPage() {
     const subtypeLabels = selectedSubtypes.map(friendlySubtypeLabel);
     return [...allLabels, ...subtypeLabels].join(", ");
   }, [selectedSubtypes, selectedSubtypeAllMarkets]);
-  const hasFilters = fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" || fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" || fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all" || fBookingProvider !== "all" || fProviderDetection !== "all";
-  const pageDetectionSummary = useMemo(() => summarizeProviderDetection(prospects), [prospects]);
-  const detectionStats: ProviderDetectionSummary = providerDiagSummary ?? {
-    ...pageDetectionSummary,
-    total: totalCount > 0 ? totalCount : pageDetectionSummary.total,
-  };
-  const hasWorkflowSelection = selectedMarkets.length > 0 || selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0 || !relationshipAllSelected || selectedRelationshipTypes.length > 0;
+  const hasFilters =
+    fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" ||
+    fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" ||
+    fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all" || fBookingProvider !== "all" ||
+    fBookingSource !== "all" || fImportCandidate || fConfidenceBucket !== "all";
+  const hasWorkflowSelection =
+    selectedMarkets.length > 0 || selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0 ||
+    !relationshipAllSelected || selectedRelationshipTypes.length > 0;
   const canCreateCampaign = visible.length > 0 && (hasWorkflowSelection || hasFilters);
+
+  const operatorMetrics = useMemo(() => {
+    const pool = statsProspects.length > 0 ? statsProspects : prospects;
+    const total = statsTotal || totalCount;
+    return {
+      total,
+      relationshipOperators: pool.filter((p) => (p.relationshipOpportunityType ?? "low_fit_unknown") !== "low_fit_unknown").length,
+      importCandidates: pool.filter((p) => isSalonImportCandidate(p)).length,
+      campaignReady: pool.filter((p) => (p.overallOpportunityScore ?? 0) >= 60 && p.validationStatus !== "archive").length,
+      needsReview: pool.filter((p) => (p.validationStatus ?? "new") === "needs_review").length,
+      enriched: pool.filter((p) => p.bookingProvider && p.bookingProvider !== "unknown").length,
+    };
+  }, [statsProspects, statsTotal, totalCount, prospects]);
 
   const thS: React.CSSProperties = {
     textAlign: "left", padding: "8px 10px", fontSize: 10, fontWeight: 700,
@@ -736,18 +726,11 @@ export default function ProspectsPage() {
     borderRadius: 6, color: "#57534e", background: "#fff",
   };
 
-  // Stats
-  const total       = totalCount;
-  const needsReview = prospects.filter((p) => (p.validationStatus ?? "new") === "needs_review").length;
-  const distinctMarkets = unique(prospects.map((p) => marketForCategory(p.businessCategory).key)).length;
-  const distinctSubtypes = unique(prospects.map((p) => p.businessSubcategory).filter(Boolean) as string[]).length;
-  const relationshipOperators = prospects.filter((p) => (p.relationshipOpportunityType ?? "low_fit_unknown") !== "low_fit_unknown").length;
-  const campaignReady = visible.filter((p) => (p.overallOpportunityScore ?? 0) >= 60 && p.validationStatus !== "archive").length;
-  const highOpportunity = visible.filter((p) => (p.overallOpportunityScore ?? 0) >= 75).length;
+  const total = totalCount;
+  const selectedOfferFitTags = unique(visible.flatMap((p) => p.offerFitTags ?? [])).slice(0, 8);
   const avgOpportunity = visible.length
     ? Math.round(visible.reduce((sum, p) => sum + (p.overallOpportunityScore ?? 0), 0) / visible.length)
     : 0;
-  const selectedOfferFitTags = unique(visible.flatMap((p) => p.offerFitTags ?? [])).slice(0, 8);
   const suggestedCampaignName = selectedMarketLabels.length > 0
     ? `${selectedMarketLabels.join(" + ")}${selectedRelationshipTypes.length === 1 ? ` - ${RELATIONSHIP_OPPORTUNITY_LABELS[selectedRelationshipTypes[0]]}` : ""}`
     : visible.some((p) => p.businessCategory === "education_tutor" || p.businessCategory === "homeschool_microschool")
@@ -766,90 +749,32 @@ export default function ProspectsPage() {
 
       <SalonStorageBadge />
 
-      <SalonResolverStatusCard
-        title="Provider diagnostics"
-        providerFound={detectionStats.providerDetected}
-        ggDirect={detectionStats.ggDirect}
-        ggLinkInBio={detectionStats.ggLinkInBio}
-        ggHandleMatch={detectionStats.ggHandleMatch}
-        ggDisplayMatch={detectionStats.ggDisplayMatch}
-        importCandidates={detectionStats.importCandidates}
-        unknown={detectionStats.unknownNoProvider}
+      <SalonOperatorSummary
+        pills={[
+          { label: "Prospects", value: operatorMetrics.total, color: "#1c1917" },
+          { label: "Relationship Operators", value: operatorMetrics.relationshipOperators, color: "#0369a1" },
+          { label: "Import Candidates", value: operatorMetrics.importCandidates, color: "#15803d" },
+          { label: "Campaign Ready", value: operatorMetrics.campaignReady, color: "#9d174d" },
+          { label: "Needs Review", value: operatorMetrics.needsReview, color: "#b45309" },
+        ]}
       />
 
-      {/* Workflow */}
-      {!loading && (
-        <div style={{ margin: "16px 0", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, padding: 14 }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 850, color: "#1c1917" }}>Market Intelligence</div>
-              <div style={{ fontSize: 12, color: "#78716c", marginTop: 2 }}>
-                Find the market, isolate relationship operators, then build a campaign around the right offer.
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
-              {["Find Market", "Find Relationship Operators", "Create Campaign"].map((step, i) => (
-                <div key={step} style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "6px 9px", borderRadius: 999,
-                  background: i === 0 ? "#fdf2f8" : "#f5f5f4", color: i === 0 ? "#9d174d" : "#57534e",
-                  fontSize: 11, fontWeight: 800,
-                }}>
-                  <span style={{ width: 18, height: 18, display: "grid", placeItems: "center", borderRadius: 999, background: "#fff", border: "1px solid #e7e5e4" }}>{i + 1}</span>
-                  {step}
-                </div>
-              ))}
-            </div>
-          </div>
+      <SalonPipelineStatus
+        steps={[
+          { label: "Source", value: operatorMetrics.total },
+          { label: "Resolved", value: operatorMetrics.enriched },
+          { label: "Qualified", value: operatorMetrics.relationshipOperators },
+          { label: "Import Candidates", value: operatorMetrics.importCandidates },
+          { label: "Campaign Ready", value: operatorMetrics.campaignReady },
+        ]}
+      />
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: 8, marginBottom: 14 }}>
-            {[
-              { label: "Markets", val: distinctMarkets, color: "#1c1917" },
-              { label: "Subtypes", val: distinctSubtypes, color: "#57534e" },
-              { label: "Relationship Operators", val: relationshipOperators, color: "#0369a1" },
-              { label: "Campaign Ready", val: campaignReady, color: "#15803d" },
-              { label: "High Opportunity", val: highOpportunity, color: "#9d174d" },
-              { label: "Needs Review", val: needsReview, color: "#b45309" },
-            ].map(({ label, val, color }) => (
-              <div key={label} style={{ background: "#fafaf9", border: "1px solid #ede9e4", borderRadius: 10, padding: "9px 10px" }}>
-                <div style={{ fontSize: 20, fontWeight: 850, color }}>{val}</div>
-                <div style={{ fontSize: 9, color: "#a8a29e", fontWeight: 800, letterSpacing: "0.04em" }}>{label.toUpperCase()}</div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 850, color: "#1c1917", marginBottom: 8 }}>
-              Booking provider detection
-              {!providerDiagSummary && (
-                <span style={{ fontWeight: 500, color: "#a8a29e", marginLeft: 6 }}>
-                  (loaded page; fetching full-store summary…)
-                </span>
-              )}
-            </div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 11, color: "#57534e" }}>
-              {[
-                ["Total prospects", detectionStats.total],
-                ["With any URL", detectionStats.withAnyUrl],
-                ["Link-in-bio URL", detectionStats.withLinkInBioUrl],
-                ["Link-in-bio fetched", detectionStats.linkInBioPagesFetched],
-                ["Provider detected", detectionStats.providerDetected],
-                ["GlossGenius", detectionStats.glossgenius],
-                ["Vagaro", detectionStats.vagaro],
-                ["Square", detectionStats.square],
-                ["Unknown / none", detectionStats.unknownNoProvider],
-              ].map(([label, val]) => (
-                <span
-                  key={label}
-                  style={{ background: "#f5f5f4", border: "1px solid #e7e5e4", borderRadius: 8, padding: "6px 10px" }}
-                >
-                  <strong>{label}:</strong> {val}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 11, fontWeight: 850, color: "#1c1917", marginBottom: 7 }}>Business Type / Market</div>
+      <div style={{ marginBottom: 14, background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "12px 14px" }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 10 }}>
+          FILTERS
+        </div>
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 850, color: "#1c1917", marginBottom: 7 }}>Business Type / Market</div>
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
               {MARKET_DEFINITIONS.map((market) => {
                 const selected = selectedMarkets.includes(market.key);
@@ -941,33 +866,107 @@ export default function ProspectsPage() {
                 )}
               </div>
             </div>
-          </div>
-
-          <div style={{
-            marginTop: 14, padding: "10px 12px", border: "1px solid #e7e5e4", borderRadius: 10,
-            background: "#1c1917", color: "#fff", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
-          }}>
-            <div style={{ fontSize: 11, color: "#d6d3d1" }}>
-              <strong style={{ color: "#fff" }}>Selected</strong>
-              {" "}Market: {selectedMarketLabels.length ? selectedMarketLabels.join(", ") : "All"}
-              {" "}· Subtypes: {subtypeSummary}
-              {" "}· Relationship: {relationshipSummary}
-            </div>
-            <div style={{ marginLeft: "auto", fontSize: 11, color: "#d6d3d1" }}>
-              Records: <strong style={{ color: "#fff" }}>{visible.length}</strong> · Avg Opportunity: <strong style={{ color: "#fff" }}>{avgOpportunity}</strong>
-            </div>
-            {hasWorkflowSelection && (
-              <button onClick={clearWorkflowSelection} style={{ border: "1px solid #57534e", background: "transparent", color: "#fff", borderRadius: 8, padding: "6px 9px", fontSize: 11, fontWeight: 800, cursor: "pointer" }}>
-                Clear Selection
-              </button>
-            )}
-            <button onClick={() => setCampaignOpen(true)} disabled={!canCreateCampaign}
-              style={{ border: "none", background: !canCreateCampaign ? "#57534e" : "#fce7f3", color: !canCreateCampaign ? "#d6d3d1" : "#9d174d", borderRadius: 8, padding: "6px 10px", fontSize: 11, fontWeight: 850, cursor: !canCreateCampaign ? "not-allowed" : "pointer" }}>
-              Create Campaign
-            </button>
-          </div>
         </div>
-      )}
+
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+          <select value={fBookingProvider} onChange={(e) => setFBookingProvider(e.target.value)} style={selS}>
+            {BOOKING_PROVIDER_FILTERS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <select value={fBookingSource} onChange={(e) => setFBookingSource(e.target.value)} style={selS}>
+            <option value="all">All sources</option>
+            <option value="direct_url">Direct</option>
+            <option value="link_in_bio">Link-in-Bio</option>
+            <option value="handle_derived">Handle Match</option>
+            <option value="display_name_derived">Display Match</option>
+          </select>
+          <select value={fConfidenceBucket} onChange={(e) => setFConfidenceBucket(e.target.value)} style={selS}>
+            <option value="all">Any provider conf.</option>
+            <option value="high">High (≥75)</option>
+            <option value="medium">Medium (50–74)</option>
+            <option value="low">Low (&lt;50)</option>
+          </select>
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, color: "#57534e" }}>
+            <input
+              type="checkbox"
+              checked={fImportCandidate}
+              onChange={(e) => setFImportCandidate(e.target.checked)}
+            />
+            Import candidate
+          </label>
+          <button
+            type="button"
+            onClick={() => setAdvancedOpen((v) => !v)}
+            style={{ ...selS, cursor: "pointer", fontWeight: 700 }}
+          >
+            {advancedOpen ? "Fewer filters" : "More filters"}
+          </button>
+          {(hasFilters || hasWorkflowSelection) && (
+            <button
+              type="button"
+              onClick={() => { clearFilters(); clearWorkflowSelection(); }}
+              style={{ fontSize: 11, color: "#9d174d", background: "none", border: "none", cursor: "pointer", fontWeight: 700 }}
+            >
+              Clear all
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setCampaignOpen(true)}
+            disabled={!canCreateCampaign}
+            style={{
+              marginLeft: "auto",
+              border: "none",
+              background: !canCreateCampaign ? "#e7e5e4" : "#fce7f3",
+              color: !canCreateCampaign ? "#a8a29e" : "#9d174d",
+              borderRadius: 8,
+              padding: "6px 10px",
+              fontSize: 11,
+              fontWeight: 850,
+              cursor: !canCreateCampaign ? "not-allowed" : "pointer",
+            }}
+          >
+            Create campaign
+          </button>
+        </div>
+
+        {advancedOpen && (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10, alignItems: "center" }}>
+            <select value={fValidation} onChange={(e) => setFValidation(e.target.value as ValidationStatus | "all")} style={selS}>
+              <option value="all">All validation</option>
+              {(Object.keys(VALIDATION_STATUS_LABELS) as ValidationStatus[]).map((s) => (
+                <option key={s} value={s}>{VALIDATION_STATUS_LABELS[s]}</option>
+              ))}
+            </select>
+            <select value={fHashtag} onChange={(e) => setFHashtag(e.target.value)} style={selS}>
+              <option value="all">All hashtags</option>
+              {hashtags.map((h) => <option key={h} value={h}>#{h}</option>)}
+            </select>
+            <select value={fPlatform} onChange={(e) => setFPlatform(e.target.value)} style={selS}>
+              <option value="all">All platforms</option>
+              {platforms.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+            <select value={fMinConf} onChange={(e) => setFMinConf(Number(e.target.value))} style={selS}>
+              <option value={0}>Any confidence</option>
+              <option value={30}>≥ 30</option>
+              <option value={50}>≥ 50</option>
+              <option value={65}>≥ 65</option>
+            </select>
+            <select value={fMinOpp} onChange={(e) => setFMinOpp(Number(e.target.value))} style={selS}>
+              <option value={0}>Any opp. score</option>
+              <option value={40}>≥ 40</option>
+              <option value={60}>≥ 60</option>
+              <option value={75}>≥ 75</option>
+            </select>
+          </div>
+        )}
+
+        <div style={{ marginTop: 8, fontSize: 11, color: "#a8a29e" }}>
+          {visible.length} shown · {totalCount} matching
+          {hasWorkflowSelection ? ` · ${subtypeSummary} · ${relationshipSummary}` : ""}
+        </div>
+      </div>
 
       {/* Fetch error */}
       {fetchError && (
@@ -975,111 +974,6 @@ export default function ProspectsPage() {
           ❌ Failed to load prospects: {fetchError}
         </div>
       )}
-
-      {/* Advanced filters */}
-      <div style={{ marginBottom: 14, background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12, padding: "10px 12px" }}>
-        <button onClick={() => setAdvancedOpen((v) => !v)}
-          style={{ width: "100%", border: "none", background: "transparent", padding: 0, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
-          <span style={{ fontSize: 12, fontWeight: 850, color: "#1c1917" }}>Advanced Filters</span>
-          <span style={{ fontSize: 11, color: "#a8a29e" }}>{advancedOpen ? "Hide" : "Show"} · {visible.length} shown · {totalCount} matching</span>
-        </button>
-      {advancedOpen && (
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10, alignItems: "center" }}>
-        <select value={fValidation} onChange={(e) => setFValidation(e.target.value as ValidationStatus | "all")} style={selS}>
-          <option value="all">All validation</option>
-          {(Object.keys(VALIDATION_STATUS_LABELS) as ValidationStatus[]).map((s) => (
-            <option key={s} value={s}>{VALIDATION_STATUS_LABELS[s]}</option>
-          ))}
-        </select>
-        <select value={fEducationType} onChange={(e) => setFEducationType(e.target.value as EducationType | "all")} style={selS}>
-          <option value="all">All ed. types</option>
-          {(Object.keys(EDUCATION_TYPE_LABELS) as EducationType[]).map((s) => (
-            <option key={s} value={s}>{EDUCATION_TYPE_LABELS[s]}</option>
-          ))}
-        </select>
-        <select value={fAudienceType} onChange={(e) => setFAudienceType(e.target.value as AudienceType | "all")} style={selS}>
-          <option value="all">All audiences</option>
-          {(Object.keys(AUDIENCE_TYPE_LABELS) as AudienceType[]).map((s) => (
-            <option key={s} value={s}>{AUDIENCE_TYPE_LABELS[s]}</option>
-          ))}
-        </select>
-        <select value={fHashtag} onChange={(e) => setFHashtag(e.target.value)} style={selS}>
-          <option value="all">All hashtags</option>
-          {hashtags.map((h) => <option key={h} value={h}>#{h}</option>)}
-        </select>
-        <select value={fPlatform} onChange={(e) => setFPlatform(e.target.value)} style={selS}>
-          <option value="all">All platforms</option>
-          {platforms.map((p) => <option key={p} value={p}>{p}</option>)}
-        </select>
-        <select value={fMinConf} onChange={(e) => setFMinConf(Number(e.target.value))} style={selS}>
-          <option value={0}>Any confidence</option>
-          <option value={30}>≥ 30</option>
-          <option value={50}>≥ 50</option>
-          <option value={65}>≥ 65</option>
-        </select>
-        <select value={fBusinessCategory} onChange={(e) => setFBusinessCategory(e.target.value)} style={selS}>
-          <option value="all">All business categories</option>
-          {BUSINESS_CATEGORIES.map((c) => <option key={c} value={c}>{BUSINESS_CATEGORY_LABELS[c]}</option>)}
-        </select>
-        <select value={fOpportunityType} onChange={(e) => setFOpportunityType(e.target.value)} style={selS}>
-          <option value="all">All opportunity types</option>
-          {RELATIONSHIP_OPPORTUNITY_TYPES.map((t) => <option key={t} value={t}>{RELATIONSHIP_OPPORTUNITY_LABELS[t]}</option>)}
-        </select>
-        <select value={fMinOpp} onChange={(e) => setFMinOpp(Number(e.target.value))} style={selS}>
-          <option value={0}>Any opp. score</option>
-          <option value={40}>≥ 40</option>
-          <option value={60}>≥ 60</option>
-          <option value={75}>≥ 75</option>
-        </select>
-        <select value={fPlatformSignal} onChange={(e) => setFPlatformSignal(e.target.value)} style={selS}>
-          <option value="all">All platform signals</option>
-          {platformSignals.map((p) => <option key={p} value={p}>{tagLabel(p)}</option>)}
-        </select>
-        <select value={fBookingProvider} onChange={(e) => setFBookingProvider(e.target.value)} style={selS}>
-          {BOOKING_PROVIDER_FILTERS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-        <select value={fBookingSource} onChange={(e) => setFBookingSource(e.target.value)} style={selS}>
-          <option value="all">All sources</option>
-          <option value="direct_url">Direct</option>
-          <option value="link_in_bio">Link-in-Bio</option>
-          <option value="handle_derived">Handle Match</option>
-          <option value="display_name_derived">Display Match</option>
-        </select>
-        <select value={fConfidenceBucket} onChange={(e) => setFConfidenceBucket(e.target.value)} style={selS}>
-          <option value="all">Any provider conf.</option>
-          <option value="high">High (≥75)</option>
-          <option value="medium">Medium (50–74)</option>
-          <option value="low">Low (&lt;50)</option>
-        </select>
-        <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, color: "#57534e" }}>
-          <input
-            type="checkbox"
-            checked={fImportCandidate}
-            onChange={(e) => setFImportCandidate(e.target.checked)}
-          />
-          Import candidate only
-        </label>
-        <select
-          value={fProviderDetection}
-          onChange={(e) => setFProviderDetection(e.target.value as ProviderDetectionFilterKey)}
-          style={selS}
-        >
-          {PROVIDER_DETECTION_FILTERS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              Provider detection: {opt.label}
-            </option>
-          ))}
-        </select>
-        {hasFilters && (
-          <button onClick={clearFilters} style={{ fontSize: 11, color: "#9d174d", background: "none", border: "none", cursor: "pointer", fontWeight: 700 }}>
-            Clear
-          </button>
-        )}
-      </div>
-      )}
-      </div>
 
       {campaignOpen && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(28, 25, 23, 0.45)", zIndex: 50, display: "grid", placeItems: "center", padding: 20 }}>
@@ -1115,7 +1009,7 @@ export default function ProspectsPage() {
         <div style={{ textAlign: "center", padding: "48px 0", color: "#a8a29e" }}>Loading…</div>
       ) : visible.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 0", color: "#a8a29e", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, fontSize: 13 }}>
-          {total === 0 ? "No prospects yet — run Hashtag Harvest to start discovering education creators." : "No prospects match the current filters."}
+          {total === 0 ? "No prospects yet — run Hashtag Harvest to start building your salon pipeline." : "No prospects match the current filters."}
         </div>
       ) : (
         <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, overflow: "hidden" }}>
@@ -1183,16 +1077,11 @@ export default function ProspectsPage() {
                           </span>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
-                      <td
-                        style={{ ...tdS, maxWidth: 220, position: "relative" }}
-                        onMouseEnter={() => setHoverProspectId(p.prospectId)}
-                        onMouseLeave={() => setHoverProspectId((id) => (id === p.prospectId ? null : id))}
-                      >
+                      <td style={{ ...tdS, maxWidth: 220 }}>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
                           <BookingProviderPill
                             provider={p.bookingProvider}
                             label={
-                              detectionByProspectId.get(p.prospectId)?.providerLabel ??
                               p.bookingProviderLabel ??
                               (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)
                             }
@@ -1201,33 +1090,6 @@ export default function ProspectsPage() {
                           />
                           <BookingProviderSourceChip prospect={p} />
                         </div>
-                        {detectionByProspectId.get(p.prospectId)?.outcome !== "detected" ? (
-                          <div style={{ fontSize: 9, color: "#b45309", marginTop: 3, fontWeight: 700 }}>
-                            {detectionByProspectId.get(p.prospectId)?.reasonLabel}
-                          </div>
-                        ) : (
-                          <div style={{ fontSize: 9, color: "#78716c", marginTop: 3, fontWeight: 600 }}>
-                            {detectionByProspectId.get(p.prospectId)?.glossGeniusStatusLabel}
-                          </div>
-                        )}
-                        {hoverProspectId === p.prospectId && (
-                          <div
-                            style={{
-                              position: "absolute",
-                              zIndex: 20,
-                              left: 0,
-                              top: "100%",
-                              marginTop: 4,
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <ProviderDetectionDetail
-                              prospect={p}
-                              variant="compact"
-                              diagnostics={detectionByProspectId.get(p.prospectId)}
-                            />
-                          </div>
-                        )}
                       </td>
                       <td style={{ ...tdS, maxWidth: 160 }}>
                         {p.bestMatch ? (
