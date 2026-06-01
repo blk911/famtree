@@ -7,6 +7,7 @@ import type { HarvestedCreatorSeed } from "@/lib/studios/creator-lab/hashtag-har
 import type { UpsertInput } from "./store";
 import type { MatchedUrl, ProspectConfidenceBreakdown } from "./types";
 import { buildProspectSourcePath } from "./source-path";
+import { detectBookingFromProspectTrail } from "@/lib/intelligence/salon/booking-from-trail";
 
 // ─── Harvest context ──────────────────────────────────────────────────────────
 
@@ -106,7 +107,16 @@ export function resultToProspect(
     (result.seed.displayName !== result.seed.handle ? result.seed.displayName : null) ??
     result.seed.handle;
 
+  const bookingFields = detectBookingFromProspectTrail({
+    bestMatchUrl: best?.url,
+    allMatchedUrls,
+    platforms: Array.from(new Set(profiles.map((p) => p.platform))),
+    evidence,
+    linkTrailUrls: result.linkTrailUrls,
+  });
+
   return {
+    ...bookingFields,
     source: {
       sourceType: "ig-stub-run",
       batchId,
@@ -167,7 +177,13 @@ export function seedToProspect(
     hashtag:    seed.sourceHashtag,
   });
 
+  const bookingFields = detectBookingFromProspectTrail({
+    evidence: seed.evidence,
+    linkTrailUrls: [],
+  });
+
   return {
+    ...bookingFields,
     source: {
       sourceType: "hashtag_harvest",
       batchId:    ctx.batchId,

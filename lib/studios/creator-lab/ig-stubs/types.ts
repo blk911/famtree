@@ -66,6 +66,8 @@ export interface StubResolutionResult {
   candidateUrlsTested?: string[];
   /** Candidates that were fetched but rejected (not_found, unverified, low_score, etc.) */
   rejectedCandidates?: RejectedCandidate[];
+  /** Booking URLs extracted from link-in-bio page HTML (one-hop, existing fetch only). */
+  linkTrailUrls?: string[];
 }
 
 // ─── API shapes ───────────────────────────────────────────────────────────────

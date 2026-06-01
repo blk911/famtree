@@ -72,6 +72,7 @@ export function generateCandidateUrls(handle: string): CandidateUrl[] {
     { platform: "linktree",   url: `https://linktr.ee/${h}`,    isGenerated: true },
     { platform: "beacons",    url: `https://beacons.ai/${h}`,   isGenerated: true },
     { platform: "stan",       url: `https://stan.store/${h}`,   isGenerated: true },
+    { platform: "msha",       url: `https://msha.ke/${h}`,      isGenerated: true },
 
     // Square Online
     { platform: "square",     url: `https://${h}.square.site`,  isGenerated: true },

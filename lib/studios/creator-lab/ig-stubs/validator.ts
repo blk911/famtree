@@ -4,6 +4,9 @@
 import type { IgSeed, CandidateFetch, ResolvedProfile, RejectedCandidate } from "./types";
 import { APPOINTMENT_PLATFORMS } from "./url-patterns";
 import type { CandidateUrl } from "./url-patterns";
+import { detectSalonBookingProvider } from "@/lib/intelligence/salon/provider-detector";
+
+const LINK_IN_BIO_PLATFORMS = new Set(["linktree", "beacons", "stan", "msha"]);
 
 const FETCH_TIMEOUT_MS = 8_000;
 const USER_AGENT =
@@ -338,6 +341,8 @@ export interface ResolveTrackedResult {
   rejectedCandidates: RejectedCandidate[];
   /** All candidate URLs that were submitted for testing */
   candidateUrlsTested: string[];
+  /** Booking provider URLs found inside fetched link-in-bio pages (no extra crawl). */
+  linkTrailUrls: string[];
 }
 
 export async function fastResolveTracked(
@@ -351,6 +356,7 @@ export async function fastResolveTracked(
   const confirmedProfiles: ResolvedProfile[] = [];
   const rejectedCandidates: RejectedCandidate[] = [];
   const candidateUrlsTested = candidates.map((c) => c.url);
+  const linkTrailUrls: string[] = [];
 
   for (let i = 0; i < fetchResults.length; i++) {
     const result = fetchResults[i];
@@ -364,6 +370,15 @@ export async function fastResolveTracked(
 
     const fetched = result.value;
     const scored = scoreCandidate(seed, fetched, isGenerated);
+
+    if (fetched.ok && LINK_IN_BIO_PLATFORMS.has(candidate.platform)) {
+      for (const link of fetched.allLinks) {
+        const hit = detectSalonBookingProvider(link, { fromLinkInBio: true });
+        if (hit?.bookingUrl && !linkTrailUrls.includes(hit.bookingUrl)) {
+          linkTrailUrls.push(hit.bookingUrl);
+        }
+      }
+    }
 
     // Generated appointment-platform URLs require additional identity verification.
     // Without it we would save URLs we constructed ourselves as confirmed matches.
@@ -386,6 +401,7 @@ export async function fastResolveTracked(
     confirmedProfiles: confirmedProfiles.sort((a, b) => b.confidenceScore - a.confidenceScore),
     rejectedCandidates,
     candidateUrlsTested,
+    linkTrailUrls,
   };
 }
 

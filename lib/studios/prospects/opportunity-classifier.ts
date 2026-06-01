@@ -3,6 +3,7 @@
 
 import { classifyPlatformSignals, type PlatformSignal } from "./platform-signals";
 import type { BusinessCategory, RelationshipOpportunityType } from "./opportunity-taxonomy";
+import { isBackOfficeImportCandidate } from "@/lib/intelligence/salon/provider-detector";
 
 export interface RelationshipOpportunityInput {
   handle?: string;
@@ -20,6 +21,8 @@ export interface RelationshipOpportunityInput {
   subcategory?: string;
   educationType?: string | null;
   audienceType?: string | null;
+  bookingProvider?: string;
+  bookingProviderConfidence?: number;
 }
 
 export interface RelationshipOpportunityClassification {
@@ -175,11 +178,27 @@ export function classifyRelationshipOpportunity(input: RelationshipOpportunityIn
   if (platformSignals.includes("commerce_platform")) offerFitTags.add("audience_to_customer");
   if (communityScore >= 60) offerFitTags.add("community_activation");
 
+  let bookingBoost = 0;
+  const notes = [...category.notes];
+  const provider = input.bookingProvider;
+  if (provider && provider !== "unknown") {
+    bookingBoost += 15;
+    notes.push("backoffice_provider_detected");
+    if (isBackOfficeImportCandidate(provider)) {
+      bookingBoost += 20;
+      offerFitTags.add("backoffice_import_candidate");
+      notes.push("Recommended play: Hidden Money Report — import booking/client history");
+    } else {
+      notes.push("Recommended play: Booking stack discovery");
+    }
+  }
+
   const overallOpportunityScore = clamp(
     relationshipScore * 0.35 +
     operationalDataScore * 0.30 +
     audienceScore * 0.20 +
-    communityScore * 0.15
+    communityScore * 0.15 +
+    bookingBoost
   );
 
   return {
@@ -194,6 +213,6 @@ export function classifyRelationshipOpportunity(input: RelationshipOpportunityIn
     offerFitTags: Array.from(offerFitTags),
     platformSignals,
     categoryConfidence: category.confidence,
-    classificationNotes: category.notes,
+    classificationNotes: notes,
   };
 }

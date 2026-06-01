@@ -72,6 +72,7 @@ export async function runResolverForSeeds(
       let profiles: ResolvedProfile[] = [];
       let candidateUrlsTested: string[] = candidates.map((c) => c.url);
       let rejectedCandidates: RejectedCandidate[] = [];
+      let linkTrailUrls: string[] = [];
 
       try {
         if (deepResolve) {
@@ -83,6 +84,7 @@ export async function runResolverForSeeds(
           profiles = tracked.confirmedProfiles;
           candidateUrlsTested = tracked.candidateUrlsTested;
           rejectedCandidates = tracked.rejectedCandidates;
+          linkTrailUrls = tracked.linkTrailUrls;
         }
       } catch {
         profiles = [];
@@ -114,6 +116,7 @@ export async function runResolverForSeeds(
         status,
         candidateUrlsTested,
         rejectedCandidates,
+        linkTrailUrls,
       };
 
       let upsertInput: UpsertInput;

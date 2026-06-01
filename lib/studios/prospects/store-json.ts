@@ -8,6 +8,7 @@ import path from "path";
 import type { ProspectRecord, ProspectStatus, MatchedUrl, ProspectEvidence, ProspectBestMatch } from "./types";
 import type { ValidationStatus } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import { classifyRelationshipOpportunity } from "./opportunity-classifier";
+import { detectBookingFromProspectTrail, enrichProspectBookingIfMissing } from "@/lib/intelligence/salon/booking-from-trail";
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp/studios-prospects"
@@ -71,26 +72,43 @@ type ClassificationFields = Pick<ProspectRecord,
   "classificationNotes" | "classificationLocked"
 >;
 
-function buildClassification(record: Partial<ProspectRecord> & UpsertInput): ClassificationFields {
-  if (record.classificationLocked) return {};
-  return classifyRelationshipOpportunity({
-    handle: record.identity?.handle,
-    displayName: record.identity?.name,
-    description: [
-      record.identity?.categoryGuess,
-      record.sourceTopic,
-      ...(record.services ?? []),
-    ].filter(Boolean).join(" "),
-    sourceHashtags: record.sourceHashtags,
-    sourcePath: record.sourcePath,
-    bestUrl: record.bestMatch?.url,
-    allMatchedUrls: record.allMatchedUrls?.map((url) => url.url),
+export function applyBookingDetection(record: Partial<ProspectRecord> & UpsertInput): Partial<ProspectRecord> & UpsertInput {
+  const detected = detectBookingFromProspectTrail({
+    bestMatchUrl: record.bestMatch?.url,
+    allMatchedUrls: record.allMatchedUrls,
     platforms: record.platforms,
     evidence: record.evidence,
-    vertical: record.vertical,
-    category: record.identity?.categoryGuess ?? undefined,
-    educationType: record.educationType,
-    audienceType: record.audienceType,
+  });
+  const existingScore = record.bookingProviderConfidence ?? 0;
+  const newScore = detected.bookingProviderConfidence ?? 0;
+  if (!detected.bookingProvider) return record;
+  if (existingScore > newScore && record.bookingProvider) return record;
+  return { ...record, ...detected };
+}
+
+function buildClassification(record: Partial<ProspectRecord> & UpsertInput): ClassificationFields {
+  if (record.classificationLocked) return {};
+  const withBooking = applyBookingDetection(record);
+  return classifyRelationshipOpportunity({
+    handle: withBooking.identity?.handle,
+    displayName: withBooking.identity?.name,
+    description: [
+      withBooking.identity?.categoryGuess,
+      withBooking.sourceTopic,
+      ...(withBooking.services ?? []),
+    ].filter(Boolean).join(" "),
+    sourceHashtags: withBooking.sourceHashtags,
+    sourcePath: withBooking.sourcePath,
+    bestUrl: withBooking.bestMatch?.url,
+    allMatchedUrls: withBooking.allMatchedUrls?.map((url) => url.url),
+    platforms: withBooking.platforms,
+    evidence: withBooking.evidence,
+    vertical: withBooking.vertical,
+    category: withBooking.identity?.categoryGuess ?? undefined,
+    educationType: withBooking.educationType,
+    audienceType: withBooking.audienceType,
+    bookingProvider: withBooking.bookingProvider,
+    bookingProviderConfidence: withBooking.bookingProviderConfidence,
   });
 }
 
@@ -205,6 +223,7 @@ export interface ProspectFilter {
   minOpportunityScore?: number;
   platformSignal?: string;
   offerFitTag?: string;
+  bookingProvider?: string;
   sourceType?: string;     // e.g. "education_directory_import"
   sourcePlatform?: string; // e.g. "directory_import"
   sourceTool?: string;     // e.g. "education_directory_import"
@@ -216,18 +235,19 @@ export interface ProspectFilter {
 export async function upsertProspectJson(incoming: UpsertInput): Promise<ProspectRecord> {
   const records = await loadAllProspects();
   const now = new Date().toISOString();
+  const incomingWithBooking = applyBookingDetection(incoming);
 
-  const incomingKey = normalizeHandle(incoming.identity.handle);
+  const incomingKey = normalizeHandle(incomingWithBooking.identity.handle);
   const incomingUrls = Array.from(new Set([
-    incoming.bestMatch?.url,
-    ...(incoming.allMatchedUrls ?? []).map((u) => u.url),
+    incomingWithBooking.bestMatch?.url,
+    ...(incomingWithBooking.allMatchedUrls ?? []).map((u) => u.url),
   ].filter((url): url is string => !!url)));
   const incomingUrl = incomingUrls[0] ?? null;
   const incomingFingerprint = generateIdentityFingerprint({
-    handle: incoming.identity.handle,
-    name: incoming.identity.name,
+    handle: incomingWithBooking.identity.handle,
+    name: incomingWithBooking.identity.name,
     bestMatchUrl: incomingUrl,
-    sourcePlatform: incoming.sourcePlatform,
+    sourcePlatform: incomingWithBooking.sourcePlatform,
   });
 
   const existingIdx = records.findIndex((r) => {
@@ -253,67 +273,83 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
     const effectiveValidationStatus: ValidationStatus =
       isHumanSetValidationStatus(existing.validationStatus)
         ? existing.validationStatus
-        : (incoming.suggestedValidationStatus ?? existing.validationStatus ?? "new");
+        : (incomingWithBooking.suggestedValidationStatus ?? existing.validationStatus ?? "new");
 
-    const mergedHashtags = mergeStrings(existing.sourceHashtags ?? [], incoming.sourceHashtags ?? []);
+    const mergedHashtags = mergeStrings(existing.sourceHashtags ?? [], incomingWithBooking.sourceHashtags ?? []);
 
-    const merged: ProspectRecord = {
+    const mergedBase: ProspectRecord = {
       ...existing,
-      ...mergeClassification(existing, incoming),
+      ...mergeClassification(existing, incomingWithBooking),
       identityFingerprint: existing.identityFingerprint ?? incomingFingerprint,
       updatedAt: now,
       identity: {
-        name: incoming.identity.name || existing.identity.name,
+        name: incomingWithBooking.identity.name || existing.identity.name,
         handle: existing.identity.handle,
-        categoryGuess: incoming.identity.categoryGuess ?? existing.identity.categoryGuess,
-        locationGuess: incoming.identity.locationGuess ?? existing.identity.locationGuess,
+        categoryGuess: incomingWithBooking.identity.categoryGuess ?? existing.identity.categoryGuess,
+        locationGuess: incomingWithBooking.identity.locationGuess ?? existing.identity.locationGuess,
       },
-      educationType: (incoming.educationType && incoming.educationType !== "unknown")
-        ? incoming.educationType
+      educationType: (incomingWithBooking.educationType && incomingWithBooking.educationType !== "unknown")
+        ? incomingWithBooking.educationType
         : existing.educationType ?? null,
-      audienceType: (incoming.audienceType && incoming.audienceType !== "unknown")
-        ? incoming.audienceType
+      audienceType: (incomingWithBooking.audienceType && incomingWithBooking.audienceType !== "unknown")
+        ? incomingWithBooking.audienceType
         : existing.audienceType ?? null,
-      sourceTopic: incoming.sourceTopic ?? existing.sourceTopic ?? null,
-      vertical:       incoming.vertical       || existing.vertical       || "education",
-      sourcePlatform: incoming.sourcePlatform || existing.sourcePlatform || "instagram",
-      sourceTool:     incoming.sourceTool     || existing.sourceTool     || "hashtag_harvest",
-      sourceHashtag:  existing.sourceHashtag  ?? incoming.sourceHashtag  ?? null,
+      sourceTopic: incomingWithBooking.sourceTopic ?? existing.sourceTopic ?? null,
+      vertical:       incomingWithBooking.vertical       || existing.vertical       || "education",
+      sourcePlatform: incomingWithBooking.sourcePlatform || existing.sourcePlatform || "instagram",
+      sourceTool:     incomingWithBooking.sourceTool     || existing.sourceTool     || "hashtag_harvest",
+      sourceHashtag:  existing.sourceHashtag  ?? incomingWithBooking.sourceHashtag  ?? null,
       sourceHashtags: mergedHashtags,
-      sourcePath:     existing.sourcePath     || incoming.sourcePath     || "",
-      runId:          incoming.runId          ?? existing.runId          ?? null,
-      harvestDate:    existing.harvestDate    ?? incoming.harvestDate    ?? null,
+      sourcePath:     existing.sourcePath     || incomingWithBooking.sourcePath     || "",
+      runId:          incomingWithBooking.runId          ?? existing.runId          ?? null,
+      harvestDate:    existing.harvestDate    ?? incomingWithBooking.harvestDate    ?? null,
       bestMatch:
         !existing.bestMatch ||
-        (incoming.bestMatch && incoming.bestMatch.confidence > existing.bestMatch.confidence)
-          ? incoming.bestMatch
+        (incomingWithBooking.bestMatch && incomingWithBooking.bestMatch.confidence > existing.bestMatch.confidence)
+          ? incomingWithBooking.bestMatch
           : existing.bestMatch,
-      platforms: mergeStrings(existing.platforms ?? [], incoming.platforms ?? []),
-      services:  mergeStrings(existing.services, incoming.services),
-      allMatchedUrls: mergeMatchedUrls(existing.allMatchedUrls, incoming.allMatchedUrls),
-      evidence:  mergeEvidence(existing.evidence, incoming.evidence, 20),
-      candidateUrlsTested: mergeStrings(existing.candidateUrlsTested ?? [], incoming.candidateUrlsTested ?? [], 200),
-      rejectedCandidateUrls: mergeRejectedUrls(existing.rejectedCandidateUrls ?? [], incoming.rejectedCandidateUrls ?? []),
+      platforms: mergeStrings(existing.platforms ?? [], incomingWithBooking.platforms ?? []),
+      services:  mergeStrings(existing.services, incomingWithBooking.services),
+      allMatchedUrls: mergeMatchedUrls(existing.allMatchedUrls, incomingWithBooking.allMatchedUrls),
+      evidence:  mergeEvidence(existing.evidence, incomingWithBooking.evidence, 20),
+      candidateUrlsTested: mergeStrings(existing.candidateUrlsTested ?? [], incomingWithBooking.candidateUrlsTested ?? [], 200),
+      rejectedCandidateUrls: mergeRejectedUrls(existing.rejectedCandidateUrls ?? [], incomingWithBooking.rejectedCandidateUrls ?? []),
       confidence:
-        incoming.confidence.overall > existing.confidence.overall
-          ? incoming.confidence
+        incomingWithBooking.confidence.overall > existing.confidence.overall
+          ? incomingWithBooking.confidence
           : existing.confidence,
+      bookingProvider: incomingWithBooking.bookingProvider ?? existing.bookingProvider,
+      bookingProviderLabel: incomingWithBooking.bookingProviderLabel ?? existing.bookingProviderLabel,
+      bookingUrl: incomingWithBooking.bookingUrl ?? existing.bookingUrl,
+      bookingProviderConfidence: Math.max(
+        incomingWithBooking.bookingProviderConfidence ?? 0,
+        existing.bookingProviderConfidence ?? 0,
+      ) || undefined,
+      bookingProviderEvidence: mergeStrings(
+        existing.bookingProviderEvidence ?? [],
+        incomingWithBooking.bookingProviderEvidence ?? [],
+        12,
+      ),
       // ALWAYS preserve human-set fields
       validationStatus: effectiveValidationStatus,
       archiveReason: existing.archiveReason ?? null,
       status: existing.status,
       notes:  existing.notes,
     };
+    const merged = applyBookingDetection({
+      ...mergedBase,
+      ...buildClassification(mergedBase),
+    }) as ProspectRecord;
 
     records[existingIdx] = merged;
     await writeAllProspects(records);
     return merged;
   }
 
-  const newRecord: ProspectRecord = {
-    ...incoming,
-    ...buildClassification(incoming),
-    prospectId: generateProspectId(incoming.identity.handle),
+  const newRecord: ProspectRecord = applyBookingDetection({
+    ...incomingWithBooking,
+    ...buildClassification(incomingWithBooking),
+    prospectId: generateProspectId(incomingWithBooking.identity.handle),
     identityFingerprint: incomingFingerprint,
     createdAt: now,
     updatedAt: now,
@@ -333,7 +369,7 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
     archiveReason: null,
     status: "new",
     notes:  "",
-  };
+  }) as ProspectRecord;
 
   records.push(newRecord);
   await writeAllProspects(records);
@@ -388,7 +424,7 @@ export async function listProspectsJson(): Promise<ProspectRecord[]> {
 // ─── Filter ───────────────────────────────────────────────────────────────────
 
 export async function filterProspectsJson(filter: ProspectFilter): Promise<ProspectRecord[]> {
-  const records = await loadAllProspects();
+  const records = (await loadAllProspects()).map((p) => enrichProspectBookingIfMissing(p));
 
   const filtered = records.filter((p) => {
     if (filter.vertical        && p.vertical        !== filter.vertical)       return false;
@@ -411,6 +447,14 @@ export async function filterProspectsJson(filter: ProspectFilter): Promise<Prosp
     if (filter.minOpportunityScore !== undefined && (p.overallOpportunityScore ?? 0) < filter.minOpportunityScore) return false;
     if (filter.platformSignal && !(p.platformSignals ?? []).includes(filter.platformSignal)) return false;
     if (filter.offerFitTag && !(p.offerFitTags ?? []).includes(filter.offerFitTag)) return false;
+    if (filter.bookingProvider) {
+      const bp = p.bookingProvider ?? "unknown";
+      if (filter.bookingProvider === "unknown") {
+        if (bp !== "unknown" && bp) return false;
+      } else if (bp !== filter.bookingProvider) {
+        return false;
+      }
+    }
     return true;
   });
 

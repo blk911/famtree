@@ -27,6 +27,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { filterProspects, getStoreBackendInfo } from "@/lib/studios/prospects/store";
 import type { ProspectListResponse, ProspectErrorResponse } from "@/lib/studios/prospects/types";
+import { enrichProspectBookingIfMissing } from "@/lib/intelligence/salon/booking-from-trail";
 
 function clampInt(raw: string | null, fallback: number, min: number, max: number): number {
   if (raw === null) return fallback;
@@ -73,12 +74,14 @@ export async function GET(req: NextRequest) {
       minOpportunityScore: minOpportunityScore !== null ? Number(minOpportunityScore) : undefined,
       platformSignal:  sp.get("platformSignal")    ?? undefined,
       offerFitTag:     sp.get("offerFitTag")       ?? undefined,
+      bookingProvider: sp.get("bookingProvider")  ?? undefined,
       sourceType:      sp.get("sourceType")        ?? undefined,
       sourcePlatform:  sp.get("sourcePlatform")    ?? undefined,
       sourceTool:      sp.get("sourceTool")         ?? undefined,
       runId:           sp.get("runId")             ?? undefined,
     });
-    const items = prospects.slice(offset, offset + pageSize);
+    const enriched = prospects.map((p) => enrichProspectBookingIfMissing(p));
+    const items = enriched.slice(offset, offset + pageSize);
     const totalPages = Math.max(1, Math.ceil(prospects.length / pageSize));
 
     return NextResponse.json(
@@ -86,7 +89,7 @@ export async function GET(req: NextRequest) {
         ok: true,
         items,
         prospects: items,
-        total: prospects.length,
+        total: enriched.length,
         page,
         pageSize,
         totalPages,
@@ -96,11 +99,11 @@ export async function GET(req: NextRequest) {
           limit: pageSize,
           offset,
           returned: items.length,
-          hasMore: offset + items.length < prospects.length,
+          hasMore: offset + items.length < enriched.length,
         },
         backend: backendInfo.backend,
         storePath: backendInfo.storePath,
-        warnings: collectWarnings(prospects, backendInfo.backend),
+        warnings: collectWarnings(enriched, backendInfo.backend),
       } satisfies ProspectListResponse
     );
   } catch (e) {

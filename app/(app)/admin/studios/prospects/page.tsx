@@ -17,6 +17,8 @@ import {
   ARCHIVE_REASONS,
 } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import type { ValidationStatus, EducationType, AudienceType } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
+import { BookingProviderPill } from "@/components/admin/intelligence/salon/BookingProviderPill";
+import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -263,6 +265,24 @@ function ProspectDetail({ prospect, onSaved }: {
                 Signals: {(prospect.platformSignals ?? []).map(tagLabel).join(", ")}
               </div>
             )}
+            {prospect.bookingProvider && prospect.bookingProvider !== "unknown" && (
+              <div style={{ marginTop: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 4 }}>BOOKING PROVIDER</div>
+                <BookingProviderPill
+                  provider={prospect.bookingProvider}
+                  label={prospect.bookingProviderLabel}
+                  bookingUrl={prospect.bookingUrl}
+                  size="md"
+                />
+                {(prospect.bookingProviderEvidence ?? []).length > 0 && (
+                  <div style={{ marginTop: 6, fontSize: 10, color: "#78716c", lineHeight: 1.45 }}>
+                    {(prospect.bookingProviderEvidence ?? []).map((line) => (
+                      <div key={line}>{line}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Evidence */}
@@ -340,7 +360,18 @@ function ProspectDetail({ prospect, onSaved }: {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-type SortKey = "name" | "handle" | "educationType" | "businessCategory" | "opportunityScore" | "location" | "platform" | "confidence" | "validationStatus" | "createdAt" | "businessSubcategory" | "relationshipOpportunityType" | "platformSignals" | "bestUrl";
+type SortKey = "name" | "handle" | "educationType" | "businessCategory" | "opportunityScore" | "location" | "platform" | "confidence" | "validationStatus" | "createdAt" | "businessSubcategory" | "relationshipOpportunityType" | "bookingProvider" | "bestUrl";
+
+const BOOKING_PROVIDER_FILTERS = [
+  { value: "all", label: "All booking providers" },
+  { value: "glossgenius", label: "GlossGenius" },
+  { value: "vagaro", label: "Vagaro" },
+  { value: "square", label: "Square" },
+  { value: "booksy", label: "Booksy" },
+  { value: "fresha", label: "Fresha" },
+  { value: "styleseat", label: "StyleSeat" },
+  { value: "unknown", label: "Unknown" },
+] as const;
 
 export default function ProspectsPage() {
   const [prospects, setProspects]   = useState<ProspectRecord[]>([]);
@@ -365,6 +396,7 @@ export default function ProspectsPage() {
   const [fMinOpp, setFMinOpp] = useState(0);
   const [fPlatformSignal, setFPlatformSignal] = useState("all");
   const [fOfferFitTag, setFOfferFitTag] = useState("all");
+  const [fBookingProvider, setFBookingProvider] = useState("all");
   const [selectedMarkets, setSelectedMarkets] = useState<MarketKey[]>([]);
   const [selectedSubtypes, setSelectedSubtypes] = useState<string[]>([]);
   const [selectedSubtypeAllMarkets, setSelectedSubtypeAllMarkets] = useState<MarketKey[]>([]);
@@ -405,6 +437,7 @@ export default function ProspectsPage() {
     if (fMinOpp > 0) params.set("minOpportunityScore", String(fMinOpp));
     if (fPlatformSignal !== "all") params.set("platformSignal", fPlatformSignal);
     if (fOfferFitTag !== "all") params.set("offerFitTag", fOfferFitTag);
+    if (fBookingProvider !== "all") params.set("bookingProvider", fBookingProvider);
 
     setLoading(true);
     setFetchError(null);
@@ -423,11 +456,11 @@ export default function ProspectsPage() {
       })
       .catch((e) => setFetchError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
-  }, [offset, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag, refreshNonce]);
+  }, [offset, fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag, fBookingProvider, refreshNonce]);
 
   useEffect(() => {
     setOffset(0);
-  }, [fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag]);
+  }, [fValidation, fEducationType, fAudienceType, fHashtag, fPlatform, fMinConf, fBusinessCategory, fOpportunityType, fMinOpp, fPlatformSignal, fOfferFitTag, fBookingProvider]);
 
   // Derive filter options
   const hashtags  = useMemo(() => Array.from(new Set(prospects.map((p) => p.sourceHashtag).filter(Boolean) as string[])).sort(), [prospects]);
@@ -532,7 +565,7 @@ export default function ProspectsPage() {
         case "createdAt":                 av = a.createdAt;                           bv = b.createdAt; break;
         case "businessSubcategory":       av = a.businessSubcategory ?? "";           bv = b.businessSubcategory ?? ""; break;
         case "relationshipOpportunityType": av = a.relationshipOpportunityType ?? ""; bv = b.relationshipOpportunityType ?? ""; break;
-        case "platformSignals":           av = (a.platformSignals ?? []).length;      bv = (b.platformSignals ?? []).length; break;
+        case "bookingProvider":           av = a.bookingProvider ?? "";               bv = b.bookingProvider ?? ""; break;
         case "bestUrl":                   av = a.bestMatch?.url ?? "";                bv = b.bestMatch?.url ?? ""; break;
       }
       const cmp = typeof av === "number" ? av - (bv as number) : String(av).localeCompare(String(bv));
@@ -553,7 +586,7 @@ export default function ProspectsPage() {
   function clearFilters() {
     setFValidation("all"); setFEducationType("all"); setFAudienceType("all");
     setFHashtag("all"); setFPlatform("all"); setFMinConf(0);
-    setFBusinessCategory("all"); setFOpportunityType("all"); setFMinOpp(0); setFPlatformSignal("all"); setFOfferFitTag("all");
+    setFBusinessCategory("all"); setFOpportunityType("all"); setFMinOpp(0); setFPlatformSignal("all"); setFOfferFitTag("all"); setFBookingProvider("all");
   }
   function clearWorkflowSelection() {
     setSelectedMarkets([]);
@@ -637,7 +670,14 @@ export default function ProspectsPage() {
     const subtypeLabels = selectedSubtypes.map(friendlySubtypeLabel);
     return [...allLabels, ...subtypeLabels].join(", ");
   }, [selectedSubtypes, selectedSubtypeAllMarkets]);
-  const hasFilters = fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" || fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" || fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all";
+  const hasFilters = fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" || fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" || fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all" || fBookingProvider !== "all";
+  const bookingProviderStats = useMemo(() => {
+    const detected = prospects.filter((p) => p.bookingProvider && p.bookingProvider !== "unknown").length;
+    const gloss = prospects.filter((p) => p.bookingProvider === "glossgenius").length;
+    const vagaro = prospects.filter((p) => p.bookingProvider === "vagaro").length;
+    const unknown = prospects.filter((p) => !p.bookingProvider || p.bookingProvider === "unknown").length;
+    return { detected, gloss, vagaro, unknown };
+  }, [prospects]);
   const hasWorkflowSelection = selectedMarkets.length > 0 || selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0 || !relationshipAllSelected || selectedRelationshipTypes.length > 0;
   const canCreateCampaign = visible.length > 0 && (hasWorkflowSelection || hasFilters);
 
@@ -725,6 +765,21 @@ export default function ProspectsPage() {
                 <div style={{ fontSize: 9, color: "#a8a29e", fontWeight: 800, letterSpacing: "0.04em" }}>{label.toUpperCase()}</div>
               </div>
             ))}
+          </div>
+
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14, fontSize: 11, color: "#57534e" }}>
+            <span style={{ background: "#f5f5f4", border: "1px solid #e7e5e4", borderRadius: 8, padding: "6px 10px" }}>
+              <strong>Providers detected:</strong> {bookingProviderStats.detected}
+            </span>
+            <span style={{ background: "#fdf2f8", border: "1px solid #fbcfe8", borderRadius: 8, padding: "6px 10px" }}>
+              <strong>GlossGenius:</strong> {bookingProviderStats.gloss}
+            </span>
+            <span style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "6px 10px" }}>
+              <strong>Vagaro:</strong> {bookingProviderStats.vagaro}
+            </span>
+            <span style={{ background: "#fafaf9", border: "1px solid #e7e5e4", borderRadius: 8, padding: "6px 10px" }}>
+              <strong>Unknown:</strong> {bookingProviderStats.unknown}
+            </span>
           </div>
 
           <div style={{ marginBottom: 12 }}>
@@ -914,6 +969,11 @@ export default function ProspectsPage() {
           <option value="all">All platform signals</option>
           {platformSignals.map((p) => <option key={p} value={p}>{tagLabel(p)}</option>)}
         </select>
+        <select value={fBookingProvider} onChange={(e) => setFBookingProvider(e.target.value)} style={selS}>
+          {BOOKING_PROVIDER_FILTERS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
         {hasFilters && (
           <button onClick={clearFilters} style={{ fontSize: 11, color: "#9d174d", background: "none", border: "none", cursor: "pointer", fontWeight: 700 }}>
             Clear
@@ -972,7 +1032,7 @@ export default function ProspectsPage() {
                   ["opportunityScore",            "Opportunity"],
                   ["location",                    "Location"],
                   ["relationshipOpportunityType", "Relationship"],
-                  ["platformSignals",             "Platform Signals"],
+                  ["bookingProvider",             "Booking Provider"],
                   ["bestUrl",                     "Best URL"],
                   ["validationStatus",            "Status"],
                 ] as [SortKey, string][]).map(([key, label]) => (
@@ -1018,14 +1078,12 @@ export default function ProspectsPage() {
                           </span>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
-                      <td style={{ ...tdS, maxWidth: 170 }}>
-                        {(p.platformSignals ?? []).length > 0 ? (
-                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                            {(p.platformSignals ?? []).slice(0, 3).map((signal) => (
-                              <span key={signal} style={{ fontSize: 9, background: "#f5f5f4", color: "#57534e", borderRadius: 20, padding: "2px 6px", fontWeight: 700 }}>{tagLabel(signal)}</span>
-                            ))}
-                          </div>
-                        ) : <span style={{ color: "#d6d3d1" }}>—</span>}
+                      <td style={{ ...tdS, maxWidth: 200 }}>
+                        <BookingProviderPill
+                          provider={p.bookingProvider}
+                          label={p.bookingProviderLabel ?? (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)}
+                          bookingUrl={p.bookingUrl ?? p.bestMatch?.url}
+                        />
                       </td>
                       <td style={{ ...tdS, maxWidth: 160 }}>
                         {p.bestMatch ? (

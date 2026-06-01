@@ -171,6 +171,13 @@ export interface ProspectRecord {
   classificationNotes?: string[];
   classificationLocked?: boolean;
 
+  // ── Salon booking provider (public link-trail detection) ───────────────────
+  bookingProvider?: string;
+  bookingProviderLabel?: string;
+  bookingUrl?: string;
+  bookingProviderConfidence?: number;
+  bookingProviderEvidence?: string[];
+
   // ── Intelligence status ──────────────────────────────────────────────────────
   /**
    * Intelligence/validation classification — system-assigned, human-overridable.

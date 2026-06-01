@@ -18,7 +18,9 @@ import {
   mergeEvidence,
   isHumanSetValidationStatus,
   generateIdentityFingerprint,
+  applyBookingDetection,
 } from "./store-json";
+import { enrichProspectBookingIfMissing } from "@/lib/intelligence/salon/booking-from-trail";
 import type { UpsertInput, ProspectFilter } from "./store-json";
 
 // ─── DB row shape (mirrors studio_prospects columns) ─────────────────────────
@@ -85,6 +87,16 @@ interface DbProspectRow {
   categoryConfidence?: number | null;
   classificationNotes?: unknown;
   classificationLocked?: boolean | null;
+  booking_provider?: string | null;
+  booking_provider_label?: string | null;
+  booking_url?: string | null;
+  booking_provider_confidence?: number | null;
+  booking_provider_evidence?: unknown;
+  bookingProvider?: string | null;
+  bookingProviderLabel?: string | null;
+  bookingUrl?: string | null;
+  bookingProviderConfidence?: number | null;
+  bookingProviderEvidence?: unknown;
   validationStatus: string;
   archiveReason: string | null;
   status: string;
@@ -183,6 +195,11 @@ function rowToRecord(row: DbProspectRow): ProspectRecord {
     categoryConfidence: row.category_confidence ?? row.categoryConfidence ?? null,
     classificationNotes: parseJsonCol<string[]>(row.classification_notes ?? row.classificationNotes),
     classificationLocked: row.classification_locked ?? row.classificationLocked ?? false,
+    bookingProvider: row.booking_provider ?? row.bookingProvider ?? undefined,
+    bookingProviderLabel: row.booking_provider_label ?? row.bookingProviderLabel ?? undefined,
+    bookingUrl: row.booking_url ?? row.bookingUrl ?? undefined,
+    bookingProviderConfidence: row.booking_provider_confidence ?? row.bookingProviderConfidence ?? undefined,
+    bookingProviderEvidence: parseJsonCol<string[]>(row.booking_provider_evidence ?? row.bookingProviderEvidence),
     validationStatus: row.validationStatus as ValidationStatus,
     archiveReason:    row.archiveReason   ?? null,
     status:           row.status          as ProspectStatus,
@@ -210,6 +227,8 @@ function buildClassification(record: Partial<ProspectRecord> & UpsertInput): Cla
     category: record.identity?.categoryGuess ?? undefined,
     educationType: record.educationType,
     audienceType: record.audienceType,
+    bookingProvider: record.bookingProvider,
+    bookingProviderConfidence: record.bookingProviderConfidence,
   });
 }
 
@@ -283,19 +302,20 @@ async function findExisting(
 
 export async function upsertProspectPostgres(incoming: UpsertInput): Promise<ProspectRecord> {
   const now = new Date().toISOString();
+  const incomingWithBooking = applyBookingDetection(incoming);
   const incomingUrls = Array.from(new Set([
-    incoming.bestMatch?.url,
-    ...(incoming.allMatchedUrls ?? []).map((u) => u.url),
+    incomingWithBooking.bestMatch?.url,
+    ...(incomingWithBooking.allMatchedUrls ?? []).map((u) => u.url),
   ].filter((url): url is string => !!url)));
   const incomingUrl = incomingUrls[0] ?? null;
   const incomingFingerprint = generateIdentityFingerprint({
-    handle: incoming.identity.handle,
-    name: incoming.identity.name,
+    handle: incomingWithBooking.identity.handle,
+    name: incomingWithBooking.identity.name,
     bestMatchUrl: incomingUrl,
-    sourcePlatform: incoming.sourcePlatform,
+    sourcePlatform: incomingWithBooking.sourcePlatform,
   });
 
-  const existing = await findExisting(incoming.identity.handle, incomingUrls);
+  const existing = await findExisting(incomingWithBooking.identity.handle, incomingUrls);
 
   if (existing) {
     // ── Merge logic (mirrors store-json upsert) ───────────────────────────────
@@ -304,63 +324,75 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
     const effectiveValidationStatus: ValidationStatus =
       isHumanSetValidationStatus(existingRecord.validationStatus)
         ? existingRecord.validationStatus
-        : (incoming.suggestedValidationStatus ?? existingRecord.validationStatus ?? "new");
+        : (incomingWithBooking.suggestedValidationStatus ?? existingRecord.validationStatus ?? "new");
 
-    const mergedHashtags   = mergeStrings(existingRecord.sourceHashtags ?? [], incoming.sourceHashtags ?? []);
-    const mergedPlatforms  = mergeStrings(existingRecord.platforms ?? [], incoming.platforms ?? []);
-    const mergedServices   = mergeStrings(existingRecord.services, incoming.services);
-    const mergedUrls       = mergeMatchedUrls(existingRecord.allMatchedUrls, incoming.allMatchedUrls);
-    const mergedEvidence   = mergeEvidence(existingRecord.evidence, incoming.evidence, 20);
+    const mergedHashtags   = mergeStrings(existingRecord.sourceHashtags ?? [], incomingWithBooking.sourceHashtags ?? []);
+    const mergedPlatforms  = mergeStrings(existingRecord.platforms ?? [], incomingWithBooking.platforms ?? []);
+    const mergedServices   = mergeStrings(existingRecord.services, incomingWithBooking.services);
+    const mergedUrls       = mergeMatchedUrls(existingRecord.allMatchedUrls, incomingWithBooking.allMatchedUrls);
+    const mergedEvidence   = mergeEvidence(existingRecord.evidence, incomingWithBooking.evidence, 20);
 
     const bestMatch =
       !existingRecord.bestMatch ||
-      (incoming.bestMatch && incoming.bestMatch.confidence > existingRecord.bestMatch.confidence)
-        ? incoming.bestMatch
+      (incomingWithBooking.bestMatch && incomingWithBooking.bestMatch.confidence > existingRecord.bestMatch.confidence)
+        ? incomingWithBooking.bestMatch
         : existingRecord.bestMatch;
 
     const confidence =
-      incoming.confidence.overall > existingRecord.confidence.overall
-        ? incoming.confidence
+      incomingWithBooking.confidence.overall > existingRecord.confidence.overall
+        ? incomingWithBooking.confidence
         : existingRecord.confidence;
 
-    const merged: ProspectRecord = {
+    const merged: ProspectRecord = applyBookingDetection({
       ...existingRecord,
-      ...mergeClassification(existingRecord, incoming),
+      ...mergeClassification(existingRecord, incomingWithBooking),
       identityFingerprint: existingRecord.identityFingerprint || incomingFingerprint,
       updatedAt: now,
       identity: {
-        name:          incoming.identity.name || existingRecord.identity.name,
+        name:          incomingWithBooking.identity.name || existingRecord.identity.name,
         handle:        existingRecord.identity.handle,
-        categoryGuess: incoming.identity.categoryGuess ?? existingRecord.identity.categoryGuess,
-        locationGuess: incoming.identity.locationGuess ?? existingRecord.identity.locationGuess,
+        categoryGuess: incomingWithBooking.identity.categoryGuess ?? existingRecord.identity.categoryGuess,
+        locationGuess: incomingWithBooking.identity.locationGuess ?? existingRecord.identity.locationGuess,
       },
-      educationType: (incoming.educationType && incoming.educationType !== "unknown")
-        ? incoming.educationType
+      educationType: (incomingWithBooking.educationType && incomingWithBooking.educationType !== "unknown")
+        ? incomingWithBooking.educationType
         : existingRecord.educationType ?? null,
-      audienceType: (incoming.audienceType && incoming.audienceType !== "unknown")
-        ? incoming.audienceType
+      audienceType: (incomingWithBooking.audienceType && incomingWithBooking.audienceType !== "unknown")
+        ? incomingWithBooking.audienceType
         : existingRecord.audienceType ?? null,
-      sourceTopic:    incoming.sourceTopic    ?? existingRecord.sourceTopic    ?? null,
-      vertical:       incoming.vertical       || existingRecord.vertical       || "education",
-      sourcePlatform: incoming.sourcePlatform || existingRecord.sourcePlatform || "instagram",
-      sourceTool:     incoming.sourceTool     || existingRecord.sourceTool     || "hashtag_harvest",
-      sourceHashtag:  existingRecord.sourceHashtag  ?? incoming.sourceHashtag  ?? null,
+      sourceTopic:    incomingWithBooking.sourceTopic    ?? existingRecord.sourceTopic    ?? null,
+      vertical:       incomingWithBooking.vertical       || existingRecord.vertical       || "education",
+      sourcePlatform: incomingWithBooking.sourcePlatform || existingRecord.sourcePlatform || "instagram",
+      sourceTool:     incomingWithBooking.sourceTool     || existingRecord.sourceTool     || "hashtag_harvest",
+      sourceHashtag:  existingRecord.sourceHashtag  ?? incomingWithBooking.sourceHashtag  ?? null,
       sourceHashtags: mergedHashtags,
-      sourcePath:     existingRecord.sourcePath     || incoming.sourcePath     || "",
-      runId:          incoming.runId          ?? existingRecord.runId          ?? null,
-      harvestDate:    existingRecord.harvestDate    ?? incoming.harvestDate    ?? null,
+      sourcePath:     existingRecord.sourcePath     || incomingWithBooking.sourcePath     || "",
+      runId:          incomingWithBooking.runId          ?? existingRecord.runId          ?? null,
+      harvestDate:    existingRecord.harvestDate    ?? incomingWithBooking.harvestDate    ?? null,
       bestMatch,
       platforms:      mergedPlatforms,
       services:       mergedServices,
       allMatchedUrls: mergedUrls,
       evidence:       mergedEvidence,
       confidence,
+      bookingProvider: incomingWithBooking.bookingProvider ?? existingRecord.bookingProvider,
+      bookingProviderLabel: incomingWithBooking.bookingProviderLabel ?? existingRecord.bookingProviderLabel,
+      bookingUrl: incomingWithBooking.bookingUrl ?? existingRecord.bookingUrl,
+      bookingProviderConfidence: Math.max(
+        incomingWithBooking.bookingProviderConfidence ?? 0,
+        existingRecord.bookingProviderConfidence ?? 0,
+      ) || undefined,
+      bookingProviderEvidence: mergeStrings(
+        existingRecord.bookingProviderEvidence ?? [],
+        incomingWithBooking.bookingProviderEvidence ?? [],
+        12,
+      ),
       // ── Human-set fields: NEVER overwrite ──────────────────────────────────
       validationStatus: effectiveValidationStatus,
       archiveReason:    existingRecord.archiveReason ?? null,
       status:           existingRecord.status,
       notes:            existingRecord.notes,
-    };
+    }) as ProspectRecord;
 
     await prisma.$executeRaw`
       UPDATE studio_prospects SET
@@ -413,10 +445,10 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
   }
 
   // ── New record ────────────────────────────────────────────────────────────────
-  const newRecord: ProspectRecord = {
-    ...incoming,
-    ...buildClassification(incoming),
-    prospectId:     generateProspectId(incoming.identity.handle),
+  const newRecord: ProspectRecord = applyBookingDetection({
+    ...incomingWithBooking,
+    ...buildClassification(incomingWithBooking),
+    prospectId:     generateProspectId(incomingWithBooking.identity.handle),
     identityFingerprint: incomingFingerprint,
     createdAt:      now,
     updatedAt:      now,
@@ -436,7 +468,7 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
     archiveReason:  null,
     status:         "new",
     notes:          "",
-  };
+  }) as ProspectRecord;
 
   await prisma.$executeRaw`
     INSERT INTO studio_prospects (
@@ -585,7 +617,7 @@ export async function listProspectsPostgres(): Promise<ProspectRecord[]> {
   const rows = await prisma.$queryRaw<DbProspectRow[]>`
     SELECT * FROM studio_prospects ORDER BY "createdAt" DESC
   `;
-  return rows.map(rowToRecord);
+  return rows.map(rowToRecord).map((r) => enrichProspectBookingIfMissing(r));
 }
 
 // ─── Filter ───────────────────────────────────────────────────────────────────
@@ -653,7 +685,15 @@ export async function filterProspectsPostgres(filter: ProspectFilter): Promise<P
   const rows = await prisma.$queryRaw<DbProspectRow[]>`
     SELECT * FROM studio_prospects ${where} ORDER BY "createdAt" DESC
   `;
-  return rows.map(rowToRecord);
+  let records = rows.map(rowToRecord).map((r) => enrichProspectBookingIfMissing(r));
+  if (filter.bookingProvider) {
+    records = records.filter((p) => {
+      const bp = p.bookingProvider ?? "unknown";
+      if (filter.bookingProvider === "unknown") return !p.bookingProvider || bp === "unknown";
+      return bp === filter.bookingProvider;
+    });
+  }
+  return records;
 }
 
 // ─── Count ────────────────────────────────────────────────────────────────────
