@@ -1410,6 +1410,9 @@ model StudioProspect {
   bookingProviderConfidence  Int?    @map("booking_provider_confidence")
   bookingProviderEvidence    Json?   @map("booking_provider_evidence")
   bookingProviderSource      String? @map("booking_provider_source")
+  ggResolverStatus           String? @map("gg_resolver_status")
+  ggCheckedUrls              Json?   @map("gg_checked_urls")
+  ggResolverReason           String? @map("gg_resolver_reason")
 
   // ── Human-managed CRM (NEVER overwritten by reruns) ───────────────────────
   validationStatus String @default("new")
