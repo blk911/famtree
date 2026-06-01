@@ -4,7 +4,7 @@
 // Engine, highest score first. Read-only view of
 // GET /api/admin/intelligence/transpo/opportunities.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
 import {
@@ -197,7 +197,7 @@ export default function TranspoOpportunitiesPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
                 <tr style={{ color: "#78716c", borderBottom: "1px solid #e7e5e4", background: "#fafaf9" }}>
-                  {["Company", "DOT", "Fleet", "Drivers", "Score", "Review", "Signals", "Recommended Play"].map((h) => (
+                  {["Company", "DOT", "Fleet", "Drivers", "Score", "Review", "Recommended Play"].map((h) => (
                     <th key={h} style={headerCellStyle}>{h}</th>
                   ))}
                 </tr>
@@ -205,73 +205,89 @@ export default function TranspoOpportunitiesPage() {
               <tbody>
                 {visible.length === 0 ? (
                   <tr>
-                    <td colSpan={8} style={{ ...cellStyle, textAlign: "center", color: "#a8a29e", padding: "24px" }}>
+                    <td colSpan={7} style={{ ...cellStyle, textAlign: "center", color: "#a8a29e", padding: "24px" }}>
                       No opportunities match this filter.
                     </td>
                   </tr>
                 ) : null}
                 {visible.map((o) => {
                   const sc = scoreColor(o.score);
+                  const open = () => setSelectedCarrierId(o.id);
+                  const rowClick = { cursor: "pointer" as const };
                   return (
-                    <tr
-                      key={o.id}
-                      onClick={() => setSelectedCarrierId(o.id)}
-                      style={{ borderBottom: "1px solid #f5f5f4", cursor: "pointer" }}
-                    >
-                      <td style={cellStyle}>
-                        <div style={{ fontWeight: 600, color: "#3730a3" }}>{o.companyName}</div>
-                        {(o.city || o.state) && (
-                          <div style={{ fontSize: 10, color: "#a8a29e" }}>
-                            {[o.city, o.state].filter(Boolean).join(", ")}
-                          </div>
-                        )}
-                      </td>
-                      <td style={{ ...cellStyle, whiteSpace: "nowrap" }}>{o.dotNumber ?? "—"}</td>
-                      <td style={cellStyle}>{o.fleetSize ?? "—"}</td>
-                      <td style={cellStyle}>{o.driverCount ?? "—"}</td>
-                      <td style={{ ...cellStyle, whiteSpace: "nowrap" }}>
-                        <span style={{
-                          display: "inline-block",
-                          minWidth: 30,
-                          textAlign: "center",
-                          fontSize: 12,
-                          fontWeight: 800,
-                          padding: "2px 8px",
-                          borderRadius: 20,
-                          color: sc.fg,
-                          background: sc.bg,
-                          border: `1px solid ${sc.bd}`,
-                        }}>
-                          {o.score}
-                        </span>
-                      </td>
-                      <td style={{ ...cellStyle, whiteSpace: "nowrap" }}>
-                        <ReviewStatusBadge status={statusOf(o.id)} />
-                      </td>
-                      <td style={cellStyle}>
-                        <div style={{ display: "flex", gap: 4, flexWrap: "wrap", maxWidth: 280 }}>
-                          {o.signals.length === 0
-                            ? <span style={{ color: "#a8a29e" }}>—</span>
-                            : o.signals.map((s) => (
-                                <span key={s.id} title={`weight ${s.weight}`} style={{
-                                  fontSize: 10,
-                                  fontWeight: 700,
-                                  padding: "2px 7px",
-                                  borderRadius: 20,
-                                  color: "#3730a3",
-                                  background: "#eef2ff",
-                                  border: "1px solid #c7d2fe",
-                                  whiteSpace: "nowrap",
-                                }}>
+                    <Fragment key={o.id}>
+                      <tr onClick={open} style={rowClick}>
+                        <td style={{ ...cellStyle, paddingBottom: 4 }}>
+                          <div style={{ fontWeight: 600, color: "#3730a3" }}>{o.companyName}</div>
+                          {(o.city || o.state) && (
+                            <div style={{ fontSize: 10, color: "#a8a29e" }}>
+                              {[o.city, o.state].filter(Boolean).join(", ")}
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ ...cellStyle, whiteSpace: "nowrap", paddingBottom: 4 }}>{o.dotNumber ?? "—"}</td>
+                        <td style={{ ...cellStyle, paddingBottom: 4 }}>{o.fleetSize ?? "—"}</td>
+                        <td style={{ ...cellStyle, paddingBottom: 4 }}>{o.driverCount ?? "—"}</td>
+                        <td style={{ ...cellStyle, whiteSpace: "nowrap", paddingBottom: 4 }}>
+                          <span style={{
+                            display: "inline-block",
+                            minWidth: 30,
+                            textAlign: "center",
+                            fontSize: 12,
+                            fontWeight: 800,
+                            padding: "2px 8px",
+                            borderRadius: 20,
+                            color: sc.fg,
+                            background: sc.bg,
+                            border: `1px solid ${sc.bd}`,
+                          }}>
+                            {o.score}
+                          </span>
+                        </td>
+                        <td style={{ ...cellStyle, whiteSpace: "nowrap", paddingBottom: 4 }}>
+                          <ReviewStatusBadge status={statusOf(o.id)} />
+                        </td>
+                        <td style={{ ...cellStyle, fontSize: 11, color: "#44403c", maxWidth: 320, paddingBottom: 4 }}>
+                          {o.recommendedPlay}
+                        </td>
+                      </tr>
+                      <tr onClick={open} style={{ ...rowClick, borderBottom: "1px solid #f5f5f4" }}>
+                        <td colSpan={7} style={{ padding: "0 12px 10px", verticalAlign: "top" }}>
+                          <div style={{
+                            display: "flex",
+                            gap: 4,
+                            flexWrap: "nowrap",
+                            overflowX: "auto",
+                            alignItems: "center",
+                            minHeight: 22,
+                          }}>
+                            {o.signals.length === 0 ? (
+                              <span style={{ fontSize: 10, color: "#a8a29e" }}>No signals</span>
+                            ) : (
+                              o.signals.map((s) => (
+                                <span
+                                  key={s.id}
+                                  title={`weight ${s.weight}`}
+                                  style={{
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    padding: "2px 7px",
+                                    borderRadius: 20,
+                                    color: "#3730a3",
+                                    background: "#eef2ff",
+                                    border: "1px solid #c7d2fe",
+                                    whiteSpace: "nowrap",
+                                    flexShrink: 0,
+                                  }}
+                                >
                                   {s.label}
                                 </span>
-                              ))}
-                        </div>
-                      </td>
-                      <td style={{ ...cellStyle, fontSize: 11, color: "#44403c", maxWidth: 280 }}>
-                        {o.recommendedPlay}
-                      </td>
-                    </tr>
+                              ))
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    </Fragment>
                   );
                 })}
               </tbody>
