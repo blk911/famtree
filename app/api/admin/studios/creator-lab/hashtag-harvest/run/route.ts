@@ -1,9 +1,8 @@
 // app/api/admin/studios/creator-lab/hashtag-harvest/run/route.ts
 // POST /api/admin/studios/creator-lab/hashtag-harvest/run
-// Runs the full hashtag harvest → resolver → prospect pipeline.
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 300; // Per-hashtag harvest (up to 100 posts × N tags) + full resolver
+export const maxDuration = 300;
 
 import { NextRequest, NextResponse } from "next/server";
 import { HarvestRunRequestSchema } from "@/lib/studios/creator-lab/hashtag-harvest/schema";
@@ -15,22 +14,34 @@ import { runResolverForSeeds } from "@/lib/studios/creator-lab/hashtag-harvest/r
 import { saveHarvestRun, generateRunId } from "@/lib/studios/creator-lab/hashtag-harvest/store";
 import { generateBatchId } from "@/lib/studios/prospects/from-resolver";
 import { getStoreBackendInfo, countProspects } from "@/lib/studios/prospects/store";
+import { buildHashtagHarvestDiagnostics } from "@/lib/intelligence/salon/harvest-diagnostics";
 import type { HarvestContext } from "@/lib/studios/creator-lab/hashtag-harvest/run-resolver";
 import type {
   HashtagHarvestRun,
   HarvestRunResponse,
   HarvestErrorResponse,
+  HashtagHarvestDiagnosticsPayload,
 } from "@/lib/studios/creator-lab/hashtag-harvest/types";
 
-function err(error: string, detail?: string, status = 400) {
-  return NextResponse.json({ ok: false, error, detail } satisfies HarvestErrorResponse, { status });
+function err(
+  error: string,
+  detail?: string,
+  status = 400,
+  extra?: Partial<HarvestErrorResponse>,
+) {
+  return NextResponse.json(
+    { ok: false, error, detail, ...extra } satisfies HarvestErrorResponse,
+    { status },
+  );
 }
 
 export async function POST(req: NextRequest) {
-  // ── Parse & validate ────────────────────────────────────────────────────────
   let body: unknown;
-  try { body = await req.json(); }
-  catch { return err("Invalid JSON body"); }
+  try {
+    body = await req.json();
+  } catch {
+    return err("Invalid JSON body");
+  }
 
   const parsed = HarvestRunRequestSchema.safeParse(body);
   if (!parsed.success) {
@@ -48,51 +59,104 @@ export async function POST(req: NextRequest) {
     runPublicDiscovery,
   } = parsed.data;
   const verticalKey = "salon";
-  const runId   = generateRunId();
+  const runId = generateRunId();
   const batchId = generateBatchId();
-  const now     = new Date().toISOString();
+  const now = new Date().toISOString();
   const errors: string[] = [];
+  const warnings: string[] = [];
 
-  // ── Step 1: Apify harvest ───────────────────────────────────────────────────
-  const { posts, actorRunId, error: apifyError } = await runApifyHashtagHarvest(hashtags, maxPerHashtag);
+  const apify = await runApifyHashtagHarvest(hashtags, maxPerHashtag);
 
-  // Fatal early exit: Apify couldn't run and returned zero posts
-  if (apifyError && posts.length === 0) {
-    return err(apifyError, undefined, 400);
+  if (!apify.apifyConnected) {
+    const diagnostics = buildHashtagHarvestDiagnostics({
+      hashtags,
+      maxPerHashtag,
+      posts: [],
+      allSeeds: [],
+      normalizedCreators: [],
+      results: [],
+      errors: [apify.error ?? "APIFY_TOKEN missing"],
+      warnings: [],
+      perTagApifyErrors: apify.perHashtagErrors,
+      apifyConnected: false,
+      apifyActorRunIds: [],
+    });
+    return err(apify.error ?? "APIFY_TOKEN is not set", undefined, 400, {
+      hashtagsParsed: hashtags.length,
+      diagnostics,
+    });
   }
-  if (apifyError) {
-    errors.push(apifyError);
+
+  if (apify.error && apify.posts.length === 0) {
+    const diagnostics = buildHashtagHarvestDiagnostics({
+      hashtags,
+      maxPerHashtag,
+      posts: [],
+      allSeeds: [],
+      normalizedCreators: [],
+      results: [],
+      errors: [apify.error],
+      warnings: [],
+      perTagApifyErrors: apify.perHashtagErrors,
+      apifyConnected: true,
+      apifyActorRunIds: apify.actorRunIds,
+    });
+    return err(apify.error, undefined, 400, {
+      hashtagsParsed: hashtags.length,
+      diagnostics,
+    });
   }
 
-  // ── Step 2: Extract creator seeds per-hashtag (independent cap per tag) ─────
+  if (apify.error) {
+    warnings.push(apify.error);
+  }
+
+  const posts = apify.posts;
+
   const allSeeds = [];
   for (const hashtag of hashtags) {
     const postsForTag = postsForHashtag(posts, hashtag, maxPerHashtag);
-    allSeeds.push(...extractPostCreators(postsForTag, hashtag, market, category, verticalKey));
+    if (postsForTag.length === 0 && !apify.perHashtagErrors[hashtag]) {
+      warnings.push(
+        `#${hashtag}: Apify returned 0 posts (check hashtag spelling or actor quota).`,
+      );
+    }
+    allSeeds.push(
+      ...extractPostCreators(postsForTag, hashtag, market, category, verticalKey),
+    );
   }
 
-  // ── Step 3: Normalize / dedupe across all hashtags ──────────────────────────
   const normalizedCreators = normalizeCreators(allSeeds);
 
-  // ── Step 4a: Capture store path + before-count for diagnostics ─────────────
+  if (normalizedCreators.length === 0 && posts.length > 0) {
+    warnings.push(
+      "Posts were returned but no creator handles could be extracted — check Apify post shape (ownerUsername).",
+    );
+  }
+
   const backendInfo = await getStoreBackendInfo();
   const prospectStorePath = backendInfo.storePath;
   const prospectsBeforeCount = await countProspects();
-  console.log(`[hashtag-harvest/run] backend=${backendInfo.backend} store=${prospectStorePath ?? "postgres"}`);
-  console.log(`[hashtag-harvest/run] prospects before: ${prospectsBeforeCount}`);
 
-  // ── Step 4: Run resolver + sequential upserts ───────────────────────────────
   const harvestCtx: HarvestContext = {
     runId,
     batchId,
     hashtags,
     harvestDate: now.slice(0, 10),
-    vertical:       verticalKey,
+    vertical: verticalKey,
     sourcePlatform: "instagram",
-    sourceTool:     "hashtag_harvest",
+    sourceTool: "hashtag_harvest",
   };
 
-  let resolverResult = { results: [], savedCount: 0, failedToSaveCount: 0, saveErrors: [], upsertAttemptCount: 0, savedProspectIds: [], savedHandles: [] } as Awaited<ReturnType<typeof runResolverForSeeds>>;
+  let resolverResult = {
+    results: [],
+    savedCount: 0,
+    failedToSaveCount: 0,
+    saveErrors: [],
+    upsertAttemptCount: 0,
+    savedProspectIds: [],
+    savedHandles: [],
+  } as Awaited<ReturnType<typeof runResolverForSeeds>>;
 
   if (normalizedCreators.length > 0) {
     try {
@@ -119,27 +183,37 @@ export async function POST(req: NextRequest) {
     resolverDiagnostics,
   } = resolverResult;
 
-  const { perHashtag: hashtagStats, totals: hashtagStatsTotals } = computeHashtagHarvestStats(
-    hashtags,
-    posts,
-    allSeeds,
-    normalizedCreators,
-    results,
-    maxPerHashtag,
-  );
+  const { perHashtag: hashtagStats, totals: hashtagStatsTotals } =
+    computeHashtagHarvestStats(
+      hashtags,
+      posts,
+      allSeeds,
+      normalizedCreators,
+      results,
+      maxPerHashtag,
+    );
 
-  // ── Step 4b: After-count for diagnostics ────────────────────────────────────
   const prospectsAfterCount = await countProspects();
-  console.log(`[hashtag-harvest/run] prospects after: ${prospectsAfterCount} (delta: +${prospectsAfterCount - prospectsBeforeCount})`);
-  console.log(`[hashtag-harvest/run] upsertAttempts=${upsertAttemptCount} saved=${savedCount} failed=${failedToSaveCount}`);
-  console.log(`[hashtag-harvest/run] savedHandles:`, savedHandles);
 
-  // ── Step 5: Compute summary metrics ────────────────────────────────────────
   const resolved = results.filter((r) => r.resolved);
 
   if (failedToSaveCount > 0) {
     errors.push(`${failedToSaveCount} prospect(s) failed to save — see saveErrors in response`);
   }
+
+  const diagnostics = buildHashtagHarvestDiagnostics({
+    hashtags,
+    maxPerHashtag,
+    posts,
+    allSeeds,
+    normalizedCreators,
+    results,
+    errors,
+    warnings,
+    perTagApifyErrors: apify.perHashtagErrors,
+    apifyConnected: apify.apifyConnected,
+    apifyActorRunIds: apify.actorRunIds,
+  });
 
   const run: HashtagHarvestRun = {
     runId,
@@ -148,7 +222,7 @@ export async function POST(req: NextRequest) {
     market,
     category,
     mode,
-    apifyActorRunId: actorRunId,
+    apifyActorRunId: apify.actorRunId,
     totalPosts: posts.length,
     totalCreators: normalizedCreators.length,
     totalResolved: resolved.length,
@@ -170,17 +244,22 @@ export async function POST(req: NextRequest) {
     resolverDiagnostics: verticalKey === "salon" ? resolverDiagnostics : undefined,
   };
 
-  // ── Step 6: Persist run file ────────────────────────────────────────────────
   try {
     await saveHarvestRun({ run, creators: normalizedCreators, results });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[hashtag-harvest/run] save error:", msg);
     run.errors.push(`Run file not saved: ${msg}`);
+    diagnostics.warnings.push(`Run file not saved: ${msg}`);
   }
 
-  return NextResponse.json(
-    { ok: true, run, creators: normalizedCreators, results, saveErrors } satisfies HarvestRunResponse,
-    { status: 200 }
-  );
+  return NextResponse.json({
+    ok: true,
+    run,
+    creators: normalizedCreators,
+    results,
+    saveErrors,
+    hashtagsParsed: hashtags.length,
+    diagnostics,
+  } satisfies HarvestRunResponse);
 }
