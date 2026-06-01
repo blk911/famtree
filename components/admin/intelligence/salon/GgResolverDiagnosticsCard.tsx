@@ -60,6 +60,10 @@ export function GgResolverDiagnosticsCard({
   ggTimeout = 0,
   ggError = 0,
   ggCheckedUrlsCount = 0,
+  ggCandidatesTested = 0,
+  ggConfirmedClientPages = 0,
+  ggGenericHomepage = 0,
+  ggTimeouts = 0,
 }: Props) {
   const show = (n?: number) => (n === undefined || n === null ? "—" : n);
   const fontSize = compact ? 11 : 12;
@@ -87,6 +91,10 @@ export function GgResolverDiagnosticsCard({
         ["Timeout", show(ggTimeout)],
         ["Error", show(ggError)],
         ["URLs checked", show(ggCheckedUrlsCount)],
+        ["GG candidates tested", show(ggCandidatesTested)],
+        ["GG confirmed pages", show(ggConfirmedClientPages)],
+        ["GG generic/home", show(ggGenericHomepage)],
+        ["GG validation timeouts", show(ggTimeouts)],
       ];
 
   return (

@@ -15,6 +15,7 @@ import {
   type GlossGeniusResolverStatus,
 } from "./enrich-booking-provider";
 import { isSalonImportCandidate } from "./import-candidate";
+import { isConfirmedSalonBookingProvider } from "./gg-booking-display";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 
 export type { GlossGeniusResolverStatus };
@@ -230,7 +231,7 @@ export function analyzeProspectProviderDetection(
 
   const ggDiag = buildGlossGeniusDiagnostics(prospect, linkTrailUrlsScanned);
 
-  if (prospect.bookingProvider && prospect.bookingProvider !== "unknown") {
+  if (isConfirmedSalonBookingProvider(prospect)) {
     const handleMatch =
       prospect.bookingProvider === "glossgenius" &&
       ggDiag.bookingProviderSource === "handle_derived";

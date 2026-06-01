@@ -9,6 +9,7 @@ import {
   confidenceToNumber,
 } from "@/lib/intelligence/salon/provider-detector";
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
+import { validateGlossGeniusPage } from "@/lib/intelligence/salon/glossgenius-page-validator";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 import { businessNameToHandleHint, normalizeBusinessName } from "./parse";
 import { searchGlossGeniusUrlsForBusiness } from "./search";
@@ -104,7 +105,11 @@ export async function discoverGgenForSeed(
       displayName: seed.businessName,
     });
 
-    if (probe.found && probe.bookingUrl) {
+    if (
+      probe.found &&
+      probe.bookingUrl &&
+      probe.ggValidationStatus === "confirmed_client_page"
+    ) {
       const hit = hitFromProbe(
         probe.bookingUrl,
         probe.confidence,

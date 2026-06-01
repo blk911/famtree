@@ -4,6 +4,7 @@ import { useEffect, useCallback, useState } from "react";
 import { BookingProviderPill } from "./BookingProviderPill";
 import { BookingProviderSourceChip } from "./BookingProviderSourceChip";
 import { AdvancedIntelligenceSection } from "./AdvancedIntelligenceSection";
+import { bookingProviderForDisplay } from "@/lib/intelligence/salon/gg-booking-display";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 
 type DetailResponse = {
@@ -122,6 +123,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
   const p = data?.prospect;
   const pd = data?.providerDetection;
   const lt = data?.linkTrail;
+  const bookingDisplay = p ? bookingProviderForDisplay(p) : null;
 
   return (
     <>
@@ -241,15 +243,15 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
                 <BookingProviderPill
-                  provider={p.bookingProvider}
-                  label={p.bookingProviderLabel}
-                  bookingUrl={p.bookingUrl}
-                  showImportChip
+                  provider={bookingDisplay?.bookingProvider}
+                  label={bookingDisplay?.bookingProviderLabel}
+                  bookingUrl={bookingDisplay?.bookingUrl}
+                  showImportChip={Boolean(bookingDisplay?.bookingProvider)}
                 />
                 <BookingProviderSourceChip prospect={p} />
               </div>
               <Row label="Confidence">{na(p.bookingProviderConfidence)}</Row>
-              <Row label="Booking URL"><ExternalLink href={p.bookingUrl} /></Row>
+              <Row label="Booking URL"><ExternalLink href={bookingDisplay?.bookingUrl ?? p.bookingUrl} /></Row>
               <Row label="Evidence">
                 {(p.bookingProviderEvidence ?? []).length > 0 ? (
                   <ul style={{ margin: 0, paddingLeft: 16 }}>
@@ -262,6 +264,49 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                 )}
               </Row>
               <Row label="GlossGenius status">{na(pd?.glossGeniusStatusLabel ?? data?.notes?.glossGeniusStatus)}</Row>
+            </section>
+
+            <section style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+                GG VALIDATION
+              </div>
+              <Row label="Status">{na(p.ggValidationStatus ?? "not_attempted")}</Row>
+              <Row label="Validated URL"><ExternalLink href={p.ggValidatedUrl} /></Row>
+              <Row label="Final URL"><ExternalLink href={p.ggValidatedUrl ?? p.bookingUrl} /></Row>
+              <Row label="Candidate URLs checked">
+                {(p.ggCandidateUrls ?? p.ggCheckedUrls ?? []).length > 0 ? (
+                  <ul style={{ margin: 0, paddingLeft: 16 }}>
+                    {(p.ggCandidateUrls ?? p.ggCheckedUrls ?? []).slice(0, 12).map((u) => (
+                      <li key={u} style={{ fontSize: 11 }}>
+                        <ExternalLink href={u} />
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  "Not available"
+                )}
+              </Row>
+              <Row label="Reason">
+                {na(p.ggResolverReason ?? p.providerResolverReason)}
+              </Row>
+              {p.bookingProvider === "glossgenius" &&
+              p.ggValidationStatus &&
+              p.ggValidationStatus !== "confirmed_client_page" ? (
+                <div
+                  style={{
+                    marginTop: 8,
+                    fontSize: 11,
+                    color: "#b45309",
+                    background: "#fffbeb",
+                    border: "1px solid #fde68a",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                  }}
+                >
+                  GlossGenius is not shown as confirmed provider — status is{" "}
+                  <strong>{p.ggValidationStatus}</strong>. Candidates remain in diagnostics only.
+                </div>
+              ) : null}
             </section>
 
             <section style={{ marginBottom: 20 }}>

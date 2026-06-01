@@ -56,12 +56,21 @@ export async function POST(req: NextRequest) {
     let ggHandleMatches = 0;
     let ggDisplayMatches = 0;
     let stillUnknown = 0;
+    let oldHandleMatchesReviewed = 0;
+    let confirmedKept = 0;
+    let downgradedCandidateOnly = 0;
+    let genericHomepageRejected = 0;
     const errors: string[] = [];
 
     for (const p of prospects) {
       try {
         const base = prospectToUpsert(p);
         const input = upsertInputToGgEnrichInput(base);
+        const hadHandleGg =
+          p.bookingProvider === "glossgenius" &&
+          (p.bookingProviderSource === "handle_derived" ||
+            p.bookingProviderSource === "display_name_derived");
+
         const result = await enrichSalonProviderDiscovery(input, {
           enableGgFallback: true,
         });
@@ -73,6 +82,20 @@ export async function POST(req: NextRequest) {
         if (result.ggResolverStatus === "found_display") ggDisplayMatches++;
         if (!result.bookingProvider) stillUnknown++;
 
+        if (hadHandleGg) {
+          oldHandleMatchesReviewed++;
+          if (result.ggValidationStatus === "confirmed_client_page" && result.bookingProvider === "glossgenius") {
+            confirmedKept++;
+          } else if (
+            result.ggValidationStatus === "generic_glossgenius_page" ||
+            result.ggValidationStatus === "redirect_home"
+          ) {
+            genericHomepageRejected++;
+          } else if (!result.bookingProvider || result.ggValidationStatus === "candidate_only") {
+            downgradedCandidateOnly++;
+          }
+        }
+
         await upsertProspect({
           ...base,
           bookingProvider: result.bookingProvider,
@@ -83,6 +106,9 @@ export async function POST(req: NextRequest) {
           bookingProviderSource: result.bookingProviderSource,
           ggResolverStatus: result.ggResolverStatus,
           ggCheckedUrls: result.ggCheckedUrls ?? d.ggCheckedUrls,
+          ggCandidateUrls: result.ggCandidateUrls,
+          ggValidatedUrl: result.ggValidatedUrl,
+          ggValidationStatus: result.ggValidationStatus,
           ggResolverReason: result.ggResolverReason,
           providerResolverReason: d.providerResolverReason,
           providerDiscoveryDebug: d,
@@ -102,6 +128,10 @@ export async function POST(req: NextRequest) {
       ggHandleMatches,
       ggDisplayMatches,
       stillUnknown,
+      oldHandleMatchesReviewed,
+      confirmedKept,
+      downgradedCandidateOnly,
+      genericHomepageRejected,
       errors,
     });
   } catch (e) {

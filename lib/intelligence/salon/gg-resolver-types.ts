@@ -1,5 +1,9 @@
 // lib/intelligence/salon/gg-resolver-types.ts
 
+import type { GgValidationStatus } from "./glossgenius-page-validator";
+
+export type { GgValidationStatus };
+
 export type ProspectGgResolverStatus =
   | "not_attempted"
   | "skipped_existing_provider"
@@ -8,6 +12,9 @@ export type ProspectGgResolverStatus =
   | "attempted_not_found"
   | "found_handle"
   | "found_display"
+  | "confirmed_client_page"
+  | "candidate_only"
+  | "generic_homepage"
   | "timeout"
   | "error";
 
@@ -25,6 +32,10 @@ export type GgResolverRunDiagnostics = {
   ggTimeout: number;
   ggError: number;
   ggCheckedUrlsCount: number;
+  ggCandidatesTested: number;
+  ggConfirmedClientPages: number;
+  ggGenericHomepage: number;
+  ggTimeouts: number;
 };
 
 export type GgCandidateDescriptor = {
@@ -38,6 +49,10 @@ export type GgProbeLogEntry = {
   httpStatus: number;
   finalUrl: string;
   markersFound: string[];
+  validationStatus?: GgValidationStatus;
+  positiveMarkers?: string[];
+  negativeMarkers?: string[];
+  reason?: string;
   error?: "timeout" | "fetch_error" | "invalid_url";
 };
 
@@ -56,6 +71,10 @@ export function emptyGgRunDiagnostics(): GgResolverRunDiagnostics {
     ggTimeout: 0,
     ggError: 0,
     ggCheckedUrlsCount: 0,
+    ggCandidatesTested: 0,
+    ggConfirmedClientPages: 0,
+    ggGenericHomepage: 0,
+    ggTimeouts: 0,
   };
 }
 

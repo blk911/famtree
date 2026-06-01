@@ -20,11 +20,15 @@ export async function POST(req: NextRequest) {
       ok: true,
       directDetection: debug.directDetection,
       linkTrailDetection: debug.linkTrailDetection,
+      directGgValidation: debug.directGgValidation,
       ggHandleResolver: debug.ggHandleResolver,
       ggDisplayResolver: debug.ggDisplayResolver,
       candidates: debug.candidates,
       checkedUrls: debug.checkedUrls,
+      probeValidations: debug.probeValidations,
+      validationStatus: debug.validationStatus,
       finalProviderDecision: debug.finalProviderDecision,
+      finalProviderDecisionSummary: debug.finalProviderDecisionSummary,
     });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);

@@ -96,6 +96,9 @@ interface DbProspectRow {
   booking_provider_source?: string | null;
   gg_resolver_status?: string | null;
   gg_checked_urls?: unknown;
+  gg_candidate_urls?: unknown;
+  gg_validated_url?: string | null;
+  gg_validation_status?: string | null;
   gg_resolver_reason?: string | null;
   provider_resolver_reason?: string | null;
   provider_discovery_debug?: unknown;
@@ -210,6 +213,9 @@ function rowToRecord(row: DbProspectRow): ProspectRecord {
     bookingProviderSource: (row.booking_provider_source ?? undefined) as ProspectRecord["bookingProviderSource"],
     ggResolverStatus: (row.gg_resolver_status ?? undefined) as ProspectRecord["ggResolverStatus"],
     ggCheckedUrls: parseJsonCol<string[]>(row.gg_checked_urls),
+    ggCandidateUrls: parseJsonCol<string[]>(row.gg_candidate_urls),
+    ggValidatedUrl: row.gg_validated_url ?? undefined,
+    ggValidationStatus: (row.gg_validation_status ?? undefined) as ProspectRecord["ggValidationStatus"],
     ggResolverReason: row.gg_resolver_reason ?? undefined,
     providerResolverReason: row.provider_resolver_reason ?? undefined,
     providerDiscoveryDebug: parseJsonCol<ProspectRecord["providerDiscoveryDebug"]>(
@@ -410,6 +416,14 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
         (incomingWithBooking.ggCheckedUrls?.length ?? 0) > 0
           ? incomingWithBooking.ggCheckedUrls
           : existingRecord.ggCheckedUrls,
+      ggCandidateUrls:
+        (incomingWithBooking.ggCandidateUrls?.length ?? 0) > 0
+          ? incomingWithBooking.ggCandidateUrls
+          : existingRecord.ggCandidateUrls,
+      ggValidatedUrl:
+        incomingWithBooking.ggValidatedUrl ?? existingRecord.ggValidatedUrl,
+      ggValidationStatus:
+        incomingWithBooking.ggValidationStatus ?? existingRecord.ggValidationStatus,
       ggResolverReason:
         incomingWithBooking.ggResolverReason ?? existingRecord.ggResolverReason,
       providerResolverReason:
@@ -483,6 +497,9 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
         "booking_provider_source" = ${merged.bookingProviderSource ?? null},
         "gg_resolver_status" = ${merged.ggResolverStatus ?? null},
         "gg_checked_urls" = ${JSON.stringify(merged.ggCheckedUrls ?? [])}::jsonb,
+        "gg_candidate_urls" = ${JSON.stringify(merged.ggCandidateUrls ?? [])}::jsonb,
+        "gg_validated_url" = ${merged.ggValidatedUrl ?? null},
+        "gg_validation_status" = ${merged.ggValidationStatus ?? null},
         "gg_resolver_reason" = ${merged.ggResolverReason ?? null},
         "provider_resolver_reason" = ${merged.providerResolverReason ?? null},
         "provider_discovery_debug" = ${JSON.stringify(merged.providerDiscoveryDebug ?? null)}::jsonb
@@ -534,7 +551,8 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
       "classification_notes", "classification_locked",
       "booking_provider", "booking_provider_label", "booking_url",
       "booking_provider_confidence", "booking_provider_evidence", "booking_provider_source",
-      "gg_resolver_status", "gg_checked_urls", "gg_resolver_reason",
+      "gg_resolver_status", "gg_checked_urls", "gg_candidate_urls", "gg_validated_url",
+      "gg_validation_status", "gg_resolver_reason",
       "provider_resolver_reason", "provider_discovery_debug",
       "validationStatus", "archiveReason", "status", "notes",
       "createdAt", "updatedAt"
@@ -594,6 +612,9 @@ export async function upsertProspectPostgres(incoming: UpsertInput): Promise<Pro
       ${newRecord.bookingProviderSource ?? null},
       ${newRecord.ggResolverStatus ?? null},
       ${JSON.stringify(newRecord.ggCheckedUrls ?? [])}::jsonb,
+      ${JSON.stringify(newRecord.ggCandidateUrls ?? [])}::jsonb,
+      ${newRecord.ggValidatedUrl ?? null},
+      ${newRecord.ggValidationStatus ?? null},
       ${newRecord.ggResolverReason ?? null},
       ${newRecord.providerResolverReason ?? null},
       ${JSON.stringify(newRecord.providerDiscoveryDebug ?? null)}::jsonb,

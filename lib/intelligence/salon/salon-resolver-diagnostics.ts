@@ -3,6 +3,7 @@
 
 import type { UpsertInput } from "@/lib/studios/prospects/store";
 import { isSalonImportCandidate } from "./import-candidate";
+import { isConfirmedSalonBookingProvider } from "./gg-booking-display";
 import { glossGeniusResolverStatus } from "./enrich-booking-provider";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 import { emptyGgRunDiagnostics, type GgResolverRunDiagnostics } from "./gg-resolver-types";
@@ -51,8 +52,16 @@ export function tallySalonResolverUpsert(
 ): void {
   if (resolved) diag.resolved = (diag.resolved ?? 0) + 1;
 
+  const pseudoForConfirm = {
+    bookingProvider: upsert.bookingProvider,
+    ggValidationStatus: upsert.ggValidationStatus,
+  };
   const provider = upsert.bookingProvider;
-  if (provider && provider !== "unknown") {
+  if (
+    provider &&
+    provider !== "unknown" &&
+    isConfirmedSalonBookingProvider(pseudoForConfirm)
+  ) {
     diag.providerFound = (diag.providerFound ?? 0) + 1;
     const trails = trailUrlsFromUpsert(upsert);
     const src = upsert.bookingProviderSource;

@@ -22,6 +22,11 @@ export type HarvestAnalyticsTotals = {
   ggLinkInBio: number;
   importCandidates: number;
   providerCoveragePct: number;
+  ggCandidatesTested: number;
+  ggConfirmedClientPages: number;
+  ggGenericHomepage: number;
+  ggNotFound: number;
+  ggTimeouts: number;
 };
 
 export type HarvestAnalyticsHashtagRow = HashtagHarvestHashtagStats & {
@@ -59,9 +64,25 @@ export async function buildHarvestAnalytics(): Promise<HarvestAnalyticsPayload> 
   let ggDirect = 0;
   let ggLinkInBio = 0;
   let importCandidates = 0;
+  let ggCandidatesTested = 0;
+  let ggConfirmedClientPages = 0;
+  let ggGenericHomepage = 0;
+  let ggNotFound = 0;
+  let ggTimeouts = 0;
 
   for (const p of salonProspects) {
     const d = analyzeProspectProviderDetection(p);
+    const candidateCount = p.ggCandidateUrls?.length ?? p.ggCheckedUrls?.length ?? 0;
+    if (candidateCount > 0) ggCandidatesTested += candidateCount;
+    if (p.ggValidationStatus === "confirmed_client_page") ggConfirmedClientPages++;
+    else if (
+      p.ggValidationStatus === "generic_glossgenius_page" ||
+      p.ggValidationStatus === "redirect_home"
+    ) {
+      ggGenericHomepage++;
+    } else if (p.ggValidationStatus === "not_found") ggNotFound++;
+    else if (p.ggValidationStatus === "timeout") ggTimeouts++;
+
     if (d.outcome === "detected") {
       providersDetected++;
       if (d.provider === "glossgenius") glossGeniusTotal++;
@@ -133,6 +154,11 @@ export async function buildHarvestAnalytics(): Promise<HarvestAnalyticsPayload> 
     providerCoveragePct: salonProspects.length
       ? Math.round((providersDetected / salonProspects.length) * 1000) / 10
       : 0,
+    ggCandidatesTested,
+    ggConfirmedClientPages,
+    ggGenericHomepage,
+    ggNotFound,
+    ggTimeouts,
   };
 
   return {

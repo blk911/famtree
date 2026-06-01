@@ -65,6 +65,11 @@ export default function HarvestAnalyticsPage() {
               ["GlossGenius", t.glossGeniusTotal],
               ["Vagaro", t.vagaroTotal],
               ["Coverage %", t.providerCoveragePct],
+              ["GG candidates tested", t.ggCandidatesTested],
+              ["GG confirmed", t.ggConfirmedClientPages],
+              ["GG generic/home", t.ggGenericHomepage],
+              ["GG not found", t.ggNotFound],
+              ["GG timeouts", t.ggTimeouts],
             ].map(([label, val]) => (
               <div
                 key={String(label)}
@@ -102,6 +107,15 @@ export default function HarvestAnalyticsPage() {
               <BookingProviderDetectionStrip summary={providerSummary} />
             </>
           ) : null}
+
+          <GgResolverDiagnosticsCard
+            title="Salon prospects — GlossGenius validation"
+            ggCandidatesTested={t.ggCandidatesTested}
+            ggConfirmedClientPages={t.ggConfirmedClientPages}
+            ggGenericHomepage={t.ggGenericHomepage}
+            ggNotFound={t.ggNotFound}
+            ggTimeouts={t.ggTimeouts}
+          />
 
           {data?.recentRuns?.[0]?.resolverDiagnostics ? (
             <GgResolverDiagnosticsCard

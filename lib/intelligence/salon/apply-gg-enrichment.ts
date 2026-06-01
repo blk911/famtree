@@ -33,7 +33,12 @@ export type SalonBookingEnrichmentFields = EnrichedProspectBookingFields &
   Partial<
     Pick<
       UpsertInput,
-      "providerResolverReason" | "providerDiscoveryDebug" | "ggCheckedUrls"
+      | "providerResolverReason"
+      | "providerDiscoveryDebug"
+      | "ggCheckedUrls"
+      | "ggCandidateUrls"
+      | "ggValidatedUrl"
+      | "ggValidationStatus"
     >
   >;
 
@@ -91,14 +96,33 @@ function runDeltaFromResult(
   if (d.ggHandleAttempted) delta.ggAttemptedHandle = 1;
   if (d.ggDisplayAttempted) delta.ggAttemptedDisplay = 1;
 
-  if (result.ggResolverStatus === "found_handle") {
+  const candidatesTested = result.ggCandidateUrls?.length ?? d.ggCheckedUrls.length;
+  if (candidatesTested > 0) {
+    delta.ggCandidatesTested = (delta.ggCandidatesTested ?? 0) + candidatesTested;
+  }
+
+  if (result.ggValidationStatus === "confirmed_client_page") {
+    delta.ggConfirmedClientPages = 1;
+    if (result.ggResolverStatus === "found_display") delta.ggFoundDisplay = 1;
+    else delta.ggFoundHandle = 1;
+  } else if (
+    result.ggValidationStatus === "generic_glossgenius_page" ||
+    result.ggValidationStatus === "redirect_home"
+  ) {
+    delta.ggGenericHomepage = 1;
+  } else if (result.ggValidationStatus === "not_found") {
+    delta.ggNotFound = 1;
+  } else if (result.ggValidationStatus === "timeout" || result.ggResolverStatus === "timeout") {
+    delta.ggTimeouts = 1;
+    delta.ggTimeout = 1;
+  } else if (result.ggResolverStatus === "found_handle") {
     delta.ggFoundHandle = 1;
   } else if (result.ggResolverStatus === "found_display") {
     delta.ggFoundDisplay = 1;
-  } else if (result.ggResolverStatus === "attempted_not_found") {
+  } else if (result.ggResolverStatus === "attempted_not_found" || result.ggResolverStatus === "candidate_only") {
     delta.ggNotFound = 1;
-  } else if (result.ggResolverStatus === "timeout") {
-    delta.ggTimeout = 1;
+  } else if (result.ggResolverStatus === "generic_homepage") {
+    delta.ggGenericHomepage = 1;
   } else if (result.ggResolverStatus === "error") {
     delta.ggError = 1;
   }
@@ -122,6 +146,7 @@ export async function applyGgSalonEnrichment(
 ): Promise<{
   bookingFields: SalonBookingEnrichmentFields;
   gg: GgProspectDiagnostics;
+  result: Awaited<ReturnType<typeof enrichSalonProviderDiscovery>>;
   runDelta: Partial<GgResolverRunDiagnostics>;
 }> {
   const maxProbes = options.runGgOnAllDeduped
@@ -130,9 +155,14 @@ export async function applyGgSalonEnrichment(
 
   const handle = (input.instagramHandle ?? "").replace(/^@+/, "").trim();
   if (!handle) {
+    const emptyDiscovery = await enrichSalonProviderDiscovery(
+      { instagramHandle: "", displayName: input.displayName },
+      { enableGgFallback: false },
+    );
     return {
       bookingFields: {},
       gg: { ggResolverStatus: "skipped_no_handle", ggResolverReason: "no_instagram_handle" },
+      result: emptyDiscovery,
       runDelta: { ggSkippedNoHandle: 1 },
     };
   }
@@ -149,6 +179,9 @@ export async function applyGgSalonEnrichment(
     ggResolverStatus,
     ggResolverReason,
     ggCheckedUrls,
+    ggCandidateUrls,
+    ggValidatedUrl,
+    ggValidationStatus,
     ...bookingFields
   } = result;
 
@@ -157,6 +190,9 @@ export async function applyGgSalonEnrichment(
       ...bookingFields,
       providerResolverReason: providerDiscoveryDebug.providerResolverReason,
       providerDiscoveryDebug,
+      ggCandidateUrls,
+      ggValidatedUrl,
+      ggValidationStatus,
     },
     gg: {
       ggResolverStatus: ggSkippedCap
@@ -167,6 +203,7 @@ export async function applyGgSalonEnrichment(
         ? `cap_exceeded_index_${options.index}_max_${maxProbes}`
         : ggResolverReason,
     },
+    result,
     runDelta: runDeltaFromResult(result, ggSkippedCap),
   };
 }
@@ -181,7 +218,7 @@ export async function runGgPassForUpserts(
   const out: UpsertInput[] = [];
   for (let i = 0; i < upserts.length; i++) {
     const base = upserts[i];
-    const { bookingFields, gg, runDelta } = await applyGgSalonEnrichment(
+    const { bookingFields, gg, result: enrichResult, runDelta } = await applyGgSalonEnrichment(
       upsertInputToGgEnrichInput(base),
       {
         index: i,
@@ -195,6 +232,9 @@ export async function runGgPassForUpserts(
       ...bookingFields,
       ggResolverStatus: gg.ggResolverStatus,
       ggCheckedUrls: gg.ggCheckedUrls,
+      ggCandidateUrls: enrichResult.ggCandidateUrls,
+      ggValidatedUrl: enrichResult.ggValidatedUrl,
+      ggValidationStatus: enrichResult.ggValidationStatus,
       ggResolverReason: gg.ggResolverReason,
     });
   }

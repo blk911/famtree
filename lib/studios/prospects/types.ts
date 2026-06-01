@@ -200,9 +200,24 @@ export interface ProspectRecord {
     | "attempted_not_found"
     | "found_handle"
     | "found_display"
+    | "confirmed_client_page"
+    | "candidate_only"
+    | "generic_homepage"
     | "timeout"
     | "error";
   ggCheckedUrls?: string[];
+  ggCandidateUrls?: string[];
+  ggValidatedUrl?: string;
+  ggValidationStatus?:
+    | "not_attempted"
+    | "candidate_only"
+    | "confirmed_client_page"
+    | "generic_glossgenius_page"
+    | "not_found"
+    | "redirect_home"
+    | "blocked"
+    | "timeout"
+    | "error";
   ggResolverReason?: string;
   providerResolverReason?: string;
   providerDiscoveryDebug?: {

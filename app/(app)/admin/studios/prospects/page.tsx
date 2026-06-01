@@ -27,6 +27,7 @@ import { ProviderDiscoveryBackfillButton } from "@/components/admin/intelligence
 import { SalonOperatorSummary } from "@/components/admin/intelligence/salon/SalonOperatorSummary";
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
+import { bookingProviderForDisplay } from "@/lib/intelligence/salon/gg-booking-display";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -564,7 +565,7 @@ export default function ProspectsPage() {
       importCandidates: pool.filter((p) => isSalonImportCandidate(p)).length,
       campaignReady: pool.filter((p) => (p.overallOpportunityScore ?? 0) >= 60 && p.validationStatus !== "archive").length,
       needsReview: pool.filter((p) => (p.validationStatus ?? "new") === "needs_review").length,
-      enriched: pool.filter((p) => p.bookingProvider && p.bookingProvider !== "unknown").length,
+      enriched: pool.filter((p) => bookingProviderForDisplay(p).bookingProvider).length,
     };
   }, [statsProspects, statsTotal, totalCount, prospects]);
 
@@ -765,6 +766,7 @@ export default function ProspectsPage() {
             <tbody>
               {visible.map((p) => {
                 const isExpanded = expandedId === p.prospectId;
+                const bookingDisplay = bookingProviderForDisplay(p);
                 return (
                   <Fragment key={p.prospectId}>
                     <tr key={p.prospectId}
@@ -796,13 +798,18 @@ export default function ProspectsPage() {
                       <td style={{ ...tdS, maxWidth: 220 }}>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
                           <BookingProviderPill
-                            provider={p.bookingProvider}
+                            provider={bookingDisplay.bookingProvider}
                             label={
-                              p.bookingProviderLabel ??
-                              (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)
+                              bookingDisplay.bookingProviderLabel ??
+                              (bookingDisplay.bookingProvider
+                                ? getBookingProviderLabel(bookingDisplay.bookingProvider as "unknown")
+                                : undefined)
                             }
-                            bookingUrl={p.bookingUrl ?? p.bestMatch?.url}
-                            showImportChip={isSalonImportCandidate(p)}
+                            bookingUrl={bookingDisplay.bookingUrl ?? p.bestMatch?.url}
+                            showImportChip={
+                              isSalonImportCandidate(p) &&
+                              Boolean(bookingDisplay.bookingProvider)
+                            }
                           />
                           <BookingProviderSourceChip prospect={p} />
                         </div>

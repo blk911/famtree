@@ -3,21 +3,12 @@
 
 import { getBookingProviderLabel } from "./provider-detector";
 import type { GgCandidateDescriptor, GgProbeLogEntry } from "./gg-resolver-types";
+import {
+  validateGlossGeniusPage,
+  type GgValidationStatus,
+} from "./glossgenius-page-validator";
 
-const FETCH_TIMEOUT_MS = 5_000;
-const MAX_RESPONSE_BYTES = 500_000;
 const MAX_CONCURRENT = 5;
-const GG_MARKERS = [
-  "glossgenius",
-  "book",
-  "booking",
-  "services",
-  "appointment",
-  "schedule",
-  "provider",
-  "business",
-] as const;
-
 const SALON_STRIP_WORDS = [
   "hair",
   "nails",
@@ -66,10 +57,6 @@ const LOCATION_WORDS = new Set([
   "georgia",
 ]);
 
-const USER_AGENT =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-  "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-
 export type GlossGeniusResolverSource = "handle_derived" | "display_name_derived" | "none";
 
 export type GlossGeniusHandleResolverInput = {
@@ -88,6 +75,9 @@ export type GlossGeniusHandleResolverResult = {
   source: GlossGeniusResolverSource;
   evidence: string[];
   checkedUrls: string[];
+  ggCandidateUrls: string[];
+  ggValidatedUrl?: string;
+  ggValidationStatus: GgValidationStatus;
   reason?: string;
   candidates?: GgCandidateDescriptor[];
   probeLog?: GgProbeLogEntry[];
@@ -280,194 +270,99 @@ function hasGlossGeniusPublicUrl(urls: string[]): boolean {
   return urls.some((u) => /glossgenius\.com/i.test(u));
 }
 
-function markersInBody(body: string, titleHint?: string): string[] {
-  const hay = `${body} ${titleHint ?? ""}`.toLowerCase();
-  return GG_MARKERS.filter((m) => hay.includes(m));
-}
-
-function titleFromHtml(body: string): string {
-  const m = body.match(/<title[^>]*>([^<]+)<\/title>/i);
-  return m?.[1]?.trim() ?? "";
-}
-
-function evaluateProbe(
-  fetched: { httpStatus: number; finalUrl: string; body: string; timedOut: boolean },
+async function probeCandidateFull(
   candidate: Candidate,
-): { valid: boolean; confidence: number; markers: string[]; weakHostOnly: boolean } {
-  if (fetched.timedOut) {
-    return { valid: false, confidence: 0, markers: [], weakHostOnly: false };
-  }
-
-  const status = fetched.httpStatus;
-  const okStatus = status >= 200 && status < 400;
-  const hostGg =
-    /glossgenius\.com/i.test(fetched.finalUrl) ||
-    /glossgenius\.com/i.test(candidate.url);
-
-  if (!okStatus || !hostGg) {
-    return { valid: false, confidence: 0, markers: [], weakHostOnly: false };
-  }
-
-  const title = titleFromHtml(fetched.body);
-  const markers = markersInBody(fetched.body, title);
-  const strong = markers.includes("glossgenius") && markers.length >= 2;
-  const hasBookingMarker = markers.some((m) =>
-    ["book", "booking", "services", "appointment", "schedule"].includes(m),
-  );
-
-  if (strong || (markers.includes("glossgenius") && hasBookingMarker)) {
-    const conf =
-      candidate.source === "handle_derived"
-        ? markers.length >= 3
-          ? 95
-          : 88
-        : 85;
-    return { valid: true, confidence: conf, markers, weakHostOnly: false };
-  }
-
-  if (hostGg && fetched.body.length === 0 && okStatus) {
-    return { valid: true, confidence: 62, markers: ["glossgenius-host"], weakHostOnly: true };
-  }
-
-  if (hostGg && okStatus) {
-    return { valid: true, confidence: 58, markers: markers.length ? markers : ["glossgenius-host"], weakHostOnly: true };
-  }
-
-  return { valid: false, confidence: 0, markers, weakHostOnly: false };
-}
-
-async function readBodyLimited(res: Response): Promise<string> {
-  try {
-    const buf = await res.arrayBuffer();
-    const slice = buf.byteLength > MAX_RESPONSE_BYTES ? buf.slice(0, MAX_RESPONSE_BYTES) : buf;
-    return new TextDecoder("utf-8", { fatal: false }).decode(slice);
-  } catch {
-    return "";
-  }
-}
-
-async function fetchPage(url: string): Promise<{
-  httpStatus: number;
-  finalUrl: string;
-  body: string;
-  timedOut: boolean;
-  fetchError: boolean;
-}> {
-  if (!url.startsWith("https://")) {
-    return { httpStatus: 0, finalUrl: url, body: "", timedOut: false, fetchError: true };
-  }
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  const headers = {
-    "User-Agent": USER_AGENT,
-    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-  };
-
-  try {
-    let res = await fetch(url, {
-      method: "HEAD",
-      signal: controller.signal,
-      headers,
-      redirect: "follow",
-    });
-
-    if (res.status === 405 || res.status === 501 || !res.ok) {
-      res = await fetch(url, {
-        method: "GET",
-        signal: controller.signal,
-        headers,
-        redirect: "follow",
-      });
-    } else if (!res.headers.get("content-type")?.includes("text")) {
-      res = await fetch(url, {
-        method: "GET",
-        signal: controller.signal,
-        headers,
-        redirect: "follow",
-      });
-    }
-
-    clearTimeout(timer);
-    const finalUrl = res.url || url;
-    const httpStatus = res.status;
-    if (!res.ok) return { httpStatus, finalUrl, body: "", timedOut: false, fetchError: false };
-    const body = await readBodyLimited(res);
-    return { httpStatus, finalUrl, body, timedOut: false, fetchError: false };
-  } catch (e) {
-    clearTimeout(timer);
-    const timedOut = e instanceof Error && e.name === "AbortError";
-    return { httpStatus: 0, finalUrl: url, body: "", timedOut, fetchError: !timedOut };
-  }
-}
-
-async function probeCandidateFull(candidate: Candidate): Promise<{
+  hints: { displayName?: string | null; handle?: string | null },
+): Promise<{
   hit: GlossGeniusHandleResolverResult | null;
   log: GgProbeLogEntry;
+  validationStatus: GgValidationStatus;
 }> {
-  const fetched = await fetchPage(candidate.url);
-  const evald = evaluateProbe(fetched, candidate);
+  const validation = await validateGlossGeniusPage({
+    url: candidate.url,
+    slugHint: candidate.slug,
+    displayNameHint: hints.displayName,
+    handleHint: hints.handle,
+    discoverySource: candidate.source,
+  });
 
   const log: GgProbeLogEntry = {
     url: candidate.url,
-    httpStatus: fetched.httpStatus,
-    finalUrl: fetched.finalUrl,
-    markersFound: evald.markers,
-    error: fetched.timedOut
-      ? "timeout"
-      : fetched.fetchError
-        ? "fetch_error"
-        : undefined,
+    httpStatus: validation.httpStatus,
+    finalUrl: validation.finalUrl,
+    markersFound: validation.positiveMarkers,
+    validationStatus: validation.status,
+    positiveMarkers: validation.positiveMarkers,
+    negativeMarkers: validation.negativeMarkers,
+    reason: validation.reason,
+    error:
+      validation.status === "timeout"
+        ? "timeout"
+        : validation.status === "error"
+          ? "fetch_error"
+          : undefined,
   };
 
-  if (!evald.valid) {
-    return { hit: null, log };
+  if (!validation.confirmed || !validation.finalUrl) {
+    return { hit: null, log, validationStatus: validation.status };
   }
 
-  const bookingUrl = (fetched.finalUrl || candidate.url).replace(/\/+$/, "");
+  const bookingUrl = validation.finalUrl.replace(/\/+$/, "");
   return {
     hit: {
       found: true,
       provider: "glossgenius",
       providerLabel: "GlossGenius",
       bookingUrl,
-      confidence: evald.confidence,
+      confidence: validation.suggestedConfidence,
       source: candidate.source,
       evidence: [
         `providerSource: ${candidate.source}`,
-        `glossgenius slug match: ${candidate.slug}.glossgenius.com`,
-        `page markers: ${evald.markers.join(", ")}`,
-        evald.weakHostOnly ? "weak host-only match (2xx glossgenius.com)" : "strong marker match",
+        `ggValidation: ${validation.status}`,
+        `glossgenius slug: ${candidate.slug}.glossgenius.com`,
+        `positive: ${validation.positiveMarkers.join(", ")}`,
+        validation.reason,
       ],
       checkedUrls: [candidate.url],
-      reason: evald.weakHostOnly ? "weak_host_match" : "found",
+      ggCandidateUrls: [candidate.url],
+      ggValidatedUrl: bookingUrl,
+      ggValidationStatus: "confirmed_client_page",
+      reason: "confirmed_client_page",
     },
     log,
+    validationStatus: validation.status,
   };
 }
 
 async function runPoolCandidates(
   candidates: Candidate[],
   stopOnFirstHit: boolean,
+  hints: { displayName?: string | null; handle?: string | null },
 ): Promise<{
   hit: GlossGeniusHandleResolverResult | null;
   probeLog: GgProbeLogEntry[];
+  lastValidationStatus: GgValidationStatus;
 }> {
   const probeLog: GgProbeLogEntry[] = [];
   let hit: GlossGeniusHandleResolverResult | null = null;
   let index = 0;
+  let lastValidationStatus: GgValidationStatus = "candidate_only";
 
   async function worker(): Promise<void> {
     while (index < candidates.length) {
       if (stopOnFirstHit && hit) return;
       const i = index++;
-      const { hit: candidateHit, log } = await probeCandidateFull(candidates[i]);
+      const { hit: candidateHit, log, validationStatus } = await probeCandidateFull(
+        candidates[i],
+        hints,
+      );
       probeLog.push(log);
+      lastValidationStatus = validationStatus;
       if (candidateHit && !hit) {
         hit = {
           ...candidateHit,
           checkedUrls: candidates.map((c) => c.url),
+          ggCandidateUrls: candidates.map((c) => c.url),
           probeLog: [...probeLog],
         };
       }
@@ -480,7 +375,7 @@ async function runPoolCandidates(
   );
   await Promise.all(workers);
 
-  return { hit, probeLog };
+  return { hit, probeLog, lastValidationStatus };
 }
 
 /**
@@ -494,7 +389,15 @@ export async function debugGlossGeniusResolver(
     return emptyResult([], [], "no_candidates");
   }
 
-  const { hit, probeLog } = await runPoolCandidates(candidates, false);
+  const hints = {
+    displayName: input.displayName,
+    handle: input.instagramHandle,
+  };
+  const { hit, probeLog, lastValidationStatus } = await runPoolCandidates(
+    candidates,
+    false,
+    hints,
+  );
   const statusCodes = probeLog.map((p) => p.httpStatus);
   const markersFound = Array.from(new Set(probeLog.flatMap((p) => p.markersFound)));
 
@@ -506,6 +409,7 @@ export async function debugGlossGeniusResolver(
       statusCodes,
       markersFound,
       checkedUrls: candidates.map((c) => c.url),
+      ggCandidateUrls: candidates.map((c) => c.url),
     };
   }
 
@@ -514,19 +418,42 @@ export async function debugGlossGeniusResolver(
     ...emptyResult(
       candidates.map((c) => c.url),
       probeLog,
-      hadTimeout ? "timeout" : "not_found",
+      hadTimeout ? "timeout" : lastValidationStatus,
     ),
     candidates,
     statusCodes,
     markersFound,
+    ggValidationStatus: lastValidationStatus,
   };
 }
 
 function emptyResult(
   checkedUrls: string[],
   probeLog: GgProbeLogEntry[],
-  reason: string,
+  reasonOrStatus: string,
 ): GlossGeniusHandleResolverResult {
+  const status = (
+    [
+      "not_attempted",
+      "candidate_only",
+      "confirmed_client_page",
+      "generic_glossgenius_page",
+      "not_found",
+      "redirect_home",
+      "blocked",
+      "timeout",
+      "error",
+    ] as const
+  ).includes(reasonOrStatus as GgValidationStatus)
+    ? (reasonOrStatus as GgValidationStatus)
+    : reasonOrStatus === "timeout"
+      ? "timeout"
+      : reasonOrStatus === "error"
+        ? "error"
+        : reasonOrStatus === "not_found"
+          ? "not_found"
+          : "candidate_only";
+
   return {
     found: false,
     provider: null,
@@ -535,8 +462,10 @@ function emptyResult(
     source: "none",
     evidence: [],
     checkedUrls,
+    ggCandidateUrls: checkedUrls,
+    ggValidationStatus: status,
     probeLog,
-    reason,
+    reason: reasonOrStatus,
   };
 }
 
@@ -557,7 +486,15 @@ export async function resolveGlossGeniusFromHandle(
     return emptyResult([], [], "no_handle");
   }
 
-  const { hit, probeLog } = await runPoolCandidates(candidates, true);
+  const hints = {
+    displayName: input.displayName,
+    handle: input.instagramHandle,
+  };
+  const { hit, probeLog, lastValidationStatus } = await runPoolCandidates(
+    candidates,
+    true,
+    hints,
+  );
   const checkedUrls = candidates.map((c) => c.url);
 
   if (hit) {
@@ -568,17 +505,26 @@ export async function resolveGlossGeniusFromHandle(
       statusCodes: probeLog.map((p) => p.httpStatus),
       markersFound: Array.from(new Set(probeLog.flatMap((p) => p.markersFound))),
       checkedUrls,
+      ggCandidateUrls: checkedUrls,
     };
   }
 
   const hadTimeout = probeLog.some((p) => p.error === "timeout");
   const hadError = probeLog.some((p) => p.error === "fetch_error");
+  const fallbackStatus: GgValidationStatus = hadTimeout
+    ? "timeout"
+    : hadError
+      ? "error"
+      : lastValidationStatus !== "candidate_only"
+        ? lastValidationStatus
+        : "not_found";
 
   return {
-    ...emptyResult(checkedUrls, probeLog, hadTimeout ? "timeout" : hadError ? "error" : "not_found"),
+    ...emptyResult(checkedUrls, probeLog, fallbackStatus),
     candidates,
     statusCodes: probeLog.map((p) => p.httpStatus),
     markersFound: Array.from(new Set(probeLog.flatMap((p) => p.markersFound))),
+    ggValidationStatus: fallbackStatus,
   };
 }
 
@@ -592,7 +538,14 @@ export function legacyGlossGeniusEnrichFields(
   bookingUrl: string;
   evidence: string[];
 } | null {
-  if (!result.found || !result.bookingUrl || result.source === "none") return null;
+  if (
+    !result.found ||
+    !result.bookingUrl ||
+    result.source === "none" ||
+    result.ggValidationStatus !== "confirmed_client_page"
+  ) {
+    return null;
+  }
   return {
     provider: "glossgenius",
     providerLabel: getBookingProviderLabel("glossgenius"),
