@@ -115,7 +115,9 @@ export async function runResolverForSeeds(
       };
 
       let upsertInput: UpsertInput;
-      const resolved = resultToProspect(stubResult, ctx.batchId);
+      const resolved = await resultToProspect(stubResult, ctx.batchId, {
+        enableHandleDerivedGlossGenius: false,
+      });
 
       if (resolved) {
         resolved.vertical       = ctx.vertical;

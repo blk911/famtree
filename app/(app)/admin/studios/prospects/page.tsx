@@ -1136,12 +1136,25 @@ export default function ProspectsPage() {
                       >
                         <BookingProviderPill
                           provider={p.bookingProvider}
-                          label={p.bookingProviderLabel ?? (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)}
+                          label={
+                            detectionByProspectId.get(p.prospectId)?.providerLabel ??
+                            p.bookingProviderLabel ??
+                            (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)
+                          }
                           bookingUrl={p.bookingUrl ?? p.bestMatch?.url}
+                          sourceHint={
+                            detectionByProspectId.get(p.prospectId)?.bookingProviderSource === "handle_derived"
+                              ? "(Handle Match)"
+                              : null
+                          }
                         />
-                        {detectionByProspectId.get(p.prospectId)?.outcome !== "detected" && (
+                        {detectionByProspectId.get(p.prospectId)?.outcome !== "detected" ? (
                           <div style={{ fontSize: 9, color: "#b45309", marginTop: 3, fontWeight: 700 }}>
                             {detectionByProspectId.get(p.prospectId)?.reasonLabel}
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 9, color: "#78716c", marginTop: 3, fontWeight: 600 }}>
+                            {detectionByProspectId.get(p.prospectId)?.glossGeniusStatusLabel}
                           </div>
                         )}
                         {hoverProspectId === p.prospectId && (

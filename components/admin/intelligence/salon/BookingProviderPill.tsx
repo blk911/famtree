@@ -23,6 +23,8 @@ type Props = {
   provider?: string | null;
   label?: string | null;
   bookingUrl?: string | null;
+  /** e.g. "(Handle Match)" when provider was derived from IG handle slug */
+  sourceHint?: string | null;
   showImportChip?: boolean;
   size?: "sm" | "md";
 };
@@ -31,12 +33,14 @@ export function BookingProviderPill({
   provider,
   label,
   bookingUrl,
+  sourceHint,
   showImportChip = true,
   size = "sm",
 }: Props) {
   const key = (provider ?? "unknown") as SalonBookingProvider;
   const colors = PILL_COLORS[key] ?? PILL_COLORS.unknown ?? { bg: "#f5f5f4", fg: "#78716c" };
-  const text = label ?? getBookingProviderLabel(key);
+  const baseLabel = label ?? getBookingProviderLabel(key);
+  const text = sourceHint ? `${baseLabel} ${sourceHint}` : baseLabel;
   const fontSize = size === "md" ? 11 : 10;
   const padding = size === "md" ? "3px 9px" : "2px 7px";
 

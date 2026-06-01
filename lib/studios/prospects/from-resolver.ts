@@ -8,6 +8,7 @@ import type { UpsertInput } from "./store";
 import type { MatchedUrl, ProspectConfidenceBreakdown } from "./types";
 import { buildProspectSourcePath } from "./source-path";
 import { detectBookingFromProspectTrail } from "@/lib/intelligence/salon/booking-from-trail";
+import { enrichSalonBookingProvider } from "@/lib/intelligence/salon/enrich-booking-provider";
 import { buildProspectLinkTrailFields } from "@/lib/intelligence/salon/provider-detection-diagnostics";
 
 // ─── Harvest context ──────────────────────────────────────────────────────────
@@ -79,10 +80,11 @@ function computeConfidence(
 
 // ─── Resolved result → UpsertInput ───────────────────────────────────────────
 
-export function resultToProspect(
+export async function resultToProspect(
   result: StubResolutionResult,
   batchId: string,
-): UpsertInput | null {
+  options?: { enableHandleDerivedGlossGenius?: boolean },
+): Promise<UpsertInput | null> {
   if (result.resolvedProfiles.length === 0) return null;
 
   const profiles = result.resolvedProfiles;
@@ -117,13 +119,23 @@ export function resultToProspect(
     rejectedCandidateUrls: result.rejectedCandidates,
   });
 
-  const bookingFields = detectBookingFromProspectTrail({
-    bestMatchUrl: best?.url,
-    allMatchedUrls,
-    platforms: Array.from(new Set(profiles.map((p) => p.platform))),
-    evidence,
-    linkTrailUrls: linkTrailFields.linkTrailUrlsScanned ?? result.linkTrailUrls,
-  });
+  const bookingFields = await enrichSalonBookingProvider(
+    {
+      bestMatchUrl: best?.url,
+      allMatchedUrls,
+      platforms: Array.from(new Set(profiles.map((p) => p.platform))),
+      evidence,
+      linkTrailUrls: linkTrailFields.linkTrailUrlsScanned ?? result.linkTrailUrls,
+      instagramHandle: result.seed.handle,
+      displayName: result.seed.displayName,
+      website: best?.url ?? `https://www.instagram.com/${result.seed.handle}/`,
+      bio: evidence.filter((e) => typeof e === "string").join(" "),
+    },
+    {
+      enableHandleDerivedGlossGenius:
+        options?.enableHandleDerivedGlossGenius ?? false,
+    },
+  );
 
   return {
     ...linkTrailFields,

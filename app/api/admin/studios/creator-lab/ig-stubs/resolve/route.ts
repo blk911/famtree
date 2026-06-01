@@ -8,7 +8,7 @@ export const maxDuration = 60; // Vercel Pro; free tier caps at 10s (fast mode o
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sanitizeHandle, generateCandidateUrls } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
-import { fastResolve } from "@/lib/studios/creator-lab/ig-stubs/validator";
+import { fastResolveTracked } from "@/lib/studios/creator-lab/ig-stubs/validator";
 import { upsertProspect } from "@/lib/studios/prospects/store";
 import { resultToProspect, generateBatchId } from "@/lib/studios/prospects/from-resolver";
 import type {
@@ -76,15 +76,24 @@ export async function POST(req: NextRequest) {
     activeSeed.map(async (seed): Promise<StubResolutionResult> => {
       const candidates = generateCandidateUrls(seed.handle);
 
-      let profiles;
+      let validProfiles;
+      let candidateUrlsTested: string[] = [];
+      let rejectedCandidates: StubResolutionResult["rejectedCandidates"] = [];
+      let linkTrailUrls: string[] = [];
+
       if (mode === "fast") {
-        profiles = await fastResolve(seed, candidates);
+        const tracked = await fastResolveTracked(seed, candidates);
+        validProfiles = tracked.confirmedProfiles.filter((p) => p.confidenceScore >= 5);
+        candidateUrlsTested = tracked.candidateUrlsTested;
+        rejectedCandidates = tracked.rejectedCandidates;
+        linkTrailUrls = tracked.linkTrailUrls;
       } else {
         const { deepResolve } = await import("@/lib/studios/creator-lab/ig-stubs/deep-research");
-        profiles = await deepResolve(seed, candidates);
+        const profiles = await deepResolve(seed, candidates);
+        validProfiles = profiles.filter((p) => p.confidenceScore >= 5);
+        candidateUrlsTested = candidates.map((c) => c.url);
       }
 
-      const validProfiles = profiles.filter((p) => p.confidenceScore >= 5);
       const bestMatch = validProfiles[0] ?? null;
 
       const status: StubResolutionResult["status"] =
@@ -94,7 +103,15 @@ export async function POST(req: NextRequest) {
           ? "partial"
           : "unresolved";
 
-      return { seed, resolvedProfiles: validProfiles, bestMatch, status };
+      return {
+        seed,
+        resolvedProfiles: validProfiles,
+        bestMatch,
+        status,
+        candidateUrlsTested,
+        rejectedCandidates,
+        linkTrailUrls,
+      };
     })
   );
 
@@ -114,7 +131,9 @@ export async function POST(req: NextRequest) {
     try {
       await Promise.allSettled(
         results.map(async (result) => {
-          const input = resultToProspect(result, batchId);
+          const input = await resultToProspect(result, batchId, {
+            enableHandleDerivedGlossGenius: true,
+          });
           if (input) await upsertProspect(input);
         })
       );

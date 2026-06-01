@@ -71,6 +71,11 @@ export function ProviderDetectionDetail({
             provider={d.provider}
             label={d.providerLabel}
             bookingUrl={d.bestUrl}
+            sourceHint={
+              d.provider === "glossgenius" && d.bookingProviderSource === "handle_derived"
+                ? "(Handle Match)"
+                : null
+            }
             showImportChip
           />
         ) : (
@@ -82,6 +87,12 @@ export function ProviderDetectionDetail({
       <UrlLine label="Link-in-bio URL" url={d.linkInBioUrl} />
       <div style={{ fontSize: 10, color: "#57534e", marginTop: 4 }}>
         <strong>Link-in-bio fetched:</strong> {d.linkInBioPageFetched ? "Yes" : "No"}
+      </div>
+      <div style={{ fontSize: 10, color: "#57534e", marginTop: 4 }}>
+        <strong>GlossGenius:</strong>{" "}
+        <span style={{ fontWeight: 700, color: d.glossGeniusStatus === "gg_not_found" ? "#b45309" : "#15803d" }}>
+          {d.glossGeniusStatusLabel}
+        </span>
       </div>
       {d.linkTrailUrlsScanned.length > 0 ? (
         <div style={{ marginTop: 6 }}>

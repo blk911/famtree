@@ -330,6 +330,8 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
         incomingWithBooking.bookingProviderEvidence ?? [],
         12,
       ),
+      bookingProviderSource:
+        incomingWithBooking.bookingProviderSource ?? existing.bookingProviderSource,
       linkInBioUrl: incomingWithBooking.linkInBioUrl ?? existing.linkInBioUrl,
       linkInBioPageFetched:
         incomingWithBooking.linkInBioPageFetched ?? existing.linkInBioPageFetched,

@@ -8,7 +8,19 @@ import {
   isLinkInBioUrl,
   type SalonBookingProvider,
 } from "./provider-detector";
+import {
+  glossGeniusResolverStatus,
+  type GlossGeniusResolverStatus,
+} from "./enrich-booking-provider";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
+
+export type { GlossGeniusResolverStatus };
+
+export const GLOSSGENIUS_STATUS_LABELS: Record<GlossGeniusResolverStatus, string> = {
+  gg_direct: "GG Direct",
+  gg_handle_match: "GG Handle Match",
+  gg_not_found: "GG Not Found",
+};
 
 export type ProviderDetectionOutcome =
   | "detected"
@@ -48,6 +60,9 @@ export type ProspectProviderDetectionDiagnostics = {
   filterKey: ProviderDetectionFilterKey;
   hasAnyUrl: boolean;
   hasLinkInBioUrl: boolean;
+  glossGeniusStatus: GlossGeniusResolverStatus;
+  glossGeniusStatusLabel: string;
+  bookingProviderSource?: ProspectRecord["bookingProviderSource"];
 };
 
 const BOOKING_HINT_HOSTS = [
@@ -113,6 +128,44 @@ function inferLinkInBioFetched(
   return tested;
 }
 
+function parseBookingProviderSource(
+  prospect: ProspectRecord,
+): ProspectRecord["bookingProviderSource"] | undefined {
+  if (prospect.bookingProviderSource) return prospect.bookingProviderSource;
+  const line = (prospect.bookingProviderEvidence ?? []).find((e) =>
+    e.startsWith("providerSource:"),
+  );
+  if (!line) return undefined;
+  const raw = line.split(":")[1]?.trim();
+  if (raw === "handle_derived" || raw === "direct_url" || raw === "link_trail") {
+    return raw;
+  }
+  return undefined;
+}
+
+function buildGlossGeniusDiagnostics(
+  prospect: ProspectRecord,
+  trailUrls: string[],
+): Pick<
+  ProspectProviderDetectionDiagnostics,
+  "glossGeniusStatus" | "glossGeniusStatusLabel" | "bookingProviderSource"
+> {
+  const bookingProviderSource = parseBookingProviderSource(prospect);
+  const status = glossGeniusResolverStatus(
+    {
+      bookingProvider: prospect.bookingProvider,
+      bookingProviderSource,
+      bookingUrl: prospect.bookingUrl,
+    },
+    trailUrls,
+  );
+  return {
+    glossGeniusStatus: status,
+    glossGeniusStatusLabel: GLOSSGENIUS_STATUS_LABELS[status],
+    bookingProviderSource,
+  };
+}
+
 function hasUnsupportedBookingHost(urls: string[]): boolean {
   for (const url of urls) {
     const hay = url.toLowerCase();
@@ -160,7 +213,12 @@ export function analyzeProspectProviderDetection(
     ...(prospect.bookingProviderEvidence ?? []),
   ];
 
+  const ggDiag = buildGlossGeniusDiagnostics(prospect, linkTrailUrlsScanned);
+
   if (prospect.bookingProvider && prospect.bookingProvider !== "unknown") {
+    const handleMatch =
+      prospect.bookingProvider === "glossgenius" &&
+      ggDiag.bookingProviderSource === "handle_derived";
     return {
       bioUrl,
       bestUrl,
@@ -168,15 +226,17 @@ export function analyzeProspectProviderDetection(
       linkTrailUrlsScanned,
       linkInBioPageFetched,
       provider: prospect.bookingProvider,
-      providerLabel:
-        prospect.bookingProviderLabel ??
-        getBookingProviderLabel(prospect.bookingProvider as SalonBookingProvider),
+      providerLabel: handleMatch
+        ? "GlossGenius (Handle Match)"
+        : (prospect.bookingProviderLabel ??
+          getBookingProviderLabel(prospect.bookingProvider as SalonBookingProvider)),
       evidence,
       outcome: "detected",
       reasonLabel: "Provider detected",
       filterKey: "detected",
       hasAnyUrl,
       hasLinkInBioUrl,
+      ...ggDiag,
     };
   }
 
@@ -201,6 +261,7 @@ export function analyzeProspectProviderDetection(
       filterKey: "detected",
       hasAnyUrl,
       hasLinkInBioUrl,
+      ...ggDiag,
     };
   }
 
@@ -217,6 +278,7 @@ export function analyzeProspectProviderDetection(
       filterKey: "no_public_url",
       hasAnyUrl: false,
       hasLinkInBioUrl,
+      ...ggDiag,
     };
   }
 
@@ -233,6 +295,7 @@ export function analyzeProspectProviderDetection(
       filterKey: "link_page_not_fetched",
       hasAnyUrl,
       hasLinkInBioUrl,
+      ...ggDiag,
     };
   }
 
@@ -249,6 +312,7 @@ export function analyzeProspectProviderDetection(
       filterKey: "no_provider_found",
       hasAnyUrl,
       hasLinkInBioUrl,
+      ...ggDiag,
     };
   }
 
@@ -264,6 +328,7 @@ export function analyzeProspectProviderDetection(
     filterKey: "no_provider_found",
     hasAnyUrl,
     hasLinkInBioUrl,
+    ...ggDiag,
   };
 }
 
