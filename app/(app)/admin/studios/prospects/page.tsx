@@ -18,7 +18,23 @@ import {
 } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import type { ValidationStatus, EducationType, AudienceType } from "@/lib/studios/creator-lab/hashtag-harvest/education-config";
 import { BookingProviderPill } from "@/components/admin/intelligence/salon/BookingProviderPill";
+import { ProviderDetectionDetail } from "@/components/admin/intelligence/salon/ProviderDetectionDetail";
 import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
+import {
+  analyzeProspectProviderDetection,
+  matchesProviderDetectionFilter,
+  summarizeProviderDetection,
+  type ProviderDetectionFilterKey,
+  type ProviderDetectionSummary,
+} from "@/lib/intelligence/salon/provider-detection-diagnostics";
+
+const PROVIDER_DETECTION_FILTERS: Array<{ value: ProviderDetectionFilterKey; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "detected", label: "Detected" },
+  { value: "no_public_url", label: "No URL" },
+  { value: "link_page_not_fetched", label: "Link Page Not Fetched" },
+  { value: "no_provider_found", label: "No Provider Found" },
+];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -265,24 +281,7 @@ function ProspectDetail({ prospect, onSaved }: {
                 Signals: {(prospect.platformSignals ?? []).map(tagLabel).join(", ")}
               </div>
             )}
-            {prospect.bookingProvider && prospect.bookingProvider !== "unknown" && (
-              <div style={{ marginTop: 8 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 4 }}>BOOKING PROVIDER</div>
-                <BookingProviderPill
-                  provider={prospect.bookingProvider}
-                  label={prospect.bookingProviderLabel}
-                  bookingUrl={prospect.bookingUrl}
-                  size="md"
-                />
-                {(prospect.bookingProviderEvidence ?? []).length > 0 && (
-                  <div style={{ marginTop: 6, fontSize: 10, color: "#78716c", lineHeight: 1.45 }}>
-                    {(prospect.bookingProviderEvidence ?? []).map((line) => (
-                      <div key={line}>{line}</div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            <ProviderDetectionDetail prospect={prospect} variant="panel" />
           </div>
 
           {/* Evidence */}
@@ -397,6 +396,9 @@ export default function ProspectsPage() {
   const [fPlatformSignal, setFPlatformSignal] = useState("all");
   const [fOfferFitTag, setFOfferFitTag] = useState("all");
   const [fBookingProvider, setFBookingProvider] = useState("all");
+  const [fProviderDetection, setFProviderDetection] = useState<ProviderDetectionFilterKey>("all");
+  const [providerDiagSummary, setProviderDiagSummary] = useState<ProviderDetectionSummary | null>(null);
+  const [hoverProspectId, setHoverProspectId] = useState<string | null>(null);
   const [selectedMarkets, setSelectedMarkets] = useState<MarketKey[]>([]);
   const [selectedSubtypes, setSelectedSubtypes] = useState<string[]>([]);
   const [selectedSubtypeAllMarkets, setSelectedSubtypeAllMarkets] = useState<MarketKey[]>([]);
@@ -421,6 +423,17 @@ export default function ProspectsPage() {
     window.addEventListener("salon-prospects:refresh", onRefresh);
     return () => window.removeEventListener("salon-prospects:refresh", onRefresh);
   }, []);
+
+  useEffect(() => {
+    fetch("/api/admin/studios/prospects/provider-diagnostics", { cache: "no-store" })
+      .then(async (r) => {
+        const data = (await r.json()) as { ok: boolean; summary?: ProviderDetectionSummary };
+        if (data.ok && data.summary) setProviderDiagSummary(data.summary);
+      })
+      .catch(() => {
+        // Summary is optional; page-level counts fall back to loaded rows.
+      });
+  }, [refreshNonce]);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -535,6 +548,14 @@ export default function ProspectsPage() {
     return counts;
   }, [prospects]);
 
+  const detectionByProspectId = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof analyzeProspectProviderDetection>>();
+    for (const p of prospects) {
+      map.set(p.prospectId, analyzeProspectProviderDetection(p));
+    }
+    return map;
+  }, [prospects]);
+
   const visible = useMemo(() => {
     let rows = prospects.filter((p) => {
       const marketKey = marketForCategory(p.businessCategory).key;
@@ -547,6 +568,11 @@ export default function ProspectsPage() {
       if (subtypeFilterActive && !marketSpecificSubtypes.includes(p.businessSubcategory ?? "")) return false;
 
       if (relationshipFilterActive && !selectedRelationshipTypes.includes((p.relationshipOpportunityType ?? "low_fit_unknown") as RelationshipOpportunityType)) return false;
+
+      if (fProviderDetection !== "all") {
+        const diag = detectionByProspectId.get(p.prospectId);
+        if (!diag || !matchesProviderDetectionFilter(diag, fProviderDetection)) return false;
+      }
       return true;
     });
 
@@ -572,7 +598,7 @@ export default function ProspectsPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return rows;
-  }, [prospects, selectedMarketCategories, selectedMarkets, selectedSubtypeAllMarkets, selectedSubtypesByMarket, selectedRelationshipTypes, sortKey, sortDir]);
+  }, [prospects, selectedMarketCategories, selectedMarkets, selectedSubtypeAllMarkets, selectedSubtypesByMarket, selectedRelationshipTypes, fProviderDetection, detectionByProspectId, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
@@ -586,7 +612,7 @@ export default function ProspectsPage() {
   function clearFilters() {
     setFValidation("all"); setFEducationType("all"); setFAudienceType("all");
     setFHashtag("all"); setFPlatform("all"); setFMinConf(0);
-    setFBusinessCategory("all"); setFOpportunityType("all"); setFMinOpp(0); setFPlatformSignal("all"); setFOfferFitTag("all"); setFBookingProvider("all");
+    setFBusinessCategory("all"); setFOpportunityType("all"); setFMinOpp(0); setFPlatformSignal("all"); setFOfferFitTag("all"); setFBookingProvider("all"); setFProviderDetection("all");
   }
   function clearWorkflowSelection() {
     setSelectedMarkets([]);
@@ -670,14 +696,12 @@ export default function ProspectsPage() {
     const subtypeLabels = selectedSubtypes.map(friendlySubtypeLabel);
     return [...allLabels, ...subtypeLabels].join(", ");
   }, [selectedSubtypes, selectedSubtypeAllMarkets]);
-  const hasFilters = fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" || fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" || fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all" || fBookingProvider !== "all";
-  const bookingProviderStats = useMemo(() => {
-    const detected = prospects.filter((p) => p.bookingProvider && p.bookingProvider !== "unknown").length;
-    const gloss = prospects.filter((p) => p.bookingProvider === "glossgenius").length;
-    const vagaro = prospects.filter((p) => p.bookingProvider === "vagaro").length;
-    const unknown = prospects.filter((p) => !p.bookingProvider || p.bookingProvider === "unknown").length;
-    return { detected, gloss, vagaro, unknown };
-  }, [prospects]);
+  const hasFilters = fValidation !== "all" || fEducationType !== "all" || fAudienceType !== "all" || fHashtag !== "all" || fPlatform !== "all" || fMinConf > 0 || fBusinessCategory !== "all" || fOpportunityType !== "all" || fMinOpp > 0 || fPlatformSignal !== "all" || fOfferFitTag !== "all" || fBookingProvider !== "all" || fProviderDetection !== "all";
+  const pageDetectionSummary = useMemo(() => summarizeProviderDetection(prospects), [prospects]);
+  const detectionStats: ProviderDetectionSummary = providerDiagSummary ?? {
+    ...pageDetectionSummary,
+    total: totalCount > 0 ? totalCount : pageDetectionSummary.total,
+  };
   const hasWorkflowSelection = selectedMarkets.length > 0 || selectedSubtypes.length > 0 || selectedSubtypeAllMarkets.length > 0 || !relationshipAllSelected || selectedRelationshipTypes.length > 0;
   const canCreateCampaign = visible.length > 0 && (hasWorkflowSelection || hasFilters);
 
@@ -767,19 +791,35 @@ export default function ProspectsPage() {
             ))}
           </div>
 
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14, fontSize: 11, color: "#57534e" }}>
-            <span style={{ background: "#f5f5f4", border: "1px solid #e7e5e4", borderRadius: 8, padding: "6px 10px" }}>
-              <strong>Providers detected:</strong> {bookingProviderStats.detected}
-            </span>
-            <span style={{ background: "#fdf2f8", border: "1px solid #fbcfe8", borderRadius: 8, padding: "6px 10px" }}>
-              <strong>GlossGenius:</strong> {bookingProviderStats.gloss}
-            </span>
-            <span style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "6px 10px" }}>
-              <strong>Vagaro:</strong> {bookingProviderStats.vagaro}
-            </span>
-            <span style={{ background: "#fafaf9", border: "1px solid #e7e5e4", borderRadius: 8, padding: "6px 10px" }}>
-              <strong>Unknown:</strong> {bookingProviderStats.unknown}
-            </span>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 850, color: "#1c1917", marginBottom: 8 }}>
+              Booking provider detection
+              {!providerDiagSummary && (
+                <span style={{ fontWeight: 500, color: "#a8a29e", marginLeft: 6 }}>
+                  (loaded page; fetching full-store summary…)
+                </span>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 11, color: "#57534e" }}>
+              {[
+                ["Total prospects", detectionStats.total],
+                ["With any URL", detectionStats.withAnyUrl],
+                ["Link-in-bio URL", detectionStats.withLinkInBioUrl],
+                ["Link-in-bio fetched", detectionStats.linkInBioPagesFetched],
+                ["Provider detected", detectionStats.providerDetected],
+                ["GlossGenius", detectionStats.glossgenius],
+                ["Vagaro", detectionStats.vagaro],
+                ["Square", detectionStats.square],
+                ["Unknown / none", detectionStats.unknownNoProvider],
+              ].map(([label, val]) => (
+                <span
+                  key={label}
+                  style={{ background: "#f5f5f4", border: "1px solid #e7e5e4", borderRadius: 8, padding: "6px 10px" }}
+                >
+                  <strong>{label}:</strong> {val}
+                </span>
+              ))}
+            </div>
           </div>
 
           <div style={{ marginBottom: 12 }}>
@@ -974,6 +1014,17 @@ export default function ProspectsPage() {
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
+        <select
+          value={fProviderDetection}
+          onChange={(e) => setFProviderDetection(e.target.value as ProviderDetectionFilterKey)}
+          style={selS}
+        >
+          {PROVIDER_DETECTION_FILTERS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              Provider detection: {opt.label}
+            </option>
+          ))}
+        </select>
         {hasFilters && (
           <button onClick={clearFilters} style={{ fontSize: 11, color: "#9d174d", background: "none", border: "none", cursor: "pointer", fontWeight: 700 }}>
             Clear
@@ -1078,12 +1129,39 @@ export default function ProspectsPage() {
                           </span>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}
                       </td>
-                      <td style={{ ...tdS, maxWidth: 200 }}>
+                      <td
+                        style={{ ...tdS, maxWidth: 220, position: "relative" }}
+                        onMouseEnter={() => setHoverProspectId(p.prospectId)}
+                        onMouseLeave={() => setHoverProspectId((id) => (id === p.prospectId ? null : id))}
+                      >
                         <BookingProviderPill
                           provider={p.bookingProvider}
                           label={p.bookingProviderLabel ?? (p.bookingProvider ? getBookingProviderLabel(p.bookingProvider as "unknown") : undefined)}
                           bookingUrl={p.bookingUrl ?? p.bestMatch?.url}
                         />
+                        {detectionByProspectId.get(p.prospectId)?.outcome !== "detected" && (
+                          <div style={{ fontSize: 9, color: "#b45309", marginTop: 3, fontWeight: 700 }}>
+                            {detectionByProspectId.get(p.prospectId)?.reasonLabel}
+                          </div>
+                        )}
+                        {hoverProspectId === p.prospectId && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              zIndex: 20,
+                              left: 0,
+                              top: "100%",
+                              marginTop: 4,
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ProviderDetectionDetail
+                              prospect={p}
+                              variant="compact"
+                              diagnostics={detectionByProspectId.get(p.prospectId)}
+                            />
+                          </div>
+                        )}
                       </td>
                       <td style={{ ...tdS, maxWidth: 160 }}>
                         {p.bestMatch ? (

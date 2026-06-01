@@ -12,6 +12,9 @@ export type SalonBookingProvider =
   | "schedulicity"
   | "acuity"
   | "mangomint"
+  | "calendly"
+  | "timely"
+  | "setmore"
   | "unknown";
 
 export type BookingProviderConfidence = "high" | "medium" | "low";
@@ -34,6 +37,9 @@ const PROVIDER_LABELS: Record<SalonBookingProvider, string> = {
   schedulicity: "Schedulicity",
   acuity: "Acuity",
   mangomint: "Mangomint",
+  calendly: "Calendly",
+  timely: "Timely",
+  setmore: "Setmore",
   unknown: "Unknown",
 };
 
@@ -45,15 +51,38 @@ type ProviderRule = {
 };
 
 const PROVIDER_RULES: ProviderRule[] = [
-  { provider: "glossgenius", patterns: ["glossgenius.com", "glossgenius.app.link", "glossgenius.site"], direct: true },
-  { provider: "vagaro", patterns: ["vagaro.com", "vagaro.app.link"], direct: true },
-  { provider: "square", patterns: ["square.site", "squareup.com/appointments", "square.site/book"], direct: true },
+  {
+    provider: "glossgenius",
+    patterns: [
+      "glossgenius.com",
+      "glossgenius.io",
+      "glossgenius.app.link",
+      "glossgenius.site",
+      "book.glossgenius.com",
+    ],
+    direct: true,
+  },
+  { provider: "vagaro", patterns: ["vagaro.com", "vagaro.app.link", "vagaro.com/us"], direct: true },
+  {
+    provider: "square",
+    patterns: [
+      "square.site",
+      "square.site/book",
+      "squareup.com/appointments",
+      "squareup.com/appointments/book",
+      "booking.squareup.com",
+    ],
+    direct: true,
+  },
   { provider: "booksy", patterns: ["booksy.com"], direct: true },
-  { provider: "fresha", patterns: ["fresha.com"], direct: true },
+  { provider: "fresha", patterns: ["fresha.com", "fresha.net"], direct: true },
   { provider: "styleseat", patterns: ["styleseat.com"], direct: true },
   { provider: "schedulicity", patterns: ["schedulicity.com"], direct: true },
   { provider: "acuity", patterns: ["acuityscheduling.com", "acuityappointments.com"], direct: true },
   { provider: "mangomint", patterns: ["mangomint.com"], direct: true },
+  { provider: "calendly", patterns: ["calendly.com"], direct: true },
+  { provider: "timely", patterns: ["gettimely.com", "timely.com"], direct: true },
+  { provider: "setmore", patterns: ["setmore.com"], direct: true },
 ];
 
 const LINK_IN_BIO_HOSTS = [
@@ -89,7 +118,7 @@ function hostOf(url: string): string {
   }
 }
 
-function isLinkInBioHost(url: string): boolean {
+export function isLinkInBioUrl(url: string): boolean {
   const host = hostOf(url);
   return LINK_IN_BIO_HOSTS.some((h) => host.includes(h));
 }
@@ -123,7 +152,7 @@ export function detectSalonBookingProvider(
   if (!raw) return null;
 
   const haystack = norm(raw);
-  const fromLib = options?.fromLinkInBio ?? isLinkInBioHost(raw);
+  const fromLib = options?.fromLinkInBio ?? isLinkInBioUrl(raw);
 
   for (const rule of PROVIDER_RULES) {
     if (!matchRule(haystack, rule)) continue;
@@ -181,7 +210,7 @@ export function detectBestSalonBookingProvider(input: {
 
   for (const url of input.urls ?? []) {
     if (!url) continue;
-    const hit = detectSalonBookingProvider(url, { fromLinkInBio: isLinkInBioHost(url) });
+    const hit = detectSalonBookingProvider(url, { fromLinkInBio: isLinkInBioUrl(url) });
     if (hit) candidates.push(hit);
   }
 

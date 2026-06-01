@@ -177,6 +177,10 @@ export interface ProspectRecord {
   bookingUrl?: string;
   bookingProviderConfidence?: number;
   bookingProviderEvidence?: string[];
+  /** IG profile URL (external bio link is not scraped). */
+  linkInBioUrl?: string;
+  linkInBioPageFetched?: boolean;
+  linkTrailUrlsScanned?: string[];
 
   // ── Intelligence status ──────────────────────────────────────────────────────
   /**

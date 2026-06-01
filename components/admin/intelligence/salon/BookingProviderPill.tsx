@@ -13,6 +13,9 @@ const PILL_COLORS: Partial<Record<SalonBookingProvider, { bg: string; fg: string
   schedulicity: { bg: "#f0f9ff", fg: "#0369a1" },
   acuity: { bg: "#fff7ed", fg: "#c2410c" },
   mangomint: { bg: "#f0fdf4", fg: "#15803d" },
+  calendly: { bg: "#eff6ff", fg: "#1d4ed8" },
+  timely: { bg: "#f0f9ff", fg: "#0369a1" },
+  setmore: { bg: "#fef3c7", fg: "#b45309" },
   unknown: { bg: "#f5f5f4", fg: "#78716c" },
 };
 

@@ -28,18 +28,20 @@ export function detectBookingFromProspectTrail(input: {
   platforms?: string[];
   evidence?: ProspectEvidence[];
   linkTrailUrls?: string[];
+  linkTrailUrlsScanned?: string[];
 }): ProspectBookingFields {
+  const trail = input.linkTrailUrlsScanned ?? input.linkTrailUrls ?? [];
   const urls = [
     input.bestMatchUrl,
     ...(input.allMatchedUrls ?? []).map((u) => (typeof u === "string" ? u : u.url)),
     ...(input.platforms ?? []),
-    ...(input.linkTrailUrls ?? []),
+    ...trail,
   ].filter((u): u is string => Boolean(u));
 
   const detection = detectBestSalonBookingProvider({
     urls,
     text: evidenceToText(input.evidence),
-    linkPageLinks: input.linkTrailUrls,
+    linkPageLinks: trail,
   });
 
   if (!detection || detection.provider === "unknown") {
@@ -65,6 +67,7 @@ export function enrichProspectBookingIfMissing(record: ProspectRecord): Prospect
     allMatchedUrls: record.allMatchedUrls,
     platforms: record.platforms,
     evidence: record.evidence,
+    linkTrailUrlsScanned: record.linkTrailUrlsScanned,
   });
   if (!detected.bookingProvider) return record;
   return { ...record, ...detected };

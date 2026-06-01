@@ -330,6 +330,14 @@ export async function upsertProspectJson(incoming: UpsertInput): Promise<Prospec
         incomingWithBooking.bookingProviderEvidence ?? [],
         12,
       ),
+      linkInBioUrl: incomingWithBooking.linkInBioUrl ?? existing.linkInBioUrl,
+      linkInBioPageFetched:
+        incomingWithBooking.linkInBioPageFetched ?? existing.linkInBioPageFetched,
+      linkTrailUrlsScanned: mergeStrings(
+        existing.linkTrailUrlsScanned ?? [],
+        incomingWithBooking.linkTrailUrlsScanned ?? [],
+        50,
+      ),
       // ALWAYS preserve human-set fields
       validationStatus: effectiveValidationStatus,
       archiveReason: existing.archiveReason ?? null,

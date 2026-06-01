@@ -8,6 +8,7 @@ import type { UpsertInput } from "./store";
 import type { MatchedUrl, ProspectConfidenceBreakdown } from "./types";
 import { buildProspectSourcePath } from "./source-path";
 import { detectBookingFromProspectTrail } from "@/lib/intelligence/salon/booking-from-trail";
+import { buildProspectLinkTrailFields } from "@/lib/intelligence/salon/provider-detection-diagnostics";
 
 // ─── Harvest context ──────────────────────────────────────────────────────────
 
@@ -107,15 +108,25 @@ export function resultToProspect(
     (result.seed.displayName !== result.seed.handle ? result.seed.displayName : null) ??
     result.seed.handle;
 
+  const linkTrailFields = buildProspectLinkTrailFields({
+    handle: result.seed.handle,
+    bestMatchUrl: best?.url,
+    allMatchedUrls,
+    candidateUrlsTested: result.candidateUrlsTested,
+    linkTrailUrls: result.linkTrailUrls,
+    rejectedCandidateUrls: result.rejectedCandidates,
+  });
+
   const bookingFields = detectBookingFromProspectTrail({
     bestMatchUrl: best?.url,
     allMatchedUrls,
     platforms: Array.from(new Set(profiles.map((p) => p.platform))),
     evidence,
-    linkTrailUrls: result.linkTrailUrls,
+    linkTrailUrls: linkTrailFields.linkTrailUrlsScanned ?? result.linkTrailUrls,
   });
 
   return {
+    ...linkTrailFields,
     ...bookingFields,
     source: {
       sourceType: "ig-stub-run",
