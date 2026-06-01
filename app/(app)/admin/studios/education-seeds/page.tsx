@@ -6,7 +6,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
+import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 import type {
   IdentityAssemblerResult,
@@ -576,9 +577,8 @@ export default function EducationSeedsPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <CreatorIntelligenceNav current="education-seeds" />
+      <IntelligenceMarketNav />
 
-      {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>
           Education Seed Import
@@ -587,6 +587,10 @@ export default function EducationSeedsPage() {
           Paste educator names, IG handles, or URLs to resolve their online identity and save to the prospect repository.
           Supports name-only, CSV, pipe-delimited, and raw handle formats.
         </p>
+        <IntelligenceContextBadge
+          verticalLabel="Education (legacy tool)"
+          dataScope="Education prospects only"
+        />
       </div>
 
       {/* Input form (pre-run) */}

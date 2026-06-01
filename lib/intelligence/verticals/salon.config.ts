@@ -9,17 +9,20 @@ export const salonConfig: VerticalConfig = {
   verticalKey: "salon",
   label: "Salon / Client-Centric",
   shortLabel: "Salon",
+  dataScope: "Salon prospects only",
   baseRoute: "/admin/intelligence/salon",
 
   navItems: [
-    { id: "assembler",  label: "Studio Assembler",  href: "/admin/studios/creator-lab" },
-    { id: "resolver",   label: "Resolver",           href: "/admin/studios/creator-lab/ig-stubs" },
-    { id: "harvest",    label: "Hashtag Harvest",    href: "/admin/studios/creator-lab/hashtag-harvest" },
-    { id: "prospects",  label: "Prospects",          href: "/admin/studios/prospects" },
-    { id: "backoffice", label: "Back Office Import", href: "/admin/intelligence/salon/backoffice" },
+    { id: "assembler",  label: "Studio Assembler",     href: "/admin/studios/creator-lab" },
+    { id: "resolver",   label: "IG Resolver",            href: "/admin/studios/creator-lab/ig-stubs" },
+    { id: "harvest",    label: "Hashtag Harvest",        href: "/admin/studios/creator-lab/hashtag-harvest" },
+    { id: "styleseat",  label: "StyleSeat Discovery",    href: "/admin/studios/styleseat" },
+    { id: "prospects",  label: "Prospects",              href: "/admin/studios/prospects" },
+    { id: "runs",       label: "Runs",                   href: "/admin/studios/runs" },
+    { id: "backoffice", label: "Back Office Import",     href: "/admin/intelligence/salon/backoffice" },
   ],
 
-  enabledTools: ["assembler", "resolver", "harvest", "prospects", "backoffice"],
+  enabledTools: ["assembler", "resolver", "harvest", "styleseat", "prospects", "runs", "backoffice"],
   hiddenTools:  [],
 
   sourceLabels: {

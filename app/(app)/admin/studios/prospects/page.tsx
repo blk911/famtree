@@ -5,6 +5,8 @@
 
 import { Fragment, useState, useEffect, useMemo } from "react";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
+import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
+import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import type { ProspectRecord, ProspectStatus, ProspectListResponse } from "@/lib/studios/prospects/types";
 import { PROSPECT_STATUS_LABELS, PROSPECT_STATUS_COLORS } from "@/lib/studios/prospects/types";
 import { BUSINESS_CATEGORIES, BUSINESS_CATEGORY_LABELS, BUSINESS_SUBCATEGORIES, RELATIONSHIP_OPPORTUNITY_LABELS, RELATIONSHIP_OPPORTUNITY_TYPES } from "@/lib/studios/prospects/opportunity-taxonomy";
@@ -437,6 +439,7 @@ export default function ProspectsPage() {
 
   useEffect(() => {
     const params = new URLSearchParams();
+    params.set("vertical", "salon");
     params.set("limit", String(pageSize));
     params.set("offset", String(offset));
     if (fValidation !== "all") params.set("validationStatus", fValidation);
@@ -741,15 +744,11 @@ export default function ProspectsPage() {
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
       <CreatorIntelligenceNav current="prospects" />
 
-      {/* Header */}
-      <div style={{ marginBottom: 6 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>
-          Prospect Market Intelligence
-        </h1>
-        <p style={{ fontSize: 12, color: "#a8a29e", margin: 0, maxWidth: 680, lineHeight: 1.5 }}>
-          Find the market, isolate relationship operators, then build a campaign around the right offer.
-        </p>
-      </div>
+      <IntelligenceFeatureHeader
+        title="Prospects"
+        description="Salon prospect repository — find the market, isolate relationship operators, then build a campaign around the right offer."
+        config={salonConfig}
+      />
 
       {/* Workflow */}
       {!loading && (

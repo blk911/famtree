@@ -11,6 +11,8 @@ export interface VerticalConfig {
   verticalKey: string;
   label: string;
   shortLabel: string;
+  /** Shown on feature pages: what data this vertical may read/write */
+  dataScope: string;
   baseRoute: string;
 
   // Tool navigation items rendered in the subnav

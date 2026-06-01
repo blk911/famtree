@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import type {
   HiddenMoneyReport,
@@ -104,21 +105,16 @@ export default function SalonBackOfficeImportPage() {
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px 60px" }}>
       <IntelligenceMarketNav />
-      <IntelligenceSubNav config={salonConfig} currentTool="backoffice" />
+      <IntelligenceSubNav config={salonConfig} currentTool="backoffice" showContextBadge={false} />
 
-      <div style={{ marginBottom: 22 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1c1917", margin: "0 0 6px" }}>
-          Salon Back Office Import Lab
-        </h1>
-        <p style={{ fontSize: 12, color: "#78716c", margin: 0, maxWidth: 720, lineHeight: 1.55 }}>
-          Upload owner-approved GlossGenius/Vagaro/Square exports to find hidden revenue
-          opportunities. Upload/import only — no scraping of private accounts.
-        </p>
-        <p style={{ fontSize: 11, color: "#a8a29e", margin: "10px 0 0", maxWidth: 720, lineHeight: 1.5 }}>
-          Use only owner-approved exports. Data is used to generate this salon&apos;s report and is
-          not sold or reused.
-        </p>
-      </div>
+      <IntelligenceFeatureHeader
+        title="Salon Back Office Import Lab"
+        description="Upload owner-approved GlossGenius/Vagaro/Square exports to find hidden revenue opportunities. Upload/import only — no scraping of private accounts."
+        config={salonConfig}
+      />
+      <p style={{ fontSize: 11, color: "#a8a29e", margin: "-12px 0 18px", maxWidth: 720, lineHeight: 1.5 }}>
+        Use only owner-approved exports. Data is used to generate this salon&apos;s report and is not sold or reused.
+      </p>
 
       {/* Upload */}
       <div style={card}>

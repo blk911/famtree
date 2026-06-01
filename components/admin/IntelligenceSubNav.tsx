@@ -5,12 +5,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import type { VerticalConfig } from "@/lib/intelligence/core/vertical-config";
 
 interface Props {
   config: VerticalConfig;
   /** Optional: override which navItem ID is active (uses pathname matching if omitted) */
   currentTool?: string;
+  /** Optional slot after tool pills (e.g. Fresh Slate on Salon) */
+  trailing?: React.ReactNode;
+  /** Show vertical context badge under the tool rail (default true) */
+  showContextBadge?: boolean;
 }
 
 function resolveCurrentTool(config: VerticalConfig, pathname: string): string {
@@ -20,7 +25,12 @@ function resolveCurrentTool(config: VerticalConfig, pathname: string): string {
   return match?.id ?? "";
 }
 
-export function IntelligenceSubNav({ config, currentTool }: Props) {
+export function IntelligenceSubNav({
+  config,
+  currentTool,
+  trailing,
+  showContextBadge = true,
+}: Props) {
   const pathname = usePathname();
   const active = currentTool ?? resolveCurrentTool(config, pathname);
 
@@ -44,41 +54,51 @@ export function IntelligenceSubNav({ config, currentTool }: Props) {
       </div>
 
       {/* Tool pill rail */}
-      <div style={{
-        display: "inline-flex",
-        gap: 2,
-        flexWrap: "wrap",
-        alignItems: "center",
-        background: "#f5f4f2",
-        border: "1px solid #e7e5e4",
-        borderRadius: 10,
-        padding: "3px 4px",
-      }}>
-        {config.navItems.map(({ id, label, href }) => {
-          const isActive = id === active;
-          return (
-            <Link
-              key={id}
-              href={href}
-              style={{
-                fontSize: 12,
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? "#1c1917" : "#78716c",
-                background: isActive ? "#ffffff" : "transparent",
-                border: isActive ? "1px solid #e2e0dc" : "1px solid transparent",
-                borderRadius: 7,
-                padding: "4px 11px",
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-                boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
-                lineHeight: "1.5",
-              }}
-            >
-              {label}
-            </Link>
-          );
-        })}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <div style={{
+          display: "inline-flex",
+          gap: 2,
+          flexWrap: "wrap",
+          alignItems: "center",
+          background: "#f5f4f2",
+          border: "1px solid #e7e5e4",
+          borderRadius: 10,
+          padding: "3px 4px",
+        }}>
+          {config.navItems.map(({ id, label, href }) => {
+            const isActive = id === active;
+            return (
+              <Link
+                key={id}
+                href={href}
+                style={{
+                  fontSize: 12,
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? "#1c1917" : "#78716c",
+                  background: isActive ? "#ffffff" : "transparent",
+                  border: isActive ? "1px solid #e2e0dc" : "1px solid transparent",
+                  borderRadius: 7,
+                  padding: "4px 11px",
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                  boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
+                  lineHeight: "1.5",
+                }}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+        {trailing}
       </div>
+
+      {showContextBadge ? (
+        <IntelligenceContextBadge
+          verticalLabel={config.label}
+          dataScope={config.dataScope}
+        />
+      ) : null}
     </div>
   );
 }

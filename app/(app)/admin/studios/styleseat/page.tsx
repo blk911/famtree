@@ -6,6 +6,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
+import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
+import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import {
   STYLESEAT_CATEGORY_LABELS,
   STYLESEAT_STATUS_LABELS,
@@ -1402,15 +1404,11 @@ export default function StyleSeatDiscoveryPage() {
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px 60px" }}>
       <CreatorIntelligenceNav current="styleseat" />
 
-      {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>
-          StyleSeat Discovery
-        </h1>
-        <p style={{ fontSize: 13, color: "#78716c", margin: 0, maxWidth: 680 }}>
-          Discover independent beauty operators from StyleSeat — braiders, barbers, lash artists, nail techs — then resolve their IG identity and save to the prospect repository.
-        </p>
-      </div>
+      <IntelligenceFeatureHeader
+        title="StyleSeat Discovery"
+        description="Discover independent beauty operators from StyleSeat, then resolve their IG identity and save to salon prospect records."
+        config={salonConfig}
+      />
 
       <StorageStatusPanel status={storageStatus} />
 

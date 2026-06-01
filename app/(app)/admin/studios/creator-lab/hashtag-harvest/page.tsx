@@ -5,6 +5,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
+import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
+import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import { HarvestForm } from "@/components/studios/creator-lab/HarvestForm";
 import {
   VALIDATION_STATUS_LABELS,
@@ -195,7 +197,7 @@ function ReportsView({
   const [debugOpen, setDebugOpen] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/studios/prospects/list?vertical=education")
+    fetch("/api/admin/studios/prospects/list?vertical=salon")
       .then((r) => r.json())
       .then((d: ProspectListResponse) => { if (d.ok) setStoredProspects(d.prospects); })
       .catch(() => {/* non-fatal */})
@@ -456,7 +458,7 @@ function ReportsView({
               VALIDATION STATUS — STORED REPOSITORY
             </div>
             <div style={{ fontSize: 10, color: "#c4b5fd", marginBottom: 10 }}>
-              {storedLoading ? "Loading…" : `${storedProspects.length} total prospects (Education vertical)`}
+              {storedLoading ? "Loading…" : `${storedProspects.length} total prospects (Salon vertical)`}
             </div>
             {!storedLoading && vsEntries.length === 0 && (
               <div style={{ fontSize: 12, color: "#d6d3d1" }}>No stored prospects yet</div>
@@ -871,15 +873,11 @@ export default function HashtagHarvestPage() {
 
       <CreatorIntelligenceNav current="hashtag-harvest" />
 
-      {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>
-          Hashtag Harvest
-        </h1>
-        <p style={{ fontSize: 13, color: "#78716c", margin: 0 }}>
-          Harvest creator signals from Instagram hashtags across verticals → resolver → prospect repository.
-        </p>
-      </div>
+      <IntelligenceFeatureHeader
+        title="Hashtag Harvest"
+        description="Harvest Salon / Client-Centric creator signals from Instagram hashtags, then resolve them into salon prospect records."
+        config={salonConfig}
+      />
 
       {/* Input form — HarvestForm owns all form state; incrementing runKey gives a clean slate */}
       {!runData && (
@@ -902,9 +900,9 @@ export default function HashtagHarvestPage() {
             <span style={{ fontSize: 12, color: "#78716c" }}>
               Run {runData.run.runId} · {new Date(runData.run.createdAt).toLocaleString()}
             </span>
-            <Link href="/admin/studios/prospects"
+            <Link href="/admin/studios/prospects?vertical=salon"
               style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "#9d174d", textDecoration: "none" }}>
-              View Discovered Entities →
+              View Salon Prospects →
             </Link>
           </div>
 

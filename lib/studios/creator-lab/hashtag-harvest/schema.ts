@@ -19,5 +19,5 @@ export const HarvestRunRequestSchema = z.object({
     .max(MAX_POSTS_PER_HASHTAG_LIMIT)
     .default(DEFAULT_MAX_POSTS_PER_HASHTAG),
   mode: z.enum(["fast", "deep"]).default("fast"),
-  verticalKey: z.enum(["education", "salon", "transpo", "hcare", "labs"]).default("education"),
+  verticalKey: z.enum(["education", "salon", "transpo", "hcare", "labs"]).default("salon"),
 });

@@ -8,6 +8,7 @@ export const hcareConfig: VerticalConfig = {
   verticalKey: "hcare",
   label: "HCare",
   shortLabel: "HCare",
+  dataScope: "Healthcare practice intelligence (coming soon)",
   baseRoute: "/admin/intelligence/hcare",
 
   navItems: [],  // TBD

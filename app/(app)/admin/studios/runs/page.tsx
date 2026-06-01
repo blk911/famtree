@@ -3,6 +3,8 @@
 // Run history and audit trail — placeholder. Not yet built.
 
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
+import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
+import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 
 export default function RunsPage() {
   return (
@@ -10,14 +12,11 @@ export default function RunsPage() {
 
       <CreatorIntelligenceNav current="runs" />
 
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 6px" }}>
-          Runs
-        </h1>
-        <p style={{ fontSize: 13, color: "#78716c", margin: 0 }}>
-          Run history and audit trail — coming soon.
-        </p>
-      </div>
+      <IntelligenceFeatureHeader
+        title="Runs"
+        description="Run history and audit trail for salon hashtag harvest, IG resolver, and prospect upserts — coming soon."
+        config={salonConfig}
+      />
 
       <div style={{
         background: "#fff",

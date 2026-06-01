@@ -5,7 +5,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
+import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 import type {
   IdentityAssemblerResult,
@@ -614,7 +615,7 @@ export default function EducationDirectoryPage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <CreatorIntelligenceNav current="education-directory" />
+      <IntelligenceMarketNav />
 
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>
@@ -625,6 +626,10 @@ export default function EducationDirectoryPage() {
           Supports pipe, CSV, dash, handle, and freeform formats.
           Resolves IG identity and saves to the prospect repository.
         </p>
+        <IntelligenceContextBadge
+          verticalLabel="Education (legacy tool)"
+          dataScope="Education prospects only"
+        />
       </div>
 
       {!runData && (

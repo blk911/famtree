@@ -7,6 +7,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
+import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
+import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import type { AssembledCreatorStudio } from "@/lib/studios/creator-lab/types";
 
 // ─── Shared primitives ────────────────────────────────────────────────────────
@@ -305,17 +307,11 @@ export default function CreatorLabPage() {
 
       <CreatorIntelligenceNav current="assembler" />
 
-      {/* Header */}
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 8px" }}>
-          Studio Assembler
-        </h1>
-        <p style={{ fontSize: 15, color: "#78716c", margin: 0, lineHeight: 1.6 }}>
-          Internal AIH Studios tool. Enter any creator URL — the system fetches public signals,
-          extracts identity, products, and style, then runs AI enrichment to produce a reviewable
-          draft studio profile.
-        </p>
-      </div>
+      <IntelligenceFeatureHeader
+        title="Studio Assembler"
+        description="Enter any creator URL — the system fetches public signals, extracts identity, products, and style, then runs AI enrichment to produce a reviewable draft studio profile."
+        config={salonConfig}
+      />
 
       {/* Input card — hide after successful assembly */}
       {!assembledStudio && (

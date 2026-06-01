@@ -12,6 +12,7 @@ export const transpoConfig: VerticalConfig = {
   verticalKey: "transpo",
   label: "Transpo",
   shortLabel: "Transpo",
+  dataScope: "Carrier and fleet intelligence only",
   baseRoute: "/admin/intelligence/transpo",
 
   navItems: [

@@ -4,6 +4,8 @@
 
 import { useState } from "react";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
+import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
+import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import { parseSeeds } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
 import type {
   ResolveMode,
@@ -448,16 +450,11 @@ export default function IgStubsPage() {
     <div style={{ maxWidth: 860, margin: "0 auto", padding: "28px 24px" }}>
       <CreatorIntelligenceNav current="ig-resolver" />
 
-      {/* Page header */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: 0 }}>
-          IG Resolver
-        </h1>
-        <p style={{ fontSize: 14, color: "#78716c", margin: "6px 0 0" }}>
-          Given Instagram handles + display names, find public booking pages, stores, and link-in-bio profiles.
-          Fast Mode tests URL patterns directly. Deep Research Mode adds AI identity analysis + web search.
-        </p>
-      </div>
+      <IntelligenceFeatureHeader
+        title="IG Resolver"
+        description="Given Instagram handles and display names, find public booking pages, stores, and link-in-bio profiles. Resolves into salon prospect records only."
+        config={salonConfig}
+      />
 
       {/* Input form — hidden when results showing */}
       {!results && (

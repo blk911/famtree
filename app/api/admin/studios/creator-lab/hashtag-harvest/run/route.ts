@@ -37,7 +37,8 @@ export async function POST(req: NextRequest) {
     return err("Validation error", parsed.error.errors[0]?.message);
   }
 
-  const { hashtags, market, category, maxPerHashtag, mode, verticalKey } = parsed.data;
+  const { hashtags, market, category, maxPerHashtag, mode } = parsed.data;
+  const verticalKey = "salon";
   const runId   = generateRunId();
   const batchId = generateBatchId();
   const now     = new Date().toISOString();

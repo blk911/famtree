@@ -4,6 +4,7 @@
 // Placeholder shell.
 
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 
 export default function IntelligenceLabsPage() {
   return (
@@ -18,6 +19,10 @@ export default function IntelligenceLabsPage() {
           Experimental tools, prototypes, and R&D scratchpad for new
           intelligence verticals and data source integrations.
         </p>
+        <IntelligenceContextBadge
+          verticalLabel="Labs"
+          dataScope="Experimental intelligence tooling only"
+        />
       </div>
 
       <div style={{

@@ -4,6 +4,7 @@
 // Placeholder shell — tools and integrations TBD.
 
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import { hcareConfig } from "@/lib/intelligence/verticals/hcare.config";
 
 export default function HCareIntelligencePage() {
@@ -19,6 +20,10 @@ export default function HCareIntelligencePage() {
           Healthcare practice and allied health operator intelligence pipeline.
           Tools and data sources for this vertical are under development.
         </p>
+        <IntelligenceContextBadge
+          verticalLabel={hcareConfig.label}
+          dataScope={hcareConfig.dataScope}
+        />
       </div>
 
       <div style={{
