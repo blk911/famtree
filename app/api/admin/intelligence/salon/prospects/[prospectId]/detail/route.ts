@@ -11,6 +11,7 @@ import { RELATIONSHIP_OPPORTUNITY_LABELS } from "@/lib/studios/prospects/opportu
 import { buildSalonIdentityPacket, prospectToPublicPresenceInput } from "@/lib/intelligence/salon/public-presence/identity-extractor";
 import { listPresenceResults } from "@/lib/intelligence/salon/public-presence/presence-store";
 import { getBusinessStack } from "@/lib/intelligence/salon/business-stack/stack-store";
+import { getQualifiedOperatorForProspect } from "@/lib/intelligence/salon/qualified-operator/list";
 
 type RouteContext = { params: Promise<{ prospectId: string }> };
 
@@ -102,6 +103,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
     };
 
     const businessStack = await getBusinessStack(prospectId);
+    const qualifiedOperator = getQualifiedOperatorForProspect(prospect, businessStack ?? undefined);
 
     return NextResponse.json({
       ok: true,
@@ -113,6 +115,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
       notes,
       publicPresence,
       businessStack: businessStack ?? undefined,
+      qualifiedOperator,
     });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);

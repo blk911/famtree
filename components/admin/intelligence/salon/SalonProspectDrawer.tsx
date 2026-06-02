@@ -8,6 +8,8 @@ import { bookingProviderForDisplay } from "@/lib/intelligence/salon/gg-booking-d
 import { getStackProvider } from "@/lib/intelligence/salon/business-stack/provider-registry";
 import type { SalonBusinessStack } from "@/lib/intelligence/salon/business-stack/types";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
+import type { QualifiedOperatorResult } from "@/lib/intelligence/salon/qualified-operator/types";
+import { QualifiedOperatorSection } from "./QualifiedOperatorSection";
 
 type DetailResponse = {
   ok: boolean;
@@ -55,6 +57,7 @@ type DetailResponse = {
     website?: string;
   };
   businessStack?: SalonBusinessStack;
+  qualifiedOperator?: QualifiedOperatorResult;
 };
 
 type Props = {
@@ -275,6 +278,10 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                 )}
               </Row>
             </section>
+
+            {data?.qualifiedOperator ? (
+              <QualifiedOperatorSection qualification={data.qualifiedOperator} />
+            ) : null}
 
             <section style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>

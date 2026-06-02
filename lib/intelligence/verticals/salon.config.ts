@@ -26,9 +26,10 @@ export const salonConfig: VerticalConfig = {
     { id: "public_presence", label: "Public Presence", href: "/admin/studios/public-presence" },
     { id: "business_stack", label: "Business Stack", href: "/admin/studios/business-stack" },
     { id: "provider_audit", label: "Provider Audit", href: "/admin/studios/provider-audit" },
+    { id: "qualified_operators", label: "Qualified Operators", href: "/admin/studios/qualified-operators" },
   ],
 
-  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice", "import_candidates", "harvest_analytics", "ggen_discovery", "public_presence", "business_stack", "provider_audit"],
+  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice", "import_candidates", "harvest_analytics", "ggen_discovery", "public_presence", "business_stack", "provider_audit", "qualified_operators"],
   hiddenTools:  [],
 
   sourceLabels: {
