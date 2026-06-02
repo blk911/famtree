@@ -1,5 +1,5 @@
 {
-  "buildCommand": "prisma db push --skip-generate && prisma generate && next build",
+  "buildCommand": "prisma db push --skip-generate --accept-data-loss && prisma generate && next build",
   "framework": "nextjs",
   "functions": {
     "app/api/profile/posts/route.ts": {
