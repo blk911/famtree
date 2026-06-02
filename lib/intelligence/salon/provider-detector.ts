@@ -68,6 +68,7 @@ const PROVIDER_RULES: ProviderRule[] = [
     patterns: [
       "square.site",
       "square.site/book",
+      "book.squareup.com",
       "squareup.com/appointments",
       "squareup.com/appointments/book",
       "booking.squareup.com",

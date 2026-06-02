@@ -57,6 +57,36 @@ export interface RejectedCandidate {
   reason: string;
 }
 
+/** Per-handle resolver trace — returned for debugging and shown in UI. */
+export interface ResolverTrace {
+  handle: string;
+  profileFetch: {
+    attempted: boolean;
+    found: boolean;
+    externalUrl: string | null;
+    biography: string | null;
+    bioUrls: string[];
+    error: string | null;
+  };
+  extracted: {
+    allDirectUrls: string[];
+    providerFromDirectUrl: string | null;
+    providerFromDirectUrlSource: string | null;
+    websiteUrl: string | null;
+  };
+  generatedCandidates: {
+    count: number;
+    linkTrailBookingUrls: string[];
+  };
+  resolverDecision: {
+    status: string;
+    bestUrl: string | null;
+    platform: string | null;
+    confidence: number;
+    reason: string;
+  };
+}
+
 export interface StubResolutionResult {
   seed: IgSeed;
   resolvedProfiles: ResolvedProfile[];  // confirmed matches only, sorted by score
@@ -68,6 +98,8 @@ export interface StubResolutionResult {
   rejectedCandidates?: RejectedCandidate[];
   /** Booking URLs extracted from link-in-bio page HTML (one-hop, existing fetch only). */
   linkTrailUrls?: string[];
+  /** Full resolver trace for debugging — included in debug mode and in IG Resolver UI. */
+  trace?: ResolverTrace;
 }
 
 // ─── API shapes ───────────────────────────────────────────────────────────────

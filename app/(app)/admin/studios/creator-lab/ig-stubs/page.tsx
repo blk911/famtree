@@ -13,6 +13,7 @@ import type {
   ResolveErrorResponse,
   StubResolutionResult,
   ResolvedProfile,
+  ResolverTrace,
 } from "@/lib/studios/creator-lab/ig-stubs/types";
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
@@ -224,6 +225,64 @@ function ProfileCard({ profile, handle }: { profile: ResolvedProfile; handle: st
   );
 }
 
+// ─── Resolver trace panel ─────────────────────────────────────────────────────
+
+function ResolverTracePanel({ trace }: { trace: ResolverTrace }) {
+  const [open, setOpen] = useState(false);
+  const kv: React.CSSProperties = { color: "#a8a29e", whiteSpace: "nowrap" };
+  const vv: React.CSSProperties = { color: "#fef3c7", wordBreak: "break-all" };
+  const rows: [string, string][] = [
+    ["profileFetch.attempted",      String(trace.profileFetch.attempted)],
+    ["profileFetch.found",          String(trace.profileFetch.found)],
+    ["profileFetch.externalUrl",    trace.profileFetch.externalUrl ?? "—"],
+    ["profileFetch.bioUrls",        trace.profileFetch.bioUrls.join(", ") || "—"],
+    ["extracted.allDirectUrls",     trace.extracted.allDirectUrls.join(", ") || "—"],
+    ["extracted.providerFromDirect",trace.extracted.providerFromDirectUrl ?? "—"],
+    ["extracted.websiteUrl",        trace.extracted.websiteUrl ?? "—"],
+    ["generatedCandidates.count",   String(trace.generatedCandidates.count)],
+    ["generatedCandidates.trail",   trace.generatedCandidates.linkTrailBookingUrls.join(", ") || "—"],
+    ["decision.status",             trace.resolverDecision.status],
+    ["decision.bestUrl",            trace.resolverDecision.bestUrl ?? "—"],
+    ["decision.platform",           trace.resolverDecision.platform ?? "—"],
+    ["decision.confidence",         String(trace.resolverDecision.confidence)],
+    ["decision.reason",             trace.resolverDecision.reason],
+  ];
+  if (trace.profileFetch.error) rows.splice(2, 0, ["profileFetch.error", trace.profileFetch.error]);
+
+  return (
+    <div style={{ marginTop: 10 }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          fontSize: 10, fontWeight: 700, color: "#6d28d9", background: "#ede9fe",
+          border: "1px solid #c4b5fd", borderRadius: 6, padding: "3px 10px",
+          cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5,
+        }}
+      >
+        🔍 Resolver Trace {open ? "▲" : "▼"}
+      </button>
+      {open && (
+        <div style={{
+          marginTop: 8, background: "#1c1917", color: "#e7e5e4",
+          borderRadius: 10, padding: "12px 16px", fontSize: 11, fontFamily: "monospace",
+        }}>
+          <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 14px" }}>
+            {rows.map(([k, v]) => (
+              <><span key={`k-${k}`} style={kv}>{k}</span><span key={`v-${k}`} style={vv}>{v}</span></>
+            ))}
+          </div>
+          {trace.profileFetch.biography && (
+            <div style={{ marginTop: 8, color: "#d4d4d8" }}>
+              bio: &quot;{trace.profileFetch.biography.slice(0, 200)}&quot;
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SeedResultBlock({ result }: { result: StubResolutionResult }) {
   const badge = statusBadge(result.status);
 
@@ -282,6 +341,9 @@ function SeedResultBlock({ result }: { result: StubResolutionResult }) {
           ))}
         </>
       )}
+
+      {/* Resolver trace — always rendered, collapsed by default */}
+      {result.trace && <ResolverTracePanel trace={result.trace} />}
     </div>
   );
 }
