@@ -341,6 +341,10 @@ function BackfillSummaryPanel({ result }: { result: StackBackfillSummary }) {
           ["Stacks updated", result.stacksUpdated],
           ["Skipped (no URLs)", result.skippedNoUrls],
           ["Failed", result.failed],
+          ["GG links seen", result.ggLinksSeen],
+          ["GG confirmed", result.ggClientPagesConfirmed],
+          ["GG rejected", result.ggGenericRejected],
+          ["GG prospects updated", result.ggUpdatedProspects],
         ].map(([label, val]) => (
           <div
             key={label}

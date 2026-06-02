@@ -1,5 +1,6 @@
 // lib/intelligence/salon/business-stack/fingerprint-detector.ts
 
+import { isGgClientSubdomainUrl } from "../glossgenius-url";
 import { SALON_STACK_PROVIDERS } from "./provider-registry";
 import type {
   SalonStackSignal,
@@ -47,6 +48,9 @@ function matchProvider(
   for (const domain of provider.domains) {
     const d = domain.toLowerCase();
     if (h === d || h.endsWith(`.${d}`) || full.includes(d)) {
+      if (provider.id === "glossgenius" && !isGgClientSubdomainUrl(url)) {
+        continue;
+      }
       evidence.push(`domain:${d}`);
       if (provider.id === "square" && full.includes("appointments")) {
         return { matched: false, evidence, confidence: 0 };

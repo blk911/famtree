@@ -8,6 +8,10 @@ import {
   buildBusinessStackForProspect,
   maybeUpgradeBookingFromStack,
 } from "./stack-engine";
+import {
+  bookingUpgradeFromGgStack,
+  type GgBookingFromStack,
+} from "./glossgenius-stack";
 import { getBusinessStack, upsertBusinessStack } from "./stack-store";
 import type { StackBackfillProspectResult, StackBackfillSummary } from "./types";
 
@@ -47,6 +51,10 @@ export async function runSalonStackBackfill(
   let websiteBuildersFound = 0;
   let skippedNoUrls = 0;
   let failed = 0;
+  let ggLinksSeen = 0;
+  let ggClientPagesConfirmed = 0;
+  let ggGenericRejected = 0;
+  let ggUpdatedProspects = 0;
   const errors: string[] = [];
   const sample: StackBackfillSummary["sample"] = [];
   const results: StackBackfillProspectResult[] = [];
@@ -76,9 +84,19 @@ export async function runSalonStackBackfill(
       }
 
       const hadStack = Boolean(await getBusinessStack(p.prospectId));
+      const ggStats = {
+        ggLinksSeen: 0,
+        ggClientPagesConfirmed: 0,
+        ggGenericRejected: 0,
+      };
       const { stack, meta } = await buildBusinessStackForProspect(stackInput, {
         crawlWebsite,
+        expandLinkInBio: true,
+        ggStats,
       });
+      ggLinksSeen += ggStats.ggLinksSeen;
+      ggClientPagesConfirmed += ggStats.ggClientPagesConfirmed;
+      ggGenericRejected += ggStats.ggGenericRejected;
 
       baseResult.warnings.push(...meta.warnings);
       baseResult.urlsScanned = meta.urlsScanned;
@@ -107,7 +125,7 @@ export async function runSalonStackBackfill(
       if (stack.checkInProvider) checkInProvidersFound++;
       if (stack.websiteBuilder) websiteBuildersFound++;
 
-      const bookingUpgrade = maybeUpgradeBookingFromStack(
+      const stackUpgrade = maybeUpgradeBookingFromStack(
         {
           bookingProvider: p.bookingProvider,
           bookingUrl: p.bookingUrl ?? undefined,
@@ -116,6 +134,14 @@ export async function runSalonStackBackfill(
         },
         stack,
       );
+      const ggUpgrade: GgBookingFromStack | null = stackUpgrade
+        ? null
+        : bookingUpgradeFromGgStack(stack, {
+            bookingProvider: p.bookingProvider,
+            bookingProviderConfidence: p.bookingProviderConfidence,
+            bookingProviderSource: p.bookingProviderSource,
+          });
+      const bookingUpgrade = stackUpgrade ?? ggUpgrade;
 
       if (persistBooking && bookingUpgrade) {
         try {
@@ -127,7 +153,16 @@ export async function runSalonStackBackfill(
             bookingProviderConfidence: bookingUpgrade.bookingProviderConfidence,
             bookingProviderEvidence: bookingUpgrade.bookingProviderEvidence,
             bookingProviderSource: bookingUpgrade.bookingProviderSource,
+            ...(ggUpgrade
+              ? {
+                  ggValidationStatus: ggUpgrade.ggValidationStatus,
+                  ggValidatedUrl: ggUpgrade.bookingUrl,
+                }
+              : {}),
           });
+          if (bookingUpgrade.bookingProvider === "glossgenius") {
+            ggUpdatedProspects++;
+          }
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           baseResult.warnings.push(`booking_upgrade_failed:${msg}`);
@@ -167,6 +202,10 @@ export async function runSalonStackBackfill(
     websiteBuildersFound,
     skippedNoUrls,
     failed,
+    ggLinksSeen,
+    ggClientPagesConfirmed,
+    ggGenericRejected,
+    ggUpdatedProspects,
     errors,
     sample,
     results,

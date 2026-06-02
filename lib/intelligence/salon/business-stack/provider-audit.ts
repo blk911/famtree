@@ -1,8 +1,10 @@
 // lib/intelligence/salon/business-stack/provider-audit.ts
 
+import { filterProspects } from "@/lib/studios/prospects/store";
+import { isGgValidationConfirmed } from "../glossgenius-page-validator";
 import { SALON_STACK_PROVIDERS, getStackProvider } from "./provider-registry";
 import { listBusinessStacks } from "./stack-store";
-import type { SalonStackSignal, SalonStackSignalSource } from "./types";
+import type { SalonStackSignalSource } from "./types";
 
 const AUDIT_PROVIDER_IDS = [
   "glossgenius",
@@ -81,30 +83,72 @@ export async function buildProviderAuditReport(options?: {
   let totalSignals = 0;
   let prospectsWithSignals = 0;
 
+  function recordHit(
+    providerId: string,
+    source: SalonStackSignalSource | "prospect_field",
+    confidence: number,
+    url: string | undefined,
+    handle: string,
+  ) {
+    if (filter && providerId !== filter && !providerId.includes(filter)) return;
+    let acc = byProvider.get(providerId);
+    if (!acc) {
+      acc = { count: 0, direct: 0, link: 0, crawl: 0, confSum: 0, handles: new Set() };
+      byProvider.set(providerId, acc);
+    }
+    totalSignals++;
+    acc.count++;
+    acc.confSum += confidence;
+    if (url && !acc.sampleUrl) acc.sampleUrl = url;
+    if (handle) acc.handles.add(handle.replace(/^@+/, ""));
+    if (source === "prospect_field") {
+      acc.direct++;
+      return;
+    }
+    const bucket = sourceBucket(source);
+    if (bucket === "direct") acc.direct++;
+    else if (bucket === "link") acc.link++;
+    else if (bucket === "crawl") acc.crawl++;
+  }
+
+  const prospectFieldToStackId: Record<string, string> = {
+    glossgenius: "glossgenius",
+    vagaro: "vagaro",
+    square: "square_appointments",
+    booksy: "booksy",
+    fresha: "fresha",
+    styleseat: "styleseat",
+  };
+
+  const prospects = await filterProspects({ vertical: "salon" });
+  for (const p of prospects) {
+    const bp = p.bookingProvider;
+    if (!bp || bp === "unknown") continue;
+    const stackId = prospectFieldToStackId[bp] ?? bp;
+    if (bp === "glossgenius" && !isGgValidationConfirmed(p.ggValidationStatus)) {
+      const conf = p.bookingProviderConfidence ?? 0;
+      if (conf < 85) continue;
+    }
+    const src =
+      p.bookingProviderSource === "link_trail"
+        ? ("link_in_bio" as SalonStackSignalSource)
+        : (p.bookingProviderSource as SalonStackSignalSource) ?? "direct_url";
+    recordHit(
+      stackId,
+      "prospect_field",
+      (p.bookingProviderConfidence ?? 70) / 100,
+      p.bookingUrl,
+      p.identity.handle,
+    );
+  }
+
   for (const stack of stacks) {
     if (!stack.signals.length) continue;
     prospectsWithSignals++;
     const handle = stack.instagramHandle ?? stack.prospectId ?? "?";
 
     for (const sig of stack.signals) {
-      if (filter && sig.providerId !== filter && !sig.providerId.includes(filter)) {
-        continue;
-      }
-      totalSignals++;
-      let acc = byProvider.get(sig.providerId);
-      if (!acc) {
-        acc = { count: 0, direct: 0, link: 0, crawl: 0, confSum: 0, handles: new Set() };
-        byProvider.set(sig.providerId, acc);
-      }
-      acc.count++;
-      acc.confSum += sig.confidence;
-      if (sig.url && !acc.sampleUrl) acc.sampleUrl = sig.url;
-      if (handle) acc.handles.add(handle.replace(/^@+/, ""));
-
-      const bucket = sourceBucket(sig.source);
-      if (bucket === "direct") acc.direct++;
-      else if (bucket === "link") acc.link++;
-      else if (bucket === "crawl") acc.crawl++;
+      recordHit(sig.providerId, sig.source, sig.confidence, sig.url, handle);
     }
   }
 

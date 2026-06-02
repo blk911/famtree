@@ -28,7 +28,7 @@ import { PublicPresenceBackfillButton } from "@/components/admin/intelligence/sa
 import { SalonOperatorSummary } from "@/components/admin/intelligence/salon/SalonOperatorSummary";
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
-import { bookingProviderForDisplay } from "@/lib/intelligence/salon/gg-booking-display";
+import { bookingProviderForDisplayWithStack } from "@/lib/intelligence/salon/salon-booking-display";
 import {
   BusinessStackChips,
   ImportCandidateChip,
@@ -587,9 +587,12 @@ export default function ProspectsPage() {
       importCandidates: pool.filter((p) => isSalonImportCandidate(p)).length,
       campaignReady: pool.filter((p) => (p.overallOpportunityScore ?? 0) >= 60 && p.validationStatus !== "archive").length,
       needsReview: pool.filter((p) => (p.validationStatus ?? "new") === "needs_review").length,
-      enriched: pool.filter((p) => bookingProviderForDisplay(p).bookingProvider).length,
+      enriched: pool.filter(
+        (p) =>
+          bookingProviderForDisplayWithStack(p, stackByProspect[p.prospectId]).bookingProvider,
+      ).length,
     };
-  }, [statsProspects, statsTotal, totalCount, prospects]);
+  }, [statsProspects, statsTotal, totalCount, prospects, stackByProspect]);
 
   const thS: React.CSSProperties = {
     textAlign: "left", padding: "8px 10px", fontSize: 10, fontWeight: 700,
@@ -792,7 +795,10 @@ export default function ProspectsPage() {
             <tbody>
               {visible.map((p) => {
                 const isExpanded = expandedId === p.prospectId;
-                const bookingDisplay = bookingProviderForDisplay(p);
+                const bookingDisplay = bookingProviderForDisplayWithStack(
+                  p,
+                  stackByProspect[p.prospectId],
+                );
                 return (
                   <Fragment key={p.prospectId}>
                     <tr key={p.prospectId}

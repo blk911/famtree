@@ -2,6 +2,11 @@
 // HTTP validation for GlossGenius client booking pages (public URLs only).
 
 import type { BookingProviderSource } from "./enrich-booking-provider";
+import {
+  glossGeniusSlugFromUrl,
+  isGgApexHost as isGgApexHostUrl,
+  isGgClientSubdomainUrl,
+} from "./glossgenius-url";
 
 const FETCH_TIMEOUT_MS = 5_000;
 const MAX_RESPONSE_BYTES = 500_000;
@@ -390,6 +395,30 @@ export function classifyGgPageContent(input: {
   const bookingSignals = hasStrongBookingSignals(positive);
   const hasGgBookingMarker = positive.includes("glossgenius_booking") && bookingSignals;
 
+  const clientSlug =
+    slugFromUrl(input.finalUrl) ?? slugFromRequested ?? slugFromUrl(input.requestedUrl);
+  const onClientSubdomain =
+    Boolean(clientSlug) &&
+    !isApexGlossGeniusHost(host) &&
+    isGgClientSubdomainUrl(input.finalUrl || input.requestedUrl);
+
+  if (onClientSubdomain && okStatus && !negativeHomepage) {
+    const conf = Math.max(
+      85,
+      confidenceForConfirmed(input.discoverySource, positive, titleMatch),
+    );
+    return {
+      status: "confirmed_client_page",
+      httpStatus: status,
+      finalUrl: input.finalUrl.replace(/\/+$/, ""),
+      positiveMarkers: positive.length ? positive : ["subdomain_client"],
+      negativeMarkers: negative,
+      reason: "Confirmed GlossGenius subdomain client page",
+      confirmed: true,
+      suggestedConfidence: conf,
+    };
+  }
+
   if (negativeHomepage && !bookingSignals) {
     return {
       status: "generic_glossgenius_page",
@@ -419,16 +448,16 @@ export function classifyGgPageContent(input: {
     };
   }
 
-  if (positive.length >= 1 && !negativeHomepage && slugFromRequested) {
+  if (positive.length >= 1 && !negativeHomepage && clientSlug && onClientSubdomain) {
     return {
-      status: "generic_glossgenius_page",
+      status: "confirmed_client_page",
       httpStatus: status,
-      finalUrl: input.finalUrl,
+      finalUrl: input.finalUrl.replace(/\/+$/, ""),
       positiveMarkers: positive,
       negativeMarkers: negative,
-      reason: "Weak booking signals on GlossGenius host",
-      confirmed: false,
-      suggestedConfidence: 0,
+      reason: "GlossGenius subdomain with partial markers",
+      confirmed: true,
+      suggestedConfidence: 85,
     };
   }
 

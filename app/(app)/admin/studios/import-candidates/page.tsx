@@ -11,6 +11,7 @@ import { BookingProviderPill } from "@/components/admin/intelligence/salon/Booki
 import { BookingProviderSourceChip } from "@/components/admin/intelligence/salon/BookingProviderSourceChip";
 import { BusinessStackChips, ImportCandidateChip } from "@/components/admin/intelligence/salon/BusinessStackChips";
 import type { SalonBusinessStack } from "@/lib/intelligence/salon/business-stack/types";
+import { bookingProviderForDisplayWithStack } from "@/lib/intelligence/salon/salon-booking-display";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 import type { ProviderDetectionSummary } from "@/lib/intelligence/salon/provider-detection-diagnostics";
 
@@ -199,12 +200,20 @@ export default function ImportCandidatesPage() {
                     <div style={{ fontSize: 10, color: "#78716c" }}>{p.identity.name}</div>
                   </td>
                   <td style={tdStyle}>
-                    <BookingProviderPill
-                      provider={p.bookingProvider}
-                      label={p.bookingProviderLabel}
-                      bookingUrl={p.bookingUrl}
-                      showImportChip
-                    />
+                    {(() => {
+                      const d = bookingProviderForDisplayWithStack(
+                        p,
+                        stackByProspect[p.prospectId],
+                      );
+                      return (
+                        <BookingProviderPill
+                          provider={d.bookingProvider ?? p.bookingProvider}
+                          label={d.bookingProviderLabel ?? p.bookingProviderLabel}
+                          bookingUrl={d.bookingUrl ?? p.bookingUrl}
+                          showImportChip
+                        />
+                      );
+                    })()}
                   </td>
                   <td style={tdStyle}>
                     <BusinessStackChips stack={stackByProspect[p.prospectId]} compact />

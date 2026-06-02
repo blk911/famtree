@@ -8,7 +8,12 @@ import {
   mergeStackSignals,
 } from "./fingerprint-detector";
 import { crawlWebsiteForStack } from "./website-stack-crawler";
+import { expandLinkInBioUrlsFromList } from "../link-in-bio-expander";
 import { collectStackUrls, prospectRecordToStackInput } from "./collect-urls";
+import {
+  detectValidatedGlossGeniusStackSignals,
+  type GgStackDetectStats,
+} from "./glossgenius-stack";
 import type {
   SalonBusinessStack,
   SalonOperationalMaturity,
@@ -82,7 +87,11 @@ function finalizeStack(
 
 export async function buildBusinessStackForProspect(
   prospect: StackProspectInput | ProspectRecord,
-  options?: { crawlWebsite?: boolean },
+  options?: {
+    crawlWebsite?: boolean;
+    expandLinkInBio?: boolean;
+    ggStats?: GgStackDetectStats;
+  },
 ): Promise<{ stack: SalonBusinessStack; meta: StackBuildMeta }> {
   const input =
     "identity" in prospect
@@ -108,12 +117,39 @@ export async function buildBusinessStackForProspect(
           instagramHandle: input.instagramHandle,
         });
 
-  const directUrls = collected.direct;
-  const linkUrls = collected.linkInBio;
-  const allUrls = collected.all;
-
+  let directUrls = [...collected.direct];
+  let linkUrls = [...collected.linkInBio];
+  let allUrls = [...collected.all];
   const notes: string[] = [];
   const warnings: string[] = [];
+
+  if (options?.expandLinkInBio !== false) {
+    const { expanded, diagnostics } = await expandLinkInBioUrlsFromList(allUrls);
+    allUrls = expanded;
+    for (const d of diagnostics) {
+      if (d.linkInBioProviderLinks.length) {
+        notes.push(
+          `link_in_bio_providers:${d.linkInBioProviderLinks.slice(0, 3).join(",")}`,
+        );
+      }
+      if (d.fetchError) warnings.push(`link_in_bio_expand:${d.fetchError}`);
+    }
+    const seenD = new Set(directUrls.map((u) => u.toLowerCase()));
+    const seenL = new Set(linkUrls.map((u) => u.toLowerCase()));
+    for (const u of expanded) {
+      const key = u.toLowerCase();
+      if (isLinkInBioUrl(u)) {
+        if (!seenL.has(key)) {
+          seenL.add(key);
+          linkUrls.push(u);
+        }
+      } else if (!seenD.has(key)) {
+        seenD.add(key);
+        directUrls.push(u);
+      }
+    }
+  }
+
   let signals: SalonStackSignal[] = [];
 
   signals.push(
@@ -132,6 +168,26 @@ export async function buildBusinessStackForProspect(
       urls: linkUrls,
       source: "link_in_bio",
     }),
+  );
+
+  const handleHint = input.instagramHandle?.replace(/^@+/, "");
+  signals.push(
+    ...(await detectValidatedGlossGeniusStackSignals({
+      urls: [...directUrls, ...linkUrls],
+      source: "direct_url",
+      handleHint,
+      displayNameHint: input.displayName ?? undefined,
+      stats: options?.ggStats,
+    })),
+  );
+  signals.push(
+    ...(await detectValidatedGlossGeniusStackSignals({
+      urls: linkUrls,
+      source: "link_in_bio",
+      handleHint,
+      displayNameHint: input.displayName ?? undefined,
+      stats: options?.ggStats,
+    })),
   );
 
   const websiteCandidate =

@@ -134,6 +134,10 @@ export type StackBackfillSummary = {
   websiteBuildersFound: number;
   skippedNoUrls: number;
   failed: number;
+  ggLinksSeen: number;
+  ggClientPagesConfirmed: number;
+  ggGenericRejected: number;
+  ggUpdatedProspects: number;
   errors: string[];
   sample: Array<{
     handle: string;

@@ -1,6 +1,7 @@
 // lib/studios/creator-lab/ig-stubs/validator.ts
 // Fetches candidate URLs, extracts signals, and produces heuristic confidence scores.
 
+import { extractOutboundLinksFromHtml } from "@/lib/intelligence/salon/link-in-bio-expander";
 import type { IgSeed, CandidateFetch, ResolvedProfile, RejectedCandidate } from "./types";
 import { APPOINTMENT_PLATFORMS } from "./url-patterns";
 import type { CandidateUrl } from "./url-patterns";
@@ -91,10 +92,7 @@ export async function fetchCandidate(candidate: CandidateUrl): Promise<Candidate
       html.match(/<meta[^>]+content=["']([^"']{1,300})["'][^>]+name=["']description["']/i);
     const description = descMatch ? decodeHtmlEntities(descMatch[1].trim()) : null;
 
-    // All links
-    const allLinks = Array.from(html.matchAll(/href=["']([^"']{4,}?)["']/gi))
-      .map((m) => m[1])
-      .filter((l) => l.startsWith("http"));
+    const allLinks = extractOutboundLinksFromHtml(html, finalUrl);
 
     // Instagram back-links
     const instagramLinks = allLinks.filter((l) => l.includes("instagram.com"));

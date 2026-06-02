@@ -8,6 +8,7 @@ import {
   maybeUpgradeBookingFromStack,
   type BookingUpgradeFromStack,
 } from "./stack-engine";
+import { bookingUpgradeFromGgStack } from "./glossgenius-stack";
 import { upsertBusinessStack } from "./stack-store";
 import type { SalonBusinessStack } from "./types";
 import type { StackBuildMeta, StackProspectInput } from "./types";
@@ -52,16 +53,22 @@ export async function enrichProspectWithBusinessStack(
     }
   }
 
-  const bookingUpgrade = maybeUpgradeBookingFromStack(
-    {
+  const bookingUpgrade =
+    maybeUpgradeBookingFromStack(
+      {
+        bookingProvider: input.bookingProvider,
+        bookingProviderLabel: undefined,
+        bookingUrl: input.bookingUrl ?? undefined,
+        bookingProviderConfidence: input.bookingProviderConfidence,
+        bookingProviderSource: input.bookingProviderSource,
+      },
+      stack,
+    ) ??
+    bookingUpgradeFromGgStack(stack, {
       bookingProvider: input.bookingProvider,
-      bookingProviderLabel: undefined,
-      bookingUrl: input.bookingUrl ?? undefined,
       bookingProviderConfidence: input.bookingProviderConfidence,
       bookingProviderSource: input.bookingProviderSource,
-    },
-    stack,
-  );
+    });
 
   const providersFound = Array.from(new Set(stack.signals.map((s) => s.providerId)));
 
