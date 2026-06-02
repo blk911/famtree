@@ -392,27 +392,61 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                 <Row label="Import opportunity">
                   {businessStack.importOpportunity ? "Yes" : "No"}
                 </Row>
-                <Row label="Stack signals">
+                <Row label="All stack signals">
                   {(businessStack.signals ?? []).length > 0 ? (
-                    <ul style={{ margin: 0, paddingLeft: 16 }}>
-                      {businessStack.signals.slice(0, 15).map((sig, i) => (
-                        <li key={`${sig.providerId}-${i}`} style={{ fontSize: 11, marginBottom: 6 }}>
-                          <strong>{sig.providerLabel}</strong> ({sig.category}) ·{" "}
-                          {sig.source} · {Math.round(sig.confidence * 100)}%
-                          {sig.url ? (
-                            <>
-                              {" "}
-                              · <ExternalLink href={sig.url} label={sig.url.slice(0, 36)} />
-                            </>
-                          ) : null}
-                          {sig.evidence.length > 0 ? (
-                            <div style={{ color: "#78716c", marginTop: 2 }}>
-                              {sig.evidence.slice(0, 2).join(" · ")}
-                            </div>
-                          ) : null}
-                        </li>
-                      ))}
-                    </ul>
+                    <div style={{ overflowX: "auto", marginTop: 4 }}>
+                      <table
+                        style={{
+                          width: "100%",
+                          borderCollapse: "collapse",
+                          fontSize: 10,
+                        }}
+                      >
+                        <thead>
+                          <tr style={{ textAlign: "left", color: "#a8a29e" }}>
+                            {["Provider", "Category", "Source", "Conf.", "URL", "Evidence"].map(
+                              (h) => (
+                                <th
+                                  key={h}
+                                  style={{
+                                    padding: "4px 6px",
+                                    borderBottom: "1px solid #e7e5e4",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  {h}
+                                </th>
+                              ),
+                            )}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {businessStack.signals.map((sig, i) => (
+                            <tr key={`${sig.providerId}-${sig.source}-${i}`}>
+                              <td style={{ padding: "6px", verticalAlign: "top" }}>
+                                <strong>{sig.providerLabel}</strong>
+                                <div style={{ color: "#a8a29e" }}>{sig.providerId}</div>
+                              </td>
+                              <td style={{ padding: "6px", verticalAlign: "top" }}>{sig.category}</td>
+                              <td style={{ padding: "6px", verticalAlign: "top" }}>{sig.source}</td>
+                              <td style={{ padding: "6px", verticalAlign: "top" }}>
+                                {Math.round(sig.confidence * 100)}%
+                              </td>
+                              <td style={{ padding: "6px", verticalAlign: "top", maxWidth: 140 }}>
+                                {sig.url ? (
+                                  <ExternalLink href={sig.url} label={sig.url.slice(0, 40)} />
+                                ) : (
+                                  "—"
+                                )}
+                              </td>
+                              <td style={{ padding: "6px", verticalAlign: "top", color: "#78716c" }}>
+                                {sig.evidence.length > 0 ? sig.evidence.join(" · ") : "—"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   ) : (
                     "Not available"
                   )}

@@ -1,15 +1,16 @@
 // lib/intelligence/salon/business-stack/apply-stack-enrichment.ts
 
 import type { UpsertInput } from "@/lib/studios/prospects/store";
+import type { ProspectRecord } from "@/lib/studios/prospects/types";
+import { collectStackUrls } from "./collect-urls";
 import {
   buildBusinessStackForProspect,
   maybeUpgradeBookingFromStack,
-  prospectToStackInput,
   type BookingUpgradeFromStack,
 } from "./stack-engine";
 import { upsertBusinessStack } from "./stack-store";
 import type { SalonBusinessStack } from "./types";
-import type { StackProspectInput } from "./types";
+import type { StackBuildMeta, StackProspectInput } from "./types";
 
 export async function enrichProspectWithBusinessStack(
   input: StackProspectInput & { prospectId?: string },
@@ -17,8 +18,10 @@ export async function enrichProspectWithBusinessStack(
 ): Promise<{
   stack: SalonBusinessStack;
   bookingUpgrade: BookingUpgradeFromStack | null;
+  meta: StackBuildMeta;
+  providersFound: string[];
 }> {
-  const stack = await buildBusinessStackForProspect(
+  const { stack, meta } = await buildBusinessStackForProspect(
     {
       prospectId: input.prospectId,
       instagramHandle: input.instagramHandle,
@@ -31,6 +34,9 @@ export async function enrichProspectWithBusinessStack(
       linkTrailUrls: input.linkTrailUrls,
       linkTrailUrlsScanned: input.linkTrailUrlsScanned,
       allMatchedUrls: input.allMatchedUrls,
+      collectedUrls: input.collectedUrls,
+      collectedDirectUrls: input.collectedDirectUrls,
+      collectedLinkUrls: input.collectedLinkUrls,
       bookingProvider: input.bookingProvider,
       bookingProviderConfidence: input.bookingProviderConfidence,
       bookingProviderSource: input.bookingProviderSource,
@@ -57,13 +63,30 @@ export async function enrichProspectWithBusinessStack(
     stack,
   );
 
-  return { stack, bookingUpgrade };
+  const providersFound = Array.from(new Set(stack.signals.map((s) => s.providerId)));
+
+  return { stack, bookingUpgrade, meta, providersFound };
 }
 
+/** Map upsert payload to stack input (includes debug URL fields when present on record). */
 export function upsertInputToStackInput(
-  upsert: UpsertInput,
+  upsert: UpsertInput & {
+    providerDiscoveryDebug?: ProspectRecord["providerDiscoveryDebug"];
+  },
   prospectId?: string,
 ): StackProspectInput & { prospectId?: string } {
+  const urls = collectStackUrls({
+    website: upsert.bestMatch?.url,
+    bestMatchUrl: upsert.bestMatch?.url,
+    bookingUrl: upsert.bookingUrl,
+    linkInBioUrl: upsert.linkInBioUrl,
+    linkTrailUrls: upsert.linkTrailUrlsScanned,
+    linkTrailUrlsScanned: upsert.linkTrailUrlsScanned,
+    allMatchedUrls: upsert.allMatchedUrls,
+    providerDiscoveryDebug: upsert.providerDiscoveryDebug,
+    instagramHandle: upsert.identity.handle,
+  });
+
   const handle = upsert.identity.handle.replace(/^@/, "");
   return {
     prospectId,
@@ -72,13 +95,16 @@ export function upsertInputToStackInput(
     website: upsert.bestMatch?.url,
     bioUrl: handle ? `https://www.instagram.com/${handle}/` : undefined,
     bestMatchUrl: upsert.bestMatch?.url,
-    allMatchedUrls: upsert.allMatchedUrls,
-    linkTrailUrls: upsert.linkTrailUrlsScanned,
+    allMatchedUrls: urls.all.map((url) => ({ url })),
+    linkTrailUrls: urls.linkInBio,
     linkTrailUrlsScanned: upsert.linkTrailUrlsScanned,
     linkInBioUrl: upsert.linkInBioUrl,
     bookingProvider: upsert.bookingProvider,
     bookingProviderConfidence: upsert.bookingProviderConfidence,
     bookingProviderSource: upsert.bookingProviderSource,
     bookingUrl: upsert.bookingUrl,
+    collectedUrls: urls.all,
+    collectedDirectUrls: urls.direct,
+    collectedLinkUrls: urls.linkInBio,
   };
 }

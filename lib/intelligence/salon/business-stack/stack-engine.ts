@@ -8,47 +8,18 @@ import {
   mergeStackSignals,
 } from "./fingerprint-detector";
 import { crawlWebsiteForStack } from "./website-stack-crawler";
+import { collectStackUrls, prospectRecordToStackInput } from "./collect-urls";
 import type {
   SalonBusinessStack,
   SalonOperationalMaturity,
   SalonStackSignal,
+  StackBuildMeta,
   StackProspectInput,
 } from "./types";
 
 const DIRECT_PROTECT_CONF = 90;
 
-function uniqueUrls(urls: Array<string | null | undefined>): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of urls) {
-    const u = (raw ?? "").trim();
-    if (!u || !u.startsWith("http")) continue;
-    const key = u.toLowerCase().replace(/\/+$/, "");
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push(u);
-  }
-  return out;
-}
-
-export function prospectToStackInput(prospect: ProspectRecord): StackProspectInput {
-  return {
-    prospectId: prospect.prospectId,
-    instagramHandle: prospect.identity.handle,
-    displayName: prospect.identity.name,
-    website: prospect.bestMatch?.url,
-    bioUrl: prospect.linkInBioUrl,
-    bestMatchUrl: prospect.bestMatch?.url ?? prospect.bookingUrl,
-    bookingUrl: prospect.bookingUrl,
-    linkInBioUrl: prospect.linkInBioUrl,
-    linkTrailUrls: prospect.linkTrailUrlsScanned,
-    linkTrailUrlsScanned: prospect.linkTrailUrlsScanned,
-    allMatchedUrls: prospect.allMatchedUrls,
-    bookingProvider: prospect.bookingProvider,
-    bookingProviderConfidence: prospect.bookingProviderConfidence,
-    bookingProviderSource: prospect.bookingProviderSource,
-  };
-}
+export { prospectRecordToStackInput as prospectToStackInput } from "./collect-urls";
 
 function scoreCompleteness(stack: Omit<SalonBusinessStack, "stackCompletenessScore" | "operationalMaturity" | "importOpportunity" | "updatedAt">): number {
   let score = 0;
@@ -112,26 +83,37 @@ function finalizeStack(
 export async function buildBusinessStackForProspect(
   prospect: StackProspectInput | ProspectRecord,
   options?: { crawlWebsite?: boolean },
-): Promise<SalonBusinessStack> {
+): Promise<{ stack: SalonBusinessStack; meta: StackBuildMeta }> {
   const input =
-    "identity" in prospect ? prospectToStackInput(prospect as ProspectRecord) : prospect;
+    "identity" in prospect
+      ? prospectRecordToStackInput(prospect as ProspectRecord)
+      : prospect;
 
-  const directUrls = uniqueUrls([
-    input.bookingUrl,
-    input.bestMatchUrl,
-    input.website,
-    input.bioUrl,
-    ...(input.allMatchedUrls ?? []).map((u) => (typeof u === "string" ? u : u.url)),
-  ]).filter((u) => !isLinkInBioUrl(u));
+  const collected =
+    input.collectedUrls && input.collectedDirectUrls && input.collectedLinkUrls
+      ? {
+          all: input.collectedUrls,
+          direct: input.collectedDirectUrls,
+          linkInBio: input.collectedLinkUrls,
+        }
+      : collectStackUrls({
+          website: input.website,
+          bioUrl: input.bioUrl,
+          bestMatchUrl: input.bestMatchUrl,
+          bookingUrl: input.bookingUrl,
+          linkInBioUrl: input.linkInBioUrl,
+          linkTrailUrls: input.linkTrailUrls,
+          linkTrailUrlsScanned: input.linkTrailUrlsScanned,
+          allMatchedUrls: input.allMatchedUrls,
+          instagramHandle: input.instagramHandle,
+        });
 
-  const linkUrls = uniqueUrls([
-    input.linkInBioUrl,
-    ...(input.linkTrailUrlsScanned ?? []),
-    ...(input.linkTrailUrls ?? []),
-  ]);
+  const directUrls = collected.direct;
+  const linkUrls = collected.linkInBio;
+  const allUrls = collected.all;
 
-  const allUrls = uniqueUrls([...directUrls, ...linkUrls]);
   const notes: string[] = [];
+  const warnings: string[] = [];
   let signals: SalonStackSignal[] = [];
 
   signals.push(
@@ -165,8 +147,12 @@ export async function buildBusinessStackForProspect(
       signals.push(...crawl.signals);
       notes.push(`website_crawl:${crawl.finalUrl}`);
     } else if (crawl.errors.length) {
-      notes.push(`crawl_error:${crawl.errors.join(",")}`);
+      const msg = crawl.errors.join(",");
+      notes.push(`crawl_error:${msg}`);
+      warnings.push(`website_crawl_failed:${msg}`);
     }
+  } else if (options?.crawlWebsite && !websiteCandidate) {
+    warnings.push("website_crawl_skipped:no_candidate_url");
   }
 
   signals = mergeStackSignals(signals);
@@ -185,7 +171,14 @@ export async function buildBusinessStackForProspect(
     notes,
   });
 
-  return stack;
+  return {
+    stack,
+    meta: {
+      urlsScanned: allUrls.length,
+      allUrls,
+      warnings: [...warnings, ...notes.filter((n) => n.startsWith("crawl_"))],
+    },
+  };
 }
 
 export type BookingUpgradeFromStack = {

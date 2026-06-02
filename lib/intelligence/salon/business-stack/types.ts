@@ -94,4 +94,53 @@ export type StackProspectInput = {
   bookingProvider?: string;
   bookingProviderConfidence?: number;
   bookingProviderSource?: string;
+  /** Pre-collected URL sets from prospect record (backfill). */
+  collectedUrls?: string[];
+  collectedDirectUrls?: string[];
+  collectedLinkUrls?: string[];
+};
+
+export type StackBuildMeta = {
+  urlsScanned: number;
+  allUrls: string[];
+  warnings: string[];
+};
+
+export type StackBackfillProspectResult = {
+  prospectId: string;
+  handle: string;
+  urlsScanned: number;
+  signalsFound: number;
+  providersFound: string[];
+  primaryBookingProvider?: string;
+  primaryPaymentProvider?: string;
+  checkInProvider?: string;
+  websiteBuilder?: string;
+  errors: string[];
+  warnings: string[];
+  skipped?: boolean;
+  failed?: boolean;
+};
+
+export type StackBackfillSummary = {
+  ok: true;
+  checked: number;
+  stacksCreated: number;
+  stacksUpdated: number;
+  providersFound: number;
+  bookingProvidersFound: number;
+  paymentProvidersFound: number;
+  checkInProvidersFound: number;
+  websiteBuildersFound: number;
+  skippedNoUrls: number;
+  failed: number;
+  errors: string[];
+  sample: Array<{
+    handle: string;
+    booking?: string;
+    payment?: string;
+    checkIn?: string;
+    score?: number;
+  }>;
+  results: StackBackfillProspectResult[];
 };

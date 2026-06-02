@@ -25,9 +25,10 @@ export const salonConfig: VerticalConfig = {
     { id: "ggen_discovery", label: "GG Seed Discovery", href: "/admin/studios/ggen-discovery" },
     { id: "public_presence", label: "Public Presence", href: "/admin/studios/public-presence" },
     { id: "business_stack", label: "Business Stack", href: "/admin/studios/business-stack" },
+    { id: "provider_audit", label: "Provider Audit", href: "/admin/studios/provider-audit" },
   ],
 
-  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice", "import_candidates", "harvest_analytics", "ggen_discovery", "public_presence", "business_stack"],
+  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice", "import_candidates", "harvest_analytics", "ggen_discovery", "public_presence", "business_stack", "provider_audit"],
   hiddenTools:  [],
 
   sourceLabels: {

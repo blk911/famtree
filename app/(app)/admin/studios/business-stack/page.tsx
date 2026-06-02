@@ -7,19 +7,13 @@ import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import { SalonStorageBadge } from "@/components/admin/intelligence/salon/SalonStorageBadge";
 import { SalonProspectDrawer } from "@/components/admin/intelligence/salon/SalonProspectDrawer";
 import { getStackProvider } from "@/lib/intelligence/salon/business-stack/provider-registry";
-import type { SalonBusinessStack } from "@/lib/intelligence/salon/business-stack/types";
+import type {
+  SalonBusinessStack,
+  StackBackfillProspectResult,
+  StackBackfillSummary,
+} from "@/lib/intelligence/salon/business-stack/types";
 
 type StackRow = SalonBusinessStack & { handle?: string; name?: string };
-
-type BackfillResult = {
-  checked: number;
-  stacksCreated: number;
-  bookingProvidersFound: number;
-  paymentProvidersFound: number;
-  checkInProvidersFound: number;
-  errors: string[];
-  sample: Array<{ handle: string; booking?: string; payment?: string; checkIn?: string }>;
-};
 
 function providerLabel(id?: string): string {
   if (!id) return "—";
@@ -33,7 +27,7 @@ export default function BusinessStackPage() {
   const [onlyUnknown, setOnlyUnknown] = useState(true);
   const [crawlWebsite, setCrawlWebsite] = useState(false);
   const [backfillLoading, setBackfillLoading] = useState(false);
-  const [backfillResult, setBackfillResult] = useState<BackfillResult | null>(null);
+  const [backfillResult, setBackfillResult] = useState<StackBackfillSummary | null>(null);
   const [backfillError, setBackfillError] = useState<string | null>(null);
   const [drawerId, setDrawerId] = useState<string | null>(null);
 
@@ -190,17 +184,7 @@ export default function BusinessStackPage() {
           <div style={{ marginTop: 10, fontSize: 12, color: "#b91c1c" }}>{backfillError}</div>
         ) : null}
         {backfillResult ? (
-          <div style={{ marginTop: 12, fontSize: 11, color: "#57534e" }}>
-            Checked {backfillResult.checked} · stacks {backfillResult.stacksCreated} · booking{" "}
-            {backfillResult.bookingProvidersFound} · payment{" "}
-            {backfillResult.paymentProvidersFound} · check-in{" "}
-            {backfillResult.checkInProvidersFound}
-            {backfillResult.errors.length > 0 ? (
-              <div style={{ color: "#b45309", marginTop: 6 }}>
-                Errors: {backfillResult.errors.slice(0, 3).join("; ")}
-              </div>
-            ) : null}
-          </div>
+          <BackfillSummaryPanel result={backfillResult} />
         ) : null}
       </div>
 
@@ -317,3 +301,120 @@ const selectStyle: React.CSSProperties = {
   border: "1px solid #e7e5e4",
   background: "#fff",
 };
+
+function BackfillSummaryPanel({ result }: { result: StackBackfillSummary }) {
+  const perProspect = (result.results ?? []).slice(0, 20);
+  const th: React.CSSProperties = {
+    textAlign: "left",
+    padding: "6px 8px",
+    fontSize: 9,
+    fontWeight: 700,
+    color: "#a8a29e",
+    borderBottom: "1px solid #e7e5e4",
+  };
+  const td: React.CSSProperties = {
+    padding: "6px 8px",
+    fontSize: 10,
+    color: "#57534e",
+    borderBottom: "1px solid #f5f5f4",
+    verticalAlign: "top",
+  };
+
+  return (
+    <div style={{ marginTop: 14 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+          gap: 8,
+          marginBottom: 12,
+        }}
+      >
+        {[
+          ["Checked", result.checked],
+          ["Providers found", result.providersFound],
+          ["Booking", result.bookingProvidersFound],
+          ["Payments", result.paymentProvidersFound],
+          ["Check-in", result.checkInProvidersFound],
+          ["Website builders", result.websiteBuildersFound],
+          ["Stacks created", result.stacksCreated],
+          ["Stacks updated", result.stacksUpdated],
+          ["Skipped (no URLs)", result.skippedNoUrls],
+          ["Failed", result.failed],
+        ].map(([label, val]) => (
+          <div
+            key={label}
+            style={{
+              background: "#fafaf9",
+              borderRadius: 8,
+              padding: "8px 10px",
+              border: "1px solid #f5f5f4",
+            }}
+          >
+            <div style={{ fontSize: 9, fontWeight: 700, color: "#a8a29e" }}>{label}</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#1c1917" }}>{val}</div>
+          </div>
+        ))}
+      </div>
+      {result.errors.length > 0 ? (
+        <div style={{ fontSize: 11, color: "#b45309", marginBottom: 10 }}>
+          <strong>Batch notes ({result.errors.length}):</strong>{" "}
+          {result.errors.slice(0, 8).join(" · ")}
+        </div>
+      ) : null}
+      {perProspect.length > 0 ? (
+        <div style={{ overflowX: "auto", border: "1px solid #e7e5e4", borderRadius: 8 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#78716c", padding: "8px 10px" }}>
+            Per-prospect results (first {perProspect.length})
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                {[
+                  "Handle",
+                  "URLs",
+                  "Signals",
+                  "Providers",
+                  "Booking",
+                  "Payment",
+                  "Check-in",
+                  "Issues",
+                ].map((h) => (
+                  <th key={h} style={th}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {perProspect.map((r: StackBackfillProspectResult) => (
+                <tr key={r.prospectId}>
+                  <td style={td}>@{r.handle}</td>
+                  <td style={td}>{r.urlsScanned}</td>
+                  <td style={td}>{r.signalsFound}</td>
+                  <td style={td}>{r.providersFound.join(", ") || "—"}</td>
+                  <td style={td}>{r.primaryBookingProvider ?? "—"}</td>
+                  <td style={td}>{r.primaryPaymentProvider ?? "—"}</td>
+                  <td style={td}>{r.checkInProvider ?? "—"}</td>
+                  <td style={td}>
+                    {r.skipped ? "no URLs" : null}
+                    {r.failed ? `fail: ${r.errors[0] ?? "?"}` : null}
+                    {!r.skipped && !r.failed && r.warnings.length > 0
+                      ? r.warnings.slice(0, 2).join("; ")
+                      : null}
+                    {!r.skipped && !r.failed && !r.warnings.length && r.errors.length > 0
+                      ? r.errors.join("; ")
+                      : null}
+                    {!r.skipped && !r.failed && !r.warnings.length && !r.errors.length
+                      ? "—"
+                      : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+    </div>
+  );
+}
