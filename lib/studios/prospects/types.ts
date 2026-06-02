@@ -233,6 +233,50 @@ export interface ProspectRecord {
     ggDisplayAttempted?: boolean;
     ggCheckedUrls?: string[];
     providerResolverReason?: string;
+    providerValidation?: {
+      candidates?: Array<{
+        id: string;
+        provider: string;
+        providerLabel: string;
+        candidateUrl: string;
+        source: string;
+        confidenceHint: number;
+        generated: boolean;
+        createdAt: string;
+      }>;
+      validations?: Array<{
+        candidateId?: string;
+        provider: string;
+        providerLabel: string;
+        candidateUrl: string;
+        finalUrl?: string;
+        status: string;
+        confirmed: boolean;
+        confidence: number;
+        statusCode?: number;
+        positiveMarkers: string[];
+        negativeMarkers: string[];
+        reason: string;
+        validatedAt: string;
+        source?: string;
+        generated?: boolean;
+      }>;
+      confirmed?: {
+        provider: string;
+        providerLabel: string;
+        candidateUrl: string;
+        finalUrl?: string;
+        status: string;
+        confirmed: boolean;
+        confidence: number;
+        positiveMarkers: string[];
+        negativeMarkers: string[];
+        reason: string;
+        validatedAt: string;
+        source?: string;
+        generated?: boolean;
+      };
+    };
   };
 
   // ── Intelligence status ──────────────────────────────────────────────────────

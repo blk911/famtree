@@ -6,9 +6,8 @@ export const maxDuration = 300;
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { filterProspects, upsertProspect } from "@/lib/studios/prospects/store";
-import {
-  enrichSalonProviderDiscovery,
-} from "@/lib/intelligence/salon/salon-provider-discovery";
+import { enrichSalonProviderDiscovery } from "@/lib/intelligence/salon/salon-provider-discovery";
+import { initProviderBackfillStats } from "@/lib/intelligence/salon/provider-validation/revalidate-prospect-booking";
 import { upsertInputToGgEnrichInput } from "@/lib/intelligence/salon/apply-gg-enrichment";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 import type { UpsertInput } from "@/lib/studios/prospects/store";
@@ -61,6 +60,7 @@ export async function POST(req: NextRequest) {
     let downgradedCandidateOnly = 0;
     let genericHomepageRejected = 0;
     const errors: string[] = [];
+    const stats = initProviderBackfillStats();
 
     for (const p of prospects) {
       try {
@@ -96,6 +96,27 @@ export async function POST(req: NextRequest) {
           }
         }
 
+        const pv = result.providerDiscoveryDebug.providerValidation;
+        stats.candidatesFound += pv?.candidates?.length ?? 0;
+        for (const v of pv?.validations ?? []) {
+          stats.validationsRun++;
+          if (v.confirmed) {
+            stats.confirmedProviders++;
+            stats.providersByType[v.provider] = (stats.providersByType[v.provider] ?? 0) + 1;
+          } else if (
+            v.status === "rejected_generic_homepage" ||
+            v.status === "rejected_marketing_page" ||
+            v.status === "rejected_redirect_home"
+          ) {
+            stats.rejectedGenericHomepage++;
+          } else if (v.status === "rejected_not_found") {
+            stats.rejectedNotFound++;
+          }
+        }
+        if (hadHandleGg && !result.bookingProvider) {
+          stats.downgradedFalsePositives++;
+        }
+
         await upsertProspect({
           ...base,
           bookingProvider: result.bookingProvider,
@@ -122,6 +143,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
+      checked: prospects.length,
       prospectsChecked: prospects.length,
       directProvidersFound,
       linkTrailProvidersFound,
@@ -132,6 +154,13 @@ export async function POST(req: NextRequest) {
       confirmedKept,
       downgradedCandidateOnly,
       genericHomepageRejected,
+      candidatesFound: stats.candidatesFound,
+      validationsRun: stats.validationsRun,
+      confirmedProviders: stats.confirmedProviders,
+      rejectedGenericHomepage: stats.rejectedGenericHomepage,
+      rejectedNotFound: stats.rejectedNotFound,
+      downgradedFalsePositives: stats.downgradedFalsePositives,
+      providersByType: stats.providersByType,
       errors,
     });
   } catch (e) {

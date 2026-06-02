@@ -586,6 +586,60 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
               })()}
             </section>
 
+            {(() => {
+              const pv =
+                p.providerDiscoveryDebug?.providerValidation ??
+                data?.notes?.providerDiscoveryDebug?.providerValidation;
+              const confirmed = pv?.confirmed;
+              const lastValidation = pv?.validations?.[pv.validations.length - 1];
+              const v = confirmed ?? lastValidation;
+              if (!v) return null;
+              return (
+                <section style={{ marginBottom: 20 }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: "#a8a29e",
+                      letterSpacing: "0.06em",
+                      marginBottom: 8,
+                    }}
+                  >
+                    PROVIDER VALIDATION
+                  </div>
+                  <Row label="Candidate URL">
+                    <ExternalLink href={v.candidateUrl} />
+                  </Row>
+                  <Row label="Final URL">
+                    {v.finalUrl ? <ExternalLink href={v.finalUrl} /> : "Not available"}
+                  </Row>
+                  <Row label="Provider">{na(v.providerLabel ?? v.provider)}</Row>
+                  <Row label="Source">{na(v.source ?? confirmed?.source)}</Row>
+                  <Row label="Generated?">
+                    {v.generated ?? confirmed?.generated ? "Yes" : "No"}
+                  </Row>
+                  <Row label="Status">{na(v.status)}</Row>
+                  <Row label="Confirmed?">{v.confirmed ? "Yes" : "No"}</Row>
+                  <Row label="Confidence">
+                    {typeof v.confidence === "number"
+                      ? `${Math.round(v.confidence * 100)}%`
+                      : "Not available"}
+                  </Row>
+                  <Row label="Positive markers">
+                    {(v.positiveMarkers ?? []).length > 0
+                      ? v.positiveMarkers.join(", ")
+                      : "None"}
+                  </Row>
+                  <Row label="Negative markers">
+                    {(v.negativeMarkers ?? []).length > 0
+                      ? v.negativeMarkers.join(", ")
+                      : "None"}
+                  </Row>
+                  <Row label="Reason">{na(v.reason)}</Row>
+                </section>
+              );
+            })()}
+
             <AdvancedIntelligenceSection
               prospect={p}
               recommendedPlay={data?.opportunity?.recommendedPlay}

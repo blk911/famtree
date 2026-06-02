@@ -10,10 +10,8 @@ import {
 import { crawlWebsiteForStack } from "./website-stack-crawler";
 import { expandLinkInBioUrlsFromList } from "../link-in-bio-expander";
 import { collectStackUrls, prospectRecordToStackInput } from "./collect-urls";
-import {
-  detectValidatedGlossGeniusStackSignals,
-  type GgStackDetectStats,
-} from "./glossgenius-stack";
+import { detectConfirmedBookingStackSignals } from "../provider-validation/confirmed-booking-signals";
+import type { GgStackDetectStats } from "./glossgenius-stack";
 import type {
   SalonBusinessStack,
   SalonOperationalMaturity,
@@ -171,24 +169,20 @@ export async function buildBusinessStackForProspect(
   );
 
   const handleHint = input.instagramHandle?.replace(/^@+/, "");
-  signals.push(
-    ...(await detectValidatedGlossGeniusStackSignals({
-      urls: [...directUrls, ...linkUrls],
-      source: "direct_url",
-      handleHint,
-      displayNameHint: input.displayName ?? undefined,
-      stats: options?.ggStats,
-    })),
-  );
-  signals.push(
-    ...(await detectValidatedGlossGeniusStackSignals({
-      urls: linkUrls,
-      source: "link_in_bio",
-      handleHint,
-      displayNameHint: input.displayName ?? undefined,
-      stats: options?.ggStats,
-    })),
-  );
+  const bookingDetect = await detectConfirmedBookingStackSignals({
+    prospectId: input.prospectId,
+    instagramHandle: handleHint ?? "",
+    displayName: input.displayName ?? undefined,
+    website: input.website,
+    directUrls,
+    linkTrailUrls: linkUrls,
+  });
+  signals.push(...bookingDetect.signals);
+  if (options?.ggStats) {
+    options.ggStats.ggLinksSeen += bookingDetect.stats.candidatesFound;
+    options.ggStats.ggClientPagesConfirmed += bookingDetect.stats.confirmed;
+    options.ggStats.ggGenericRejected += bookingDetect.stats.rejectedGeneric;
+  }
 
   const websiteCandidate =
     directUrls.find((u) => !isLinkInBioUrl(u) && !u.includes("instagram.com")) ??
@@ -295,7 +289,10 @@ export function maybeUpgradeBookingFromStack(
   if (!bookingId) return null;
 
   const signal = stack.signals.find(
-    (s) => s.category === "booking" && s.providerId === bookingId,
+    (s) =>
+      s.category === "booking" &&
+      s.providerId === bookingId &&
+      s.evidence.some((e) => e.includes("provider_validation:confirmed")),
   );
   if (!signal) return null;
 

@@ -1,7 +1,7 @@
 // lib/intelligence/salon/business-stack/provider-audit.ts
 
 import { filterProspects } from "@/lib/studios/prospects/store";
-import { isGgValidationConfirmed } from "../glossgenius-page-validator";
+import { isConfirmedSalonBookingProvider } from "../gg-booking-display";
 import { SALON_STACK_PROVIDERS, getStackProvider } from "./provider-registry";
 import { listBusinessStacks } from "./stack-store";
 import type { SalonStackSignalSource } from "./types";
@@ -41,12 +41,21 @@ export type ProviderAuditRow = {
   sampleProspects: string[];
 };
 
+export type ProviderValidationAuditSummary = {
+  confirmed: number;
+  candidates: number;
+  rejectedGeneric: number;
+  rejectedNotFound: number;
+  timeoutError: number;
+};
+
 export type ProviderAuditReport = {
   ok: true;
   totalStacks: number;
   totalSignals: number;
   prospectsWithSignals: number;
   providers: ProviderAuditRow[];
+  validationSummary: ProviderValidationAuditSummary;
 };
 
 function sourceBucket(source: SalonStackSignalSource): "direct" | "link" | "crawl" | "other" {
@@ -120,15 +129,38 @@ export async function buildProviderAuditReport(options?: {
     styleseat: "styleseat",
   };
 
+  const validationSummary: ProviderValidationAuditSummary = {
+    confirmed: 0,
+    candidates: 0,
+    rejectedGeneric: 0,
+    rejectedNotFound: 0,
+    timeoutError: 0,
+  };
+
   const prospects = await filterProspects({ vertical: "salon" });
   for (const p of prospects) {
+    const pv = p.providerDiscoveryDebug?.providerValidation;
+    for (const v of pv?.validations ?? []) {
+      if (v.confirmed) validationSummary.confirmed++;
+      else if (v.status === "candidate_only") validationSummary.candidates++;
+      else if (
+        v.status === "rejected_generic_homepage" ||
+        v.status === "rejected_marketing_page" ||
+        v.status === "rejected_redirect_home" ||
+        v.status === "rejected_login_signup"
+      ) {
+        validationSummary.rejectedGeneric++;
+      } else if (v.status === "rejected_not_found") {
+        validationSummary.rejectedNotFound++;
+      } else if (v.status === "timeout" || v.status === "error" || v.status === "blocked") {
+        validationSummary.timeoutError++;
+      }
+    }
+
     const bp = p.bookingProvider;
     if (!bp || bp === "unknown") continue;
+    if (!isConfirmedSalonBookingProvider(p)) continue;
     const stackId = prospectFieldToStackId[bp] ?? bp;
-    if (bp === "glossgenius" && !isGgValidationConfirmed(p.ggValidationStatus)) {
-      const conf = p.bookingProviderConfidence ?? 0;
-      if (conf < 85) continue;
-    }
     const src =
       p.bookingProviderSource === "link_trail"
         ? ("link_in_bio" as SalonStackSignalSource)
@@ -148,6 +180,12 @@ export async function buildProviderAuditReport(options?: {
     const handle = stack.instagramHandle ?? stack.prospectId ?? "?";
 
     for (const sig of stack.signals) {
+      if (
+        sig.category === "booking" &&
+        !sig.evidence.some((e) => e.includes("provider_validation:confirmed"))
+      ) {
+        continue;
+      }
       recordHit(sig.providerId, sig.source, sig.confidence, sig.url, handle);
     }
   }
@@ -216,6 +254,7 @@ export async function buildProviderAuditReport(options?: {
       providers: providers.filter(
         (r) => r.providerId.includes(filter) || r.label.toLowerCase().includes(filter),
       ),
+      validationSummary,
     };
   }
 
@@ -225,5 +264,6 @@ export async function buildProviderAuditReport(options?: {
     totalSignals,
     prospectsWithSignals,
     providers,
+    validationSummary,
   };
 }

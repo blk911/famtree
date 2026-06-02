@@ -12,6 +12,11 @@ import {
   bookingUpgradeFromGgStack,
   type GgBookingFromStack,
 } from "./glossgenius-stack";
+import {
+  accumulateBackfillStats,
+  initProviderBackfillStats,
+  revalidateProspectBookingFields,
+} from "../provider-validation/revalidate-prospect-booking";
 import { getBusinessStack, upsertBusinessStack } from "./stack-store";
 import type { StackBackfillProspectResult, StackBackfillSummary } from "./types";
 
@@ -58,6 +63,7 @@ export async function runSalonStackBackfill(
   const errors: string[] = [];
   const sample: StackBackfillSummary["sample"] = [];
   const results: StackBackfillProspectResult[] = [];
+  const providerValidationStats = initProviderBackfillStats();
 
   for (const p of prospects) {
     const handle = p.identity.handle.replace(/^@+/, "");
@@ -72,7 +78,29 @@ export async function runSalonStackBackfill(
     };
 
     try {
-      const stackInput = prospectRecordToStackInput(p);
+      const revalidate = await revalidateProspectBookingFields(p);
+      accumulateBackfillStats(
+        providerValidationStats,
+        revalidate.validation,
+        revalidate.downgraded,
+        p.bookingProvider,
+      );
+      if (revalidate.downgraded && persistBooking) {
+        try {
+          await upsertProspect({
+            ...prospectToUpsert(p),
+            ...revalidate.fields,
+          });
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          baseResult.warnings.push(`revalidate_downgrade_failed:${msg}`);
+        }
+      }
+
+      const stackInput = prospectRecordToStackInput({
+        ...p,
+        ...revalidate.fields,
+      } as ProspectRecord);
       baseResult.urlsScanned = stackInput.collectedUrls?.length ?? 0;
 
       if (baseResult.urlsScanned === 0) {
@@ -206,6 +234,13 @@ export async function runSalonStackBackfill(
     ggClientPagesConfirmed,
     ggGenericRejected,
     ggUpdatedProspects,
+    candidatesFound: providerValidationStats.candidatesFound,
+    validationsRun: providerValidationStats.validationsRun,
+    confirmedProviders: providerValidationStats.confirmedProviders,
+    rejectedGenericHomepage: providerValidationStats.rejectedGenericHomepage,
+    rejectedNotFound: providerValidationStats.rejectedNotFound,
+    downgradedFalsePositives: providerValidationStats.downgradedFalsePositives,
+    providersByType: providerValidationStats.providersByType,
     errors,
     sample,
     results,

@@ -1,5 +1,5 @@
 // lib/intelligence/salon/gg-booking-display.ts
-// UI helpers — only show GlossGenius when validation confirmed.
+// UI helpers — only show booking providers when validation confirmed.
 
 import { isGgValidationConfirmed } from "./glossgenius-page-validator";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
@@ -12,7 +12,19 @@ export type SalonBookingDisplayFields = Pick<
   | "bookingProviderSource"
   | "bookingProviderConfidence"
   | "ggValidationStatus"
+  | "providerDiscoveryDebug"
 >;
+
+function hasConfirmedProviderValidation(
+  p: SalonBookingDisplayFields,
+): boolean {
+  const confirmed = p.providerDiscoveryDebug?.providerValidation?.confirmed;
+  if (confirmed?.confirmed) return true;
+  if (p.bookingProvider === "glossgenius") {
+    return isGgValidationConfirmed(p.ggValidationStatus);
+  }
+  return false;
+}
 
 /** Whether the prospect table/drawer should show a booking provider pill. */
 export function isConfirmedSalonBookingProvider(
@@ -20,8 +32,7 @@ export function isConfirmedSalonBookingProvider(
 ): boolean {
   const provider = p.bookingProvider;
   if (!provider || provider === "unknown") return false;
-  if (provider !== "glossgenius") return true;
-  return isGgValidationConfirmed(p.ggValidationStatus);
+  return hasConfirmedProviderValidation(p);
 }
 
 export function bookingProviderForDisplay(

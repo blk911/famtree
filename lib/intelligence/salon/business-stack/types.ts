@@ -138,6 +138,13 @@ export type StackBackfillSummary = {
   ggClientPagesConfirmed: number;
   ggGenericRejected: number;
   ggUpdatedProspects: number;
+  candidatesFound?: number;
+  validationsRun?: number;
+  confirmedProviders?: number;
+  rejectedGenericHomepage?: number;
+  rejectedNotFound?: number;
+  downgradedFalsePositives?: number;
+  providersByType?: Record<string, number>;
   errors: string[];
   sample: Array<{
     handle: string;

@@ -25,6 +25,8 @@ import {
   mapValidationSource,
   type GgValidationStatus,
 } from "./glossgenius-page-validator";
+import type { ProviderValidationDiagnostics } from "./provider-validation/types";
+import { runSalonProviderDiscoveryPipeline } from "./provider-validation/discovery-pipeline";
 
 const SKIP_GG_CONFIDENCE = 90;
 const MAX_GG_CANDIDATES = 8;
@@ -39,6 +41,7 @@ export type ProviderDiscoveryDebug = {
   ggDisplayAttempted: boolean;
   ggCheckedUrls: string[];
   providerResolverReason: string;
+  providerValidation?: ProviderValidationDiagnostics;
 };
 
 export type SalonProviderDiscoveryInput = {
@@ -277,7 +280,7 @@ function detectLinkTrailProviders(
 }
 
 /**
- * Full salon provider discovery with explicit priority and diagnostics.
+ * Full salon provider discovery: candidates → provider-specific validation → confirmed signal only.
  */
 export async function enrichSalonProviderDiscovery(
   input: SalonProviderDiscoveryInput,
@@ -310,334 +313,32 @@ export async function enrichSalonProviderDiscovery(
     .filter(Boolean)
     .join(" ");
 
-  const linkInBioFetched = Boolean(
-    input.linkInBioPageFetched ||
-      (input.linkInBioUrl && linkTrailUrlsScanned.length > 1),
-  );
-
-  const hints = {
-    handle: input.instagramHandle,
-    displayName: input.displayName ?? null,
-  };
-
-  const direct = detectDirectProviders(directUrlsScanned, text);
-  const trail = detectLinkTrailProviders(linkTrailUrlsScanned, text);
-
-  let fields: ProspectBookingFields | null = pickBetter(direct.fields, trail.fields);
-  let providerDetectedFromDirect = direct.fromDirect;
-  let providerDetectedFromLinkTrail =
-    trail.fromLinkTrail && !direct.fromDirect;
-
-  let ggCandidateUrls: string[] = [];
-  let ggValidatedUrl: string | undefined;
-  let ggValidationStatus: GgValidationStatus = "not_attempted";
-
-  if (fields?.bookingProvider) {
-    const srcUrls = providerDetectedFromLinkTrail ? linkTrailUrlsScanned : directUrlsScanned;
-    const source = inferSource(srcUrls, fields);
-
-    if (fields.bookingProvider === "glossgenius") {
-      const validated = await validateGgDetectionFields(fields, source, hints);
-      ggCandidateUrls = validated.ggCandidateUrls;
-      ggValidatedUrl = validated.ggValidatedUrl;
-      ggValidationStatus = validated.ggValidationStatus;
-
-      if (validated.fields) {
-        return {
-          ...validated.fields,
-          bookingProviderSource: source,
-          ggCandidateUrls: validated.ggCandidateUrls,
-          ggValidatedUrl: validated.ggValidatedUrl,
-          ggValidationStatus: validated.ggValidationStatus,
-          ggCheckedUrls: validated.ggCandidateUrls,
-          providerDiscoveryDebug: {
-            directUrlsScanned,
-            linkTrailUrlsScanned,
-            linkInBioFetched,
-            providerDetectedFromDirect,
-            providerDetectedFromLinkTrail,
-            ggHandleAttempted: false,
-            ggDisplayAttempted: false,
-            ggCheckedUrls: validated.ggCandidateUrls,
-            providerResolverReason: providerDetectedFromLinkTrail
-              ? "link_trail_gg_confirmed"
-              : "direct_gg_confirmed",
-          },
-          ggResolverStatus: "skipped_existing_provider",
-          ggResolverReason: validated.validationReason,
-        };
-      }
-
-      fields = null;
-      providerDetectedFromDirect = false;
-      providerDetectedFromLinkTrail = false;
-    } else {
-      return {
-        ...fields,
-        bookingProviderSource: source,
-        providerDiscoveryDebug: {
-          directUrlsScanned,
-          linkTrailUrlsScanned,
-          linkInBioFetched,
-          providerDetectedFromDirect,
-          providerDetectedFromLinkTrail,
-          ggHandleAttempted: false,
-          ggDisplayAttempted: false,
-          ggCheckedUrls: [],
-          providerResolverReason: providerDetectedFromLinkTrail
-            ? "link_trail_detection"
-            : "direct_url_detection",
-        },
-        ggResolverStatus: "skipped_existing_provider",
-        ggResolverReason: "provider_found_before_gg",
-        ggValidationStatus: "not_attempted",
-      };
-    }
-  }
-
-  // Legacy combined trail pass (catches edge cases in evidence text)
-  const combined = detectBookingFromProspectTrail({
-    bestMatchUrl: input.bestMatchUrl,
-    allMatchedUrls: input.allMatchedUrls,
-    evidence: input.evidence,
-    linkTrailUrls: input.linkTrailUrls,
-    linkTrailUrlsScanned: linkTrailUrlsScanned,
-  });
-
-  if (combined.bookingProvider) {
-    fields = combined;
-    providerDetectedFromLinkTrail = linkTrailUrlsScanned.some((u) =>
-      /glossgenius|vagaro|square|booksy|fresha|styleseat/i.test(u),
-    );
-    providerDetectedFromDirect = directUrlsScanned.some(
-      (u) =>
-        detectSalonBookingProvider(u)?.provider === combined.bookingProvider,
-    );
-
-    if (fields.bookingProvider === "glossgenius") {
-      const source = inferSource(linkTrailUrlsScanned, fields);
-      const validated = await validateGgDetectionFields(fields, source, hints);
-      ggCandidateUrls = validated.ggCandidateUrls;
-      ggValidatedUrl = validated.ggValidatedUrl;
-      ggValidationStatus = validated.ggValidationStatus;
-
-      if (validated.fields) {
-        return {
-          ...validated.fields,
-          bookingProviderSource: source,
-          ggCandidateUrls: validated.ggCandidateUrls,
-          ggValidatedUrl: validated.ggValidatedUrl,
-          ggValidationStatus: validated.ggValidationStatus,
-          ggCheckedUrls: validated.ggCandidateUrls,
-          providerDiscoveryDebug: {
-            directUrlsScanned,
-            linkTrailUrlsScanned,
-            linkInBioFetched,
-            providerDetectedFromDirect,
-            providerDetectedFromLinkTrail,
-            ggHandleAttempted: false,
-            ggDisplayAttempted: false,
-            ggCheckedUrls: validated.ggCandidateUrls,
-            providerResolverReason: "combined_trail_gg_confirmed",
-          },
-          ggResolverStatus: "skipped_existing_provider",
-          ggResolverReason: validated.validationReason,
-        };
-      }
-
-      fields = null;
-      providerDetectedFromDirect = false;
-      providerDetectedFromLinkTrail = false;
-    } else if (
-      fields &&
-      (scoreFields(fields) >= SKIP_GG_CONFIDENCE ||
-      options?.enableGgFallback === false)
-    ) {
-      return {
-        ...fields,
-        bookingProviderSource: inferSource(linkTrailUrlsScanned, fields),
-        providerDiscoveryDebug: {
-          directUrlsScanned,
-          linkTrailUrlsScanned,
-          linkInBioFetched,
-          providerDetectedFromDirect,
-          providerDetectedFromLinkTrail,
-          ggHandleAttempted: false,
-          ggDisplayAttempted: false,
-          ggCheckedUrls: [],
-          providerResolverReason: "combined_trail_detection",
-        },
-        ggResolverStatus: "skipped_existing_provider",
-        ggResolverReason: "provider_found_before_gg",
-      };
-    }
-  }
-
-  if (options?.enableGgFallback === false) {
-    return {
-      ...(fields ?? {}),
-      providerDiscoveryDebug: {
-        directUrlsScanned,
-        linkTrailUrlsScanned,
-        linkInBioFetched,
-        providerDetectedFromDirect: false,
-        providerDetectedFromLinkTrail: false,
-        ggHandleAttempted: false,
-        ggDisplayAttempted: false,
-        ggCheckedUrls: [],
-        providerResolverReason: "no_provider_gg_disabled",
-      },
-      ggResolverStatus: "not_attempted",
-    };
-  }
-
-  const ggInput: GlossGeniusHandleResolverInput = {
+  const pipeline = await runSalonProviderDiscoveryPipeline({
     instagramHandle: input.instagramHandle,
     displayName: input.displayName,
     website: input.website,
     bio: input.bio,
-  };
+    directUrls: directUrlsScanned,
+    linkTrailUrls: linkTrailUrlsScanned,
+    text,
+    enableGeneratedFallback: options?.enableGgFallback !== false,
+  });
 
-  const candidates = collectGlossGeniusCandidates(ggInput).slice(0, MAX_GG_CANDIDATES);
-  const ggHandleAttempted = candidates.some((c) => c.source === "handle_derived");
-  const ggDisplayAttempted = candidates.some((c) => c.source === "display_name_derived");
-
-  let ggResult;
-  try {
-    ggResult = await resolveGlossGeniusFromHandle(ggInput, {
-      publicUrls: linkTrailUrlsScanned,
-    });
-  } catch (e) {
-    const reason = e instanceof Error ? e.message : "gg_error";
+  const downgrade = wasHandleDerivedGg(input);
+  if (downgrade && !pipeline.bookingProvider) {
     return {
-      ...(fields ?? {}),
+      ...clearUnconfirmedBookingFields(),
+      ...pipeline,
       providerDiscoveryDebug: {
-        directUrlsScanned,
-        linkTrailUrlsScanned,
-        linkInBioFetched,
-        providerDetectedFromDirect: false,
-        providerDetectedFromLinkTrail: false,
-        ggHandleAttempted,
-        ggDisplayAttempted,
-        ggCheckedUrls: [],
-        providerResolverReason: reason,
+        ...pipeline.providerDiscoveryDebug,
+        providerResolverReason: "downgraded_unconfirmed_gg",
       },
-      ggResolverStatus: "error",
-      ggResolverReason: reason,
+      ggResolverStatus: "candidate_only",
+      ggResolverReason: "downgraded_unconfirmed_gg",
     };
   }
 
-  const ggCheckedUrls = ggResult.checkedUrls ?? candidates.map((c) => c.url);
-
-  const ggDiag = buildGgDiagnosticsFromResult(ggResult);
-
-  if (!ggResult.found) {
-    const downgrade = wasHandleDerivedGg(input);
-    const cleared = downgrade ? clearUnconfirmedBookingFields() : {};
-    return {
-      ...(fields ?? {}),
-      ...cleared,
-      ...ggDiag,
-      providerDiscoveryDebug: {
-        directUrlsScanned,
-        linkTrailUrlsScanned,
-        linkInBioFetched,
-        providerDetectedFromDirect: false,
-        providerDetectedFromLinkTrail: false,
-        ggHandleAttempted,
-        ggDisplayAttempted,
-        ggCheckedUrls,
-        providerResolverReason: downgrade
-          ? "downgraded_unconfirmed_gg"
-          : ggResult.reason ?? "gg_not_found",
-      },
-      ggResolverStatus: mapGgStatus(
-        false,
-        ggResult.source,
-        ggResult.reason,
-        ggResult.ggValidationStatus,
-      ),
-      ggResolverReason: ggResult.reason ?? ggResult.ggValidationStatus,
-    };
-  }
-
-  const gg = legacyGlossGeniusEnrichFields(ggResult);
-  if (!gg) {
-    return {
-      ...(fields ?? {}),
-      ...ggDiag,
-      providerDiscoveryDebug: {
-        directUrlsScanned,
-        linkTrailUrlsScanned,
-        linkInBioFetched,
-        providerDetectedFromDirect: false,
-        providerDetectedFromLinkTrail: false,
-        ggHandleAttempted,
-        ggDisplayAttempted,
-        ggCheckedUrls,
-        providerResolverReason: "gg_not_confirmed",
-      },
-      ggResolverStatus: mapGgStatus(
-        false,
-        ggResult.source,
-        ggResult.reason,
-        ggResult.ggValidationStatus,
-      ),
-      ggResolverReason: ggResult.ggValidationStatus ?? "candidate_only",
-    };
-  }
-
-  if (fields?.bookingProvider && scoreFields(fields) >= SKIP_GG_CONFIDENCE) {
-    return {
-      ...fields,
-      bookingProviderSource: inferSource(linkTrailUrlsScanned, fields),
-      providerDiscoveryDebug: {
-        directUrlsScanned,
-        linkTrailUrlsScanned,
-        linkInBioFetched,
-        providerDetectedFromDirect,
-        providerDetectedFromLinkTrail,
-        ggHandleAttempted,
-        ggDisplayAttempted,
-        ggCheckedUrls,
-        providerResolverReason: "trail_kept_over_gg",
-      },
-      ggResolverStatus: "skipped_existing_provider",
-      ggResolverReason: "high_confidence_trail",
-      ggCheckedUrls,
-    };
-  }
-
-  return {
-    bookingProvider: gg.provider,
-    bookingProviderLabel: gg.providerLabel,
-    bookingUrl: gg.bookingUrl,
-    bookingProviderConfidence: gg.providerConfidence,
-    bookingProviderEvidence: gg.evidence,
-    bookingProviderSource: gg.providerSource,
-    ...ggDiag,
-    providerDiscoveryDebug: {
-      directUrlsScanned,
-      linkTrailUrlsScanned,
-      linkInBioFetched,
-      providerDetectedFromDirect: false,
-      providerDetectedFromLinkTrail: false,
-      ggHandleAttempted,
-      ggDisplayAttempted,
-      ggCheckedUrls,
-      providerResolverReason:
-        gg.providerSource === "display_name_derived"
-          ? "gg_display_confirmed"
-          : "gg_handle_confirmed",
-    },
-    ggResolverStatus: mapGgStatus(
-      true,
-      gg.providerSource,
-      "confirmed_client_page",
-      ggResult.ggValidationStatus,
-    ),
-    ggResolverReason: "confirmed_client_page",
-  };
+  return pipeline as SalonProviderDiscoveryResult;
 }
 
 /** Debug payload for POST /api/admin/intelligence/salon/provider-debug */

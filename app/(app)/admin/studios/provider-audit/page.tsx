@@ -13,6 +13,13 @@ type AuditResponse = {
   totalSignals?: number;
   prospectsWithSignals?: number;
   providers?: ProviderAuditRow[];
+  validationSummary?: {
+    confirmed: number;
+    candidates: number;
+    rejectedGeneric: number;
+    rejectedNotFound: number;
+    timeoutError: number;
+  };
   detail?: string;
 };
 
@@ -104,6 +111,11 @@ export default function ProviderAuditPage() {
             ["Total signals", report.totalSignals ?? 0],
             ["Prospects w/ signals", report.prospectsWithSignals ?? 0],
             ["Providers w/ hits", rows.filter((r) => r.count > 0).length],
+            ["Confirmed validations", report.validationSummary?.confirmed ?? 0],
+            ["Candidate only", report.validationSummary?.candidates ?? 0],
+            ["Rejected generic", report.validationSummary?.rejectedGeneric ?? 0],
+            ["Rejected not found", report.validationSummary?.rejectedNotFound ?? 0],
+            ["Timeout / error", report.validationSummary?.timeoutError ?? 0],
           ].map(([label, val]) => (
             <div
               key={label}

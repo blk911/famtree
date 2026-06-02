@@ -101,6 +101,7 @@ export function detectBusinessStackFromUrls(input: StackDetectInput): SalonStack
     if (!url.startsWith("http")) continue;
 
     for (const provider of SALON_STACK_PROVIDERS) {
+      if (provider.category === "booking") continue;
       const hit = matchProvider(provider, url);
       if (!hit.matched) continue;
       const conf = Math.min(1, baseConf * (hit.confidence >= 0.9 ? 1 : hit.confidence));
