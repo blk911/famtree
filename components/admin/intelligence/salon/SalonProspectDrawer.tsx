@@ -452,7 +452,25 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                   )}
                 </Row>
               </section>
-            ) : null}
+            ) : (
+              <section style={{ marginBottom: 20 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: "#a8a29e",
+                    letterSpacing: "0.06em",
+                    marginBottom: 8,
+                  }}
+                >
+                  BUSINESS STACK
+                </div>
+                <div style={{ fontSize: 12, color: "#78716c" }}>
+                  No stack stored. Run <strong>Backfill IG URLs</strong>, then{" "}
+                  <strong>Business Stack backfill</strong> (crawl off is fine).
+                </div>
+              </section>
+            )}
 
             {presence ? (
               <section style={{ marginBottom: 20 }}>

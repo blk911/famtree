@@ -28,11 +28,26 @@ type UrlSource = {
   linkInBioUrl?: string | null;
   linkTrailUrls?: string[];
   linkTrailUrlsScanned?: string[];
+  candidateUrlsTested?: string[];
   allMatchedUrls?: Array<{ url: string } | string>;
   externalUrl?: string | null;
   providerDiscoveryDebug?: ProspectRecord["providerDiscoveryDebug"];
   instagramHandle?: string;
 };
+
+function resolveExternalUrl(
+  dbg: ProspectRecord["providerDiscoveryDebug"],
+  bestMatchUrl?: string | null,
+): string | undefined {
+  if (dbg?.externalUrl && dbg.externalUrl.startsWith("http")) {
+    return dbg.externalUrl;
+  }
+  const fromBio = (dbg?.bioUrls ?? []).find((u) => u.startsWith("http"));
+  if (fromBio) return fromBio;
+  const fromDirect = (dbg?.directUrlsScanned ?? []).find((u) => u.startsWith("http"));
+  if (fromDirect) return fromDirect;
+  return bestMatchUrl?.startsWith("http") ? bestMatchUrl : undefined;
+}
 
 /** Gather every public URL we know for a prospect (trail, booking, debug scans, matches). */
 export function collectStackUrls(source: UrlSource): {
@@ -46,14 +61,18 @@ export function collectStackUrls(source: UrlSource): {
     source.bioUrl ??
     (handle ? `https://www.instagram.com/${handle}/` : undefined);
 
+  const externalUrl = source.externalUrl ?? resolveExternalUrl(dbg, source.bestMatchUrl);
+
   const directCandidates: Array<string | null | undefined> = [
-    source.externalUrl,
+    externalUrl,
     source.bookingUrl,
     source.bestMatchUrl,
     source.website,
     ...(dbg?.directUrlsScanned ?? []),
     ...(dbg?.urlsScanned ?? []),
     ...(dbg?.bioUrls ?? []),
+    ...(dbg?.linkTrailUrlsScanned ?? []).filter((u) => !isLinkInBioUrl(u)),
+    ...(source.candidateUrlsTested ?? []),
     ...(source.allMatchedUrls ?? []).map((u) =>
       typeof u === "string" ? u : u.url,
     ),
@@ -98,18 +117,20 @@ export function collectStackUrls(source: UrlSource): {
 
 export function prospectRecordToStackInput(prospect: ProspectRecord): StackProspectInput {
   const dbg = prospect.providerDiscoveryDebug;
+  const bestUrl = prospect.bestMatch?.url ?? prospect.bookingUrl ?? undefined;
+  const websiteOnly =
+    prospect.bestMatch?.platform === "website" ? prospect.bestMatch.url : undefined;
+
   const urls = collectStackUrls({
-    website:
-      prospect.bestMatch?.platform === "website"
-        ? prospect.bestMatch.url
-        : undefined,
-    externalUrl: dbg?.externalUrl ?? undefined,
+    website: websiteOnly,
+    externalUrl: resolveExternalUrl(dbg, bestUrl),
     bioUrl: prospect.linkInBioUrl,
-    bestMatchUrl: prospect.bestMatch?.url ?? prospect.bookingUrl,
+    bestMatchUrl: bestUrl,
     bookingUrl: prospect.bookingUrl,
     linkInBioUrl: prospect.linkInBioUrl,
     linkTrailUrls: prospect.linkTrailUrlsScanned,
     linkTrailUrlsScanned: prospect.linkTrailUrlsScanned,
+    candidateUrlsTested: prospect.candidateUrlsTested,
     allMatchedUrls: prospect.allMatchedUrls,
     providerDiscoveryDebug: dbg,
     instagramHandle: prospect.identity.handle,
@@ -119,9 +140,9 @@ export function prospectRecordToStackInput(prospect: ProspectRecord): StackProsp
     prospectId: prospect.prospectId,
     instagramHandle: prospect.identity.handle,
     displayName: prospect.identity.name,
-    website: prospect.bestMatch?.url ?? undefined,
+    website: websiteOnly ?? undefined,
     bioUrl: prospect.linkInBioUrl ?? undefined,
-    bestMatchUrl: prospect.bestMatch?.url ?? prospect.bookingUrl ?? undefined,
+    bestMatchUrl: bestUrl,
     bookingUrl: prospect.bookingUrl ?? undefined,
     linkInBioUrl: prospect.linkInBioUrl ?? undefined,
     linkTrailUrls: urls.linkInBio,

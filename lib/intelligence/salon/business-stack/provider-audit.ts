@@ -49,14 +49,33 @@ export type ProviderValidationAuditSummary = {
   timeoutError: number;
 };
 
+export type ProviderAuditCategorySection = {
+  title: string;
+  category: string;
+  rows: ProviderAuditRow[];
+};
+
 export type ProviderAuditReport = {
   ok: true;
   totalStacks: number;
   totalSignals: number;
   prospectsWithSignals: number;
   providers: ProviderAuditRow[];
+  /** Hits grouped for operator review (confirmed booking uses validation-gated stack signals). */
+  categorySections: ProviderAuditCategorySection[];
   validationSummary: ProviderValidationAuditSummary;
 };
+
+function buildCategorySections(providers: ProviderAuditRow[]): ProviderAuditCategorySection[] {
+  const hits = (id: string) =>
+    providers.filter((r) => r.category === id && r.count > 0);
+  return [
+    { title: "Confirmed booking providers", category: "booking", rows: hits("booking") },
+    { title: "Payment providers", category: "payments", rows: hits("payments") },
+    { title: "Check-in providers", category: "check_in", rows: hits("check_in") },
+    { title: "Website builders", category: "website_builder", rows: hits("website_builder") },
+  ];
+}
 
 function sourceBucket(source: SalonStackSignalSource): "direct" | "link" | "crawl" | "other" {
   if (source === "direct_url") return "direct";
@@ -246,14 +265,16 @@ export async function buildProviderAuditReport(options?: {
   providers.sort((a, b) => b.count - a.count);
 
   if (filter) {
+    const filtered = providers.filter(
+      (r) => r.providerId.includes(filter) || r.label.toLowerCase().includes(filter),
+    );
     return {
       ok: true,
       totalStacks: stacks.length,
       totalSignals,
       prospectsWithSignals,
-      providers: providers.filter(
-        (r) => r.providerId.includes(filter) || r.label.toLowerCase().includes(filter),
-      ),
+      providers: filtered,
+      categorySections: buildCategorySections(filtered),
       validationSummary,
     };
   }
@@ -264,6 +285,7 @@ export async function buildProviderAuditReport(options?: {
     totalSignals,
     prospectsWithSignals,
     providers,
+    categorySections: buildCategorySections(providers),
     validationSummary,
   };
 }

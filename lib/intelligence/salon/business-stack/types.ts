@@ -133,6 +133,12 @@ export type StackBackfillSummary = {
   checkInProvidersFound: number;
   websiteBuildersFound: number;
   skippedNoUrls: number;
+  prospectsChecked: number;
+  prospectsWithHandle: number;
+  prospectsWithAnyUrl: number;
+  prospectsWithExternalUrl: number;
+  prospectsWithBioUrls: number;
+  prospectsWithBestUrl: number;
   failed: number;
   ggLinksSeen: number;
   ggClientPagesConfirmed: number;

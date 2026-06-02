@@ -18,6 +18,7 @@ import {
   revalidateProspectBookingFields,
 } from "../provider-validation/revalidate-prospect-booking";
 import { getBusinessStack, upsertBusinessStack } from "./stack-store";
+import { auditSalonProspectUrlCoverage } from "./url-coverage";
 import type { StackBackfillProspectResult, StackBackfillSummary } from "./types";
 
 export type RunStackBackfillOptions = {
@@ -64,6 +65,8 @@ export async function runSalonStackBackfill(
   const sample: StackBackfillSummary["sample"] = [];
   const results: StackBackfillProspectResult[] = [];
   const providerValidationStats = initProviderBackfillStats();
+
+  const urlCoverageAtStart = auditSalonProspectUrlCoverage(prospects, 0);
 
   for (const p of prospects) {
     const handle = p.identity.handle.replace(/^@+/, "");
@@ -218,6 +221,8 @@ export async function runSalonStackBackfill(
     }
   }
 
+  const urlCoverage = auditSalonProspectUrlCoverage(prospects, skippedNoUrls);
+
   return {
     ok: true,
     checked: prospects.length,
@@ -229,6 +234,12 @@ export async function runSalonStackBackfill(
     checkInProvidersFound,
     websiteBuildersFound,
     skippedNoUrls,
+    prospectsChecked: urlCoverage.prospectsChecked,
+    prospectsWithHandle: urlCoverage.prospectsWithHandle,
+    prospectsWithAnyUrl: urlCoverageAtStart.prospectsWithAnyUrl,
+    prospectsWithExternalUrl: urlCoverage.prospectsWithExternalUrl,
+    prospectsWithBioUrls: urlCoverage.prospectsWithBioUrls,
+    prospectsWithBestUrl: urlCoverage.prospectsWithBestUrl,
     failed,
     ggLinksSeen,
     ggClientPagesConfirmed,

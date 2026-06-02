@@ -5,7 +5,10 @@ import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/Creator
 import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import { SalonStorageBadge } from "@/components/admin/intelligence/salon/SalonStorageBadge";
-import type { ProviderAuditRow } from "@/lib/intelligence/salon/business-stack/provider-audit";
+import type {
+  ProviderAuditCategorySection,
+  ProviderAuditRow,
+} from "@/lib/intelligence/salon/business-stack/provider-audit";
 
 type AuditResponse = {
   ok: boolean;
@@ -13,6 +16,7 @@ type AuditResponse = {
   totalSignals?: number;
   prospectsWithSignals?: number;
   providers?: ProviderAuditRow[];
+  categorySections?: ProviderAuditCategorySection[];
   validationSummary?: {
     confirmed: number;
     candidates: number;
@@ -140,70 +144,22 @@ export default function ProviderAuditPage() {
           {report?.detail ?? "Audit failed"}
         </div>
       ) : (
-        <div style={{ overflowX: "auto", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                {[
-                  "Provider",
-                  "Category",
-                  "Count",
-                  "Direct URL",
-                  "Link-in-bio",
-                  "Website crawl",
-                  "Avg conf.",
-                  "Sample URL",
-                  "Sample prospects",
-                ].map((h) => (
-                  <th key={h} style={thStyle}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr
-                  key={r.providerId}
-                  style={{
-                    background: r.count === 0 ? "#fafaf9" : "transparent",
-                    opacity: r.count === 0 ? 0.65 : 1,
-                  }}
-                >
-                  <td style={tdStyle}>
-                    <strong>{r.label}</strong>
-                    <div style={{ fontSize: 10, color: "#a8a29e" }}>{r.providerId}</div>
-                  </td>
-                  <td style={tdStyle}>{r.category}</td>
-                  <td style={tdStyle}>{r.count}</td>
-                  <td style={tdStyle}>{r.directUrlCount}</td>
-                  <td style={tdStyle}>{r.linkInBioCount}</td>
-                  <td style={tdStyle}>{r.websiteCrawlCount}</td>
-                  <td style={tdStyle}>{r.averageConfidence ? `${r.averageConfidence}%` : "—"}</td>
-                  <td style={tdStyle}>
-                    {r.sampleUrl ? (
-                      <a
-                        href={r.sampleUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: "#0284c7", fontSize: 10, wordBreak: "break-all" }}
-                      >
-                        {r.sampleUrl.slice(0, 48)}
-                      </a>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td style={tdStyle}>
-                    {r.sampleProspects.length > 0
-                      ? r.sampleProspects.map((h) => `@${h}`).join(", ")
-                      : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {(report.categorySections ?? []).map((section) => (
+            <CategorySectionTable
+              key={section.category}
+              section={section}
+              thStyle={thStyle}
+              tdStyle={tdStyle}
+            />
+          ))}
+          <div style={{ marginTop: 20, marginBottom: 8, fontSize: 12, fontWeight: 700, color: "#44403c" }}>
+            All providers
+          </div>
+          <div style={{ overflowX: "auto", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12 }}>
+            <AuditProviderTable rows={rows} thStyle={thStyle} tdStyle={tdStyle} />
+          </div>
+        </>
       )}
     </div>
   );
@@ -216,6 +172,116 @@ const selectStyle: React.CSSProperties = {
   border: "1px solid #e7e5e4",
   background: "#fff",
 };
+
+function AuditProviderTable({
+  rows,
+  thStyle,
+  tdStyle,
+}: {
+  rows: ProviderAuditRow[];
+  thStyle: React.CSSProperties;
+  tdStyle: React.CSSProperties;
+}) {
+  return (
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <thead>
+        <tr>
+          {[
+            "Provider",
+            "Category",
+            "Count",
+            "Direct URL",
+            "Link-in-bio",
+            "Website crawl",
+            "Avg conf.",
+            "Sample URL",
+            "Sample prospects",
+          ].map((h) => (
+            <th key={h} style={thStyle}>
+              {h}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr
+            key={r.providerId}
+            style={{
+              background: r.count === 0 ? "#fafaf9" : "transparent",
+              opacity: r.count === 0 ? 0.65 : 1,
+            }}
+          >
+            <td style={tdStyle}>
+              <strong>{r.label}</strong>
+              <div style={{ fontSize: 10, color: "#a8a29e" }}>{r.providerId}</div>
+            </td>
+            <td style={tdStyle}>{r.category}</td>
+            <td style={tdStyle}>{r.count}</td>
+            <td style={tdStyle}>{r.directUrlCount}</td>
+            <td style={tdStyle}>{r.linkInBioCount}</td>
+            <td style={tdStyle}>{r.websiteCrawlCount}</td>
+            <td style={tdStyle}>{r.averageConfidence ? `${r.averageConfidence}%` : "—"}</td>
+            <td style={tdStyle}>
+              {r.sampleUrl ? (
+                <a
+                  href={r.sampleUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#0284c7", fontSize: 10, wordBreak: "break-all" }}
+                >
+                  {r.sampleUrl.slice(0, 48)}
+                </a>
+              ) : (
+                "—"
+              )}
+            </td>
+            <td style={tdStyle}>
+              {r.sampleProspects.length > 0
+                ? r.sampleProspects.map((h) => `@${h}`).join(", ")
+                : "—"}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function CategorySectionTable({
+  section,
+  thStyle,
+  tdStyle,
+}: {
+  section: ProviderAuditCategorySection;
+  thStyle: React.CSSProperties;
+  tdStyle: React.CSSProperties;
+}) {
+  if (section.rows.length === 0) {
+    return (
+      <div style={{ marginBottom: 16, fontSize: 11, color: "#a8a29e" }}>
+        <strong>{section.title}:</strong> none detected yet
+      </div>
+    );
+  }
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#44403c", marginBottom: 8 }}>
+        {section.title}
+      </div>
+      <div
+        style={{
+          overflowX: "auto",
+          background: "#fff",
+          border: "1px solid #e7e5e4",
+          borderRadius: 12,
+        }}
+      >
+        <AuditProviderTable rows={section.rows} thStyle={thStyle} tdStyle={tdStyle} />
+      </div>
+    </div>
+  );
+}
 
 const btnStyle: React.CSSProperties = {
   fontSize: 12,

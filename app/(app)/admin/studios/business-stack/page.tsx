@@ -335,6 +335,10 @@ function BackfillSummaryPanel({ result }: { result: StackBackfillSummary }) {
       >
         {[
           ["Checked", result.checked],
+          ["With any URL", result.prospectsWithAnyUrl ?? "—"],
+          ["With best URL", result.prospectsWithBestUrl ?? "—"],
+          ["With external URL", result.prospectsWithExternalUrl ?? "—"],
+          ["With bio URLs", result.prospectsWithBioUrls ?? "—"],
           ["Providers found", result.providersFound],
           ["Booking", result.bookingProvidersFound],
           ["Payments", result.paymentProvidersFound],
@@ -363,6 +367,31 @@ function BackfillSummaryPanel({ result }: { result: StackBackfillSummary }) {
           </div>
         ))}
       </div>
+      {result.skippedNoUrls > 0 ? (
+        <div
+          style={{
+            fontSize: 11,
+            color: "#57534e",
+            marginBottom: 10,
+            padding: "10px 12px",
+            background: "#fffbeb",
+            border: "1px solid #fde68a",
+            borderRadius: 8,
+          }}
+        >
+          <strong>URL coverage:</strong> {result.prospectsWithHandle ?? 0} with handle ·{" "}
+          {result.prospectsWithAnyUrl ?? 0} with any URL · {result.prospectsWithBestUrl ?? 0}{" "}
+          with bestMatchUrl · {result.prospectsWithExternalUrl ?? 0} with externalUrl ·{" "}
+          {result.prospectsWithBioUrls ?? 0} with bioUrls ·{" "}
+          <span style={{ color: "#b45309" }}>{result.skippedNoUrls} skipped (no_urls)</span>
+          {(result.prospectsWithAnyUrl ?? 0) > result.skippedNoUrls ? (
+            <span>
+              {" "}
+              — run <strong>Backfill IG URLs</strong> first if skipped count stays high.
+            </span>
+          ) : null}
+        </div>
+      ) : null}
       {result.errors.length > 0 ? (
         <div style={{ fontSize: 11, color: "#b45309", marginBottom: 10 }}>
           <strong>Batch notes ({result.errors.length}):</strong>{" "}
