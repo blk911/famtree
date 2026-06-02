@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
       perTagApifyErrors: apify.perHashtagErrors,
       apifyConnected: false,
       apifyActorRunIds: [],
+      apifyTagDiagnostics: apify.diagnostics,
     });
     return err(apify.error ?? "APIFY_TOKEN is not set", undefined, 400, {
       hashtagsParsed: hashtags.length,
@@ -100,6 +101,7 @@ export async function POST(req: NextRequest) {
       perTagApifyErrors: apify.perHashtagErrors,
       apifyConnected: true,
       apifyActorRunIds: apify.actorRunIds,
+      apifyTagDiagnostics: apify.diagnostics,
     });
     return err(apify.error, undefined, 400, {
       hashtagsParsed: hashtags.length,
@@ -213,6 +215,7 @@ export async function POST(req: NextRequest) {
     perTagApifyErrors: apify.perHashtagErrors,
     apifyConnected: apify.apifyConnected,
     apifyActorRunIds: apify.actorRunIds,
+    apifyTagDiagnostics: apify.diagnostics,
   });
 
   const run: HashtagHarvestRun = {

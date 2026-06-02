@@ -210,6 +210,8 @@ export type HashtagHarvestDiagnosticsPayload = {
   errors: string[];
   apifyConnected: boolean;
   apifyActorRunIds: string[];
+  /** Raw per-hashtag Apify diagnostics — actor id, input sent, run status, dataset item count, sample keys */
+  apifyTagDiagnostics?: import("@/lib/studios/creator-lab/hashtag-harvest/apify-client").ApifyTagDiagnostic[];
 };
 
 export interface HarvestRunResponse {

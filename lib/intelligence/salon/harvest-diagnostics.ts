@@ -6,6 +6,7 @@ import type {
   HarvestedCreatorSeed,
   ResolverPipelineResult,
 } from "@/lib/studios/creator-lab/hashtag-harvest/types";
+import type { ApifyTagDiagnostic } from "@/lib/studios/creator-lab/hashtag-harvest/apify-client";
 import { postsForHashtag } from "@/lib/studios/creator-lab/hashtag-harvest/post-hashtag-match";
 
 export type HashtagHarvestPerTagDiagnostic = {
@@ -35,6 +36,8 @@ export type HashtagHarvestDiagnostics = {
   errors: string[];
   apifyConnected: boolean;
   apifyActorRunIds: string[];
+  /** Raw Apify diagnostics per hashtag — for the "Raw Apify Debug" panel in the UI */
+  apifyTagDiagnostics?: ApifyTagDiagnostic[];
 };
 
 function handleKey(handle: string): string {
@@ -53,6 +56,7 @@ export function buildHashtagHarvestDiagnostics(params: {
   perTagApifyErrors?: Record<string, string | undefined>;
   apifyConnected: boolean;
   apifyActorRunIds: string[];
+  apifyTagDiagnostics?: ApifyTagDiagnostic[];
 }): HashtagHarvestDiagnostics {
   const {
     hashtags,
@@ -66,6 +70,7 @@ export function buildHashtagHarvestDiagnostics(params: {
     perTagApifyErrors = {},
     apifyConnected,
     apifyActorRunIds,
+    apifyTagDiagnostics,
   } = params;
 
   const normalizedHandles = new Set(
@@ -126,5 +131,6 @@ export function buildHashtagHarvestDiagnostics(params: {
     errors,
     apifyConnected,
     apifyActorRunIds,
+    apifyTagDiagnostics,
   };
 }

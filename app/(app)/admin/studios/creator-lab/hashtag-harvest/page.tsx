@@ -280,17 +280,19 @@ function BreakdownSection({
 }
 
 function ReportsView({
-  run, results, saveErrors,
+  run, results, saveErrors, diagnostics,
 }: {
   run: HashtagHarvestRun;
   creators: HarvestedCreatorSeed[];
   results: ResolverPipelineResult[];
   saveErrors: SaveError[];
+  diagnostics?: HashtagHarvestDiagnosticsPayload;
 }) {
   // ── Stored prospects from the real DB — fetched once when tab opens ──────────
   const [storedProspects, setStoredProspects] = useState<ProspectRecord[]>([]);
   const [storedLoading, setStoredLoading] = useState(true);
   const [debugOpen, setDebugOpen] = useState(false);
+  const [apifyDebugOpen, setApifyDebugOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/studios/prospects/list?vertical=salon")
@@ -443,6 +445,75 @@ function ReportsView({
           </div>
         )}
       </div>
+
+      {/* Raw Apify Debug panel — per-hashtag actor diagnostics */}
+      {diagnostics?.apifyTagDiagnostics && diagnostics.apifyTagDiagnostics.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <button
+            type="button"
+            onClick={() => setApifyDebugOpen((v) => !v)}
+            style={{
+              fontSize: 10, fontWeight: 700, color: "#9d174d", background: "#fdf2f8",
+              border: "1px solid #fbcfe8", borderRadius: 6, padding: "4px 10px",
+              cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5,
+            }}
+          >
+            🛰 Raw Apify Debug {apifyDebugOpen ? "▲" : "▼"}
+          </button>
+
+          {apifyDebugOpen && (
+            <div style={{ marginTop: 8, background: "#1c1917", color: "#e7e5e4", borderRadius: 10, padding: "14px 18px", fontSize: 11, fontFamily: "monospace", overflowX: "auto" }}>
+              <div style={{ marginBottom: 10, fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em" }}>
+                APIFY TAG DIAGNOSTICS — {diagnostics.apifyTagDiagnostics.length} hashtag(s)
+              </div>
+              {diagnostics.apifyTagDiagnostics.map((d, i) => (
+                <div key={i} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: i < diagnostics.apifyTagDiagnostics!.length - 1 ? "1px solid #3f3f46" : "none" }}>
+                  <div style={{ color: "#fcd34d", fontWeight: 700, marginBottom: 6 }}>#{d.hashtag}</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 14px" }}>
+                    {([
+                      ["actorId",          d.actorId],
+                      ["runId",            d.runId ?? "—"],
+                      ["runStatus",        d.runStatus ?? "—"],
+                      ["datasetId",        d.datasetId ?? "—"],
+                      ["datasetItemCount", String(d.datasetItemCount)],
+                      ["rawKeysSample",    d.rawKeysSample ? d.rawKeysSample.join(", ") : "—"],
+                      ["usedFallback",     String(d.usedFallback)],
+                      ["fallbackVariant",  d.fallbackVariant ?? "—"],
+                    ] as [string, string][]).map(([k, v]) => (
+                      <><span key={`k-${i}-${k}`} style={{ color: "#a8a29e" }}>{k}</span>
+                      <span key={`v-${i}-${k}`} style={{ color: "#fef3c7", wordBreak: "break-all" }}>{v}</span></>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 6 }}>
+                    <span style={{ color: "#a8a29e" }}>actorInput</span>{" "}
+                    <span style={{ color: "#bbf7d0" }}>{JSON.stringify(d.actorInput)}</span>
+                  </div>
+                  {d.apifyErrorMessage && (
+                    <div style={{ marginTop: 6, color: "#fca5a5" }}>
+                      ⚠ {d.apifyErrorMessage}
+                    </div>
+                  )}
+                  {d.datasetItemCount === 0 && !d.apifyErrorMessage && (
+                    <div style={{ marginTop: 6, color: "#fdba74" }}>
+                      Actor produced 0 items — Instagram may be rate-limiting this actor.
+                      Actor was last updated {new Date().toISOString().slice(0, 10)}.
+                      Try: HARVEST_MOCK=true for local testing, or use a different Apify actor.
+                    </div>
+                  )}
+                  {d.rawItemSample && d.rawItemSample.length > 0 && (
+                    <div style={{ marginTop: 6 }}>
+                      <div style={{ color: "#a8a29e", marginBottom: 2 }}>rawItemSample[0]</div>
+                      <div style={{ color: "#d4d4d8", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+                        {JSON.stringify(d.rawItemSample[0], null, 2).slice(0, 600)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Debug panel — collapsible */}
       <div style={{ marginBottom: 14 }}>
@@ -1004,6 +1075,39 @@ export default function HashtagHarvestPage() {
           <SummaryCards run={runData.run} results={runData.results} />
           <HashtagDiagnosticsPanel run={runData.run} />
 
+          {/* Zero-post source failure — actionable Apify diagnostics */}
+          {runData.run.totalPosts === 0 && (
+            <div style={{ marginBottom: 16, padding: "14px 18px", background: "#fef2f2", border: "2px solid #dc2626", borderRadius: 10 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "#dc2626", marginBottom: 8 }}>
+                ⛔ Source harvest returned 0 posts — resolver and prospect save skipped.
+              </div>
+              {runData.diagnostics?.apifyTagDiagnostics?.map((d, i) => (
+                <div key={i} style={{ fontSize: 12, color: "#7f1d1d", marginBottom: 4, fontFamily: "monospace" }}>
+                  <strong>#{d.hashtag}</strong> — actorId: {d.actorId} · runId: {d.runId ?? "—"} · status: {d.runStatus ?? "—"} · datasetId: {d.datasetId ?? "—"} · items: {d.datasetItemCount}
+                  {d.apifyErrorMessage && <div style={{ color: "#b91c1c", marginTop: 2 }}>Error: {d.apifyErrorMessage}</div>}
+                  {d.datasetItemCount === 0 && !d.apifyErrorMessage && (
+                    <div style={{ color: "#92400e", marginTop: 2 }}>
+                      Actor produced 0 dataset items. Input sent: <code>{JSON.stringify(d.actorInput)}</code>.
+                      Likely cause: Instagram is rate-limiting the {d.actorId} actor (updated {new Date().toISOString().slice(0, 10)}).
+                      Try a broader hashtag (e.g. &quot;hairstylist&quot;) via the raw-test route to confirm.
+                    </div>
+                  )}
+                </div>
+              ))}
+              {(!runData.diagnostics?.apifyTagDiagnostics || runData.diagnostics.apifyTagDiagnostics.length === 0) && (
+                <div style={{ fontSize: 12, color: "#7f1d1d" }}>
+                  Apify run IDs: {runData.diagnostics?.apifyActorRunIds?.join(", ") || "none"}.
+                  Check Reports → Raw Apify Debug for per-hashtag details.
+                </div>
+              )}
+              <div style={{ marginTop: 10, fontSize: 11, color: "#78716c" }}>
+                <strong>Next steps:</strong> (1) Test via <code>POST /api/admin/intelligence/salon/hashtag-harvest/raw-test</code> with a broad tag like &quot;hairstylist&quot;.
+                (2) If items=0 there too, the actor is Instagram-blocked — try enabling <code>HARVEST_MOCK=true</code> in .env.local to run the full pipeline with synthetic data.
+                (3) Check Apify console for account-level rate-limit or proxy issues.
+              </div>
+            </div>
+          )}
+
           {/* Hard zero-save warning */}
           {runData.run.totalCreators > 0 && runData.run.savedCount === 0 && (
             <div style={{ marginBottom: 16, padding: "12px 16px", background: "#fef2f2", border: "2px solid #dc2626", borderRadius: 10 }}>
@@ -1065,6 +1169,7 @@ export default function HashtagHarvestPage() {
               creators={runData.creators}
               results={runData.results}
               saveErrors={runData.saveErrors}
+              diagnostics={runData.diagnostics}
             />
           )}
         </>
