@@ -96,12 +96,16 @@ export async function buildBusinessStackForProspect(
       ? prospectRecordToStackInput(prospect as ProspectRecord)
       : prospect;
 
-  const collected =
-    input.collectedUrls && input.collectedDirectUrls && input.collectedLinkUrls
+  const hasPreCollected =
+    (input.collectedUrls?.length ?? 0) > 0 ||
+    (input.collectedDirectUrls?.length ?? 0) > 0 ||
+    (input.collectedLinkUrls?.length ?? 0) > 0;
+
+  const collected = hasPreCollected
       ? {
-          all: input.collectedUrls,
-          direct: input.collectedDirectUrls,
-          linkInBio: input.collectedLinkUrls,
+          all: input.collectedUrls ?? [],
+          direct: input.collectedDirectUrls ?? [],
+          linkInBio: input.collectedLinkUrls ?? [],
         }
       : collectStackUrls({
           website: input.website,

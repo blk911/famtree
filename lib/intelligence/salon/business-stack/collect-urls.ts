@@ -20,6 +20,47 @@ export function uniqueHttpUrls(urls: Array<string | null | undefined>): string[]
   return out;
 }
 
+/** Restore URL trail fields from Postgres JSON debug + booking columns (not dedicated columns). */
+export function hydrateProspectUrlFields(prospect: ProspectRecord): ProspectRecord {
+  const dbg = prospect.providerDiscoveryDebug;
+  const linkTrailUrlsScanned = uniqueHttpUrls([
+    ...(prospect.linkTrailUrlsScanned ?? []),
+    ...(dbg?.linkTrailUrlsScanned ?? []),
+    ...(dbg?.urlsScanned ?? []),
+    ...(dbg?.directUrlsScanned ?? []),
+    ...(dbg?.bioUrls ?? []),
+    prospect.bestMatch?.url,
+    prospect.bookingUrl,
+    ...(prospect.allMatchedUrls ?? []).map((m) => m.url),
+    ...(prospect.candidateUrlsTested ?? []),
+  ]);
+
+  const bestMatch =
+    prospect.bestMatch ??
+    (prospect.bookingUrl?.startsWith("http")
+      ? {
+          platform: prospect.bookingProvider ?? "unknown",
+          url: prospect.bookingUrl,
+          confidence: prospect.bookingProviderConfidence ?? 0,
+          matchReason: "booking_url",
+        }
+      : null);
+
+  return {
+    ...prospect,
+    linkTrailUrlsScanned,
+    linkInBioUrl: prospect.linkInBioUrl ?? dbg?.externalUrl ?? undefined,
+    bestMatch,
+    providerDiscoveryDebug: {
+      ...dbg,
+      externalUrl: dbg?.externalUrl ?? bestMatch?.url ?? prospect.bookingUrl ?? null,
+      urlsScanned: dbg?.urlsScanned?.length
+        ? dbg.urlsScanned
+        : linkTrailUrlsScanned,
+    },
+  };
+}
+
 type UrlSource = {
   website?: string | null;
   bioUrl?: string | null;
@@ -87,19 +128,16 @@ export function collectStackUrls(source: UrlSource): {
     ...(dbg?.ggCheckedUrls ?? []),
   ];
 
-  const allSeen = new Set<string>();
-  const all: string[] = [];
   const direct: string[] = [];
   const linkInBio: string[] = [];
 
+  const directSeen = new Set<string>();
+  const linkSeen = new Set<string>();
   for (const u of directCandidates) {
-    pushUrl(direct, allSeen, u);
+    pushUrl(direct, directSeen, u);
   }
   for (const u of linkCandidates) {
-    pushUrl(linkInBio, allSeen, u);
-  }
-  for (const u of [...direct, ...linkInBio]) {
-    pushUrl(all, allSeen, u);
+    pushUrl(linkInBio, linkSeen, u);
   }
 
   const directFiltered = direct.filter((u) => !isLinkInBioUrl(u));
@@ -109,48 +147,49 @@ export function collectStackUrls(source: UrlSource): {
   ]);
 
   return {
-    all: uniqueHttpUrls(all),
+    all: uniqueHttpUrls([...directFiltered, ...linkFiltered]),
     direct: uniqueHttpUrls(directFiltered),
     linkInBio: linkFiltered,
   };
 }
 
 export function prospectRecordToStackInput(prospect: ProspectRecord): StackProspectInput {
-  const dbg = prospect.providerDiscoveryDebug;
-  const bestUrl = prospect.bestMatch?.url ?? prospect.bookingUrl ?? undefined;
+  const hydrated = hydrateProspectUrlFields(prospect);
+  const dbg = hydrated.providerDiscoveryDebug;
+  const bestUrl = hydrated.bestMatch?.url ?? hydrated.bookingUrl ?? undefined;
   const websiteOnly =
-    prospect.bestMatch?.platform === "website" ? prospect.bestMatch.url : undefined;
+    hydrated.bestMatch?.platform === "website" ? hydrated.bestMatch.url : undefined;
 
   const urls = collectStackUrls({
     website: websiteOnly,
     externalUrl: resolveExternalUrl(dbg, bestUrl),
-    bioUrl: prospect.linkInBioUrl,
+    bioUrl: hydrated.linkInBioUrl,
     bestMatchUrl: bestUrl,
-    bookingUrl: prospect.bookingUrl,
-    linkInBioUrl: prospect.linkInBioUrl,
-    linkTrailUrls: prospect.linkTrailUrlsScanned,
-    linkTrailUrlsScanned: prospect.linkTrailUrlsScanned,
-    candidateUrlsTested: prospect.candidateUrlsTested,
-    allMatchedUrls: prospect.allMatchedUrls,
+    bookingUrl: hydrated.bookingUrl,
+    linkInBioUrl: hydrated.linkInBioUrl,
+    linkTrailUrls: hydrated.linkTrailUrlsScanned,
+    linkTrailUrlsScanned: hydrated.linkTrailUrlsScanned,
+    candidateUrlsTested: hydrated.candidateUrlsTested,
+    allMatchedUrls: hydrated.allMatchedUrls,
     providerDiscoveryDebug: dbg,
-    instagramHandle: prospect.identity.handle,
+    instagramHandle: hydrated.identity.handle,
   });
 
   return {
-    prospectId: prospect.prospectId,
-    instagramHandle: prospect.identity.handle,
-    displayName: prospect.identity.name,
+    prospectId: hydrated.prospectId,
+    instagramHandle: hydrated.identity.handle,
+    displayName: hydrated.identity.name,
     website: websiteOnly ?? undefined,
-    bioUrl: prospect.linkInBioUrl ?? undefined,
+    bioUrl: hydrated.linkInBioUrl ?? undefined,
     bestMatchUrl: bestUrl,
-    bookingUrl: prospect.bookingUrl ?? undefined,
-    linkInBioUrl: prospect.linkInBioUrl ?? undefined,
+    bookingUrl: hydrated.bookingUrl ?? undefined,
+    linkInBioUrl: hydrated.linkInBioUrl ?? undefined,
     linkTrailUrls: urls.linkInBio,
-    linkTrailUrlsScanned: prospect.linkTrailUrlsScanned,
+    linkTrailUrlsScanned: hydrated.linkTrailUrlsScanned,
     allMatchedUrls: urls.all.map((url) => ({ url })),
-    bookingProvider: prospect.bookingProvider,
-    bookingProviderConfidence: prospect.bookingProviderConfidence,
-    bookingProviderSource: prospect.bookingProviderSource,
+    bookingProvider: hydrated.bookingProvider,
+    bookingProviderConfidence: hydrated.bookingProviderConfidence,
+    bookingProviderSource: hydrated.bookingProviderSource,
     collectedUrls: urls.all,
     collectedDirectUrls: urls.direct,
     collectedLinkUrls: urls.linkInBio,

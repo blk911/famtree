@@ -21,6 +21,7 @@ import {
   applyBookingDetection,
 } from "./store-json";
 import { enrichProspectBookingIfMissing } from "@/lib/intelligence/salon/booking-from-trail";
+import { hydrateProspectUrlFields } from "@/lib/intelligence/salon/business-stack/collect-urls";
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import type { UpsertInput, ProspectFilter } from "./store-json";
 
@@ -147,7 +148,7 @@ function rowToRecord(row: DbProspectRow): ProspectRecord {
         }
       : null;
 
-  return {
+  const base: ProspectRecord = {
     prospectId:     row.id,
     identityFingerprint: row.identityFingerprint ?? generateIdentityFingerprint({
       handle: row.handle,
@@ -226,6 +227,8 @@ function rowToRecord(row: DbProspectRow): ProspectRecord {
     status:           row.status          as ProspectStatus,
     notes:            row.notes,
   };
+
+  return hydrateProspectUrlFields(base);
 }
 
 function buildClassification(record: Partial<ProspectRecord> & UpsertInput): ClassificationFields {

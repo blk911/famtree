@@ -3,7 +3,7 @@
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 import { upsertProspect } from "@/lib/studios/prospects/store";
 import type { UpsertInput } from "@/lib/studios/prospects/store";
-import { prospectRecordToStackInput } from "./collect-urls";
+import { prospectRecordToStackInput, uniqueHttpUrls } from "./collect-urls";
 import {
   buildBusinessStackForProspect,
   maybeUpgradeBookingFromStack,
@@ -18,7 +18,7 @@ import {
   revalidateProspectBookingFields,
 } from "../provider-validation/revalidate-prospect-booking";
 import { getBusinessStack, upsertBusinessStack } from "./stack-store";
-import { auditSalonProspectUrlCoverage } from "./url-coverage";
+import { auditSalonProspectUrlCoverage, countCollectableStackUrls } from "./url-coverage";
 import type { StackBackfillProspectResult, StackBackfillSummary } from "./types";
 
 export type RunStackBackfillOptions = {
@@ -100,18 +100,28 @@ export async function runSalonStackBackfill(
         }
       }
 
-      const stackInput = prospectRecordToStackInput({
-        ...p,
-        ...revalidate.fields,
-      } as ProspectRecord);
-      baseResult.urlsScanned = stackInput.collectedUrls?.length ?? 0;
+      // Collect URLs from persisted prospect + providerDiscoveryDebug — do not let
+      // revalidate downgrade fields wipe bookingUrl/bestMatch before URL gather.
+      const urlCount = countCollectableStackUrls(p);
+      baseResult.urlsScanned = urlCount;
 
-      if (baseResult.urlsScanned === 0) {
+      if (urlCount === 0) {
         skippedNoUrls++;
         baseResult.skipped = true;
         baseResult.warnings.push("no_urls");
         results.push(baseResult);
         continue;
+      }
+
+      const stackInput = prospectRecordToStackInput(p);
+      if ((stackInput.collectedUrls?.length ?? 0) === 0 && urlCount > 0) {
+        stackInput.collectedUrls = uniqueHttpUrls([
+          ...(stackInput.collectedDirectUrls ?? []),
+          ...(stackInput.collectedLinkUrls ?? []),
+        ]);
+        stackInput.collectedDirectUrls = stackInput.collectedDirectUrls?.length
+          ? stackInput.collectedDirectUrls
+          : stackInput.collectedUrls;
       }
 
       const hadStack = Boolean(await getBusinessStack(p.prospectId));

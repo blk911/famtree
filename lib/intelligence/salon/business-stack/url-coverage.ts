@@ -2,7 +2,7 @@
 // Prospect URL field coverage for stack backfill diagnostics.
 
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
-import { collectStackUrls } from "./collect-urls";
+import { collectStackUrls, hydrateProspectUrlFields } from "./collect-urls";
 
 export type StackUrlCoverageDiagnostics = {
   prospectsChecked: number;
@@ -38,22 +38,22 @@ export function prospectHasStoredUrlFields(prospect: ProspectRecord): boolean {
 
 /** URLs the stack engine will scan (after collectStackUrls merge). */
 export function countCollectableStackUrls(prospect: ProspectRecord): number {
-  const dbg = prospect.providerDiscoveryDebug;
-  const handle = prospect.identity.handle.replace(/^@+/, "").trim();
+  const hydrated = hydrateProspectUrlFields(prospect);
+  const dbg = hydrated.providerDiscoveryDebug;
   const { all } = collectStackUrls({
     website:
-      prospect.bestMatch?.platform === "website" ? prospect.bestMatch.url : undefined,
+      hydrated.bestMatch?.platform === "website" ? hydrated.bestMatch.url : undefined,
     externalUrl: dbg?.externalUrl ?? undefined,
-    bioUrl: prospect.linkInBioUrl,
-    bestMatchUrl: prospect.bestMatch?.url ?? prospect.bookingUrl,
-    bookingUrl: prospect.bookingUrl,
-    linkInBioUrl: prospect.linkInBioUrl,
-    linkTrailUrls: prospect.linkTrailUrlsScanned,
-    linkTrailUrlsScanned: prospect.linkTrailUrlsScanned,
-    allMatchedUrls: prospect.allMatchedUrls,
-    candidateUrlsTested: prospect.candidateUrlsTested,
+    bioUrl: hydrated.linkInBioUrl,
+    bestMatchUrl: hydrated.bestMatch?.url ?? hydrated.bookingUrl,
+    bookingUrl: hydrated.bookingUrl,
+    linkInBioUrl: hydrated.linkInBioUrl,
+    linkTrailUrls: hydrated.linkTrailUrlsScanned,
+    linkTrailUrlsScanned: hydrated.linkTrailUrlsScanned,
+    allMatchedUrls: hydrated.allMatchedUrls,
+    candidateUrlsTested: hydrated.candidateUrlsTested,
     providerDiscoveryDebug: dbg,
-    instagramHandle: prospect.identity.handle,
+    instagramHandle: hydrated.identity.handle,
   });
   return all.length;
 }
