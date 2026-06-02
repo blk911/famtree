@@ -24,8 +24,16 @@ function confidenceColor(score: number): string {
   return "#dc2626";                  // red
 }
 
-function statusBadge(status: StubResolutionResult["status"]): { label: string; bg: string; fg: string } {
-  switch (status) {
+function statusBadge(result: StubResolutionResult): { label: string; bg: string; fg: string } {
+  const decision = result.trace?.resolverDecision.status;
+  if (decision === "website_found") {
+    return { label: "Website Found", bg: "#e0f2fe", fg: "#0369a1" };
+  }
+  if (decision === "resolved" && result.trace?.extracted.providerFromDirectUrlSource === "direct_url") {
+    const provider = result.trace.extracted.providerFromDirectUrl ?? result.bestMatch?.platform ?? "provider";
+    return { label: `${provider} (direct)`, bg: "#dcfce7", fg: "#15803d" };
+  }
+  switch (result.status) {
     case "resolved":   return { label: "Resolved",   bg: "#dcfce7", fg: "#15803d" };
     case "partial":    return { label: "Partial",    bg: "#fef3c7", fg: "#b45309" };
     case "unresolved": return { label: "No match",   bg: "#fee2e2", fg: "#b91c1c" };
@@ -238,6 +246,7 @@ function ResolverTracePanel({ trace }: { trace: ResolverTrace }) {
     ["profileFetch.bioUrls",        trace.profileFetch.bioUrls.join(", ") || "—"],
     ["extracted.allDirectUrls",     trace.extracted.allDirectUrls.join(", ") || "—"],
     ["extracted.providerFromDirect",trace.extracted.providerFromDirectUrl ?? "—"],
+    ["extracted.directUrlSource",   trace.extracted.providerFromDirectUrlSource ?? "—"],
     ["extracted.websiteUrl",        trace.extracted.websiteUrl ?? "—"],
     ["generatedCandidates.count",   String(trace.generatedCandidates.count)],
     ["generatedCandidates.trail",   trace.generatedCandidates.linkTrailBookingUrls.join(", ") || "—"],
@@ -284,7 +293,7 @@ function ResolverTracePanel({ trace }: { trace: ResolverTrace }) {
 }
 
 function SeedResultBlock({ result }: { result: StubResolutionResult }) {
-  const badge = statusBadge(result.status);
+  const badge = statusBadge(result);
 
   return (
     <div
@@ -380,7 +389,7 @@ function SummaryTable({ results }: { results: StubResolutionResult[] }) {
         <tbody>
           {results.map((r, i) => {
             const b = r.bestMatch;
-            const badge = statusBadge(r.status);
+            const badge = statusBadge(r);
             return (
               <tr
                 key={i}

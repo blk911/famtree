@@ -52,12 +52,18 @@ export type SalonBookingEnrichmentFields = EnrichedProspectBookingFields &
 
 export function upsertInputToGgEnrichInput(upsert: UpsertInput): GgEnrichmentInput {
   const handle = upsert.identity.handle.replace(/^@/, "");
+  const websiteFromMatch =
+    upsert.bestMatch?.platform === "website" ? upsert.bestMatch.url : undefined;
+
   return {
     instagramHandle: upsert.identity.handle,
     displayName: upsert.identity.name,
-    website: upsert.bestMatch?.url,
+    website: websiteFromMatch,
     bioUrl: handle ? `https://www.instagram.com/${handle}/` : undefined,
-    bio: (upsert.evidence ?? []).filter((e) => typeof e === "string").join(" "),
+    bio: (upsert.evidence ?? [])
+      .filter((e) => typeof e === "string")
+      .map((e) => (e.startsWith("IG bio:") ? e.replace(/^IG bio:\s*/, "") : e))
+      .join(" "),
     bestMatchUrl: upsert.bestMatch?.url,
     allMatchedUrls: upsert.allMatchedUrls,
     linkTrailUrls: upsert.linkTrailUrlsScanned,

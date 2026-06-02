@@ -1,152 +1,104 @@
-// app/api/admin/intelligence/salon/ig-resolver/debug/route.ts
 // POST /api/admin/intelligence/salon/ig-resolver/debug
-//
-// Full resolver trace for a list of handles — no DB writes, no GG fallback.
-// Use to diagnose why a handle resolves or doesn't.
-//
-// Body: { handles: string[] }
-// Returns: { ok, results: ResolverTrace[], profileFetchError }
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 90;
+export const maxDuration = 120;
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { sanitizeHandle, generateCandidateUrls } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
-import { fastResolveTracked } from "@/lib/studios/creator-lab/ig-stubs/validator";
-import { fetchIgProfiles } from "@/lib/studios/creator-lab/ig-stubs/ig-profile-fetch";
+import { sanitizeHandle } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
+import { fetchAndResolveIgSeeds } from "@/lib/studios/creator-lab/ig-stubs/resolve-seed";
+import { buildSalonIgResolverTrace } from "@/lib/intelligence/salon/ig-resolver-trace";
+import { upsertProspect } from "@/lib/studios/prospects/store";
+import { resultToProspect, generateBatchId } from "@/lib/studios/prospects/from-resolver";
 import {
-  detectBestSalonBookingProvider,
-  isLinkInBioUrl,
-} from "@/lib/intelligence/salon/provider-detector";
-import type { IgSeed, ResolverTrace } from "@/lib/studios/creator-lab/ig-stubs/types";
+  applyGgSalonEnrichment,
+  upsertInputToGgEnrichInput,
+} from "@/lib/intelligence/salon/apply-gg-enrichment";
 
 const BodySchema = z.object({
   handles: z.array(z.string().min(1).max(60)).min(1).max(10),
+  persist: z.boolean().optional().default(false),
 });
 
 export async function POST(req: NextRequest) {
-  let body: unknown;
-  try { body = await req.json(); }
-  catch { return NextResponse.json({ ok: false, error: "Invalid JSON" }, { status: 400 }); }
+  try {
+    const { handles: rawHandles, persist } = BodySchema.parse(await req.json());
+    const handles = rawHandles.map(sanitizeHandle).filter(Boolean);
+    const seeds = handles.map((h) => ({ handle: h, displayName: h }));
 
-  const parsed = BodySchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: parsed.error.errors[0]?.message }, { status: 400 });
+    const { profileFetch, results } = await fetchAndResolveIgSeeds(seeds, "fast");
+    const batchId = generateBatchId();
+
+    const traces = await Promise.all(
+      results.map(async (result, i) => {
+        const handle = handles[i];
+        const persistenceErrors: string[] = [];
+        let prospectId: string | null = null;
+        const fieldsUpdated: string[] = [];
+
+        if (persist) {
+          try {
+            let upsertInput = await resultToProspect(result, batchId, {
+              skipLegacyBookingEnrichment: true,
+              vertical: "salon",
+            });
+            if (upsertInput) {
+              const enrich = await applyGgSalonEnrichment(
+                upsertInputToGgEnrichInput(upsertInput),
+                { index: 0, runGgOnAllDeduped: true },
+              );
+              upsertInput = {
+                ...upsertInput,
+                ...enrich.bookingFields,
+                providerDiscoveryDebug: {
+                  ...upsertInput.providerDiscoveryDebug,
+                  ...enrich.bookingFields.providerDiscoveryDebug,
+                  urlsScanned: upsertInput.providerDiscoveryDebug?.urlsScanned,
+                  externalUrl: upsertInput.providerDiscoveryDebug?.externalUrl,
+                  bioUrls: upsertInput.providerDiscoveryDebug?.bioUrls,
+                },
+              };
+              const saved = await upsertProspect(upsertInput);
+              prospectId = saved.prospectId;
+              if (saved.bestMatch?.url) fieldsUpdated.push("bestMatchUrl");
+              if (saved.linkTrailUrlsScanned?.length) {
+                fieldsUpdated.push("linkTrailUrlsScanned");
+              }
+              if (saved.bookingProvider) fieldsUpdated.push("bookingProvider");
+            }
+          } catch (e) {
+            persistenceErrors.push(e instanceof Error ? e.message : String(e));
+          }
+        }
+
+        const trace = buildSalonIgResolverTrace({
+          handle,
+          displayName: result.seed.displayName,
+          trace: result.trace!,
+          result,
+          prospectId,
+          persistenceErrors,
+        });
+        trace.persistence.fieldsUpdated = fieldsUpdated.length
+          ? fieldsUpdated
+          : trace.persistence.fieldsUpdated;
+
+        return trace;
+      }),
+    );
+
+    return NextResponse.json({
+      ok: true,
+      profileFetchRunId: profileFetch.runId,
+      profileFetchError: profileFetch.error,
+      apifyOk: profileFetch.apifyOk,
+      results: traces,
+    });
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : String(e);
+    return NextResponse.json(
+      { ok: false, error: "ig-resolver debug failed", detail },
+      { status: 500 },
+    );
   }
-
-  const handles = parsed.data.handles.map(sanitizeHandle).filter(Boolean);
-  const seeds: IgSeed[] = handles.map((h) => ({ handle: h, displayName: h }));
-
-  // Step 1: batch IG profile fetch
-  const profileFetch = await fetchIgProfiles(handles);
-
-  const traces: ResolverTrace[] = await Promise.all(
-    seeds.map(async (seed) => {
-      const igProfile = profileFetch.profiles.get(seed.handle.toLowerCase()) ?? null;
-
-      const directUrls: string[] = [];
-      if (igProfile?.externalUrl) directUrls.push(igProfile.externalUrl);
-      directUrls.push(...(igProfile?.extraExternalUrls ?? []));
-
-      let providerFromDirectUrl: string | null = null;
-      let providerFromDirectUrlSource: string | null = null;
-      let websiteUrl: string | null = null;
-      let decisionStatus = "unresolved";
-      let decisionBestUrl: string | null = null;
-      let decisionPlatform: string | null = null;
-      let decisionConfidence = 0;
-      let decisionReason = "No match found";
-
-      if (directUrls.length > 0) {
-        const detection = detectBestSalonBookingProvider({ urls: directUrls });
-        if (detection && detection.provider !== "unknown" && detection.bookingUrl) {
-          providerFromDirectUrl = detection.provider;
-          providerFromDirectUrlSource = "ig_direct_url";
-          const conf = detection.confidence === "high" ? 95 : detection.confidence === "medium" ? 75 : 55;
-          decisionStatus = "resolved";
-          decisionBestUrl = detection.bookingUrl;
-          decisionPlatform = detection.provider;
-          decisionConfidence = conf;
-          decisionReason = `${detection.providerLabel} booking URL from IG profile externalUrl.`;
-        } else {
-          websiteUrl = directUrls.find(
-            (u) => u.startsWith("http") && !u.includes("instagram.com") && !isLinkInBioUrl(u)
-          ) ?? null;
-          if (websiteUrl) {
-            decisionStatus = "partial";
-            decisionBestUrl = websiteUrl;
-            decisionPlatform = "website";
-            decisionConfidence = 65;
-            decisionReason = "Public website found from IG profile. No booking platform detected.";
-          }
-        }
-      }
-
-      // If direct path resolved, skip generated candidates
-      let linkTrailBookingUrls: string[] = [];
-      let candidateCount = 0;
-
-      if (decisionStatus === "unresolved") {
-        const candidates = generateCandidateUrls(seed.handle);
-        candidateCount = candidates.length;
-        const tracked = await fastResolveTracked(seed, candidates);
-        linkTrailBookingUrls = tracked.linkTrailUrls;
-
-        if (tracked.confirmedProfiles.length > 0) {
-          const best = tracked.confirmedProfiles[0];
-          decisionStatus = best.confidenceScore >= 50 ? "resolved" : "partial";
-          decisionBestUrl = best.url;
-          decisionPlatform = best.platform;
-          decisionConfidence = best.confidenceScore;
-          decisionReason = best.matchReason;
-        } else if (linkTrailBookingUrls.length > 0) {
-          const trailDetection = detectBestSalonBookingProvider({ urls: linkTrailBookingUrls });
-          if (trailDetection?.bookingUrl && trailDetection.provider !== "unknown") {
-            decisionStatus = "partial";
-            decisionBestUrl = trailDetection.bookingUrl;
-            decisionPlatform = trailDetection.provider;
-            decisionConfidence = trailDetection.confidence === "high" ? 80 : 65;
-            decisionReason = `${trailDetection.providerLabel} URL found in link-in-bio trail.`;
-          }
-        }
-      }
-
-      return {
-        handle: seed.handle,
-        profileFetch: {
-          attempted: profileFetch.apifyOk,
-          found: igProfile?.found ?? false,
-          externalUrl: igProfile?.externalUrl ?? null,
-          biography: igProfile?.biography ?? null,
-          bioUrls: igProfile?.extraExternalUrls ?? [],
-          error: profileFetch.error ?? igProfile?.error ?? null,
-        },
-        extracted: {
-          allDirectUrls: directUrls,
-          providerFromDirectUrl,
-          providerFromDirectUrlSource,
-          websiteUrl,
-        },
-        generatedCandidates: {
-          count: candidateCount,
-          linkTrailBookingUrls,
-        },
-        resolverDecision: {
-          status: decisionStatus,
-          bestUrl: decisionBestUrl,
-          platform: decisionPlatform,
-          confidence: decisionConfidence,
-          reason: decisionReason,
-        },
-      } satisfies ResolverTrace;
-    })
-  );
-
-  return NextResponse.json({
-    ok: true,
-    profileFetchRunId: profileFetch.runId,
-    profileFetchError: profileFetch.error,
-    results: traces,
-  });
 }

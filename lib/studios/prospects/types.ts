@@ -233,6 +233,9 @@ export interface ProspectRecord {
     ggDisplayAttempted?: boolean;
     ggCheckedUrls?: string[];
     providerResolverReason?: string;
+    urlsScanned?: string[];
+    externalUrl?: string | null;
+    bioUrls?: string[];
     providerValidation?: {
       candidates?: Array<{
         id: string;

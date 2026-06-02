@@ -80,25 +80,64 @@ function computeConfidence(
 
 // ─── Resolved result → UpsertInput ───────────────────────────────────────────
 
+function uniqueUrlList(urls: Array<string | null | undefined>): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of urls) {
+    const u = (raw ?? "").trim();
+    if (!u || !u.startsWith("http")) continue;
+    const key = u.toLowerCase().replace(/\/+$/, "");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(u);
+  }
+  return out;
+}
+
 export async function resultToProspect(
   result: StubResolutionResult,
   batchId: string,
-  options?: { enableHandleDerivedGlossGenius?: boolean },
+  options?: {
+    enableHandleDerivedGlossGenius?: boolean;
+    skipLegacyBookingEnrichment?: boolean;
+    vertical?: string;
+  },
 ): Promise<UpsertInput | null> {
-  if (result.resolvedProfiles.length === 0) return null;
-
   const profiles = result.resolvedProfiles;
   const best = result.bestMatch;
+  const igContext = result.igContext;
+  const directUrls = igContext?.directUrlsScanned ?? [];
+
+  if (profiles.length === 0 && !best?.url && directUrls.length === 0) {
+    return null;
+  }
 
   const services = Array.from(new Set(profiles.flatMap((p) => p.detectedServices)));
-  const evidence = Array.from(new Set(profiles.flatMap((p) => p.evidenceSnippets))).slice(0, 15);
+  const bioEvidence = igContext?.biography
+    ? [`IG bio: ${igContext.biography.slice(0, 280)}`]
+    : [];
+  const evidence = Array.from(
+    new Set([...bioEvidence, ...profiles.flatMap((p) => p.evidenceSnippets)]),
+  ).slice(0, 15);
 
-  const allMatchedUrls: MatchedUrl[] = profiles.map((p) => ({
+  const profileMatches: MatchedUrl[] = profiles.map((p) => ({
     platform: p.platform,
     url: p.url,
     confidence: p.confidenceScore,
     matchReason: p.matchReason,
   }));
+
+  const directMatches: MatchedUrl[] = [];
+  if (best?.url && !profileMatches.some((m) => m.url === best.url)) {
+    directMatches.push({
+      platform: best.platform,
+      url: best.url,
+      confidence: best.confidenceScore,
+      matchReason: best.matchReason,
+    });
+  }
+
+  const allMatchedUrls: MatchedUrl[] = [...directMatches, ...profileMatches];
 
   const locationGuess =
     best?.detectedLocation ??
@@ -110,43 +149,80 @@ export async function resultToProspect(
     (result.seed.displayName !== result.seed.handle ? result.seed.displayName : null) ??
     result.seed.handle;
 
+  const linkTrailUrlsScanned = uniqueUrlList([
+    ...directUrls,
+    ...(result.linkTrailUrls ?? []),
+    ...(result.candidateUrlsTested ?? []),
+    best?.url,
+  ]);
+
   const linkTrailFields = buildProspectLinkTrailFields({
     handle: result.seed.handle,
     bestMatchUrl: best?.url,
     allMatchedUrls,
-    candidateUrlsTested: result.candidateUrlsTested,
-    linkTrailUrls: result.linkTrailUrls,
+    candidateUrlsTested: uniqueUrlList([
+      ...(result.candidateUrlsTested ?? []),
+      ...directUrls,
+    ]),
+    linkTrailUrls: linkTrailUrlsScanned,
     rejectedCandidateUrls: result.rejectedCandidates,
   });
 
-  const bookingFields = await enrichSalonBookingProvider(
-    {
-      bestMatchUrl: best?.url,
-      allMatchedUrls,
-      platforms: Array.from(new Set(profiles.map((p) => p.platform))),
-      evidence,
-      linkTrailUrls: linkTrailFields.linkTrailUrlsScanned ?? result.linkTrailUrls,
-      instagramHandle: result.seed.handle,
-      displayName: result.seed.displayName,
-      website: best?.url ?? `https://www.instagram.com/${result.seed.handle}/`,
-      bio: evidence.filter((e) => typeof e === "string").join(" "),
-    },
-    {
-      enableHandleDerivedGlossGenius:
-        options?.enableHandleDerivedGlossGenius ?? false,
-    },
-  );
+  const websiteUrl =
+    best?.platform === "website"
+      ? best.url
+      : igContext?.externalUrl?.startsWith("http")
+        ? igContext.externalUrl
+        : undefined;
+
+  const bookingFields = options?.skipLegacyBookingEnrichment
+    ? {}
+    : await enrichSalonBookingProvider(
+        {
+          bestMatchUrl: best?.url,
+          allMatchedUrls,
+          platforms: Array.from(new Set(profiles.map((p) => p.platform))),
+          evidence,
+          linkTrailUrls: linkTrailFields.linkTrailUrlsScanned ?? result.linkTrailUrls,
+          instagramHandle: result.seed.handle,
+          displayName: result.seed.displayName,
+          website: websiteUrl ?? best?.url,
+          bio: igContext?.biography ?? evidence.filter((e) => typeof e === "string").join(" "),
+        },
+        {
+          enableHandleDerivedGlossGenius:
+            options?.enableHandleDerivedGlossGenius ?? false,
+        },
+      );
+
+  const providerDiscoveryDebug = {
+    directUrlsScanned: directUrls,
+    linkTrailUrlsScanned,
+    linkInBioFetched: Boolean(linkTrailFields.linkInBioPageFetched),
+    providerDetectedFromDirect: Boolean(
+      igContext?.directUrlsScanned?.length && best?.platform && best.platform !== "website",
+    ),
+    providerDetectedFromLinkTrail: false,
+    ggHandleAttempted: false,
+    ggDisplayAttempted: false,
+    ggCheckedUrls: [],
+    providerResolverReason: result.trace?.resolverDecision.reason ?? "ig_resolver",
+    urlsScanned: linkTrailUrlsScanned,
+    externalUrl: igContext?.externalUrl ?? result.trace?.profileFetch.externalUrl ?? null,
+    bioUrls: result.trace?.profileFetch.bioUrls ?? [],
+  };
 
   return {
     ...linkTrailFields,
     ...bookingFields,
+    providerDiscoveryDebug,
     source: {
       sourceType: "ig-stub-run",
       batchId,
       sourceHandle: result.seed.handle,
       sourceDisplayName: result.seed.displayName,
     },
-    vertical: "education",
+    vertical: options?.vertical ?? "education",
     sourcePlatform: "instagram",
     sourceTool: "ig-stub-run",
     sourceHashtag: null,

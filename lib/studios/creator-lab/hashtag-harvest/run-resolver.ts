@@ -4,6 +4,8 @@
 
 import { generateCandidateUrls } from "@/lib/studios/creator-lab/ig-stubs/url-patterns";
 import { fastResolveTracked } from "@/lib/studios/creator-lab/ig-stubs/validator";
+import { resolveIgSeed } from "@/lib/studios/creator-lab/ig-stubs/resolve-seed";
+import { fetchIgProfiles } from "@/lib/studios/creator-lab/ig-stubs/ig-profile-fetch";
 import { upsertProspect } from "@/lib/studios/prospects/store";
 import { resultToProspect, seedToProspect } from "@/lib/studios/prospects/from-resolver";
 import { buildProspectSourcePath } from "@/lib/studios/prospects/source-path";
@@ -75,44 +77,17 @@ export async function runResolverForSeeds(
     }
   }
 
-  // Phase 1: parallel IG resolution + trail-only booking (no GG probes)
+  const salonProfileFetch = salonHarvest
+    ? await fetchIgProfiles(seeds.map((s) => s.handle))
+    : null;
+
+  // Phase 1: parallel IG resolution (salon: profile fetch + direct URL first)
   const settled = await Promise.allSettled(
     seeds.map(async (seed): Promise<ResolvedSeed> => {
       const igSeed: IgSeed = {
         handle: seed.handle,
         displayName: seed.displayName,
       };
-
-      const candidates = generateCandidateUrls(seed.handle);
-
-      let profiles: ResolvedProfile[] = [];
-      let candidateUrlsTested: string[] = candidates.map((c) => c.url);
-      let rejectedCandidates: RejectedCandidate[] = [];
-      let linkTrailUrls: string[] = [];
-
-      try {
-        if (deepResolve) {
-          profiles = await deepResolve(igSeed, candidates);
-        } else {
-          const tracked = await fastResolveTracked(igSeed, candidates);
-          profiles = tracked.confirmedProfiles;
-          candidateUrlsTested = tracked.candidateUrlsTested;
-          rejectedCandidates = tracked.rejectedCandidates;
-          linkTrailUrls = tracked.linkTrailUrls;
-        }
-      } catch {
-        profiles = [];
-      }
-
-      const validProfiles = profiles.filter((p) => p.confidenceScore >= 5);
-      const bestMatch = validProfiles[0] ?? null;
-
-      const status: StubResolutionResult["status"] =
-        bestMatch && bestMatch.confidenceScore >= 50
-          ? "resolved"
-          : bestMatch && bestMatch.confidenceScore >= 20
-          ? "partial"
-          : "unresolved";
 
       const sourcePath = buildProspectSourcePath({
         vertical:   ctx.vertical,
@@ -122,19 +97,64 @@ export async function runResolverForSeeds(
         hashtag:    seed.sourceHashtag,
       });
 
-      const stubResult: StubResolutionResult = {
-        seed: igSeed,
-        resolvedProfiles: validProfiles,
-        bestMatch,
-        status,
-        candidateUrlsTested,
-        rejectedCandidates,
-        linkTrailUrls,
-      };
+      let stubResult: StubResolutionResult;
+
+      if (salonHarvest && salonProfileFetch) {
+        stubResult = await resolveIgSeed(igSeed, {
+          mode: deepResolve ? "deep" : "fast",
+          profileFetch: salonProfileFetch,
+          igProfile: salonProfileFetch.profiles.get(seed.handle.toLowerCase()) ?? null,
+        });
+      } else {
+        const candidates = generateCandidateUrls(seed.handle);
+        let profiles: ResolvedProfile[] = [];
+        let candidateUrlsTested: string[] = candidates.map((c) => c.url);
+        let rejectedCandidates: RejectedCandidate[] = [];
+        let linkTrailUrls: string[] = [];
+
+        try {
+          if (deepResolve) {
+            profiles = await deepResolve(igSeed, candidates);
+          } else {
+            const tracked = await fastResolveTracked(igSeed, candidates);
+            profiles = tracked.confirmedProfiles;
+            candidateUrlsTested = tracked.candidateUrlsTested;
+            rejectedCandidates = tracked.rejectedCandidates;
+            linkTrailUrls = tracked.linkTrailUrls;
+          }
+        } catch {
+          profiles = [];
+        }
+
+        const validProfiles = profiles.filter((p) => p.confidenceScore >= 5);
+        const bestMatch = validProfiles[0] ?? null;
+        const status: StubResolutionResult["status"] =
+          bestMatch && bestMatch.confidenceScore >= 50
+            ? "resolved"
+            : bestMatch && bestMatch.confidenceScore >= 20
+              ? "partial"
+              : "unresolved";
+
+        stubResult = {
+          seed: igSeed,
+          resolvedProfiles: validProfiles,
+          bestMatch,
+          status,
+          candidateUrlsTested,
+          rejectedCandidates,
+          linkTrailUrls,
+        };
+      }
+
+      const validProfiles = stubResult.resolvedProfiles;
+      const bestMatch = stubResult.bestMatch;
+      const status = stubResult.status;
 
       let upsertInput: UpsertInput;
       const resolvedInput = await resultToProspect(stubResult, ctx.batchId, {
         enableHandleDerivedGlossGenius: false,
+        skipLegacyBookingEnrichment: salonHarvest,
+        vertical: ctx.vertical,
       });
 
       if (resolvedInput) {
@@ -170,8 +190,8 @@ export async function runResolverForSeeds(
         validProfiles,
         bestMatch,
         status,
-        candidateUrlsTested,
-        rejectedCandidates,
+        candidateUrlsTested: stubResult.candidateUrlsTested ?? [],
+        rejectedCandidates: stubResult.rejectedCandidates ?? [],
         upsertInput,
         resolved: status === "resolved" || status === "partial",
       };

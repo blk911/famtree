@@ -52,6 +52,8 @@ export function collectStackUrls(source: UrlSource): {
     source.bestMatchUrl,
     source.website,
     ...(dbg?.directUrlsScanned ?? []),
+    ...(dbg?.urlsScanned ?? []),
+    ...(dbg?.bioUrls ?? []),
     ...(source.allMatchedUrls ?? []).map((u) =>
       typeof u === "string" ? u : u.url,
     ),
@@ -95,8 +97,13 @@ export function collectStackUrls(source: UrlSource): {
 }
 
 export function prospectRecordToStackInput(prospect: ProspectRecord): StackProspectInput {
+  const dbg = prospect.providerDiscoveryDebug;
   const urls = collectStackUrls({
-    website: prospect.bestMatch?.url,
+    website:
+      prospect.bestMatch?.platform === "website"
+        ? prospect.bestMatch.url
+        : undefined,
+    externalUrl: dbg?.externalUrl ?? undefined,
     bioUrl: prospect.linkInBioUrl,
     bestMatchUrl: prospect.bestMatch?.url ?? prospect.bookingUrl,
     bookingUrl: prospect.bookingUrl,
@@ -104,7 +111,7 @@ export function prospectRecordToStackInput(prospect: ProspectRecord): StackProsp
     linkTrailUrls: prospect.linkTrailUrlsScanned,
     linkTrailUrlsScanned: prospect.linkTrailUrlsScanned,
     allMatchedUrls: prospect.allMatchedUrls,
-    providerDiscoveryDebug: prospect.providerDiscoveryDebug,
+    providerDiscoveryDebug: dbg,
     instagramHandle: prospect.identity.handle,
   });
 

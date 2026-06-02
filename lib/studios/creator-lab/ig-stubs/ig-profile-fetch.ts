@@ -38,6 +38,14 @@ export interface IgProfileFetchResult {
 
 const URL_IN_TEXT = /https?:\/\/[^\s<>"'）\]]+/gi;
 
+function normalizeProfileExternalUrl(raw: string | null | undefined): string | null {
+  if (!raw?.trim()) return null;
+  const u = raw.trim();
+  if (u.startsWith("http://") || u.startsWith("https://")) return u;
+  if (/^[a-z0-9][a-z0-9.-]+\.[a-z]{2,}/i.test(u)) return `https://${u}`;
+  return u;
+}
+
 /** Extract bare https?:// URLs from biography text. */
 export function extractUrlsFromBio(bio: string): string[] {
   return Array.from(new Set((bio.match(URL_IN_TEXT) ?? []).map((u) => u.replace(/[.,;)!?]+$/, ""))));
@@ -152,12 +160,22 @@ export async function fetchIgProfiles(handles: string[]): Promise<IgProfileFetch
 
     const bioUrls = item.biography ? extractUrlsFromBio(item.biography) : [];
 
+    const primaryExternal = normalizeProfileExternalUrl(
+      item.externalUrlShimmed ?? item.externalUrl ?? null,
+    );
+
     profiles.set(h, {
       handle: h,
-      externalUrl: item.externalUrl ?? null,
+      externalUrl: primaryExternal,
       biography: item.biography ?? null,
       fullName: item.fullName ?? null,
-      extraExternalUrls: Array.from(new Set([...extraUrls, ...bioUrls])),
+      extraExternalUrls: Array.from(
+        new Set([
+          ...extraUrls,
+          ...bioUrls,
+          ...(item.externalUrl && item.externalUrl !== primaryExternal ? [item.externalUrl] : []),
+        ]),
+      ),
       found: true,
       error: null,
     });

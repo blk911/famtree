@@ -87,6 +87,13 @@ export interface ResolverTrace {
   };
 }
 
+export type IgResolveContext = {
+  biography?: string | null;
+  externalUrl?: string | null;
+  displayNameFromProfile?: string | null;
+  directUrlsScanned: string[];
+};
+
 export interface StubResolutionResult {
   seed: IgSeed;
   resolvedProfiles: ResolvedProfile[];  // confirmed matches only, sorted by score
@@ -100,6 +107,8 @@ export interface StubResolutionResult {
   linkTrailUrls?: string[];
   /** Full resolver trace for debugging — included in debug mode and in IG Resolver UI. */
   trace?: ResolverTrace;
+  /** IG profile extraction context for prospect URL persistence. */
+  igContext?: IgResolveContext;
 }
 
 // ─── API shapes ───────────────────────────────────────────────────────────────
