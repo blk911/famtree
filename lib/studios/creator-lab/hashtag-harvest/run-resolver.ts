@@ -16,6 +16,7 @@ import {
   applyGgSalonEnrichment,
   upsertInputToGgEnrichInput,
 } from "@/lib/intelligence/salon/apply-gg-enrichment";
+import { upsertBusinessStack } from "@/lib/intelligence/salon/business-stack/stack-store";
 import {
   DEFAULT_GG_RESOLVER_CAP,
   emptyGgRunDiagnostics,
@@ -40,6 +41,7 @@ export type RunResolverOptions = {
   runGgOnAllDeduped?: boolean;
   /** Run SerpAPI / Google CSE on up to 50 deduped prospects after trail resolution. */
   runPublicDiscovery?: boolean;
+  crawlWebsite?: boolean;
 };
 
 interface ResolvedSeed {
@@ -216,20 +218,27 @@ export async function runResolverForSeeds(
 
     let { seed, validProfiles, bestMatch, status, upsertInput, resolved } = s.value;
 
+    let businessStack: Awaited<
+      ReturnType<typeof applyGgSalonEnrichment>
+    >["businessStack"];
+
     if (salonHarvest && ggRun) {
       const runPublicSearch =
         resolverOptions?.runPublicDiscovery === true && i < 50;
       try {
-        const { bookingFields, gg, runDelta } = await applyGgSalonEnrichment(
-          upsertInputToGgEnrichInput(upsertInput),
-          {
-            index: i,
-            maxProbes: ggMaxProbes,
-            runGgOnAllDeduped,
-            runPublicSearch,
-            forceSearch: runPublicSearch,
-          },
-        );
+      const enrichResult = await applyGgSalonEnrichment(
+        upsertInputToGgEnrichInput(upsertInput),
+        {
+          index: i,
+          maxProbes: ggMaxProbes,
+          runGgOnAllDeduped,
+          runPublicSearch,
+          forceSearch: runPublicSearch,
+          crawlWebsite: resolverOptions?.crawlWebsite ?? runPublicSearch,
+        },
+      );
+        businessStack = enrichResult.businessStack;
+        const { bookingFields, gg, runDelta } = enrichResult;
         mergeGgRunDiagnostics(ggRun, runDelta);
         upsertInput = {
           ...upsertInput,
@@ -255,6 +264,13 @@ export async function runResolverForSeeds(
     try {
       const saved = await upsertProspect(upsertInput);
       prospectId = saved.prospectId;
+      if (salonHarvest && businessStack && prospectId) {
+        try {
+          await upsertBusinessStack({ ...businessStack, prospectId });
+        } catch {
+          // non-fatal
+        }
+      }
       savedCount++;
       savedProspectIds.push(saved.prospectId);
       savedHandles.push(seed.handle);

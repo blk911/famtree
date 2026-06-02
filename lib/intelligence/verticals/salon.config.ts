@@ -24,9 +24,10 @@ export const salonConfig: VerticalConfig = {
     { id: "harvest_analytics", label: "Harvest Analytics", href: "/admin/studios/harvest-analytics" },
     { id: "ggen_discovery", label: "GG Seed Discovery", href: "/admin/studios/ggen-discovery" },
     { id: "public_presence", label: "Public Presence", href: "/admin/studios/public-presence" },
+    { id: "business_stack", label: "Business Stack", href: "/admin/studios/business-stack" },
   ],
 
-  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice", "import_candidates", "harvest_analytics", "ggen_discovery", "public_presence"],
+  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice", "import_candidates", "harvest_analytics", "ggen_discovery", "public_presence", "business_stack"],
   hiddenTools:  [],
 
   sourceLabels: {

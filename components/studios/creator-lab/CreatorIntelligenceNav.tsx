@@ -15,7 +15,8 @@ export type CreatorIntelligenceTool =
   | "runs"
   | "import-candidates"
   | "harvest-analytics"
-  | "public-presence";
+  | "public-presence"
+  | "business-stack";
 
 const TOOL_TO_NAV_ID: Record<CreatorIntelligenceTool, string> = {
   assembler: "assembler",
@@ -26,6 +27,7 @@ const TOOL_TO_NAV_ID: Record<CreatorIntelligenceTool, string> = {
   "import-candidates": "import_candidates",
   "harvest-analytics": "harvest_analytics",
   "public-presence": "public_presence",
+  "business-stack": "business_stack",
 };
 
 type WipeState = "idle" | "counting" | "confirming" | "wiping" | "wiped" | "error";

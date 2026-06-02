@@ -9,6 +9,8 @@ import { SalonProspectDrawer } from "@/components/admin/intelligence/salon/Salon
 import { SalonOperatorSummary } from "@/components/admin/intelligence/salon/SalonOperatorSummary";
 import { BookingProviderPill } from "@/components/admin/intelligence/salon/BookingProviderPill";
 import { BookingProviderSourceChip } from "@/components/admin/intelligence/salon/BookingProviderSourceChip";
+import { BusinessStackChips, ImportCandidateChip } from "@/components/admin/intelligence/salon/BusinessStackChips";
+import type { SalonBusinessStack } from "@/lib/intelligence/salon/business-stack/types";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 import type { ProviderDetectionSummary } from "@/lib/intelligence/salon/provider-detection-diagnostics";
 
@@ -19,6 +21,10 @@ export default function ImportCandidatesPage() {
   const [fProvider, setFProvider] = useState("all");
   const [fSource, setFSource] = useState("all");
   const [fConfidence, setFConfidence] = useState("all");
+  const [fPayment, setFPayment] = useState("all");
+  const [fCheckIn, setFCheckIn] = useState("all");
+  const [fMaturity, setFMaturity] = useState("all");
+  const [stackByProspect, setStackByProspect] = useState<Record<string, SalonBusinessStack>>({});
   const [drawerId, setDrawerId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -35,14 +41,24 @@ export default function ImportCandidatesPage() {
     if (fProvider !== "all") params.set("provider", fProvider);
     if (fSource !== "all") params.set("source", fSource);
     if (fConfidence !== "all") params.set("confidence", fConfidence);
+    if (fPayment !== "all") params.set("paymentProvider", fPayment);
+    if (fCheckIn !== "all") params.set("checkInProvider", fCheckIn);
+    if (fMaturity !== "all") params.set("maturity", fMaturity);
     setLoading(true);
     fetch(`/api/admin/intelligence/salon/import-candidates?${params}`)
       .then((r) => r.json())
-      .then((d: { ok: boolean; prospects?: ProspectRecord[] }) => {
-        if (d.ok) setProspects(d.prospects ?? []);
+      .then((d: {
+        ok: boolean;
+        prospects?: ProspectRecord[];
+        stacks?: Record<string, SalonBusinessStack>;
+      }) => {
+        if (d.ok) {
+          setProspects(d.prospects ?? []);
+          setStackByProspect(d.stacks ?? {});
+        }
       })
       .finally(() => setLoading(false));
-  }, [fProvider, fSource, fConfidence]);
+  }, [fProvider, fSource, fConfidence, fPayment, fCheckIn, fMaturity]);
 
   const providerCounts = useMemo(() => {
     const counts = { glossgenius: 0, vagaro: 0, square: 0, unknown: 0 };
@@ -138,6 +154,25 @@ export default function ImportCandidatesPage() {
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
+        <select value={fPayment} onChange={(e) => setFPayment(e.target.value)} style={selectStyle}>
+          <option value="all">Payment: All</option>
+          <option value="square">Square</option>
+          <option value="stripe">Stripe</option>
+          <option value="clover">Clover</option>
+          <option value="paypal">PayPal</option>
+        </select>
+        <select value={fCheckIn} onChange={(e) => setFCheckIn(e.target.value)} style={selectStyle}>
+          <option value="all">Check-In: All</option>
+          <option value="gocheckin">GoCheckIn</option>
+          <option value="waitwhile">Waitwhile</option>
+          <option value="waitlist_me">Waitlist.me</option>
+        </select>
+        <select value={fMaturity} onChange={(e) => setFMaturity(e.target.value)} style={selectStyle}>
+          <option value="all">Maturity: All</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
       </div>
 
       {loading ? (
@@ -147,7 +182,7 @@ export default function ImportCandidatesPage() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr style={{ background: "#fafaf9", textAlign: "left" }}>
-                {["Prospect", "Provider", "Source", "Conf.", "Import", "Booking URL", "Updated"].map((h) => (
+                {["Prospect", "Provider", "Stack", "Import", "Source", "Conf.", "Booking URL", "Updated"].map((h) => (
                   <th key={h} style={thStyle}>{h}</th>
                 ))}
               </tr>
@@ -172,10 +207,15 @@ export default function ImportCandidatesPage() {
                     />
                   </td>
                   <td style={tdStyle}>
+                    <BusinessStackChips stack={stackByProspect[p.prospectId]} compact />
+                  </td>
+                  <td style={tdStyle}>
+                    <ImportCandidateChip stack={stackByProspect[p.prospectId]} />
+                  </td>
+                  <td style={tdStyle}>
                     <BookingProviderSourceChip prospect={p} />
                   </td>
                   <td style={tdStyle}>{p.bookingProviderConfidence ?? "—"}</td>
-                  <td style={tdStyle}>Yes</td>
                   <td style={tdStyle}>
                     {p.bookingUrl ? (
                       <a

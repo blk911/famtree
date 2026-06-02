@@ -29,6 +29,12 @@ import { SalonOperatorSummary } from "@/components/admin/intelligence/salon/Salo
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
 import { bookingProviderForDisplay } from "@/lib/intelligence/salon/gg-booking-display";
+import {
+  BusinessStackChips,
+  ImportCandidateChip,
+  StackPaymentChip,
+} from "@/components/admin/intelligence/salon/BusinessStackChips";
+import type { SalonBusinessStack } from "@/lib/intelligence/salon/business-stack/types";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -398,6 +404,7 @@ export default function ProspectsPage() {
   const [selectedSalonCategories, setSelectedSalonCategories] = useState<SalonCategoryKey[]>([]);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [refreshNonce, setRefreshNonce] = useState(0);
+  const [stackByProspect, setStackByProspect] = useState<Record<string, SalonBusinessStack>>({});
   const pageSize = 100;
 
   // Fresh Slate (in CreatorIntelligenceNav) broadcasts this event after wiping
@@ -426,6 +433,20 @@ export default function ProspectsPage() {
         setStatsProspects([]);
         setStatsTotal(0);
       });
+  }, [refreshNonce]);
+
+  useEffect(() => {
+    fetch("/api/admin/intelligence/salon/business-stack?limit=500", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d: { ok: boolean; stacks?: SalonBusinessStack[] }) => {
+        if (!d.ok || !d.stacks) return;
+        const map: Record<string, SalonBusinessStack> = {};
+        for (const s of d.stacks) {
+          if (s.prospectId) map[s.prospectId] = s;
+        }
+        setStackByProspect(map);
+      })
+      .catch(() => setStackByProspect({}));
   }, [refreshNonce]);
 
   useEffect(() => {
@@ -756,6 +777,9 @@ export default function ProspectsPage() {
                   ["businessSubcategory",         "Subtype"],
                   ["location",                    "Location"],
                   ["bookingProvider",             "Booking Provider"],
+                  ["payment",                     "Payment"],
+                  ["stack",                       "Stack"],
+                  ["import",                      "Import Candidate"],
                   ["bestUrl",                     "Best URL"],
                   ["validationStatus",            "Status"],
                 ] as [SortKey, string][]).map(([key, label]) => (
@@ -816,6 +840,15 @@ export default function ProspectsPage() {
                           <BookingProviderSourceChip prospect={p} />
                         </div>
                       </td>
+                      <td style={tdS}>
+                        <StackPaymentChip stack={stackByProspect[p.prospectId]} />
+                      </td>
+                      <td style={tdS}>
+                        <BusinessStackChips stack={stackByProspect[p.prospectId]} compact />
+                      </td>
+                      <td style={tdS}>
+                        <ImportCandidateChip stack={stackByProspect[p.prospectId]} />
+                      </td>
                       <td style={{ ...tdS, maxWidth: 160 }}>
                         {p.bestMatch ? (
                           <a href={p.bestMatch.url} target="_blank" rel="noopener noreferrer"
@@ -831,7 +864,7 @@ export default function ProspectsPage() {
                     </tr>
                     {isExpanded && (
                       <tr key={`${p.prospectId}-detail`}>
-                        <td colSpan={8} style={{ padding: 0 }}>
+                        <td colSpan={11} style={{ padding: 0 }}>
                           <ProspectDetail prospect={p} onSaved={(updated) => setProspects((prev) => prev.map((x) => x.prospectId === updated.prospectId ? updated : x))} />
                         </td>
                       </tr>

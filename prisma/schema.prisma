@@ -1594,3 +1594,24 @@ model SalonBackofficeImportRun {
 
   @@map("salon_backoffice_import_runs")
 }
+
+/// Salon business-stack fingerprints (booking, payments, website, marketing, check-in).
+/// Table is also ensured via raw DDL in lib/intelligence/salon/business-stack/db.ts.
+model SalonBusinessStack {
+  prospectId              String   @id @map("prospect_id")
+  instagramHandle         String?  @map("instagram_handle")
+  signals                 Json     @default("[]")
+  primaryBookingProvider  String?  @map("primary_booking_provider")
+  primaryPaymentProvider  String?  @map("primary_payment_provider")
+  websiteBuilder          String?  @map("website_builder")
+  reviewPresence          Json     @default("[]") @map("review_presence")
+  marketingPixels         Json     @default("[]") @map("marketing_pixels")
+  checkInProvider         String?  @map("check_in_provider")
+  stackCompletenessScore  Int      @default(0) @map("stack_completeness_score")
+  operationalMaturity     String   @default("low") @map("operational_maturity")
+  importOpportunity       Boolean  @default(false) @map("import_opportunity")
+  notes                   Json     @default("[]")
+  updatedAt               DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("salon_business_stack")
+}

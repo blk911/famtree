@@ -10,6 +10,7 @@ import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidat
 import { RELATIONSHIP_OPPORTUNITY_LABELS } from "@/lib/studios/prospects/opportunity-taxonomy";
 import { buildSalonIdentityPacket, prospectToPublicPresenceInput } from "@/lib/intelligence/salon/public-presence/identity-extractor";
 import { listPresenceResults } from "@/lib/intelligence/salon/public-presence/presence-store";
+import { getBusinessStack } from "@/lib/intelligence/salon/business-stack/stack-store";
 
 type RouteContext = { params: Promise<{ prospectId: string }> };
 
@@ -100,6 +101,8 @@ export async function GET(_req: NextRequest, context: RouteContext) {
       diagnostics: { errors: [] as string[] },
     };
 
+    const businessStack = await getBusinessStack(prospectId);
+
     return NextResponse.json({
       ok: true,
       prospect,
@@ -109,6 +112,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
       sourceLinks,
       notes,
       publicPresence,
+      businessStack: businessStack ?? undefined,
     });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);

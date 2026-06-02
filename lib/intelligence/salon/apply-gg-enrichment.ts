@@ -17,8 +17,10 @@ import {
 } from "./public-presence/discovery-engine";
 import { upsertPresenceResults } from "./public-presence/presence-store";
 import type { SalonPublicPresenceDiscoveryResult } from "./public-presence/types";
+import { enrichProspectWithBusinessStack } from "./business-stack/apply-stack-enrichment";
+import type { SalonBusinessStack } from "./business-stack/types";
 
-export type GgEnrichmentInput = SalonProviderDiscoveryInput;
+export type GgEnrichmentInput = SalonProviderDiscoveryInput & { prospectId?: string };
 
 export type GgProspectDiagnostics = {
   ggResolverStatus: ProspectGgResolverStatus;
@@ -32,6 +34,7 @@ export type ApplyGgOptions = {
   runGgOnAllDeduped?: boolean;
   runPublicSearch?: boolean;
   forceSearch?: boolean;
+  crawlWebsite?: boolean;
 };
 
 export type SalonBookingEnrichmentFields = EnrichedProspectBookingFields &
@@ -214,6 +217,7 @@ export async function applyGgSalonEnrichment(
   bookingFields: SalonBookingEnrichmentFields;
   gg: GgProspectDiagnostics;
   result: SalonDiscoveryEnrichmentResult;
+  businessStack?: SalonBusinessStack;
   runDelta: Partial<GgResolverRunDiagnostics>;
 }> {
   const maxProbes = options.runGgOnAllDeduped
@@ -292,8 +296,49 @@ export async function applyGgSalonEnrichment(
 
   const legacy = discoveryToLegacyResult(discovery, enableGg);
 
+  let bookingFields = { ...legacy.bookingFields };
+  let businessStack: SalonBusinessStack | undefined;
+  try {
+    const stackResult = await enrichProspectWithBusinessStack(
+      {
+        prospectId: input.prospectId,
+        instagramHandle: handle,
+        displayName: input.displayName ?? undefined,
+        website: input.website ?? undefined,
+        bioUrl: input.bioUrl ?? undefined,
+        bestMatchUrl: input.bestMatchUrl ?? undefined,
+        allMatchedUrls: input.allMatchedUrls,
+        linkTrailUrls: input.linkTrailUrls,
+        linkTrailUrlsScanned: input.linkTrailUrlsScanned,
+        linkInBioUrl: input.linkInBioUrl ?? undefined,
+        bookingProvider: bookingFields.bookingProvider,
+        bookingProviderConfidence: bookingFields.bookingProviderConfidence,
+        bookingProviderSource: bookingFields.bookingProviderSource,
+        bookingUrl: bookingFields.bookingUrl ?? undefined,
+      },
+      {
+        crawlWebsite: options.crawlWebsite ?? options.runPublicSearch ?? false,
+        persist: false,
+      },
+    );
+    businessStack = {
+      ...stackResult.stack,
+      prospectId: input.prospectId ?? stackResult.stack.prospectId,
+    };
+    if (stackResult.bookingUpgrade) {
+      const upgrade = stackResult.bookingUpgrade;
+      bookingFields = {
+        ...bookingFields,
+        ...upgrade,
+        bookingProviderEvidence: upgrade.bookingProviderEvidence,
+      };
+    }
+  } catch {
+    // stack enrichment must not block harvest
+  }
+
   return {
-    bookingFields: legacy.bookingFields,
+    bookingFields,
     gg: {
       ggResolverStatus: ggSkippedCap
         ? "skipped_cap"
@@ -304,6 +349,7 @@ export async function applyGgSalonEnrichment(
         : legacy.ggResolverReason,
     },
     result: legacy,
+    businessStack,
     runDelta: runDeltaFromDiscovery(legacy, ggSkippedCap),
   };
 }
@@ -315,6 +361,7 @@ export async function runGgPassForUpserts(
     runGgOnAllDeduped?: boolean;
     runPublicSearch?: boolean;
     forceSearch?: boolean;
+    crawlWebsite?: boolean;
   },
 ): Promise<{ upserts: UpsertInput[]; ggRun: GgResolverRunDiagnostics }> {
   const ggRun = emptyGgRunDiagnostics();
@@ -323,7 +370,8 @@ export async function runGgPassForUpserts(
   const out: UpsertInput[] = [];
   for (let i = 0; i < upserts.length; i++) {
     const base = upserts[i];
-    const { bookingFields, gg, result: enrichResult, runDelta } = await applyGgSalonEnrichment(
+    const { bookingFields, gg, result: enrichResult, businessStack, runDelta } =
+      await applyGgSalonEnrichment(
       upsertInputToGgEnrichInput(base),
       {
         index: i,
@@ -331,6 +379,7 @@ export async function runGgPassForUpserts(
         runGgOnAllDeduped: options?.runGgOnAllDeduped,
         runPublicSearch: options?.runPublicSearch,
         forceSearch: options?.forceSearch,
+        crawlWebsite: options?.crawlWebsite,
       },
     );
     mergeGgRunDiagnostics(ggRun, runDelta);

@@ -5,6 +5,8 @@ import { BookingProviderPill } from "./BookingProviderPill";
 import { BookingProviderSourceChip } from "./BookingProviderSourceChip";
 import { AdvancedIntelligenceSection } from "./AdvancedIntelligenceSection";
 import { bookingProviderForDisplay } from "@/lib/intelligence/salon/gg-booking-display";
+import { getStackProvider } from "@/lib/intelligence/salon/business-stack/provider-registry";
+import type { SalonBusinessStack } from "@/lib/intelligence/salon/business-stack/types";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 
 type DetailResponse = {
@@ -52,6 +54,7 @@ type DetailResponse = {
     linkInBio?: string;
     website?: string;
   };
+  businessStack?: SalonBusinessStack;
 };
 
 type Props = {
@@ -114,12 +117,14 @@ type PresencePayload = {
 export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
   const [data, setData] = useState<DetailResponse | null>(null);
   const [presence, setPresence] = useState<PresencePayload | null>(null);
+  const [businessStack, setBusinessStack] = useState<SalonBusinessStack | null>(null);
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
     if (!prospectId) return;
     setLoading(true);
     setPresence(null);
+    setBusinessStack(null);
     try {
       const res = await fetch(
         `/api/admin/intelligence/salon/prospects/${encodeURIComponent(prospectId)}/detail`,
@@ -129,6 +134,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
       if (json.ok) {
         setData(json);
         if (json.publicPresence) setPresence(json.publicPresence);
+        if (json.businessStack) setBusinessStack(json.businessStack);
       }
     } catch {
       setData(null);
@@ -341,6 +347,78 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                 </div>
               ) : null}
             </section>
+
+            {businessStack ? (
+              <section style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+                  BUSINESS STACK
+                </div>
+                <Row label="Booking provider">
+                  {na(
+                    getStackProvider(businessStack.primaryBookingProvider ?? "")?.label ??
+                      businessStack.primaryBookingProvider,
+                  )}
+                </Row>
+                <Row label="Payment provider">
+                  {na(
+                    getStackProvider(businessStack.primaryPaymentProvider ?? "")?.label ??
+                      businessStack.primaryPaymentProvider,
+                  )}
+                </Row>
+                <Row label="Website builder">
+                  {na(
+                    getStackProvider(businessStack.websiteBuilder ?? "")?.label ??
+                      businessStack.websiteBuilder,
+                  )}
+                </Row>
+                <Row label="Check-in provider">
+                  {na(
+                    getStackProvider(businessStack.checkInProvider ?? "")?.label ??
+                      businessStack.checkInProvider,
+                  )}
+                </Row>
+                <Row label="Review presence">
+                  {(businessStack.reviewPresence ?? []).length > 0
+                    ? (businessStack.reviewPresence ?? [])
+                        .map((id) => getStackProvider(id)?.label ?? id)
+                        .join(", ")
+                    : "Not available"}
+                </Row>
+                <Row label="Marketing pixels">
+                  {(businessStack.marketingPixels ?? []).join(", ") || "Not available"}
+                </Row>
+                <Row label="Operational maturity">{na(businessStack.operationalMaturity)}</Row>
+                <Row label="Stack completeness">{na(businessStack.stackCompletenessScore)}</Row>
+                <Row label="Import opportunity">
+                  {businessStack.importOpportunity ? "Yes" : "No"}
+                </Row>
+                <Row label="Stack signals">
+                  {(businessStack.signals ?? []).length > 0 ? (
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                      {businessStack.signals.slice(0, 15).map((sig, i) => (
+                        <li key={`${sig.providerId}-${i}`} style={{ fontSize: 11, marginBottom: 6 }}>
+                          <strong>{sig.providerLabel}</strong> ({sig.category}) ·{" "}
+                          {sig.source} · {Math.round(sig.confidence * 100)}%
+                          {sig.url ? (
+                            <>
+                              {" "}
+                              · <ExternalLink href={sig.url} label={sig.url.slice(0, 36)} />
+                            </>
+                          ) : null}
+                          {sig.evidence.length > 0 ? (
+                            <div style={{ color: "#78716c", marginTop: 2 }}>
+                              {sig.evidence.slice(0, 2).join(" · ")}
+                            </div>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    "Not available"
+                  )}
+                </Row>
+              </section>
+            ) : null}
 
             {presence ? (
               <section style={{ marginBottom: 20 }}>
