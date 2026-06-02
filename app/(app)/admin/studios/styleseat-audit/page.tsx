@@ -215,6 +215,8 @@ export default function StyleSeatAuditPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"summary" | "method" | "validation" | "generated" | "proof" | "answers">("summary");
+  const [backfillLoading, setBackfillLoading] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<{ summary: string; downgraded: number; kept: number } | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/intelligence/salon/styleseat-audit")
@@ -226,6 +228,22 @@ export default function StyleSeatAuditPage() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleBackfill() {
+    if (!confirm("This will downgrade generated_candidate StyleSeat records that have no real source URL. Continue?")) return;
+    setBackfillLoading(true);
+    setBackfillResult(null);
+    try {
+      const res = await fetch("/api/admin/intelligence/salon/styleseat-audit/backfill", { method: "POST" });
+      const d = await res.json() as { ok: boolean; summary?: string; downgraded?: number; kept?: number; error?: string };
+      if (d.ok) setBackfillResult({ summary: d.summary ?? "Done", downgraded: d.downgraded ?? 0, kept: d.kept ?? 0 });
+      else setError(d.error ?? "Backfill failed");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Backfill error");
+    } finally {
+      setBackfillLoading(false);
+    }
+  }
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
     padding: "5px 14px", borderRadius: 20, border: "none",
@@ -252,6 +270,31 @@ export default function StyleSeatAuditPage() {
           How are StyleSeat prospects identified? Are generated candidates helping or hurting?
           Is the concatenation engine needed?
         </p>
+      </div>
+
+      {/* Backfill action */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        <button
+          onClick={handleBackfill}
+          disabled={backfillLoading}
+          style={{
+            padding: "8px 18px", borderRadius: 8, border: "none",
+            background: backfillLoading ? "#d6d3d1" : "#9d174d", color: "#fff",
+            fontWeight: 700, fontSize: 12, cursor: backfillLoading ? "not-allowed" : "pointer",
+          }}
+        >
+          {backfillLoading ? "Running backfill…" : "⬇ Run Backfill — Downgrade Generated Records"}
+        </button>
+        {backfillResult && (
+          <div style={{
+            fontSize: 12, padding: "6px 14px", borderRadius: 8,
+            background: backfillResult.downgraded > 0 ? "#fef3c7" : "#f0fdf4",
+            border: `1px solid ${backfillResult.downgraded > 0 ? "#fde68a" : "#bbf7d0"}`,
+            color: "#1c1917",
+          }}>
+            {backfillResult.summary}
+          </div>
+        )}
       </div>
 
       {loading && (

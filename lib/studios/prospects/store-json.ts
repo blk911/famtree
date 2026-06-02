@@ -73,14 +73,49 @@ type ClassificationFields = Pick<ProspectRecord,
   "classificationNotes" | "classificationLocked"
 >;
 
+/**
+ * Builds the set of URLs that are excluded from booking provider detection.
+ * Any URL that was tested as a generated candidate and rejected must not
+ * produce a provider pill — it was not verified as belonging to this operator.
+ */
+function buildRejectedUrlSet(record: Partial<ProspectRecord> & UpsertInput): Set<string> {
+  const rejected = record.rejectedCandidateUrls ?? [];
+  const out = new Set<string>();
+  for (const r of rejected) {
+    if (r && typeof r === "object" && r.url) out.add(r.url);
+    else if (typeof r === "string") out.add(r);
+  }
+  return out;
+}
+
+/**
+ * Returns a filtered copy of `linkTrailUrls` that excludes rejected generated
+ * candidate probes. Appointment-platform URLs (StyleSeat, GlossGenius, Vagaro,
+ * Booksy, etc.) that were tested and rejected must never become a bookingProvider.
+ */
+function filterLinkTrailForDetection(
+  linkTrailUrls: string[] | undefined,
+  rejectedUrls: Set<string>,
+): string[] {
+  if (!linkTrailUrls) return [];
+  // Only exclude URLs we know were rejected — don't strip real trail URLs
+  return linkTrailUrls.filter((u) => !rejectedUrls.has(u));
+}
+
 export function applyBookingDetection(record: Partial<ProspectRecord> & UpsertInput): Partial<ProspectRecord> & UpsertInput {
+  // Exclude rejected generated-candidate probes from provider detection.
+  // A URL like styleseat.com/m/{handle} that was probed and rejected must not
+  // produce a bookingProvider="styleseat" pill — it was not verified.
+  const rejectedUrls = buildRejectedUrlSet(record);
+  const cleanTrail = filterLinkTrailForDetection(record.linkTrailUrlsScanned, rejectedUrls);
+
   const detected = detectBookingFromProspectTrail({
     bestMatchUrl: record.bestMatch?.url,
     allMatchedUrls: record.allMatchedUrls,
     platforms: record.platforms,
     evidence: record.evidence,
-    linkTrailUrls: record.linkTrailUrlsScanned,
-    linkTrailUrlsScanned: record.linkTrailUrlsScanned,
+    linkTrailUrls: cleanTrail,
+    linkTrailUrlsScanned: cleanTrail,
   });
   const existingScore = record.bookingProviderConfidence ?? 0;
   const newScore = detected.bookingProviderConfidence ?? 0;

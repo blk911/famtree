@@ -149,12 +149,27 @@ export async function resultToProspect(
     (result.seed.displayName !== result.seed.handle ? result.seed.displayName : null) ??
     result.seed.handle;
 
+  // linkTrailUrlsScanned: full diagnostic trail including all tested candidates.
+  // Used for audit/provenance only — NOT for booking provider detection.
   const linkTrailUrlsScanned = uniqueUrlList([
     ...directUrls,
     ...(result.linkTrailUrls ?? []),
     ...(result.candidateUrlsTested ?? []),
     best?.url,
   ]);
+
+  // linkTrailUrlsForDetection: real evidence only (no generated probe URLs).
+  // Booking provider detection must NOT see rejected candidate probes —
+  // a styleseat.com/m/{handle} URL we constructed ourselves and that failed
+  // identity verification must never produce a bookingProvider="styleseat" pill.
+  const rejectedProbeUrls = new Set(
+    (result.rejectedCandidates ?? []).map((r) => r.url).filter(Boolean),
+  );
+  const linkTrailUrlsForDetection = uniqueUrlList([
+    ...directUrls,
+    ...(result.linkTrailUrls ?? []),  // real URLs found inside link-in-bio pages
+    best?.url,
+  ]).filter((u) => !rejectedProbeUrls.has(u));
 
   const linkTrailFields = buildProspectLinkTrailFields({
     handle: result.seed.handle,
@@ -183,7 +198,7 @@ export async function resultToProspect(
           allMatchedUrls,
           platforms: Array.from(new Set(profiles.map((p) => p.platform))),
           evidence,
-          linkTrailUrls: linkTrailFields.linkTrailUrlsScanned ?? result.linkTrailUrls,
+          linkTrailUrls: linkTrailUrlsForDetection,
           instagramHandle: result.seed.handle,
           displayName: result.seed.displayName,
           website: websiteUrl ?? best?.url,
