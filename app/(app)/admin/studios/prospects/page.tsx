@@ -25,6 +25,7 @@ import { ProviderDetectionDetail } from "@/components/admin/intelligence/salon/P
 import { SalonProspectDrawer } from "@/components/admin/intelligence/salon/SalonProspectDrawer";
 import { ProviderDiscoveryBackfillButton } from "@/components/admin/intelligence/salon/ProviderDiscoveryBackfillButton";
 import { PublicPresenceBackfillButton } from "@/components/admin/intelligence/salon/PublicPresenceBackfillButton";
+import { IgResolverUrlBackfillButton } from "@/components/admin/intelligence/salon/IgResolverUrlBackfillButton";
 import { SalonOperatorSummary } from "@/components/admin/intelligence/salon/SalonOperatorSummary";
 import { isSalonImportCandidate } from "@/lib/intelligence/salon/import-candidate";
 import { getBookingProviderLabel } from "@/lib/intelligence/salon/provider-detector";
@@ -621,6 +622,7 @@ export default function ProspectsPage() {
         showContext={true}
       />
 
+      <IgResolverUrlBackfillButton defaultLimit={250} />
       <ProviderDiscoveryBackfillButton limit={250} />
       <PublicPresenceBackfillButton />
 

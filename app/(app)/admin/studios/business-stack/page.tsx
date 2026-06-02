@@ -5,6 +5,7 @@ import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/Creator
 import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import { SalonStorageBadge } from "@/components/admin/intelligence/salon/SalonStorageBadge";
+import { IgResolverUrlBackfillButton } from "@/components/admin/intelligence/salon/IgResolverUrlBackfillButton";
 import { SalonProspectDrawer } from "@/components/admin/intelligence/salon/SalonProspectDrawer";
 import { getStackProvider } from "@/lib/intelligence/salon/business-stack/provider-registry";
 import type {
@@ -123,6 +124,8 @@ export default function BusinessStackPage() {
         config={salonConfig}
       />
       <SalonStorageBadge />
+
+      <IgResolverUrlBackfillButton defaultLimit={250} />
 
       <div
         style={{
