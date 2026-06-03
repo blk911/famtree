@@ -13,23 +13,14 @@ import {
   type ProviderProvenanceRecord,
   type ProviderProvenanceReport,
 } from "@/lib/intelligence/salon/provider-provenance/types";
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "8px 10px",
-  fontSize: 10,
-  fontWeight: 700,
-  color: "#78716c",
-  borderBottom: "1px solid #e7e5e4",
-  whiteSpace: "nowrap",
-};
-const tdStyle: React.CSSProperties = {
-  padding: "8px 10px",
-  fontSize: 11,
-  color: "#57534e",
-  borderBottom: "1px solid #f5f5f4",
-  verticalAlign: "top",
-};
+import {
+  ADMIN_INTEL_BODY,
+  ADMIN_INTEL_CARD_LABEL,
+  ADMIN_INTEL_META,
+  ADMIN_INTEL_SECTION_TITLE,
+  ADMIN_INTEL_TABLE_CELL as tdStyle,
+  ADMIN_INTEL_TABLE_HEADER as thStyle,
+} from "@/components/admin/intelligence/salon/admin-intelligence-typography";
 
 export default function ProviderProvenancePage() {
   const [report, setReport] = useState<ProviderProvenanceReport | null>(null);
@@ -177,7 +168,7 @@ export default function ProviderProvenancePage() {
                     <tr key={row.provider}>
                       <td style={tdStyle}>
                         <strong>{row.providerLabel}</strong>
-                        <div style={{ fontSize: 10, color: "#a8a29e" }}>{row.provider}</div>
+                        <div style={ADMIN_INTEL_META}>{row.provider}</div>
                       </td>
                       <td style={tdStyle}>{row.total}</td>
                       <td style={{ ...tdStyle, color: "#15803d", fontWeight: 700 }}>{row.confirmed}</td>
@@ -250,7 +241,7 @@ function BadTable({
             >
               <td style={tdStyle}>
                 <strong>@{r.instagramHandle}</strong>
-                <div style={{ fontSize: 10, color: "#a8a29e" }}>{r.displayName}</div>
+                <div style={ADMIN_INTEL_META}>{r.displayName}</div>
               </td>
               <td style={tdStyle}>{r.providerLabel}</td>
               <td style={tdStyle}>{ASSIGNMENT_SOURCE_LABELS[r.assignmentSource]}</td>
@@ -384,9 +375,9 @@ function QuestionsBlock({ questions }: { questions: ProviderProvenanceQuestions 
             padding: "14px 16px",
           }}
         >
-          <div style={{ fontSize: 10, fontWeight: 800, color: "#9d174d", marginBottom: 4 }}>{q}</div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#1c1917", marginBottom: 6 }}>{label}</div>
-          <div style={{ fontSize: 12, color: "#57534e", lineHeight: 1.55 }}>{text}</div>
+          <div style={{ fontSize: 12, fontWeight: 800, color: "#9d174d", marginBottom: 4 }}>{q}</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#1c1917", marginBottom: 6 }}>{label}</div>
+          <div style={{ ...ADMIN_INTEL_BODY, color: "#57534e", lineHeight: 1.55 }}>{text}</div>
         </div>
       ))}
     </div>
@@ -398,9 +389,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <div style={{ marginBottom: 28 }}>
       <div
         style={{
-          fontSize: 10,
-          fontWeight: 800,
-          color: "#a8a29e",
+          ...ADMIN_INTEL_SECTION_TITLE,
           letterSpacing: "0.07em",
           marginBottom: 12,
         }}
@@ -422,7 +411,7 @@ function Card({ label, value, color }: { label: string; value: number | string; 
         padding: "12px 14px",
       }}
     >
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e" }}>{label}</div>
+      <div style={ADMIN_INTEL_CARD_LABEL}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
     </div>
   );

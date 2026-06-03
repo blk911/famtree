@@ -4,6 +4,11 @@ import {
   ASSIGNMENT_SOURCE_LABELS,
   type ProviderProvenanceRecord,
 } from "@/lib/intelligence/salon/provider-provenance/types";
+import {
+  ADMIN_INTEL_DRAWER_LABEL,
+  ADMIN_INTEL_DRAWER_VALUE,
+  ADMIN_INTEL_SECTION_TITLE,
+} from "./admin-intelligence-typography";
 
 export function ProviderProvenanceSection({
   record,
@@ -13,20 +18,10 @@ export function ProviderProvenanceSection({
   if (!record) {
     return (
       <section style={{ marginBottom: 20 }}>
+        <div style={ADMIN_INTEL_SECTION_TITLE}>PROVIDER PROVENANCE</div>
         <div
           style={{
-            fontSize: 11,
-            fontWeight: 800,
-            color: "#a8a29e",
-            letterSpacing: "0.06em",
-            marginBottom: 8,
-          }}
-        >
-          PROVIDER PROVENANCE
-        </div>
-        <div
-          style={{
-            fontSize: 12,
+            ...ADMIN_INTEL_DRAWER_VALUE,
             color: "#78716c",
             background: "#fafaf9",
             border: "1px solid #e7e5e4",
@@ -42,17 +37,7 @@ export function ProviderProvenanceSection({
 
   return (
     <section style={{ marginBottom: 20 }}>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 800,
-          color: "#a8a29e",
-          letterSpacing: "0.06em",
-          marginBottom: 8,
-        }}
-      >
-        PROVIDER PROVENANCE
-      </div>
+      <div style={ADMIN_INTEL_SECTION_TITLE}>PROVIDER PROVENANCE</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
         <Pill label={record.providerLabel} tone="neutral" />
         <Pill
@@ -76,7 +61,7 @@ export function ProviderProvenanceSection({
         {record.evidence.length > 0 ? (
           <ul style={{ margin: 0, paddingLeft: 16 }}>
             {record.evidence.slice(0, 12).map((e) => (
-              <li key={e} style={{ fontSize: 11, marginBottom: 2 }}>
+              <li key={e} style={{ ...ADMIN_INTEL_DRAWER_VALUE, marginBottom: 2, wordBreak: "break-word" }}>
                 {e}
               </li>
             ))}
@@ -92,8 +77,8 @@ export function ProviderProvenanceSection({
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 8 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: 12, color: "#44403c", lineHeight: 1.45 }}>{children}</div>
+      <div style={ADMIN_INTEL_DRAWER_LABEL}>{label}</div>
+      <div style={ADMIN_INTEL_DRAWER_VALUE}>{children}</div>
     </div>
   );
 }

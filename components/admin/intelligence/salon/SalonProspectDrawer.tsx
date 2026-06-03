@@ -14,6 +14,12 @@ import { ProviderProvenanceSection } from "./ProviderProvenanceSection";
 import { GoogleIdentitySection } from "./GoogleIdentitySection";
 import type { ProviderProvenanceRecord } from "@/lib/intelligence/salon/provider-provenance/types";
 import type { GoogleIdentityRecord } from "@/lib/intelligence/salon/google-identity/types";
+import {
+  ADMIN_INTEL_DRAWER_LABEL,
+  ADMIN_INTEL_DRAWER_VALUE,
+  ADMIN_INTEL_META,
+  ADMIN_INTEL_SECTION_TITLE,
+} from "./admin-intelligence-typography";
 
 type DetailResponse = {
   ok: boolean;
@@ -75,8 +81,8 @@ type Props = {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 8 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: 12, color: "#44403c", lineHeight: 1.45 }}>{children}</div>
+      <div style={ADMIN_INTEL_DRAWER_LABEL}>{label}</div>
+      <div style={ADMIN_INTEL_DRAWER_VALUE}>{children}</div>
     </div>
   );
 }
@@ -207,7 +213,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
             </div>
             <div style={{ fontSize: 13, color: "#57534e" }}>{p?.identity.name ?? "Not available"}</div>
             {p?.identity.locationGuess ? (
-              <div style={{ fontSize: 11, color: "#78716c", marginTop: 4 }}>
+              <div style={{ ...ADMIN_INTEL_META, color: "#78716c", marginTop: 4 }}>
                 {p.identity.locationGuess}
               </div>
             ) : null}
@@ -251,7 +257,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
         ) : (
           <>
             <section style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+              <div style={ADMIN_INTEL_SECTION_TITLE}>
                 INSTAGRAM IDENTITY
               </div>
               <Row label="Username">@{p.identity.handle}</Row>
@@ -263,7 +269,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
             </section>
 
             <section style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+              <div style={ADMIN_INTEL_SECTION_TITLE}>
                 LINK TRAIL
               </div>
               <Row label="Bio URL"><ExternalLink href={lt?.bioUrl} /></Row>
@@ -274,7 +280,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                 {(lt?.linkTrailUrlsScanned ?? []).length > 0 ? (
                   <ul style={{ margin: 0, paddingLeft: 16 }}>
                     {(lt?.linkTrailUrlsScanned ?? []).slice(0, 12).map((u) => (
-                      <li key={u} style={{ fontSize: 11 }}>
+                      <li key={u} style={ADMIN_INTEL_DRAWER_VALUE}>
                         <ExternalLink href={u} />
                       </li>
                     ))}
@@ -293,7 +299,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
             <GoogleIdentitySection record={data?.googleIdentity} />
 
             <section style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+              <div style={ADMIN_INTEL_SECTION_TITLE}>
                 BOOKING PROVIDER
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
@@ -311,7 +317,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                 {(p.bookingProviderEvidence ?? []).length > 0 ? (
                   <ul style={{ margin: 0, paddingLeft: 16 }}>
                     {(p.bookingProviderEvidence ?? []).map((e) => (
-                      <li key={e} style={{ fontSize: 11 }}>{e}</li>
+                      <li key={e} style={ADMIN_INTEL_DRAWER_VALUE}>{e}</li>
                     ))}
                   </ul>
                 ) : (
@@ -322,7 +328,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
             </section>
 
             <section style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+              <div style={ADMIN_INTEL_SECTION_TITLE}>
                 GG VALIDATION
               </div>
               <Row label="Status">{na(p.ggValidationStatus ?? "not_attempted")}</Row>
@@ -332,7 +338,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                 {(p.ggCandidateUrls ?? p.ggCheckedUrls ?? []).length > 0 ? (
                   <ul style={{ margin: 0, paddingLeft: 16 }}>
                     {(p.ggCandidateUrls ?? p.ggCheckedUrls ?? []).slice(0, 12).map((u) => (
-                      <li key={u} style={{ fontSize: 11 }}>
+                      <li key={u} style={ADMIN_INTEL_DRAWER_VALUE}>
                         <ExternalLink href={u} />
                       </li>
                     ))}
@@ -350,7 +356,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                 <div
                   style={{
                     marginTop: 8,
-                    fontSize: 11,
+                    fontSize: 13,
                     color: "#b45309",
                     background: "#fffbeb",
                     border: "1px solid #fde68a",
@@ -366,7 +372,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
 
             {businessStack ? (
               <section style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+                <div style={ADMIN_INTEL_SECTION_TITLE}>
                   BUSINESS STACK
                 </div>
                 <Row label="Booking provider">
@@ -472,7 +478,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
               <section style={{ marginBottom: 20 }}>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 13,
                     fontWeight: 800,
                     color: "#a8a29e",
                     letterSpacing: "0.06em",
@@ -490,7 +496,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
 
             {presence ? (
               <section style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+                <div style={ADMIN_INTEL_SECTION_TITLE}>
                   PUBLIC PRESENCE
                 </div>
                 {presence.identity ? (
@@ -504,7 +510,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                       {(presence.identity.searchQueries ?? []).length > 0 ? (
                         <ul style={{ margin: 0, paddingLeft: 16 }}>
                           {(presence.identity.searchQueries ?? []).map((q) => (
-                            <li key={q} style={{ fontSize: 11 }}>{q}</li>
+                            <li key={q} style={ADMIN_INTEL_DRAWER_VALUE}>{q}</li>
                           ))}
                         </ul>
                       ) : (
@@ -533,7 +539,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                   {(presence.results ?? []).length > 0 ? (
                     <ul style={{ margin: 0, paddingLeft: 16 }}>
                       {(presence.results ?? []).slice(0, 12).map((r) => (
-                        <li key={`${r.source}-${r.url}`} style={{ fontSize: 11, marginBottom: 4 }}>
+                        <li key={`${r.source}-${r.url}`} style={{ ...ADMIN_INTEL_DRAWER_VALUE, marginBottom: 4, wordBreak: "break-word" }}>
                           <span style={{ color: "#78716c" }}>{r.urlType}</span> ·{" "}
                           <ExternalLink href={r.url} label={r.url.slice(0, 40)} />
                           {r.provider ? ` · ${r.provider}` : ""}
@@ -551,7 +557,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
             ) : null}
 
             <section style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+              <div style={ADMIN_INTEL_SECTION_TITLE}>
                 PROVIDER DISCOVERY DEBUG
               </div>
               {(() => {
@@ -568,7 +574,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                       {uniqueScanned.length > 0 ? (
                         <ul style={{ margin: 0, paddingLeft: 16 }}>
                           {uniqueScanned.slice(0, 15).map((u) => (
-                            <li key={u} style={{ fontSize: 11 }}>
+                            <li key={u} style={ADMIN_INTEL_DRAWER_VALUE}>
                               <ExternalLink href={u} />
                             </li>
                           ))}
@@ -596,7 +602,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                           {(dbg?.ggCheckedUrls ?? p.ggCheckedUrls ?? [])
                             .slice(0, 12)
                             .map((u) => (
-                              <li key={u} style={{ fontSize: 11 }}>
+                              <li key={u} style={ADMIN_INTEL_DRAWER_VALUE}>
                                 <ExternalLink href={u} />
                               </li>
                             ))}
@@ -632,7 +638,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
                 <section style={{ marginBottom: 20 }}>
                   <div
                     style={{
-                      fontSize: 11,
+                      fontSize: 13,
                       fontWeight: 800,
                       color: "#a8a29e",
                       letterSpacing: "0.06em",
@@ -681,7 +687,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
             />
 
             <section style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+              <div style={ADMIN_INTEL_SECTION_TITLE}>
                 NOTES / DIAGNOSTICS
               </div>
               <Row label="Detection">{na(data?.notes?.reasonLabel)}</Row>
@@ -695,7 +701,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
             </section>
 
             <section>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
+              <div style={ADMIN_INTEL_SECTION_TITLE}>
                 SOURCE LINKS
               </div>
               <Row label="Instagram"><ExternalLink href={data?.sourceLinks?.instagram} /></Row>

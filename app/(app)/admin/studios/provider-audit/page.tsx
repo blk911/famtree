@@ -14,6 +14,15 @@ import type {
   ProviderProvenanceAuditReport,
   ProviderTrustRow,
 } from "@/lib/intelligence/salon/provider-provenance-audit";
+import {
+  ADMIN_INTEL_BODY,
+  ADMIN_INTEL_CARD_LABEL,
+  ADMIN_INTEL_META,
+  ADMIN_INTEL_SECTION_TITLE,
+  ADMIN_INTEL_TABLE_CELL as tdStyle,
+  ADMIN_INTEL_TABLE_HEADER as thStyle,
+  ADMIN_INTEL_URL,
+} from "@/components/admin/intelligence/salon/admin-intelligence-typography";
 
 type AuditResponse = {
   ok: boolean;
@@ -74,23 +83,6 @@ export default function ProviderAuditPage() {
     if (filter === "all") return list;
     return list.filter((r) => r.count > 0);
   }, [report, filter]);
-
-  const thStyle: React.CSSProperties = {
-    textAlign: "left",
-    padding: "8px 10px",
-    fontSize: 10,
-    fontWeight: 700,
-    color: "#78716c",
-    borderBottom: "1px solid #e7e5e4",
-    whiteSpace: "nowrap",
-  };
-  const tdStyle: React.CSSProperties = {
-    padding: "8px 10px",
-    fontSize: 11,
-    color: "#57534e",
-    borderBottom: "1px solid #f5f5f4",
-    verticalAlign: "top",
-  };
 
   return (
     <div style={{ padding: "24px 28px 48px", maxWidth: 1200, margin: "0 auto" }}>
@@ -213,7 +205,7 @@ export default function ProviderAuditPage() {
                       padding: "10px 12px",
                     }}
                   >
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e" }}>{label}</div>
+                    <div style={ADMIN_INTEL_CARD_LABEL}>{label}</div>
                     <div style={{ fontSize: 20, fontWeight: 800, color: "#1c1917" }}>{val}</div>
                   </div>
                 ))}
@@ -289,7 +281,7 @@ function AuditProviderTable({
           >
             <td style={tdStyle}>
               <strong>{r.label}</strong>
-              <div style={{ fontSize: 10, color: "#a8a29e" }}>{r.providerId}</div>
+              <div style={ADMIN_INTEL_META}>{r.providerId}</div>
             </td>
             <td style={tdStyle}>{r.category}</td>
             <td style={tdStyle}>{r.count}</td>
@@ -303,7 +295,7 @@ function AuditProviderTable({
                   href={r.sampleUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "#0284c7", fontSize: 10, wordBreak: "break-all" }}
+                  style={{ color: "#0284c7", ...ADMIN_INTEL_URL }}
                 >
                   {r.sampleUrl.slice(0, 48)}
                 </a>
@@ -334,7 +326,7 @@ function CategorySectionTable({
 }) {
   if (section.rows.length === 0) {
     return (
-      <div style={{ marginBottom: 16, fontSize: 11, color: "#a8a29e" }}>
+      <div style={{ marginBottom: 16, ...ADMIN_INTEL_META }}>
         <strong>{section.title}:</strong> none detected yet
       </div>
     );
@@ -374,7 +366,7 @@ function ProvenanceSummaryTab({ prov }: { prov: ProviderProvenanceAuditReport })
   const h = prov.hiddenVsDisplayed;
   return (
     <div>
-      <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 10 }}>
+      <div style={{ ...ADMIN_INTEL_SECTION_TITLE, marginBottom: 10 }}>
         PROVENANCE COVERAGE
       </div>
       <div
@@ -407,7 +399,7 @@ function ProvenanceSummaryTab({ prov }: { prov: ProviderProvenanceAuditReport })
         ))}
       </div>
 
-      <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 10 }}>
+      <div style={{ ...ADMIN_INTEL_SECTION_TITLE, marginBottom: 10 }}>
         HIDDEN VS DISPLAYED ASSIGNMENTS
       </div>
       <div
@@ -439,7 +431,7 @@ function ProvenanceSummaryTab({ prov }: { prov: ProviderProvenanceAuditReport })
           </div>
         ))}
       </div>
-      <p style={{ fontSize: 11, color: "#78716c", lineHeight: 1.5, maxWidth: 720 }}>
+      <p style={{ ...ADMIN_INTEL_BODY, color: "#78716c", maxWidth: 720 }}>
         <strong>Stored</strong> = prospect has <code>bookingProvider</code>.{" "}
         <strong>Display eligible</strong> = <code>isConfirmedSalonBookingProvider</code> /{" "}
         <code>bookingProviderForDisplay</code> would show the pill.{" "}
@@ -496,7 +488,7 @@ function ProviderTrustTable({
                 <tr key={r.providerId}>
                   <td style={tdStyle}>
                     <strong>{r.label}</strong>
-                    <div style={{ fontSize: 10, color: "#a8a29e" }}>{r.providerId}</div>
+                    <div style={ADMIN_INTEL_META}>{r.providerId}</div>
                   </td>
                   <td style={tdStyle}>{r.storedCount}</td>
                   <td style={{ ...tdStyle, color: "#15803d", fontWeight: 700 }}>{r.displayEligibleCount}</td>
@@ -555,7 +547,7 @@ function BadAssignmentsTable({
                 <tr key={r.prospectId}>
                   <td style={tdStyle}>
                     <strong>@{r.instagramHandle}</strong>
-                    <div style={{ fontSize: 10, color: "#a8a29e" }}>{r.displayName}</div>
+                    <div style={ADMIN_INTEL_META}>{r.displayName}</div>
                   </td>
                   <td style={tdStyle}>{r.bookingProviderLabel ?? r.bookingProvider}</td>
                   <td style={tdStyle}>{r.bookingProviderSource ?? "—"}</td>
@@ -646,7 +638,7 @@ function AnswerCard({
       }}
     >
       <div style={{ display: "flex", gap: 10, alignItems: "baseline", marginBottom: 6 }}>
-        <span style={{ fontSize: 10, fontWeight: 800, color: "#9d174d", minWidth: 28 }}>{q}</span>
+        <span style={{ fontSize: 12, fontWeight: 800, color: "#9d174d", minWidth: 28 }}>{q}</span>
         <span style={{ fontSize: 12, fontWeight: 700, color: "#1c1917" }}>{label}</span>
         {highlight ? (
           <span style={{ marginLeft: "auto", fontSize: 18, fontWeight: 800, color: warn ? "#b45309" : "#15803d" }}>

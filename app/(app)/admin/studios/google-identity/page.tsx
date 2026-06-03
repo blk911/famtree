@@ -12,23 +12,13 @@ import type {
   GoogleIdentityRecord,
   GoogleIdentityReport,
 } from "@/lib/intelligence/salon/google-identity/types";
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "8px 10px",
-  fontSize: 10,
-  fontWeight: 700,
-  color: "#78716c",
-  borderBottom: "1px solid #e7e5e4",
-  whiteSpace: "nowrap",
-};
-const tdStyle: React.CSSProperties = {
-  padding: "8px 10px",
-  fontSize: 11,
-  color: "#57534e",
-  borderBottom: "1px solid #f5f5f4",
-  verticalAlign: "top",
-};
+import {
+  ADMIN_INTEL_BODY,
+  ADMIN_INTEL_CARD_LABEL,
+  ADMIN_INTEL_META,
+  ADMIN_INTEL_TABLE_CELL as tdStyle,
+  ADMIN_INTEL_TABLE_HEADER as thStyle,
+} from "@/components/admin/intelligence/salon/admin-intelligence-typography";
 
 const STATUS_COLOR: Record<string, string> = {
   confirmed: "#15803d",
@@ -119,7 +109,7 @@ export default function GoogleIdentityPage() {
           Google Places API not connected. Set <code>GOOGLE_MAPS_API_KEY</code> in{" "}
           <code>.env.local</code> and restart <code>npm run dev</code>.
           {report.connection ? (
-            <div style={{ marginTop: 8, fontSize: 11, color: "#78716c" }}>
+            <div style={{ marginTop: 8, ...ADMIN_INTEL_META, color: "#78716c" }}>
               {report.connection.providerConnectionReason}
               {" "}
               (hasKey: {String(report.connection.hasGoogleMapsKey)}, length:{" "}
@@ -132,7 +122,7 @@ export default function GoogleIdentityPage() {
       {!loading && report?.providerConnected ? (
         <div
           style={{
-            fontSize: 11,
+            fontSize: 13,
             color: "#15803d",
             background: "#f0fdf4",
             border: "1px solid #bbf7d0",
@@ -268,7 +258,7 @@ function MatchTable({
               onClick={() => onRowClick(r.prospectId)}
             >
               <td style={tdStyle}>
-                <code style={{ fontSize: 10 }}>{r.prospectId.slice(0, 8)}…</code>
+                <code style={ADMIN_INTEL_META}>{r.prospectId.slice(0, 8)}…</code>
               </td>
               <td style={tdStyle}>{r.googleBusinessName ?? "—"}</td>
               <td style={{ ...tdStyle, color: STATUS_COLOR[r.status] ?? "#57534e", fontWeight: 700 }}>
@@ -321,7 +311,7 @@ function ConflictTable({
               <td style={tdStyle}>
                 <strong>{r.displayName ?? r.prospectId.slice(0, 8)}</strong>
                 {r.instagramHandle ? (
-                  <div style={{ fontSize: 10, color: "#a8a29e" }}>@{r.instagramHandle}</div>
+                  <div style={ADMIN_INTEL_META}>@{r.instagramHandle}</div>
                 ) : null}
               </td>
               <td style={{ ...tdStyle, color: "#b91c1c", fontWeight: 700 }}>{r.status}</td>
@@ -359,8 +349,7 @@ function QuestionsBlock({ questions }: { questions: GoogleIdentityQuestions }) {
         <div
           key={q}
           style={{
-            fontSize: 12,
-            color: "#44403c",
+            ...ADMIN_INTEL_BODY,
             background: "#fafaf9",
             border: "1px solid #e7e5e4",
             borderRadius: 8,
@@ -411,7 +400,7 @@ function Card({
         padding: "12px 14px",
       }}
     >
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", marginBottom: 4 }}>{label}</div>
+      <div style={ADMIN_INTEL_CARD_LABEL}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
     </div>
   );

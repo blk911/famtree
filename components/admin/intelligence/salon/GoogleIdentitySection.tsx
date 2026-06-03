@@ -1,6 +1,12 @@
 "use client";
 
 import type { GoogleIdentityRecord } from "@/lib/intelligence/salon/google-identity/types";
+import {
+  ADMIN_INTEL_DRAWER_LABEL,
+  ADMIN_INTEL_DRAWER_VALUE,
+  ADMIN_INTEL_META,
+  ADMIN_INTEL_SECTION_TITLE,
+} from "./admin-intelligence-typography";
 
 const STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
   confirmed: { bg: "#dcfce7", fg: "#15803d" },
@@ -18,20 +24,10 @@ export function GoogleIdentitySection({
   if (!record) {
     return (
       <section style={{ marginBottom: 20 }}>
+        <div style={ADMIN_INTEL_SECTION_TITLE}>GOOGLE IDENTITY</div>
         <div
           style={{
-            fontSize: 11,
-            fontWeight: 800,
-            color: "#a8a29e",
-            letterSpacing: "0.06em",
-            marginBottom: 8,
-          }}
-        >
-          GOOGLE IDENTITY
-        </div>
-        <div
-          style={{
-            fontSize: 12,
+            ...ADMIN_INTEL_DRAWER_VALUE,
             color: "#78716c",
             background: "#fafaf9",
             border: "1px solid #e7e5e4",
@@ -49,21 +45,11 @@ export function GoogleIdentitySection({
 
   return (
     <section style={{ marginBottom: 20 }}>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 800,
-          color: "#a8a29e",
-          letterSpacing: "0.06em",
-          marginBottom: 8,
-        }}
-      >
-        GOOGLE IDENTITY
-      </div>
+      <div style={ADMIN_INTEL_SECTION_TITLE}>GOOGLE IDENTITY</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
         <span
           style={{
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             padding: "3px 8px",
             borderRadius: 6,
@@ -74,7 +60,7 @@ export function GoogleIdentitySection({
         >
           {record.status.replace(/_/g, " ")}
         </span>
-        <span style={{ fontSize: 10, color: "#78716c" }}>
+        <span style={{ ...ADMIN_INTEL_META, color: "#78716c" }}>
           {record.matchConfidence}% confidence
         </span>
       </div>
@@ -94,7 +80,7 @@ export function GoogleIdentitySection({
         <Row label="Conflict reasons">
           <ul style={{ margin: 0, paddingLeft: 16 }}>
             {record.evidence.map((e) => (
-              <li key={e} style={{ fontSize: 11, marginBottom: 2 }}>
+              <li key={e} style={{ ...ADMIN_INTEL_DRAWER_VALUE, marginBottom: 2, wordBreak: "break-word" }}>
                 {e}
               </li>
             ))}
@@ -108,8 +94,8 @@ export function GoogleIdentitySection({
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 6 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: 12, color: "#44403c" }}>{children}</div>
+      <div style={ADMIN_INTEL_DRAWER_LABEL}>{label}</div>
+      <div style={ADMIN_INTEL_DRAWER_VALUE}>{children}</div>
     </div>
   );
 }

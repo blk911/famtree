@@ -36,6 +36,21 @@ import {
   StackPaymentChip,
 } from "@/components/admin/intelligence/salon/BusinessStackChips";
 import type { SalonBusinessStack } from "@/lib/intelligence/salon/business-stack/types";
+import {
+  ADMIN_INTEL_DRAWER_LABEL,
+  ADMIN_INTEL_DRAWER_VALUE,
+  ADMIN_INTEL_META,
+  ADMIN_INTEL_SECTION_TITLE,
+  ADMIN_INTEL_TABLE_CELL,
+  ADMIN_INTEL_TABLE_HEADER,
+  ADMIN_INTEL_URL,
+} from "@/components/admin/intelligence/salon/admin-intelligence-typography";
+
+const detailFieldLabel: React.CSSProperties = {
+  ...ADMIN_INTEL_DRAWER_LABEL,
+  letterSpacing: "0.08em",
+  marginBottom: 5,
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -201,8 +216,8 @@ function ProspectDetail({ prospect, onSaved }: {
           {/* Source path */}
           {prospect.sourcePath && (
             <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 4 }}>SOURCE PATH</div>
-              <div style={{ fontSize: 11, color: "#78716c", fontFamily: "monospace", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 6, padding: "5px 9px" }}>
+              <div style={{ ...detailFieldLabel, marginBottom: 4 }}>SOURCE PATH</div>
+              <div style={{ ...ADMIN_INTEL_DRAWER_VALUE, color: "#78716c", fontFamily: "monospace", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 6, padding: "5px 9px" }}>
                 {prospect.sourcePath}
               </div>
             </div>
@@ -230,12 +245,12 @@ function ProspectDetail({ prospect, onSaved }: {
           {/* Matched URLs */}
           {prospect.allMatchedUrls.length > 0 && (
             <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 5 }}>MATCHED URLS</div>
+              <div style={detailFieldLabel}>MATCHED URLS</div>
               {prospect.allMatchedUrls.map((u, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
                   <span style={{ fontSize: 9, fontWeight: 700, background: "#f5f5f4", color: "#78716c", borderRadius: 4, padding: "1px 5px", whiteSpace: "nowrap" }}>{u.platform}</span>
                   <a href={u.url} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize: 11, color: "#0284c7", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>
+                    style={{ fontSize: 13, color: "#0284c7", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>
                     {u.url}
                   </a>
                   <span style={{ fontSize: 10, color: confColor(u.confidence), fontWeight: 700, flexShrink: 0 }}>{u.confidence}</span>
@@ -246,7 +261,7 @@ function ProspectDetail({ prospect, onSaved }: {
 
           {/* Opportunity classification */}
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 5 }}>RELATIONSHIP OPPORTUNITY</div>
+            <div style={detailFieldLabel}>RELATIONSHIP OPPORTUNITY</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 7 }}>
               {prospect.businessCategory && (
                 <span style={{ fontSize: 10, background: "#fce7f3", color: "#9d174d", borderRadius: 20, padding: "2px 8px", fontWeight: 700 }}>
@@ -289,9 +304,9 @@ function ProspectDetail({ prospect, onSaved }: {
           {/* Evidence */}
           {prospect.evidence.length > 0 && (
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 5 }}>EVIDENCE</div>
+              <div style={detailFieldLabel}>EVIDENCE</div>
               {prospect.evidence.slice(0, 6).map((e, i) => (
-                <div key={i} style={{ fontSize: 11, color: "#57534e", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 5, padding: "3px 8px", marginBottom: 2, fontFamily: "monospace" }}>
+                <div key={i} style={{ ...ADMIN_INTEL_DRAWER_VALUE, color: "#57534e", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 5, padding: "3px 8px", marginBottom: 2, fontFamily: "monospace", wordBreak: "break-all" }}>
                   {evidenceLabel(e)}
                 </div>
               ))}
@@ -303,7 +318,7 @@ function ProspectDetail({ prospect, onSaved }: {
         <div>
           {/* Validation status */}
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 5 }}>VALIDATION STATUS</div>
+            <div style={detailFieldLabel}>VALIDATION STATUS</div>
             <select value={vs} onChange={(e) => setVs(e.target.value as ValidationStatus)} style={sel}>
               {(Object.keys(VALIDATION_STATUS_LABELS) as ValidationStatus[]).map((s) => (
                 <option key={s} value={s}>{VALIDATION_STATUS_LABELS[s]}</option>
@@ -314,7 +329,7 @@ function ProspectDetail({ prospect, onSaved }: {
           {/* Archive reason */}
           {vs === "archive" && (
             <div style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 5 }}>ARCHIVE REASON</div>
+              <div style={detailFieldLabel}>ARCHIVE REASON</div>
               <select value={archiveReason} onChange={(e) => setArchiveReason(e.target.value)} style={sel}>
                 <option value="">Select reason…</option>
                 {ARCHIVE_REASONS.map((r) => <option key={r} value={r}>{r.replace(/_/g, " ")}</option>)}
@@ -324,7 +339,7 @@ function ProspectDetail({ prospect, onSaved }: {
 
           {/* CRM status */}
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 5 }}>CRM STATUS</div>
+            <div style={detailFieldLabel}>CRM STATUS</div>
             <select value={status} onChange={(e) => setStatus(e.target.value as ProspectStatus)} style={sel}>
               {(Object.keys(PROSPECT_STATUS_LABELS) as ProspectStatus[]).map((s) => (
                 <option key={s} value={s}>{PROSPECT_STATUS_LABELS[s]}</option>
@@ -334,7 +349,7 @@ function ProspectDetail({ prospect, onSaved }: {
 
           {/* Notes */}
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", letterSpacing: "0.08em", marginBottom: 5 }}>NOTES</div>
+            <div style={detailFieldLabel}>NOTES</div>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
               placeholder="Add admin notes…"
               style={{ ...sel, resize: "vertical", fontFamily: "inherit", boxSizing: "border-box" }} />
@@ -596,13 +611,15 @@ export default function ProspectsPage() {
   }, [statsProspects, statsTotal, totalCount, prospects, stackByProspect]);
 
   const thS: React.CSSProperties = {
-    textAlign: "left", padding: "8px 10px", fontSize: 10, fontWeight: 700,
-    color: "#78716c", letterSpacing: "0.07em", borderBottom: "1px solid #e7e5e4",
-    whiteSpace: "nowrap", cursor: "pointer", userSelect: "none", background: "#f9f9f8",
+    ...ADMIN_INTEL_TABLE_HEADER,
+    letterSpacing: "0.07em",
+    cursor: "pointer",
+    userSelect: "none",
+    background: "#f9f9f8",
   };
   const tdS: React.CSSProperties = {
-    padding: "8px 10px", fontSize: 12, color: "#57534e",
-    borderBottom: "1px solid #f5f5f4", verticalAlign: "middle",
+    ...ADMIN_INTEL_TABLE_CELL,
+    verticalAlign: "middle",
   };
   const selS: React.CSSProperties = {
     fontSize: 11, padding: "4px 7px", border: "1px solid #e7e5e4",
@@ -644,7 +661,7 @@ export default function ProspectsPage() {
 
       <div style={{ marginBottom: 10, background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, padding: "10px 12px" }}>
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 6 }}>
+          <div style={{ ...ADMIN_INTEL_SECTION_TITLE, marginBottom: 6 }}>
             SALON CATEGORY
           </div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -806,7 +823,7 @@ export default function ProspectsPage() {
                     <tr key={p.prospectId}
                       onClick={() => setExpandedId(isExpanded ? null : p.prospectId)}
                       style={{ cursor: "pointer", background: isExpanded ? "#fdf2f8" : "transparent" }}>
-                      <td style={{ ...tdS, fontFamily: "monospace", fontSize: 11, fontWeight: 700, color: "#1c1917" }}>
+                      <td style={{ ...tdS, fontFamily: "monospace", fontWeight: 700, color: "#1c1917" }}>
                         <a href={`https://instagram.com/${p.identity.handle}`} target="_blank" rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()} style={{ color: "#1c1917", textDecoration: "none" }}>
                           @{p.identity.handle}
@@ -861,7 +878,7 @@ export default function ProspectsPage() {
                         {p.bestMatch ? (
                           <a href={p.bestMatch.url} target="_blank" rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            style={{ color: "#0284c7", textDecoration: "none", fontSize: 11, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            style={{ color: "#0284c7", textDecoration: "none", fontSize: 13, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {p.bestMatch.url}
                           </a>
                         ) : <span style={{ color: "#d6d3d1" }}>—</span>}

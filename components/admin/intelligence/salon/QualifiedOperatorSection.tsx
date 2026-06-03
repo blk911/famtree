@@ -6,12 +6,17 @@ import {
   RECOMMENDED_ACTION_LABELS,
   type QualifiedOperatorResult,
 } from "@/lib/intelligence/salon/qualified-operator/types";
+import {
+  ADMIN_INTEL_DRAWER_LABEL,
+  ADMIN_INTEL_DRAWER_VALUE,
+  ADMIN_INTEL_SECTION_TITLE,
+} from "./admin-intelligence-typography";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 8 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: 12, color: "#44403c", lineHeight: 1.45 }}>{children}</div>
+      <div style={ADMIN_INTEL_DRAWER_LABEL}>{label}</div>
+      <div style={ADMIN_INTEL_DRAWER_VALUE}>{children}</div>
     </div>
   );
 }
@@ -31,17 +36,7 @@ export function QualifiedOperatorSection({
 
   return (
     <section style={{ marginBottom: 20 }}>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 800,
-          color: "#a8a29e",
-          letterSpacing: "0.06em",
-          marginBottom: 8,
-        }}
-      >
-        QUALIFIED OPERATOR
-      </div>
+      <div style={ADMIN_INTEL_SECTION_TITLE}>QUALIFIED OPERATOR</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
         <span
           style={{
@@ -75,7 +70,7 @@ export function QualifiedOperatorSection({
       <Row label="Why qualified / scored">
         <ul style={{ margin: 0, paddingLeft: 16 }}>
           {qualification.qualificationReasons.map((r) => (
-            <li key={`${r.code}-${r.label}`} style={{ fontSize: 11, marginBottom: 4 }}>
+            <li key={`${r.code}-${r.label}`} style={{ ...ADMIN_INTEL_DRAWER_VALUE, marginBottom: 4 }}>
               {r.delta !== 0 ? (
                 <span style={{ fontWeight: 700, color: r.delta > 0 ? "#15803d" : "#b91c1c" }}>
                   {r.delta > 0 ? "+" : ""}
@@ -88,7 +83,7 @@ export function QualifiedOperatorSection({
         </ul>
       </Row>
       <Row label="Signals">
-        <span style={{ fontSize: 11, color: "#57534e" }}>
+        <span style={ADMIN_INTEL_DRAWER_VALUE}>
           {[
             qualification.confirmedBooking ? "Confirmed booking" : null,
             qualification.importCandidate ? "Import candidate" : null,

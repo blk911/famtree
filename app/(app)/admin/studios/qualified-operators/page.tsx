@@ -17,6 +17,11 @@ import {
   type QualificationStatus,
 } from "@/lib/intelligence/salon/qualified-operator/types";
 import type { QualifiedOperatorListSummary } from "@/lib/intelligence/salon/qualified-operator/list";
+import {
+  ADMIN_INTEL_META,
+  ADMIN_INTEL_TABLE_CELL as tdStyle,
+  ADMIN_INTEL_TABLE_HEADER as thStyle,
+} from "@/components/admin/intelligence/salon/admin-intelligence-typography";
 
 type ApiResponse = {
   ok: boolean;
@@ -32,24 +37,6 @@ const selectStyle: React.CSSProperties = {
   border: "1px solid #e7e5e4",
   background: "#fff",
   color: "#44403c",
-};
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "8px 10px",
-  fontSize: 10,
-  fontWeight: 700,
-  color: "#78716c",
-  borderBottom: "1px solid #e7e5e4",
-  whiteSpace: "nowrap",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "8px 10px",
-  fontSize: 11,
-  color: "#57534e",
-  borderBottom: "1px solid #f5f5f4",
-  verticalAlign: "top",
 };
 
 function scoreColor(n: number): string {
@@ -202,7 +189,7 @@ export default function QualifiedOperatorsPage() {
                     >
                       <td style={tdStyle}>
                         <div style={{ fontWeight: 700, color: "#1c1917" }}>@{o.instagramHandle}</div>
-                        <div style={{ fontSize: 10, color: "#a8a29e" }}>{o.displayName}</div>
+                        <div style={ADMIN_INTEL_META}>{o.displayName}</div>
                       </td>
                       <td style={{ ...tdStyle, fontWeight: 800, color: scoreColor(o.qualifiedOperatorScore) }}>
                         {o.qualifiedOperatorScore}
