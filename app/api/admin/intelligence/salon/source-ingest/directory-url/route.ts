@@ -11,6 +11,7 @@ const RequestSchema = z.object({
   market: z.string().optional(),
   category: z.string().optional(),
   notes: z.string().optional(),
+  fullScroll: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {
@@ -35,6 +36,10 @@ export async function POST(req: Request) {
       category: result.category,
       candidatesFound: result.candidatesFound,
       candidatesCreated: result.candidatesCreated,
+      staticCandidatesFound: result.staticCandidatesFound,
+      browserCandidatesFound: result.browserCandidatesFound,
+      scrollModeUsed: result.scrollModeUsed,
+      scrollAttempts: result.scrollAttempts,
       duplicates: result.duplicates,
       warnings: result.warnings,
       errors: result.errors,

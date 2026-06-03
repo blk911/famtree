@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
@@ -22,6 +22,10 @@ type ScanResponse = {
   category?: string;
   candidatesFound?: number;
   candidatesCreated?: number;
+  staticCandidatesFound?: number;
+  browserCandidatesFound?: number;
+  scrollModeUsed?: string;
+  scrollAttempts?: number;
   duplicates?: number;
   warnings?: string[];
   errors?: string[];
@@ -38,6 +42,10 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box",
 };
 
+function isVagaroUrl(value: string): boolean {
+  return /vagaro\.com/i.test(value);
+}
+
 export default function SourceIngestPage() {
   const [url, setUrl] = useState(
     "https://www.vagaro.com/professionals/nails/parker--co",
@@ -45,9 +53,14 @@ export default function SourceIngestPage() {
   const [market, setMarket] = useState("");
   const [category, setCategory] = useState("");
   const [notes, setNotes] = useState("");
+  const [fullScroll, setFullScroll] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ScanResponse | null>(null);
+
+  useEffect(() => {
+    setFullScroll(isVagaroUrl(url));
+  }, [url]);
 
   async function handleScan() {
     setLoading(true);
@@ -64,6 +77,7 @@ export default function SourceIngestPage() {
             market: market.trim() || undefined,
             category: category.trim() || undefined,
             notes: notes.trim() || undefined,
+            fullScroll: isVagaroUrl(url.trim()) ? fullScroll : false,
           }),
         },
       );
@@ -168,6 +182,33 @@ export default function SourceIngestPage() {
               style={{ ...inputStyle, resize: "vertical" }}
             />
           </label>
+          {isVagaroUrl(url) ? (
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 8,
+                fontSize: 12,
+                color: "#44403c",
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={fullScroll}
+                onChange={(e) => setFullScroll(e.target.checked)}
+                disabled={loading}
+                style={{ marginTop: 2 }}
+              />
+              <span>
+                <strong>Full scroll harvest</strong>
+                <span style={{ display: "block", fontSize: 11, color: "#a8a29e", marginTop: 2 }}>
+                  Loads additional directory results that appear as you scroll. Recommended for
+                  Vagaro.
+                </span>
+              </span>
+            </label>
+          ) : null}
         </div>
 
         <button
@@ -227,6 +268,10 @@ export default function SourceIngestPage() {
               ["Provider detected", result.providerLabel ?? result.provider ?? "—"],
               ["Source type", result.sourceType ?? "directory"],
               ["Candidates found", String(result.candidatesFound ?? 0)],
+              ["Static (SSR)", String(result.staticCandidatesFound ?? "—")],
+              ["Browser scroll", String(result.browserCandidatesFound ?? "—")],
+              ["Scroll mode", result.scrollModeUsed ?? "—"],
+              ["Scroll attempts", String(result.scrollAttempts ?? 0)],
               ["Candidates created", String(result.candidatesCreated ?? 0)],
               ["Duplicates", String(result.duplicates ?? 0)],
             ].map(([label, value]) => (

@@ -80,6 +80,43 @@ export type VagaroScrapeResult = {
   warnings: string[];
 };
 
+export function isVagaroDirectoryUrl(url: string): boolean {
+  try {
+    const host = new URL(url.trim().startsWith("http") ? url : `https://${url}`).hostname
+      .replace(/^www\./, "")
+      .toLowerCase();
+    return host === "vagaro.com";
+  } catch {
+    return /vagaro\.com/i.test(url);
+  }
+}
+
+/** Stable key for Vagaro directory card dedupe (static + browser). */
+export function vagaroListingDedupeKey(listing: DirectoryRawListing): string {
+  const profile = (listing.providerProfileUrl ?? "").toLowerCase().replace(/\/$/, "");
+  const booking = (listing.bookingUrl ?? "").toLowerCase().replace(/\/$/, "");
+  if (profile) return profile;
+  if (booking) return booking;
+  const name = listing.displayName.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const loc = [listing.city, listing.state].filter(Boolean).join(",").toLowerCase();
+  return `vagaro|${name}|${loc}`;
+}
+
+export function mergeVagaroDirectoryListings(
+  primary: DirectoryRawListing[],
+  secondary: DirectoryRawListing[] = [],
+): DirectoryRawListing[] {
+  const seen = new Set<string>();
+  const out: DirectoryRawListing[] = [];
+  for (const listing of [...primary, ...secondary]) {
+    const key = vagaroListingDedupeKey(listing);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(listing);
+  }
+  return out;
+}
+
 export function scrapeVagaroDirectoryHtml(
   html: string,
   directoryUrl: string,
@@ -138,6 +175,7 @@ export function scrapeVagaroDirectoryHtml(
     const evidence: string[] = [
       `Vagaro directory listing (${directoryUrl})`,
       `Business ID ${bizId}, provider ID ${providerId}`,
+      "Harvest: static HTML",
     ];
     if (professionalName) evidence.push(`Professional: ${professionalName}`);
     if (ariaParsed.rating != null) {

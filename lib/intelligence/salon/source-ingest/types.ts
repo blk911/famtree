@@ -50,11 +50,15 @@ export interface DirectoryCandidate extends DirectoryRawListing {
   dedupeKey: string;
 }
 
+export type DirectoryScrollMode = "static" | "full_scroll";
+
 export interface DirectoryIngestRequest {
   url: string;
   market?: string;
   category?: string;
   notes?: string;
+  /** Vagaro: scroll page in headless browser to load lazy directory cards */
+  fullScroll?: boolean;
 }
 
 export interface DirectoryIngestResult {
@@ -68,6 +72,10 @@ export interface DirectoryIngestResult {
   notes?: string;
   candidatesFound: number;
   candidatesCreated: number;
+  staticCandidatesFound?: number;
+  browserCandidatesFound?: number;
+  scrollModeUsed?: DirectoryScrollMode;
+  scrollAttempts?: number;
   duplicates: number;
   warnings: string[];
   errors: string[];

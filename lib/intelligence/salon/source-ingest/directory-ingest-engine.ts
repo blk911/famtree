@@ -9,9 +9,16 @@ import {
 } from "./directory-candidate-normalizer";
 import {
   fetchVagaroDirectoryPage,
+  isVagaroDirectoryUrl,
   scrapeVagaroDirectoryHtml,
 } from "./vagaro-directory-scraper";
-import type { DirectoryIngestRequest, DirectoryIngestResult, DirectoryRawListing } from "./types";
+import { scrapeVagaroDirectoryTiered } from "./vagaro-browser-scraper";
+import type {
+  DirectoryIngestRequest,
+  DirectoryIngestResult,
+  DirectoryRawListing,
+  DirectoryScrollMode,
+} from "./types";
 
 function generateIngestRunId(): string {
   return `dir-${Date.now().toString(36)}`;
@@ -20,40 +27,99 @@ function generateIngestRunId(): string {
 const UNSUPPORTED_SCRAPER_WARNING =
   "Directory provider recognized but scraper not implemented yet; no candidates extracted.";
 
-async function scrapeDirectoryListings(
+type ScrapeOutcome = {
+  listings: DirectoryRawListing[];
+  warnings: string[];
+  errors: string[];
+  staticCandidatesFound: number;
+  browserCandidatesFound: number;
+  scrollModeUsed: DirectoryScrollMode;
+  scrollAttempts: number;
+};
+
+async function scrapeVagaroListings(
+  directoryUrl: string,
   classification: ReturnType<typeof classifyDirectoryUrl>,
-): Promise<{ listings: DirectoryRawListing[]; warnings: string[]; errors: string[] }> {
-  const warnings = [...classification.warnings];
+  fullScroll: boolean,
+): Promise<ScrapeOutcome> {
+  const warnings: string[] = [];
   const errors: string[] = [];
 
+  const html = await fetchVagaroDirectoryPage(directoryUrl);
+  const staticScraped = scrapeVagaroDirectoryHtml(html, directoryUrl, {
+    market: classification.market,
+    category: classification.category,
+  });
+  warnings.push(...staticScraped.warnings);
+
+  const tiered = await scrapeVagaroDirectoryTiered(
+    directoryUrl,
+    staticScraped.listings,
+    fullScroll,
+    {
+      market: classification.market,
+      category: classification.category,
+    },
+  );
+  warnings.push(...tiered.warnings);
+
+  return {
+    listings: tiered.listings,
+    warnings,
+    errors,
+    staticCandidatesFound: tiered.staticCandidatesFound,
+    browserCandidatesFound: tiered.browserCandidatesFound,
+    scrollModeUsed: tiered.scrollModeUsed,
+    scrollAttempts: tiered.scrollAttempts,
+  };
+}
+
+async function scrapeDirectoryListings(
+  classification: ReturnType<typeof classifyDirectoryUrl>,
+  options?: { fullScroll?: boolean },
+): Promise<ScrapeOutcome> {
+  const warnings = [...classification.warnings];
+  const errors: string[] = [];
+  const emptyMetrics = {
+    staticCandidatesFound: 0,
+    browserCandidatesFound: 0,
+    scrollModeUsed: "static" as const,
+    scrollAttempts: 0,
+  };
+
   if (!classification.directoryUrl) {
-    return { listings: [], warnings, errors: ["Directory URL is required."] };
+    return { listings: [], warnings, errors: ["Directory URL is required."], ...emptyMetrics };
   }
 
   if (classification.sourceType === "unknown_directory") {
-    return { listings: [], warnings, errors };
+    return { listings: [], warnings, errors, ...emptyMetrics };
   }
 
   if (classification.provider === "vagaro") {
     try {
-      const html = await fetchVagaroDirectoryPage(classification.directoryUrl);
-      const scraped = scrapeVagaroDirectoryHtml(html, classification.directoryUrl, {
-        market: classification.market,
-        category: classification.category,
-      });
+      const fullScroll = options?.fullScroll === true;
+      const scraped = await scrapeVagaroListings(
+        classification.directoryUrl,
+        classification,
+        fullScroll,
+      );
       return {
         listings: scraped.listings,
         warnings: [...warnings, ...scraped.warnings],
-        errors,
+        errors: scraped.errors,
+        staticCandidatesFound: scraped.staticCandidatesFound,
+        browserCandidatesFound: scraped.browserCandidatesFound,
+        scrollModeUsed: scraped.scrollModeUsed,
+        scrollAttempts: scraped.scrollAttempts,
       };
     } catch (e) {
       errors.push(e instanceof Error ? e.message : String(e));
-      return { listings: [], warnings, errors };
+      return { listings: [], warnings, errors, ...emptyMetrics };
     }
   }
 
   warnings.push(UNSUPPORTED_SCRAPER_WARNING);
-  return { listings: [], warnings, errors };
+  return { listings: [], warnings, errors, ...emptyMetrics };
 }
 
 export async function runDirectoryUrlIngest(
@@ -65,9 +131,15 @@ export async function runDirectoryUrlIngest(
   });
 
   const ingestRunId = generateIngestRunId();
-  const { listings: rawListings, warnings, errors } = await scrapeDirectoryListings(classification);
+  const fullScroll =
+    input.fullScroll === true ||
+    (input.fullScroll !== false &&
+      classification.provider === "vagaro" &&
+      isVagaroDirectoryUrl(classification.directoryUrl));
 
-  const candidates = rawListings.map(normalizeDirectoryListing);
+  const scraped = await scrapeDirectoryListings(classification, { fullScroll });
+
+  const candidates = scraped.listings.map(normalizeDirectoryListing);
   const candidatesFound = candidates.length;
 
   const existing = await filterProspects({ vertical: "salon" });
@@ -92,14 +164,14 @@ export async function runDirectoryUrlIngest(
       candidatesCreated++;
       existing.push(record);
     } catch (e) {
-      errors.push(
+      scraped.errors.push(
         `Failed to store "${candidate.displayName}": ${e instanceof Error ? e.message : String(e)}`,
       );
     }
   }
 
   return {
-    ok: Boolean(classification.directoryUrl) && errors.length === 0,
+    ok: Boolean(classification.directoryUrl) && scraped.errors.length === 0,
     sourceType: classification.sourceType,
     provider: classification.provider,
     providerLabel: classification.providerLabel,
@@ -109,9 +181,13 @@ export async function runDirectoryUrlIngest(
     notes: input.notes,
     candidatesFound,
     candidatesCreated,
+    staticCandidatesFound: scraped.staticCandidatesFound,
+    browserCandidatesFound: scraped.browserCandidatesFound,
+    scrollModeUsed: scraped.scrollModeUsed,
+    scrollAttempts: scraped.scrollAttempts,
     duplicates,
-    warnings,
-    errors,
+    warnings: scraped.warnings,
+    errors: scraped.errors,
     ingestRunId,
   };
 }

@@ -1,5 +1,6 @@
 ﻿/** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverExternalPackages: ["playwright", "playwright-core"],
   env: {
     NEXT_PUBLIC_ADMIN_TOOLS_FEATURES: "member-video-preview-v1",
   },

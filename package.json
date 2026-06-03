@@ -74,6 +74,9 @@
     "zod": "^3.22.4",
     "zod-form-data": "^2.0.2"
   },
+  "optionalDependencies": {
+    "playwright": "^1.49.1"
+  },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/js-yaml": "^4.0.9",
