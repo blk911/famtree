@@ -146,11 +146,14 @@ export default function ProviderProvenancePage() {
                 gap: 10,
               }}
             >
-              <Card label="Provider assignments" value={s.totalAssignments} color="#1c1917" />
+              <Card label="Provider assignments" value={s.storedAssignments} color="#1c1917" />
+              <Card label="Provenance coverage" value={`${s.provenanceCoveragePercent}%`} color={s.provenanceCoveragePercent >= 70 ? "#15803d" : "#b45309"} />
+              <Card label="With provenance" value={s.assignmentsWithProvenance} color="#15803d" />
+              <Card label="Without provenance" value={s.assignmentsWithoutProvenance} color="#dc2626" />
+              <Card label="Display eligible" value={s.displayEligibleAssignments} color="#15803d" />
+              <Card label="Hidden (gate)" value={s.hiddenUnconfirmedAssignments} color="#dc2626" />
               <Card label="Confirmed" value={s.confirmedAssignments} color="#15803d" />
               <Card label="Generated" value={s.generatedAssignments} color="#7c3aed" />
-              <Card label="Rejected" value={s.rejectedAssignments} color="#dc2626" />
-              <Card label="Unknown" value={s.unknownAssignments} color="#78716c" />
               <Card label="Bad assignments" value={s.badAssignments} color="#b45309" />
             </div>
           </Section>
@@ -358,6 +361,16 @@ function QuestionsBlock({ questions }: { questions: ProviderProvenanceQuestions 
     ["Q6", "Are any providers assigned without proof?", questions.q6_without_proof],
     ["Q7", "What provider has weakest provenance?", questions.q7_weakest_provider],
     ["Q8", "What provider has strongest provenance?", questions.q8_strongest_provider],
+    [
+      "Q9",
+      "What percentage of provider assignments have explainable provenance?",
+      questions.q9_provenance_coverage_pct,
+    ],
+    [
+      "Q10",
+      "How many stored provider assignments are hidden by the display gate?",
+      questions.q10_hidden_stored_assignments,
+    ],
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -399,7 +412,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Card({ label, value, color }: { label: string; value: number; color: string }) {
+function Card({ label, value, color }: { label: string; value: number | string; color: string }) {
   return (
     <div
       style={{

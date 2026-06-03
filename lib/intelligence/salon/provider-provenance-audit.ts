@@ -80,23 +80,15 @@ export async function buildProviderProvenanceAuditReport(): Promise<ProviderProv
   const { summary, records, badAssignments: badRows } = report;
 
   const provenanceCoverage: ProvenanceCoverageMetrics = {
-    totalAssignments: summary.totalAssignments,
-    withExplainableProvenance: summary.confirmedAssignments,
-    withoutProvenance: summary.totalAssignments - summary.confirmedAssignments,
-    coveragePercent:
-      summary.totalAssignments > 0
-        ? Math.round((summary.confirmedAssignments / summary.totalAssignments) * 100)
-        : 0,
+    totalAssignments: summary.storedAssignments,
+    withExplainableProvenance: summary.assignmentsWithProvenance,
+    withoutProvenance: summary.assignmentsWithoutProvenance,
+    coveragePercent: summary.provenanceCoveragePercent,
   };
 
   const prospects = await filterProspects({ vertical: "salon" });
-  let displayEligibleAssignments = 0;
-  let hiddenUnconfirmedAssignments = 0;
-  for (const p of prospects) {
-    if (!p.bookingProvider || p.bookingProvider === "unknown") continue;
-    if (isConfirmedSalonBookingProvider(p)) displayEligibleAssignments++;
-    else hiddenUnconfirmedAssignments++;
-  }
+  const displayEligibleAssignments = summary.displayEligibleAssignments;
+  const hiddenUnconfirmedAssignments = summary.hiddenUnconfirmedAssignments;
 
   const providerTrustTable: ProviderTrustRow[] = summary.byProvider.map((row) => {
     const providerRecords = records.filter((r) => r.provider === row.provider);

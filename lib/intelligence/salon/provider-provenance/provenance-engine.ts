@@ -2,6 +2,7 @@
 
 import { filterProspects } from "@/lib/studios/prospects/store";
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
+import { isConfirmedSalonBookingProvider } from "../gg-booking-display";
 import { listBusinessStacks } from "../business-stack/stack-store";
 import type { SalonBusinessStack } from "../business-stack/types";
 import { getBookingProviderLabel } from "../provider-detector";
@@ -326,6 +327,52 @@ export function isBadProvenanceRecord(record: ProviderProvenanceRecord): boolean
   return classifyBadAssignment(record).length > 0;
 }
 
+/** Assignment has an auditable why/URL trail (not only a raw bookingProvider field). */
+export function recordHasExplainableProvenance(record: ProviderProvenanceRecord): boolean {
+  if (record.confirmed) return true;
+  if (record.assignmentSource === "unknown") return false;
+  const hasUrl = Boolean(record.candidateUrl?.startsWith("http") || record.validatedUrl?.startsWith("http"));
+  return hasUrl && record.evidence.length > 0 && record.reason.trim().length > 0;
+}
+
+function countDisplayGateMetrics(
+  records: ProviderProvenanceRecord[],
+  prospects: ProspectRecord[],
+): Pick<
+  ProviderProvenanceSummary,
+  | "storedAssignments"
+  | "displayEligibleAssignments"
+  | "hiddenUnconfirmedAssignments"
+  | "assignmentsWithProvenance"
+  | "assignmentsWithoutProvenance"
+  | "provenanceCoveragePercent"
+> {
+  const storedAssignments = records.length;
+  const assignmentsWithProvenance = records.filter(recordHasExplainableProvenance).length;
+  const assignmentsWithoutProvenance = storedAssignments - assignmentsWithProvenance;
+  const provenanceCoveragePercent =
+    storedAssignments > 0
+      ? Math.round((assignmentsWithProvenance / storedAssignments) * 100)
+      : 0;
+
+  const prospectById = new Map(prospects.map((p) => [p.prospectId, p]));
+  let displayEligibleAssignments = 0;
+  for (const rec of records) {
+    const p = prospectById.get(rec.prospectId);
+    if (p && isConfirmedSalonBookingProvider(p)) displayEligibleAssignments++;
+  }
+  const hiddenUnconfirmedAssignments = storedAssignments - displayEligibleAssignments;
+
+  return {
+    storedAssignments,
+    displayEligibleAssignments,
+    hiddenUnconfirmedAssignments,
+    assignmentsWithProvenance,
+    assignmentsWithoutProvenance,
+    provenanceCoveragePercent,
+  };
+}
+
 function toBadRow(record: ProviderProvenanceRecord): ProviderProvenanceBadAssignment {
   return {
     prospectId: record.prospectId,
@@ -353,7 +400,10 @@ function trustScoreForProvider(row: Omit<ProviderProvenanceByProvider, "trustSco
   );
 }
 
-function buildSummary(records: ProviderProvenanceRecord[]): ProviderProvenanceSummary {
+function buildSummary(
+  records: ProviderProvenanceRecord[],
+  prospects: ProspectRecord[],
+): ProviderProvenanceSummary {
   const byProviderMap = new Map<string, ProviderProvenanceByProvider>();
 
   let confirmedAssignments = 0;
@@ -414,6 +464,7 @@ function buildSummary(records: ProviderProvenanceRecord[]): ProviderProvenanceSu
     unknownAssignments,
     badAssignments,
     byProvider,
+    ...countDisplayGateMetrics(records, prospects),
   };
 }
 
@@ -455,6 +506,10 @@ function buildQuestions(
     q8_strongest_provider: strongest
       ? `Strongest: ${strongest.providerLabel} (trust ${strongest.trustScore}, ${strongest.confirmed}/${strongest.total} confirmed).`
       : "No provider assignments in store.",
+
+    q9_provenance_coverage_pct: `${summary.provenanceCoveragePercent}% of stored provider assignments (${summary.assignmentsWithProvenance} of ${summary.storedAssignments}) have explainable provenance — validation confirmed, directory URL, stack signal, or auditable URL/evidence trail. ${summary.assignmentsWithoutProvenance} lack explainable provenance.`,
+
+    q10_hidden_stored_assignments: `${summary.hiddenUnconfirmedAssignments} stored provider assignments are hidden by the display gate (bookingProvider set on record but bookingProviderForDisplay / isConfirmedSalonBookingProvider suppresses the pill). ${summary.displayEligibleAssignments} are display-eligible.`,
   };
 }
 
@@ -474,8 +529,9 @@ export async function buildSalonProviderProvenanceReport(options?: {
     }
   }
 
+  const prospects = await filterProspects({ vertical: "salon" });
+
   if (!records) {
-    const prospects = await filterProspects({ vertical: "salon" });
     const stacks = await listBusinessStacks({ limit: 500 });
     const stackById = new Map(stacks.map((s) => [s.prospectId, s]));
 
@@ -488,7 +544,7 @@ export async function buildSalonProviderProvenanceReport(options?: {
     records.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
   }
 
-  const summary = buildSummary(records);
+  const summary = buildSummary(records, prospects);
   const badAssignments = records.filter(isBadProvenanceRecord).map(toBadRow);
   const questions = buildQuestions(summary, records);
 
@@ -532,7 +588,8 @@ export async function runProviderProvenanceBackfill(options?: {
     await persistProvenanceCache(records);
   }
 
-  const summary = buildSummary(records);
+  const allProspects = await filterProspects({ vertical: "salon" });
+  const summary = buildSummary(records, allProspects);
   return {
     ok: true,
     checked: prospects.length,

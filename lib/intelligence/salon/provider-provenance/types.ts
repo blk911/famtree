@@ -53,6 +53,14 @@ export type ProviderProvenanceSummary = {
   unknownAssignments: number;
   badAssignments: number;
   byProvider: ProviderProvenanceByProvider[];
+  /** Explainable provenance coverage (confirmed or auditable evidence trail). */
+  provenanceCoveragePercent: number;
+  assignmentsWithProvenance: number;
+  assignmentsWithoutProvenance: number;
+  /** Stored vs display-gate (bookingProviderForDisplay). */
+  storedAssignments: number;
+  displayEligibleAssignments: number;
+  hiddenUnconfirmedAssignments: number;
 };
 
 export type ProviderProvenanceBadAssignment = {
@@ -79,6 +87,8 @@ export type ProviderProvenanceQuestions = {
   q6_without_proof: string;
   q7_weakest_provider: string;
   q8_strongest_provider: string;
+  q9_provenance_coverage_pct: string;
+  q10_hidden_stored_assignments: string;
 };
 
 export type ProviderProvenanceReport = {
