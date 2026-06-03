@@ -3,9 +3,7 @@
 // Salon vertical subnav — tools from salon.config only (no in-page vertical selector).
 
 import { useState } from "react";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
-import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
-import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
+import { SalonPipelineNav } from "@/components/studios/creator-lab/SalonPipelineNav";
 
 export type CreatorIntelligenceTool =
   | "assembler"
@@ -21,7 +19,9 @@ export type CreatorIntelligenceTool =
   | "provider-provenance"
   | "qualified-operators"
   | "google-identity"
-  | "source-ingest";
+  | "source-ingest"
+  | "ggen-discovery"
+  | "backoffice";
 
 const TOOL_TO_NAV_ID: Record<CreatorIntelligenceTool, string> = {
   assembler: "assembler",
@@ -38,6 +38,8 @@ const TOOL_TO_NAV_ID: Record<CreatorIntelligenceTool, string> = {
   "qualified-operators": "qualified_operators",
   "google-identity": "google_identity",
   "source-ingest": "source_ingest",
+  "ggen-discovery": "ggen_discovery",
+  backoffice: "backoffice",
 };
 
 type WipeState = "idle" | "counting" | "confirming" | "wiping" | "wiped" | "error";
@@ -236,14 +238,9 @@ function FreshSlateButton() {
 
 export function CreatorIntelligenceNav({ current }: { current: CreatorIntelligenceTool }) {
   return (
-    <div style={{ marginBottom: 22 }}>
-      <IntelligenceMarketNav />
-      <IntelligenceSubNav
-        config={salonConfig}
-        currentTool={TOOL_TO_NAV_ID[current]}
-        trailing={<FreshSlateButton />}
-        showContextBadge={false}
-      />
-    </div>
+    <SalonPipelineNav
+      currentTool={TOOL_TO_NAV_ID[current]}
+      trailing={<FreshSlateButton />}
+    />
   );
 }

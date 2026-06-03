@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { Building2, Plus, Sprout, Inbox } from "lucide-react";
 import { StudiosGatewayAccessRequestsSection } from "./StudiosGatewayAccessRequestsSection";
+import { SalonPipelineOverview } from "./SalonPipelineOverview";
 
 const card = {
   background: "white",
@@ -39,6 +40,10 @@ export default async function AdminStudiosPage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+
+      <SalonPipelineOverview />
+
+      <hr style={{ border: "none", borderTop: "1px solid #e7e5e4", margin: "8px 0" }} />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "20px", flexWrap: "wrap" }}>

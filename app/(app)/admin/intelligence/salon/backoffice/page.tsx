@@ -3,8 +3,7 @@
 // Salon Back Office Import Lab — owner-approved export upload & Hidden Money Report
 
 import { useCallback, useEffect, useState } from "react";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
-import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import type {
@@ -104,8 +103,7 @@ export default function SalonBackOfficeImportPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <IntelligenceMarketNav />
-      <IntelligenceSubNav config={salonConfig} currentTool="backoffice" showContextBadge={false} />
+      <CreatorIntelligenceNav current="backoffice" />
 
       <IntelligenceFeatureHeader
         title="Salon Back Office Import Lab"

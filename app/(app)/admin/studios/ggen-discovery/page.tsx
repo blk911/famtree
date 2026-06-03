@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef } from "react";
 import Link from "next/link";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import { BookingProviderPill } from "@/components/admin/intelligence/salon/BookingProviderPill";
@@ -163,7 +163,7 @@ export default function GgenDiscoveryPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 20px 48px" }}>
-      <IntelligenceMarketNav />
+      <CreatorIntelligenceNav current="ggen-discovery" />
       <IntelligenceFeatureHeader
         title="GlossGenius Seed Discovery"
         description="Discover public GlossGenius booking pages from business names — candidate slug probes plus public search."
