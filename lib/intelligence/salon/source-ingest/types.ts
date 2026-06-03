@@ -76,6 +76,7 @@ export interface DirectoryIngestResult {
   browserCandidatesFound?: number;
   scrollModeUsed?: DirectoryScrollMode;
   scrollAttempts?: number;
+  browserAvailable?: boolean;
   duplicates: number;
   warnings: string[];
   errors: string[];

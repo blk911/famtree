@@ -40,6 +40,7 @@ export async function POST(req: Request) {
       browserCandidatesFound: result.browserCandidatesFound,
       scrollModeUsed: result.scrollModeUsed,
       scrollAttempts: result.scrollAttempts,
+      browserAvailable: result.browserAvailable,
       duplicates: result.duplicates,
       warnings: result.warnings,
       errors: result.errors,

@@ -13,6 +13,7 @@ import {
   scrapeVagaroDirectoryHtml,
 } from "./vagaro-directory-scraper";
 import { scrapeVagaroDirectoryTiered } from "./vagaro-browser-scraper";
+import { getPlaywrightRuntimeStatus } from "./playwright-runtime";
 import type {
   DirectoryIngestRequest,
   DirectoryIngestResult,
@@ -35,6 +36,7 @@ type ScrapeOutcome = {
   browserCandidatesFound: number;
   scrollModeUsed: DirectoryScrollMode;
   scrollAttempts: number;
+  browserAvailable: boolean;
 };
 
 async function scrapeVagaroListings(
@@ -71,6 +73,7 @@ async function scrapeVagaroListings(
     browserCandidatesFound: tiered.browserCandidatesFound,
     scrollModeUsed: tiered.scrollModeUsed,
     scrollAttempts: tiered.scrollAttempts,
+    browserAvailable: tiered.browserAvailable,
   };
 }
 
@@ -80,11 +83,13 @@ async function scrapeDirectoryListings(
 ): Promise<ScrapeOutcome> {
   const warnings = [...classification.warnings];
   const errors: string[] = [];
+  const runtime = await getPlaywrightRuntimeStatus();
   const emptyMetrics = {
     staticCandidatesFound: 0,
     browserCandidatesFound: 0,
     scrollModeUsed: "static" as const,
     scrollAttempts: 0,
+    browserAvailable: runtime.browserAvailable,
   };
 
   if (!classification.directoryUrl) {
@@ -111,6 +116,7 @@ async function scrapeDirectoryListings(
         browserCandidatesFound: scraped.browserCandidatesFound,
         scrollModeUsed: scraped.scrollModeUsed,
         scrollAttempts: scraped.scrollAttempts,
+        browserAvailable: scraped.browserAvailable,
       };
     } catch (e) {
       errors.push(e instanceof Error ? e.message : String(e));
@@ -185,6 +191,7 @@ export async function runDirectoryUrlIngest(
     browserCandidatesFound: scraped.browserCandidatesFound,
     scrollModeUsed: scraped.scrollModeUsed,
     scrollAttempts: scraped.scrollAttempts,
+    browserAvailable: scraped.browserAvailable,
     duplicates,
     warnings: scraped.warnings,
     errors: scraped.errors,

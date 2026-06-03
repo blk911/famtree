@@ -6,9 +6,15 @@ import {
   mergeVagaroDirectoryListings,
   scrapeVagaroDirectoryHtml,
 } from "./vagaro-directory-scraper";
+import {
+  formatPlaywrightHarvestWarning,
+  getPlaywrightRuntimeStatus,
+  PLAYWRIGHT_BROWSER_MISSING_WARNING,
+  PLAYWRIGHT_PACKAGE_MISSING_WARNING,
+  resolvePlaywrightBrowserWarning,
+} from "./playwright-runtime";
 
-export const PLAYWRIGHT_UNAVAILABLE_WARNING =
-  "Full scroll harvest requires browser scraper support. Install Playwright: npm install playwright && npx playwright install chromium";
+export const PLAYWRIGHT_UNAVAILABLE_WARNING = PLAYWRIGHT_PACKAGE_MISSING_WARNING;
 
 const MAX_SCROLL_ATTEMPTS = 50;
 const STALE_SCROLL_LIMIT = 3;
@@ -22,7 +28,10 @@ export type VagaroBrowserScrapeResult = {
   warnings: string[];
   scrollModeUsed: VagaroScrollMode;
   scrollAttempts: number;
-  available: boolean;
+  /** Playwright package present */
+  packageInstalled: boolean;
+  /** Chromium binary installed and launchable */
+  browserAvailable: boolean;
 };
 
 type PlaywrightChromium = {
@@ -41,6 +50,10 @@ type PlaywrightPage = {
 };
 
 async function loadPlaywrightChromium(): Promise<PlaywrightChromium | null> {
+  const status = await getPlaywrightRuntimeStatus();
+  if (!status.packageInstalled || !status.browserAvailable) {
+    return null;
+  }
   try {
     const mod = (await import("playwright")) as { chromium: PlaywrightChromium };
     return mod.chromium ?? null;
@@ -55,21 +68,36 @@ async function countProviderCards(page: PlaywrightPage): Promise<number> {
   });
 }
 
+function unavailableResult(warning: string, status: {
+  packageInstalled: boolean;
+  browserAvailable: boolean;
+}): VagaroBrowserScrapeResult {
+  return {
+    listings: [],
+    warnings: [warning],
+    scrollModeUsed: "static",
+    scrollAttempts: 0,
+    packageInstalled: status.packageInstalled,
+    browserAvailable: status.browserAvailable,
+  };
+}
+
 export async function scrapeVagaroDirectoryWithBrowser(
   directoryUrl: string,
   opts?: { market?: string; category?: string },
 ): Promise<VagaroBrowserScrapeResult> {
-  const warnings: string[] = [];
-  const chromium = await loadPlaywrightChromium();
+  const status = await getPlaywrightRuntimeStatus();
+  const preflightWarning = await resolvePlaywrightBrowserWarning(status);
+  if (preflightWarning) {
+    return unavailableResult(preflightWarning, status);
+  }
 
+  const chromium = await loadPlaywrightChromium();
   if (!chromium) {
-    return {
-      listings: [],
-      warnings: [PLAYWRIGHT_UNAVAILABLE_WARNING],
-      scrollModeUsed: "static",
-      scrollAttempts: 0,
-      available: false,
-    };
+    return unavailableResult(PLAYWRIGHT_BROWSER_MISSING_WARNING, {
+      packageInstalled: status.packageInstalled,
+      browserAvailable: false,
+    });
   }
 
   let browser: Awaited<ReturnType<PlaywrightChromium["launch"]>> | null = null;
@@ -124,6 +152,7 @@ export async function scrapeVagaroDirectoryWithBrowser(
       ],
     }));
 
+    const warnings: string[] = [];
     if (listings.length === 0) {
       warnings.push(
         "Browser scroll completed but no Vagaro provider cards were parsed from the final DOM.",
@@ -136,18 +165,19 @@ export async function scrapeVagaroDirectoryWithBrowser(
       warnings,
       scrollModeUsed: "full_scroll",
       scrollAttempts,
-      available: true,
+      packageInstalled: true,
+      browserAvailable: true,
     };
   } catch (e) {
-    warnings.push(
-      `Browser scroll harvest failed: ${e instanceof Error ? e.message : String(e)}`,
-    );
+    const formatted = formatPlaywrightHarvestWarning(e);
+    getPlaywrightRuntimeStatus(true).catch(() => undefined);
     return {
       listings: [],
-      warnings,
+      warnings: [formatted.warning],
       scrollModeUsed: "static",
       scrollAttempts: 0,
-      available: true,
+      packageInstalled: status.packageInstalled,
+      browserAvailable: formatted.browserAvailable,
     };
   } finally {
     await page?.close().catch(() => undefined);
@@ -168,9 +198,11 @@ export async function scrapeVagaroDirectoryTiered(
   browserCandidatesFound: number;
   scrollModeUsed: VagaroScrollMode;
   scrollAttempts: number;
+  browserAvailable: boolean;
 }> {
   const staticCandidatesFound = staticListings.length;
   if (!fullScroll) {
+    const status = await getPlaywrightRuntimeStatus();
     return {
       listings: staticListings,
       warnings: [],
@@ -178,13 +210,14 @@ export async function scrapeVagaroDirectoryTiered(
       browserCandidatesFound: 0,
       scrollModeUsed: "static",
       scrollAttempts: 0,
+      browserAvailable: status.browserAvailable,
     };
   }
 
   const browser = await scrapeVagaroDirectoryWithBrowser(directoryUrl, opts);
   const browserCandidatesFound = browser.listings.length;
 
-  if (!browser.available) {
+  if (!browser.browserAvailable || browser.scrollModeUsed !== "full_scroll") {
     return {
       listings: staticListings,
       warnings: browser.warnings,
@@ -192,6 +225,7 @@ export async function scrapeVagaroDirectoryTiered(
       browserCandidatesFound: 0,
       scrollModeUsed: "static",
       scrollAttempts: 0,
+      browserAvailable: browser.browserAvailable,
     };
   }
 
@@ -204,5 +238,6 @@ export async function scrapeVagaroDirectoryTiered(
     browserCandidatesFound,
     scrollModeUsed: browser.scrollModeUsed,
     scrollAttempts: browser.scrollAttempts,
+    browserAvailable: true,
   };
 }

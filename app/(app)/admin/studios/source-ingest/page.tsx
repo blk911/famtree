@@ -26,6 +26,7 @@ type ScanResponse = {
   browserCandidatesFound?: number;
   scrollModeUsed?: string;
   scrollAttempts?: number;
+  browserAvailable?: boolean;
   duplicates?: number;
   warnings?: string[];
   errors?: string[];
@@ -57,10 +58,22 @@ export default function SourceIngestPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ScanResponse | null>(null);
+  const [browserAvailable, setBrowserAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
     setFullScroll(isVagaroUrl(url));
   }, [url]);
+
+  useEffect(() => {
+    fetch("/api/admin/intelligence/salon/source-ingest/browser-status", {
+      cache: "no-store",
+    })
+      .then((r) => r.json())
+      .then((d: { browserAvailable?: boolean }) => {
+        setBrowserAvailable(d.browserAvailable === true);
+      })
+      .catch(() => setBrowserAvailable(false));
+  }, []);
 
   async function handleScan() {
     setLoading(true);
@@ -272,6 +285,14 @@ export default function SourceIngestPage() {
               ["Browser scroll", String(result.browserCandidatesFound ?? "—")],
               ["Scroll mode", result.scrollModeUsed ?? "—"],
               ["Scroll attempts", String(result.scrollAttempts ?? 0)],
+              [
+                "Browser available",
+                result.browserAvailable === true
+                  ? "Yes"
+                  : result.browserAvailable === false
+                    ? "No"
+                    : "—",
+              ],
               ["Candidates created", String(result.candidatesCreated ?? 0)],
               ["Duplicates", String(result.duplicates ?? 0)],
             ].map(([label, value]) => (
