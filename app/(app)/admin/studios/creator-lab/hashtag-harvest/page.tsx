@@ -1026,7 +1026,7 @@ export default function HashtagHarvestPage() {
 
       <IntelligenceFeatureHeader
         title="Hashtag Harvest"
-        description="Harvest Salon / Client-Centric creator signals from Instagram hashtags, then resolve them into salon prospect records."
+        description="Instagram hashtags only. To scan provider directories or source URLs, use Source URL."
         config={salonConfig}
       />
 

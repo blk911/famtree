@@ -20,7 +20,7 @@ export const salonConfig: VerticalConfig = {
     { id: "prospects",  label: "Prospects",              href: "/admin/studios/prospects" },
     { id: "runs",       label: "Runs",                   href: "/admin/studios/runs" },
     { id: "backoffice", label: "Back Office Import",     href: "/admin/intelligence/salon/backoffice" },
-    { id: "source_ingest", label: "Source Ingest", href: "/admin/studios/source-ingest" },
+    { id: "source_ingest", label: "Source URL", href: "/admin/studios/source-ingest" },
     { id: "import_candidates", label: "Import Candidates", href: "/admin/studios/import-candidates" },
     { id: "harvest_analytics", label: "Harvest Analytics", href: "/admin/studios/harvest-analytics" },
     { id: "ggen_discovery", label: "GG Seed Discovery", href: "/admin/studios/ggen-discovery" },

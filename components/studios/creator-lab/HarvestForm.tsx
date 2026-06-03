@@ -3,6 +3,7 @@
 // Salon-only hashtag harvest form (vertical is set by top nav, not in-page).
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { parseHashtags } from "@/lib/studios/creator-lab/hashtag-harvest/normalize-creators";
 import {
   SALON_HASHTAG_CLUSTERS,
@@ -245,9 +246,9 @@ export function HarvestForm({ onSubmit, loading, error }: HarvestFormProps) {
               style={{ marginTop: 2 }}
             />
             <span>
-              <strong>Run GG resolver on all deduped prospects</strong>
+              <strong>Enrich with booking platforms</strong>
               <span style={{ display: "block", fontSize: 11, color: "#a8a29e", marginTop: 2 }}>
-                Default cap is 250 GlossGenius probes per harvest. Enable this to probe every deduped creator (slower).
+                Find GlossGenius and booking signals for harvested creators.
               </span>
             </span>
           </label>
@@ -272,9 +273,9 @@ export function HarvestForm({ onSubmit, loading, error }: HarvestFormProps) {
               style={{ marginTop: 2 }}
             />
             <span>
-              <strong>Run public web discovery after harvest</strong>
-              <span style={{ display: "block", fontSize: 11, color: "#b45309", marginTop: 2 }}>
-                Public web discovery uses configured search API credits. Runs on up to 50 deduped prospects.
+              <strong>Enrich with public business data</strong>
+              <span style={{ display: "block", fontSize: 11, color: "#a8a29e", marginTop: 2 }}>
+                Find websites, Google presence, and business stack signals.
               </span>
             </span>
           </label>

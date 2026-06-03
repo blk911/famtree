@@ -95,8 +95,8 @@ export default function SourceIngestPage() {
     >
       <CreatorIntelligenceNav current="source-ingest" />
       <IntelligenceFeatureHeader
-        title="Source Ingest"
-        description="Paste provider or suite directory URLs to discover import candidates — no hashtag harvest, no direct prospect scoring."
+        title="Source URL Ingest"
+        description="Paste a provider, directory, suite, or source URL and scan it into import candidates."
         config={salonConfig}
       />
       <SalonStorageBadge />
@@ -111,16 +111,16 @@ export default function SourceIngestPage() {
         }}
       >
         <h2 style={{ ...ADMIN_INTEL_CARD_LABEL, margin: "0 0 4px", fontSize: 14 }}>
-          Directory URL Ingest
+          Source URL
         </h2>
         <p style={{ ...ADMIN_INTEL_META, margin: "0 0 16px" }}>
-          Directory listings (e.g. Vagaro /professionals/) are not operator profiles.
-          Scanned rows route into Import Candidates for resolver review.
+          Paste a supported directory or source URL. The system will classify the provider,
+          scan child listings when available, and route normalized records into Import Candidates.
         </p>
 
         <div style={{ display: "grid", gap: 12, marginBottom: 16 }}>
           <label style={{ display: "grid", gap: 4 }}>
-            <span style={ADMIN_INTEL_CARD_LABEL}>Directory URL</span>
+            <span style={ADMIN_INTEL_CARD_LABEL}>Source URL</span>
             <input
               type="url"
               value={url}
@@ -128,6 +128,14 @@ export default function SourceIngestPage() {
               placeholder="https://www.vagaro.com/professionals/nails/parker--co"
               style={inputStyle}
             />
+            <span style={{ ...ADMIN_INTEL_META, lineHeight: 1.5 }}>
+              Examples:{" "}
+              <span style={{ wordBreak: "break-all" }}>
+                https://www.vagaro.com/professionals/nails/parker--co ·
+                https://www.solasalonstudios.com/locations/... ·
+                https://www.styleseat.com/...
+              </span>
+            </span>
           </label>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <label style={{ display: "grid", gap: 4 }}>
@@ -177,7 +185,7 @@ export default function SourceIngestPage() {
             cursor: loading ? "default" : "pointer",
           }}
         >
-          {loading ? "Scanning…" : "Scan Directory"}
+          {loading ? "Scanning…" : "Scan Source URL"}
         </button>
 
         {error ? (
@@ -282,7 +290,7 @@ export default function SourceIngestPage() {
               textDecoration: "none",
             }}
           >
-            → Import Candidates
+            Review in Import Candidates →
           </Link>
         </div>
       ) : null}
