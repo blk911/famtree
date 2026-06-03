@@ -12,6 +12,7 @@ export type ProviderAssignmentSource =
   | "display_name_guess"
   | "public_presence"
   | "business_stack"
+  | "google_business"
   | "manual"
   | "unknown";
 
@@ -113,6 +114,7 @@ export const ASSIGNMENT_SOURCE_LABELS: Record<ProviderAssignmentSource, string> 
   display_name_guess: "Display name guess",
   public_presence: "Public presence",
   business_stack: "Business stack",
+  google_business: "Google Business (reference)",
   manual: "Manual",
   unknown: "Unknown",
 };

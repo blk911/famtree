@@ -13,6 +13,7 @@ import { listPresenceResults } from "@/lib/intelligence/salon/public-presence/pr
 import { getBusinessStack } from "@/lib/intelligence/salon/business-stack/stack-store";
 import { getQualifiedOperatorForProspect } from "@/lib/intelligence/salon/qualified-operator/list";
 import { buildProviderProvenanceForProspect } from "@/lib/intelligence/salon/provider-provenance/provenance-engine";
+import { getGoogleIdentityRecordForProspect } from "@/lib/intelligence/salon/google-identity/google-identity-engine";
 
 type RouteContext = { params: Promise<{ prospectId: string }> };
 
@@ -109,6 +110,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
       prospect,
       businessStack ?? undefined,
     );
+    const googleIdentity = await getGoogleIdentityRecordForProspect(prospect);
 
     return NextResponse.json({
       ok: true,
@@ -122,6 +124,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
       businessStack: businessStack ?? undefined,
       qualifiedOperator,
       providerProvenance,
+      googleIdentity: googleIdentity ?? undefined,
     });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);

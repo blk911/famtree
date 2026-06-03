@@ -11,7 +11,9 @@ import type { ProspectRecord } from "@/lib/studios/prospects/types";
 import type { QualifiedOperatorResult } from "@/lib/intelligence/salon/qualified-operator/types";
 import { QualifiedOperatorSection } from "./QualifiedOperatorSection";
 import { ProviderProvenanceSection } from "./ProviderProvenanceSection";
+import { GoogleIdentitySection } from "./GoogleIdentitySection";
 import type { ProviderProvenanceRecord } from "@/lib/intelligence/salon/provider-provenance/types";
+import type { GoogleIdentityRecord } from "@/lib/intelligence/salon/google-identity/types";
 
 type DetailResponse = {
   ok: boolean;
@@ -61,6 +63,7 @@ type DetailResponse = {
   businessStack?: SalonBusinessStack;
   qualifiedOperator?: QualifiedOperatorResult;
   providerProvenance?: ProviderProvenanceRecord | null;
+  googleIdentity?: GoogleIdentityRecord | null;
 };
 
 type Props = {
@@ -287,6 +290,7 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
             ) : null}
 
             <ProviderProvenanceSection record={data?.providerProvenance} />
+            <GoogleIdentitySection record={data?.googleIdentity} />
 
             <section style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>

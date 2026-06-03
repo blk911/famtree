@@ -28,9 +28,10 @@ export const salonConfig: VerticalConfig = {
     { id: "provider_audit", label: "Provider Audit", href: "/admin/studios/provider-audit" },
     { id: "provider_provenance", label: "Provider Provenance", href: "/admin/studios/provider-provenance" },
     { id: "qualified_operators", label: "Qualified Operators", href: "/admin/studios/qualified-operators" },
+    { id: "google_identity", label: "Google Identity", href: "/admin/studios/google-identity" },
   ],
 
-  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice", "import_candidates", "harvest_analytics", "ggen_discovery", "public_presence", "business_stack", "provider_audit", "provider_provenance", "qualified_operators"],
+  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice", "import_candidates", "harvest_analytics", "ggen_discovery", "public_presence", "business_stack", "provider_audit", "provider_provenance", "qualified_operators", "google_identity"],
   hiddenTools:  [],
 
   sourceLabels: {

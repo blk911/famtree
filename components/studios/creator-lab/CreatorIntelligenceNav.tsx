@@ -19,7 +19,8 @@ export type CreatorIntelligenceTool =
   | "business-stack"
   | "provider-audit"
   | "provider-provenance"
-  | "qualified-operators";
+  | "qualified-operators"
+  | "google-identity";
 
 const TOOL_TO_NAV_ID: Record<CreatorIntelligenceTool, string> = {
   assembler: "assembler",
@@ -34,6 +35,7 @@ const TOOL_TO_NAV_ID: Record<CreatorIntelligenceTool, string> = {
   "provider-audit": "provider_audit",
   "provider-provenance": "provider_provenance",
   "qualified-operators": "qualified_operators",
+  "google-identity": "google_identity",
 };
 
 type WipeState = "idle" | "counting" | "confirming" | "wiping" | "wiped" | "error";
