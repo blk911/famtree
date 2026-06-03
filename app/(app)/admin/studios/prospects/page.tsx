@@ -633,7 +633,7 @@ export default function ProspectsPage() {
   const total = totalCount;
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 20px 40px" }}>
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 20px 40px", overflowX: "hidden" }}>
       <CreatorIntelligenceNav current="prospects" />
 
       <IntelligenceFeatureHeader
