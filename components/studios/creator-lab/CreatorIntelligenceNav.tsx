@@ -18,6 +18,7 @@ export type CreatorIntelligenceTool =
   | "public-presence"
   | "business-stack"
   | "provider-audit"
+  | "provider-provenance"
   | "qualified-operators";
 
 const TOOL_TO_NAV_ID: Record<CreatorIntelligenceTool, string> = {
@@ -31,6 +32,7 @@ const TOOL_TO_NAV_ID: Record<CreatorIntelligenceTool, string> = {
   "public-presence": "public_presence",
   "business-stack": "business_stack",
   "provider-audit": "provider_audit",
+  "provider-provenance": "provider_provenance",
   "qualified-operators": "qualified_operators",
 };
 

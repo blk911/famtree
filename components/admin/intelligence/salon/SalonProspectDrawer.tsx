@@ -10,6 +10,8 @@ import type { SalonBusinessStack } from "@/lib/intelligence/salon/business-stack
 import type { ProspectRecord } from "@/lib/studios/prospects/types";
 import type { QualifiedOperatorResult } from "@/lib/intelligence/salon/qualified-operator/types";
 import { QualifiedOperatorSection } from "./QualifiedOperatorSection";
+import { ProviderProvenanceSection } from "./ProviderProvenanceSection";
+import type { ProviderProvenanceRecord } from "@/lib/intelligence/salon/provider-provenance/types";
 
 type DetailResponse = {
   ok: boolean;
@@ -58,6 +60,7 @@ type DetailResponse = {
   };
   businessStack?: SalonBusinessStack;
   qualifiedOperator?: QualifiedOperatorResult;
+  providerProvenance?: ProviderProvenanceRecord | null;
 };
 
 type Props = {
@@ -282,6 +285,8 @@ export function SalonProspectDrawer({ prospectId, open, onClose }: Props) {
             {data?.qualifiedOperator ? (
               <QualifiedOperatorSection qualification={data.qualifiedOperator} />
             ) : null}
+
+            <ProviderProvenanceSection record={data?.providerProvenance} />
 
             <section style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", letterSpacing: "0.06em", marginBottom: 8 }}>
