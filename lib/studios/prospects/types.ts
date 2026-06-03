@@ -62,7 +62,12 @@ export interface ProspectSource {
     | "styleseat_harvest"
     | "education_seed_import"
     | "education_directory_import"
-    | "ggen_seed_discovery";
+    | "ggen_seed_discovery"
+    | "vagaro_directory"
+    | "styleseat_directory"
+    | "glossgenius_directory"
+    | "suite_directory"
+    | "unknown_directory";
   batchId: string;
   sourceHandle: string;
   sourceDisplayName: string;

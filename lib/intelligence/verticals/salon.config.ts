@@ -20,6 +20,7 @@ export const salonConfig: VerticalConfig = {
     { id: "prospects",  label: "Prospects",              href: "/admin/studios/prospects" },
     { id: "runs",       label: "Runs",                   href: "/admin/studios/runs" },
     { id: "backoffice", label: "Back Office Import",     href: "/admin/intelligence/salon/backoffice" },
+    { id: "source_ingest", label: "Source Ingest", href: "/admin/studios/source-ingest" },
     { id: "import_candidates", label: "Import Candidates", href: "/admin/studios/import-candidates" },
     { id: "harvest_analytics", label: "Harvest Analytics", href: "/admin/studios/harvest-analytics" },
     { id: "ggen_discovery", label: "GG Seed Discovery", href: "/admin/studios/ggen-discovery" },
@@ -31,7 +32,7 @@ export const salonConfig: VerticalConfig = {
     { id: "google_identity", label: "Google Identity", href: "/admin/studios/google-identity" },
   ],
 
-  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice", "import_candidates", "harvest_analytics", "ggen_discovery", "public_presence", "business_stack", "provider_audit", "provider_provenance", "qualified_operators", "google_identity"],
+  enabledTools: ["assembler", "resolver", "harvest", "prospects", "runs", "backoffice", "source_ingest", "import_candidates", "harvest_analytics", "ggen_discovery", "public_presence", "business_stack", "provider_audit", "provider_provenance", "qualified_operators", "google_identity"],
   hiddenTools:  [],
 
   sourceLabels: {

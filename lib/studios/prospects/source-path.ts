@@ -17,6 +17,11 @@ const TOOL_LABELS: Record<string, string> = {
   styleseat_harvest:     "StyleSeat Harvest",
   education_seed_import:      "Education Seed Import",
   education_directory_import: "Education Directory Import",
+  salon_directory_ingest:     "Salon Directory Ingest",
+  vagaro_directory:           "Vagaro Directory",
+  styleseat_directory:        "StyleSeat Directory",
+  glossgenius_directory:      "GlossGenius Directory",
+  suite_directory:            "Suite Directory",
   manual:                     "Manual",
 };
 
