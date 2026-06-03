@@ -14,6 +14,10 @@ import {
   type ProviderProvenanceReport,
 } from "@/lib/intelligence/salon/provider-provenance/types";
 import {
+  AdminIntelTableScroll,
+  adminIntelTableStyle,
+} from "@/components/admin/intelligence/salon/AdminIntelTableScroll";
+import {
   ADMIN_INTEL_BODY,
   ADMIN_INTEL_CARD_LABEL,
   ADMIN_INTEL_META,
@@ -72,7 +76,7 @@ export default function ProviderProvenancePage() {
   const s = report?.summary;
 
   return (
-    <div style={{ padding: "24px 28px 48px", maxWidth: 1200, margin: "0 auto" }}>
+    <div style={{ padding: "24px 28px 48px", maxWidth: 1200, margin: "0 auto", overflowX: "hidden" }}>
       <CreatorIntelligenceNav current="provider-provenance" />
       <IntelligenceFeatureHeader
         title="Provider Provenance Audit"
@@ -150,8 +154,8 @@ export default function ProviderProvenancePage() {
           </Section>
 
           <Section title="PROVIDER TRUST TABLE">
-            <TableWrap>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <AdminIntelTableScroll minWidth={720}>
+              <table style={adminIntelTableStyle(720)}>
                 <thead>
                   <tr>
                     {["Provider", "Total", "Confirmed", "Generated", "Rejected", "Unknown", "Trust"].map(
@@ -180,7 +184,7 @@ export default function ProviderProvenancePage() {
                   ))}
                 </tbody>
               </table>
-            </TableWrap>
+            </AdminIntelTableScroll>
           </Section>
 
           <Section title="BAD ASSIGNMENTS">
@@ -221,8 +225,8 @@ function BadTable({
     );
   }
   return (
-    <TableWrap>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <AdminIntelTableScroll minWidth={1000}>
+      <table style={adminIntelTableStyle(1000)}>
         <thead>
           <tr>
             {["Prospect", "Provider", "Source", "Validation", "Candidate URL", "Reason"].map((h) => (
@@ -279,7 +283,7 @@ function BadTable({
           ))}
         </tbody>
       </table>
-    </TableWrap>
+    </AdminIntelTableScroll>
   );
 }
 
@@ -291,8 +295,8 @@ function DetailTable({
   onRowClick: (id: string) => void;
 }) {
   return (
-    <TableWrap>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <AdminIntelTableScroll minWidth={1000}>
+      <table style={adminIntelTableStyle(1000)}>
         <thead>
           <tr>
             {[
@@ -338,7 +342,7 @@ function DetailTable({
           ))}
         </tbody>
       </table>
-    </TableWrap>
+    </AdminIntelTableScroll>
   );
 }
 
@@ -413,14 +417,6 @@ function Card({ label, value, color }: { label: string; value: number | string; 
     >
       <div style={ADMIN_INTEL_CARD_LABEL}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
-    </div>
-  );
-}
-
-function TableWrap({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ overflowX: "auto", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12 }}>
-      {children}
     </div>
   );
 }

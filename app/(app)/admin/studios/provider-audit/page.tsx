@@ -15,6 +15,10 @@ import type {
   ProviderTrustRow,
 } from "@/lib/intelligence/salon/provider-provenance-audit";
 import {
+  AdminIntelTableScroll,
+  adminIntelTableStyle,
+} from "@/components/admin/intelligence/salon/AdminIntelTableScroll";
+import {
   ADMIN_INTEL_BODY,
   ADMIN_INTEL_CARD_LABEL,
   ADMIN_INTEL_META,
@@ -85,7 +89,7 @@ export default function ProviderAuditPage() {
   }, [report, filter]);
 
   return (
-    <div style={{ padding: "24px 28px 48px", maxWidth: 1200, margin: "0 auto" }}>
+    <div style={{ padding: "24px 28px 48px", maxWidth: 1200, margin: "0 auto", overflowX: "hidden" }}>
       <CreatorIntelligenceNav current="provider-audit" />
       <IntelligenceFeatureHeader
         title="Provider Audit"
@@ -221,9 +225,9 @@ export default function ProviderAuditPage() {
               <div style={{ marginTop: 20, marginBottom: 8, fontSize: 12, fontWeight: 700, color: "#44403c" }}>
                 All providers (stack signals)
               </div>
-              <div style={{ overflowX: "auto", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12 }}>
+              <AdminIntelTableScroll minWidth={1100}>
                 <AuditProviderTable rows={rows} thStyle={thStyle} tdStyle={tdStyle} />
-              </div>
+              </AdminIntelTableScroll>
             </>
           ) : null}
         </>
@@ -250,7 +254,7 @@ function AuditProviderTable({
   tdStyle: React.CSSProperties;
 }) {
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <table style={adminIntelTableStyle(1100)}>
       <thead>
         <tr>
           {[
@@ -336,16 +340,9 @@ function CategorySectionTable({
       <div style={{ fontSize: 12, fontWeight: 700, color: "#44403c", marginBottom: 8 }}>
         {section.title}
       </div>
-      <div
-        style={{
-          overflowX: "auto",
-          background: "#fff",
-          border: "1px solid #e7e5e4",
-          borderRadius: 12,
-        }}
-      >
+      <AdminIntelTableScroll minWidth={1100}>
         <AuditProviderTable rows={section.rows} thStyle={thStyle} tdStyle={tdStyle} />
-      </div>
+      </AdminIntelTableScroll>
     </div>
   );
 }
@@ -455,8 +452,8 @@ function ProviderTrustTable({
       <div style={{ fontSize: 12, fontWeight: 700, color: "#44403c", marginBottom: 10 }}>
         Provider trust table
       </div>
-      <div style={{ overflowX: "auto", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <AdminIntelTableScroll minWidth={1000}>
+        <table style={adminIntelTableStyle(1000)}>
           <thead>
             <tr>
               {[
@@ -505,7 +502,7 @@ function ProviderTrustTable({
             )}
           </tbody>
         </table>
-      </div>
+      </AdminIntelTableScroll>
     </div>
   );
 }
@@ -524,8 +521,8 @@ function BadAssignmentsTable({
       <div style={{ fontSize: 12, fontWeight: 700, color: "#44403c", marginBottom: 10 }}>
         Bad assignments ({rows.length})
       </div>
-      <div style={{ overflowX: "auto", background: "#fff", border: "1px solid #e7e5e4", borderRadius: 12 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <AdminIntelTableScroll minWidth={1050}>
+        <table style={adminIntelTableStyle(1050)}>
           <thead>
             <tr>
               {["Handle", "Provider", "Source", "Conf.", "Displayed", "Provenance", "Issues"].map((h) => (
@@ -583,7 +580,7 @@ function BadAssignmentsTable({
             )}
           </tbody>
         </table>
-      </div>
+      </AdminIntelTableScroll>
     </div>
   );
 }

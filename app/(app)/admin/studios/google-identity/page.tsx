@@ -13,6 +13,10 @@ import type {
   GoogleIdentityReport,
 } from "@/lib/intelligence/salon/google-identity/types";
 import {
+  AdminIntelTableScroll,
+  adminIntelTableStyle,
+} from "@/components/admin/intelligence/salon/AdminIntelTableScroll";
+import {
   ADMIN_INTEL_BODY,
   ADMIN_INTEL_CARD_LABEL,
   ADMIN_INTEL_META,
@@ -85,7 +89,7 @@ export default function GoogleIdentityPage() {
   const s = report?.summary;
 
   return (
-    <div style={{ padding: "24px 28px 48px", maxWidth: 1200, margin: "0 auto" }}>
+    <div style={{ padding: "24px 28px 48px", maxWidth: 1200, margin: "0 auto", overflowX: "hidden" }}>
       <CreatorIntelligenceNav current="google-identity" />
       <IntelligenceFeatureHeader
         title="Google Identity Audit"
@@ -239,8 +243,8 @@ function MatchTable({
     return <div style={{ fontSize: 12, color: "#78716c" }}>No records — run backfill.</div>;
   }
   return (
-    <TableWrap>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <AdminIntelTableScroll minWidth={900}>
+      <table style={adminIntelTableStyle(900)}>
         <thead>
           <tr>
             {["Prospect", "Google Business", "Status", "Confidence", "Rating", "Reviews"].map((h) => (
@@ -271,7 +275,7 @@ function MatchTable({
           ))}
         </tbody>
       </table>
-    </TableWrap>
+    </AdminIntelTableScroll>
   );
 }
 
@@ -290,8 +294,8 @@ function ConflictTable({
     );
   }
   return (
-    <TableWrap>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <AdminIntelTableScroll minWidth={900}>
+      <table style={adminIntelTableStyle(900)}>
         <thead>
           <tr>
             {["Prospect", "Status", "Issue", "Google Website", "Prospect Website"].map((h) => (
@@ -326,7 +330,7 @@ function ConflictTable({
           ))}
         </tbody>
       </table>
-    </TableWrap>
+    </AdminIntelTableScroll>
   );
 }
 
@@ -402,21 +406,6 @@ function Card({
     >
       <div style={ADMIN_INTEL_CARD_LABEL}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
-    </div>
-  );
-}
-
-function TableWrap({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        overflowX: "auto",
-        border: "1px solid #e7e5e4",
-        borderRadius: 10,
-        background: "#fff",
-      }}
-    >
-      {children}
     </div>
   );
 }

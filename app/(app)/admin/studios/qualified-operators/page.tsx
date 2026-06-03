@@ -18,6 +18,10 @@ import {
 } from "@/lib/intelligence/salon/qualified-operator/types";
 import type { QualifiedOperatorListSummary } from "@/lib/intelligence/salon/qualified-operator/list";
 import {
+  AdminIntelTableScroll,
+  adminIntelTableStyle,
+} from "@/components/admin/intelligence/salon/AdminIntelTableScroll";
+import {
   ADMIN_INTEL_META,
   ADMIN_INTEL_TABLE_CELL as tdStyle,
   ADMIN_INTEL_TABLE_HEADER as thStyle,
@@ -100,7 +104,7 @@ export default function QualifiedOperatorsPage() {
   }, [operators]);
 
   return (
-    <div style={{ padding: "24px 28px 48px", maxWidth: 1200, margin: "0 auto" }}>
+    <div style={{ padding: "24px 28px 48px", maxWidth: 1200, margin: "0 auto", overflowX: "hidden" }}>
       <CreatorIntelligenceNav current="qualified-operators" />
       <IntelligenceFeatureHeader
         title="Qualified Operators"
@@ -158,8 +162,8 @@ export default function QualifiedOperatorsPage() {
       {loading ? (
         <div style={{ fontSize: 12, color: "#78716c" }}>Loading…</div>
       ) : (
-        <div style={{ overflowX: "auto", border: "1px solid #e7e5e4", borderRadius: 12, background: "#fff" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <AdminIntelTableScroll minWidth={1100} borderRadius={12}>
+          <table style={adminIntelTableStyle(1100)}>
             <thead>
               <tr>
                 <th style={thStyle}>Handle</th>
@@ -230,7 +234,7 @@ export default function QualifiedOperatorsPage() {
               )}
             </tbody>
           </table>
-        </div>
+        </AdminIntelTableScroll>
       )}
 
       <SalonProspectDrawer

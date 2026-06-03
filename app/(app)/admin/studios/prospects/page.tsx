@@ -37,6 +37,10 @@ import {
 } from "@/components/admin/intelligence/salon/BusinessStackChips";
 import type { SalonBusinessStack } from "@/lib/intelligence/salon/business-stack/types";
 import {
+  AdminIntelTableScroll,
+  adminIntelTableStyle,
+} from "@/components/admin/intelligence/salon/AdminIntelTableScroll";
+import {
   ADMIN_INTEL_DRAWER_LABEL,
   ADMIN_INTEL_DRAWER_VALUE,
   ADMIN_INTEL_META,
@@ -788,8 +792,8 @@ export default function ProspectsPage() {
           {total === 0 ? "No prospects yet — run Hashtag Harvest to start building your salon pipeline." : "No prospects match the current filters."}
         </div>
       ) : (
-        <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, overflow: "hidden" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <AdminIntelTableScroll minWidth={1320} borderRadius={14}>
+          <table style={adminIntelTableStyle(1320)}>
             <thead>
               <tr>
                 {([
@@ -899,7 +903,7 @@ export default function ProspectsPage() {
               })}
             </tbody>
           </table>
-        </div>
+        </AdminIntelTableScroll>
       )}
 
       {!loading && totalCount > pageSize && (
