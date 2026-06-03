@@ -1,6 +1,10 @@
 // lib/intelligence/salon/google-identity/types.ts
 // Observation-only Google Business reference layer (no prospect mutation).
 
+import type { GoogleIdentityConnectionDiagnostics } from "./google-identity-connection";
+
+export type { GoogleIdentityConnectionDiagnostics };
+
 export type GoogleIdentityStatus =
   | "confirmed"
   | "probable"
@@ -81,6 +85,8 @@ export type GoogleIdentityReport = {
   computedAt: string;
   fromCache: boolean;
   providerConnected: boolean;
+  /** Safe server-runtime env diagnostics (no secret values). */
+  connection: GoogleIdentityConnectionDiagnostics;
 };
 
 export type GoogleIdentityProspectInput = {

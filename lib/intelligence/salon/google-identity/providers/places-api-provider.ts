@@ -1,6 +1,7 @@
 // Google Places Text Search + Place Details (GOOGLE_MAPS_API_KEY).
 // Salon-only — does not import Transpo modules.
 
+import { getGoogleMapsApiKey } from "../google-identity-connection";
 import type {
   GooglePlaceCandidate,
   GooglePlaceLookupInput,
@@ -58,11 +59,11 @@ export class GooglePlacesApiDataSource implements SalonGoogleDataSource {
   readonly id = "google_places_api";
 
   isConnected(): boolean {
-    return Boolean(process.env.GOOGLE_MAPS_API_KEY?.trim());
+    return Boolean(getGoogleMapsApiKey());
   }
 
   async lookup(input: GooglePlaceLookupInput): Promise<GooglePlaceLookupResult> {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY?.trim();
+    const apiKey = getGoogleMapsApiKey();
     if (!apiKey) {
       return {
         connected: false,
@@ -152,6 +153,4 @@ export function getSalonGoogleDataSource(): SalonGoogleDataSource {
   return _defaultSource;
 }
 
-export function isSalonGoogleDataSourceConnected(): boolean {
-  return getSalonGoogleDataSource().isConnected();
-}
+export { isSalonGoogleDataSourceConnected } from "../google-identity-connection";

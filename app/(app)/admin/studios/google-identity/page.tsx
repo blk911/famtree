@@ -104,7 +104,7 @@ export default function GoogleIdentityPage() {
       />
       <SalonStorageBadge />
 
-      {!report?.providerConnected ? (
+      {!loading && report && !report.providerConnected ? (
         <div
           style={{
             fontSize: 12,
@@ -116,8 +116,32 @@ export default function GoogleIdentityPage() {
             marginBottom: 16,
           }}
         >
-          Google Places API not connected. Set <code>GOOGLE_MAPS_API_KEY</code> for live lookups.
-          Backfill will record not_found until connected.
+          Google Places API not connected. Set <code>GOOGLE_MAPS_API_KEY</code> in{" "}
+          <code>.env.local</code> and restart <code>npm run dev</code>.
+          {report.connection ? (
+            <div style={{ marginTop: 8, fontSize: 11, color: "#78716c" }}>
+              {report.connection.providerConnectionReason}
+              {" "}
+              (hasKey: {String(report.connection.hasGoogleMapsKey)}, length:{" "}
+              {report.connection.keyLength})
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {!loading && report?.providerConnected ? (
+        <div
+          style={{
+            fontSize: 11,
+            color: "#15803d",
+            background: "#f0fdf4",
+            border: "1px solid #bbf7d0",
+            borderRadius: 8,
+            padding: "8px 12px",
+            marginBottom: 16,
+          }}
+        >
+          Google Places connected (key length {report.connection?.keyLength ?? 0}).
         </div>
       ) : null}
 

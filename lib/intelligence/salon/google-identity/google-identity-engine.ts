@@ -29,7 +29,7 @@ import {
   loadGoogleIdentityCacheFromDisk,
   persistGoogleIdentityCache,
 } from "./google-identity-store";
-import { isSalonGoogleDataSourceConnected } from "./providers/places-api-provider";
+import { getGoogleIdentityConnectionDiagnostics } from "./google-identity-connection";
 import { prospectToGoogleIdentityInput } from "./prospect-input";
 import type {
   GoogleIdentityByProvider,
@@ -195,6 +195,8 @@ export async function buildSalonGoogleIdentityReport(options?: {
   const manualReview = records.filter(needsManualReview);
   const questions = buildQuestions(summary, records, byProvider, manualReview);
 
+  const connection = getGoogleIdentityConnectionDiagnostics();
+
   return {
     ok: true,
     summary,
@@ -204,7 +206,8 @@ export async function buildSalonGoogleIdentityReport(options?: {
     byProvider,
     computedAt: new Date().toISOString(),
     fromCache,
-    providerConnected: isSalonGoogleDataSourceConnected(),
+    providerConnected: connection.providerConnected,
+    connection,
   };
 }
 
@@ -219,6 +222,7 @@ export async function runGoogleIdentityBackfill(options?: {
   possible: number;
   conflicts: number;
   notFound: number;
+  connection: ReturnType<typeof getGoogleIdentityConnectionDiagnostics>;
 }> {
   const limit = options?.limit ?? 500;
   const prospects = (await filterProspects({ vertical: "salon" })).slice(0, limit);
@@ -235,6 +239,7 @@ export async function runGoogleIdentityBackfill(options?: {
   }
 
   const summary = buildSummary(records, prospects.length);
+  const connection = getGoogleIdentityConnectionDiagnostics();
   return {
     ok: true,
     checked: prospects.length,
@@ -243,6 +248,7 @@ export async function runGoogleIdentityBackfill(options?: {
     possible: summary.possible,
     conflicts: summary.conflict,
     notFound: summary.notFound,
+    connection,
   };
 }
 
