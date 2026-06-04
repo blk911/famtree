@@ -63,8 +63,8 @@ export function SalonPipelineOverview() {
       />
 
       <p style={{ fontSize: 12, color: "#57534e", margin: "16px 0 20px", lineHeight: 1.5 }}>
-        Use the network visualization thumbnail (upper right on pipeline tools) to preview private
-        client network growth.
+        <strong>Unlock Your Client Relationships</strong> — open the visualization thumbnail (upper
+        right on pipeline tools) to preview private client network growth.
       </p>
 
       <div

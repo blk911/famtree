@@ -41,50 +41,67 @@ export function SalonNetworkVizLauncher({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Open private network visualization"
+      <div
         style={{
-          flexShrink: 0,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 6,
-          padding: 0,
-          border: "none",
-          background: "transparent",
-          cursor: "pointer",
+          gap: 10,
+          flexShrink: 0,
         }}
       >
-        <div
+        <p
           style={{
-            width: thumbSize,
-            height: thumbSize,
-            borderRadius: 12,
-            overflow: "hidden",
-            border: "1px solid #e7e5e4",
-            background: "#1c1917",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            margin: 0,
+            fontSize: 12,
+            fontWeight: 800,
+            color: "#1c1917",
+            lineHeight: 1.35,
+            textAlign: "center",
+            maxWidth: 200,
           }}
         >
-          <iframe
-            src={SALON_INTELLIGENCE_NETWORK_PATH}
-            title="Private network visualization preview"
-            tabIndex={-1}
+          Unlock Your Client Relationships
+        </p>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Open private network visualization"
+          style={{
+            padding: 0,
+            border: "none",
+            background: "transparent",
+            cursor: "pointer",
+          }}
+        >
+          <div
             style={{
-              width: modalWidth,
-              height: modalHeight,
-              border: "none",
-              display: "block",
-              pointerEvents: "none",
-              transform: `scale(${thumbScale})`,
-              transformOrigin: "top left",
+              width: thumbSize,
+              height: thumbSize,
+              borderRadius: 12,
+              overflow: "hidden",
+              border: "1px solid #e7e5e4",
+              background: "#1c1917",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
             }}
-          />
-        </div>
-        <span style={{ fontSize: 10, fontWeight: 700, color: "#9d174d" }}>Network viz</span>
-      </button>
+          >
+            <iframe
+              src={SALON_INTELLIGENCE_NETWORK_PATH}
+              title="Private network visualization preview"
+              tabIndex={-1}
+              style={{
+                width: modalWidth,
+                height: modalHeight,
+                border: "none",
+                display: "block",
+                pointerEvents: "none",
+                transform: `scale(${thumbScale})`,
+                transformOrigin: "top left",
+              }}
+            />
+          </div>
+        </button>
+      </div>
 
       {mounted && open
         ? createPortal(

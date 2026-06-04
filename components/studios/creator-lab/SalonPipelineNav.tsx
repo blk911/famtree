@@ -202,12 +202,6 @@ export function SalonPipelineNav({ currentTool, trailing }: SalonPipelineNavProp
                 Next: {s.label}
               </button>
             ))}
-            <Link
-              href="/admin/studios"
-              style={{ fontSize: 10, fontWeight: 700, color: "#9d174d", textDecoration: "none", marginLeft: "auto" }}
-            >
-              Pipeline overview →
-            </Link>
           </div>
 
           <IntelligenceContextBadge
