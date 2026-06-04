@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Network Simulation</title>
+    <title>Create a Value-Based Network</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         * {
@@ -157,19 +157,20 @@
 </head>
 <body>
     <div class="header">
-        <h1>Network Expansion Simulation</h1>
-        <div class="info">Click on nodes to expand the network • CL → Salons → Sub-CLs</div>
+        <h1>Create a Value-Based Network</h1>
+        <div class="info">Your client → client-favorite salons → each salon’s client network</div>
     </div>
 
     <div id="network-container">
         <div class="stats">
-            <div>Total Nodes: <span id="node-count">1</span></div>
-            <div>Active Links: <span id="link-count">0</span></div>
+            <div style="font-weight: bold; margin-bottom: 8px;">Private Network Growth</div>
+            <div>Total Members: <span id="node-count">1</span></div>
+            <div>Active Relationships: <span id="link-count">0</span></div>
             <div>Network Depth: <span id="depth">1</span></div>
         </div>
         <div class="controls">
             <button onclick="resetNetwork()">Reset Network</button>
-            <button onclick="autoExpand()">Auto Expand</button>
+            <button onclick="autoExpand()">Grow Private Network</button>
         </div>
     </div>
 
@@ -205,7 +206,7 @@
         function initNetwork() {
             nodes = [{
                 id: nodeIdCounter++,
-                label: 'CL',
+                label: 'Client',
                 type: 'main',
                 level: 0,
                 x: width / 2,
@@ -231,7 +232,7 @@
                 const angle = i * angleStep;
                 const childNode = {
                     id: nodeIdCounter++,
-                    label: node.type === 'main' ? `Salon ${i + 1}` : `CL ${i + 1}`,
+                    label: node.type === 'main' ? `Fav Salon ${i + 1}` : `Salon Clients ${i + 1}`,
                     type: node.type === 'main' ? 'salon' : 'sub-cl',
                     level: node.level + 1,
                     x: node.x + Math.cos(angle) * radius,
@@ -280,7 +281,10 @@
                     tooltip.style.opacity = 1;
                     tooltip.style.left = event.pageX + 10 + 'px';
                     tooltip.style.top = event.pageY - 10 + 'px';
-                    tooltip.textContent = `${d.label} (Level ${d.level})${d.expanded ? ' - Expanded' : ' - Click to expand'}`;
+                    const growHint = d.type !== 'sub-cl' && !d.expanded
+                        ? ' - Click to grow this relationship network'
+                        : d.expanded ? ' - Expanded' : '';
+                    tooltip.textContent = `${d.label} (Level ${d.level})${growHint}`;
                 })
                 .on('mouseleave', () => {
                     tooltip.style.opacity = 0;
@@ -298,8 +302,8 @@
             nodeEnter.append('text')
                 .attr('class', 'node-label')
                 .attr('dy', '.35em')
-                .style('font-size', d => d.type === 'main' ? '16px' : d.type === 'salon' ? '12px' : '10px')
-                .text(d => d.type === 'main' ? d.label : '');
+                .style('font-size', d => d.type === 'main' ? '14px' : d.type === 'salon' ? '11px' : '9px')
+                .text(d => d.level <= 2 ? d.label : '');
 
             node.exit().remove();
 
