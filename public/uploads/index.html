@@ -181,6 +181,8 @@
         const height = window.innerHeight - 100;
         const tooltip = document.getElementById('tooltip');
         
+        const SALON_TYPES = ['Nails', 'Hair', 'Brows', 'Lashes', 'Lips', 'Massage', 'Spa', 'Wax'];
+
         let nodes = [];
         let links = [];
         let simulation;
@@ -230,9 +232,16 @@
             
             for (let i = 0; i < childCount; i++) {
                 const angle = i * angleStep;
+                const salonType = node.type === 'main'
+                    ? SALON_TYPES[i]
+                    : node.salonType;
+                const label = node.type === 'main'
+                    ? salonType
+                    : `${salonType} Client ${i + 1}`;
                 const childNode = {
                     id: nodeIdCounter++,
-                    label: node.type === 'main' ? `Fav Salon ${i + 1}` : `Salon Clients ${i + 1}`,
+                    label,
+                    salonType,
                     type: node.type === 'main' ? 'salon' : 'sub-cl',
                     level: node.level + 1,
                     x: node.x + Math.cos(angle) * radius,
