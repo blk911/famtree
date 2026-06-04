@@ -11,6 +11,7 @@ import {
   ADMIN_INTEL_CARD_LABEL,
   ADMIN_INTEL_META,
 } from "@/components/admin/intelligence/salon/admin-intelligence-typography";
+import { SalonNetworkVizLauncher } from "@/components/admin/intelligence/salon/SalonNetworkVizLauncher";
 
 type ScanResponse = {
   ok: boolean;
@@ -145,7 +146,17 @@ export default function SourceIngestPage() {
           scan child listings when available, and route normalized records into Import Candidates.
         </p>
 
-        <div style={{ display: "grid", gap: 12, marginBottom: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 20,
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+            marginBottom: 16,
+          }}
+        >
+          <div style={{ flex: "1 1 280px", minWidth: 0 }}>
+        <div style={{ display: "grid", gap: 12 }}>
           <label style={{ display: "grid", gap: 4 }}>
             <span style={ADMIN_INTEL_CARD_LABEL}>Source URL</span>
             <input
@@ -222,6 +233,9 @@ export default function SourceIngestPage() {
               </span>
             </label>
           ) : null}
+        </div>
+          </div>
+          <SalonNetworkVizLauncher thumbSize={140} modalSize={500} />
         </div>
 
         <button

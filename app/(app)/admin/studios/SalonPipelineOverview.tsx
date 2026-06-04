@@ -7,9 +7,6 @@ import { SalonPipelineHeader } from "@/components/admin/intelligence/salon/Salon
 import { SALON_PIPELINE_STAGES } from "@/lib/intelligence/salon/pipeline/salon-pipeline-config";
 import type { SalonPipelineSummary, SalonPipelineStageId } from "@/lib/intelligence/salon/pipeline/pipeline-types";
 
-/** Public static asset — served from `public/uploads/index.html` */
-const SALON_INTELLIGENCE_NETWORK_PATH = "/uploads/index.html";
-
 export function SalonPipelineOverview() {
   const [counts, setCounts] = useState<SalonPipelineSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,55 +62,14 @@ export function SalonPipelineOverview() {
         onStageSelect={setHighlightStage}
       />
 
-      <div
-        style={{
-          marginTop: 20,
-          marginBottom: 20,
-          background: "#fff",
-          border: "1px solid #e7e5e4",
-          borderRadius: 14,
-          padding: "18px 20px",
-        }}
-      >
-        <h2 style={{ fontSize: 15, fontWeight: 800, color: "#1c1917", margin: "0 0 6px" }}>
-          Intelligence Network
-        </h2>
-        <p style={{ fontSize: 12, color: "#57534e", margin: "0 0 12px", lineHeight: 1.5, maxWidth: 720 }}>
-          Source signals expand into candidates, enrichment, verification, and qualified operators.
-        </p>
-        <div
-          style={{
-            width: "100%",
-            height: 420,
-            borderRadius: 12,
-            overflow: "hidden",
-            border: "1px solid #e7e5e4",
-            background: "#1c1917",
-          }}
-        >
-          <iframe
-            src={SALON_INTELLIGENCE_NETWORK_PATH}
-            title="Salon intelligence network visualization"
-            style={{
-              width: "100%",
-              height: "100%",
-              border: "none",
-              display: "block",
-              background: "#1c1917",
-            }}
-          />
-        </div>
-        <p style={{ fontSize: 11, margin: "10px 0 0" }}>
-          <a
-            href={SALON_INTELLIGENCE_NETWORK_PATH}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ fontWeight: 700, color: "#9d174d", textDecoration: "none" }}
-          >
-            Open network visualization →
-          </a>
-        </p>
-      </div>
+      <p style={{ fontSize: 12, color: "#57534e", margin: "16px 0 20px", lineHeight: 1.5 }}>
+        Private network visualization lives on{" "}
+        <Link href="/admin/studios/source-ingest" style={{ fontWeight: 700, color: "#9d174d", textDecoration: "none" }}>
+          Source URL
+        </Link>
+        {" "}
+        — click the thumbnail to open the interactive graph.
+      </p>
 
       <div
         style={{
