@@ -7,12 +7,14 @@ export const SALON_INTELLIGENCE_NETWORK_PATH = "/uploads/index.html";
 
 type SalonNetworkVizLauncherProps = {
   thumbSize?: number;
-  modalSize?: number;
+  modalWidth?: number;
+  modalHeight?: number;
 };
 
 export function SalonNetworkVizLauncher({
   thumbSize = 140,
-  modalSize = 500,
+  modalWidth = 700,
+  modalHeight = 800,
 }: SalonNetworkVizLauncherProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -35,7 +37,7 @@ export function SalonNetworkVizLauncher({
     };
   }, [open]);
 
-  const scale = thumbSize / modalSize;
+  const thumbScale = Math.min(thumbSize / modalWidth, thumbSize / modalHeight);
 
   return (
     <>
@@ -71,12 +73,12 @@ export function SalonNetworkVizLauncher({
             title="Private network visualization preview"
             tabIndex={-1}
             style={{
-              width: modalSize,
-              height: modalSize,
+              width: modalWidth,
+              height: modalHeight,
               border: "none",
               display: "block",
               pointerEvents: "none",
-              transform: `scale(${scale})`,
+              transform: `scale(${thumbScale})`,
               transformOrigin: "top left",
             }}
           />
@@ -107,11 +109,10 @@ export function SalonNetworkVizLauncher({
                 aria-label="Private network visualization"
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                  width: modalSize,
-                  height: modalSize,
+                  width: modalWidth,
+                  height: modalHeight,
                   maxWidth: "calc(100vw - 32px)",
                   maxHeight: "calc(100vh - 32px)",
-                  aspectRatio: "1",
                   borderRadius: 14,
                   overflow: "hidden",
                   border: "1px solid #e7e5e4",

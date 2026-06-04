@@ -224,7 +224,7 @@ export function SalonPipelineNav({ currentTool, trailing }: SalonPipelineNavProp
             paddingTop: 4,
           }}
         >
-          <SalonNetworkVizLauncher thumbSize={160} modalSize={500} />
+          <SalonNetworkVizLauncher thumbSize={160} modalWidth={700} modalHeight={800} />
         </div>
       </div>
     </div>
