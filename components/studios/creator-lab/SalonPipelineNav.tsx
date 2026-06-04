@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import { SalonPipelineHeader } from "@/components/admin/intelligence/salon/SalonPipelineHeader";
+import { SalonNetworkVizLauncher } from "@/components/admin/intelligence/salon/SalonNetworkVizLauncher";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import {
   pipelineStageDef,
@@ -88,121 +89,144 @@ export function SalonPipelineNav({ currentTool, trailing }: SalonPipelineNavProp
     <div style={{ marginBottom: 22 }}>
       <IntelligenceMarketNav />
 
-      <div style={{ marginBottom: 12 }}>
-        <div
-          style={{
-            fontSize: 11,
-            color: "#a8a29e",
-            marginBottom: 8,
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-          }}
-        >
-          <Link href="/admin/studios" style={{ color: "#78716c", textDecoration: "none", fontWeight: 600 }}>
-            AIH Studios
-          </Link>
-          <span style={{ color: "#d6d3d1", fontSize: 10 }}>›</span>
-          <span style={{ color: "#44403c", fontWeight: 700 }}>{salonConfig.label}</span>
-          <span style={{ color: "#d6d3d1", fontSize: 10 }}>›</span>
-          <Link
-            href="/admin/studios"
-            style={{ color: "#9d174d", textDecoration: "none", fontWeight: 700 }}
-          >
-            Pipeline
-          </Link>
-        </div>
-
-        <SalonPipelineHeader
-          currentStage={selectedStage}
-          counts={counts}
-          countsLoading={countsLoading}
-          onStageSelect={handleStageSelect}
-        />
-
-        <p style={{ fontSize: 11, color: "#78716c", margin: "0 0 10px", lineHeight: 1.5 }}>
-          {pipelineStageDef(selectedStage).purpose}
-          <span style={{ color: "#a8a29e" }}>
-            {" "}
-            — Discover → Enrich → Verify → Qualify → Operate
-          </span>
-        </p>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <div
-          style={{
-            display: "inline-flex",
-            gap: 2,
-            flexWrap: "wrap",
-            alignItems: "center",
-            background: "#f5f4f2",
-            border: "1px solid #e7e5e4",
-            borderRadius: 10,
-            padding: "3px 4px",
-          }}
-        >
-          {stageNavItems.map(({ id, label, href }) => {
-            const isActive = id === activeTool;
-            return (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1fr) auto",
+          gap: 20,
+          alignItems: "start",
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <div style={{ marginBottom: 12 }}>
+            <div
+              style={{
+                fontSize: 11,
+                color: "#a8a29e",
+                marginBottom: 8,
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                flexWrap: "wrap",
+              }}
+            >
+              <Link href="/admin/studios" style={{ color: "#78716c", textDecoration: "none", fontWeight: 600 }}>
+                AIH Studios
+              </Link>
+              <span style={{ color: "#d6d3d1", fontSize: 10 }}>›</span>
+              <span style={{ color: "#44403c", fontWeight: 700 }}>{salonConfig.label}</span>
+              <span style={{ color: "#d6d3d1", fontSize: 10 }}>›</span>
               <Link
-                key={id}
-                href={href}
+                href="/admin/studios"
+                style={{ color: "#9d174d", textDecoration: "none", fontWeight: 700 }}
+              >
+                Pipeline
+              </Link>
+            </div>
+
+            <SalonPipelineHeader
+              currentStage={selectedStage}
+              counts={counts}
+              countsLoading={countsLoading}
+              onStageSelect={handleStageSelect}
+            />
+
+            <p style={{ fontSize: 11, color: "#78716c", margin: "0 0 10px", lineHeight: 1.5 }}>
+              {pipelineStageDef(selectedStage).purpose}
+              <span style={{ color: "#a8a29e" }}>
+                {" "}
+                — Discover → Enrich → Verify → Qualify → Operate
+              </span>
+            </p>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <div
+              style={{
+                display: "inline-flex",
+                gap: 2,
+                flexWrap: "wrap",
+                alignItems: "center",
+                background: "#f5f4f2",
+                border: "1px solid #e7e5e4",
+                borderRadius: 10,
+                padding: "3px 4px",
+              }}
+            >
+              {stageNavItems.map(({ id, label, href }) => {
+                const isActive = id === activeTool;
+                return (
+                  <Link
+                    key={id}
+                    href={href}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: isActive ? 700 : 500,
+                      color: isActive ? "#1c1917" : "#78716c",
+                      background: isActive ? "#ffffff" : "transparent",
+                      border: isActive ? "1px solid #e2e0dc" : "1px solid transparent",
+                      borderRadius: 7,
+                      padding: "4px 11px",
+                      textDecoration: "none",
+                      whiteSpace: "nowrap",
+                      boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+            {trailing}
+          </div>
+
+          <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+            {SALON_PIPELINE_STAGES.filter((s) => s.id !== selectedStage).map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => handleStageSelect(s.id)}
                 style={{
-                  fontSize: 12,
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? "#1c1917" : "#78716c",
-                  background: isActive ? "#ffffff" : "transparent",
-                  border: isActive ? "1px solid #e2e0dc" : "1px solid transparent",
-                  borderRadius: 7,
-                  padding: "4px 11px",
-                  textDecoration: "none",
-                  whiteSpace: "nowrap",
-                  boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
-                  lineHeight: "1.5",
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "#78716c",
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  textDecoration: "underline",
+                  textUnderlineOffset: 2,
                 }}
               >
-                {label}
-              </Link>
-            );
-          })}
+                Next: {s.label}
+              </button>
+            ))}
+            <Link
+              href="/admin/studios"
+              style={{ fontSize: 10, fontWeight: 700, color: "#9d174d", textDecoration: "none", marginLeft: "auto" }}
+            >
+              Pipeline overview →
+            </Link>
+          </div>
+
+          <IntelligenceContextBadge
+            verticalLabel={salonConfig.label}
+            dataScope={salonConfig.dataScope}
+          />
         </div>
-        {trailing}
-      </div>
 
-      <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-        {SALON_PIPELINE_STAGES.filter((s) => s.id !== selectedStage).map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => handleStageSelect(s.id)}
-            style={{
-              fontSize: 10,
-              fontWeight: 600,
-              color: "#78716c",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-              textDecoration: "underline",
-              textUnderlineOffset: 2,
-            }}
-          >
-            Next: {s.label}
-          </button>
-        ))}
-        <Link
-          href="/admin/studios"
-          style={{ fontSize: 10, fontWeight: 700, color: "#9d174d", textDecoration: "none", marginLeft: "auto" }}
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            flexShrink: 0,
+            paddingTop: 4,
+          }}
         >
-          Pipeline overview →
-        </Link>
+          <SalonNetworkVizLauncher thumbSize={160} modalSize={500} />
+        </div>
       </div>
-
-      <IntelligenceContextBadge
-        verticalLabel={salonConfig.label}
-        dataScope={salonConfig.dataScope}
-      />
     </div>
   );
 }

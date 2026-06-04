@@ -63,12 +63,8 @@ export function SalonPipelineOverview() {
       />
 
       <p style={{ fontSize: 12, color: "#57534e", margin: "16px 0 20px", lineHeight: 1.5 }}>
-        Private network visualization lives on{" "}
-        <Link href="/admin/studios/source-ingest" style={{ fontWeight: 700, color: "#9d174d", textDecoration: "none" }}>
-          Source URL
-        </Link>
-        {" "}
-        — click the thumbnail to open the interactive graph.
+        Use the network visualization thumbnail (upper right on pipeline tools) to preview private
+        client network growth.
       </p>
 
       <div
