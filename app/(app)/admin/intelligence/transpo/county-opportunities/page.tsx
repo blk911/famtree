@@ -6,8 +6,10 @@ import Link from "next/link";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { CountyOpportunityDrawer } from "@/components/admin/intelligence/transpo/CountyOpportunityDrawer";
 import { SERVICE_CATEGORY_LABELS, type TranspoServiceCategory } from "@/lib/intelligence/transpo/market-gaps/types";
+import { OPPORTUNITY_TYPE_LABELS } from "@/lib/intelligence/transpo/network-formation/network-formation-types";
 import type {
   CountyOpportunityDossier,
+  CountyOpportunityQuestion,
   CountyOpportunitySummary,
 } from "@/lib/intelligence/transpo/opportunity-dossiers/county-opportunity-types";
 
@@ -44,6 +46,7 @@ export default function TranspoCountyOpportunitiesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<CountyOpportunityDossier | null>(null);
+  const [questions, setQuestions] = useState<CountyOpportunityQuestion[]>([]);
   const [countyFilter, setCountyFilter] = useState(searchParams.get("county") ?? "");
   const [stateFilter, setStateFilter] = useState(searchParams.get("state") ?? "CO");
 
@@ -63,6 +66,7 @@ export default function TranspoCountyOpportunitiesPage() {
       }
       setSummary(data.summary ?? null);
       setDossiers(data.dossiers ?? []);
+      setQuestions(data.questions ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -108,7 +112,7 @@ export default function TranspoCountyOpportunitiesPage() {
       {error ? <div style={{ marginBottom: 16, fontSize: 12, color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "10px 12px" }}>{error}</div> : null}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 20 }}>
-        {[["Dossiers", summary?.totalDossiers ?? "…"], ["Immediate", summary?.immediateOpportunities ?? "…"], ["Priority", summary?.priorityOpportunities ?? "…"], ["Zero Provider", summary?.zeroProviderRows ?? "…"]].map(([l, v]) => (
+        {[["Dossiers", summary?.totalDossiers ?? "…"], ["Next Week", summary?.nextWeekPlays ?? "…"], ["Network Formation", summary?.networkFormationPlays ?? "…"], ["College Network", summary?.collegeNetworkPlays ?? "…"], ["Zero Provider", summary?.zeroProviderRows ?? "…"]].map(([l, v]) => (
           <div key={l} style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, padding: "12px 14px" }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e" }}>{l}</div>
             <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4 }}>{v}</div>
@@ -139,7 +143,7 @@ export default function TranspoCountyOpportunitiesPage() {
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1000 }}>
           <thead>
             <tr>
-              {["County", "Service", "Gap", "Confidence", "Providers", "Payers", "Actionability", "Play"].map((h) => (
+              {["County", "Service", "Type", "Gap", "Confidence", "Providers", "Actionability", "First Move"].map((h) => (
                 <th key={h} style={th}>{h}</th>
               ))}
             </tr>
@@ -154,22 +158,37 @@ export default function TranspoCountyOpportunitiesPage() {
                   <tr key={d.id} onClick={() => setSelected(d)} style={{ cursor: "pointer" }}>
                     <td style={{ ...td, fontWeight: 700, color: "#1c1917" }}>{d.county}, {d.state}</td>
                     <td style={td}>{SERVICE_CATEGORY_LABELS[svc] ?? d.serviceCategory}</td>
+                    <td style={td}>{d.opportunityType ? OPPORTUNITY_TYPE_LABELS[d.opportunityType] : "—"}</td>
                     <td style={{ ...td, fontWeight: 800 }}>{d.deficitScore}</td>
                     <td style={td}>{d.confidenceScore}</td>
                     <td style={{ ...td, fontWeight: d.providerCount === 0 ? 800 : 400, color: d.providerCount === 0 ? "#991b1b" : undefined }}>{d.providerCount}</td>
-                    <td style={td}>{d.payers.length}</td>
                     <td style={td}>
                       <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, color: band.fg, background: band.bg }}>
                         {d.actionabilityScore} ({d.actionabilityBand})
                       </span>
                     </td>
-                    <td style={{ ...td, maxWidth: 200 }}>{d.recommendedPlay}</td>
+                    <td style={{ ...td, maxWidth: 200 }}>{d.firstMove ?? d.recommendedPlay}</td>
                   </tr>
                 );
               })}
           </tbody>
         </table>
       </div>
+
+      {questions.length > 0 ? (
+        <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, padding: "18px 20px", marginBottom: 24 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 800, margin: "0 0 14px" }}>Network Formation Questions</h2>
+          <div style={{ display: "grid", gap: 12 }}>
+            {questions.map((q) => (
+              <div key={q.id} style={{ borderTop: "1px solid #f5f4f2", paddingTop: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "#4338ca" }}>{q.id}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, margin: "4px 0" }}>{q.question}</div>
+                <div style={{ fontSize: 12, color: "#57534e", lineHeight: 1.55 }}>{q.answer}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <CountyOpportunityDrawer
         dossier={selected}

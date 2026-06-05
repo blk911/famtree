@@ -1,5 +1,7 @@
 // lib/intelligence/transpo/action-queue/action-types.ts
 
+import type { TranspoOpportunityType, TranspoTimeHorizon } from "../network-formation/network-formation-types";
+
 export type TranspoActionDecision =
   | "unreviewed"
   | "investigate"
@@ -32,6 +34,11 @@ export type TranspoActionQueueRecord = {
   providerCount?: number;
   payerName?: string;
   countyOpportunityId?: string;
+  opportunityType?: TranspoOpportunityType;
+  nearTermPlay?: string;
+  firstMove?: string;
+  timeHorizon?: TranspoTimeHorizon;
+  nextWeekActions?: string[];
   createdAt: string;
   updatedAt: string;
 };

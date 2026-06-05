@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { enrichCountyOpportunityDossier, enrichCountyOpportunityDossiers } from "@/lib/intelligence/transpo/network-formation/network-formation-engine";
+import { buildNetworkFormationQuestions } from "@/lib/intelligence/transpo/network-formation/network-formation-summary";
 import { buildAndPersistCountyOpportunities } from "@/lib/intelligence/transpo/opportunity-dossiers/build-county-opportunities";
 import { buildCountyOpportunitySummary } from "@/lib/intelligence/transpo/opportunity-dossiers/county-opportunity-summary";
 import { readCountyOpportunityCache } from "@/lib/intelligence/transpo/opportunity-dossiers/county-opportunity-store";
@@ -29,7 +31,7 @@ export async function GET(request: NextRequest) {
       if (!one) {
         return NextResponse.json({ ok: false, error: "county opportunity not found" }, { status: 404 });
       }
-      return NextResponse.json({ ok: true, dossier: one });
+      return NextResponse.json({ ok: true, dossier: enrichCountyOpportunityDossier(one) });
     }
 
     if (county) {
@@ -38,8 +40,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    dossiers = enrichCountyOpportunityDossiers(dossiers);
     const summary = buildCountyOpportunitySummary(dossiers);
-    return NextResponse.json({ ok: true, summary, dossiers, meta: { fromCache, count: dossiers.length } });
+    const questions = buildNetworkFormationQuestions(dossiers);
+    return NextResponse.json({ ok: true, summary, dossiers, questions, meta: { fromCache, count: dossiers.length } });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);
     return NextResponse.json({ ok: false, error: "county opportunities failed", detail }, { status: 500 });

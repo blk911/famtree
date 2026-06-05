@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { NearTermOpportunityPanel } from "@/components/admin/intelligence/transpo/NearTermOpportunityPanel";
 import { PromoteToActionQueueButton } from "@/components/admin/intelligence/transpo/PromoteToActionQueueButton";
 import { SERVICE_CATEGORY_LABELS, type TranspoServiceCategory } from "@/lib/intelligence/transpo/market-gaps/types";
 import type { CountyOpportunityDossier } from "@/lib/intelligence/transpo/opportunity-dossiers/county-opportunity-types";
@@ -97,6 +98,8 @@ export function CountyOpportunityDrawer({ dossier, open, onClose, onSelectProvid
             ))}
           </div>
         )}
+
+        <NearTermOpportunityPanel dossier={dossier} />
 
         <div style={{ marginTop: 14, fontSize: 10, fontWeight: 800, color: "#a8a29e", marginBottom: 8 }}>EVIDENCE</div>
         <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.55, color: "#57534e" }}>

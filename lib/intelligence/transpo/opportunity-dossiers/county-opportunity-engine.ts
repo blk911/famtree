@@ -5,6 +5,7 @@ import { getColoradoMarketPayerMeta } from "../payers/payer-engine";
 import type { TranspoProviderDossier } from "../provider-dossiers/dossier-types";
 import { dossiersForCounty } from "../provider-dossiers/dossier-engine";
 import type { TranspoServiceDeficitRecord } from "../service-deficits/deficit-types";
+import { enrichCountyOpportunityDossier } from "../network-formation/network-formation-engine";
 import type { CountyOpportunityDossier } from "./county-opportunity-types";
 
 export function providerScarcityScore(providerCount: number): number {
@@ -70,7 +71,7 @@ export function buildCountyOpportunityDossier(
     `Actionability ${actionabilityScore} (${actionabilityBand(actionabilityScore)}).`,
   ];
 
-  return {
+  const base: CountyOpportunityDossier = {
     id: `opp-${deficit.county}-${deficit.state}-${deficit.serviceCategory}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-"),
     county: deficit.county,
     state: deficit.state,
@@ -99,6 +100,8 @@ export function buildCountyOpportunityDossier(
     brokerName: deficit.brokerName,
     evidence,
   };
+
+  return enrichCountyOpportunityDossier(base);
 }
 
 export function buildCountyOpportunityDossiers(

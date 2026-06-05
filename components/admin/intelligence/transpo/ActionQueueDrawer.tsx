@@ -3,6 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { SERVICE_CATEGORY_LABELS, type TranspoServiceCategory } from "@/lib/intelligence/transpo/market-gaps/types";
+import {
+  OPPORTUNITY_TYPE_LABELS,
+  TIME_HORIZON_LABELS,
+  type TranspoOpportunityType,
+  type TranspoTimeHorizon,
+} from "@/lib/intelligence/transpo/network-formation/network-formation-types";
 import type {
   TranspoActionDecision,
   TranspoActionQueueRecord,
@@ -115,8 +121,22 @@ export function ActionQueueDrawer({ record, open, onClose, onUpdated }: Props) {
         <div style={{ fontSize: 12, lineHeight: 1.7, color: "#44403c", marginBottom: 14 }}>
           <div>Deficit: <strong>{local.deficitScore}</strong> · Confidence: <strong>{local.confidenceScore}</strong> · Severity: <strong>{local.severity}</strong></div>
           <div>Providers: <strong>{local.providerCount ?? "—"}</strong> · Payer: <strong>{local.payerName ?? "—"}</strong></div>
-          <div style={{ marginTop: 6 }}>{local.recommendedPlay}</div>
+          <div style={{ marginTop: 6 }}>{local.nearTermPlay ?? local.recommendedPlay}</div>
         </div>
+
+        {local.opportunityType ? (
+          <div style={{ marginBottom: 14, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "12px 14px", fontSize: 12, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "#166534", marginBottom: 6 }}>NEAR-TERM PLAY</div>
+            <div><strong>Type:</strong> {OPPORTUNITY_TYPE_LABELS[local.opportunityType as TranspoOpportunityType]}</div>
+            {local.timeHorizon ? <div><strong>Horizon:</strong> {TIME_HORIZON_LABELS[local.timeHorizon as TranspoTimeHorizon]}</div> : null}
+            {local.firstMove ? <div style={{ marginTop: 6 }}><strong>First move:</strong> {local.firstMove}</div> : null}
+            {local.nextWeekActions && local.nextWeekActions.length > 0 ? (
+              <ol style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+                {local.nextWeekActions.map((a) => <li key={a}>{a}</li>)}
+              </ol>
+            ) : null}
+          </div>
+        ) : null}
 
         <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", marginBottom: 8 }}>DECISION</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>

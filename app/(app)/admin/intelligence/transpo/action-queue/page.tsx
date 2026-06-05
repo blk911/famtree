@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { ActionQueueDrawer } from "@/components/admin/intelligence/transpo/ActionQueueDrawer";
 import { actionabilityTier } from "@/lib/intelligence/transpo/action-queue/action-engine";
+import { OPPORTUNITY_TYPE_LABELS } from "@/lib/intelligence/transpo/network-formation/network-formation-types";
 import type {
   TranspoActionDecision,
   TranspoActionQueueQuestion,
@@ -156,24 +157,25 @@ export default function TranspoActionQueuePage() {
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1100 }}>
           <thead>
             <tr>
-              {["County", "Service", "Gap", "Confidence", "Actionability", "Play", "Decision", "Status", "Updated"].map((h) => (
+              {["County", "Service", "Type", "Gap", "Confidence", "Actionability", "First Move", "Decision", "Status", "Updated"].map((h) => (
                 <th key={h} style={th}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {loading ? <tr><td colSpan={9} style={{ ...td, textAlign: "center" }}>Loading…</td></tr>
-              : sorted.length === 0 ? <tr><td colSpan={9} style={{ ...td, textAlign: "center" }}>No actions — promote from Opportunity Radar or County Dossier.</td></tr>
+            {loading ? <tr><td colSpan={10} style={{ ...td, textAlign: "center" }}>Loading…</td></tr>
+              : sorted.length === 0 ? <tr><td colSpan={10} style={{ ...td, textAlign: "center" }}>No actions — promote from Opportunity Radar or County Dossier.</td></tr>
               : sorted.map((r) => {
                 const svc = r.serviceCategory as TranspoServiceCategory;
                 return (
                   <tr key={r.id} onClick={() => setSelected(r)} style={{ cursor: "pointer" }}>
                     <td style={{ ...td, fontWeight: 700, color: "#1c1917" }}>{r.county}, {r.state}</td>
                     <td style={td}>{SERVICE_CATEGORY_LABELS[svc] ?? r.serviceCategory}</td>
+                    <td style={td}>{r.opportunityType ? OPPORTUNITY_TYPE_LABELS[r.opportunityType] : "—"}</td>
                     <td style={{ ...td, fontWeight: 800 }}>{r.deficitScore}</td>
                     <td style={td}>{r.confidenceScore}</td>
                     <td style={td}>{r.actionabilityScore}</td>
-                    <td style={{ ...td, maxWidth: 180 }}>{r.recommendedPlay}</td>
+                    <td style={{ ...td, maxWidth: 180 }}>{r.firstMove ?? r.recommendedPlay}</td>
                     <td style={td}>{r.decision}</td>
                     <td style={td}>{r.status}</td>
                     <td style={td}>{new Date(r.updatedAt).toLocaleDateString()}</td>

@@ -11,6 +11,7 @@ import {
   buildActionQueueSummary,
 } from "@/lib/intelligence/transpo/action-queue/action-summary";
 import { readActionQueue, writeActionQueue } from "@/lib/intelligence/transpo/action-queue/action-store";
+import { enrichCountyOpportunityDossier } from "@/lib/intelligence/transpo/network-formation/network-formation-engine";
 import { readCountyOpportunityCache } from "@/lib/intelligence/transpo/opportunity-dossiers/county-opportunity-store";
 import { readServiceDeficitCache } from "@/lib/intelligence/transpo/service-deficits/deficit-store";
 
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
       if (!dossier) {
         return NextResponse.json({ ok: false, error: "county opportunity not found" }, { status: 404 });
       }
-      incoming = buildActionFromCountyOpportunity(dossier);
+      incoming = buildActionFromCountyOpportunity(enrichCountyOpportunityDossier(dossier));
     } else if (county && service) {
       const dossier = dossiers.find(
         (d) =>
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
           d.serviceCategory === service,
       );
       if (dossier) {
-        incoming = buildActionFromCountyOpportunity(dossier);
+        incoming = buildActionFromCountyOpportunity(enrichCountyOpportunityDossier(dossier));
       } else if (body.source === "service_deficit") {
         const deficits = await readServiceDeficitCache();
         const deficit = deficits.find(

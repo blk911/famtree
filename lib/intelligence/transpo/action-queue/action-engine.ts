@@ -1,5 +1,6 @@
 // lib/intelligence/transpo/action-queue/action-engine.ts
 
+import { suggestedDecisionForType } from "../network-formation/network-formation-engine";
 import type { CountyOpportunityDossier } from "../opportunity-dossiers/county-opportunity-types";
 import type { TranspoServiceDeficitRecord } from "../service-deficits/deficit-types";
 import type {
@@ -37,11 +38,18 @@ export function buildActionFromCountyOpportunity(
     actionabilityScore: dossier.actionabilityScore,
     severity: severityFromOpportunity(dossier),
     recommendedPlay: dossier.recommendedPlay,
-    decision: "unreviewed",
+    decision: dossier.opportunityType
+      ? suggestedDecisionForType(dossier.opportunityType)
+      : "unreviewed",
     status: "new",
     providerCount: dossier.providerCount,
     payerName: dossier.brokerName ?? dossier.payers[0]?.name,
     countyOpportunityId: dossier.id,
+    opportunityType: dossier.opportunityType,
+    nearTermPlay: dossier.nearTermPlay,
+    firstMove: dossier.firstMove,
+    timeHorizon: dossier.timeHorizon,
+    nextWeekActions: dossier.nextWeekActions,
     createdAt: now,
     updatedAt: now,
   };
