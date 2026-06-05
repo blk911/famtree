@@ -3,7 +3,6 @@
 // Transpo Market Harvest — market-level discovery and aggregation for
 // carrier / operator signals. Placeholder shell.
 
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 
@@ -13,7 +12,6 @@ const SCORING_HINTS = transpoConfig.scoringHints;
 export default function TranspoHarvestPage() {
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <IntelligenceMarketNav />
       <TranspoIntelligenceNav currentTool="harvest" />
 
       {/* Header */}

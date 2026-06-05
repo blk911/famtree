@@ -4,7 +4,6 @@
 // runs. Read-only view of GET /api/admin/intelligence/transpo/carriers.
 
 import { useEffect, useState } from "react";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import { CarrierOpportunityDrawer } from "@/components/admin/intelligence/transpo/CarrierOpportunityDrawer";
@@ -57,7 +56,6 @@ export default function TranspoCarriersPage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <IntelligenceMarketNav />
       <TranspoIntelligenceNav currentTool="carriers" />
 
       {/* Header */}

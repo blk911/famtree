@@ -5,7 +5,6 @@
 // top-opportunities feed. Reads the existing GET APIs client-side.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import type { TranspoCarrierTarget } from "@/lib/intelligence/transpo/types";
@@ -247,7 +246,6 @@ export default function TranspoMarketDashboardPage() {
 
   return (
     <div style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <IntelligenceMarketNav />
       <TranspoIntelligenceNav currentTool="market-dashboard" />
 
       <div style={{ marginBottom: 18 }}>

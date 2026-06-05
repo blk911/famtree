@@ -4,7 +4,6 @@
 // carrier resolution. Read-only view of GET /api/admin/intelligence/transpo/evidence.
 
 import { useEffect, useState } from "react";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import type { TranspoEvidence } from "@/lib/intelligence/transpo/types";
@@ -75,7 +74,6 @@ export default function TranspoEvidencePage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <IntelligenceMarketNav />
       <TranspoIntelligenceNav currentTool="evidence" />
 
       <div style={{ marginBottom: 24 }}>

@@ -5,7 +5,6 @@
 // GET /api/admin/intelligence/transpo/opportunities.
 
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import {
   CarrierOpportunityDrawer,
@@ -202,7 +201,6 @@ export default function TranspoOpportunitiesPage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <IntelligenceMarketNav />
       <TranspoIntelligenceNav currentTool="opportunities" />
 
       {/* Header */}

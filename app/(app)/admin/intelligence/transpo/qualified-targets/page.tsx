@@ -5,7 +5,6 @@
 // carriers an operator marked "approved". Click a row for the full detail drawer.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { CarrierOpportunityDrawer } from "@/components/admin/intelligence/transpo/CarrierOpportunityDrawer";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
@@ -90,7 +89,6 @@ export default function TranspoQualifiedTargetsPage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <IntelligenceMarketNav />
       <TranspoIntelligenceNav currentTool="qualified-targets" />
 
       <div style={{ marginBottom: 24 }}>

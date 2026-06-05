@@ -5,7 +5,6 @@
 // batches via POST.
 
 import { Fragment, useEffect, useState, useCallback } from "react";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import type {
@@ -233,7 +232,6 @@ export default function TranspoVerificationPage() {
 
   return (
     <div style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <IntelligenceMarketNav />
       <TranspoIntelligenceNav currentTool="verification" />
 
       <div style={{ marginBottom: 18 }}>

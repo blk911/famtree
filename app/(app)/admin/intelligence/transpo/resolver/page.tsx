@@ -4,7 +4,6 @@
 // and upsert them into the carrier master store.
 
 import { useCallback, useEffect, useState } from "react";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 
@@ -75,7 +74,6 @@ export default function TranspoResolverPage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <IntelligenceMarketNav />
       <TranspoIntelligenceNav currentTool="resolver" />
 
       <div style={{ marginBottom: 24 }}>
