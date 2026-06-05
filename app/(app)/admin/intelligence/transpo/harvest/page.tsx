@@ -4,7 +4,7 @@
 // carrier / operator signals. Placeholder shell.
 
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
-import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 
 const SCHEMA_HINTS = transpoConfig.schemaHints;
@@ -14,7 +14,7 @@ export default function TranspoHarvestPage() {
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
       <IntelligenceMarketNav />
-      <IntelligenceSubNav config={transpoConfig} currentTool="harvest" />
+      <TranspoIntelligenceNav currentTool="harvest" />
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>

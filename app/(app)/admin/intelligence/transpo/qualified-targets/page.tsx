@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
-import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { CarrierOpportunityDrawer } from "@/components/admin/intelligence/transpo/CarrierOpportunityDrawer";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import type { TranspoOpportunityRecord } from "@/lib/intelligence/transpo/opportunity-engine";
@@ -91,7 +91,7 @@ export default function TranspoQualifiedTargetsPage() {
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
       <IntelligenceMarketNav />
-      <IntelligenceSubNav config={transpoConfig} currentTool="qualified-targets" />
+      <TranspoIntelligenceNav currentTool="qualified-targets" />
 
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>

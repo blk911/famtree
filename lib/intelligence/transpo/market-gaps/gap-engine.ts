@@ -2,6 +2,9 @@
 // v1 market gap analysis — compares carrier supply heuristics to location demand
 // placeholders. Does not mutate carrier master or change opportunity scoring.
 
+import {
+  classifyProviderServiceCategory as classifyCarrierServiceCategory,
+} from "../provider-classification-engine";
 import type { TranspoCarrierTarget } from "../types";
 import type { TranspoCarrierVerification } from "../verification-types";
 import {
@@ -13,6 +16,8 @@ import {
   type TranspoServiceCategory,
 } from "./types";
 
+export { classifyCarrierServiceCategory };
+
 export type BuildMarketGapsInput = {
   carriers: TranspoCarrierTarget[];
   verifications?: TranspoCarrierVerification[];
@@ -20,72 +25,6 @@ export type BuildMarketGapsInput = {
 
 const FRONTIER_STATES = new Set(["WY", "MT", "ND", "SD", "AK", "NM", "ID", "NE", "KS", "OK", "AR", "MS", "WV"]);
 const RURAL_STATE_HINTS = new Set(["WY", "MT", "ND", "SD", "AK", "VT", "ME", "WV", "ID", "NM"]);
-
-const CATEGORY_RULES: { category: TranspoServiceCategory; patterns: RegExp[] }[] = [
-  {
-    category: "nemt",
-    patterns: [
-      /\bnemt\b/i,
-      /non[- ]?emergency/i,
-      /medicaid ride/i,
-      /patient transport/i,
-      /wheelchair/i,
-      /stretcher/i,
-    ],
-  },
-  {
-    category: "medical_transport",
-    patterns: [/\bmedical\b/i, /\bambulance\b/i, /\bpatient\b/i, /\bclinic\b/i, /\bhospital\b/i],
-  },
-  {
-    category: "senior_transport",
-    patterns: [/\bsenior\b/i, /\belder\b/i, /assisted living/i, /\bretirement\b/i],
-  },
-  {
-    category: "veteran_transport",
-    patterns: [/\bveteran/i, /\bva\b/i, /\bmilitary\b/i],
-  },
-  {
-    category: "meal_delivery",
-    patterns: [/\bmeal/i, /\bmeals\b/i, /food delivery/i, /\bnutrition\b/i, /senior meals/i],
-  },
-  {
-    category: "rural_transit",
-    patterns: [/\brural\b/i, /county transit/i, /community transit/i],
-  },
-];
-
-function normalizeText(...parts: (string | undefined)[]): string {
-  return parts.filter(Boolean).join(" ").toLowerCase();
-}
-
-function collectCarrierText(
-  carrier: TranspoCarrierTarget,
-  verification?: TranspoCarrierVerification,
-): string {
-  const signals = [
-    verification?.websiteTitle,
-    verification?.websiteDescription,
-    ...(verification?.websiteSignals ?? []),
-    ...(verification?.notes ?? []),
-  ];
-  return normalizeText(
-    carrier.companyName,
-    carrier.website,
-    ...signals,
-  );
-}
-
-export function classifyCarrierServiceCategory(
-  carrier: TranspoCarrierTarget,
-  verification?: TranspoCarrierVerification,
-): TranspoServiceCategory {
-  const text = collectCarrierText(carrier, verification);
-  for (const rule of CATEGORY_RULES) {
-    if (rule.patterns.some((p) => p.test(text))) return rule.category;
-  }
-  return "general_carrier";
-}
 
 function isActiveAuthority(status?: string): boolean {
   const s = (status ?? "").trim().toLowerCase();

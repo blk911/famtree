@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
-import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { MarketGapDetailDrawer } from "@/components/admin/intelligence/transpo/MarketGapDetailDrawer";
-import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import {
   SERVICE_CATEGORY_LABELS,
   type TranspoGapSeverity,
@@ -222,7 +221,7 @@ export default function TranspoMarketGapsPage() {
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
       <IntelligenceMarketNav />
-      <IntelligenceSubNav config={transpoConfig} currentTool="market-gaps" />
+      <TranspoIntelligenceNav currentTool="market-gaps" />
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
         <div>

@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
-import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import type { BaseProspect } from "@/lib/intelligence/core/prospect-types";
 
@@ -88,7 +88,7 @@ export default function TranspoProspectsPage() {
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
       <IntelligenceMarketNav />
-      <IntelligenceSubNav config={transpoConfig} currentTool="prospects" />
+      <TranspoIntelligenceNav currentTool="prospects" />
 
       {/* Header */}
       <div style={{ marginBottom: 20 }}>

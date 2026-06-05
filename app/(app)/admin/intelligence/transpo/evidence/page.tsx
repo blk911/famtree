@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
-import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import type { TranspoEvidence } from "@/lib/intelligence/transpo/types";
 
@@ -76,7 +76,7 @@ export default function TranspoEvidencePage() {
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
       <IntelligenceMarketNav />
-      <IntelligenceSubNav config={transpoConfig} currentTool="evidence" />
+      <TranspoIntelligenceNav currentTool="evidence" />
 
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>

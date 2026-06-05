@@ -6,7 +6,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
-import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { KeywordPackSelector } from "@/components/admin/intelligence/transpo/KeywordPackSelector";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import {
@@ -225,7 +225,7 @@ export default function TranspoSourceIngestPage() {
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
       <IntelligenceMarketNav />
-      <IntelligenceSubNav config={transpoConfig} currentTool="source-ingest" />
+      <TranspoIntelligenceNav currentTool="source-ingest" />
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>

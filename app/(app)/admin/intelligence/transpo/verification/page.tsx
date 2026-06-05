@@ -6,7 +6,7 @@
 
 import { Fragment, useEffect, useState, useCallback } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
-import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import type {
   TranspoCarrierVerification,
@@ -234,7 +234,7 @@ export default function TranspoVerificationPage() {
   return (
     <div style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 20px 60px" }}>
       <IntelligenceMarketNav />
-      <IntelligenceSubNav config={transpoConfig} currentTool="verification" />
+      <TranspoIntelligenceNav currentTool="verification" />
 
       <div style={{ marginBottom: 18 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>

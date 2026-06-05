@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
-import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
+import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import { CarrierOpportunityDrawer } from "@/components/admin/intelligence/transpo/CarrierOpportunityDrawer";
 import type { TranspoCarrierTarget } from "@/lib/intelligence/transpo/types";
@@ -58,7 +58,7 @@ export default function TranspoCarriersPage() {
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
       <IntelligenceMarketNav />
-      <IntelligenceSubNav config={transpoConfig} currentTool="carriers" />
+      <TranspoIntelligenceNav currentTool="carriers" />
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
