@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { DataSourceStatusBadge } from "@/components/admin/intelligence/transpo/DataSourceStatusBadge";
 import type { TranspoServiceDeficitRecord } from "@/lib/intelligence/transpo/service-deficits/deficit-types";
 import { SERVICE_CATEGORY_LABELS } from "@/lib/intelligence/transpo/market-gaps/types";
@@ -144,6 +145,21 @@ export function ServiceDeficitDetailDrawer({ record, open, onClose }: Props) {
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.55, color: "#57534e" }}>
             {record.evidence.map((e) => <li key={e}>{e}</li>)}
           </ul>
+        </div>
+
+        <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+          <Link
+            href={`/admin/intelligence/transpo/county-opportunities?county=${encodeURIComponent(record.county)}&state=${record.state}&service=${record.serviceCategory}`}
+            style={{ fontSize: 12, fontWeight: 700, color: "#4338ca" }}
+          >
+            County opportunity dossier →
+          </Link>
+          <Link
+            href={`/admin/intelligence/transpo/provider-dossiers?county=${encodeURIComponent(record.county)}&state=${record.state}`}
+            style={{ fontSize: 12, fontWeight: 700, color: "#4338ca" }}
+          >
+            Providers in {record.county} →
+          </Link>
         </div>
       </div>
     </div>

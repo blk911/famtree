@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { DataSourceStatusBadge } from "@/components/admin/intelligence/transpo/DataSourceStatusBadge";
 import { ServiceDeficitDetailDrawer } from "@/components/admin/intelligence/transpo/ServiceDeficitDetailDrawer";
@@ -337,7 +338,15 @@ export default function TranspoServiceDeficitsPage() {
                     <td style={td}>{SERVICE_CATEGORY_LABELS[r.serviceCategory]}</td>
                     <td style={td}>{r.needScore}</td>
                     <td style={td}>{r.payerPresenceScore}</td>
-                    <td style={{ ...td, fontWeight: r.providerCount === 0 ? 800 : 400, color: r.providerCount === 0 ? "#991b1b" : undefined }}>{r.providerCount}</td>
+                    <td style={{ ...td, fontWeight: r.providerCount === 0 ? 800 : 400, color: r.providerCount === 0 ? "#991b1b" : undefined }}>
+                      <Link
+                        href={`/admin/intelligence/transpo/provider-dossiers?county=${encodeURIComponent(r.county)}&state=${r.state}`}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ color: r.providerCount === 0 ? "#991b1b" : "#4338ca", textDecoration: "none" }}
+                      >
+                        {r.providerCount}
+                      </Link>
+                    </td>
                     <td style={td}>{r.coverageScore}</td>
                     <td style={{ ...td, fontWeight: 800 }}>{r.deficitScore}</td>
                     <td style={td}><span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, color: sev.fg, background: sev.bg }}>{r.severity}</span></td>
