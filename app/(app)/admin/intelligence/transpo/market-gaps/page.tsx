@@ -42,6 +42,84 @@ const tdS: React.CSSProperties = {
   verticalAlign: "top",
 };
 
+type SortColumn =
+  | "market"
+  | "service"
+  | "carriers"
+  | "verified"
+  | "supply"
+  | "demand"
+  | "gap"
+  | "severity"
+  | "play";
+
+type SortDir = "asc" | "desc";
+
+const SORT_COLUMNS: { key: SortColumn; label: string }[] = [
+  { key: "market", label: "Market" },
+  { key: "service", label: "Service" },
+  { key: "carriers", label: "Carriers" },
+  { key: "verified", label: "Verified" },
+  { key: "supply", label: "Supply" },
+  { key: "demand", label: "Demand" },
+  { key: "gap", label: "Gap" },
+  { key: "severity", label: "Severity" },
+  { key: "play", label: "Recommended Play" },
+];
+
+const SEVERITY_SORT_ORDER: Record<TranspoGapSeverity, number> = {
+  critical: 4,
+  high: 3,
+  medium: 2,
+  low: 1,
+};
+
+function compareMarketGaps(
+  a: TranspoMarketGapRecord,
+  b: TranspoMarketGapRecord,
+  col: SortColumn,
+  dir: SortDir,
+): number {
+  const sign = dir === "asc" ? 1 : -1;
+  let cmp = 0;
+
+  switch (col) {
+    case "market":
+      cmp = a.marketLabel.localeCompare(b.marketLabel, undefined, { sensitivity: "base" });
+      break;
+    case "service":
+      cmp = SERVICE_CATEGORY_LABELS[a.serviceCategory].localeCompare(
+        SERVICE_CATEGORY_LABELS[b.serviceCategory],
+        undefined,
+        { sensitivity: "base" },
+      );
+      break;
+    case "carriers":
+      cmp = a.carrierCount - b.carrierCount;
+      break;
+    case "verified":
+      cmp = a.verifiedCarrierCount - b.verifiedCarrierCount;
+      break;
+    case "supply":
+      cmp = a.supplyScore - b.supplyScore;
+      break;
+    case "demand":
+      cmp = a.demandScore - b.demandScore;
+      break;
+    case "gap":
+      cmp = a.gapScore - b.gapScore;
+      break;
+    case "severity":
+      cmp = SEVERITY_SORT_ORDER[a.severity] - SEVERITY_SORT_ORDER[b.severity];
+      break;
+    case "play":
+      cmp = a.recommendedPlay.localeCompare(b.recommendedPlay, undefined, { sensitivity: "base" });
+      break;
+  }
+
+  return cmp * sign;
+}
+
 export default function TranspoMarketGapsPage() {
   const [summary, setSummary] = useState<TranspoMarketGapSummary | null>(null);
   const [records, setRecords] = useState<TranspoMarketGapRecord[]>([]);
@@ -55,6 +133,17 @@ export default function TranspoMarketGapsPage() {
   const [categoryFilter, setCategoryFilter] = useState<TranspoServiceCategory | "">("");
   const [severityFilter, setSeverityFilter] = useState<TranspoGapSeverity | "">("");
   const [ruralityFilter, setRuralityFilter] = useState<TranspoRurality | "">("");
+  const [sortKey, setSortKey] = useState<SortColumn>("gap");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const toggleSort = useCallback((col: SortColumn) => {
+    if (sortKey === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(col);
+      setSortDir(col === "market" || col === "service" || col === "play" ? "asc" : "desc");
+    }
+  }, [sortKey]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -124,10 +213,11 @@ export default function TranspoMarketGapsPage() {
     });
   }, [records, stateFilter, categoryFilter, severityFilter, ruralityFilter]);
 
-  const topGaps = useMemo(
-    () => [...filtered].sort((a, b) => b.gapScore - a.gapScore).slice(0, 50),
-    [filtered],
-  );
+  const sortedGaps = useMemo(() => {
+    const list = [...filtered];
+    list.sort((a, b) => compareMarketGaps(a, b, sortKey, sortDir));
+    return list;
+  }, [filtered, sortKey, sortDir]);
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
@@ -235,7 +325,7 @@ export default function TranspoMarketGapsPage() {
           ))}
         </select>
         <span style={{ fontSize: 11, color: "#a8a29e" }}>
-          {filtered.length} market{filtered.length === 1 ? "" : "s"} shown
+          {sortedGaps.length} market{sortedGaps.length === 1 ? "" : "s"} shown · click a column to sort
         </span>
       </div>
 
@@ -247,9 +337,39 @@ export default function TranspoMarketGapsPage() {
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 960 }}>
           <thead>
             <tr>
-              {["Market", "Service", "Carriers", "Verified", "Supply", "Demand", "Gap", "Severity", "Recommended Play"].map((h) => (
-                <th key={h} style={thS}>{h}</th>
-              ))}
+              {SORT_COLUMNS.map(({ key, label }) => {
+                const active = sortKey === key;
+                return (
+                  <th key={key} style={thS}>
+                    <button
+                      type="button"
+                      onClick={() => toggleSort(key)}
+                      title={`Sort by ${label}`}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                        padding: 0,
+                        border: "none",
+                        background: "transparent",
+                        font: "inherit",
+                        fontWeight: 800,
+                        color: active ? "#4338ca" : "#a8a29e",
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                        letterSpacing: "0.08em",
+                        fontSize: 10,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {label}
+                      <span style={{ fontSize: 9, opacity: active ? 1 : 0.45 }}>
+                        {active ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
+                      </span>
+                    </button>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -257,14 +377,14 @@ export default function TranspoMarketGapsPage() {
               <tr>
                 <td colSpan={9} style={{ ...tdS, textAlign: "center", color: "#a8a29e" }}>Loading…</td>
               </tr>
-            ) : topGaps.length === 0 ? (
+            ) : sortedGaps.length === 0 ? (
               <tr>
                 <td colSpan={9} style={{ ...tdS, textAlign: "center", color: "#a8a29e" }}>
                   No gap records — ingest carriers, then run Market Gap Backfill.
                 </td>
               </tr>
             ) : (
-              topGaps.map((r) => {
+              sortedGaps.map((r) => {
                 const sev = SEVERITY_STYLE[r.severity];
                 return (
                   <tr
