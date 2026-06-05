@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { CountyOpportunityDrawer } from "@/components/admin/intelligence/transpo/CountyOpportunityDrawer";
+import { PromoteToActionQueueButton } from "@/components/admin/intelligence/transpo/PromoteToActionQueueButton";
 import { SERVICE_CATEGORY_LABELS, type TranspoServiceCategory } from "@/lib/intelligence/transpo/market-gaps/types";
 import type {
   CountyOpportunityDossier,
@@ -121,8 +122,8 @@ export default function TranspoOpportunityRadarPage() {
             </tr>
           </thead>
           <tbody>
-            {loading ? <tr><td colSpan={8} style={{ ...td, textAlign: "center" }}>Loading…</td></tr>
-              : sorted.length === 0 ? <tr><td colSpan={8} style={{ ...td, textAlign: "center" }}>No opportunities — run provider dossier backfill after service deficits.</td></tr>
+            {loading ? <tr><td colSpan={9} style={{ ...td, textAlign: "center" }}>Loading…</td></tr>
+              : sorted.length === 0 ? <tr><td colSpan={9} style={{ ...td, textAlign: "center" }}>No opportunities — run provider dossier backfill after service deficits.</td></tr>
               : sorted.map((d) => {
                 const band = BAND_STYLE[d.actionabilityBand] ?? BAND_STYLE.watch;
                 const svc = d.serviceCategory as TranspoServiceCategory;
@@ -148,6 +149,15 @@ export default function TranspoOpportunityRadarPage() {
                       </span>
                     </td>
                     <td style={{ ...td, maxWidth: 220 }}>{d.recommendedPlay}</td>
+                    <td style={td} onClick={(e) => e.stopPropagation()}>
+                      <PromoteToActionQueueButton
+                        county={d.county}
+                        state={d.state}
+                        serviceCategory={d.serviceCategory}
+                        countyOpportunityId={d.id}
+                        compact
+                      />
+                    </td>
                   </tr>
                 );
               })}

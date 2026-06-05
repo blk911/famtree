@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { PromoteToActionQueueButton } from "@/components/admin/intelligence/transpo/PromoteToActionQueueButton";
 import { SERVICE_CATEGORY_LABELS, type TranspoServiceCategory } from "@/lib/intelligence/transpo/market-gaps/types";
 import type { CountyOpportunityDossier } from "@/lib/intelligence/transpo/opportunity-dossiers/county-opportunity-types";
 
@@ -101,6 +102,15 @@ export function CountyOpportunityDrawer({ dossier, open, onClose, onSelectProvid
         <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.55, color: "#57534e" }}>
           {dossier.evidence.slice(0, 12).map((e) => <li key={e}>{e}</li>)}
         </ul>
+
+        <div style={{ marginTop: 16, marginBottom: 12 }}>
+          <PromoteToActionQueueButton
+            county={dossier.county}
+            state={dossier.state}
+            serviceCategory={dossier.serviceCategory}
+            countyOpportunityId={dossier.id}
+          />
+        </div>
 
         <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
           <Link href={`/admin/intelligence/transpo/provider-dossiers?county=${encodeURIComponent(dossier.county)}&state=${dossier.state}`} style={{ fontSize: 12, fontWeight: 700, color: "#4338ca" }}>

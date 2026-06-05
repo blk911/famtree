@@ -26,7 +26,7 @@ export const TRANSPO_PIPELINE_STAGES: TranspoPipelineStageDef[] = [
     order: 1,
     label: "Discover",
     description: "Source ingest, runs, and evidence.",
-    navItemIds: ["source-ingest", "source-runs", "evidence"],
+    navItemIds: ["source-ingest", "source-runs", "evidence", "harvest"],
     primaryHref: "/admin/intelligence/transpo/source-ingest",
     primaryActionLabel: "Open Source Ingest",
   },
@@ -70,10 +70,10 @@ export const TRANSPO_PIPELINE_STAGES: TranspoPipelineStageDef[] = [
     id: "operate",
     order: 6,
     label: "Operate",
-    description: "Reviews and red-dot operations.",
-    navItemIds: ["provider-dossiers", "prospects", "harvest"],
-    primaryHref: "/admin/intelligence/transpo/prospects",
-    primaryActionLabel: "Open Red Dots",
+    description: "Decide and track market-entry actions from opportunity to execution.",
+    navItemIds: ["action-queue", "qualified-targets", "provider-dossiers", "reviews", "storage-status"],
+    primaryHref: "/admin/intelligence/transpo/action-queue",
+    primaryActionLabel: "Open Action Queue",
   },
 ];
 
