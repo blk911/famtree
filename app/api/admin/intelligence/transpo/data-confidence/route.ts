@@ -10,6 +10,7 @@ import { readDataConfidenceCache } from "@/lib/intelligence/transpo/data-confide
 import { buildLiveDataSetupStatus, type DataConfidenceContext } from "@/lib/intelligence/transpo/data-confidence/data-confidence-engine";
 import { readCarrierMaster } from "@/lib/intelligence/transpo/carrier-master-store";
 import { readCountyDemandCache } from "@/lib/intelligence/transpo/demand/demand-store";
+import { buildColoradoCountyCoverageSummary } from "@/lib/intelligence/transpo/payers/payer-engine";
 import { readPayerCache } from "@/lib/intelligence/transpo/payers/payer-store";
 import { readServiceDeficitCache } from "@/lib/intelligence/transpo/service-deficits/deficit-store";
 import { readRuns } from "@/lib/intelligence/transpo/sources/source-runs-store";
@@ -44,6 +45,7 @@ export async function GET() {
       payers,
     };
     const setup = await buildLiveDataSetupStatus(ctx);
+    const coloradoCoverage = buildColoradoCountyCoverageSummary(demandRecords);
 
     return NextResponse.json({
       ok: true,
@@ -51,6 +53,7 @@ export async function GET() {
       records,
       questions,
       setup,
+      coloradoCoverage,
       meta: { fromCache, recordCount: records.length },
     });
   } catch (e) {

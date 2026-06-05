@@ -77,6 +77,25 @@ export function ServiceDeficitDetailDrawer({ record, open, onClose }: Props) {
           </div>
         ) : null}
 
+        {record.brokerName || record.payerStatus || record.approvedProviderCount !== undefined ? (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", marginBottom: 8 }}>PAYER / PROVIDER REGISTRY</div>
+            {record.brokerName ? <Row label="Broker / payer" value={record.brokerName} /> : null}
+            {record.approvedProviderCount !== undefined ? (
+              <Row label="Approved providers" value={record.approvedProviderCount} />
+            ) : null}
+            {record.payerStatus ? (
+              <Row label="Payer status" value={<DataSourceStatusBadge status={record.payerStatus} />} />
+            ) : null}
+            {record.payerEvidence && record.payerEvidence.length > 0 ? (
+              <Row label="Payer evidence" value={record.payerEvidence.join("; ")} />
+            ) : null}
+            {conf?.recommendedNextDataSource ? (
+              <Row label="Next data source" value={conf.recommendedNextDataSource} />
+            ) : null}
+          </div>
+        ) : null}
+
         {conf ? (
           <div style={{ marginTop: 14 }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", marginBottom: 8 }}>DATA CONFIDENCE</div>

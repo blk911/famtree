@@ -60,8 +60,10 @@ export type TranspoDataConfidenceSummary = {
   experimental: number;
   liveCarrierSupply: number;
   liveVerification: number;
+  livePayers: number;
   seededDemand: number;
   seededPayers: number;
+  missingPayers: number;
   missingDemandOrPayer: number;
   averageConfidenceScore: number;
   topActionable: TranspoDataConfidenceRecord[];

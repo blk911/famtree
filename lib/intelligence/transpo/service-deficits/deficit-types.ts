@@ -1,6 +1,6 @@
 // lib/intelligence/transpo/service-deficits/deficit-types.ts
 
-import type { TranspoServiceDeficitDataConfidence } from "../data-confidence/data-confidence-types";
+import type { TranspoDataSourceStatus, TranspoServiceDeficitDataConfidence } from "../data-confidence/data-confidence-types";
 import type { TranspoServiceCategory, TranspoGapSeverity } from "../market-gaps/types";
 import type { TranspoCountyDemandRecord } from "../demand/demand-types";
 
@@ -33,6 +33,10 @@ export type TranspoServiceDeficitRecord = {
   reasons: string[];
   evidence: string[];
   revenueOpportunity: TranspoRevenueOpportunity;
+  approvedProviderCount?: number;
+  brokerName?: string;
+  payerEvidence?: string[];
+  payerStatus?: TranspoDataSourceStatus;
   dataConfidence?: TranspoServiceDeficitDataConfidence;
   createdAt: string;
   updatedAt: string;

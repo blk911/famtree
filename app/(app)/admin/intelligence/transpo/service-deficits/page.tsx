@@ -10,6 +10,7 @@ import {
   type TranspoGapSeverity,
   type TranspoServiceCategory,
 } from "@/lib/intelligence/transpo/market-gaps/types";
+import type { ColoradoCountyCoverageSummary } from "@/lib/intelligence/transpo/payers/colorado/colorado-payer-types";
 import type {
   TranspoRevenuePotential,
   TranspoServiceDeficitQuestion,
@@ -84,6 +85,7 @@ export default function TranspoServiceDeficitsPage() {
   const [backfilling, setBackfilling] = useState(false);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<TranspoServiceDeficitRecord | null>(null);
+  const [coloradoCoverage, setColoradoCoverage] = useState<ColoradoCountyCoverageSummary | null>(null);
 
   const [stateFilter, setStateFilter] = useState("");
   const [countyFilter, setCountyFilter] = useState("");
@@ -114,6 +116,7 @@ export default function TranspoServiceDeficitsPage() {
       setSummary(data.summary ?? null);
       setRecords(data.records ?? []);
       setQuestions(data.questions ?? []);
+      setColoradoCoverage(data.coloradoCoverage ?? null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -156,6 +159,11 @@ export default function TranspoServiceDeficitsPage() {
   }, [filtered, sortKey, sortDir]);
 
   const topRevenue = summary?.topRevenueOpportunities ?? [];
+  const showBrokerCol = useMemo(() => records.some((r) => r.brokerName), [records]);
+  const showApprovedCol = useMemo(
+    () => records.some((r) => r.approvedProviderCount !== undefined),
+    [records],
+  );
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
@@ -200,6 +208,24 @@ export default function TranspoServiceDeficitsPage() {
         ))}
       </div>
 
+      {coloradoCoverage ? (
+        <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 14, padding: "14px 18px", marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: "#166534", marginBottom: 8 }}>COLORADO COUNTY COVERAGE</div>
+          <p style={{ fontSize: 12, color: "#365314", margin: "0 0 10px", lineHeight: 1.55 }}>{coloradoCoverage.scopeNote}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8, fontSize: 12 }}>
+            <div><strong>{coloradoCoverage.totalInScope}</strong> counties in scope</div>
+            <div><strong>{coloradoCoverage.countiesWithPayerData.length}</strong> with payer data</div>
+            <div><strong>{coloradoCoverage.countiesWithApprovedProviders.length}</strong> with approved providers</div>
+            <div><strong>{coloradoCoverage.countiesMissingPayerData.length}</strong> missing payer data</div>
+          </div>
+          {coloradoCoverage.countiesMissingPayerData.length > 0 ? (
+            <div style={{ fontSize: 11, color: "#4d7c0f", marginTop: 8 }}>
+              Missing payer: {coloradoCoverage.countiesMissingPayerData.join(", ")}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       {topRevenue.length > 0 ? (
         <div style={{ background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 14, padding: "14px 18px", marginBottom: 20 }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: "#4338ca", marginBottom: 8 }}>TOP REVENUE OPPORTUNITIES</div>
@@ -243,11 +269,13 @@ export default function TranspoServiceDeficitsPage() {
                   </th>
                 );
               })}
+              {showBrokerCol ? <th style={th}>Broker / Payer</th> : null}
+              {showApprovedCol ? <th style={th}>Approved Providers</th> : null}
             </tr>
           </thead>
           <tbody>
-            {loading ? <tr><td colSpan={11} style={{ ...td, textAlign: "center" }}>Loading…</td></tr>
-              : sorted.length === 0 ? <tr><td colSpan={11} style={{ ...td, textAlign: "center" }}>No deficits — run backfill after carrier ingest.</td></tr>
+            {loading ? <tr><td colSpan={11 + (showBrokerCol ? 1 : 0) + (showApprovedCol ? 1 : 0)} style={{ ...td, textAlign: "center" }}>Loading…</td></tr>
+              : sorted.length === 0 ? <tr><td colSpan={11 + (showBrokerCol ? 1 : 0) + (showApprovedCol ? 1 : 0)} style={{ ...td, textAlign: "center" }}>No deficits — run backfill after carrier ingest.</td></tr>
               : sorted.map((r) => {
                 const sev = SEV[r.severity];
                 const conf = r.dataConfidence;
@@ -288,9 +316,16 @@ export default function TranspoServiceDeficitsPage() {
                             <DataSourceStatusBadge status={conf.payerStatus} compact />
                           </>
                         ) : null}
+                        {r.payerStatus ? <DataSourceStatusBadge status={r.payerStatus} compact /> : null}
                       </div>
                       {r.revenueOpportunity.recommendedPlay}
                     </td>
+                    {showBrokerCol ? (
+                      <td style={{ ...td, maxWidth: 160 }}>{r.brokerName ?? "—"}</td>
+                    ) : null}
+                    {showApprovedCol ? (
+                      <td style={td}>{r.approvedProviderCount ?? "—"}</td>
+                    ) : null}
                   </tr>
                 );
               })}

@@ -10,6 +10,8 @@ export type TranspoPayerCategory =
   | "meal_program"
   | "private";
 
+export type TranspoPayerSourceStatus = "live" | "seeded";
+
 export type TranspoPayerRecord = {
   payerId: string;
   state: string;
@@ -19,4 +21,8 @@ export type TranspoPayerRecord = {
   serviceCategories: string[];
   website?: string;
   notes?: string;
+  sourceUrl?: string;
+  evidence?: string[];
+  sourceStatus?: TranspoPayerSourceStatus;
+  brokerName?: string;
 };

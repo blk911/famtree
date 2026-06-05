@@ -38,8 +38,10 @@ export function buildTranspoDataConfidenceSummary(
     experimental,
     liveCarrierSupply: records.filter((r) => r.carrierSupplyStatus === "live").length,
     liveVerification: records.filter((r) => r.verificationStatus === "live").length,
+    livePayers: records.filter((r) => r.payerStatus === "live").length,
     seededDemand: records.filter((r) => r.demandStatus === "seeded").length,
     seededPayers: records.filter((r) => r.payerStatus === "seeded").length,
+    missingPayers: records.filter((r) => r.payerStatus === "missing").length,
     missingDemandOrPayer: records.filter(
       (r) => r.demandStatus === "missing" || r.payerStatus === "missing",
     ).length,

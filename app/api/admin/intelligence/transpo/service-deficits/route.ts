@@ -5,6 +5,8 @@ import { readDataConfidenceCache } from "@/lib/intelligence/transpo/data-confide
 import { mergeConfidenceIntoDeficits } from "@/lib/intelligence/transpo/data-confidence/data-confidence-engine";
 import { buildAndPersistServiceDeficits } from "@/lib/intelligence/transpo/service-deficits/build-service-deficits";
 import { buildTranspoServiceDeficitQuestions, buildTranspoServiceDeficitSummary } from "@/lib/intelligence/transpo/service-deficits/deficit-summary";
+import { buildColoradoCountyCoverageSummary } from "@/lib/intelligence/transpo/payers/payer-engine";
+import { readCountyDemandCache } from "@/lib/intelligence/transpo/demand/demand-store";
 import { readServiceDeficitCache } from "@/lib/intelligence/transpo/service-deficits/deficit-store";
 
 export async function GET() {
@@ -24,12 +26,19 @@ export async function GET() {
 
     const summary = buildTranspoServiceDeficitSummary(records);
     const questions = buildTranspoServiceDeficitQuestions(records, summary);
+    const demandRecords = await readCountyDemandCache();
+    const coloradoCoverage = buildColoradoCountyCoverageSummary(
+      demandRecords.length > 0
+        ? demandRecords
+        : records.map((r) => r.demand),
+    );
 
     return NextResponse.json({
       ok: true,
       summary,
       records,
       questions,
+      coloradoCoverage,
       meta: { fromCache, recordCount: records.length },
     });
   } catch (e) {

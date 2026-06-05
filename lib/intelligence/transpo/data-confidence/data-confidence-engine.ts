@@ -1,6 +1,7 @@
 // lib/intelligence/transpo/data-confidence/data-confidence-engine.ts
 
 import { resolveCountyFromCityState } from "../demand/census-adapter";
+import { getColoradoMarketPayerMeta } from "../payers/payer-engine";
 import type { TranspoCountyDemandRecord } from "../demand/demand-types";
 import type { TranspoPayerRecord } from "../payers/payer-types";
 import type { TranspoServiceDeficitRecord } from "../service-deficits/deficit-types";
@@ -271,10 +272,44 @@ export function detectPayerStatus(
   payers: TranspoPayerRecord[],
   state: string,
   county: string,
+  serviceCategory?: string,
+  deficitPayerStatus?: TranspoDataSourceStatus,
+  approvedProviderCount?: number,
 ): LayerSignals {
   const out = emptySignals();
   const st = state.trim().toUpperCase();
   const co = county.trim().toLowerCase();
+
+  if (st === "CO" && serviceCategory) {
+    const meta = getColoradoMarketPayerMeta(county, serviceCategory);
+    if (meta.payerStatus === "live") {
+      out.status = "live";
+      out.liveSignals.push("Colorado Medicaid/NEMT registry — evidence-backed broker");
+      if (meta.brokerName) out.liveSignals.push(meta.brokerName);
+      for (const e of meta.payerEvidence.filter((x) => x.startsWith("Broker source:"))) {
+        out.liveSignals.push(e);
+      }
+      return out;
+    }
+    if (meta.payerStatus === "seeded") {
+      out.status = "seeded";
+      out.seededSignals.push("Colorado payer registry — seeded pending live import");
+      if (meta.brokerName) out.seededSignals.push(meta.brokerName);
+      return out;
+    }
+    out.status = "missing";
+    out.missingSignals.push("No Colorado payer/broker data for county/service");
+    return out;
+  }
+
+  if (deficitPayerStatus) {
+    out.status = deficitPayerStatus;
+    if (deficitPayerStatus === "live") out.liveSignals.push("Deficit record payerStatus=live");
+    if (deficitPayerStatus === "seeded") out.seededSignals.push("Deficit record payerStatus=seeded");
+    if (deficitPayerStatus === "missing") out.missingSignals.push("Deficit record payerStatus=missing");
+    return out;
+  }
+
   const marketPayers = payers.filter(
     (p) =>
       p.state === st &&
@@ -290,12 +325,10 @@ export function detectPayerStatus(
     return out;
   }
 
-  const livePayers = marketPayers.filter(
-    (p) => p.notes && !p.notes.toLowerCase().includes("placeholder"),
-  );
+  const livePayers = marketPayers.filter((p) => p.sourceStatus === "live");
   if (livePayers.length > 0) {
     out.status = "live";
-    out.liveSignals.push(`${livePayers.length} external payer registry record(s)`);
+    out.liveSignals.push(`${livePayers.length} Colorado registry record(s) with sourceUrl`);
     return out;
   }
 
@@ -347,7 +380,7 @@ export function recommendNextDataSource(layers: {
     return "Census/ACS live county demand API";
   }
   if (layers.payer === "missing" || layers.payer === "seeded") {
-    return "Medicaid/NEMT payer and provider registry";
+    return "Connect Colorado Medicaid/NEMT broker and approved provider registry";
   }
   if (layers.revenue === "heuristic") {
     return "Connect live demand + payer to upgrade revenue confidence";
@@ -368,7 +401,14 @@ export function buildConfidenceForDeficit(
     deficit.county,
   );
   const demand = detectDemandStatus(deficit.demand);
-  const payer = detectPayerStatus(ctx.payers, deficit.state, deficit.county);
+  const payer = detectPayerStatus(
+    ctx.payers,
+    deficit.state,
+    deficit.county,
+    deficit.serviceCategory,
+    deficit.payerStatus,
+    deficit.approvedProviderCount,
+  );
   const revenue = detectRevenueStatus(
     demand.status,
     payer.status,
@@ -441,7 +481,17 @@ export function buildConfidenceForDeficit(
     heuristicSignals,
     missingSignals,
     errors,
-    recommendedNextDataSource: recommendNextDataSource(layers),
+    recommendedNextDataSource: (() => {
+      const base = recommendNextDataSource(layers);
+      if (
+        deficit.state === "CO" &&
+        payer.status !== "missing" &&
+        (deficit.approvedProviderCount === 0 || deficit.approvedProviderCount === undefined)
+      ) {
+        return "Connect approved provider list for this service category.";
+      }
+      return base;
+    })(),
     createdAt: now,
     updatedAt: now,
   };
@@ -502,8 +552,10 @@ export async function buildLiveDataSetupStatus(
   const demandLayer = ctx.demandRecords.length
     ? detectDemandStatus(ctx.demandRecords[0])
     : emptySignals();
-  const payerLayer =
-    ctx.payers.length > 0
+  const coDemand = ctx.demandRecords.find((d) => d.state === "CO");
+  const payerLayer = coDemand
+    ? detectPayerStatus(ctx.payers, "CO", coDemand.county, "nemt")
+    : ctx.payers.length > 0
       ? detectPayerStatus(ctx.payers, ctx.payers[0].state, ctx.payers[0].region)
       : emptySignals();
 

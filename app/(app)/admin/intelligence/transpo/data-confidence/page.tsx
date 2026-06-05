@@ -14,6 +14,7 @@ import type {
   TranspoDataConfidenceSummary,
   TranspoLiveDataSetupStatus,
 } from "@/lib/intelligence/transpo/data-confidence/data-confidence-types";
+import type { ColoradoCountyCoverageSummary } from "@/lib/intelligence/transpo/payers/colorado/colorado-payer-types";
 import type { TranspoServiceDeficitRecord } from "@/lib/intelligence/transpo/service-deficits/deficit-types";
 
 const GRADE_STYLE: Record<TranspoConfidenceGrade, { fg: string; bg: string }> = {
@@ -51,6 +52,7 @@ export default function TranspoDataConfidencePage() {
   const [records, setRecords] = useState<TranspoDataConfidenceRecord[]>([]);
   const [questions, setQuestions] = useState<TranspoDataConfidenceQuestion[]>([]);
   const [setup, setSetup] = useState<TranspoLiveDataSetupStatus | null>(null);
+  const [coloradoCoverage, setColoradoCoverage] = useState<ColoradoCountyCoverageSummary | null>(null);
   const [deficits, setDeficits] = useState<TranspoServiceDeficitRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [backfilling, setBackfilling] = useState(false);
@@ -74,6 +76,7 @@ export default function TranspoDataConfidencePage() {
       setRecords(confData.records ?? []);
       setQuestions(confData.questions ?? []);
       setSetup(confData.setup ?? null);
+      setColoradoCoverage(confData.coloradoCoverage ?? null);
       if (defData.ok) setDeficits(defData.records ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -128,8 +131,10 @@ export default function TranspoDataConfidencePage() {
     ["Experimental", summary?.experimental ?? 0],
     ["Live Carrier Supply", summary?.liveCarrierSupply ?? 0],
     ["Live Verification", summary?.liveVerification ?? 0],
+    ["Live Payer", summary?.livePayers ?? 0],
     ["Seeded Demand", summary?.seededDemand ?? 0],
-    ["Seeded Payers", summary?.seededPayers ?? 0],
+    ["Seeded Payer", summary?.seededPayers ?? 0],
+    ["Missing Payer", summary?.missingPayers ?? 0],
     ["Missing Demand/Payer", summary?.missingDemandOrPayer ?? 0],
   ];
 
@@ -181,6 +186,19 @@ export default function TranspoDataConfidencePage() {
             <li>Connect Census/ACS demand source</li>
             <li>Connect Medicaid/NEMT payer/provider registry</li>
           </ol>
+        </div>
+      ) : null}
+
+      {coloradoCoverage ? (
+        <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 14, padding: "14px 18px", marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: "#166534", marginBottom: 8 }}>COLORADO COUNTY COVERAGE</div>
+          <p style={{ fontSize: 12, color: "#365314", margin: "0 0 10px", lineHeight: 1.55 }}>{coloradoCoverage.scopeNote}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8, fontSize: 12, color: "#365314" }}>
+            <div>Represented: <strong>{coloradoCoverage.countiesRepresented.join(", ") || "—"}</strong></div>
+            <div>With payer data: <strong>{coloradoCoverage.countiesWithPayerData.length}</strong></div>
+            <div>With approved providers: <strong>{coloradoCoverage.countiesWithApprovedProviders.join(", ") || "none"}</strong></div>
+            <div>Missing payer data: <strong>{coloradoCoverage.countiesMissingPayerData.join(", ") || "none"}</strong></div>
+          </div>
         </div>
       ) : null}
 
@@ -255,7 +273,7 @@ function ConfidenceTable({
       <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1100 }}>
         <thead>
           <tr>
-            {["Market", "Service", "Confidence", "Grade", "Carrier Supply", "Verification", "Demand", "Payer", "Revenue", "Next Data Source"].map((h) => (
+            {["Market", "Service", "Confidence", "Grade", "Carrier Supply", "Verification", "Demand", "Payer (Live/Seeded/Missing)", "Revenue", "Next Data Source"].map((h) => (
               <th key={h} style={th}>{h}</th>
             ))}
           </tr>

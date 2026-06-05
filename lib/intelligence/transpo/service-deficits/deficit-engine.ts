@@ -4,7 +4,8 @@
 import type { TranspoCoverageRecord } from "../coverage/coverage-types";
 import type { TranspoCountyDemandRecord } from "../demand/demand-types";
 import { SERVICE_CATEGORY_LABELS, type TranspoGapSeverity, type TranspoServiceCategory } from "../market-gaps/types";
-import { payerPresenceScoreForMarket } from "../payers/payer-engine";
+import { getColoradoMarketPayerMeta, payerPresenceScoreForMarket } from "../payers/payer-engine";
+import { toTranspoDataSourceStatus } from "../payers/colorado/colorado-registry-lookups";
 import type { TranspoPayerRecord } from "../payers/payer-types";
 import { buildRevenueOpportunity } from "./opportunity-value-engine";
 import type { TranspoServiceDeficitRecord } from "./deficit-types";
@@ -109,7 +110,44 @@ export function buildTranspoServiceDeficitRecords(input: {
         providerCount: coverage.providerCount,
       });
 
+      let approvedProviderCount: number | undefined;
+      let brokerName: string | undefined;
+      let payerEvidence: string[] | undefined;
+      let payerStatus: ReturnType<typeof toTranspoDataSourceStatus> | undefined;
+
+      if (demand.state === "CO") {
+        const coMeta = getColoradoMarketPayerMeta(demand.county, serviceCategory);
+        approvedProviderCount = coMeta.approvedProviderCount;
+        brokerName = coMeta.brokerName;
+        payerEvidence = coMeta.payerEvidence.length > 0 ? coMeta.payerEvidence : undefined;
+        payerStatus = toTranspoDataSourceStatus(coMeta.payerStatus);
+        if (coMeta.payerStatus === "live") {
+          reasons.push("Colorado Medicaid/NEMT payer registry has evidence-backed broker reference.");
+        } else if (coMeta.payerStatus === "seeded") {
+          reasons.push("Colorado payer/broker data is seeded — pending live registry import.");
+        }
+        if (approvedProviderCount > 0) {
+          reasons.push(`${approvedProviderCount} approved/visible provider(s) in Colorado registry.`);
+        } else if (coMeta.payerStatus !== "missing") {
+          reasons.push("No approved provider list for this county/service yet.");
+        }
+      }
+
       const id = `deficit-${demand.countyFips}-${serviceCategory}`.toLowerCase();
+
+      const evidenceLines = [
+        ...coverage.evidence,
+        `Need score ${needScore} from county demand layer.`,
+        `Payer presence score ${payerPresenceScore}.`,
+        `Coverage score ${coverage.coverageScore}.`,
+        `Carrier providers: ${coverage.providerCount}; verified: ${coverage.verifiedProviderCount}.`,
+        ...(approvedProviderCount !== undefined
+          ? [`Approved registry providers: ${approvedProviderCount}.`]
+          : []),
+        ...(brokerName ? [`Broker/payer: ${brokerName}.`] : []),
+        ...(payerEvidence ?? []),
+        "Demand demographics use census adapter placeholder until live ACS is connected.",
+      ];
 
       records.push({
         id,
@@ -127,14 +165,12 @@ export function buildTranspoServiceDeficitRecords(input: {
         providerCount: coverage.providerCount,
         verifiedProviderCount: coverage.verifiedProviderCount,
         fleetCapacity: coverage.fleetCapacity,
+        approvedProviderCount,
+        brokerName,
+        payerEvidence,
+        payerStatus,
         reasons,
-        evidence: [
-          ...coverage.evidence,
-          `Need score ${needScore} from county demand layer.`,
-          `Payer presence score ${payerPresenceScore}.`,
-          `Coverage score ${coverage.coverageScore}.`,
-          "Demand demographics use census adapter placeholder until live ACS is connected.",
-        ],
+        evidence: evidenceLines,
         revenueOpportunity,
         createdAt: now,
         updatedAt: now,
