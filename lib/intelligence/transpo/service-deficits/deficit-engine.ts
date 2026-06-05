@@ -3,7 +3,13 @@
 
 import type { TranspoCoverageRecord } from "../coverage/coverage-types";
 import type { TranspoCountyDemandRecord } from "../demand/demand-types";
-import { SERVICE_CATEGORY_LABELS, type TranspoGapSeverity, type TranspoServiceCategory } from "../market-gaps/types";
+import { computeBaselineDemandScore } from "../demand/demographic-engine";
+import {
+  SERVICE_CATEGORY_LABELS,
+  TRANSPO_SERVICE_CATEGORIES,
+  type TranspoGapSeverity,
+  type TranspoServiceCategory,
+} from "../market-gaps/types";
 import { getColoradoMarketPayerMeta, payerPresenceScoreForMarket } from "../payers/payer-engine";
 import { toTranspoDataSourceStatus } from "../payers/colorado/colorado-registry-lookups";
 import type { TranspoPayerRecord } from "../payers/payer-types";
@@ -30,15 +36,17 @@ function needScoreForCategory(
   demand: TranspoCountyDemandRecord,
   serviceCategory: TranspoServiceCategory,
 ): number {
-  let score = demand.demandScore;
+  let score = demand.demandIncomplete
+    ? computeBaselineDemandScore(demand.rurality)
+    : demand.demandScore;
   if (serviceCategory === "nemt" || serviceCategory === "medical_transport") {
     score += Math.min(15, (demand.medicaidPercent ?? 0) * 0.5);
   }
   if (serviceCategory === "senior_transport" || serviceCategory === "meal_delivery") {
-    score += Math.min(12, demand.seniorsPercent * 0.4);
+    score += Math.min(12, (demand.seniorsPercent ?? 0) * 0.4);
   }
   if (serviceCategory === "veteran_transport") {
-    score += Math.min(10, demand.veteransPercent * 0.6);
+    score += Math.min(10, (demand.veteransPercent ?? 0) * 0.6);
   }
   if (serviceCategory === "rural_transit" && (demand.rurality === "rural" || demand.rurality === "frontier")) {
     score += 10;
@@ -59,7 +67,7 @@ export function buildTranspoServiceDeficitRecords(input: {
   const records: TranspoServiceDeficitRecord[] = [];
 
   for (const demand of input.demandRecords) {
-    for (const serviceCategory of Object.keys(SERVICE_CATEGORY_LABELS) as TranspoServiceCategory[]) {
+    for (const serviceCategory of TRANSPO_SERVICE_CATEGORIES) {
       const key = `${demand.state}|${demand.county}|${serviceCategory}`;
       const coverage = coverageByKey.get(key) ?? {
         state: demand.state,
@@ -89,7 +97,12 @@ export function buildTranspoServiceDeficitRecords(input: {
       const severity = severityFromDeficitScore(deficitScore);
 
       const reasons: string[] = [];
-      if (coverage.providerCount === 0) reasons.push("No classified providers for this service category.");
+      if (coverage.providerCount === 0) {
+        reasons.push("No classified providers for this service category.");
+        if (payerPresenceScore > 0) {
+          reasons.push("Zero-provider red dot — payer/need signals exist without carrier coverage.");
+        }
+      }
       if (coverage.verifiedProviderCount === 0 && coverage.providerCount > 0) {
         reasons.push("Providers present but verification is weak.");
       }
@@ -146,7 +159,10 @@ export function buildTranspoServiceDeficitRecords(input: {
           : []),
         ...(brokerName ? [`Broker/payer: ${brokerName}.`] : []),
         ...(payerEvidence ?? []),
-        "Demand demographics use census adapter placeholder until live ACS is connected.",
+        ...(demand.demandIncomplete
+          ? ["County demand demographics incomplete — baseline row uses rurality heuristics only."]
+          : ["Demand demographics use census adapter placeholder until live ACS is connected."]),
+        ...(demand.baselineGenerated ? ["Baseline row generated for complete Colorado coverage."] : []),
       ];
 
       records.push({
@@ -169,6 +185,7 @@ export function buildTranspoServiceDeficitRecords(input: {
         brokerName,
         payerEvidence,
         payerStatus,
+        baselineGenerated: demand.baselineGenerated,
         reasons,
         evidence: evidenceLines,
         revenueOpportunity,

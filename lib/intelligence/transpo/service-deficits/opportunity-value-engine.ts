@@ -14,12 +14,15 @@ export function buildRevenueOpportunity(input: {
 }): TranspoRevenueOpportunity {
   const { serviceCategory, severity, deficitScore, demand, payerPresenceScore, providerCount } = input;
 
-  let affected = demand.seniors65Plus;
-  if (serviceCategory === "veteran_transport") affected = demand.veterans;
+  let affected = demand.seniors65Plus ?? 0;
+  if (serviceCategory === "veteran_transport") affected = demand.veterans ?? 0;
   if (serviceCategory === "nemt" || serviceCategory === "medical_transport") {
-    affected = demand.medicaidPopulation ?? Math.round(demand.population * 0.08);
+    affected = demand.medicaidPopulation ?? Math.round((demand.population ?? 0) * 0.08);
   }
-  if (serviceCategory === "meal_delivery") affected = Math.round(demand.seniors65Plus * 0.35);
+  if (serviceCategory === "meal_delivery") affected = Math.round((demand.seniors65Plus ?? 0) * 0.35);
+  if (demand.demandIncomplete && affected === 0) {
+    affected = demand.rurality === "frontier" ? 500 : demand.rurality === "rural" ? 1200 : 3000;
+  }
 
   const estimatedServiceDemand = Math.round(
     affected * (deficitScore / 100) * (payerPresenceScore > 0 ? 1.15 : 1),

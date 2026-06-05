@@ -1,5 +1,6 @@
 // lib/intelligence/transpo/service-deficits/deficit-types.ts
 
+import type { TranspoDemandBuildMode } from "../demand/demand-types";
 import type { TranspoDataSourceStatus, TranspoServiceDeficitDataConfidence } from "../data-confidence/data-confidence-types";
 import type { TranspoServiceCategory, TranspoGapSeverity } from "../market-gaps/types";
 import type { TranspoCountyDemandRecord } from "../demand/demand-types";
@@ -37,6 +38,7 @@ export type TranspoServiceDeficitRecord = {
   brokerName?: string;
   payerEvidence?: string[];
   payerStatus?: TranspoDataSourceStatus;
+  baselineGenerated?: boolean;
   dataConfidence?: TranspoServiceDeficitDataConfidence;
   createdAt: string;
   updatedAt: string;
@@ -64,4 +66,18 @@ export type TranspoServiceDeficitQuestion = {
   id: string;
   question: string;
   answer: string;
+};
+
+export type TranspoServiceDeficitBuildMode = TranspoDemandBuildMode;
+
+export type TranspoServiceDeficitCacheMeta = {
+  mode: TranspoServiceDeficitBuildMode;
+  countiesEvaluated: number;
+  expectedColoradoCounties: number;
+  countyServiceRows: number;
+  zeroProviderRows: number;
+  criticalZeroProviderRows: number;
+  baselineRows: number;
+  observedRows: number;
+  updatedAt: string;
 };

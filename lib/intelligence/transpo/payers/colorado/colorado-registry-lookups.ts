@@ -1,6 +1,8 @@
 // lib/intelligence/transpo/payers/colorado/colorado-registry-lookups.ts
 
+import { COLORADO_COUNTY_TOTAL } from "../../demand/colorado-county-baseline";
 import type { TranspoCountyDemandRecord } from "../../demand/demand-types";
+import type { TranspoServiceDeficitCacheMeta } from "../../service-deficits/deficit-types";
 import type { TranspoDataSourceStatus } from "../../data-confidence/data-confidence-types";
 import type { TranspoPayerRecord } from "../payer-types";
 import { brokersForMarket } from "./colorado-medicaid-payer-registry";
@@ -69,6 +71,7 @@ export function getColoradoMarketPayerMeta(
 
 export function buildColoradoCountyCoverageSummary(
   demandRecords: TranspoCountyDemandRecord[],
+  meta?: TranspoServiceDeficitCacheMeta | null,
 ): ColoradoCountyCoverageSummary {
   const coCounties = Array.from(
     new Set(
@@ -105,10 +108,13 @@ export function buildColoradoCountyCoverageSummary(
 
   const countiesMissingPayerData = coCounties.filter((c) => !countiesWithPayerData.includes(c));
 
+  const isBaseline = meta?.mode === "colorado_baseline" || coCounties.length >= COLORADO_COUNTY_TOTAL;
   const scopeNote =
     coCounties.length === 0
       ? "No Colorado counties in current demand layer — run deficit backfill after carrier ingest."
-      : `Evaluating ${coCounties.length} Colorado ${coCounties.length === 1 ? "county" : "counties"} present in demand/carrier-touched records — not all 64 Colorado counties.`;
+      : isBaseline
+        ? `Colorado baseline mode — all ${COLORADO_COUNTY_TOTAL} counties × service categories evaluated.`
+        : `Observed mode — ${coCounties.length} Colorado ${coCounties.length === 1 ? "county" : "counties"} from carrier/demand records only (not all 64).`;
 
   return {
     scopeNote,
@@ -117,7 +123,13 @@ export function buildColoradoCountyCoverageSummary(
     countiesWithApprovedProviders,
     countiesMissingPayerData,
     totalInScope: coCounties.length,
-    coloradoCountyTotal: 64,
+    coloradoCountyTotal: COLORADO_COUNTY_TOTAL,
+    baselineMode: isBaseline,
+    countyServiceRows: meta?.countyServiceRows,
+    baselineRows: meta?.baselineRows,
+    observedRows: meta?.observedRows,
+    zeroProviderRows: meta?.zeroProviderRows,
+    criticalZeroProviderRows: meta?.criticalZeroProviderRows,
   };
 }
 

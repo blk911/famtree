@@ -45,5 +45,11 @@ export type ColoradoCountyCoverageSummary = {
   countiesWithApprovedProviders: string[];
   countiesMissingPayerData: string[];
   totalInScope: number;
-  coloradoCountyTotal: 64;
+  coloradoCountyTotal: number;
+  baselineMode?: boolean;
+  countyServiceRows?: number;
+  baselineRows?: number;
+  observedRows?: number;
+  zeroProviderRows?: number;
+  criticalZeroProviderRows?: number;
 };

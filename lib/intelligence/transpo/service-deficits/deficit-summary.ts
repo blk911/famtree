@@ -1,7 +1,13 @@
 // lib/intelligence/transpo/service-deficits/deficit-summary.ts
 
+import { COLORADO_COUNTY_TOTAL } from "../demand/colorado-county-baseline";
 import { SERVICE_CATEGORY_LABELS, type TranspoServiceCategory } from "../market-gaps/types";
-import type { TranspoServiceDeficitQuestion, TranspoServiceDeficitRecord, TranspoServiceDeficitSummary } from "./deficit-types";
+import type {
+  TranspoServiceDeficitCacheMeta,
+  TranspoServiceDeficitQuestion,
+  TranspoServiceDeficitRecord,
+  TranspoServiceDeficitSummary,
+} from "./deficit-types";
 
 function severityCounts(records: TranspoServiceDeficitRecord[]) {
   return {
@@ -47,6 +53,7 @@ export function buildTranspoServiceDeficitSummary(
 export function buildTranspoServiceDeficitQuestions(
   records: TranspoServiceDeficitRecord[],
   summary: TranspoServiceDeficitSummary,
+  meta?: TranspoServiceDeficitCacheMeta | null,
 ): TranspoServiceDeficitQuestion[] {
   const topCounty = summary.topDeficits[0];
   const topCategory = [...summary.byServiceCategory].sort(
@@ -112,6 +119,34 @@ export function buildTranspoServiceDeficitQuestions(
       question: "Which additional datasets would most improve confidence?",
       answer:
         "Live US Census ACS county demographics, state Medicaid NEMT broker regions, USDA RUCA rurality codes, Area Agency on Aging directories, VA facility catchment maps, and food-access (USDA Food Access Research Atlas).",
+    },
+    {
+      id: "Q11",
+      question: "Are all 64 Colorado counties represented?",
+      answer: (() => {
+        const coCounties = new Set(records.filter((r) => r.state === "CO").map((r) => r.county)).size;
+        const mode = meta?.mode ?? "colorado_baseline";
+        if (mode === "colorado_baseline" && coCounties >= COLORADO_COUNTY_TOTAL) {
+          return `Yes — baseline mode evaluates all ${COLORADO_COUNTY_TOTAL} Colorado counties (${coCounties} in current cache).`;
+        }
+        return `No — ${coCounties} of ${COLORADO_COUNTY_TOTAL} counties in cache. Run backfill with mode=colorado_baseline for full coverage.`;
+      })(),
+    },
+    {
+      id: "Q12",
+      question: "Which counties have critical deficits with zero provider coverage?",
+      answer: (() => {
+        const hits = records
+          .filter(
+            (r) =>
+              r.providerCount === 0 &&
+              (r.severity === "critical" || r.severity === "high"),
+          )
+          .slice(0, 12);
+        return hits.length
+          ? `${hits.length}+ red dots: ${hits.map((r) => `${r.county} ${SERVICE_CATEGORY_LABELS[r.serviceCategory]} (${r.severity})`).join("; ")}${records.filter((r) => r.providerCount === 0 && (r.severity === "critical" || r.severity === "high")).length > 12 ? "…" : ""}`
+          : "None with high/critical severity and zero providers in current cache.";
+      })(),
     },
   ];
 }

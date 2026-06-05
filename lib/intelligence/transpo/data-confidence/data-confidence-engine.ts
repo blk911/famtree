@@ -243,6 +243,12 @@ export function detectDemandStatus(demand?: TranspoCountyDemandRecord): LayerSig
   );
   const hasHeuristic = sources.some((s) => s.includes("heuristic"));
 
+  if (demand.demandIncomplete) {
+    out.status = "heuristic";
+    out.heuristicSignals.push("Baseline county — demographics incomplete pending live ACS");
+    return out;
+  }
+
   if (hasPlaceholder && !hasHeuristic) {
     out.status = "seeded";
     out.seededSignals.push("Colorado county census seeds");
@@ -456,6 +462,12 @@ export function buildConfidenceForDeficit(
     ...payer.missingSignals,
     ...revenue.missingSignals,
   ];
+  if (deficit.baselineGenerated) {
+    seededSignals.push("Baseline row generated for complete Colorado coverage.");
+  }
+  if (deficit.demand.demandIncomplete) {
+    heuristicSignals.push("County demand demographics incomplete — confidence reduced.");
+  }
   const errors = [
     ...globalCarrierSupply.errors,
     ...verification.errors,

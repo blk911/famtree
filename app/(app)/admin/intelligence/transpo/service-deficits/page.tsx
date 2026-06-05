@@ -13,6 +13,7 @@ import {
 import type { ColoradoCountyCoverageSummary } from "@/lib/intelligence/transpo/payers/colorado/colorado-payer-types";
 import type {
   TranspoRevenuePotential,
+  TranspoServiceDeficitBuildMode,
   TranspoServiceDeficitQuestion,
   TranspoServiceDeficitRecord,
   TranspoServiceDeficitSummary,
@@ -25,7 +26,7 @@ const SEV: Record<TranspoGapSeverity, { fg: string; bg: string }> = {
   low: { fg: "#166534", bg: "#dcfce7" },
 };
 
-type SortColumn = "market" | "service" | "need" | "payer" | "coverage" | "deficit" | "severity" | "confidence" | "grade" | "revenue" | "play";
+type SortColumn = "market" | "service" | "need" | "payer" | "providers" | "coverage" | "deficit" | "severity" | "confidence" | "grade" | "revenue" | "play";
 type SortDir = "asc" | "desc";
 
 const SORT_COLS: { key: SortColumn; label: string }[] = [
@@ -33,6 +34,7 @@ const SORT_COLS: { key: SortColumn; label: string }[] = [
   { key: "service", label: "Service" },
   { key: "need", label: "Need" },
   { key: "payer", label: "Payer" },
+  { key: "providers", label: "Providers" },
   { key: "coverage", label: "Coverage" },
   { key: "deficit", label: "Deficit" },
   { key: "severity", label: "Severity" },
@@ -61,6 +63,7 @@ function compareRecords(a: TranspoServiceDeficitRecord, b: TranspoServiceDeficit
     case "service": cmp = SERVICE_CATEGORY_LABELS[a.serviceCategory].localeCompare(SERVICE_CATEGORY_LABELS[b.serviceCategory]); break;
     case "need": cmp = a.needScore - b.needScore; break;
     case "payer": cmp = a.payerPresenceScore - b.payerPresenceScore; break;
+    case "providers": cmp = a.providerCount - b.providerCount; break;
     case "coverage": cmp = a.coverageScore - b.coverageScore; break;
     case "deficit": cmp = a.deficitScore - b.deficitScore; break;
     case "severity": cmp = SEV_ORDER[a.severity] - SEV_ORDER[b.severity]; break;
@@ -86,6 +89,14 @@ export default function TranspoServiceDeficitsPage() {
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<TranspoServiceDeficitRecord | null>(null);
   const [coloradoCoverage, setColoradoCoverage] = useState<ColoradoCountyCoverageSummary | null>(null);
+  const [coverageMode, setCoverageMode] = useState<TranspoServiceDeficitBuildMode>("colorado_baseline");
+  const [countyStats, setCountyStats] = useState({
+    countiesEvaluated: 0,
+    expectedColoradoCounties: 64,
+    countyServiceRows: 0,
+    zeroProviderRows: 0,
+    criticalZeroProviderRows: 0,
+  });
 
   const [stateFilter, setStateFilter] = useState("");
   const [countyFilter, setCountyFilter] = useState("");
@@ -103,11 +114,11 @@ export default function TranspoServiceDeficitsPage() {
     }
   }, [sortKey]);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (mode: TranspoServiceDeficitBuildMode) => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/admin/intelligence/transpo/service-deficits", { cache: "no-store" });
+      const res = await fetch(`/api/admin/intelligence/transpo/service-deficits?mode=${mode}`, { cache: "no-store" });
       const data = await res.json();
       if (!data.ok) {
         setError(data.error ?? "Failed to load");
@@ -117,6 +128,13 @@ export default function TranspoServiceDeficitsPage() {
       setRecords(data.records ?? []);
       setQuestions(data.questions ?? []);
       setColoradoCoverage(data.coloradoCoverage ?? null);
+      setCountyStats({
+        countiesEvaluated: data.countiesEvaluated ?? 0,
+        expectedColoradoCounties: data.expectedColoradoCounties ?? 64,
+        countyServiceRows: data.countyServiceRows ?? data.records?.length ?? 0,
+        zeroProviderRows: data.zeroProviderRows ?? 0,
+        criticalZeroProviderRows: data.criticalZeroProviderRows ?? 0,
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -124,15 +142,19 @@ export default function TranspoServiceDeficitsPage() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(coverageMode); }, [load, coverageMode]);
 
   async function handleBackfill() {
     setBackfilling(true);
     try {
-      const res = await fetch("/api/admin/intelligence/transpo/service-deficits/backfill", { method: "POST" });
+      const res = await fetch("/api/admin/intelligence/transpo/service-deficits/backfill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: coverageMode }),
+      });
       const data = await res.json();
       if (!data.ok) { setError(data.error ?? "Backfill failed"); return; }
-      await load();
+      await load(coverageMode);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -176,12 +198,25 @@ export default function TranspoServiceDeficitsPage() {
             Need → Payer → Provider → Coverage. Identify underserved transportation markets where public funding exists.
           </p>
         </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+          <label style={{ fontSize: 12, fontWeight: 700, color: "#57534e" }}>
+            Coverage Mode{" "}
+            <select
+              value={coverageMode}
+              onChange={(e) => setCoverageMode(e.target.value as TranspoServiceDeficitBuildMode)}
+              style={sel}
+            >
+              <option value="colorado_baseline">Colorado Baseline</option>
+              <option value="observed">Observed Markets</option>
+            </select>
+          </label>
         <button type="button" onClick={handleBackfill} disabled={backfilling} style={{
           fontSize: 13, fontWeight: 700, padding: "9px 18px", borderRadius: 8, border: "none",
           background: backfilling ? "#d6d3d1" : "#4338ca", color: "#fff", cursor: backfilling ? "default" : "pointer",
         }}>
           {backfilling ? "Building…" : "Run Service Deficit Backfill"}
         </button>
+        </div>
       </div>
 
       {error ? <div style={{ marginBottom: 16, fontSize: 12, color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "10px 12px" }}>{error}</div> : null}
@@ -200,7 +235,7 @@ export default function TranspoServiceDeficitsPage() {
       ) : null}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10, marginBottom: 20 }}>
-        {[["Deficits", summary?.totalDeficits ?? "…"], ["Critical", summary?.critical ?? 0], ["High", summary?.high ?? 0], ["Medium", summary?.medium ?? 0], ["Low", summary?.low ?? 0], ["Avg Deficit", summary?.averageDeficitScore ?? 0]].map(([l, v]) => (
+        {[["County Coverage", `${countyStats.countiesEvaluated} / ${countyStats.expectedColoradoCounties}`], ["County/Service Rows", countyStats.countyServiceRows || "…"], ["Zero Provider", countyStats.zeroProviderRows], ["Critical Zero-Prov", countyStats.criticalZeroProviderRows], ["Deficits", summary?.totalDeficits ?? "…"], ["Critical", summary?.critical ?? 0], ["High", summary?.high ?? 0], ["Avg Deficit", summary?.averageDeficitScore ?? 0]].map(([l, v]) => (
           <div key={l} style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, padding: "12px 14px" }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e" }}>{l}</div>
             <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4 }}>{v}</div>
@@ -213,10 +248,12 @@ export default function TranspoServiceDeficitsPage() {
           <div style={{ fontSize: 11, fontWeight: 800, color: "#166534", marginBottom: 8 }}>COLORADO COUNTY COVERAGE</div>
           <p style={{ fontSize: 12, color: "#365314", margin: "0 0 10px", lineHeight: 1.55 }}>{coloradoCoverage.scopeNote}</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8, fontSize: 12 }}>
-            <div><strong>{coloradoCoverage.totalInScope}</strong> counties in scope</div>
+            <div><strong>{coloradoCoverage.totalInScope} / {coloradoCoverage.coloradoCountyTotal}</strong> counties evaluated</div>
+            <div><strong>{coloradoCoverage.countyServiceRows ?? countyStats.countyServiceRows}</strong> county/service rows</div>
+            <div><strong>{coloradoCoverage.zeroProviderRows ?? countyStats.zeroProviderRows}</strong> zero-provider rows</div>
+            <div><strong>{coloradoCoverage.criticalZeroProviderRows ?? countyStats.criticalZeroProviderRows}</strong> critical zero-provider</div>
             <div><strong>{coloradoCoverage.countiesWithPayerData.length}</strong> with payer data</div>
             <div><strong>{coloradoCoverage.countiesWithApprovedProviders.length}</strong> with approved providers</div>
-            <div><strong>{coloradoCoverage.countiesMissingPayerData.length}</strong> missing payer data</div>
           </div>
           {coloradoCoverage.countiesMissingPayerData.length > 0 ? (
             <div style={{ fontSize: 11, color: "#4d7c0f", marginTop: 8 }}>
@@ -274,8 +311,8 @@ export default function TranspoServiceDeficitsPage() {
             </tr>
           </thead>
           <tbody>
-            {loading ? <tr><td colSpan={11 + (showBrokerCol ? 1 : 0) + (showApprovedCol ? 1 : 0)} style={{ ...td, textAlign: "center" }}>Loading…</td></tr>
-              : sorted.length === 0 ? <tr><td colSpan={11 + (showBrokerCol ? 1 : 0) + (showApprovedCol ? 1 : 0)} style={{ ...td, textAlign: "center" }}>No deficits — run backfill after carrier ingest.</td></tr>
+            {loading ? <tr><td colSpan={12 + (showBrokerCol ? 1 : 0) + (showApprovedCol ? 1 : 0)} style={{ ...td, textAlign: "center" }}>Loading…</td></tr>
+              : sorted.length === 0 ? <tr><td colSpan={12 + (showBrokerCol ? 1 : 0) + (showApprovedCol ? 1 : 0)} style={{ ...td, textAlign: "center" }}>No deficits — run backfill after carrier ingest.</td></tr>
               : sorted.map((r) => {
                 const sev = SEV[r.severity];
                 const conf = r.dataConfidence;
@@ -284,17 +321,23 @@ export default function TranspoServiceDeficitsPage() {
                   conf &&
                   (conf.confidenceGrade === "low" || conf.confidenceGrade === "experimental") &&
                   (r.severity === "high" || r.severity === "critical");
+                const zeroProviderRedDot =
+                  r.providerCount === 0 && (r.severity === "high" || r.severity === "critical");
                 return (
-                  <tr key={r.id} onClick={() => setSelected(r)} style={{ cursor: "pointer", background: highGapLowConf ? "#fffbeb" : undefined }}>
+                  <tr key={r.id} onClick={() => setSelected(r)} style={{ cursor: "pointer", background: highGapLowConf ? "#fffbeb" : zeroProviderRedDot ? "#fef2f2" : undefined }}>
                     <td style={{ ...td, fontWeight: 700, color: "#1c1917" }}>
                       {r.marketLabel}
                       {highGapLowConf ? (
                         <div style={{ fontSize: 10, color: "#b45309", marginTop: 2 }}>High gap, low confidence</div>
                       ) : null}
+                      {zeroProviderRedDot ? (
+                        <span style={{ display: "inline-block", marginTop: 4, fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 20, color: "#991b1b", background: "#fecaca" }}>Zero Provider</span>
+                      ) : null}
                     </td>
                     <td style={td}>{SERVICE_CATEGORY_LABELS[r.serviceCategory]}</td>
                     <td style={td}>{r.needScore}</td>
                     <td style={td}>{r.payerPresenceScore}</td>
+                    <td style={{ ...td, fontWeight: r.providerCount === 0 ? 800 : 400, color: r.providerCount === 0 ? "#991b1b" : undefined }}>{r.providerCount}</td>
                     <td style={td}>{r.coverageScore}</td>
                     <td style={{ ...td, fontWeight: 800 }}>{r.deficitScore}</td>
                     <td style={td}><span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, color: sev.fg, background: sev.bg }}>{r.severity}</span></td>

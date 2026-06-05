@@ -1,6 +1,7 @@
 // lib/intelligence/transpo/data-confidence/data-confidence-summary.ts
 
-import type { TranspoServiceDeficitRecord } from "../service-deficits/deficit-types";
+import { COLORADO_COUNTY_TOTAL } from "../demand/colorado-county-baseline";
+import type { TranspoServiceDeficitCacheMeta, TranspoServiceDeficitRecord } from "../service-deficits/deficit-types";
 import type {
   TranspoDataConfidenceQuestion,
   TranspoDataConfidenceRecord,
@@ -55,6 +56,7 @@ export function buildTranspoDataConfidenceQuestions(
   records: TranspoDataConfidenceRecord[],
   summary: TranspoDataConfidenceSummary,
   deficits: TranspoServiceDeficitRecord[],
+  meta?: TranspoServiceDeficitCacheMeta | null,
 ): TranspoDataConfidenceQuestion[] {
   const highConf = records.filter((r) => r.confidenceGrade === "high").length;
   const experimental = summary.experimental;
@@ -168,6 +170,32 @@ export function buildTranspoDataConfidenceQuestions(
               .map((r) => `${r.county}, ${r.state}`)
               .join("; ")}`
           : "No high-severity deficits flagged with low confidence.",
+    },
+    {
+      id: "Q11",
+      question: "Are all 64 Colorado counties represented?",
+      answer: (() => {
+        const coCounties = new Set(deficits.filter((d) => d.state === "CO").map((d) => d.county)).size;
+        if (meta?.mode === "colorado_baseline" && coCounties >= COLORADO_COUNTY_TOTAL) {
+          return `Yes — ${coCounties}/${COLORADO_COUNTY_TOTAL} counties in baseline (${meta.countyServiceRows ?? deficits.length} county/service rows).`;
+        }
+        return `${coCounties}/${COLORADO_COUNTY_TOTAL} counties — run service deficit backfill with colorado_baseline mode.`;
+      })(),
+    },
+    {
+      id: "Q12",
+      question: "Which counties have critical deficits with zero provider coverage?",
+      answer: (() => {
+        const hits = deficits.filter(
+          (d) => d.providerCount === 0 && (d.severity === "critical" || d.severity === "high"),
+        );
+        return hits.length
+          ? `${meta?.criticalZeroProviderRows ?? hits.length} critical/high zero-provider rows. Top: ${hits
+              .slice(0, 8)
+              .map((d) => `${d.county} (${d.serviceCategory}, ${d.severity})`)
+              .join("; ")}`
+          : "No high/critical zero-provider deficits in cache.";
+      })(),
     },
   ];
 }

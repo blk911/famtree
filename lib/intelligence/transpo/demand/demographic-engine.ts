@@ -58,6 +58,17 @@ export function estimateCountyDemographics(input: DemographicInput): Demographic
   };
 }
 
+/** Rurality-only demand score when Census demographics are unavailable. */
+export function computeBaselineDemandScore(rurality: TranspoRurality): number {
+  let score = 32;
+  if (rurality === "urban") score += 8;
+  if (rurality === "suburban") score += 5;
+  if (rurality === "rural") score += 14;
+  if (rurality === "frontier") score += 20;
+  if (rurality === "unknown") score += 6;
+  return Math.max(0, Math.min(100, score));
+}
+
 export function computeDemandScore(est: DemographicEstimates, rurality: TranspoRurality): number {
   let score = 40;
   score += Math.min(25, est.seniorsPercent * 1.2);

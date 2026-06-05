@@ -66,9 +66,9 @@ export function ServiceDeficitDetailDrawer({ record, open, onClose }: Props) {
         <Row label="Providers" value={record.providerCount} />
         <Row label="Verified" value={record.verifiedProviderCount} />
         <Row label="Fleet capacity" value={record.fleetCapacity} />
-        <Row label="Population" value={record.demand.population.toLocaleString()} />
-        <Row label="Seniors 65+" value={`${record.demand.seniors65Plus.toLocaleString()} (${record.demand.seniorsPercent}%)`} />
-        <Row label="Veterans" value={`${record.demand.veterans.toLocaleString()} (${record.demand.veteransPercent}%)`} />
+        <Row label="Population" value={record.demand.population !== undefined ? record.demand.population.toLocaleString() : "— (incomplete)"} />
+        <Row label="Seniors 65+" value={record.demand.seniors65Plus !== undefined ? `${record.demand.seniors65Plus.toLocaleString()} (${record.demand.seniorsPercent ?? 0}%)` : "—"} />
+        <Row label="Veterans" value={record.demand.veterans !== undefined ? `${record.demand.veterans.toLocaleString()} (${record.demand.veteransPercent ?? 0}%)` : "—"} />
         <Row label="Rurality" value={record.demand.rurality} />
 
         {highGapLowConf ? (

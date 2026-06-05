@@ -194,10 +194,12 @@ export default function TranspoDataConfidencePage() {
           <div style={{ fontSize: 11, fontWeight: 800, color: "#166534", marginBottom: 8 }}>COLORADO COUNTY COVERAGE</div>
           <p style={{ fontSize: 12, color: "#365314", margin: "0 0 10px", lineHeight: 1.55 }}>{coloradoCoverage.scopeNote}</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8, fontSize: 12, color: "#365314" }}>
-            <div>Represented: <strong>{coloradoCoverage.countiesRepresented.join(", ") || "—"}</strong></div>
+            <div>Evaluated: <strong>{coloradoCoverage.totalInScope} / {coloradoCoverage.coloradoCountyTotal}</strong></div>
+            <div>County/service rows: <strong>{coloradoCoverage.countyServiceRows ?? "—"}</strong></div>
+            <div>Baseline rows: <strong>{coloradoCoverage.baselineRows ?? "—"}</strong></div>
+            <div>Observed rows: <strong>{coloradoCoverage.observedRows ?? "—"}</strong></div>
+            <div>Zero-provider rows: <strong>{coloradoCoverage.zeroProviderRows ?? "—"}</strong></div>
             <div>With payer data: <strong>{coloradoCoverage.countiesWithPayerData.length}</strong></div>
-            <div>With approved providers: <strong>{coloradoCoverage.countiesWithApprovedProviders.join(", ") || "none"}</strong></div>
-            <div>Missing payer data: <strong>{coloradoCoverage.countiesMissingPayerData.join(", ") || "none"}</strong></div>
           </div>
         </div>
       ) : null}
