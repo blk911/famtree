@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { DataSourceStatusBadge } from "@/components/admin/intelligence/transpo/DataSourceStatusBadge";
 import type { TranspoServiceDeficitRecord } from "@/lib/intelligence/transpo/service-deficits/deficit-types";
 import { SERVICE_CATEGORY_LABELS } from "@/lib/intelligence/transpo/market-gaps/types";
 
@@ -30,6 +31,11 @@ export function ServiceDeficitDetailDrawer({ record, open, onClose }: Props) {
   if (!open || !record) return null;
   const sev = SEV[record.severity] ?? SEV.low;
   const rev = record.revenueOpportunity;
+  const conf = record.dataConfidence;
+  const highGapLowConf =
+    conf &&
+    (conf.confidenceGrade === "low" || conf.confidenceGrade === "experimental") &&
+    (record.severity === "high" || record.severity === "critical");
 
   return (
     <div
@@ -64,6 +70,39 @@ export function ServiceDeficitDetailDrawer({ record, open, onClose }: Props) {
         <Row label="Seniors 65+" value={`${record.demand.seniors65Plus.toLocaleString()} (${record.demand.seniorsPercent}%)`} />
         <Row label="Veterans" value={`${record.demand.veterans.toLocaleString()} (${record.demand.veteransPercent}%)`} />
         <Row label="Rurality" value={record.demand.rurality} />
+
+        {highGapLowConf ? (
+          <div style={{ marginTop: 12, fontSize: 12, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "10px 12px", lineHeight: 1.55 }}>
+            This market shows a large potential deficit, but the data confidence is low. Validate demand and payer data before action.
+          </div>
+        ) : null}
+
+        {conf ? (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", marginBottom: 8 }}>DATA CONFIDENCE</div>
+            <Row label="Score" value={`${conf.confidenceScore} (${conf.confidenceGrade})`} />
+            <Row label="Carrier supply" value={<DataSourceStatusBadge status={conf.carrierSupplyStatus} />} />
+            <Row label="Verification" value={<DataSourceStatusBadge status={conf.verificationStatus} />} />
+            <Row label="Demand" value={<DataSourceStatusBadge status={conf.demandStatus} />} />
+            <Row label="Payer" value={<DataSourceStatusBadge status={conf.payerStatus} />} />
+            <Row label="Revenue" value={<DataSourceStatusBadge status={conf.revenueStatus} />} />
+            {conf.liveSignals.length > 0 ? (
+              <Row label="Live signals" value={conf.liveSignals.join("; ")} />
+            ) : null}
+            {conf.seededSignals.length > 0 ? (
+              <Row label="Seeded signals" value={conf.seededSignals.join("; ")} />
+            ) : null}
+            {conf.heuristicSignals.length > 0 ? (
+              <Row label="Heuristic signals" value={conf.heuristicSignals.join("; ")} />
+            ) : null}
+            {conf.missingSignals.length > 0 ? (
+              <Row label="Missing signals" value={conf.missingSignals.join("; ")} />
+            ) : null}
+            {conf.recommendedNextDataSource ? (
+              <Row label="Next data source" value={conf.recommendedNextDataSource} />
+            ) : null}
+          </div>
+        ) : null}
 
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 10, fontWeight: 800, color: "#a8a29e", marginBottom: 8 }}>REVENUE OPPORTUNITY</div>

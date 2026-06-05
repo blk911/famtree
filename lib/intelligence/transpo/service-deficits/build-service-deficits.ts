@@ -7,6 +7,7 @@ import { buildCountyDemandRecords } from "../demand/county-demand-engine";
 import { writeCountyDemandCache } from "../demand/demand-store";
 import { buildTranspoPayerRecords } from "../payers/payer-engine";
 import { writePayerCache } from "../payers/payer-store";
+import { buildAndPersistDataConfidence } from "../data-confidence/build-data-confidence";
 import { buildTranspoServiceDeficitRecords } from "./deficit-engine";
 import { writeServiceDeficitCache } from "./deficit-store";
 import type { TranspoServiceDeficitRecord } from "./deficit-types";
@@ -44,24 +45,34 @@ export async function buildAndPersistServiceDeficits(): Promise<ServiceDeficitBu
   const persistWarnings: string[] = [];
   const w1 = await writeCountyDemandCache(demandRecords);
   const w2 = await writePayerCache(payers);
-  const w3 = await writeServiceDeficitCache(records);
   if (w1) persistWarnings.push(`demand: ${w1}`);
   if (w2) persistWarnings.push(`payers: ${w2}`);
-  if (w3) persistWarnings.push(`deficits: ${w3}`);
 
-  const critical = records.filter((r) => r.severity === "critical").length;
-  const high = records.filter((r) => r.severity === "high").length;
-  const medium = records.filter((r) => r.severity === "medium").length;
-  const low = records.filter((r) => r.severity === "low").length;
+  const confidenceResult = await buildAndPersistDataConfidence(records, { persistDeficits: false });
+  const { mergeConfidenceIntoDeficits } = await import("../data-confidence/data-confidence-engine");
+  const finalRecords =
+    confidenceResult.records.length > 0
+      ? mergeConfidenceIntoDeficits(records, confidenceResult.records)
+      : records;
+  const w3 = await writeServiceDeficitCache(finalRecords);
+  if (w3) persistWarnings.push(`deficits: ${w3}`);
+  if (confidenceResult.persistWarnings.length) {
+    persistWarnings.push(...confidenceResult.persistWarnings);
+  }
+
+  const critical = finalRecords.filter((r) => r.severity === "critical").length;
+  const high = finalRecords.filter((r) => r.severity === "high").length;
+  const medium = finalRecords.filter((r) => r.severity === "medium").length;
+  const low = finalRecords.filter((r) => r.severity === "low").length;
 
   return {
     checkedCarriers: carriers.length,
-    recordsBuilt: records.length,
+    recordsBuilt: finalRecords.length,
     critical,
     high,
     medium,
     low,
-    records,
+    records: finalRecords,
     persistWarnings,
   };
 }

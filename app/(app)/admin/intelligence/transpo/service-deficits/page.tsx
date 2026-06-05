@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
+import { DataSourceStatusBadge } from "@/components/admin/intelligence/transpo/DataSourceStatusBadge";
 import { ServiceDeficitDetailDrawer } from "@/components/admin/intelligence/transpo/ServiceDeficitDetailDrawer";
+import type { TranspoConfidenceGrade } from "@/lib/intelligence/transpo/data-confidence/data-confidence-types";
 import {
   SERVICE_CATEGORY_LABELS,
   type TranspoGapSeverity,
@@ -22,7 +24,7 @@ const SEV: Record<TranspoGapSeverity, { fg: string; bg: string }> = {
   low: { fg: "#166534", bg: "#dcfce7" },
 };
 
-type SortColumn = "market" | "service" | "need" | "payer" | "coverage" | "deficit" | "severity" | "revenue" | "play";
+type SortColumn = "market" | "service" | "need" | "payer" | "coverage" | "deficit" | "severity" | "confidence" | "grade" | "revenue" | "play";
 type SortDir = "asc" | "desc";
 
 const SORT_COLS: { key: SortColumn; label: string }[] = [
@@ -33,12 +35,22 @@ const SORT_COLS: { key: SortColumn; label: string }[] = [
   { key: "coverage", label: "Coverage" },
   { key: "deficit", label: "Deficit" },
   { key: "severity", label: "Severity" },
+  { key: "confidence", label: "Confidence" },
+  { key: "grade", label: "Data Grade" },
   { key: "revenue", label: "Revenue" },
   { key: "play", label: "Recommended Play" },
 ];
 
 const SEV_ORDER: Record<TranspoGapSeverity, number> = { critical: 4, high: 3, medium: 2, low: 1 };
 const REV_ORDER: Record<TranspoRevenuePotential, number> = { strategic: 4, high: 3, medium: 2, low: 1 };
+const GRADE_ORDER: Record<TranspoConfidenceGrade, number> = { high: 4, medium: 3, low: 2, experimental: 1 };
+
+const GRADE_STYLE: Record<TranspoConfidenceGrade, { fg: string; bg: string }> = {
+  high: { fg: "#166534", bg: "#dcfce7" },
+  medium: { fg: "#1d4ed8", bg: "#dbeafe" },
+  low: { fg: "#92400e", bg: "#fef3c7" },
+  experimental: { fg: "#991b1b", bg: "#fef2f2" },
+};
 
 function compareRecords(a: TranspoServiceDeficitRecord, b: TranspoServiceDeficitRecord, col: SortColumn, dir: SortDir): number {
   const sign = dir === "asc" ? 1 : -1;
@@ -51,6 +63,13 @@ function compareRecords(a: TranspoServiceDeficitRecord, b: TranspoServiceDeficit
     case "coverage": cmp = a.coverageScore - b.coverageScore; break;
     case "deficit": cmp = a.deficitScore - b.deficitScore; break;
     case "severity": cmp = SEV_ORDER[a.severity] - SEV_ORDER[b.severity]; break;
+    case "confidence": cmp = (a.dataConfidence?.confidenceScore ?? 0) - (b.dataConfidence?.confidenceScore ?? 0); break;
+    case "grade": {
+      const ga = a.dataConfidence?.confidenceGrade ?? "experimental";
+      const gb = b.dataConfidence?.confidenceGrade ?? "experimental";
+      cmp = GRADE_ORDER[ga] - GRADE_ORDER[gb];
+      break;
+    }
     case "revenue": cmp = REV_ORDER[a.revenueOpportunity.revenuePotential] - REV_ORDER[b.revenueOpportunity.revenuePotential]; break;
     case "play": cmp = a.revenueOpportunity.recommendedPlay.localeCompare(b.revenueOpportunity.recommendedPlay); break;
   }
@@ -159,6 +178,19 @@ export default function TranspoServiceDeficitsPage() {
 
       {error ? <div style={{ marginBottom: 16, fontSize: 12, color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "10px 12px" }}>{error}</div> : null}
 
+      {sorted.some((r) => {
+        const c = r.dataConfidence;
+        if (!c) return false;
+        const weak = c.confidenceGrade === "low" || c.confidenceGrade === "experimental";
+        const sev = r.severity === "high" || r.severity === "critical";
+        return weak && sev;
+      }) ? (
+        <div style={{ marginBottom: 16, fontSize: 12, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "10px 12px", lineHeight: 1.55 }}>
+          Some markets show large potential deficits with low data confidence. Validate demand and payer data before action.
+          High gap + low confidence rows are labeled in the table.
+        </div>
+      ) : null}
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10, marginBottom: 20 }}>
         {[["Deficits", summary?.totalDeficits ?? "…"], ["Critical", summary?.critical ?? 0], ["High", summary?.high ?? 0], ["Medium", summary?.medium ?? 0], ["Low", summary?.low ?? 0], ["Avg Deficit", summary?.averageDeficitScore ?? 0]].map(([l, v]) => (
           <div key={l} style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 10, padding: "12px 14px" }}>
@@ -200,7 +232,7 @@ export default function TranspoServiceDeficitsPage() {
       </div>
 
       <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: 14, overflow: "auto", marginBottom: 24 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1100 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1280 }}>
           <thead>
             <tr>
               {SORT_COLS.map(({ key, label }) => {
@@ -214,21 +246,51 @@ export default function TranspoServiceDeficitsPage() {
             </tr>
           </thead>
           <tbody>
-            {loading ? <tr><td colSpan={9} style={{ ...td, textAlign: "center" }}>Loading…</td></tr>
-              : sorted.length === 0 ? <tr><td colSpan={9} style={{ ...td, textAlign: "center" }}>No deficits — run backfill after carrier ingest.</td></tr>
+            {loading ? <tr><td colSpan={11} style={{ ...td, textAlign: "center" }}>Loading…</td></tr>
+              : sorted.length === 0 ? <tr><td colSpan={11} style={{ ...td, textAlign: "center" }}>No deficits — run backfill after carrier ingest.</td></tr>
               : sorted.map((r) => {
                 const sev = SEV[r.severity];
+                const conf = r.dataConfidence;
+                const grade = conf ? GRADE_STYLE[conf.confidenceGrade] : null;
+                const highGapLowConf =
+                  conf &&
+                  (conf.confidenceGrade === "low" || conf.confidenceGrade === "experimental") &&
+                  (r.severity === "high" || r.severity === "critical");
                 return (
-                  <tr key={r.id} onClick={() => setSelected(r)} style={{ cursor: "pointer" }}>
-                    <td style={{ ...td, fontWeight: 700, color: "#1c1917" }}>{r.marketLabel}</td>
+                  <tr key={r.id} onClick={() => setSelected(r)} style={{ cursor: "pointer", background: highGapLowConf ? "#fffbeb" : undefined }}>
+                    <td style={{ ...td, fontWeight: 700, color: "#1c1917" }}>
+                      {r.marketLabel}
+                      {highGapLowConf ? (
+                        <div style={{ fontSize: 10, color: "#b45309", marginTop: 2 }}>High gap, low confidence</div>
+                      ) : null}
+                    </td>
                     <td style={td}>{SERVICE_CATEGORY_LABELS[r.serviceCategory]}</td>
                     <td style={td}>{r.needScore}</td>
                     <td style={td}>{r.payerPresenceScore}</td>
                     <td style={td}>{r.coverageScore}</td>
                     <td style={{ ...td, fontWeight: 800 }}>{r.deficitScore}</td>
                     <td style={td}><span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, color: sev.fg, background: sev.bg }}>{r.severity}</span></td>
+                    <td style={td}>{conf?.confidenceScore ?? "—"}</td>
+                    <td style={td}>
+                      {grade && conf ? (
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, color: grade.fg, background: grade.bg }}>
+                          {conf.confidenceGrade}
+                        </span>
+                      ) : "—"}
+                    </td>
                     <td style={td}>{r.revenueOpportunity.revenuePotential}</td>
-                    <td style={{ ...td, maxWidth: 220 }}>{r.revenueOpportunity.recommendedPlay}</td>
+                    <td style={{ ...td, maxWidth: 220 }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 4 }}>
+                        {conf ? (
+                          <>
+                            <DataSourceStatusBadge status={conf.carrierSupplyStatus} compact />
+                            <DataSourceStatusBadge status={conf.demandStatus} compact />
+                            <DataSourceStatusBadge status={conf.payerStatus} compact />
+                          </>
+                        ) : null}
+                      </div>
+                      {r.revenueOpportunity.recommendedPlay}
+                    </td>
                   </tr>
                 );
               })}

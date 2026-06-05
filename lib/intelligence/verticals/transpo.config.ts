@@ -27,11 +27,12 @@ export const transpoConfig: VerticalConfig = {
     { id: "market-dashboard", label: "Market Dashboard", href: "/admin/intelligence/transpo/market-dashboard" },
     { id: "market-gaps",      label: "Market Gaps",      href: "/admin/intelligence/transpo/market-gaps" },
     { id: "service-deficits", label: "Service Deficits", href: "/admin/intelligence/transpo/service-deficits" },
+    { id: "data-confidence",  label: "Data Confidence", href: "/admin/intelligence/transpo/data-confidence" },
     { id: "harvest",         label: "Market Harvest",   href: "/admin/intelligence/transpo/harvest" },
     { id: "prospects",       label: "Red Dots",         href: "/admin/intelligence/transpo/prospects" },
   ],
 
-  enabledTools: ["source-ingest", "source-runs", "evidence", "resolver", "carriers", "verification", "opportunities", "qualified-targets", "market-dashboard", "market-gaps", "service-deficits", "harvest", "prospects"],
+  enabledTools: ["source-ingest", "source-runs", "evidence", "resolver", "carriers", "verification", "opportunities", "qualified-targets", "market-dashboard", "market-gaps", "service-deficits", "data-confidence", "harvest", "prospects"],
 
   // Salon/personal-care tools are explicitly hidden from this vertical
   hiddenTools: [
