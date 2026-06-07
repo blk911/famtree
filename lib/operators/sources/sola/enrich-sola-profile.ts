@@ -2,12 +2,6 @@
 // API-first Sola /pro enrichment with Playwright fallback.
 
 import {
-  formatPlaywrightHarvestWarning,
-  getPlaywrightRuntimeStatus,
-  PLAYWRIGHT_BROWSER_MISSING_WARNING,
-  resolvePlaywrightBrowserWarning,
-} from "@/lib/intelligence/salon/source-ingest/playwright-runtime";
-import {
   fetchSolaProfileApi,
   type SolaProfileApiFetchResult,
 } from "./fetch-sola-profile-api";
@@ -143,7 +137,12 @@ export function discoverLikelyProfileApiEndpoint(apiHits: SolaProfileApiHit[]): 
   return undefined;
 }
 
+async function loadPlaywrightRuntime() {
+  return import("@/lib/intelligence/salon/source-ingest/playwright-runtime");
+}
+
 async function loadPlaywrightChromium(): Promise<PlaywrightChromium | null> {
+  const { getPlaywrightRuntimeStatus } = await loadPlaywrightRuntime();
   const status = await getPlaywrightRuntimeStatus();
   if (!status.packageInstalled || !status.browserAvailable) return null;
   try {
@@ -296,8 +295,9 @@ async function enrichSolaProfilePlaywright(
     enrichmentMethod: "failed",
   };
 
-  const status = await getPlaywrightRuntimeStatus();
-  const preflight = await resolvePlaywrightBrowserWarning(status);
+  const playwrightRuntime = await loadPlaywrightRuntime();
+  const status = await playwrightRuntime.getPlaywrightRuntimeStatus();
+  const preflight = await playwrightRuntime.resolvePlaywrightBrowserWarning(status);
   if (preflight) {
     return { ...base, error: preflight };
   }
@@ -312,7 +312,7 @@ async function enrichSolaProfilePlaywright(
     if (!page) {
       const chromium = await loadPlaywrightChromium();
       if (!chromium) {
-        return { ...base, error: PLAYWRIGHT_BROWSER_MISSING_WARNING };
+        return { ...base, error: playwrightRuntime.PLAYWRIGHT_BROWSER_MISSING_WARNING };
       }
       browser = await chromium.launch({ headless: true });
       page = (await browser.newPage()) as PlaywrightPage;
@@ -486,8 +486,8 @@ async function enrichSolaProfilePlaywright(
       enrichmentMethod: "playwright",
     };
   } catch (error) {
-    const formatted = formatPlaywrightHarvestWarning(error);
-    getPlaywrightRuntimeStatus(true).catch(() => undefined);
+    const formatted = playwrightRuntime.formatPlaywrightHarvestWarning(error);
+    playwrightRuntime.getPlaywrightRuntimeStatus(true).catch(() => undefined);
     return {
       ...base,
       apiHitsCount: apiHits.length,
