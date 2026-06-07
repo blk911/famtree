@@ -274,20 +274,61 @@ export type SolaCategoryBucket =
   | "wax"
   | "other";
 
-export type SolaResolverImportStatus = "live_verified" | "matched" | "discovered";
+export type SolaResolverVerificationStatus = "live_verified" | "matched" | "discovered";
+
+/** @deprecated Use SolaResolverVerificationStatus */
+export type SolaResolverImportStatus = SolaResolverVerificationStatus;
 
 export type SolaResolverRecommendedAction =
   | "call_or_text"
   | "booking_profile_review"
   | "needs_manual_validation";
 
-export interface SolaResolverImportRecord extends SolaResolverCandidate {
+export interface SolaResolverImportRecord {
+  candidateKey: string;
+  operatorName: string;
+  displayName: string;
+  professionalName?: string;
+  contactName?: string;
+  businessName?: string;
+  brandOrStudioName?: string;
+  slug: string;
+  locationSlug: string;
+  locationName?: string;
+  suiteNumber?: string;
+  categories: string[];
   categoryBuckets: SolaCategoryBucket[];
   categoryBucket: SolaCategoryBucket;
+  phones: string[];
+  emails: string[];
+  website?: string;
+  externalLinks?: string[];
+  socialLinks: string[];
+  bookingLinks: string[];
+  profileUrl?: string;
+  imageUrl?: string;
+  profileImages?: string[];
+  bio?: string;
+  parentContainerId: string;
+  parentContainerBrand: typeof SOLA_PARENT_CONTAINER_BRAND;
+  parentContainerType: "salon_suite";
+  containerRelationship: "tenant";
+  sourceProvider: typeof SOLA_SOURCE_PROVIDER;
+  sourceType: typeof SOLA_SOURCE_TYPE;
+  verificationStatus: SolaResolverVerificationStatus;
   contactabilityScore: number;
   identityScore: number;
   acquisitionScore: number;
-  status: SolaResolverImportStatus;
+  recommendedAction: SolaResolverRecommendedAction;
+}
+
+export interface SolaResolverImportTopCandidate {
+  candidateKey: string;
+  displayName: string;
+  slug: string;
+  categoryBucket: SolaCategoryBucket;
+  acquisitionScore: number;
+  verificationStatus: SolaResolverVerificationStatus;
   recommendedAction: SolaResolverRecommendedAction;
 }
 
@@ -309,6 +350,7 @@ export interface SolaResolverImportSummary {
   avgAcquisition: number;
   bySlug: Record<string, SolaResolverImportSlugSummary>;
   byCategory: Record<SolaCategoryBucket, number>;
+  topAcquisitionCandidates: SolaResolverImportTopCandidate[];
 }
 
 export interface SolaResolverImportArtifact {

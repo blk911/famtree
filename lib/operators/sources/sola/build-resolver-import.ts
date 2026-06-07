@@ -2,9 +2,7 @@
 
 import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
-import {
-  CANDIDATES_ARTIFACT_PATH,
-} from "./run-sola-harvest";
+import { CANDIDATES_ARTIFACT_PATH } from "./run-sola-harvest";
 import type {
   SolaCategoryBucket,
   SolaOperatorCandidatesArtifact,
@@ -13,10 +11,11 @@ import type {
   SolaResolverImportRecord,
   SolaResolverImportSlugSummary,
   SolaResolverImportSummary,
-  SolaResolverImportStatus,
+  SolaResolverImportTopCandidate,
   SolaResolverRecommendedAction,
+  SolaResolverVerificationStatus,
 } from "./types";
-import { SOLA_SOURCE_PROVIDER, SOLA_SOURCE_TYPE } from "./types";
+import { SOLA_PARENT_CONTAINER_BRAND, SOLA_SOURCE_PROVIDER, SOLA_SOURCE_TYPE } from "./types";
 
 export const RESOLVER_IMPORT_ARTIFACT_PATH = path.join(
   process.cwd(),
@@ -24,6 +23,8 @@ export const RESOLVER_IMPORT_ARTIFACT_PATH = path.join(
   "sola",
   "sola-resolver-import.generated.json",
 );
+
+const TOP_CANDIDATE_COUNT = 10;
 
 const CATEGORY_BUCKET_ORDER: SolaCategoryBucket[] = [
   "barber",
@@ -48,6 +49,8 @@ const BUCKET_PATTERNS: Array<{ bucket: SolaCategoryBucket; pattern: RegExp }> = 
 
 const IGNORED_SERVICE_TOKENS = new Set(["portfolio", "other", "others"]);
 
+type EnrichedSolaCandidate = SolaResolverCandidate & { displayName?: string };
+
 function hostOf(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "").toLowerCase();
@@ -58,6 +61,10 @@ function hostOf(url: string): string {
 
 function clampScore(value: number, max = 100): number {
   return Math.max(0, Math.min(max, Math.round(value)));
+}
+
+function resolveDisplayName(candidate: EnrichedSolaCandidate): string {
+  return candidate.displayName?.trim() || candidate.operatorName;
 }
 
 function hasPhone(candidate: SolaResolverCandidate): boolean {
@@ -154,6 +161,14 @@ function computeContactabilityScore(candidate: SolaResolverCandidate): number {
   return clampScore(score);
 }
 
+function hasPersonName(candidate: SolaResolverCandidate): boolean {
+  return Boolean(
+    candidate.professionalName?.trim() ||
+      candidate.contactName?.trim() ||
+      candidate.operatorName?.trim(),
+  );
+}
+
 function hasStudioOrBusinessName(candidate: SolaResolverCandidate): boolean {
   return Boolean(
     candidate.businessName?.trim() ||
@@ -161,13 +176,18 @@ function hasStudioOrBusinessName(candidate: SolaResolverCandidate): boolean {
   );
 }
 
+function hasProfileImage(candidate: SolaResolverCandidate): boolean {
+  if (candidate.imageUrl?.trim()) return true;
+  return Boolean(candidate.profileImages?.some((image) => image.trim()));
+}
+
 function computeIdentityScore(candidate: SolaResolverCandidate): number {
   let score = 0;
   if (candidate.profileUrl?.trim()) score += 30;
-  if (candidate.professionalName?.trim()) score += 25;
+  if (hasPersonName(candidate)) score += 25;
   if (hasStudioOrBusinessName(candidate)) score += 20;
   if (candidate.suiteNumber?.trim()) score += 15;
-  if (candidate.imageUrl?.trim()) score += 10;
+  if (hasProfileImage(candidate)) score += 10;
   return clampScore(score);
 }
 
@@ -192,28 +212,30 @@ function primaryCategoryBucket(buckets: SolaCategoryBucket[]): SolaCategoryBucke
   return "other";
 }
 
-function categoryAcquisitionBonus(buckets: SolaCategoryBucket[]): number {
-  let bonus = 0;
+function categoryAcquisitionWeight(buckets: SolaCategoryBucket[]): number {
+  let weight = 0;
   for (const bucket of buckets) {
     if (bucket === "nails" || bucket === "lashes" || bucket === "skin" || bucket === "wax") {
-      bonus = Math.max(bonus, 12);
+      weight = Math.max(weight, 15);
     } else if (bucket === "massage") {
-      bonus = Math.max(bonus, 10);
+      weight = Math.max(weight, 12);
     } else if (bucket === "hair" || bucket === "barber") {
-      bonus = Math.max(bonus, 6);
+      weight = Math.max(weight, 8);
+    } else if (bucket === "other") {
+      weight = Math.max(weight, 3);
     }
   }
-  return bonus;
+  return weight;
 }
 
 function computeAcquisitionScore(
   contactabilityScore: number,
   categoryBuckets: SolaCategoryBucket[],
 ): number {
-  return clampScore(contactabilityScore + categoryAcquisitionBonus(categoryBuckets));
+  return clampScore(contactabilityScore + categoryAcquisitionWeight(categoryBuckets));
 }
 
-function resolveStatus(candidate: SolaResolverCandidate): SolaResolverImportStatus {
+function resolveVerificationStatus(candidate: SolaResolverCandidate): SolaResolverVerificationStatus {
   const profile = Boolean(candidate.profileUrl?.trim());
   const booking = hasBookingLink(candidate);
   const phone = hasPhone(candidate);
@@ -223,32 +245,66 @@ function resolveStatus(candidate: SolaResolverCandidate): SolaResolverImportStat
   return "discovered";
 }
 
-function resolveRecommendedAction(status: SolaResolverImportStatus): SolaResolverRecommendedAction {
-  if (status === "live_verified") return "call_or_text";
-  if (status === "matched") return "booking_profile_review";
+function resolveRecommendedAction(
+  verificationStatus: SolaResolverVerificationStatus,
+  candidate: SolaResolverCandidate,
+): SolaResolverRecommendedAction {
+  if (verificationStatus === "live_verified" && hasPhone(candidate)) return "call_or_text";
+  if (verificationStatus === "matched") return "booking_profile_review";
   return "needs_manual_validation";
 }
 
-export function scoreSolaResolverCandidate(
-  candidate: SolaResolverCandidate,
-): SolaResolverImportRecord {
+function mapResolverImportRecord(candidate: EnrichedSolaCandidate): SolaResolverImportRecord {
   const categoryBuckets = resolveCategoryBuckets(candidate);
   const categoryBucket = primaryCategoryBucket(categoryBuckets);
   const contactabilityScore = computeContactabilityScore(candidate);
   const identityScore = computeIdentityScore(candidate);
   const acquisitionScore = computeAcquisitionScore(contactabilityScore, categoryBuckets);
-  const status = resolveStatus(candidate);
+  const verificationStatus = resolveVerificationStatus(candidate);
 
   return {
-    ...candidate,
+    candidateKey: candidate.candidateKey,
+    operatorName: candidate.operatorName,
+    displayName: resolveDisplayName(candidate),
+    professionalName: candidate.professionalName,
+    contactName: candidate.contactName,
+    businessName: candidate.businessName,
+    brandOrStudioName: candidate.brandOrStudioName,
+    slug: candidate.parentContainerSlug,
+    locationSlug: candidate.locationSlug,
+    locationName: candidate.locationName ?? candidate.parentContainerName,
+    suiteNumber: candidate.suiteNumber,
+    categories: candidate.categories,
     categoryBuckets,
     categoryBucket,
+    phones: candidate.phones ?? [],
+    emails: candidate.emails ?? [],
+    website: candidate.website,
+    externalLinks: candidate.externalLinks,
+    socialLinks: candidate.socialLinks,
+    bookingLinks: candidate.bookingLinks,
+    profileUrl: candidate.profileUrl,
+    imageUrl: candidate.imageUrl,
+    profileImages: candidate.profileImages,
+    bio: candidate.bio,
+    parentContainerId: candidate.parentContainerId,
+    parentContainerBrand: SOLA_PARENT_CONTAINER_BRAND,
+    parentContainerType: "salon_suite",
+    containerRelationship: "tenant",
+    sourceProvider: SOLA_SOURCE_PROVIDER,
+    sourceType: SOLA_SOURCE_TYPE,
+    verificationStatus,
     contactabilityScore,
     identityScore,
     acquisitionScore,
-    status,
-    recommendedAction: resolveRecommendedAction(status),
+    recommendedAction: resolveRecommendedAction(verificationStatus, candidate),
   };
+}
+
+export function scoreSolaResolverCandidate(
+  candidate: SolaResolverCandidate,
+): SolaResolverImportRecord {
+  return mapResolverImportRecord(candidate as EnrichedSolaCandidate);
 }
 
 function emptySlugSummary(): SolaResolverImportSlugSummary {
@@ -274,6 +330,18 @@ function emptyCategoryCounts(): Record<SolaCategoryBucket, number> {
   };
 }
 
+function toTopCandidate(record: SolaResolverImportRecord): SolaResolverImportTopCandidate {
+  return {
+    candidateKey: record.candidateKey,
+    displayName: record.displayName,
+    slug: record.slug,
+    categoryBucket: record.categoryBucket,
+    acquisitionScore: record.acquisitionScore,
+    verificationStatus: record.verificationStatus,
+    recommendedAction: record.recommendedAction,
+  };
+}
+
 export function buildSolaResolverImportSummary(
   records: SolaResolverImportRecord[],
 ): SolaResolverImportSummary {
@@ -293,17 +361,17 @@ export function buildSolaResolverImportSummary(
     acquisitionTotal += record.acquisitionScore;
     byCategory[record.categoryBucket] += 1;
 
-    if (record.status === "live_verified") liveVerified += 1;
-    else if (record.status === "matched") matched += 1;
+    if (record.verificationStatus === "live_verified") liveVerified += 1;
+    else if (record.verificationStatus === "matched") matched += 1;
     else discovered += 1;
 
-    const slug = record.parentContainerSlug;
+    const slug = record.slug;
     if (!bySlug[slug]) bySlug[slug] = emptySlugSummary();
     const slugSummary = bySlug[slug];
     slugSummary.total += 1;
     slugSummary.avgAcquisition += record.acquisitionScore;
-    if (record.status === "live_verified") slugSummary.liveVerified += 1;
-    else if (record.status === "matched") slugSummary.matched += 1;
+    if (record.verificationStatus === "live_verified") slugSummary.liveVerified += 1;
+    else if (record.verificationStatus === "matched") slugSummary.matched += 1;
     else slugSummary.discovered += 1;
   }
 
@@ -313,7 +381,9 @@ export function buildSolaResolverImportSummary(
       summary.total > 0 ? Math.round(summary.avgAcquisition / summary.total) : 0;
   }
 
+  const sorted = [...records].sort((a, b) => b.acquisitionScore - a.acquisitionScore);
   const total = records.length;
+
   return {
     total,
     liveVerified,
@@ -324,6 +394,7 @@ export function buildSolaResolverImportSummary(
     avgAcquisition: total > 0 ? Math.round(acquisitionTotal / total) : 0,
     bySlug,
     byCategory,
+    topAcquisitionCandidates: sorted.slice(0, TOP_CANDIDATE_COUNT).map(toTopCandidate),
   };
 }
 
