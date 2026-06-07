@@ -39,7 +39,8 @@
     "verify:aihsafe-scenarios": "tsx scripts/aihsafe/verify-relationship-scenarios.ts",
     "verify:visible-governance": "tsx scripts/aihsafe/verify-visible-governance-settings.ts",
     "verify:invite-intent": "tsx scripts/aihsafe/verify-invite-intent-enforcement.ts",
-    "playwright:install-chromium": "playwright install chromium"
+    "playwright:install-chromium": "playwright install chromium",
+    "test:sola": "tsx scripts/test-sola.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1039.0",
