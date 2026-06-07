@@ -2,8 +2,12 @@
 
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
+import { buildSolaCandidateKey, extractProfileSlug } from "./candidate-key";
 import { dedupeSolaListings } from "./dedupe-listings";
-import { mapListingToResolverCandidate } from "./map-resolver-candidate";
+import {
+  applyGroupingMetadata,
+  mapListingToResolverCandidate,
+} from "./map-resolver-candidate";
 import {
   discoverSolaApiEndpoint,
   scrapeSolaLocation,
@@ -17,6 +21,8 @@ import type {
   SolaSlugHarvestResult,
 } from "./types";
 import { SOLA_SOURCE_PROVIDER, SOLA_SOURCE_TYPE } from "./types";
+
+export { buildSolaCandidateKey, extractProfileSlug };
 
 const SOLA_DATA_DIR = path.join(process.cwd(), "runtime-data", "sola");
 
@@ -66,6 +72,29 @@ function listingToEvidence(
   };
 }
 
+export function printCollisionDiagnostic(candidates: SolaResolverCandidate[]): void {
+  const totalCandidates = candidates.length;
+  const keyCounts = new Map<string, number>();
+
+  for (const candidate of candidates) {
+    keyCounts.set(
+      candidate.candidateKey,
+      (keyCounts.get(candidate.candidateKey) ?? 0) + 1,
+    );
+  }
+
+  const uniqueCandidateKeys = keyCounts.size;
+  const collisionEntries = Array.from(keyCounts.entries()).filter(([, count]) => count > 1);
+
+  console.log(
+    `totalCandidates=${totalCandidates} uniqueCandidateKeys=${uniqueCandidateKeys} collisions=${collisionEntries.length}`,
+  );
+
+  for (const [key, count] of collisionEntries) {
+    console.log(`  collision: ${key} (${count}x)`);
+  }
+}
+
 function printSlugSummary(result: SolaSlugHarvestResult): void {
   console.log(
     [
@@ -90,11 +119,16 @@ async function readCandidatesArtifact(): Promise<SolaResolverCandidate[]> {
 
 async function writeCandidatesArtifact(
   newCandidates: SolaResolverCandidate[],
+  harvestedSlugs: string[],
 ): Promise<SolaOperatorCandidatesArtifact> {
   const existing = await readCandidatesArtifact();
-  const byKey = new Map<string, SolaResolverCandidate>();
+  const slugSet = new Set(harvestedSlugs.map((slug) => slug.trim().toLowerCase()));
+  const retained = existing.filter(
+    (candidate) => !slugSet.has(candidate.parentContainerSlug),
+  );
 
-  for (const candidate of existing) {
+  const byKey = new Map<string, SolaResolverCandidate>();
+  for (const candidate of retained) {
     byKey.set(candidate.candidateKey, candidate);
   }
   for (const candidate of newCandidates) {
@@ -143,9 +177,11 @@ async function harvestSlug(slug: string): Promise<SolaSlugHarvestResult> {
     const deduped = dedupeSolaListings(scrape.listings);
     const apiEndpoint = discoverSolaApiEndpoint(scrape.apiHits);
 
-    const candidates = deduped.map((listing) =>
-      mapListingToResolverCandidate(listing, clean),
+    const candidates = applyGroupingMetadata(
+      deduped.map((listing) => mapListingToResolverCandidate(listing, clean)),
     );
+    printCollisionDiagnostic(candidates);
+
     const evidence = deduped.map((listing, index) =>
       listingToEvidence(
         listing,
@@ -216,7 +252,7 @@ export async function runSolaHarvest(
   await mkdir(SOLA_DATA_DIR, { recursive: true });
   await writeFile(HARVEST_ARTIFACT_PATH, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
 
-  const candidatesArtifact = await writeCandidatesArtifact(allCandidates);
+  const candidatesArtifact = await writeCandidatesArtifact(allCandidates, slugList);
   console.log(
     `[sola-harvest] wrote ${candidatesArtifact.candidateCount} candidates -> ${CANDIDATES_ARTIFACT_PATH}`,
   );

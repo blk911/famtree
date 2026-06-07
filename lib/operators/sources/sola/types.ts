@@ -50,9 +50,15 @@ export interface SolaLocationScrapeResult {
 export interface SolaResolverCandidate {
   candidateKey: string;
   operatorName: string;
+  displayName: string;
+  brandOrStudioName?: string;
   contactName?: string;
   locationName?: string;
   suiteNumber?: string;
+  suiteGroupKey?: string;
+  businessGroupKey?: string;
+  sharedSuite: boolean;
+  sharedBusiness: boolean;
   categories: string[];
   services: string[];
   profileUrl?: string;

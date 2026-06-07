@@ -1,15 +1,19 @@
 {
-  "generatedAt": "2026-06-07T12:49:36.066Z",
+  "generatedAt": "2026-06-07T12:52:23.321Z",
   "sourceProvider": "sola",
   "sourceType": "suite_directory",
-  "candidateCount": 16,
+  "candidateCount": 19,
   "candidates": [
     {
-      "candidateKey": "sola:lafayette:courtney hair and lash:12",
-      "operatorName": "Courtney Hair and Lash",
+      "candidateKey": "sola:lafayette:profile:courtney-hair-and-lash",
+      "operatorName": "Courtney Balzen",
+      "displayName": "Courtney Balzen · Courtney Hair and Lash",
+      "brandOrStudioName": "Courtney Hair and Lash",
       "contactName": "Courtney Balzen",
       "locationName": "Lafayette",
       "suiteNumber": "12",
+      "suiteGroupKey": "sola:lafayette:suite:12",
+      "businessGroupKey": "sola:lafayette:business:courtney hair and lash",
       "categories": [
         "Hair",
         "Lashes"
@@ -41,14 +45,20 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/courtney-hair-and-lash/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:kiki s hair shop:13",
-      "operatorName": "Kiki's Hair Shop",
+      "candidateKey": "sola:lafayette:profile:kikis-hair-shop",
+      "operatorName": "Kiki Carter",
+      "displayName": "Kiki Carter · Kiki's Hair Shop",
+      "brandOrStudioName": "Kiki's Hair Shop",
       "contactName": "Kiki Carter",
       "locationName": "Lafayette",
       "suiteNumber": "13",
+      "suiteGroupKey": "sola:lafayette:suite:13",
+      "businessGroupKey": "sola:lafayette:business:kiki s hair shop",
       "categories": [
         "Hair",
         "Hair Extensions"
@@ -80,14 +90,20 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/kikis-hair-shop/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:bink:11",
-      "operatorName": "BInk",
+      "candidateKey": "sola:lafayette:profile:bink",
+      "operatorName": "Beth Vogel",
+      "displayName": "Beth Vogel · BInk",
+      "brandOrStudioName": "BInk",
       "contactName": "Beth Vogel",
       "locationName": "Lafayette",
       "suiteNumber": "11",
+      "suiteGroupKey": "sola:lafayette:suite:11",
+      "businessGroupKey": "sola:lafayette:business:bink",
       "categories": [
         "Hair"
       ],
@@ -117,14 +133,20 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/bink/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:butler s barber lounge:1",
-      "operatorName": "Butler's Barber Lounge",
+      "candidateKey": "sola:lafayette:profile:butlers-barber-lounge",
+      "operatorName": "Sean Butler",
+      "displayName": "Sean Butler · Butler's Barber Lounge",
+      "brandOrStudioName": "Butler's Barber Lounge",
       "contactName": "Sean Butler",
       "locationName": "Lafayette",
       "suiteNumber": "1",
+      "suiteGroupKey": "sola:lafayette:suite:1",
+      "businessGroupKey": "sola:lafayette:business:butler s barber lounge",
       "categories": [
         "Barber"
       ],
@@ -154,13 +176,19 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/butlers-barber-lounge/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:golda tharp:18",
+      "candidateKey": "sola:lafayette:profile:golda-tharp",
       "operatorName": "Golda Tharp",
+      "displayName": "Golda Tharp",
+      "brandOrStudioName": "Golda Tharp",
       "locationName": "Lafayette",
       "suiteNumber": "18",
+      "suiteGroupKey": "sola:lafayette:suite:18",
+      "businessGroupKey": "sola:lafayette:business:golda tharp",
       "categories": [],
       "services": [],
       "profileUrl": "https://book.solasalonstudios.com/golda-tharp/pro",
@@ -186,14 +214,20 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/golda-tharp/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:jk hair design:9",
-      "operatorName": "JK HAIR DESIGN",
+      "candidateKey": "sola:lafayette:profile:jk-hair-design",
+      "operatorName": "Jodi Kalman",
+      "displayName": "Jodi Kalman · JK HAIR DESIGN",
+      "brandOrStudioName": "JK HAIR DESIGN",
       "contactName": "Jodi Kalman",
       "locationName": "Lafayette",
       "suiteNumber": "9",
+      "suiteGroupKey": "sola:lafayette:suite:9",
+      "businessGroupKey": "sola:lafayette:business:jk hair design",
       "categories": [],
       "services": [],
       "profileUrl": "https://book.solasalonstudios.com/jk-hair-design/pro",
@@ -219,14 +253,65 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/jk-hair-design/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:luxe lather:14",
-      "operatorName": "Luxe + Lather",
+      "candidateKey": "sola:lafayette:profile:johnathan-walker",
+      "operatorName": "Johnathan Walker",
+      "displayName": "Johnathan Walker · Luxe + Lather",
+      "brandOrStudioName": "Luxe + Lather",
+      "contactName": "Johnathan Walker",
+      "locationName": "Lafayette",
+      "suiteNumber": "14",
+      "suiteGroupKey": "sola:lafayette:suite:14",
+      "businessGroupKey": "sola:lafayette:business:luxe lather",
+      "categories": [
+        "Hair",
+        "Barber"
+      ],
+      "services": [
+        "Hair",
+        "Barber"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/johnathan-walker/pro",
+      "website": "https://book.solasalonstudios.com/johnathan-walker/pro",
+      "imageUrl": "https://7bb036ad9139dd74dadb-31716e6545e0b3b2a332b1f8d0cd31e7.ssl.cf2.rackcdn.com/Compressed/Import-63520888_463944_2026_06_01_18_45_25_1734_3505.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Johnathan Walker",
+      "businessName": "Luxe + Lather",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/johnathan-walker/pro"
+      ],
+      "sharedSuite": true,
+      "sharedBusiness": true
+    },
+    {
+      "candidateKey": "sola:lafayette:profile:michelle-walker",
+      "operatorName": "Michelle Walker",
+      "displayName": "Michelle Walker · Luxe + Lather",
+      "brandOrStudioName": "Luxe + Lather",
       "contactName": "Michelle Walker",
       "locationName": "Lafayette",
       "suiteNumber": "14",
+      "suiteGroupKey": "sola:lafayette:suite:14",
+      "businessGroupKey": "sola:lafayette:business:luxe lather",
       "categories": [
         "Hair",
         "Skin Care"
@@ -258,13 +343,19 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/michelle-walker/pro"
-      ]
+      ],
+      "sharedSuite": true,
+      "sharedBusiness": true
     },
     {
-      "candidateKey": "sola:lafayette:mehak ahuja:17",
+      "candidateKey": "sola:lafayette:profile:mehak-ahuja",
       "operatorName": "Mehak Ahuja",
+      "displayName": "Mehak Ahuja",
+      "brandOrStudioName": "Mehak Ahuja",
       "locationName": "Lafayette",
       "suiteNumber": "17",
+      "suiteGroupKey": "sola:lafayette:suite:17",
+      "businessGroupKey": "sola:lafayette:business:mehak ahuja",
       "categories": [
         "Brows"
       ],
@@ -294,14 +385,20 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/mehak-ahuja/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:nikki wynn:10",
-      "operatorName": "Nikki Wynn",
+      "candidateKey": "sola:lafayette:profile:nikki-wynn",
+      "operatorName": "Thu Wynn",
+      "displayName": "Thu Wynn · Nikki Wynn",
+      "brandOrStudioName": "Nikki Wynn",
       "contactName": "Thu Wynn",
       "locationName": "Lafayette",
       "suiteNumber": "10",
+      "suiteGroupKey": "sola:lafayette:suite:10",
+      "businessGroupKey": "sola:lafayette:business:nikki wynn",
       "categories": [
         "Nails"
       ],
@@ -331,14 +428,20 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/nikki-wynn/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:razzor sharp:6",
-      "operatorName": "Razzor Sharp",
+      "candidateKey": "sola:lafayette:profile:razzor-sharp",
+      "operatorName": "Jamie Eliptico",
+      "displayName": "Jamie Eliptico · Razzor Sharp",
+      "brandOrStudioName": "Razzor Sharp",
       "contactName": "Jamie Eliptico",
       "locationName": "Lafayette",
       "suiteNumber": "6",
+      "suiteGroupKey": "sola:lafayette:suite:6",
+      "businessGroupKey": "sola:lafayette:business:razzor sharp",
       "categories": [
         "Hair"
       ],
@@ -368,13 +471,19 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/razzor-sharp/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:rebecca whitcomb:2",
+      "candidateKey": "sola:lafayette:profile:rebecca-whitcomb",
       "operatorName": "Rebecca Whitcomb",
+      "displayName": "Rebecca Whitcomb",
+      "brandOrStudioName": "Rebecca Whitcomb",
       "locationName": "Lafayette",
       "suiteNumber": "2",
+      "suiteGroupKey": "sola:lafayette:suite:2",
+      "businessGroupKey": "sola:lafayette:business:rebecca whitcomb",
       "categories": [],
       "services": [],
       "profileUrl": "https://book.solasalonstudios.com/rebecca-whitcomb/pro",
@@ -400,14 +509,20 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/rebecca-whitcomb/pro"
-      ]
+      ],
+      "sharedSuite": true,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:scizzors:19",
-      "operatorName": "Scizzors",
+      "candidateKey": "sola:lafayette:profile:scizzors",
+      "operatorName": "Luan Chavez",
+      "displayName": "Luan Chavez · Scizzors",
+      "brandOrStudioName": "Scizzors",
       "contactName": "Luan Chavez",
       "locationName": "Lafayette",
       "suiteNumber": "19",
+      "suiteGroupKey": "sola:lafayette:suite:19",
+      "businessGroupKey": "sola:lafayette:business:scizzors",
       "categories": [],
       "services": [],
       "profileUrl": "https://book.solasalonstudios.com/scizzors/pro",
@@ -433,14 +548,20 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/scizzors/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:the nail spot:5",
-      "operatorName": "The Nail Spot",
+      "candidateKey": "sola:lafayette:profile:the-nail-spot",
+      "operatorName": "Debbie Stidham",
+      "displayName": "Debbie Stidham · The Nail Spot",
+      "brandOrStudioName": "The Nail Spot",
       "contactName": "Debbie Stidham",
       "locationName": "Lafayette",
       "suiteNumber": "5",
+      "suiteGroupKey": "sola:lafayette:suite:5",
+      "businessGroupKey": "sola:lafayette:business:the nail spot",
       "categories": [
         "Nails"
       ],
@@ -470,14 +591,20 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/the-nail-spot/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:the rose salon:7",
-      "operatorName": "The Rose Salon",
+      "candidateKey": "sola:lafayette:profile:the-rose-salon-2",
+      "operatorName": "Alyzah Read",
+      "displayName": "Alyzah Read · The Rose Salon",
+      "brandOrStudioName": "The Rose Salon",
       "contactName": "Alyzah Read",
       "locationName": "Lafayette",
       "suiteNumber": "7",
+      "suiteGroupKey": "sola:lafayette:suite:7",
+      "businessGroupKey": "sola:lafayette:business:the rose salon",
       "categories": [
         "Hair"
       ],
@@ -507,14 +634,106 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/the-rose-salon-2/pro"
-      ]
+      ],
+      "sharedSuite": false,
+      "sharedBusiness": false
     },
     {
-      "candidateKey": "sola:lafayette:up in the hair:3",
-      "operatorName": "Up In The Hair",
+      "candidateKey": "sola:lafayette:profile:up-in-the-hair-1",
+      "operatorName": "Diane Maes",
+      "displayName": "Diane Maes · Up In The Hair",
+      "brandOrStudioName": "Up In The Hair",
+      "contactName": "Diane Maes",
+      "locationName": "Lafayette",
+      "suiteNumber": "3",
+      "suiteGroupKey": "sola:lafayette:suite:3",
+      "businessGroupKey": "sola:lafayette:business:up in the hair",
+      "categories": [
+        "Hair"
+      ],
+      "services": [
+        "Hair"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/up-in-the-hair-1/pro",
+      "website": "https://book.solasalonstudios.com/up-in-the-hair-1/pro",
+      "imageUrl": "https://22254c69fb18e6f6a871-14e42dfdfeb3c7f26591ac805f785d6d.ssl.cf2.rackcdn.com/Compressed/Import-251915025_439054_2026_04_01_02_02_25_4559_3686.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Diane Maes",
+      "businessName": "Up In The Hair",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/up-in-the-hair-1/pro"
+      ],
+      "sharedSuite": true,
+      "sharedBusiness": true
+    },
+    {
+      "candidateKey": "sola:lafayette:profile:up-in-the-hair-2",
+      "operatorName": "Cynthia Owen",
+      "displayName": "Cynthia Owen · Up In The Hair",
+      "brandOrStudioName": "Up In The Hair",
+      "contactName": "Cynthia Owen",
+      "locationName": "Lafayette",
+      "suiteNumber": "3",
+      "suiteGroupKey": "sola:lafayette:suite:3",
+      "businessGroupKey": "sola:lafayette:business:up in the hair",
+      "categories": [
+        "Hair"
+      ],
+      "services": [
+        "Hair"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/up-in-the-hair-2/pro",
+      "website": "https://book.solasalonstudios.com/up-in-the-hair-2/pro",
+      "imageUrl": "https://fc04ff775470ee4b54b9-8fe2ba8294e4e25040210ce13c4cc612.ssl.cf2.rackcdn.com/Compressed/Import-251918150_439931_2026_04_01_04_03_43_6496_4473.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Cynthia Owen",
+      "businessName": "Up In The Hair",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/up-in-the-hair-2/pro"
+      ],
+      "sharedSuite": true,
+      "sharedBusiness": true
+    },
+    {
+      "candidateKey": "sola:lafayette:profile:up-in-the-hair-3",
+      "operatorName": "Maria Chambers",
+      "displayName": "Maria Chambers · Up In The Hair",
+      "brandOrStudioName": "Up In The Hair",
       "contactName": "Maria Chambers",
       "locationName": "Lafayette",
       "suiteNumber": "3",
+      "suiteGroupKey": "sola:lafayette:suite:3",
+      "businessGroupKey": "sola:lafayette:business:up in the hair",
       "categories": [
         "Hair"
       ],
@@ -544,14 +763,20 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/up-in-the-hair-3/pro"
-      ]
+      ],
+      "sharedSuite": true,
+      "sharedBusiness": true
     },
     {
-      "candidateKey": "sola:lafayette:wellness hub iv hydration:2",
-      "operatorName": "Wellness Hub IV Hydration",
+      "candidateKey": "sola:lafayette:profile:wellness-hub-iv-hydration",
+      "operatorName": "Dianela Trevino",
+      "displayName": "Dianela Trevino · Wellness Hub IV Hydration",
+      "brandOrStudioName": "Wellness Hub IV Hydration",
       "contactName": "Dianela Trevino",
       "locationName": "Lafayette",
       "suiteNumber": "2",
+      "suiteGroupKey": "sola:lafayette:suite:2",
+      "businessGroupKey": "sola:lafayette:business:wellness hub iv hydration",
       "categories": [],
       "services": [],
       "profileUrl": "https://book.solasalonstudios.com/wellness-hub-iv-hydration/pro",
@@ -577,7 +802,9 @@
       ],
       "bookingLinks": [
         "https://book.solasalonstudios.com/wellness-hub-iv-hydration/pro"
-      ]
+      ],
+      "sharedSuite": true,
+      "sharedBusiness": false
     }
   ]
 }

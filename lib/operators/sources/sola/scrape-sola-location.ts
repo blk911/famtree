@@ -7,6 +7,7 @@ import {
   PLAYWRIGHT_BROWSER_MISSING_WARNING,
   resolvePlaywrightBrowserWarning,
 } from "@/lib/intelligence/salon/source-ingest/playwright-runtime";
+import { buildSolaCandidateKey } from "./candidate-key";
 import type { SolaApiHit, SolaLocationScrapeResult, SolaRawListing } from "./types";
 import { SOLA_SOURCE_PROVIDER, SOLA_SOURCE_TYPE } from "./types";
 
@@ -49,22 +50,18 @@ export function parseSuiteFromLabel(suiteLabel?: string): string | undefined {
   return suiteLabel.trim();
 }
 
+/** @deprecated Use buildSolaCandidateKey from ./candidate-key */
 export function buildCandidateKey(
   slug: string,
   operatorName: string,
   suite?: string,
 ): string {
-  const cleanSlug = slug.trim().toLowerCase();
-  const normalizedOperator = normalizeSolaName(operatorName);
-  const normalizedSuite = normalizeSolaName(suite ?? "");
-  return normalizedSuite
-    ? `sola:${cleanSlug}:${normalizedOperator}:${normalizedSuite}`
-    : `sola:${cleanSlug}:${normalizedOperator}`;
-}
-
-/** @deprecated Use buildCandidateKey */
-export function candidateKeyForListing(slug: string, normalizedName: string): string {
-  return buildCandidateKey(slug, normalizedName);
+  return buildSolaCandidateKey(slug, {
+    businessName: operatorName,
+    professionalName: operatorName,
+    displayName: operatorName,
+    suite,
+  });
 }
 
 function truncateJsonBody(body: unknown): unknown {
@@ -208,7 +205,15 @@ function mapDomListing(
     normalizedName,
     normalizedCity: normalizedCity || undefined,
     normalizedProfileUrl,
-    candidateKey: buildCandidateKey(slug, operatorName, suite ?? row.suiteLabel),
+    candidateKey: buildSolaCandidateKey(slug, {
+      profileUrl: row.profileUrl,
+      normalizedProfileUrl,
+      businessName: row.businessName,
+      professionalName: row.professionalName,
+      displayName: row.displayName,
+      suite,
+      suiteLabel: row.suiteLabel,
+    }),
   };
 }
 
