@@ -80,6 +80,53 @@ export interface SolaResolverCandidate {
   phoneLinks: string[];
   socialLinks: string[];
   bookingLinks: string[];
+  phones?: string[];
+  emails?: string[];
+  externalLinks?: string[];
+  bio?: string;
+  profileImages?: string[];
+  enrichmentStatus?: "enriched" | "failed" | "skipped";
+  enrichmentFetchedAt?: string;
+}
+
+export interface SolaProfileApiHit {
+  url: string;
+  status: number;
+  contentType: string;
+  body: unknown;
+}
+
+export interface SolaProfileEnrichment {
+  profileUrl: string;
+  pageTitle?: string;
+  professionalName?: string;
+  businessName?: string;
+  phoneLinks: string[];
+  emailLinks: string[];
+  websiteLinks: string[];
+  instagramLinks: string[];
+  facebookLinks: string[];
+  bookingLinks: string[];
+  services: string[];
+  bio?: string;
+  imageUrls: string[];
+  visibleTextSample?: string;
+  fetchedAt: string;
+  apiHitsCount: number;
+  likelyProfileApiEndpoint?: string;
+  error?: string;
+}
+
+export interface SolaProfileEnrichmentArtifact {
+  generatedAt: string;
+  sourceProvider: typeof SOLA_SOURCE_PROVIDER;
+  profileCount: number;
+  profiles: SolaProfileEnrichment[];
+}
+
+export interface SolaHarvestOptions {
+  enrichProfiles?: boolean;
+  profileLimit?: number;
 }
 
 /** @deprecated Use SolaResolverCandidate — kept for harvest artifact compatibility */
@@ -117,6 +164,9 @@ export interface SolaSlugHarvestResult {
   candidates: SolaResolverCandidate[];
   evidence: SolaEvidenceRecord[];
   scrape?: SolaLocationScrapeResult;
+  profilesEnriched?: number;
+  profileEnrichmentFailed?: number;
+  profileEnrichments?: SolaProfileEnrichment[];
   error?: string;
 }
 

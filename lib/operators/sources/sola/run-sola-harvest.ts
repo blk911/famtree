@@ -5,9 +5,15 @@ import path from "path";
 import { buildSolaCandidateKey, extractProfileSlug } from "./candidate-key";
 import { dedupeSolaListings } from "./dedupe-listings";
 import {
+  createSolaProfileBrowser,
+  enrichSolaProfile,
+  type PlaywrightPage,
+} from "./enrich-sola-profile";
+import {
   applyGroupingMetadata,
   mapListingToResolverCandidate,
 } from "./map-resolver-candidate";
+import { mergeProfileEnrichment } from "./merge-profile-enrichment";
 import {
   discoverSolaApiEndpoint,
   scrapeSolaLocation,
@@ -15,7 +21,10 @@ import {
 import type {
   SolaEvidenceRecord,
   SolaHarvestArtifact,
+  SolaHarvestOptions,
   SolaOperatorCandidatesArtifact,
+  SolaProfileEnrichment,
+  SolaProfileEnrichmentArtifact,
   SolaRawListing,
   SolaResolverCandidate,
   SolaSlugHarvestResult,
@@ -34,6 +43,11 @@ export const HARVEST_ARTIFACT_PATH = path.join(
 export const CANDIDATES_ARTIFACT_PATH = path.join(
   SOLA_DATA_DIR,
   "sola-operator-candidates.generated.json",
+);
+
+export const PROFILE_ENRICHMENT_ARTIFACT_PATH = path.join(
+  SOLA_DATA_DIR,
+  "sola-profile-enrichment.generated.json",
 );
 
 const BASE_CONFIDENCE = 70;
@@ -96,15 +110,20 @@ export function printCollisionDiagnostic(candidates: SolaResolverCandidate[]): v
 }
 
 function printSlugSummary(result: SolaSlugHarvestResult): void {
-  console.log(
-    [
-      `slug=${result.slug}`,
-      `rawListings=${result.rawListings}`,
-      `dedupedListings=${result.dedupedListings}`,
-      `candidatesCreated=${result.candidatesCreated}`,
-      result.error ? `errors=${result.error}` : "errors=none",
-    ].join(" | "),
-  );
+  const parts = [
+    `slug=${result.slug}`,
+    `rawListings=${result.rawListings}`,
+    `dedupedListings=${result.dedupedListings}`,
+    `candidatesCreated=${result.candidatesCreated}`,
+  ];
+  if (result.profilesEnriched !== undefined) {
+    parts.push(`profilesEnriched=${result.profilesEnriched}`);
+  }
+  if (result.profileEnrichmentFailed !== undefined) {
+    parts.push(`profileEnrichmentFailed=${result.profileEnrichmentFailed}`);
+  }
+  parts.push(result.error ? `errors=${result.error}` : "errors=none");
+  console.log(parts.join(" | "));
 }
 
 async function readCandidatesArtifact(): Promise<SolaResolverCandidate[]> {
@@ -154,7 +173,170 @@ async function writeCandidatesArtifact(
   return artifact;
 }
 
-async function harvestSlug(slug: string): Promise<SolaSlugHarvestResult> {
+async function readProfileEnrichmentArtifact(): Promise<SolaProfileEnrichment[]> {
+  try {
+    const raw = await readFile(PROFILE_ENRICHMENT_ARTIFACT_PATH, "utf8");
+    const parsed = JSON.parse(raw) as SolaProfileEnrichmentArtifact;
+    return parsed.profiles ?? [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeProfileEnrichmentArtifact(
+  newProfiles: SolaProfileEnrichment[],
+  harvestedProfileUrls: Set<string>,
+): Promise<SolaProfileEnrichmentArtifact> {
+  const existing = await readProfileEnrichmentArtifact();
+
+  const retained = existing.filter(
+    (profile) => !harvestedProfileUrls.has(profile.profileUrl.toLowerCase()),
+  );
+
+  const byUrl = new Map<string, SolaProfileEnrichment>();
+  for (const profile of retained) {
+    byUrl.set(profile.profileUrl.toLowerCase(), profile);
+  }
+  for (const profile of newProfiles) {
+    byUrl.set(profile.profileUrl.toLowerCase(), profile);
+  }
+
+  const profiles = Array.from(byUrl.values());
+  const artifact: SolaProfileEnrichmentArtifact = {
+    generatedAt: new Date().toISOString(),
+    sourceProvider: SOLA_SOURCE_PROVIDER,
+    profileCount: profiles.length,
+    profiles,
+  };
+
+  await mkdir(SOLA_DATA_DIR, { recursive: true });
+  await writeFile(
+    PROFILE_ENRICHMENT_ARTIFACT_PATH,
+    `${JSON.stringify(artifact, null, 2)}\n`,
+    "utf8",
+  );
+
+  return artifact;
+}
+
+async function enrichCandidates(
+  candidates: SolaResolverCandidate[],
+  options: SolaHarvestOptions,
+): Promise<{
+  candidates: SolaResolverCandidate[];
+  profiles: SolaProfileEnrichment[];
+  enriched: number;
+  failed: number;
+}> {
+  const limit = options.profileLimit ?? candidates.length;
+  const targets = candidates
+    .filter((candidate) => candidate.profileUrl)
+    .slice(0, limit);
+
+  const browserSession = await createSolaProfileBrowser();
+  if (!browserSession) {
+    console.log("[sola-harvest] profile enrichment skipped: Playwright unavailable");
+    return {
+      candidates: candidates.map((candidate) => ({
+        ...candidate,
+        enrichmentStatus: candidate.profileUrl ? "failed" : ("skipped" as const),
+      })),
+      profiles: [],
+      enriched: 0,
+      failed: targets.length,
+    };
+  }
+
+  const profiles: SolaProfileEnrichment[] = [];
+  let enriched = 0;
+  let failed = 0;
+  const enrichedByKey = new Map<string, SolaResolverCandidate>();
+
+  for (const candidate of candidates) {
+    if (!candidate.profileUrl) {
+      enrichedByKey.set(candidate.candidateKey, {
+        ...candidate,
+        enrichmentStatus: "skipped",
+      });
+      continue;
+    }
+    if (!targets.some((target) => target.candidateKey === candidate.candidateKey)) {
+      enrichedByKey.set(candidate.candidateKey, {
+        ...candidate,
+        enrichmentStatus: "skipped",
+      });
+      continue;
+    }
+    enrichedByKey.set(candidate.candidateKey, candidate);
+  }
+
+  try {
+    for (const candidate of targets) {
+      const profileUrl = candidate.profileUrl!;
+      const page = (await browserSession.browser.newPage()) as PlaywrightPage;
+      try {
+        console.log(`[sola-harvest] enriching ${profileUrl}`);
+        const enrichment = await enrichSolaProfile(profileUrl, { page });
+        profiles.push(enrichment);
+
+        if (enrichment.error) {
+          failed += 1;
+          enrichedByKey.set(candidate.candidateKey, {
+            ...candidate,
+            enrichmentStatus: "failed",
+            enrichmentFetchedAt: enrichment.fetchedAt,
+          });
+        } else {
+          enriched += 1;
+          enrichedByKey.set(
+            candidate.candidateKey,
+            mergeProfileEnrichment(candidate, enrichment),
+          );
+        }
+      } catch (error) {
+        failed += 1;
+        const message = error instanceof Error ? error.message : String(error);
+        profiles.push({
+          profileUrl,
+          phoneLinks: [],
+          emailLinks: [],
+          websiteLinks: [],
+          instagramLinks: [],
+          facebookLinks: [],
+          bookingLinks: [],
+          services: [],
+          imageUrls: [],
+          fetchedAt: new Date().toISOString(),
+          apiHitsCount: 0,
+          error: message,
+        });
+        enrichedByKey.set(candidate.candidateKey, {
+          ...candidate,
+          enrichmentStatus: "failed",
+          enrichmentFetchedAt: new Date().toISOString(),
+        });
+      } finally {
+        await page.close().catch(() => undefined);
+      }
+    }
+  } finally {
+    await browserSession.browser.close().catch(() => undefined);
+  }
+
+  return {
+    candidates: candidates.map(
+      (candidate) => enrichedByKey.get(candidate.candidateKey) ?? candidate,
+    ),
+    profiles,
+    enriched,
+    failed,
+  };
+}
+
+async function harvestSlug(
+  slug: string,
+  options: SolaHarvestOptions = {},
+): Promise<SolaSlugHarvestResult> {
   const clean = slug.trim().toLowerCase();
   try {
     const scrape = await scrapeSolaLocation(clean);
@@ -177,15 +359,30 @@ async function harvestSlug(slug: string): Promise<SolaSlugHarvestResult> {
     const deduped = dedupeSolaListings(scrape.listings);
     const apiEndpoint = discoverSolaApiEndpoint(scrape.apiHits);
 
-    const candidates = applyGroupingMetadata(
+    let candidates = applyGroupingMetadata(
       deduped.map((listing) => mapListingToResolverCandidate(listing, clean)),
     );
     printCollisionDiagnostic(candidates);
 
+    let profilesEnriched = 0;
+    let profileEnrichmentFailed = 0;
+    let profileEnrichments: SolaProfileEnrichment[] = [];
+
+    if (options.enrichProfiles) {
+      const enrichmentResult = await enrichCandidates(candidates, options);
+      candidates = enrichmentResult.candidates;
+      profileEnrichments = enrichmentResult.profiles;
+      profilesEnriched = enrichmentResult.enriched;
+      profileEnrichmentFailed = enrichmentResult.failed;
+      console.log(
+        `[sola-harvest] enrichment: enriched=${profilesEnriched} failed=${profileEnrichmentFailed}`,
+      );
+    }
+
     const evidence = deduped.map((listing, index) =>
       listingToEvidence(
         listing,
-        candidates[index],
+        candidates.find((row) => row.candidateKey === listing.candidateKey) ?? candidates[index],
         clean,
         scrape.sourceUrl,
         apiEndpoint,
@@ -202,6 +399,9 @@ async function harvestSlug(slug: string): Promise<SolaSlugHarvestResult> {
       candidates,
       evidence,
       scrape,
+      profilesEnriched,
+      profileEnrichmentFailed,
+      profileEnrichments,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -221,6 +421,7 @@ async function harvestSlug(slug: string): Promise<SolaSlugHarvestResult> {
 
 export async function runSolaHarvest(
   slugs: string | string[],
+  options: SolaHarvestOptions = {},
 ): Promise<SolaHarvestArtifact> {
   const slugList = (Array.isArray(slugs) ? slugs : [slugs])
     .map((slug) => slug.trim().toLowerCase())
@@ -229,9 +430,11 @@ export async function runSolaHarvest(
   const results: SolaSlugHarvestResult[] = [];
   const errors: Array<{ slug: string; error: string }> = [];
   const allCandidates: SolaResolverCandidate[] = [];
+  const allProfileEnrichments: SolaProfileEnrichment[] = [];
+  const harvestedProfileUrls = new Set<string>();
 
   for (const slug of slugList) {
-    const result = await harvestSlug(slug);
+    const result = await harvestSlug(slug, options);
     results.push(result);
     printSlugSummary(result);
 
@@ -239,6 +442,12 @@ export async function runSolaHarvest(
       errors.push({ slug, error: result.error });
     } else {
       allCandidates.push(...result.candidates);
+      if (result.profileEnrichments?.length) {
+        allProfileEnrichments.push(...result.profileEnrichments);
+        for (const profile of result.profileEnrichments) {
+          harvestedProfileUrls.add(profile.profileUrl.toLowerCase());
+        }
+      }
     }
   }
 
@@ -256,6 +465,25 @@ export async function runSolaHarvest(
   console.log(
     `[sola-harvest] wrote ${candidatesArtifact.candidateCount} candidates -> ${CANDIDATES_ARTIFACT_PATH}`,
   );
+
+  if (options.enrichProfiles && allProfileEnrichments.length > 0) {
+    const profileArtifact = await writeProfileEnrichmentArtifact(
+      allProfileEnrichments,
+      harvestedProfileUrls,
+    );
+    const withPhones = profileArtifact.profiles.filter((p) => p.phoneLinks.length > 0).length;
+    const withSocial = profileArtifact.profiles.filter(
+      (p) => p.instagramLinks.length > 0 || p.facebookLinks.length > 0,
+    ).length;
+    const withBooking = profileArtifact.profiles.filter((p) => p.bookingLinks.length > 0).length;
+    const withApi = profileArtifact.profiles.filter((p) => p.likelyProfileApiEndpoint).length;
+    console.log(
+      `[sola-harvest] wrote ${profileArtifact.profileCount} profiles -> ${PROFILE_ENRICHMENT_ARTIFACT_PATH}`,
+    );
+    console.log(
+      `[sola-harvest] enrichment evidence: phones=${withPhones} social=${withSocial} booking=${withBooking} profileApi=${withApi}`,
+    );
+  }
 
   return artifact;
 }

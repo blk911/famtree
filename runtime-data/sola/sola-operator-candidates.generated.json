@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-07T12:52:23.321Z",
+  "generatedAt": "2026-06-07T13:25:42.412Z",
   "sourceProvider": "sola",
   "sourceType": "suite_directory",
   "candidateCount": 19,
@@ -16,14 +16,18 @@
       "businessGroupKey": "sola:lafayette:business:courtney hair and lash",
       "categories": [
         "Hair",
-        "Lashes"
+        "Lashes",
+        "Hair Extensions",
+        "Waxing"
       ],
       "services": [
         "Hair",
-        "Lashes"
+        "Lashes",
+        "Hair Extensions",
+        "Waxing"
       ],
       "profileUrl": "https://book.solasalonstudios.com/courtney-hair-and-lash/pro",
-      "website": "https://book.solasalonstudios.com/courtney-hair-and-lash/pro",
+      "website": "https://www.courtneyhairandlash.com",
       "imageUrl": "https://477a60e96fe31b52e067-225202c07b1dacad6f42ffdd97924785.ssl.cf2.rackcdn.com/Compressed/z8Gwo_temp_82816632_159738_$2020_09_08_19_13_53_6150.jpg",
       "sourceProvider": "sola",
       "sourceType": "suite_directory",
@@ -38,16 +42,44 @@
       "parentContainerType": "salon_suite",
       "parentContainerBrand": "Sola Salon Studios",
       "containerRelationship": "tenant",
-      "phoneLinks": [],
+      "phoneLinks": [
+        "tel:3035788446"
+      ],
       "socialLinks": [
         "https://www.facebook.com/solasalonslafayetteco",
         "https://www.instagram.com/solalafayetteco/"
       ],
       "bookingLinks": [
-        "https://book.solasalonstudios.com/courtney-hair-and-lash/pro"
+        "https://book.solasalonstudios.com/courtney-hair-and-lash/pro",
+        "https://www.vagaro.com/courtneyhairandlash",
+        "https://book.solasalonstudios.com/lafayette"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "phones": [
+        "3035788446"
+      ],
+      "emails": [],
+      "externalLinks": [
+        "https://www.courtneyhairandlash.com",
+        "https://support.radianceholdings.com/hc/en-us/requests/new?ticket_form_id=7659798014491"
+      ],
+      "bio": "10+ years, but it has been a love of mine forever. I graduated with honors from the Aveda Institute Denver. Come on in and let me make your hair dreams real! I love creating either a 'to the scalp' blonde highlight or lived in blondes and specialize in grey coverage. I have been doing lash extensions for about 8 years and LOVE them. If you are looking for a solution to streamlining your daily beauty routine, look no further! Eyelash extensions are your solution!",
+      "profileImages": [
+        "https://477a60e96fe31b52e067-225202c07b1dacad6f42ffdd97924785.ssl.cf2.rackcdn.com/Compressed/z8Gwo_temp_82816632_159738_$2020_09_08_19_13_53_6150.jpg",
+        "https://cf474f612402df7cb5f3-44666847fce354f1be2146d0562fa80e.ssl.cf2.rackcdn.com/Websitebuilder/20250530210801.png",
+        "https://cf474f612402df7cb5f3-44666847fce354f1be2146d0562fa80e.ssl.cf2.rackcdn.com/Original/IDItn_temp_176517905_388942_$2025_06_03_16_33_14_3698.png",
+        "https://cf474f612402df7cb5f3-44666847fce354f1be2146d0562fa80e.ssl.cf2.rackcdn.com/Websitebuilder/20251015225129.png",
+        "https://cf474f612402df7cb5f3-44666847fce354f1be2146d0562fa80e.ssl.cf2.rackcdn.com/Websitebuilder/20251015225200.png",
+        "https://477a60e96fe31b52e067-225202c07b1dacad6f42ffdd97924785.ssl.cf2.rackcdn.com/Original/z8Gwo_temp_82816632_159738_$2020_09_08_19_13_53_6150.jpg",
+        "https://477a60e96fe31b52e067-225202c07b1dacad6f42ffdd97924785.ssl.cf2.rackcdn.com//Original/LGz8t_temp_2846310_159738_$2024_08_09_22_57_52_8095.jpeg",
+        "https://477a60e96fe31b52e067-225202c07b1dacad6f42ffdd97924785.ssl.cf2.rackcdn.com//Original/yEFKD_temp_82816632_159738_$2026_01_15_01_11_26_5224.webp",
+        "https://477a60e96fe31b52e067-225202c07b1dacad6f42ffdd97924785.ssl.cf2.rackcdn.com//Original/MFvyL_temp_82816632_159738_$2026_01_15_01_12_04_0880.webp",
+        "https://477a60e96fe31b52e067-225202c07b1dacad6f42ffdd97924785.ssl.cf2.rackcdn.com//Original/2846310_159738$2025_12_28_01_09_00_2806.jpg",
+        "https://477a60e96fe31b52e067-225202c07b1dacad6f42ffdd97924785.ssl.cf2.rackcdn.com//Original/nrtoK_temp_82816632_159738_$2026_01_15_01_12_58_5320.webp"
+      ],
+      "enrichmentStatus": "enriched",
+      "enrichmentFetchedAt": "2026-06-07T13:25:27.441Z"
     },
     {
       "candidateKey": "sola:lafayette:profile:kikis-hair-shop",
@@ -68,7 +100,7 @@
         "Hair Extensions"
       ],
       "profileUrl": "https://book.solasalonstudios.com/kikis-hair-shop/pro",
-      "website": "https://book.solasalonstudios.com/kikis-hair-shop/pro",
+      "website": "https://www.tiktok.com/@kikishairshop",
       "imageUrl": "https://db189571f5518f6d81b3-1dfedd6ead6ec90e33957176b7771511.ssl.cf2.rackcdn.com/Compressed/38125489_439593$2026_04_18_05_18_50_9146.png",
       "sourceProvider": "sola",
       "sourceType": "suite_directory",
@@ -83,16 +115,51 @@
       "parentContainerType": "salon_suite",
       "parentContainerBrand": "Sola Salon Studios",
       "containerRelationship": "tenant",
-      "phoneLinks": [],
+      "phoneLinks": [
+        "tel:7605608001"
+      ],
       "socialLinks": [
         "https://www.facebook.com/solasalonslafayetteco",
-        "https://www.instagram.com/solalafayetteco/"
+        "https://www.instagram.com/solalafayetteco/",
+        "https://www.instagram.com/kikishairshopllc",
+        "https://www.facebook.com/kikishairshop"
       ],
       "bookingLinks": [
-        "https://book.solasalonstudios.com/kikis-hair-shop/pro"
+        "https://book.solasalonstudios.com/kikis-hair-shop/pro",
+        "https://www.vagaro.com/kikishairshop",
+        "https://book.solasalonstudios.com/lafayette"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "phones": [
+        "7605608001"
+      ],
+      "emails": [],
+      "externalLinks": [
+        "https://www.tiktok.com/@kikishairshop",
+        "https://x.com/kikishairshop",
+        "https://www.youtube.com/@kikishairshop",
+        "https://www.kikishairshop.com",
+        "https://support.radianceholdings.com/hc/en-us/requests/new?ticket_form_id=7659798014491",
+        "https://www.instagram.com/kikishairshopllc",
+        "https://www.facebook.com/kikishairshop"
+      ],
+      "bio": "Kiki’s Hair Shop is a premier hair salon in Lafayette, Colorado, specializing in luxury hair extensions, advanced blonde services, custom hair color, and professional smoothing treatments. We focus on individualized appointments, ensuring a private and personalized experience for each client without the hassle of double booking. As a Certified Great Lengths Keratin Bond Professional in addition to Bellami and DreamCatchers Beaded Wefts Certified Professional, I offer expert extension services suitable for all hair types, utilizing over 25 premium extension vendors. Our salon is renowned for balayage, foil highlights, lived-in blondes, dimensional brunettes, platinum blonde transformations, gray blending, and smoothing treatments. Each service is meticulously tailored to align with your hair goals, lifestyle, and maintenance needs. Schedule your appointment online today to experience the Kiki’s Hair Shop difference.",
+      "profileImages": [
+        "https://db189571f5518f6d81b3-1dfedd6ead6ec90e33957176b7771511.ssl.cf2.rackcdn.com/Compressed/38125489_439593$2026_04_18_05_18_50_9146.png",
+        "https://cf474f612402df7cb5f3-44666847fce354f1be2146d0562fa80e.ssl.cf2.rackcdn.com/Websitebuilder/20250530210801.png",
+        "https://cf474f612402df7cb5f3-44666847fce354f1be2146d0562fa80e.ssl.cf2.rackcdn.com/Original/IDItn_temp_176517905_388942_$2025_06_03_16_33_14_3698.png",
+        "https://cf474f612402df7cb5f3-44666847fce354f1be2146d0562fa80e.ssl.cf2.rackcdn.com/Websitebuilder/20251015225129.png",
+        "https://cf474f612402df7cb5f3-44666847fce354f1be2146d0562fa80e.ssl.cf2.rackcdn.com/Websitebuilder/20251015225200.png",
+        "https://db189571f5518f6d81b3-1dfedd6ead6ec90e33957176b7771511.ssl.cf2.rackcdn.com/Original/38125489_439593$2026_04_18_05_18_50_9146.png",
+        "https://db189571f5518f6d81b3-1dfedd6ead6ec90e33957176b7771511.ssl.cf2.rackcdn.com//Original/38125489_439593$2026_04_16_18_58_49_8918.png",
+        "https://db189571f5518f6d81b3-1dfedd6ead6ec90e33957176b7771511.ssl.cf2.rackcdn.com//Original/Import-38125489_439593_2026_04_01_03_21_08_6161_5549.png",
+        "https://db189571f5518f6d81b3-1dfedd6ead6ec90e33957176b7771511.ssl.cf2.rackcdn.com//Original/38125489_439593$2026_05_31_15_11_20_2776.png",
+        "https://db189571f5518f6d81b3-1dfedd6ead6ec90e33957176b7771511.ssl.cf2.rackcdn.com//Original/38125489_439593$2026_05_12_22_38_37_2609.png",
+        "https://db189571f5518f6d81b3-1dfedd6ead6ec90e33957176b7771511.ssl.cf2.rackcdn.com//Original/38125489_439593$2026_04_24_13_08_47_3249.png"
+      ],
+      "enrichmentStatus": "enriched",
+      "enrichmentFetchedAt": "2026-06-07T13:25:34.836Z"
     },
     {
       "candidateKey": "sola:lafayette:profile:bink",
@@ -135,7 +202,8 @@
         "https://book.solasalonstudios.com/bink/pro"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:butlers-barber-lounge",
@@ -178,7 +246,8 @@
         "https://book.solasalonstudios.com/butlers-barber-lounge/pro"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:golda-tharp",
@@ -216,7 +285,8 @@
         "https://book.solasalonstudios.com/golda-tharp/pro"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:jk-hair-design",
@@ -255,7 +325,8 @@
         "https://book.solasalonstudios.com/jk-hair-design/pro"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:johnathan-walker",
@@ -300,7 +371,8 @@
         "https://book.solasalonstudios.com/johnathan-walker/pro"
       ],
       "sharedSuite": true,
-      "sharedBusiness": true
+      "sharedBusiness": true,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:michelle-walker",
@@ -345,7 +417,8 @@
         "https://book.solasalonstudios.com/michelle-walker/pro"
       ],
       "sharedSuite": true,
-      "sharedBusiness": true
+      "sharedBusiness": true,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:mehak-ahuja",
@@ -387,7 +460,8 @@
         "https://book.solasalonstudios.com/mehak-ahuja/pro"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:nikki-wynn",
@@ -430,7 +504,8 @@
         "https://book.solasalonstudios.com/nikki-wynn/pro"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:razzor-sharp",
@@ -473,7 +548,8 @@
         "https://book.solasalonstudios.com/razzor-sharp/pro"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:rebecca-whitcomb",
@@ -511,7 +587,8 @@
         "https://book.solasalonstudios.com/rebecca-whitcomb/pro"
       ],
       "sharedSuite": true,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:scizzors",
@@ -550,7 +627,8 @@
         "https://book.solasalonstudios.com/scizzors/pro"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:the-nail-spot",
@@ -593,7 +671,8 @@
         "https://book.solasalonstudios.com/the-nail-spot/pro"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:the-rose-salon-2",
@@ -636,7 +715,8 @@
         "https://book.solasalonstudios.com/the-rose-salon-2/pro"
       ],
       "sharedSuite": false,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:up-in-the-hair-1",
@@ -679,7 +759,8 @@
         "https://book.solasalonstudios.com/up-in-the-hair-1/pro"
       ],
       "sharedSuite": true,
-      "sharedBusiness": true
+      "sharedBusiness": true,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:up-in-the-hair-2",
@@ -722,7 +803,8 @@
         "https://book.solasalonstudios.com/up-in-the-hair-2/pro"
       ],
       "sharedSuite": true,
-      "sharedBusiness": true
+      "sharedBusiness": true,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:up-in-the-hair-3",
@@ -765,7 +847,8 @@
         "https://book.solasalonstudios.com/up-in-the-hair-3/pro"
       ],
       "sharedSuite": true,
-      "sharedBusiness": true
+      "sharedBusiness": true,
+      "enrichmentStatus": "skipped"
     },
     {
       "candidateKey": "sola:lafayette:profile:wellness-hub-iv-hydration",
@@ -804,7 +887,8 @@
         "https://book.solasalonstudios.com/wellness-hub-iv-hydration/pro"
       ],
       "sharedSuite": true,
-      "sharedBusiness": false
+      "sharedBusiness": false,
+      "enrichmentStatus": "skipped"
     }
   ]
 }
