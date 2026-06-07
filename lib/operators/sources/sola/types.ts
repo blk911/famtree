@@ -263,3 +263,60 @@ export interface SolaOperatorCandidatesArtifact {
   candidateCount: number;
   candidates: SolaResolverCandidate[];
 }
+
+export type SolaCategoryBucket =
+  | "hair"
+  | "nails"
+  | "skin"
+  | "lashes"
+  | "barber"
+  | "massage"
+  | "wax"
+  | "other";
+
+export type SolaResolverImportStatus = "live_verified" | "matched" | "discovered";
+
+export type SolaResolverRecommendedAction =
+  | "call_or_text"
+  | "booking_profile_review"
+  | "needs_manual_validation";
+
+export interface SolaResolverImportRecord extends SolaResolverCandidate {
+  categoryBuckets: SolaCategoryBucket[];
+  categoryBucket: SolaCategoryBucket;
+  contactabilityScore: number;
+  identityScore: number;
+  acquisitionScore: number;
+  status: SolaResolverImportStatus;
+  recommendedAction: SolaResolverRecommendedAction;
+}
+
+export interface SolaResolverImportSlugSummary {
+  total: number;
+  liveVerified: number;
+  matched: number;
+  discovered: number;
+  avgAcquisition: number;
+}
+
+export interface SolaResolverImportSummary {
+  total: number;
+  liveVerified: number;
+  matched: number;
+  discovered: number;
+  avgContactability: number;
+  avgIdentity: number;
+  avgAcquisition: number;
+  bySlug: Record<string, SolaResolverImportSlugSummary>;
+  byCategory: Record<SolaCategoryBucket, number>;
+}
+
+export interface SolaResolverImportArtifact {
+  generatedAt: string;
+  sourceProvider: typeof SOLA_SOURCE_PROVIDER;
+  sourceType: typeof SOLA_SOURCE_TYPE;
+  sourceArtifact: string;
+  recordCount: number;
+  summary: SolaResolverImportSummary;
+  records: SolaResolverImportRecord[];
+}
