@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-06-07T17:21:22.459Z",
+  "slugCount": 1,
+  "totalCandidates": 19,
+  "enrichedProfiles": 19,
+  "phonesFound": 19,
+  "socialsFound": 0,
+  "bookingLinksFound": 19,
+  "failures": [],
+  "perSlug": [
+    {
+      "slug": "lafayette",
+      "ok": true,
+      "candidates": 19,
+      "enrichedProfiles": 19,
+      "phonesFound": 19,
+      "socialsFound": 0,
+      "bookingLinksFound": 19,
+      "recoverySource": "artifact"
+    }
+  ]
+}

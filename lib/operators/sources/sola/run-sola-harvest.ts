@@ -25,6 +25,8 @@ import type {
   SolaHarvestArtifact,
   SolaHarvestOptions,
   SolaHealthArtifact,
+  SolaMarketSlugMetrics,
+  SolaMarketSummaryArtifact,
   SolaOperatorCandidatesArtifact,
   SolaProfileEnrichment,
   SolaProfileEnrichmentArtifact,
@@ -59,6 +61,13 @@ export const PROFILE_ENRICHMENT_ARTIFACT_PATH = path.join(
 export const HEALTH_ARTIFACT_PATH = path.join(
   SOLA_DATA_DIR,
   "sola-health.generated.json",
+);
+
+export const SLUGS_SEED_PATH = path.join(SOLA_DATA_DIR, "sola-slugs.seed.json");
+
+export const MARKET_SUMMARY_PATH = path.join(
+  SOLA_DATA_DIR,
+  "sola-market-summary.generated.json",
 );
 
 const DEGRADED_LISTING_RATIO = 0.25;
@@ -738,10 +747,152 @@ async function harvestSlug(
   }
 }
 
+export async function readSeedSlugs(): Promise<string[]> {
+  try {
+    const raw = await readFile(SLUGS_SEED_PATH, "utf8");
+    const parsed = JSON.parse(raw) as unknown;
+    const slugs = Array.isArray(parsed)
+      ? parsed
+      : Array.isArray((parsed as { slugs?: unknown }).slugs)
+        ? (parsed as { slugs: unknown[] }).slugs
+        : [];
+    return slugs
+      .map((slug) => String(slug).trim().toLowerCase())
+      .filter(Boolean);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to read seed slugs from ${SLUGS_SEED_PATH}: ${message}`);
+  }
+}
+
+function countProfileEvidence(profiles: SolaProfileEnrichment[]): {
+  phonesFound: number;
+  socialsFound: number;
+  bookingLinksFound: number;
+} {
+  return {
+    phonesFound: profiles.filter((profile) => profile.phoneLinks.length > 0).length,
+    socialsFound: profiles.filter(
+      (profile) => profile.instagramLinks.length > 0 || profile.facebookLinks.length > 0,
+    ).length,
+    bookingLinksFound: profiles.filter((profile) => profile.bookingLinks.length > 0).length,
+  };
+}
+
+function buildSlugMarketMetrics(result: SolaSlugHarvestResult): SolaMarketSlugMetrics {
+  const profiles = result.profileEnrichments ?? [];
+  const evidence = countProfileEvidence(profiles);
+
+  return {
+    slug: result.slug,
+    ok: result.ok,
+    candidates: result.candidatesCreated,
+    enrichedProfiles: result.profilesEnriched ?? 0,
+    phonesFound: evidence.phonesFound,
+    socialsFound: evidence.socialsFound,
+    bookingLinksFound: evidence.bookingLinksFound,
+    recoverySource: result.recoverySource,
+    error: result.error,
+  };
+}
+
+function buildMarketSummary(
+  results: SolaSlugHarvestResult[],
+  errors: Array<{ slug: string; error: string }>,
+): SolaMarketSummaryArtifact {
+  const perSlug = results.map(buildSlugMarketMetrics);
+  const allProfiles = results.flatMap((result) => result.profileEnrichments ?? []);
+  const totals = countProfileEvidence(allProfiles);
+
+  return {
+    generatedAt: new Date().toISOString(),
+    slugCount: perSlug.length,
+    totalCandidates: perSlug.reduce((sum, row) => sum + row.candidates, 0),
+    enrichedProfiles: perSlug.reduce((sum, row) => sum + row.enrichedProfiles, 0),
+    phonesFound: totals.phonesFound,
+    socialsFound: totals.socialsFound,
+    bookingLinksFound: totals.bookingLinksFound,
+    failures: errors,
+    perSlug,
+  };
+}
+
+function printMarketTable(summary: SolaMarketSummaryArtifact): void {
+  const header = [
+    "slug".padEnd(24),
+    "ok".padEnd(5),
+    "cand".padEnd(6),
+    "enr".padEnd(5),
+    "phone".padEnd(7),
+    "social".padEnd(8),
+    "book".padEnd(6),
+    "recovery".padEnd(10),
+    "error",
+  ].join(" | ");
+
+  console.log(header);
+  console.log("-".repeat(header.length));
+
+  for (const row of summary.perSlug) {
+    const line = [
+      row.slug.padEnd(24),
+      (row.ok ? "yes" : "no").padEnd(5),
+      String(row.candidates).padEnd(6),
+      String(row.enrichedProfiles).padEnd(5),
+      String(row.phonesFound).padEnd(7),
+      String(row.socialsFound).padEnd(8),
+      String(row.bookingLinksFound).padEnd(6),
+      (row.recoverySource ?? "-").padEnd(10),
+      row.error ?? "",
+    ].join(" | ");
+    console.log(line);
+  }
+
+  console.log("-".repeat(header.length));
+  console.log(
+    [
+      `TOTAL slugs=${summary.slugCount}`,
+      `candidates=${summary.totalCandidates}`,
+      `enriched=${summary.enrichedProfiles}`,
+      `phones=${summary.phonesFound}`,
+      `socials=${summary.socialsFound}`,
+      `booking=${summary.bookingLinksFound}`,
+      `failures=${summary.failures.length}`,
+    ].join(" | "),
+  );
+}
+
+async function writeMarketSummary(
+  summary: SolaMarketSummaryArtifact,
+): Promise<SolaMarketSummaryArtifact> {
+  await mkdir(SOLA_DATA_DIR, { recursive: true });
+  await writeFile(MARKET_SUMMARY_PATH, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
+  return summary;
+}
+
+function failedSlugResult(slug: string, error: string): SolaSlugHarvestResult {
+  return {
+    slug,
+    ok: false,
+    rawListings: 0,
+    dedupedListings: 0,
+    candidatesCreated: 0,
+    listingsFound: 0,
+    candidates: [],
+    evidence: [],
+    error,
+  };
+}
+
+export interface SolaHarvestRunResult {
+  harvest: SolaHarvestArtifact;
+  marketSummary: SolaMarketSummaryArtifact;
+}
+
 export async function runSolaHarvest(
   slugs: string | string[],
   options: SolaHarvestOptions = {},
-): Promise<SolaHarvestArtifact> {
+): Promise<SolaHarvestRunResult> {
   const slugList = (Array.isArray(slugs) ? slugs : [slugs])
     .map((slug) => slug.trim().toLowerCase())
     .filter(Boolean);
@@ -753,20 +904,29 @@ export async function runSolaHarvest(
   const harvestedProfileUrls = new Set<string>();
 
   for (const slug of slugList) {
-    const result = await harvestSlug(slug, options);
-    results.push(result);
-    printSlugSummary(result);
+    try {
+      const result = await harvestSlug(slug, options);
+      results.push(result);
+      printSlugSummary(result);
 
-    if (!result.ok && result.error) {
-      errors.push({ slug, error: result.error });
-    } else {
-      allCandidates.push(...result.candidates);
-      if (result.profileEnrichments?.length) {
-        allProfileEnrichments.push(...result.profileEnrichments);
-        for (const profile of result.profileEnrichments) {
-          harvestedProfileUrls.add(profile.profileUrl.toLowerCase());
+      if (!result.ok && result.error) {
+        errors.push({ slug, error: result.error });
+      } else {
+        allCandidates.push(...result.candidates);
+        if (result.profileEnrichments?.length) {
+          allProfileEnrichments.push(...result.profileEnrichments);
+          for (const profile of result.profileEnrichments) {
+            harvestedProfileUrls.add(profile.profileUrl.toLowerCase());
+          }
         }
       }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const result = failedSlugResult(slug, message);
+      results.push(result);
+      errors.push({ slug, error: message });
+      printSlugSummary(result);
+      console.error(`[sola-harvest] slug "${slug}" failed: ${message}`);
     }
   }
 
@@ -804,5 +964,11 @@ export async function runSolaHarvest(
     );
   }
 
-  return artifact;
+  const marketSummary = await writeMarketSummary(buildMarketSummary(results, errors));
+  if (options.seedBatch || slugList.length > 1) {
+    printMarketTable(marketSummary);
+    console.log(`[sola-harvest] wrote market summary -> ${MARKET_SUMMARY_PATH}`);
+  }
+
+  return { harvest: artifact, marketSummary };
 }

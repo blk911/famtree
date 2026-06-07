@@ -1,6 +1,6 @@
 // scripts/run-sola-harvest.ts
 
-import { runSolaHarvest } from "@/lib/operators/sources/sola/run-sola-harvest";
+import { readSeedSlugs, runSolaHarvest } from "@/lib/operators/sources/sola/run-sola-harvest";
 import type { SolaHarvestOptions } from "@/lib/operators/sources/sola/types";
 
 function parseArgs(argv: string[]): {
@@ -24,6 +24,10 @@ function parseArgs(argv: string[]): {
       options.reuseArtifacts = true;
       continue;
     }
+    if (arg === "--seed") {
+      options.seedBatch = true;
+      continue;
+    }
     if (arg.startsWith("--limit=")) {
       const value = Number.parseInt(arg.slice("--limit=".length), 10);
       if (Number.isFinite(value) && value > 0) {
@@ -41,18 +45,25 @@ function parseArgs(argv: string[]): {
 
 async function main() {
   const { slugs, options } = parseArgs(process.argv.slice(2));
+  let slugList = slugs;
 
-  if (slugs.length === 0) {
+  if (options.seedBatch) {
+    slugList = await readSeedSlugs();
+    console.log(`[sola-harvest] seed batch: ${slugList.length} slug(s) from sola-slugs.seed.json`);
+  }
+
+  if (slugList.length === 0) {
     console.error(
-      "Usage: npm run harvest:sola -- <slug> [slug...] [--enrich] [--api-only] [--reuse-artifacts] [--limit=N]",
+      "Usage: npm run harvest:sola -- <slug> [slug...] [--seed] [--enrich] [--api-only] [--reuse-artifacts] [--limit=N]",
     );
     console.error(
-      "Example: npm run harvest:sola -- lafayette --enrich --api-only --reuse-artifacts",
+      "Example: npm run harvest:sola -- --seed --enrich --api-only --reuse-artifacts",
     );
     process.exit(1);
   }
 
-  await runSolaHarvest(slugs, options);
+  const { marketSummary } = await runSolaHarvest(slugList, options);
+  console.log(JSON.stringify(marketSummary, null, 2));
 }
 
 main().catch((error) => {

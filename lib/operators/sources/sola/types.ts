@@ -145,6 +145,32 @@ export interface SolaHarvestOptions {
   apiOnly?: boolean;
   /** Skip location scrape; load candidates from stored artifact. */
   reuseArtifacts?: boolean;
+  /** Read slugs from sola-slugs.seed.json and emit market summary. */
+  seedBatch?: boolean;
+}
+
+export interface SolaMarketSlugMetrics {
+  slug: string;
+  ok: boolean;
+  candidates: number;
+  enrichedProfiles: number;
+  phonesFound: number;
+  socialsFound: number;
+  bookingLinksFound: number;
+  recoverySource?: SolaRecoverySource;
+  error?: string;
+}
+
+export interface SolaMarketSummaryArtifact {
+  generatedAt: string;
+  slugCount: number;
+  totalCandidates: number;
+  enrichedProfiles: number;
+  phonesFound: number;
+  socialsFound: number;
+  bookingLinksFound: number;
+  failures: Array<{ slug: string; error: string }>;
+  perSlug: SolaMarketSlugMetrics[];
 }
 
 export interface SolaSlugRecoveryMetrics {
