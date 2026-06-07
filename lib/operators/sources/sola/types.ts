@@ -137,10 +137,36 @@ export interface SolaProfileEnrichmentArtifact {
   profiles: SolaProfileEnrichment[];
 }
 
+export type SolaRecoverySource = "live" | "artifact" | "mixed";
+
 export interface SolaHarvestOptions {
   enrichProfiles?: boolean;
   profileLimit?: number;
   apiOnly?: boolean;
+  /** Skip location scrape; load candidates from stored artifact. */
+  reuseArtifacts?: boolean;
+}
+
+export interface SolaSlugRecoveryMetrics {
+  slug: string;
+  liveListings: number;
+  artifactListings: number;
+  candidatesUsed: number;
+  recoverySource: SolaRecoverySource;
+  enrichedProfiles: number;
+}
+
+export interface SolaSlugHealth {
+  lastSuccessfulScrape?: string;
+  lastListingCount: number;
+  lastEnrichmentCount: number;
+  scrapeFailures: number;
+  scrapeDegradedEvents: number;
+}
+
+export interface SolaHealthArtifact {
+  generatedAt: string;
+  slugs: Record<string, SolaSlugHealth>;
 }
 
 export interface SolaEnrichmentTimingSummary {
@@ -191,6 +217,9 @@ export interface SolaSlugHarvestResult {
   profilesEnriched?: number;
   profileEnrichmentFailed?: number;
   profileEnrichments?: SolaProfileEnrichment[];
+  recoverySource?: SolaRecoverySource;
+  scrapeDegraded?: boolean;
+  recoveryMetrics?: SolaSlugRecoveryMetrics;
   error?: string;
 }
 

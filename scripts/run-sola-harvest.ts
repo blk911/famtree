@@ -20,6 +20,10 @@ function parseArgs(argv: string[]): {
       options.enrichProfiles = true;
       continue;
     }
+    if (arg === "--reuse-artifacts") {
+      options.reuseArtifacts = true;
+      continue;
+    }
     if (arg.startsWith("--limit=")) {
       const value = Number.parseInt(arg.slice("--limit=".length), 10);
       if (Number.isFinite(value) && value > 0) {
@@ -40,9 +44,11 @@ async function main() {
 
   if (slugs.length === 0) {
     console.error(
-      "Usage: npm run harvest:sola -- <slug> [slug...] [--enrich] [--api-only] [--limit=N]",
+      "Usage: npm run harvest:sola -- <slug> [slug...] [--enrich] [--api-only] [--reuse-artifacts] [--limit=N]",
     );
-    console.error("Example: npm run harvest:sola -- lafayette --enrich --api-only");
+    console.error(
+      "Example: npm run harvest:sola -- lafayette --enrich --api-only --reuse-artifacts",
+    );
     process.exit(1);
   }
 

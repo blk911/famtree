@@ -24,12 +24,16 @@ import type {
   SolaEvidenceRecord,
   SolaHarvestArtifact,
   SolaHarvestOptions,
+  SolaHealthArtifact,
   SolaOperatorCandidatesArtifact,
   SolaProfileEnrichment,
   SolaProfileEnrichmentArtifact,
   SolaRawListing,
+  SolaRecoverySource,
   SolaResolverCandidate,
+  SolaSlugHealth,
   SolaSlugHarvestResult,
+  SolaSlugRecoveryMetrics,
 } from "./types";
 import { SOLA_SOURCE_PROVIDER, SOLA_SOURCE_TYPE } from "./types";
 
@@ -51,6 +55,13 @@ export const PROFILE_ENRICHMENT_ARTIFACT_PATH = path.join(
   SOLA_DATA_DIR,
   "sola-profile-enrichment.generated.json",
 );
+
+export const HEALTH_ARTIFACT_PATH = path.join(
+  SOLA_DATA_DIR,
+  "sola-health.generated.json",
+);
+
+const DEGRADED_LISTING_RATIO = 0.25;
 
 const BASE_CONFIDENCE = 70;
 const PROFILE_CONFIDENCE = 82;
@@ -118,6 +129,9 @@ function printSlugSummary(result: SolaSlugHarvestResult): void {
     `dedupedListings=${result.dedupedListings}`,
     `candidatesCreated=${result.candidatesCreated}`,
   ];
+  if (result.recoverySource) {
+    parts.push(`recoverySource=${result.recoverySource}`);
+  }
   if (result.profilesEnriched !== undefined) {
     parts.push(`profilesEnriched=${result.profilesEnriched}`);
   }
@@ -126,6 +140,141 @@ function printSlugSummary(result: SolaSlugHarvestResult): void {
   }
   parts.push(result.error ? `errors=${result.error}` : "errors=none");
   console.log(parts.join(" | "));
+}
+
+function printRecoveryMetrics(metrics: SolaSlugRecoveryMetrics): void {
+  console.log(JSON.stringify(metrics));
+}
+
+function printArtifactRecoveryWarning(
+  liveListings: number,
+  artifactListings: number,
+  reuseArtifacts: boolean,
+): void {
+  console.warn("WARNING:");
+  if (reuseArtifacts) {
+    console.warn("Sola scrape skipped (--reuse-artifacts).");
+  } else {
+    console.warn("Sola scrape degraded.");
+  }
+  console.warn("Using artifact recovery.");
+  console.warn(`Live: ${liveListings}`);
+  console.warn(`Artifact: ${artifactListings}`);
+}
+
+function isScrapeDegraded(liveCount: number, previousCount: number): boolean {
+  if (liveCount === 0) return true;
+  if (previousCount <= 0) return false;
+  return liveCount < previousCount * DEGRADED_LISTING_RATIO;
+}
+
+function filterCandidatesForSlug(
+  candidates: SolaResolverCandidate[],
+  slug: string,
+): SolaResolverCandidate[] {
+  const clean = slug.trim().toLowerCase();
+  return candidates.filter((candidate) => candidate.parentContainerSlug === clean);
+}
+
+function mergeCandidates(
+  live: SolaResolverCandidate[],
+  artifact: SolaResolverCandidate[],
+): SolaResolverCandidate[] {
+  const byKey = new Map<string, SolaResolverCandidate>();
+  for (const candidate of artifact) {
+    byKey.set(candidate.candidateKey, candidate);
+  }
+  for (const candidate of live) {
+    byKey.set(candidate.candidateKey, candidate);
+  }
+  return Array.from(byKey.values());
+}
+
+function defaultSlugHealth(): SolaSlugHealth {
+  return {
+    lastListingCount: 0,
+    lastEnrichmentCount: 0,
+    scrapeFailures: 0,
+    scrapeDegradedEvents: 0,
+  };
+}
+
+async function readHealthArtifact(): Promise<SolaHealthArtifact> {
+  try {
+    const raw = await readFile(HEALTH_ARTIFACT_PATH, "utf8");
+    return JSON.parse(raw) as SolaHealthArtifact;
+  } catch {
+    return { generatedAt: new Date().toISOString(), slugs: {} };
+  }
+}
+
+async function writeHealthArtifact(artifact: SolaHealthArtifact): Promise<void> {
+  await mkdir(SOLA_DATA_DIR, { recursive: true });
+  await writeFile(
+    HEALTH_ARTIFACT_PATH,
+    `${JSON.stringify({ ...artifact, generatedAt: new Date().toISOString() }, null, 2)}\n`,
+    "utf8",
+  );
+}
+
+async function getPreviousListingCount(slug: string): Promise<number> {
+  const health = await readHealthArtifact();
+  const fromHealth = health.slugs[slug]?.lastListingCount;
+  if (fromHealth && fromHealth > 0) return fromHealth;
+
+  try {
+    const raw = await readFile(HARVEST_ARTIFACT_PATH, "utf8");
+    const harvest = JSON.parse(raw) as SolaHarvestArtifact;
+    const result = harvest.results?.find((row) => row.slug === slug);
+    if (result?.dedupedListings && result.dedupedListings > 0) {
+      return result.dedupedListings;
+    }
+  } catch {
+    // no prior harvest artifact
+  }
+
+  return 0;
+}
+
+async function updateSlugHealth(
+  slug: string,
+  patch: Partial<SolaSlugHealth>,
+): Promise<void> {
+  const health = await readHealthArtifact();
+  const current = health.slugs[slug] ?? defaultSlugHealth();
+  health.slugs[slug] = { ...current, ...patch };
+  await writeHealthArtifact(health);
+}
+
+async function recordScrapeFailure(slug: string): Promise<void> {
+  const health = await readHealthArtifact();
+  const current = health.slugs[slug] ?? defaultSlugHealth();
+  health.slugs[slug] = {
+    ...current,
+    scrapeFailures: current.scrapeFailures + 1,
+  };
+  await writeHealthArtifact(health);
+}
+
+async function recordScrapeDegraded(slug: string): Promise<void> {
+  const health = await readHealthArtifact();
+  const current = health.slugs[slug] ?? defaultSlugHealth();
+  health.slugs[slug] = {
+    ...current,
+    scrapeDegradedEvents: current.scrapeDegradedEvents + 1,
+  };
+  await writeHealthArtifact(health);
+}
+
+async function recordSuccessfulScrape(slug: string, listingCount: number): Promise<void> {
+  await updateSlugHealth(slug, {
+    lastSuccessfulScrape: new Date().toISOString(),
+    lastListingCount: listingCount,
+  });
+}
+
+async function recordEnrichmentCount(slug: string, enrichedProfiles: number): Promise<void> {
+  await updateSlugHealth(slug, { lastEnrichmentCount: enrichedProfiles });
 }
 
 async function readCandidatesArtifact(): Promise<SolaResolverCandidate[]> {
@@ -389,35 +538,143 @@ async function enrichCandidates(
   };
 }
 
+function candidateToEvidence(
+  candidate: SolaResolverCandidate,
+  slug: string,
+  sourceUrl: string,
+): SolaEvidenceRecord {
+  const profileUrl = candidate.profileUrl;
+  return {
+    candidateKey: candidate.candidateKey,
+    sourceProvider: SOLA_SOURCE_PROVIDER,
+    sourceType: SOLA_SOURCE_TYPE,
+    sourceUrl,
+    evidenceUrl: profileUrl ?? sourceUrl,
+    profileUrl,
+    parentContainerId: candidate.parentContainerId,
+    parentContainerSlug: slug,
+    confidence: profileUrl ? PROFILE_CONFIDENCE : BASE_CONFIDENCE,
+    capturedAt: new Date().toISOString(),
+    notes: candidate.suiteNumber ? `Studio ${candidate.suiteNumber}` : undefined,
+  };
+}
+
 async function harvestSlug(
   slug: string,
   options: SolaHarvestOptions = {},
 ): Promise<SolaSlugHarvestResult> {
   const clean = slug.trim().toLowerCase();
+  const artifactCandidates = filterCandidatesForSlug(await readCandidatesArtifact(), clean);
+  const artifactListings = artifactCandidates.length;
+  const previousListingCount = await getPreviousListingCount(clean);
+
+  let liveListings = 0;
+  let recoverySource: SolaRecoverySource = "live";
+  let scrapeDegraded = false;
+  let candidates: SolaResolverCandidate[] = [];
+  let evidence: SolaEvidenceRecord[] = [];
+  let scrape: Awaited<ReturnType<typeof scrapeSolaLocation>> | undefined;
+  let rawListings = 0;
+  let dedupedListings = 0;
+  const defaultSourceUrl = `https://book.solasalonstudios.com/${clean}/location`;
+
   try {
-    const scrape = await scrapeSolaLocation(clean);
-    if (scrape.error && scrape.listings.length === 0) {
-      return {
-        slug: clean,
-        ok: false,
-        rawListings: 0,
-        dedupedListings: 0,
-        candidatesCreated: 0,
-        listingsFound: 0,
-        candidates: [],
-        evidence: [],
-        scrape,
-        error: scrape.error,
-      };
+    if (options.reuseArtifacts) {
+      if (artifactListings === 0) {
+        await recordScrapeFailure(clean);
+        return {
+          slug: clean,
+          ok: false,
+          rawListings: 0,
+          dedupedListings: 0,
+          candidatesCreated: 0,
+          listingsFound: 0,
+          candidates: [],
+          evidence: [],
+          recoverySource: "artifact",
+          error: `No artifact candidates for slug "${clean}"`,
+        };
+      }
+
+      candidates = artifactCandidates;
+      recoverySource = "artifact";
+      printArtifactRecoveryWarning(0, artifactListings, true);
+      evidence = candidates.map((candidate) =>
+        candidateToEvidence(candidate, clean, candidate.sourceUrl || defaultSourceUrl),
+      );
+    } else {
+      scrape = await scrapeSolaLocation(clean);
+      const sourceUrl = scrape.sourceUrl;
+      rawListings = scrape.listings.length;
+      const deduped = dedupeSolaListings(scrape.listings);
+      dedupedListings = deduped.length;
+      liveListings = dedupedListings;
+      const apiEndpoint = discoverSolaApiEndpoint(scrape.apiHits);
+      const liveCandidates = applyGroupingMetadata(
+        deduped.map((listing) => mapListingToResolverCandidate(listing, clean)),
+      );
+
+      if (isScrapeDegraded(liveListings, previousListingCount)) {
+        scrapeDegraded = true;
+        await recordScrapeDegraded(clean);
+
+        if (liveListings === 0) {
+          if (artifactListings === 0) {
+            await recordScrapeFailure(clean);
+            return {
+              slug: clean,
+              ok: false,
+              rawListings,
+              dedupedListings,
+              candidatesCreated: 0,
+              listingsFound: 0,
+              candidates: [],
+              evidence: [],
+              scrape,
+              recoverySource: "artifact",
+              scrapeDegraded: true,
+              error: scrape.error ?? "Live scrape returned 0 listings and no artifact candidates",
+            };
+          }
+
+          candidates = artifactCandidates;
+          recoverySource = "artifact";
+          printArtifactRecoveryWarning(0, artifactListings, false);
+          evidence = candidates.map((candidate) =>
+            candidateToEvidence(candidate, clean, candidate.sourceUrl || defaultSourceUrl),
+          );
+        } else {
+          candidates = mergeCandidates(liveCandidates, artifactCandidates);
+          recoverySource = "mixed";
+          printArtifactRecoveryWarning(liveListings, artifactListings, false);
+          evidence = deduped.map((listing, index) =>
+            listingToEvidence(
+              listing,
+              candidates.find((row) => row.candidateKey === listing.candidateKey) ??
+                liveCandidates[index],
+              clean,
+              sourceUrl,
+              apiEndpoint,
+            ),
+          );
+        }
+      } else {
+        candidates = liveCandidates;
+        recoverySource = "live";
+        await recordSuccessfulScrape(clean, liveListings);
+        evidence = deduped.map((listing, index) =>
+          listingToEvidence(
+            listing,
+            candidates.find((row) => row.candidateKey === listing.candidateKey) ??
+              liveCandidates[index],
+            clean,
+            sourceUrl,
+            apiEndpoint,
+          ),
+        );
+      }
     }
 
-    const rawListings = scrape.listings.length;
-    const deduped = dedupeSolaListings(scrape.listings);
-    const apiEndpoint = discoverSolaApiEndpoint(scrape.apiHits);
-
-    let candidates = applyGroupingMetadata(
-      deduped.map((listing) => mapListingToResolverCandidate(listing, clean)),
-    );
     printCollisionDiagnostic(candidates);
 
     let profilesEnriched = 0;
@@ -430,46 +687,52 @@ async function harvestSlug(
       profileEnrichments = enrichmentResult.profiles;
       profilesEnriched = enrichmentResult.enriched;
       profileEnrichmentFailed = enrichmentResult.failed;
+      await recordEnrichmentCount(clean, profilesEnriched);
       console.log(
         `[sola-harvest] enrichment: enriched=${profilesEnriched} failed=${profileEnrichmentFailed} apiOnly=${options.apiOnly ? "yes" : "no"}`,
       );
     }
 
-    const evidence = deduped.map((listing, index) =>
-      listingToEvidence(
-        listing,
-        candidates.find((row) => row.candidateKey === listing.candidateKey) ?? candidates[index],
-        clean,
-        scrape.sourceUrl,
-        apiEndpoint,
-      ),
-    );
+    const recoveryMetrics: SolaSlugRecoveryMetrics = {
+      slug: clean,
+      liveListings,
+      artifactListings,
+      candidatesUsed: candidates.length,
+      recoverySource,
+      enrichedProfiles: profilesEnriched,
+    };
+    printRecoveryMetrics(recoveryMetrics);
 
     return {
       slug: clean,
       ok: true,
       rawListings,
-      dedupedListings: deduped.length,
+      dedupedListings,
       candidatesCreated: candidates.length,
-      listingsFound: deduped.length,
+      listingsFound: recoverySource === "artifact" ? artifactListings : dedupedListings,
       candidates,
       evidence,
       scrape,
       profilesEnriched,
       profileEnrichmentFailed,
       profileEnrichments,
+      recoverySource,
+      scrapeDegraded,
+      recoveryMetrics,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    await recordScrapeFailure(clean);
     return {
       slug: clean,
       ok: false,
-      rawListings: 0,
-      dedupedListings: 0,
+      rawListings,
+      dedupedListings,
       candidatesCreated: 0,
       listingsFound: 0,
       candidates: [],
       evidence: [],
+      scrape,
       error: message,
     };
   }
