@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   SolaCategoryBucket,
   SolaResolverImportArtifact,
   SolaResolverImportRecord,
   SolaResolverRecommendedAction,
   SolaResolverVerificationStatus,
+  SolaReviewStateMap,
+  SolaReviewStatus,
 } from "@/lib/operators/sources/sola/types";
 import {
   ADMIN_INTEL_META,
@@ -24,6 +26,16 @@ const selectStyle: React.CSSProperties = {
   color: "#44403c",
 };
 
+const rowSelectStyle: React.CSSProperties = {
+  fontSize: 11,
+  padding: "4px 6px",
+  borderRadius: 6,
+  border: "1px solid #e7e5e4",
+  background: "#fff",
+  color: "#44403c",
+  maxWidth: 130,
+};
+
 const STATUS_STYLE: Record<SolaResolverVerificationStatus, { label: string; fg: string; bg: string }> = {
   live_verified: { label: "Live verified", fg: "#166534", bg: "#dcfce7" },
   matched: { label: "Matched", fg: "#1d4ed8", bg: "#dbeafe" },
@@ -36,6 +48,15 @@ const ACTION_LABELS: Record<SolaResolverRecommendedAction, string> = {
   needs_manual_validation: "Manual validation",
 };
 
+const REVIEW_LABELS: Record<SolaReviewStatus, string> = {
+  unreviewed: "Unreviewed",
+  valid: "Valid",
+  bad_data: "Bad data",
+  duplicate: "Duplicate",
+  do_not_contact: "Do not contact",
+  priority: "Priority",
+};
+
 const ALL_CATEGORIES: SolaCategoryBucket[] = [
   "hair",
   "nails",
@@ -45,6 +66,15 @@ const ALL_CATEGORIES: SolaCategoryBucket[] = [
   "massage",
   "wax",
   "other",
+];
+
+const REVIEW_FILTER_OPTIONS: SolaReviewStatus[] = [
+  "unreviewed",
+  "valid",
+  "priority",
+  "bad_data",
+  "duplicate",
+  "do_not_contact",
 ];
 
 function hostOf(url: string): string {
@@ -120,6 +150,33 @@ function scoreColor(score: number): string {
   return "#78716c";
 }
 
+function resolveReviewStatus(
+  candidateKey: string,
+  reviewStates: SolaReviewStateMap,
+): SolaReviewStatus {
+  return reviewStates[candidateKey]?.reviewStatus ?? "unreviewed";
+}
+
+function rowStyle(reviewStatus: SolaReviewStatus): React.CSSProperties {
+  if (reviewStatus === "priority") {
+    return {
+      background: "linear-gradient(90deg, #fff7ed 0%, #fffbeb 12%, #fff 100%)",
+      boxShadow: "inset 4px 0 0 #f59e0b",
+    };
+  }
+  if (
+    reviewStatus === "bad_data" ||
+    reviewStatus === "duplicate" ||
+    reviewStatus === "do_not_contact"
+  ) {
+    return { background: "#f5f5f4", opacity: 0.58 };
+  }
+  if (reviewStatus === "valid") {
+    return { background: "#f7fee7" };
+  }
+  return {};
+}
+
 function linkBtn(href: string, label: string): React.ReactNode {
   return (
     <a
@@ -156,9 +213,72 @@ export function SolaMarketClient({ artifact }: Props) {
   const [slugFilter, setSlugFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [actionFilter, setActionFilter] = useState<string>("all");
+  const [reviewFilter, setReviewFilter] = useState<string>("all");
+  const [reviewStates, setReviewStates] = useState<SolaReviewStateMap>({});
+  const [reviewError, setReviewError] = useState("");
+  const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [notesModal, setNotesModal] = useState<{
+    candidateKey: string;
+    displayName: string;
+    reviewStatus: SolaReviewStatus;
+    notes: string;
+  } | null>(null);
 
   const records = artifact?.records ?? [];
   const summary = artifact?.summary;
+
+  const loadReviewStates = useCallback(async () => {
+    setReviewError("");
+    try {
+      const res = await fetch("/api/admin/markets/sola/review-state", { cache: "no-store" });
+      const data = await res.json();
+      if (!data.ok) {
+        setReviewError(data.error ?? "Failed to load review states");
+        return;
+      }
+      setReviewStates(data.states ?? {});
+    } catch (e) {
+      setReviewError(e instanceof Error ? e.message : "Failed to load review states");
+    }
+  }, []);
+
+  useEffect(() => {
+    loadReviewStates();
+  }, [loadReviewStates]);
+
+  const saveReview = useCallback(
+    async (candidateKey: string, reviewStatus: SolaReviewStatus, notes?: string) => {
+      setSavingKey(candidateKey);
+      setReviewError("");
+      try {
+        const res = await fetch("/api/admin/markets/sola/review-state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            candidateKey,
+            reviewStatus,
+            notes: notes ?? reviewStates[candidateKey]?.notes ?? "",
+          }),
+        });
+        const data = await res.json();
+        if (!data.ok) {
+          setReviewError(data.error ?? "Failed to save review");
+          return;
+        }
+        setReviewStates(data.states ?? {});
+      } catch (e) {
+        setReviewError(e instanceof Error ? e.message : "Failed to save review");
+      } finally {
+        setSavingKey(null);
+      }
+    },
+    [reviewStates],
+  );
+
+  const reviewedCount = useMemo(
+    () => Object.keys(reviewStates).length,
+    [reviewStates],
+  );
 
   const slugs = useMemo(() => {
     const set = new Set(records.map((r) => r.slug));
@@ -171,13 +291,29 @@ export function SolaMarketClient({ artifact }: Props) {
       .filter((r) => slugFilter === "all" || r.slug === slugFilter)
       .filter((r) => statusFilter === "all" || r.verificationStatus === statusFilter)
       .filter((r) => actionFilter === "all" || r.recommendedAction === actionFilter)
+      .filter((r) => {
+        if (reviewFilter === "all") return true;
+        return resolveReviewStatus(r.candidateKey, reviewStates) === reviewFilter;
+      })
       .sort((a, b) => {
+        const aReview = resolveReviewStatus(a.candidateKey, reviewStates);
+        const bReview = resolveReviewStatus(b.candidateKey, reviewStates);
+        if (aReview === "priority" && bReview !== "priority") return -1;
+        if (bReview === "priority" && aReview !== "priority") return 1;
         if (b.acquisitionScore !== a.acquisitionScore) {
           return b.acquisitionScore - a.acquisitionScore;
         }
         return b.contactabilityScore - a.contactabilityScore;
       });
-  }, [records, categoryFilter, slugFilter, statusFilter, actionFilter]);
+  }, [
+    records,
+    categoryFilter,
+    slugFilter,
+    statusFilter,
+    actionFilter,
+    reviewFilter,
+    reviewStates,
+  ]);
 
   if (!artifact) {
     return (
@@ -203,16 +339,33 @@ export function SolaMarketClient({ artifact }: Props) {
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 4px" }}>Sola Market</h1>
         <p style={{ fontSize: 12, color: "#78716c", margin: 0, maxWidth: 720, lineHeight: 1.55 }}>
-          Read-only inspector for Sola suite-directory resolver import — {artifact.recordCount} candidates
-          from <code style={{ fontSize: 11 }}>{artifact.sourceArtifact}</code>
+          Sola suite-directory resolver import with manual review overlay — {artifact.recordCount}{" "}
+          candidates from <code style={{ fontSize: 11 }}>{artifact.sourceArtifact}</code>
           {artifact.generatedAt ? ` · generated ${new Date(artifact.generatedAt).toLocaleString()}` : null}.
+          Review states are stored separately and do not mutate the generated import.
         </p>
       </div>
+
+      {reviewError ? (
+        <div
+          style={{
+            marginBottom: 16,
+            fontSize: 12,
+            color: "#b91c1c",
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            borderRadius: 8,
+            padding: "10px 12px",
+          }}
+        >
+          {reviewError}
+        </div>
+      ) : null}
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
           gap: 10,
           marginBottom: 20,
         }}
@@ -220,6 +373,7 @@ export function SolaMarketClient({ artifact }: Props) {
         {[
           ["Total records", summary?.total ?? artifact.recordCount],
           ["Live verified", summary?.liveVerified ?? 0],
+          ["Reviewed", reviewedCount],
           ["Avg contactability", summary?.avgContactability ?? 0],
           ["Avg acquisition", summary?.avgAcquisition ?? 0],
         ].map(([label, value]) => (
@@ -259,7 +413,7 @@ export function SolaMarketClient({ artifact }: Props) {
           ))}
         </select>
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={selectStyle}>
-          <option value="all">Status: All</option>
+          <option value="all">Verification: All</option>
           {(Object.keys(STATUS_STYLE) as SolaResolverVerificationStatus[]).map((s) => (
             <option key={s} value={s}>
               {STATUS_STYLE[s].label}
@@ -274,13 +428,21 @@ export function SolaMarketClient({ artifact }: Props) {
             </option>
           ))}
         </select>
+        <select value={reviewFilter} onChange={(e) => setReviewFilter(e.target.value)} style={selectStyle}>
+          <option value="all">Review: All</option>
+          {REVIEW_FILTER_OPTIONS.map((s) => (
+            <option key={s} value={s}>
+              {REVIEW_LABELS[s]}
+            </option>
+          ))}
+        </select>
         <span style={{ fontSize: 12, color: "#78716c", alignSelf: "center" }}>
           Showing {filtered.length} of {records.length}
         </span>
       </div>
 
-      <AdminIntelTableScroll minWidth={1180} borderRadius={12}>
-        <table style={adminIntelTableStyle(1180)}>
+      <AdminIntelTableScroll minWidth={1320} borderRadius={12}>
+        <table style={adminIntelTableStyle(1320)}>
           <thead>
             <tr>
               <th style={thStyle}>Operator</th>
@@ -291,14 +453,15 @@ export function SolaMarketClient({ artifact }: Props) {
               <th style={thStyle}>Web / Social</th>
               <th style={thStyle}>Contact</th>
               <th style={thStyle}>Acquire</th>
-              <th style={thStyle}>Status</th>
+              <th style={thStyle}>Verification</th>
+              <th style={thStyle}>Review</th>
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={10} style={{ ...tdStyle, textAlign: "center", color: "#a8a29e" }}>
+                <td colSpan={11} style={{ ...tdStyle, textAlign: "center", color: "#a8a29e" }}>
                   No candidates match the current filters.
                 </td>
               </tr>
@@ -308,12 +471,47 @@ export function SolaMarketClient({ artifact }: Props) {
                 const website = pickWebsite(record);
                 const social = pickSocialLink(record);
                 const phone = record.phones[0];
-                const status = STATUS_STYLE[record.verificationStatus];
+                const verification = STATUS_STYLE[record.verificationStatus];
+                const reviewStatus = resolveReviewStatus(record.candidateKey, reviewStates);
+                const reviewNotes = reviewStates[record.candidateKey]?.notes ?? "";
+                const isSaving = savingKey === record.candidateKey;
 
                 return (
-                  <tr key={record.candidateKey}>
+                  <tr key={record.candidateKey} style={rowStyle(reviewStatus)}>
                     <td style={tdStyle}>
-                      <div style={{ fontWeight: 700, color: "#1c1917" }}>{record.displayName}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontWeight: 700, color: "#1c1917" }}>{record.displayName}</span>
+                        {reviewStatus === "priority" ? (
+                          <span
+                            style={{
+                              fontSize: 9,
+                              fontWeight: 800,
+                              padding: "2px 6px",
+                              borderRadius: 999,
+                              background: "#fef3c7",
+                              color: "#b45309",
+                              letterSpacing: "0.04em",
+                            }}
+                          >
+                            PRIORITY
+                          </span>
+                        ) : null}
+                        {reviewStatus === "valid" ? (
+                          <span
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 800,
+                              padding: "2px 6px",
+                              borderRadius: 999,
+                              background: "#dcfce7",
+                              color: "#166534",
+                            }}
+                            title="Reviewed valid"
+                          >
+                            ✓ Valid
+                          </span>
+                        ) : null}
+                      </div>
                       {record.professionalName && record.professionalName !== record.displayName ? (
                         <div style={ADMIN_INTEL_META}>{record.professionalName}</div>
                       ) : null}
@@ -397,16 +595,76 @@ export function SolaMarketClient({ artifact }: Props) {
                           fontWeight: 800,
                           padding: "3px 8px",
                           borderRadius: 999,
-                          color: status.fg,
-                          background: status.bg,
+                          color: verification.fg,
+                          background: verification.bg,
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {status.label}
+                        {verification.label}
                       </span>
                       <div style={{ ...ADMIN_INTEL_META, marginTop: 4 }}>
                         {ACTION_LABELS[record.recommendedAction]}
                       </div>
+                    </td>
+                    <td style={tdStyle}>
+                      <select
+                        value={reviewStatus}
+                        disabled={isSaving}
+                        onChange={(e) => {
+                          void saveReview(
+                            record.candidateKey,
+                            e.target.value as SolaReviewStatus,
+                            reviewNotes,
+                          );
+                        }}
+                        style={rowSelectStyle}
+                      >
+                        {(Object.keys(REVIEW_LABELS) as SolaReviewStatus[]).map((s) => (
+                          <option key={s} value={s}>
+                            {REVIEW_LABELS[s]}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setNotesModal({
+                            candidateKey: record.candidateKey,
+                            displayName: record.displayName,
+                            reviewStatus,
+                            notes: reviewNotes,
+                          })
+                        }
+                        style={{
+                          display: "block",
+                          marginTop: 6,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          padding: "3px 8px",
+                          borderRadius: 6,
+                          border: "1px solid #e7e5e4",
+                          background: reviewNotes ? "#ede9fe" : "#fff",
+                          color: "#5b21b6",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {reviewNotes ? "Edit notes" : "Add notes"}
+                      </button>
+                      {reviewNotes ? (
+                        <div
+                          style={{
+                            ...ADMIN_INTEL_META,
+                            marginTop: 4,
+                            maxWidth: 140,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                          title={reviewNotes}
+                        >
+                          {reviewNotes}
+                        </div>
+                      ) : null}
                     </td>
                     <td style={tdStyle}>
                       {record.profileUrl ? linkBtn(record.profileUrl, "Profile") : null}
@@ -421,6 +679,119 @@ export function SolaMarketClient({ artifact }: Props) {
           </tbody>
         </table>
       </AdminIntelTableScroll>
+
+      {notesModal ? (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 23, 41, 0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 50,
+            padding: 20,
+          }}
+          onClick={() => setNotesModal(null)}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 440,
+              background: "#fff",
+              borderRadius: 14,
+              border: "1px solid #e7e5e4",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
+              padding: "20px 22px",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ fontSize: 16, fontWeight: 800, margin: "0 0 4px" }}>Review notes</h2>
+            <p style={{ fontSize: 12, color: "#78716c", margin: "0 0 14px" }}>{notesModal.displayName}</p>
+
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", marginBottom: 6 }}>
+              Review status
+            </label>
+            <select
+              value={notesModal.reviewStatus}
+              onChange={(e) =>
+                setNotesModal({
+                  ...notesModal,
+                  reviewStatus: e.target.value as SolaReviewStatus,
+                })
+              }
+              style={{ ...selectStyle, width: "100%", marginBottom: 12 }}
+            >
+              {(Object.keys(REVIEW_LABELS) as SolaReviewStatus[]).map((s) => (
+                <option key={s} value={s}>
+                  {REVIEW_LABELS[s]}
+                </option>
+              ))}
+            </select>
+
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#78716c", marginBottom: 6 }}>
+              Notes
+            </label>
+            <textarea
+              value={notesModal.notes}
+              onChange={(e) => setNotesModal({ ...notesModal, notes: e.target.value })}
+              rows={4}
+              placeholder="Acquisition notes, data issues, outreach context…"
+              style={{
+                width: "100%",
+                fontSize: 13,
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "1px solid #e7e5e4",
+                resize: "vertical",
+                fontFamily: "inherit",
+                boxSizing: "border-box",
+              }}
+            />
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+              <button
+                type="button"
+                onClick={() => setNotesModal(null)}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  padding: "8px 14px",
+                  borderRadius: 8,
+                  border: "1px solid #e7e5e4",
+                  background: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={savingKey === notesModal.candidateKey}
+                onClick={() => {
+                  void saveReview(
+                    notesModal.candidateKey,
+                    notesModal.reviewStatus,
+                    notesModal.notes,
+                  ).then(() => setNotesModal(null));
+                }}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  padding: "8px 14px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: "#4338ca",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

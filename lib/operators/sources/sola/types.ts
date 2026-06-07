@@ -362,3 +362,30 @@ export interface SolaResolverImportArtifact {
   summary: SolaResolverImportSummary;
   records: SolaResolverImportRecord[];
 }
+
+export type SolaReviewStatus =
+  | "unreviewed"
+  | "valid"
+  | "bad_data"
+  | "duplicate"
+  | "do_not_contact"
+  | "priority";
+
+export const SOLA_REVIEW_STATUSES: SolaReviewStatus[] = [
+  "unreviewed",
+  "valid",
+  "bad_data",
+  "duplicate",
+  "do_not_contact",
+  "priority",
+];
+
+export interface SolaReviewState {
+  candidateKey: string;
+  reviewStatus: Exclude<SolaReviewStatus, "unreviewed">;
+  notes: string;
+  reviewedAt: string;
+  reviewedBy: string;
+}
+
+export type SolaReviewStateMap = Record<string, SolaReviewState>;
