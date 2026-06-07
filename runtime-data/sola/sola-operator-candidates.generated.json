@@ -1,0 +1,583 @@
+{
+  "generatedAt": "2026-06-07T12:49:36.066Z",
+  "sourceProvider": "sola",
+  "sourceType": "suite_directory",
+  "candidateCount": 16,
+  "candidates": [
+    {
+      "candidateKey": "sola:lafayette:courtney hair and lash:12",
+      "operatorName": "Courtney Hair and Lash",
+      "contactName": "Courtney Balzen",
+      "locationName": "Lafayette",
+      "suiteNumber": "12",
+      "categories": [
+        "Hair",
+        "Lashes"
+      ],
+      "services": [
+        "Hair",
+        "Lashes"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/courtney-hair-and-lash/pro",
+      "website": "https://book.solasalonstudios.com/courtney-hair-and-lash/pro",
+      "imageUrl": "https://477a60e96fe31b52e067-225202c07b1dacad6f42ffdd97924785.ssl.cf2.rackcdn.com/Compressed/z8Gwo_temp_82816632_159738_$2020_09_08_19_13_53_6150.jpg",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Courtney Balzen",
+      "businessName": "Courtney Hair and Lash",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/courtney-hair-and-lash/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:kiki s hair shop:13",
+      "operatorName": "Kiki's Hair Shop",
+      "contactName": "Kiki Carter",
+      "locationName": "Lafayette",
+      "suiteNumber": "13",
+      "categories": [
+        "Hair",
+        "Hair Extensions"
+      ],
+      "services": [
+        "Hair",
+        "Hair Extensions"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/kikis-hair-shop/pro",
+      "website": "https://book.solasalonstudios.com/kikis-hair-shop/pro",
+      "imageUrl": "https://db189571f5518f6d81b3-1dfedd6ead6ec90e33957176b7771511.ssl.cf2.rackcdn.com/Compressed/38125489_439593$2026_04_18_05_18_50_9146.png",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Kiki Carter",
+      "businessName": "Kiki's Hair Shop",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/kikis-hair-shop/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:bink:11",
+      "operatorName": "BInk",
+      "contactName": "Beth Vogel",
+      "locationName": "Lafayette",
+      "suiteNumber": "11",
+      "categories": [
+        "Hair"
+      ],
+      "services": [
+        "Hair"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/bink/pro",
+      "website": "https://book.solasalonstudios.com/bink/pro",
+      "imageUrl": "https://b6abf5956a7d4cffca73-1e673d34366d8dbeb17aabcd538307a1.ssl.cf2.rackcdn.com/Compressed/Import-64642915_440148_2026_04_01_04_32_35_2546_5985.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Beth Vogel",
+      "businessName": "BInk",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/bink/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:butler s barber lounge:1",
+      "operatorName": "Butler's Barber Lounge",
+      "contactName": "Sean Butler",
+      "locationName": "Lafayette",
+      "suiteNumber": "1",
+      "categories": [
+        "Barber"
+      ],
+      "services": [
+        "Barber"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/butlers-barber-lounge/pro",
+      "website": "https://book.solasalonstudios.com/butlers-barber-lounge/pro",
+      "imageUrl": "https://87404849d4aa495bc2b8-f905ea9af2a10c73df1b3f8f181352ce.ssl.cf2.rackcdn.com/Compressed/251912959_438603_$2026_06_06_18_05_02_5725.png",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Sean Butler",
+      "businessName": "Butler's Barber Lounge",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/butlers-barber-lounge/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:golda tharp:18",
+      "operatorName": "Golda Tharp",
+      "locationName": "Lafayette",
+      "suiteNumber": "18",
+      "categories": [],
+      "services": [],
+      "profileUrl": "https://book.solasalonstudios.com/golda-tharp/pro",
+      "website": "https://book.solasalonstudios.com/golda-tharp/pro",
+      "imageUrl": "https://vagaro.azureedge.net/static/assets/Sola_Saloon_Img_2.png",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Golda Tharp",
+      "businessName": "Golda Tharp",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/golda-tharp/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:jk hair design:9",
+      "operatorName": "JK HAIR DESIGN",
+      "contactName": "Jodi Kalman",
+      "locationName": "Lafayette",
+      "suiteNumber": "9",
+      "categories": [],
+      "services": [],
+      "profileUrl": "https://book.solasalonstudios.com/jk-hair-design/pro",
+      "website": "https://book.solasalonstudios.com/jk-hair-design/pro",
+      "imageUrl": "https://bb6f8dd122b8e3eafc82-97d0760993c90ccfe9b82a001da0a9ec.ssl.cf2.rackcdn.com/Compressed/Import-78836261_439049_2026_04_01_02_01_53_9789_3942.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Jodi Kalman",
+      "businessName": "JK HAIR DESIGN",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/jk-hair-design/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:luxe lather:14",
+      "operatorName": "Luxe + Lather",
+      "contactName": "Michelle Walker",
+      "locationName": "Lafayette",
+      "suiteNumber": "14",
+      "categories": [
+        "Hair",
+        "Skin Care"
+      ],
+      "services": [
+        "Hair",
+        "Skin Care"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/michelle-walker/pro",
+      "website": "https://book.solasalonstudios.com/michelle-walker/pro",
+      "imageUrl": "https://103c7a9d3cad2db6f44e-200cda55f84c789b68a1a0e528a3f783.ssl.cf2.rackcdn.com/Compressed/Import-256737595_463945_2026_06_01_18_46_18_5584_4297.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Michelle Walker",
+      "businessName": "Luxe + Lather",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/michelle-walker/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:mehak ahuja:17",
+      "operatorName": "Mehak Ahuja",
+      "locationName": "Lafayette",
+      "suiteNumber": "17",
+      "categories": [
+        "Brows"
+      ],
+      "services": [
+        "Brows"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/mehak-ahuja/pro",
+      "website": "https://book.solasalonstudios.com/mehak-ahuja/pro",
+      "imageUrl": "https://1116f63a84b8f784c263-23b96a2ed515b255c420ac0e7902a6de.ssl.cf2.rackcdn.com/Compressed/Import-67572945_437687_2026_03_31_22_52_07_9969_7676.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Mehak Ahuja",
+      "businessName": "Mehak Ahuja",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/mehak-ahuja/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:nikki wynn:10",
+      "operatorName": "Nikki Wynn",
+      "contactName": "Thu Wynn",
+      "locationName": "Lafayette",
+      "suiteNumber": "10",
+      "categories": [
+        "Nails"
+      ],
+      "services": [
+        "Nails"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/nikki-wynn/pro",
+      "website": "https://book.solasalonstudios.com/nikki-wynn/pro",
+      "imageUrl": "https://1ee3e7168fee5aed58ba-c76e504693247817076953d5b2ec0fc4.ssl.cf2.rackcdn.com/Compressed/Import-252965324_451810_2026_04_15_05_08_27_8683_5824.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Thu Wynn",
+      "businessName": "Nikki Wynn",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/nikki-wynn/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:razzor sharp:6",
+      "operatorName": "Razzor Sharp",
+      "contactName": "Jamie Eliptico",
+      "locationName": "Lafayette",
+      "suiteNumber": "6",
+      "categories": [
+        "Hair"
+      ],
+      "services": [
+        "Hair"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/razzor-sharp/pro",
+      "website": "https://book.solasalonstudios.com/razzor-sharp/pro",
+      "imageUrl": "https://e2cedadf306b77015082-25c2a81ecd8f1a32b2f9b10467877bf5.ssl.cf2.rackcdn.com/Compressed/Import-251909027_437995_2026_03_31_23_37_12_7867_402.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Jamie Eliptico",
+      "businessName": "Razzor Sharp",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/razzor-sharp/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:rebecca whitcomb:2",
+      "operatorName": "Rebecca Whitcomb",
+      "locationName": "Lafayette",
+      "suiteNumber": "2",
+      "categories": [],
+      "services": [],
+      "profileUrl": "https://book.solasalonstudios.com/rebecca-whitcomb/pro",
+      "website": "https://book.solasalonstudios.com/rebecca-whitcomb/pro",
+      "imageUrl": "https://2f4b402458dda443463e-abb6e7ec832e7cf052834bb9164841f7.ssl.cf2.rackcdn.com/Compressed/Import-251918716_440201_2026_04_01_04_36_56_0268_200.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Rebecca Whitcomb",
+      "businessName": "Rebecca Whitcomb",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/rebecca-whitcomb/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:scizzors:19",
+      "operatorName": "Scizzors",
+      "contactName": "Luan Chavez",
+      "locationName": "Lafayette",
+      "suiteNumber": "19",
+      "categories": [],
+      "services": [],
+      "profileUrl": "https://book.solasalonstudios.com/scizzors/pro",
+      "website": "https://book.solasalonstudios.com/scizzors/pro",
+      "imageUrl": "https://0cc61c22d996d674172d-75781f92f5480e744244d30a45d30762.ssl.cf2.rackcdn.com/Compressed/Import-251907507_437826_2026_03_31_23_12_00_7044_3751.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Luan Chavez",
+      "businessName": "Scizzors",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/scizzors/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:the nail spot:5",
+      "operatorName": "The Nail Spot",
+      "contactName": "Debbie Stidham",
+      "locationName": "Lafayette",
+      "suiteNumber": "5",
+      "categories": [
+        "Nails"
+      ],
+      "services": [
+        "Nails"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/the-nail-spot/pro",
+      "website": "https://book.solasalonstudios.com/the-nail-spot/pro",
+      "imageUrl": "https://ecc290eeee987ed6a4e4-ab2c6e946c27034763c2e27ed9d14105.ssl.cf2.rackcdn.com/Compressed/Import-37210889_438821_2026_04_01_01_36_54_8382_9063.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Debbie Stidham",
+      "businessName": "The Nail Spot",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/the-nail-spot/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:the rose salon:7",
+      "operatorName": "The Rose Salon",
+      "contactName": "Alyzah Read",
+      "locationName": "Lafayette",
+      "suiteNumber": "7",
+      "categories": [
+        "Hair"
+      ],
+      "services": [
+        "Hair"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/the-rose-salon-2/pro",
+      "website": "https://book.solasalonstudios.com/the-rose-salon-2/pro",
+      "imageUrl": "https://fb3cc950db6410f12e55-7dc488750b675a496ad84628a8faf1d3.ssl.cf2.rackcdn.com/Compressed/Import-251915731_439183_2026_04_01_02_24_51_9543_9604.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Alyzah Read",
+      "businessName": "The Rose Salon",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/the-rose-salon-2/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:up in the hair:3",
+      "operatorName": "Up In The Hair",
+      "contactName": "Maria Chambers",
+      "locationName": "Lafayette",
+      "suiteNumber": "3",
+      "categories": [
+        "Hair"
+      ],
+      "services": [
+        "Hair"
+      ],
+      "profileUrl": "https://book.solasalonstudios.com/up-in-the-hair-3/pro",
+      "website": "https://book.solasalonstudios.com/up-in-the-hair-3/pro",
+      "imageUrl": "https://031bca6e3f27e29645fb-e5b7ce3d15ceb93eb49a8797a0abc3fe.ssl.cf2.rackcdn.com/Compressed/Import-251918627_440145_2026_04_01_04_31_43_0783_378.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Maria Chambers",
+      "businessName": "Up In The Hair",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/up-in-the-hair-3/pro"
+      ]
+    },
+    {
+      "candidateKey": "sola:lafayette:wellness hub iv hydration:2",
+      "operatorName": "Wellness Hub IV Hydration",
+      "contactName": "Dianela Trevino",
+      "locationName": "Lafayette",
+      "suiteNumber": "2",
+      "categories": [],
+      "services": [],
+      "profileUrl": "https://book.solasalonstudios.com/wellness-hub-iv-hydration/pro",
+      "website": "https://book.solasalonstudios.com/wellness-hub-iv-hydration/pro",
+      "imageUrl": "https://0783ddb745a76401d5ae-829d4e3f98ea2da7b7bcedafcf769377.ssl.cf2.rackcdn.com/Compressed/Import-252966712_452036_2026_04_15_05_31_19_1553_9022.webp",
+      "sourceProvider": "sola",
+      "sourceType": "suite_directory",
+      "sourceUrl": "https://book.solasalonstudios.com/lafayette/location",
+      "parentContainerId": "sola:lafayette",
+      "parentContainerSlug": "lafayette",
+      "parentContainerName": "Lafayette",
+      "locationSlug": "lafayette",
+      "professionalName": "Dianela Trevino",
+      "businessName": "Wellness Hub IV Hydration",
+      "isChildOperator": true,
+      "parentContainerType": "salon_suite",
+      "parentContainerBrand": "Sola Salon Studios",
+      "containerRelationship": "tenant",
+      "phoneLinks": [],
+      "socialLinks": [
+        "https://www.facebook.com/solasalonslafayetteco",
+        "https://www.instagram.com/solalafayetteco/"
+      ],
+      "bookingLinks": [
+        "https://book.solasalonstudios.com/wellness-hub-iv-hydration/pro"
+      ]
+    }
+  ]
+}

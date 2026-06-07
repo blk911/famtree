@@ -1,7 +1,9 @@
 // lib/operators/sources/sola/run-sola-harvest.ts
 
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
+import { dedupeSolaListings } from "./dedupe-listings";
+import { mapListingToResolverCandidate } from "./map-resolver-candidate";
 import {
   discoverSolaApiEndpoint,
   scrapeSolaLocation,
@@ -9,51 +11,28 @@ import {
 import type {
   SolaEvidenceRecord,
   SolaHarvestArtifact,
-  SolaOperatorCandidate,
+  SolaOperatorCandidatesArtifact,
   SolaRawListing,
+  SolaResolverCandidate,
   SolaSlugHarvestResult,
 } from "./types";
 import { SOLA_SOURCE_PROVIDER, SOLA_SOURCE_TYPE } from "./types";
 
-const HARVEST_ARTIFACT_PATH = path.join(
-  process.cwd(),
-  "runtime-data",
-  "sola",
+const SOLA_DATA_DIR = path.join(process.cwd(), "runtime-data", "sola");
+
+export const HARVEST_ARTIFACT_PATH = path.join(
+  SOLA_DATA_DIR,
   "sola-harvest.generated.json",
+);
+
+export const CANDIDATES_ARTIFACT_PATH = path.join(
+  SOLA_DATA_DIR,
+  "sola-operator-candidates.generated.json",
 );
 
 const BASE_CONFIDENCE = 70;
 const PROFILE_CONFIDENCE = 82;
 const API_DISCOVERY_CONFIDENCE = 85;
-
-function listingToCandidate(
-  listing: SolaRawListing,
-  slug: string,
-): SolaOperatorCandidate {
-  const profileUrl = listing.normalizedProfileUrl ?? listing.profileUrl;
-  return {
-    candidateKey: listing.candidateKey,
-    parentContainerId: listing.parentContainerId,
-    parentContainerSlug: slug,
-    sourceProvider: SOLA_SOURCE_PROVIDER,
-    sourceType: SOLA_SOURCE_TYPE,
-    displayName: listing.displayName,
-    professionalName: listing.professionalName,
-    businessName: listing.businessName,
-    normalizedName: listing.normalizedName,
-    normalizedCity: listing.normalizedCity,
-    normalizedProfileUrl: listing.normalizedProfileUrl,
-    profileUrl,
-    bookingUrl: profileUrl,
-    imageUrl: listing.imageUrl,
-    suiteLabel: listing.suiteLabel,
-    categories: listing.categories,
-    visibleText: listing.visibleText,
-    phoneLinks: listing.phoneLinks,
-    socialLinks: listing.socialLinks,
-    bookingLinks: listing.bookingLinks,
-  };
-}
 
 function evidenceConfidence(
   listing: SolaRawListing,
@@ -66,13 +45,14 @@ function evidenceConfidence(
 
 function listingToEvidence(
   listing: SolaRawListing,
+  candidate: SolaResolverCandidate,
   slug: string,
   sourceUrl: string,
   apiEndpoint: string | null,
 ): SolaEvidenceRecord {
-  const profileUrl = listing.normalizedProfileUrl ?? listing.profileUrl;
+  const profileUrl = candidate.profileUrl;
   return {
-    candidateKey: listing.candidateKey,
+    candidateKey: candidate.candidateKey,
     sourceProvider: SOLA_SOURCE_PROVIDER,
     sourceType: SOLA_SOURCE_TYPE,
     sourceUrl,
@@ -82,8 +62,62 @@ function listingToEvidence(
     parentContainerSlug: slug,
     confidence: evidenceConfidence(listing, apiEndpoint),
     capturedAt: new Date().toISOString(),
-    notes: listing.suiteLabel,
+    notes: listing.suiteLabel ?? listing.suite,
   };
+}
+
+function printSlugSummary(result: SolaSlugHarvestResult): void {
+  console.log(
+    [
+      `slug=${result.slug}`,
+      `rawListings=${result.rawListings}`,
+      `dedupedListings=${result.dedupedListings}`,
+      `candidatesCreated=${result.candidatesCreated}`,
+      result.error ? `errors=${result.error}` : "errors=none",
+    ].join(" | "),
+  );
+}
+
+async function readCandidatesArtifact(): Promise<SolaResolverCandidate[]> {
+  try {
+    const raw = await readFile(CANDIDATES_ARTIFACT_PATH, "utf8");
+    const parsed = JSON.parse(raw) as SolaOperatorCandidatesArtifact;
+    return parsed.candidates ?? [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeCandidatesArtifact(
+  newCandidates: SolaResolverCandidate[],
+): Promise<SolaOperatorCandidatesArtifact> {
+  const existing = await readCandidatesArtifact();
+  const byKey = new Map<string, SolaResolverCandidate>();
+
+  for (const candidate of existing) {
+    byKey.set(candidate.candidateKey, candidate);
+  }
+  for (const candidate of newCandidates) {
+    byKey.set(candidate.candidateKey, candidate);
+  }
+
+  const candidates = Array.from(byKey.values());
+  const artifact: SolaOperatorCandidatesArtifact = {
+    generatedAt: new Date().toISOString(),
+    sourceProvider: SOLA_SOURCE_PROVIDER,
+    sourceType: SOLA_SOURCE_TYPE,
+    candidateCount: candidates.length,
+    candidates,
+  };
+
+  await mkdir(SOLA_DATA_DIR, { recursive: true });
+  await writeFile(
+    CANDIDATES_ARTIFACT_PATH,
+    `${JSON.stringify(artifact, null, 2)}\n`,
+    "utf8",
+  );
+
+  return artifact;
 }
 
 async function harvestSlug(slug: string): Promise<SolaSlugHarvestResult> {
@@ -94,6 +128,9 @@ async function harvestSlug(slug: string): Promise<SolaSlugHarvestResult> {
       return {
         slug: clean,
         ok: false,
+        rawListings: 0,
+        dedupedListings: 0,
+        candidatesCreated: 0,
         listingsFound: 0,
         candidates: [],
         evidence: [],
@@ -102,16 +139,30 @@ async function harvestSlug(slug: string): Promise<SolaSlugHarvestResult> {
       };
     }
 
+    const rawListings = scrape.listings.length;
+    const deduped = dedupeSolaListings(scrape.listings);
     const apiEndpoint = discoverSolaApiEndpoint(scrape.apiHits);
-    const candidates = scrape.listings.map((listing) => listingToCandidate(listing, clean));
-    const evidence = scrape.listings.map((listing) =>
-      listingToEvidence(listing, clean, scrape.sourceUrl, apiEndpoint),
+
+    const candidates = deduped.map((listing) =>
+      mapListingToResolverCandidate(listing, clean),
+    );
+    const evidence = deduped.map((listing, index) =>
+      listingToEvidence(
+        listing,
+        candidates[index],
+        clean,
+        scrape.sourceUrl,
+        apiEndpoint,
+      ),
     );
 
     return {
       slug: clean,
       ok: true,
-      listingsFound: scrape.listings.length,
+      rawListings,
+      dedupedListings: deduped.length,
+      candidatesCreated: candidates.length,
+      listingsFound: deduped.length,
       candidates,
       evidence,
       scrape,
@@ -121,6 +172,9 @@ async function harvestSlug(slug: string): Promise<SolaSlugHarvestResult> {
     return {
       slug: clean,
       ok: false,
+      rawListings: 0,
+      dedupedListings: 0,
+      candidatesCreated: 0,
       listingsFound: 0,
       candidates: [],
       evidence: [],
@@ -138,16 +192,17 @@ export async function runSolaHarvest(
 
   const results: SolaSlugHarvestResult[] = [];
   const errors: Array<{ slug: string; error: string }> = [];
+  const allCandidates: SolaResolverCandidate[] = [];
 
   for (const slug of slugList) {
-    console.log(`[sola-harvest] scraping ${slug}`);
     const result = await harvestSlug(slug);
     results.push(result);
+    printSlugSummary(result);
+
     if (!result.ok && result.error) {
       errors.push({ slug, error: result.error });
-      console.log(`[sola-harvest] ${slug} failed: ${result.error}`);
     } else {
-      console.log(`[sola-harvest] ${slug}: ${result.listingsFound} listings`);
+      allCandidates.push(...result.candidates);
     }
   }
 
@@ -158,10 +213,13 @@ export async function runSolaHarvest(
     errors,
   };
 
-  await mkdir(path.dirname(HARVEST_ARTIFACT_PATH), { recursive: true });
+  await mkdir(SOLA_DATA_DIR, { recursive: true });
   await writeFile(HARVEST_ARTIFACT_PATH, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
+
+  const candidatesArtifact = await writeCandidatesArtifact(allCandidates);
+  console.log(
+    `[sola-harvest] wrote ${candidatesArtifact.candidateCount} candidates -> ${CANDIDATES_ARTIFACT_PATH}`,
+  );
 
   return artifact;
 }
-
-export { HARVEST_ARTIFACT_PATH };

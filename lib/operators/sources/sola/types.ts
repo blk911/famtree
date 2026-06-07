@@ -2,6 +2,7 @@
 
 export const SOLA_SOURCE_PROVIDER = "sola" as const;
 export const SOLA_SOURCE_TYPE = "suite_directory" as const;
+export const SOLA_PARENT_CONTAINER_BRAND = "Sola Salon Studios" as const;
 
 export interface SolaApiHit {
   url: string;
@@ -18,14 +19,19 @@ export interface SolaRawListing {
   profileUrl?: string;
   imageUrl?: string;
   suiteLabel?: string;
+  suite?: string;
   categories: string[];
+  services: string[];
   phoneLinks: string[];
   socialLinks: string[];
   bookingLinks: string[];
+  locationSlug: string;
+  parentContainerId: string;
+  parentContainerName?: string;
+  sourceUrl: string;
   normalizedName: string;
   normalizedCity?: string;
   normalizedProfileUrl?: string;
-  parentContainerId: string;
   candidateKey: string;
 }
 
@@ -33,6 +39,7 @@ export interface SolaLocationScrapeResult {
   sourceProvider: typeof SOLA_SOURCE_PROVIDER;
   sourceType: typeof SOLA_SOURCE_TYPE;
   parentContainerSlug: string;
+  parentContainerName?: string;
   sourceUrl: string;
   fetchedAt: string;
   apiHits: SolaApiHit[];
@@ -40,27 +47,44 @@ export interface SolaLocationScrapeResult {
   error?: string;
 }
 
-export interface SolaOperatorCandidate {
+export interface SolaResolverCandidate {
   candidateKey: string;
-  parentContainerId: string;
-  parentContainerSlug: string;
+  operatorName: string;
+  contactName?: string;
+  locationName?: string;
+  suiteNumber?: string;
+  categories: string[];
+  services: string[];
+  profileUrl?: string;
+  website?: string;
+  imageUrl?: string;
   sourceProvider: typeof SOLA_SOURCE_PROVIDER;
   sourceType: typeof SOLA_SOURCE_TYPE;
-  displayName: string;
+  sourceUrl: string;
+  parentContainerId: string;
+  parentContainerSlug: string;
+  parentContainerName?: string;
+  locationSlug: string;
   professionalName?: string;
   businessName?: string;
-  normalizedName: string;
-  normalizedCity?: string;
-  normalizedProfileUrl?: string;
-  profileUrl?: string;
-  bookingUrl?: string;
-  imageUrl?: string;
-  suiteLabel?: string;
-  categories: string[];
-  visibleText: string;
+  isChildOperator: true;
+  parentContainerType: "salon_suite";
+  parentContainerBrand: typeof SOLA_PARENT_CONTAINER_BRAND;
+  containerRelationship: "tenant";
   phoneLinks: string[];
   socialLinks: string[];
   bookingLinks: string[];
+}
+
+/** @deprecated Use SolaResolverCandidate — kept for harvest artifact compatibility */
+export interface SolaOperatorCandidate extends SolaResolverCandidate {
+  displayName: string;
+  normalizedName: string;
+  normalizedCity?: string;
+  normalizedProfileUrl?: string;
+  bookingUrl?: string;
+  suiteLabel?: string;
+  visibleText: string;
 }
 
 export interface SolaEvidenceRecord {
@@ -80,8 +104,11 @@ export interface SolaEvidenceRecord {
 export interface SolaSlugHarvestResult {
   slug: string;
   ok: boolean;
+  rawListings: number;
+  dedupedListings: number;
+  candidatesCreated: number;
   listingsFound: number;
-  candidates: SolaOperatorCandidate[];
+  candidates: SolaResolverCandidate[];
   evidence: SolaEvidenceRecord[];
   scrape?: SolaLocationScrapeResult;
   error?: string;
@@ -92,4 +119,12 @@ export interface SolaHarvestArtifact {
   slugs: string[];
   results: SolaSlugHarvestResult[];
   errors: Array<{ slug: string; error: string }>;
+}
+
+export interface SolaOperatorCandidatesArtifact {
+  generatedAt: string;
+  sourceProvider: typeof SOLA_SOURCE_PROVIDER;
+  sourceType: typeof SOLA_SOURCE_TYPE;
+  candidateCount: number;
+  candidates: SolaResolverCandidate[];
 }

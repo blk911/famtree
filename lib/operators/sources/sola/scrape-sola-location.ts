@@ -42,8 +42,29 @@ export function normalizeSolaProfileUrl(url?: string): string | undefined {
   }
 }
 
+export function parseSuiteFromLabel(suiteLabel?: string): string | undefined {
+  if (!suiteLabel?.trim()) return undefined;
+  const match = suiteLabel.match(/studio\s*#?\s*(\d+)/i);
+  if (match) return match[1];
+  return suiteLabel.trim();
+}
+
+export function buildCandidateKey(
+  slug: string,
+  operatorName: string,
+  suite?: string,
+): string {
+  const cleanSlug = slug.trim().toLowerCase();
+  const normalizedOperator = normalizeSolaName(operatorName);
+  const normalizedSuite = normalizeSolaName(suite ?? "");
+  return normalizedSuite
+    ? `sola:${cleanSlug}:${normalizedOperator}:${normalizedSuite}`
+    : `sola:${cleanSlug}:${normalizedOperator}`;
+}
+
+/** @deprecated Use buildCandidateKey */
 export function candidateKeyForListing(slug: string, normalizedName: string): string {
-  return `sola:${slug.trim().toLowerCase()}:${normalizedName}`;
+  return buildCandidateKey(slug, normalizedName);
 }
 
 function truncateJsonBody(body: unknown): unknown {
@@ -153,12 +174,18 @@ export function discoverSolaApiEndpoint(apiHits: SolaApiHit[]): string | null {
 function mapDomListing(
   row: DomListing,
   slug: string,
+  sourceUrl: string,
+  parentContainerName?: string,
   pageCity?: string,
 ): SolaRawListing {
-  const normalizedName = normalizeSolaName(row.displayName || row.businessName || row.professionalName || "");
-  const normalizedCity = normalizeSolaName(pageCity ?? row.pageCity ?? parseCityFromSuiteLabel(row.suiteLabel) ?? "");
+  const operatorName = row.businessName || row.professionalName || row.displayName;
+  const normalizedName = normalizeSolaName(operatorName);
+  const normalizedCity = normalizeSolaName(
+    pageCity ?? row.pageCity ?? parseCityFromSuiteLabel(row.suiteLabel) ?? "",
+  );
   const normalizedProfileUrl = normalizeSolaProfileUrl(row.profileUrl);
   const parentContainerId = parentContainerIdForSlug(slug);
+  const suite = parseSuiteFromLabel(row.suiteLabel);
 
   return {
     professionalName: row.professionalName,
@@ -168,15 +195,20 @@ function mapDomListing(
     profileUrl: row.profileUrl,
     imageUrl: row.imageUrl,
     suiteLabel: row.suiteLabel,
+    suite,
     categories: row.categories,
+    services: row.categories,
     phoneLinks: row.phoneLinks,
     socialLinks: row.socialLinks,
     bookingLinks: row.bookingLinks,
+    locationSlug: slug,
+    parentContainerId,
+    parentContainerName,
+    sourceUrl,
     normalizedName,
     normalizedCity: normalizedCity || undefined,
     normalizedProfileUrl,
-    parentContainerId,
-    candidateKey: candidateKeyForListing(slug, normalizedName),
+    candidateKey: buildCandidateKey(slug, operatorName, suite ?? row.suiteLabel),
   };
 }
 
@@ -243,8 +275,12 @@ export async function scrapeSolaLocation(
     await Promise.allSettled(pendingResponses);
 
     const dom = await page.evaluate(() => {
+      const locationHeading =
+        document.querySelector("h1")?.textContent?.trim() ||
+        document.querySelector("h2")?.textContent?.trim() ||
+        undefined;
       const pageCity =
-        document.querySelector("h1, h2")?.textContent?.trim() ||
+        locationHeading ||
         document.body.innerText.match(/\n([A-Za-z .'-]+),\s*[A-Z]{2}\s+\d{5}/)?.[1]?.trim();
 
       const socialHosts = ["facebook.com", "instagram.com", "tiktok.com", "twitter.com", "x.com"];
@@ -295,15 +331,16 @@ export async function scrapeSolaLocation(
         });
       });
 
-      return { rows, pageCity };
+      return { rows, pageCity, parentContainerName: locationHeading };
     });
 
     const listings = dom.rows.map((row) =>
-      mapDomListing(row, slug, dom.pageCity),
+      mapDomListing(row, slug, sourceUrl, dom.parentContainerName, dom.pageCity),
     );
 
     return {
       ...base,
+      parentContainerName: dom.parentContainerName,
       apiHits,
       listings,
     };
