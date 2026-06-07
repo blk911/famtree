@@ -8,6 +8,10 @@ import {
   resolvePlaywrightBrowserWarning,
 } from "@/lib/intelligence/salon/source-ingest/playwright-runtime";
 import { buildSolaCandidateKey } from "./candidate-key";
+import {
+  normalizeSolaName,
+  normalizeSolaProfileUrl,
+} from "./profile-url-utils";
 import type { SolaApiHit, SolaLocationScrapeResult, SolaRawListing } from "./types";
 import { SOLA_SOURCE_PROVIDER, SOLA_SOURCE_TYPE } from "./types";
 
@@ -24,24 +28,7 @@ export function parentContainerIdForSlug(slug: string): string {
   return `sola:${slug.trim().toLowerCase()}`;
 }
 
-export function normalizeSolaName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-export function normalizeSolaProfileUrl(url?: string): string | undefined {
-  if (!url?.trim()) return undefined;
-  try {
-    const parsed = new URL(url.trim());
-    parsed.hash = "";
-    return parsed.toString().replace(/\/$/, "");
-  } catch {
-    return url.trim().replace(/\/$/, "");
-  }
-}
+export { normalizeSolaName, normalizeSolaProfileUrl } from "./profile-url-utils";
 
 export function parseSuiteFromLabel(suiteLabel?: string): string | undefined {
   if (!suiteLabel?.trim()) return undefined;

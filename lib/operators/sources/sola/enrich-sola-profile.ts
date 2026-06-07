@@ -1,5 +1,5 @@
 // lib/operators/sources/sola/enrich-sola-profile.ts
-// Playwright enrichment for individual Sola /pro profile pages.
+// API-first Sola /pro enrichment with Playwright fallback.
 
 import {
   formatPlaywrightHarvestWarning,
@@ -7,8 +7,17 @@ import {
   PLAYWRIGHT_BROWSER_MISSING_WARNING,
   resolvePlaywrightBrowserWarning,
 } from "@/lib/intelligence/salon/source-ingest/playwright-runtime";
-import { normalizeSolaProfileUrl } from "./scrape-sola-location";
-import type { SolaProfileApiHit, SolaProfileEnrichment } from "./types";
+import {
+  fetchSolaProfileApi,
+  type SolaProfileApiFetchResult,
+} from "./fetch-sola-profile-api";
+import {
+  parsedApiHasSignal,
+  type ParsedSolaProfileApi,
+} from "./parse-sola-profile-api";
+import { dedupeLinks } from "./link-utils";
+import { normalizeSolaProfileUrl } from "./profile-url-utils";
+import type { SolaEnrichmentMethod, SolaProfileApiHit, SolaProfileEnrichment } from "./types";
 
 const PAGE_TIMEOUT_MS = 45_000;
 const SETTLE_MS = 6_000;
@@ -24,11 +33,6 @@ const EXCLUDED_HOSTS = [
   "facebook.com/tr",
   "doubleclick.net",
 ];
-
-const SOCIAL_HOSTS = {
-  instagram: ["instagram.com"],
-  facebook: ["facebook.com", "fb.com"],
-} as const;
 
 type PlaywrightChromium = {
   launch: (opts?: { headless?: boolean }) => Promise<{
@@ -66,7 +70,12 @@ function normalizeHref(href: string, baseUrl: string): string | undefined {
 
   try {
     const resolved = new URL(trimmed, baseUrl);
-    if (resolved.protocol !== "http:" && resolved.protocol !== "https:" && resolved.protocol !== "tel:" && resolved.protocol !== "mailto:") {
+    if (
+      resolved.protocol !== "http:" &&
+      resolved.protocol !== "https:" &&
+      resolved.protocol !== "tel:" &&
+      resolved.protocol !== "mailto:"
+    ) {
       return undefined;
     }
     return resolved.toString().replace(/\/$/, "");
@@ -110,29 +119,17 @@ export function isExcludedLink(url: string): boolean {
   );
 }
 
-export function dedupeLinks(links: string[]): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const link of links) {
-    const normalized = link.trim();
-    if (!normalized || seen.has(normalized)) continue;
-    seen.add(normalized);
-    out.push(normalized);
-  }
-  return out;
-}
+export { dedupeLinks } from "./link-utils";
 
 export function discoverLikelyProfileApiEndpoint(apiHits: SolaProfileApiHit[]): string | undefined {
-  const patterns = [
-    /staff/i,
-    /provider/i,
-    /professional/i,
-    /services/i,
-    /businessdetail/i,
-    /merchant/i,
-    /mysite/i,
-  ];
+  for (const hit of apiHits) {
+    const url = hit.url.toLowerCase();
+    if (!url.includes("businesslocationasync")) continue;
+    if (!url.includes("vagaro.com")) continue;
+    return hit.url;
+  }
 
+  const patterns = [/staff/i, /provider/i, /professional/i, /services/i, /businessdetail/i, /merchant/i];
   for (const hit of apiHits) {
     const url = hit.url.toLowerCase();
     if (!url.includes("vagaro.com")) continue;
@@ -140,27 +137,7 @@ export function discoverLikelyProfileApiEndpoint(apiHits: SolaProfileApiHit[]): 
     if (url.includes("dateformat") || url.includes("tracking/save") || url.includes("cookie")) {
       continue;
     }
-
-    const body = hit.body;
-    if (body && typeof body === "object") {
-      const record = body as Record<string, unknown>;
-      const data = record.Data ?? record.data;
-      if (data && typeof data === "object") {
-        const keys = Object.keys(data as object).join(" ").toLowerCase();
-        if (
-          keys.includes("service") ||
-          keys.includes("staff") ||
-          keys.includes("provider") ||
-          keys.includes("business") ||
-          keys.includes("phone")
-        ) {
-          return hit.url;
-        }
-      }
-      if (Array.isArray(data) && data.length > 0) {
-        return hit.url;
-      }
-    }
+    return hit.url;
   }
 
   return undefined;
@@ -193,11 +170,112 @@ type DomProfile = {
   visibleTextSample: string;
 };
 
+function enrichmentFromParsedApi(
+  profileUrl: string,
+  api: SolaProfileApiFetchResult,
+  fetchedAt: string,
+): SolaProfileEnrichment {
+  const parsed = api.parsed;
+  return {
+    profileUrl,
+    professionalName: parsed.professionalName,
+    businessName: parsed.businessName,
+    phoneLinks: parsed.phones.map((phone) => `tel:${phone}`),
+    emailLinks: parsed.emails.map((email) => `mailto:${email}`),
+    websiteLinks: parsed.externalLinks,
+    instagramLinks: parsed.socialLinks.filter((url) => /instagram\.com/i.test(url)),
+    facebookLinks: parsed.socialLinks.filter((url) => /facebook\.com|fb\.com/i.test(url)),
+    bookingLinks: parsed.bookingLinks,
+    services: parsed.services.length ? parsed.services : parsed.categories,
+    bio: parsed.bio,
+    imageUrls: parsed.imageUrls,
+    fetchedAt,
+    apiHitsCount: 0,
+    likelyProfileApiEndpoint: api.apiEndpoint,
+    enrichmentMethod: "api",
+    apiStatus: api.apiStatus,
+    apiEndpoint: api.apiEndpoint,
+    apiFetchedAt: api.apiFetchedAt,
+  };
+}
+
+function needsDomFallback(api: SolaProfileApiFetchResult): boolean {
+  if (api.apiStatus !== "ok") return true;
+  const parsed = api.parsed;
+  return !parsed.socialLinks.length || !parsed.services.length;
+}
+
+function mergeApiAndDom(
+  profileUrl: string,
+  api: SolaProfileApiFetchResult | null,
+  dom: SolaProfileEnrichment,
+): SolaProfileEnrichment {
+  const parsed = api?.parsed;
+  const apiStrong = api?.apiStatus === "ok" && parsed && parsedApiHasSignal(parsed);
+
+  const phoneLinks = dedupeLinks([
+    ...(parsed?.phones.map((phone) => `tel:${phone}`) ?? []),
+    ...dom.phoneLinks,
+  ]);
+  const emailLinks = dedupeLinks([
+    ...(parsed?.emails.map((email) => `mailto:${email}`) ?? []),
+    ...dom.emailLinks,
+  ]);
+  const instagramLinks = dedupeLinks([
+    ...dom.instagramLinks,
+    ...(parsed?.socialLinks.filter((url) => /instagram\.com/i.test(url)) ?? []),
+  ]);
+  const facebookLinks = dedupeLinks([
+    ...dom.facebookLinks,
+    ...(parsed?.socialLinks.filter((url) => /facebook\.com|fb\.com/i.test(url)) ?? []),
+  ]);
+  const websiteLinks = dedupeLinks([
+    ...(parsed?.externalLinks ?? []),
+    ...dom.websiteLinks,
+  ]);
+  const bookingLinks = dedupeLinks([...(parsed?.bookingLinks ?? []), ...dom.bookingLinks, profileUrl]);
+  const services = dedupeLinks([...(parsed?.services ?? []), ...(parsed?.categories ?? []), ...dom.services]);
+  const imageUrls = dedupeLinks([...(parsed?.imageUrls ?? []), ...dom.imageUrls]);
+
+  let enrichmentMethod: SolaEnrichmentMethod = "playwright";
+  if (apiStrong && dom.apiHitsCount > 0) enrichmentMethod = "mixed";
+  else if (apiStrong && !dom.apiHitsCount) enrichmentMethod = "api";
+  else if (!apiStrong && dom.apiHitsCount > 0) enrichmentMethod = "playwright";
+
+  return {
+    ...dom,
+    profileUrl,
+    professionalName:
+      apiStrong && parsed?.professionalName && parsed.professionalName.length <= 60
+        ? parsed.professionalName
+        : dom.professionalName,
+    businessName: (apiStrong && parsed?.businessName) || dom.businessName,
+    phoneLinks,
+    emailLinks,
+    websiteLinks,
+    instagramLinks,
+    facebookLinks,
+    bookingLinks,
+    services,
+    bio: (apiStrong && parsed?.bio && parsed.bio.length > (dom.bio?.length ?? 0))
+      ? parsed.bio
+      : dom.bio,
+    imageUrls,
+    likelyProfileApiEndpoint: api?.apiEndpoint ?? dom.likelyProfileApiEndpoint,
+    enrichmentMethod,
+    apiStatus: api?.apiStatus,
+    apiEndpoint: api?.apiEndpoint,
+    apiFetchedAt: api?.apiFetchedAt,
+  };
+}
+
 export type EnrichSolaProfileOptions = {
   page?: PlaywrightPage;
+  knownEndpoint?: string;
+  apiOnly?: boolean;
 };
 
-export async function enrichSolaProfile(
+async function enrichSolaProfilePlaywright(
   profileUrl: string,
   opts?: EnrichSolaProfileOptions,
 ): Promise<SolaProfileEnrichment> {
@@ -215,6 +293,7 @@ export async function enrichSolaProfile(
     imageUrls: [],
     fetchedAt,
     apiHitsCount: 0,
+    enrichmentMethod: "failed",
   };
 
   const status = await getPlaywrightRuntimeStatus();
@@ -267,7 +346,6 @@ export async function enrichSolaProfile(
     const dom = await page.evaluate(() => {
       const pageTitle = document.title?.trim() || "";
       const businessName = document.querySelector("h1")?.textContent?.trim() || undefined;
-
       const bodyText = document.body.innerText.replace(/\s+/g, " ").trim();
       const meetMatch = bodyText.match(
         /Meet\s+([A-Za-z][A-Za-z .'-]{0,48}?)(?:\s{2,}|\.|!|\s+I\s+have|\s+Contact|\s+Primary|$)/i,
@@ -275,7 +353,9 @@ export async function enrichSolaProfile(
       const professionalName = meetMatch?.[1]?.trim();
 
       const services: string[] = [];
-      const serviceMatch = bodyText.match(/Primary Services\s+(.+?)(?:Portfolio|Business Info|Hours of Operation|$)/i);
+      const serviceMatch = bodyText.match(
+        /Primary Services\s+(.+?)(?:Portfolio|Business Info|Hours of Operation|$)/i,
+      );
       if (serviceMatch) {
         const chunk = serviceMatch[1];
         const known = [
@@ -403,6 +483,7 @@ export async function enrichSolaProfile(
       fetchedAt,
       apiHitsCount: apiHits.length,
       likelyProfileApiEndpoint,
+      enrichmentMethod: "playwright",
     };
   } catch (error) {
     const formatted = formatPlaywrightHarvestWarning(error);
@@ -418,6 +499,67 @@ export async function enrichSolaProfile(
       await browser?.close().catch(() => undefined);
     }
   }
+}
+
+export async function enrichSolaProfile(
+  profileUrl: string,
+  opts?: EnrichSolaProfileOptions,
+): Promise<SolaProfileEnrichment> {
+  const normalizedUrl = normalizeSolaProfileUrl(profileUrl) ?? profileUrl.trim();
+  const fetchedAt = new Date().toISOString();
+
+  let apiResult = await fetchSolaProfileApi(normalizedUrl, opts?.knownEndpoint);
+
+  if (opts?.apiOnly) {
+    if (apiResult.apiStatus === "ok" && parsedApiHasSignal(apiResult.parsed)) {
+      return enrichmentFromParsedApi(normalizedUrl, apiResult, fetchedAt);
+    }
+    return {
+      profileUrl: normalizedUrl,
+      phoneLinks: [],
+      emailLinks: [],
+      websiteLinks: [],
+      instagramLinks: [],
+      facebookLinks: [],
+      bookingLinks: [],
+      services: [],
+      imageUrls: [],
+      fetchedAt,
+      apiHitsCount: 0,
+      enrichmentMethod: "failed",
+      apiStatus: apiResult.apiStatus,
+      apiEndpoint: apiResult.apiEndpoint,
+      apiFetchedAt: apiResult.apiFetchedAt,
+      error: apiResult.error ?? "skipped_api_unavailable",
+    };
+  }
+
+  if (apiResult.apiStatus === "ok" && parsedApiHasSignal(apiResult.parsed) && !needsDomFallback(apiResult)) {
+    return enrichmentFromParsedApi(normalizedUrl, apiResult, fetchedAt);
+  }
+
+  const domResult = await enrichSolaProfilePlaywright(normalizedUrl, opts);
+
+  if (domResult.likelyProfileApiEndpoint && apiResult.apiStatus !== "ok") {
+    apiResult = await fetchSolaProfileApi(normalizedUrl, domResult.likelyProfileApiEndpoint);
+  }
+
+  if (domResult.error && apiResult.apiStatus !== "ok") {
+    return {
+      ...domResult,
+      enrichmentMethod: "failed",
+      apiStatus: apiResult.apiStatus,
+      apiEndpoint: apiResult.apiEndpoint ?? domResult.likelyProfileApiEndpoint,
+      apiFetchedAt: apiResult.apiFetchedAt,
+      error: domResult.error,
+    };
+  }
+
+  const merged = mergeApiAndDom(normalizedUrl, apiResult, domResult);
+  if (merged.likelyProfileApiEndpoint || apiResult.apiEndpoint) {
+    merged.likelyProfileApiEndpoint = apiResult.apiEndpoint ?? merged.likelyProfileApiEndpoint;
+  }
+  return merged;
 }
 
 export async function createSolaProfileBrowser(): Promise<{

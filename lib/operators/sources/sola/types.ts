@@ -85,7 +85,8 @@ export interface SolaResolverCandidate {
   externalLinks?: string[];
   bio?: string;
   profileImages?: string[];
-  enrichmentStatus?: "enriched" | "failed" | "skipped";
+  enrichmentStatus?: SolaEnrichmentStatus;
+  enrichmentMethod?: SolaEnrichmentMethod;
   enrichmentFetchedAt?: string;
 }
 
@@ -95,6 +96,14 @@ export interface SolaProfileApiHit {
   contentType: string;
   body: unknown;
 }
+
+export type SolaEnrichmentMethod = "api" | "playwright" | "mixed" | "failed";
+
+export type SolaEnrichmentStatus =
+  | "enriched"
+  | "failed"
+  | "skipped"
+  | "skipped_api_unavailable";
 
 export interface SolaProfileEnrichment {
   profileUrl: string;
@@ -114,6 +123,10 @@ export interface SolaProfileEnrichment {
   fetchedAt: string;
   apiHitsCount: number;
   likelyProfileApiEndpoint?: string;
+  enrichmentMethod?: SolaEnrichmentMethod;
+  apiStatus?: "ok" | "failed" | "not_available";
+  apiEndpoint?: string;
+  apiFetchedAt?: string;
   error?: string;
 }
 
@@ -127,6 +140,17 @@ export interface SolaProfileEnrichmentArtifact {
 export interface SolaHarvestOptions {
   enrichProfiles?: boolean;
   profileLimit?: number;
+  apiOnly?: boolean;
+}
+
+export interface SolaEnrichmentTimingSummary {
+  profilesAttempted: number;
+  apiEnriched: number;
+  playwrightEnriched: number;
+  mixedEnriched: number;
+  failed: number;
+  skipped: number;
+  durationMs: number;
 }
 
 /** @deprecated Use SolaResolverCandidate — kept for harvest artifact compatibility */

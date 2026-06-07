@@ -1,25 +1,13 @@
 // lib/operators/sources/sola/candidate-key.ts
 
-import { normalizeSolaName, normalizeSolaProfileUrl } from "./scrape-sola-location";
+import {
+  extractProfileSlug,
+  normalizeSolaName,
+  normalizeSolaProfileUrl,
+} from "./profile-url-utils";
 import type { SolaRawListing } from "./types";
 
-const SOLA_BOOK_ORIGIN = "https://book.solasalonstudios.com";
-
-/** Extract profile slug from Sola book URLs (absolute or relative). */
-export function extractProfileSlug(profileUrl?: string): string | undefined {
-  if (!profileUrl?.trim()) return undefined;
-
-  let pathname: string;
-  try {
-    const parsed = new URL(profileUrl.trim(), SOLA_BOOK_ORIGIN);
-    pathname = parsed.pathname;
-  } catch {
-    pathname = profileUrl.trim();
-  }
-
-  const segment = pathname.replace(/^\/+/, "").split("/").filter(Boolean)[0];
-  return segment?.toLowerCase();
-}
+export { extractProfileSlug } from "./profile-url-utils";
 
 export function buildSuiteGroupKey(slug: string, suiteNumber?: string): string | undefined {
   const suite = suiteNumber?.trim();

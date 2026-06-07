@@ -1,0 +1,24 @@
+{
+  "generatedAt": "2026-06-07T16:44:44.338Z",
+  "endpointsByProfileUrl": {
+    "https://book.solasalonstudios.com/bink/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=uJEhmUIIU~JbuChjuTCbZA==",
+    "https://book.solasalonstudios.com/butlers-barber-lounge/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=AEIpppeQqQFFE3WOTSAxSA==",
+    "https://book.solasalonstudios.com/golda-tharp/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=TS5Yio7Aeqk-qzv5hRTjEg==",
+    "https://book.solasalonstudios.com/jk-hair-design/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=QXcFE1QFyVl1LEZ9O-c2TA==",
+    "https://book.solasalonstudios.com/johnathan-walker/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=ZoqoixORqOnwIbeus6PkLw==",
+    "https://book.solasalonstudios.com/michelle-walker/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=j2b1d5kspPxVcMkPBUihug==",
+    "https://book.solasalonstudios.com/mehak-ahuja/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=nrilfORXJOuEFtd5~Lybag==",
+    "https://book.solasalonstudios.com/nikki-wynn/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=alMWCqD0dFnv96i4-tasbg==",
+    "https://book.solasalonstudios.com/razzor-sharp/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=hJL7t-JRkco8zMEYGgEQww==",
+    "https://book.solasalonstudios.com/rebecca-whitcomb/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=eEH3RZXZEZxwnFt3TIc38Q==",
+    "https://book.solasalonstudios.com/scizzors/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=lCkxpndHs6n8srxf9hj6Sg==",
+    "https://book.solasalonstudios.com/the-nail-spot/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=VLEr3VWix6aSGei99maKUg==",
+    "https://book.solasalonstudios.com/the-rose-salon-2/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=j-K5YbJlWieoUWcLvujOhQ==",
+    "https://book.solasalonstudios.com/up-in-the-hair-1/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=Ax0MGjqkF0A47MLBCHLUcw==",
+    "https://book.solasalonstudios.com/up-in-the-hair-2/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=9iHuW3kxh6ORrJd15RnaeQ==",
+    "https://book.solasalonstudios.com/up-in-the-hair-3/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=GisdlN2Gm7UbDMs55jH~Ig==",
+    "https://book.solasalonstudios.com/wellness-hub-iv-hydration/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=sRgU~wVR7djPbl3vwnm~xA==",
+    "https://book.solasalonstudios.com/courtney-hair-and-lash/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=RECyi6UK9-rawJldgx963A==",
+    "https://book.solasalonstudios.com/kikis-hair-shop/pro": "https://mysiteapi.vagaro.com/us02/api/v2/businesslogincustomerdetails/businesslocationasync?SiteName=book.solasalonstudios.com&VagaroURL=&UserId=&EncMerchantID=oXeDxepKZeT2BH0iEUDWmw=="
+  }
+}

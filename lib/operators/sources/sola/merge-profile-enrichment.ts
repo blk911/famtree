@@ -55,7 +55,11 @@ export function mergeProfileEnrichment(
     ...enrichment.imageUrls,
   ]);
 
-  const enrichmentStatus = enrichment.error ? "failed" : "enriched";
+  const enrichmentStatus = enrichment.error
+    ? enrichment.error === "skipped_api_unavailable"
+      ? "skipped_api_unavailable"
+      : "failed"
+    : "enriched";
 
   return {
     ...candidate,
@@ -78,6 +82,7 @@ export function mergeProfileEnrichment(
     profileImages,
     imageUrl: profileImages[0] ?? candidate.imageUrl,
     enrichmentStatus,
+    enrichmentMethod: enrichment.enrichmentMethod,
     enrichmentFetchedAt: enrichment.fetchedAt,
   };
 }

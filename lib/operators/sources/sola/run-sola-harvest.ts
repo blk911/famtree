@@ -5,10 +5,10 @@ import path from "path";
 import { buildSolaCandidateKey, extractProfileSlug } from "./candidate-key";
 import { dedupeSolaListings } from "./dedupe-listings";
 import {
-  createSolaProfileBrowser,
-  enrichSolaProfile,
-  type PlaywrightPage,
-} from "./enrich-sola-profile";
+  readProfileApiEndpointCache,
+  writeProfileApiEndpointCache,
+} from "./fetch-sola-profile-api";
+import { enrichSolaProfile } from "./enrich-sola-profile";
 import {
   applyGroupingMetadata,
   mapListingToResolverCandidate,
@@ -19,6 +19,8 @@ import {
   scrapeSolaLocation,
 } from "./scrape-sola-location";
 import type {
+  SolaEnrichmentMethod,
+  SolaEnrichmentTimingSummary,
   SolaEvidenceRecord,
   SolaHarvestArtifact,
   SolaHarvestOptions,
@@ -219,6 +221,39 @@ async function writeProfileEnrichmentArtifact(
   return artifact;
 }
 
+function printEnrichmentTiming(summary: SolaEnrichmentTimingSummary): void {
+  console.log(
+    [
+      `profilesAttempted=${summary.profilesAttempted}`,
+      `apiEnriched=${summary.apiEnriched}`,
+      `playwrightEnriched=${summary.playwrightEnriched}`,
+      `mixedEnriched=${summary.mixedEnriched}`,
+      `failed=${summary.failed}`,
+      `skipped=${summary.skipped}`,
+      `durationMs=${summary.durationMs}`,
+    ].join(" | "),
+  );
+}
+
+function countByMethod(
+  profiles: SolaProfileEnrichment[],
+): Pick<SolaEnrichmentTimingSummary, "apiEnriched" | "playwrightEnriched" | "mixedEnriched" | "failed"> {
+  let apiEnriched = 0;
+  let playwrightEnriched = 0;
+  let mixedEnriched = 0;
+  let failed = 0;
+
+  for (const profile of profiles) {
+    const method: SolaEnrichmentMethod = profile.enrichmentMethod ?? (profile.error ? "failed" : "api");
+    if (method === "api") apiEnriched += 1;
+    else if (method === "playwright") playwrightEnriched += 1;
+    else if (method === "mixed") mixedEnriched += 1;
+    else failed += 1;
+  }
+
+  return { apiEnriched, playwrightEnriched, mixedEnriched, failed };
+}
+
 async function enrichCandidates(
   candidates: SolaResolverCandidate[],
   options: SolaHarvestOptions,
@@ -227,29 +262,21 @@ async function enrichCandidates(
   profiles: SolaProfileEnrichment[];
   enriched: number;
   failed: number;
+  timing: SolaEnrichmentTimingSummary;
 }> {
+  const startedAt = Date.now();
   const limit = options.profileLimit ?? candidates.length;
   const targets = candidates
     .filter((candidate) => candidate.profileUrl)
     .slice(0, limit);
 
-  const browserSession = await createSolaProfileBrowser();
-  if (!browserSession) {
-    console.log("[sola-harvest] profile enrichment skipped: Playwright unavailable");
-    return {
-      candidates: candidates.map((candidate) => ({
-        ...candidate,
-        enrichmentStatus: candidate.profileUrl ? "failed" : ("skipped" as const),
-      })),
-      profiles: [],
-      enriched: 0,
-      failed: targets.length,
-    };
-  }
+  const endpointCache = await readProfileApiEndpointCache();
+  const endpointUpdates: Record<string, string> = {};
 
   const profiles: SolaProfileEnrichment[] = [];
   let enriched = 0;
   let failed = 0;
+  let skipped = 0;
   const enrichedByKey = new Map<string, SolaResolverCandidate>();
 
   for (const candidate of candidates) {
@@ -258,6 +285,7 @@ async function enrichCandidates(
         ...candidate,
         enrichmentStatus: "skipped",
       });
+      skipped += 1;
       continue;
     }
     if (!targets.some((target) => target.candidateKey === candidate.candidateKey)) {
@@ -265,25 +293,42 @@ async function enrichCandidates(
         ...candidate,
         enrichmentStatus: "skipped",
       });
+      skipped += 1;
       continue;
     }
     enrichedByKey.set(candidate.candidateKey, candidate);
   }
 
-  try {
-    for (const candidate of targets) {
+  for (const candidate of targets) {
       const profileUrl = candidate.profileUrl!;
-      const page = (await browserSession.browser.newPage()) as PlaywrightPage;
+      const cacheKey = profileUrl.toLowerCase();
+      const knownEndpoint = endpointCache[cacheKey] ?? endpointCache[profileUrl];
+
       try {
-        console.log(`[sola-harvest] enriching ${profileUrl}`);
-        const enrichment = await enrichSolaProfile(profileUrl, { page });
+        console.log(
+          `[sola-harvest] enriching ${profileUrl}${options.apiOnly ? " (api-only)" : ""}`,
+        );
+        const enrichment = await enrichSolaProfile(profileUrl, {
+          knownEndpoint,
+          apiOnly: options.apiOnly,
+        });
         profiles.push(enrichment);
+
+        const discoveredEndpoint =
+          enrichment.apiEndpoint ?? enrichment.likelyProfileApiEndpoint;
+        if (discoveredEndpoint) {
+          endpointUpdates[cacheKey] = discoveredEndpoint;
+        }
 
         if (enrichment.error) {
           failed += 1;
           enrichedByKey.set(candidate.candidateKey, {
             ...candidate,
-            enrichmentStatus: "failed",
+            enrichmentStatus:
+              enrichment.error === "skipped_api_unavailable"
+                ? "skipped_api_unavailable"
+                : "failed",
+            enrichmentMethod: enrichment.enrichmentMethod ?? "failed",
             enrichmentFetchedAt: enrichment.fetchedAt,
           });
         } else {
@@ -308,20 +353,30 @@ async function enrichCandidates(
           imageUrls: [],
           fetchedAt: new Date().toISOString(),
           apiHitsCount: 0,
+          enrichmentMethod: "failed",
           error: message,
         });
         enrichedByKey.set(candidate.candidateKey, {
           ...candidate,
           enrichmentStatus: "failed",
+          enrichmentMethod: "failed",
           enrichmentFetchedAt: new Date().toISOString(),
         });
-      } finally {
-        await page.close().catch(() => undefined);
       }
     }
-  } finally {
-    await browserSession.browser.close().catch(() => undefined);
+
+  if (Object.keys(endpointUpdates).length > 0) {
+    await writeProfileApiEndpointCache(endpointUpdates);
   }
+
+  const methodCounts = countByMethod(profiles);
+  const timing: SolaEnrichmentTimingSummary = {
+    profilesAttempted: targets.length,
+    ...methodCounts,
+    skipped,
+    durationMs: Date.now() - startedAt,
+  };
+  printEnrichmentTiming(timing);
 
   return {
     candidates: candidates.map(
@@ -330,6 +385,7 @@ async function enrichCandidates(
     profiles,
     enriched,
     failed,
+    timing,
   };
 }
 
@@ -375,7 +431,7 @@ async function harvestSlug(
       profilesEnriched = enrichmentResult.enriched;
       profileEnrichmentFailed = enrichmentResult.failed;
       console.log(
-        `[sola-harvest] enrichment: enriched=${profilesEnriched} failed=${profileEnrichmentFailed}`,
+        `[sola-harvest] enrichment: enriched=${profilesEnriched} failed=${profileEnrichmentFailed} apiOnly=${options.apiOnly ? "yes" : "no"}`,
       );
     }
 
