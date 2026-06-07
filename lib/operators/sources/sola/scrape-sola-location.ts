@@ -16,7 +16,8 @@ import type { SolaApiHit, SolaLocationScrapeResult, SolaRawListing } from "./typ
 import { SOLA_SOURCE_PROVIDER, SOLA_SOURCE_TYPE } from "./types";
 
 const PAGE_TIMEOUT_MS = 45_000;
-const SETTLE_MS = 8_000;
+const SETTLE_MS = 10_000;
+const CARD_WAIT_MS = 25_000;
 const MAX_API_BODY_CHARS = 120_000;
 
 export function buildSolaLocationUrl(slug: string): string {
@@ -63,6 +64,63 @@ function parseCityFromSuiteLabel(label?: string): string | undefined {
   return match?.[1]?.trim();
 }
 
+const MARKETING_LOCATION_URL = (slug: string) =>
+  `https://www.solasalonstudios.com/locations/${slug}`;
+
+const BOOK_PROFILE_SLUG_RE = /book\.solasalonstudios\.com\/([a-z0-9-]+)/gi;
+
+async function scrapeSolaLocationFromMarketing(
+  slug: string,
+  sourceUrl: string,
+): Promise<{ listings: SolaRawListing[]; parentContainerName?: string }> {
+  try {
+    const response = await fetch(MARKETING_LOCATION_URL(slug), {
+      headers: {
+        Accept: "text/html,application/xhtml+xml",
+        "User-Agent": "famtree-sola-harvest/1.0",
+      },
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!response.ok) return { listings: [] };
+
+    const html = await response.text();
+    const profileSlugs = new Set<string>();
+    for (const match of Array.from(html.matchAll(BOOK_PROFILE_SLUG_RE))) {
+      const profileSlug = match[1].toLowerCase();
+      if (profileSlug === slug) continue;
+      profileSlugs.add(profileSlug);
+    }
+
+    const parentContainerName =
+      html.match(/# Salon Suites For Rent ([^,<]+)/i)?.[1]?.trim() ?? slug;
+
+    const listings = Array.from(profileSlugs).map((profileSlug) => {
+      const profileUrl = `https://book.solasalonstudios.com/${profileSlug}/pro`;
+      const displayName = profileSlug.replace(/-/g, " ");
+      return mapDomListing(
+        {
+          displayName,
+          visibleText: displayName,
+          profileUrl,
+          categories: [],
+          phoneLinks: [],
+          socialLinks: [],
+          bookingLinks: [profileUrl],
+          pageCity: parentContainerName,
+        },
+        slug,
+        sourceUrl,
+        parentContainerName,
+        parentContainerName,
+      );
+    });
+
+    return { listings, parentContainerName };
+  } catch {
+    return { listings: [] };
+  }
+}
+
 type PlaywrightChromium = {
   launch: (opts?: { headless?: boolean }) => Promise<{
     newPage: () => Promise<PlaywrightPage>;
@@ -80,10 +138,51 @@ type PlaywrightResponse = {
 type PlaywrightPage = {
   goto: (url: string, opts?: { waitUntil?: string; timeout?: number }) => Promise<void>;
   waitForTimeout: (ms: number) => Promise<void>;
+  waitForSelector: (selector: string, opts?: { timeout?: number }) => Promise<unknown>;
+  waitForFunction: (
+    fn: () => boolean,
+    opts?: { timeout?: number },
+  ) => Promise<unknown>;
   on: (event: "response", handler: (response: PlaywrightResponse) => void) => void;
   evaluate: <T>(fn: () => T) => Promise<T>;
   close: () => Promise<void>;
 };
+
+async function dismissCookieBanner(page: PlaywrightPage): Promise<void> {
+  await page.evaluate(() => {
+    const selectors = [
+      "#cky-btn-accept",
+      ".cky-btn-accept",
+      '[data-cky-tag="accept-button"]',
+      'button[aria-label="Accept"]',
+    ];
+    for (const selector of selectors) {
+      const button = document.querySelector(selector) as HTMLElement | null;
+      if (button) {
+        button.click();
+        break;
+      }
+    }
+  });
+}
+
+async function waitForDirectoryCards(page: PlaywrightPage): Promise<void> {
+  try {
+    await page.waitForSelector("a.dir-card-wrapper", { timeout: CARD_WAIT_MS });
+    return;
+  } catch {
+    // fall through to polling
+  }
+
+  try {
+    await page.waitForFunction(
+      () => document.querySelectorAll("a.dir-card-wrapper").length > 0,
+      { timeout: CARD_WAIT_MS },
+    );
+  } catch {
+    // continue with best-effort extraction
+  }
+}
 
 async function loadPlaywrightChromium(): Promise<PlaywrightChromium | null> {
   const status = await getPlaywrightRuntimeStatus();
@@ -220,6 +319,15 @@ export async function scrapeSolaLocation(
     listings: [],
   };
 
+  const marketing = await scrapeSolaLocationFromMarketing(slug, sourceUrl);
+  if (marketing.listings.length > 0) {
+    return {
+      ...base,
+      parentContainerName: marketing.parentContainerName,
+      listings: marketing.listings,
+    };
+  }
+
   const status = await getPlaywrightRuntimeStatus();
   const preflight = await resolvePlaywrightBrowserWarning(status);
   if (preflight) {
@@ -260,9 +368,14 @@ export async function scrapeSolaLocation(
     });
 
     await page.goto(sourceUrl, {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: PAGE_TIMEOUT_MS,
     });
+    await page.waitForTimeout(2_000);
+    await dismissCookieBanner(page);
+    await page.waitForTimeout(1_000);
+    await waitForDirectoryCards(page);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(SETTLE_MS);
     await Promise.allSettled(pendingResponses);
 
@@ -326,9 +439,22 @@ export async function scrapeSolaLocation(
       return { rows, pageCity, parentContainerName: locationHeading };
     });
 
-    const listings = dom.rows.map((row) =>
+    let listings = dom.rows.map((row) =>
       mapDomListing(row, slug, sourceUrl, dom.parentContainerName, dom.pageCity),
     );
+
+    if (listings.length === 0) {
+      const marketing = await scrapeSolaLocationFromMarketing(slug, sourceUrl);
+      if (marketing.listings.length > 0) {
+        listings = marketing.listings;
+        return {
+          ...base,
+          parentContainerName: marketing.parentContainerName ?? dom.parentContainerName,
+          apiHits,
+          listings,
+        };
+      }
+    }
 
     return {
       ...base,

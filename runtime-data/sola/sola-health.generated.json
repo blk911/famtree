@@ -1,11 +1,143 @@
 {
-  "generatedAt": "2026-06-07T17:21:22.454Z",
+  "generatedAt": "2026-06-07T18:54:11.588Z",
   "slugs": {
     "lafayette": {
-      "lastListingCount": 0,
+      "lastListingCount": 19,
       "lastEnrichmentCount": 19,
       "scrapeFailures": 0,
-      "scrapeDegradedEvents": 0
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:22:16.628Z"
+    },
+    "arvada": {
+      "lastListingCount": 9,
+      "lastEnrichmentCount": 9,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T17:48:16.816Z"
+    },
+    "aurora": {
+      "lastListingCount": 11,
+      "lastEnrichmentCount": 11,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T17:49:24.541Z"
+    },
+    "belmar": {
+      "lastListingCount": 25,
+      "lastEnrichmentCount": 25,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T17:51:05.047Z"
+    },
+    "boulder": {
+      "lastListingCount": 25,
+      "lastEnrichmentCount": 25,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T17:54:49.354Z"
+    },
+    "centennial": {
+      "lastListingCount": 13,
+      "lastEnrichmentCount": 13,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T17:58:27.649Z"
+    },
+    "cherry-creek-clayton-lane": {
+      "lastListingCount": 23,
+      "lastEnrichmentCount": 23,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:00:15.122Z"
+    },
+    "denver-west": {
+      "lastListingCount": 28,
+      "lastEnrichmentCount": 28,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:03:37.868Z"
+    },
+    "downtown-loveland": {
+      "lastListingCount": 28,
+      "lastEnrichmentCount": 28,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:07:29.127Z"
+    },
+    "front-range-village": {
+      "lastListingCount": 24,
+      "lastEnrichmentCount": 24,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:11:55.084Z"
+    },
+    "geneva-commons": {
+      "lastListingCount": 0,
+      "lastEnrichmentCount": 0,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1
+    },
+    "highlands-ranch-town-center": {
+      "lastListingCount": 47,
+      "lastEnrichmentCount": 47,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:15:46.858Z"
+    },
+    "lakewood": {
+      "lastListingCount": 0,
+      "lastEnrichmentCount": 0,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1
+    },
+    "littleton": {
+      "lastListingCount": 21,
+      "lastEnrichmentCount": 21,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:25:06.389Z"
+    },
+    "north-academy-blvd": {
+      "lastListingCount": 28,
+      "lastEnrichmentCount": 28,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:27:55.864Z"
+    },
+    "orchard-town-center": {
+      "lastListingCount": 21,
+      "lastEnrichmentCount": 21,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:31:49.242Z"
+    },
+    "parker": {
+      "lastListingCount": 25,
+      "lastEnrichmentCount": 25,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:34:52.432Z"
+    },
+    "southlands": {
+      "lastListingCount": 29,
+      "lastEnrichmentCount": 29,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:38:17.025Z"
+    },
+    "westminster": {
+      "lastListingCount": 32,
+      "lastEnrichmentCount": 32,
+      "scrapeFailures": 1,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:42:13.873Z"
+    },
+    "westminster-city-center": {
+      "lastListingCount": 35,
+      "lastEnrichmentCount": 35,
+      "scrapeFailures": 2,
+      "scrapeDegradedEvents": 1,
+      "lastSuccessfulScrape": "2026-06-07T18:47:08.781Z"
     }
   }
 }
