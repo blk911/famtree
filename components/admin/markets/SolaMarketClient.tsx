@@ -204,11 +204,18 @@ function linkBtn(href: string, label: string): React.ReactNode {
   );
 }
 
-type Props = {
-  artifact: SolaResolverImportArtifact | null;
+type ReviewedTargetsExportMeta = {
+  csvAvailable: boolean;
+  jsonAvailable: boolean;
+  exportedCount?: number;
 };
 
-export function SolaMarketClient({ artifact }: Props) {
+type Props = {
+  artifact: SolaResolverImportArtifact | null;
+  reviewedTargetsExport?: ReviewedTargetsExportMeta;
+};
+
+export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [slugFilter, setSlugFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -336,14 +343,77 @@ export function SolaMarketClient({ artifact }: Props) {
 
   return (
     <div style={{ padding: "28px 20px 60px", maxWidth: 1280, margin: "0 auto" }}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 4px" }}>Sola Market</h1>
-        <p style={{ fontSize: 12, color: "#78716c", margin: 0, maxWidth: 720, lineHeight: 1.55 }}>
-          Sola suite-directory resolver import with manual review overlay — {artifact.recordCount}{" "}
-          candidates from <code style={{ fontSize: 11 }}>{artifact.sourceArtifact}</code>
-          {artifact.generatedAt ? ` · generated ${new Date(artifact.generatedAt).toLocaleString()}` : null}.
-          Review states are stored separately and do not mutate the generated import.
-        </p>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 12,
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: 20,
+        }}
+      >
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 4px" }}>Sola Market</h1>
+          <p style={{ fontSize: 12, color: "#78716c", margin: 0, maxWidth: 720, lineHeight: 1.55 }}>
+            Sola suite-directory resolver import with manual review overlay — {artifact.recordCount}{" "}
+            candidates from <code style={{ fontSize: 11 }}>{artifact.sourceArtifact}</code>
+            {artifact.generatedAt ? ` · generated ${new Date(artifact.generatedAt).toLocaleString()}` : null}.
+            Review states are stored separately and do not mutate the generated import.
+          </p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+          {reviewedTargetsExport?.csvAvailable ? (
+            <>
+              <a
+                href="/api/admin/markets/sola/reviewed-targets?format=csv"
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  padding: "8px 14px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: "#4338ca",
+                  color: "#fff",
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Export reviewed targets (CSV)
+              </a>
+              {reviewedTargetsExport.jsonAvailable ? (
+                <a
+                  href="/api/admin/markets/sola/reviewed-targets?format=json"
+                  style={{ fontSize: 11, fontWeight: 600, color: "#4338ca", textDecoration: "none" }}
+                >
+                  Download JSON
+                  {typeof reviewedTargetsExport.exportedCount === "number"
+                    ? ` (${reviewedTargetsExport.exportedCount})`
+                    : null}
+                </a>
+              ) : null}
+            </>
+          ) : (
+            <div
+              style={{
+                fontSize: 11,
+                color: "#78716c",
+                background: "#fafaf9",
+                border: "1px solid #e7e5e4",
+                borderRadius: 8,
+                padding: "8px 12px",
+                maxWidth: 280,
+                lineHeight: 1.5,
+              }}
+            >
+              No export yet. Run{" "}
+              <code style={{ fontSize: 10, background: "#f5f5f4", padding: "1px 4px", borderRadius: 4 }}>
+                npm run export:sola:reviewed
+              </code>{" "}
+              after marking candidates valid or priority.
+            </div>
+          )}
+        </div>
       </div>
 
       {reviewError ? (
