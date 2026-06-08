@@ -5,7 +5,15 @@ import { readSolaResolverImport } from "@/lib/operators/sources/sola/read-sola-r
 import { RESOLVER_IMPORT_ARTIFACT_PATH } from "@/lib/operators/sources/sola/build-resolver-import";
 import { readSolaReviewStates } from "@/lib/operators/sources/sola/sola-review-state-store";
 import type { SolaResolverImportRecord } from "@/lib/operators/sources/sola/types";
-import type { MarketCandidate, MarketCategoryBucket } from "@/lib/markets/types";
+import { filterValidCategoryBuckets } from "@/lib/markets/category-buckets";
+import {
+  normalizeBookingKey,
+  normalizeOperatorName,
+  normalizePhoneKeys,
+  normalizeSocialHandles,
+  normalizeWebsiteDomain,
+} from "@/lib/markets/normalize-identity";
+import type { MarketCandidate } from "@/lib/markets/types";
 
 export const SOLA_SOURCE_KEY = "sola";
 
@@ -14,20 +22,8 @@ export interface SolaAdapterResult {
   artifactPath: string;
   lastImportedAt: string;
   candidates: MarketCandidate[];
-}
-
-function mapCategoryBuckets(buckets: string[]): MarketCategoryBucket[] {
-  const allowed = new Set<MarketCategoryBucket>([
-    "hair",
-    "nails",
-    "skin",
-    "lashes",
-    "barber",
-    "massage",
-    "wax",
-    "other",
-  ]);
-  return buckets.filter((b): b is MarketCategoryBucket => allowed.has(b as MarketCategoryBucket));
+  importedCount: number;
+  skippedCount: number;
 }
 
 function mapSolaRecord(
@@ -51,7 +47,7 @@ function mapSolaRecord(
     state: "CO",
     suiteNumber: record.suiteNumber,
     categories: record.categories,
-    categoryBuckets: mapCategoryBuckets(record.categoryBuckets),
+    categoryBuckets: filterValidCategoryBuckets(record.categoryBuckets),
     phones: record.phones,
     emails: record.emails,
     bookingLinks: record.bookingLinks,
@@ -74,6 +70,13 @@ function mapSolaRecord(
     notes,
     createdAt: importGeneratedAt,
     updatedAt: reviewedAt ?? importGeneratedAt,
+    normalizedOperatorName: normalizeOperatorName(record.displayName || record.operatorName),
+    normalizedPhoneKeys: normalizePhoneKeys(record.phones),
+    normalizedWebsiteDomain: record.website ? normalizeWebsiteDomain(record.website) : undefined,
+    normalizedSocialHandles: normalizeSocialHandles(record.socialLinks),
+    normalizedBookingKey: normalizeBookingKey(
+      record.bookingLinks[0] ?? record.profileUrl ?? "",
+    ),
   };
 }
 
@@ -100,5 +103,7 @@ export async function adaptSolaToMarketCandidates(): Promise<SolaAdapterResult |
     artifactPath: path.relative(process.cwd(), RESOLVER_IMPORT_ARTIFACT_PATH),
     lastImportedAt: importArtifact.generatedAt,
     candidates,
+    importedCount: candidates.length,
+    skippedCount: 0,
   };
 }

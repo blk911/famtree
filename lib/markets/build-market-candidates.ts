@@ -1,18 +1,26 @@
 // lib/markets/build-market-candidates.ts
 
 import { mkdir, writeFile } from "fs/promises";
+import { adaptGgenToMarketCandidates, GGEN_SOURCE_KEY } from "./adapters/ggen-to-market-candidates";
 import { adaptSolaToMarketCandidates, SOLA_SOURCE_KEY } from "./adapters/sola-to-market-candidates";
 import { MARKET_CANDIDATES_ARTIFACT_PATH, MARKETS_DATA_DIR } from "./paths";
 import type { MarketCandidatesArtifact, MarketCandidate } from "./types";
 
-export type MarketCandidateAdapter = () => Promise<{
+export type MarketCandidateAdapterResult = {
   sourceKey: string;
   artifactPath: string;
   lastImportedAt: string;
   candidates: MarketCandidate[];
-} | null>;
+  importedCount: number;
+  skippedCount: number;
+};
 
-const ADAPTERS: MarketCandidateAdapter[] = [adaptSolaToMarketCandidates];
+export type MarketCandidateAdapter = () => Promise<MarketCandidateAdapterResult | null>;
+
+const ADAPTERS: MarketCandidateAdapter[] = [
+  adaptSolaToMarketCandidates,
+  adaptGgenToMarketCandidates,
+];
 
 function compareCandidates(a: MarketCandidate, b: MarketCandidate): number {
   if (b.acquisitionScore !== a.acquisitionScore) {
@@ -24,14 +32,21 @@ function compareCandidates(a: MarketCandidate, b: MarketCandidate): number {
   return a.operatorName.localeCompare(b.operatorName, undefined, { sensitivity: "base" });
 }
 
-export async function buildMarketCandidatesRegistry(): Promise<MarketCandidatesArtifact> {
+export type BuildMarketCandidatesResult = {
+  artifact: MarketCandidatesArtifact;
+  adapterResults: MarketCandidateAdapterResult[];
+};
+
+export async function buildMarketCandidatesRegistry(): Promise<BuildMarketCandidatesResult> {
   const sources: MarketCandidatesArtifact["sources"] = {};
   const candidates: MarketCandidate[] = [];
+  const adapterResults: MarketCandidateAdapterResult[] = [];
 
   for (const adapt of ADAPTERS) {
     const result = await adapt();
     if (!result) continue;
 
+    adapterResults.push(result);
     sources[result.sourceKey] = {
       count: result.candidates.length,
       artifactPath: result.artifactPath,
@@ -56,7 +71,7 @@ export async function buildMarketCandidatesRegistry(): Promise<MarketCandidatesA
     "utf8",
   );
 
-  return artifact;
+  return { artifact, adapterResults };
 }
 
-export { SOLA_SOURCE_KEY };
+export { SOLA_SOURCE_KEY, GGEN_SOURCE_KEY };

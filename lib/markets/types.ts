@@ -62,6 +62,12 @@ export interface MarketCandidate {
   notes: string;
   createdAt: string;
   updatedAt: string;
+  /** Stable identity fields for future cross-source clustering */
+  normalizedOperatorName?: string;
+  normalizedPhoneKeys?: string[];
+  normalizedWebsiteDomain?: string;
+  normalizedSocialHandles?: string[];
+  normalizedBookingKey?: string;
 }
 
 export interface MarketSourceRegistryEntry {

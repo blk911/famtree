@@ -81,7 +81,9 @@ function isBookingLink(url: string): boolean {
   if (host === "book.solasalonstudios.com") return trimmed.includes("/pro");
   if (host === "connect.vagaro.com" || host === "api.vagaro.com") return false;
   if (host.endsWith("vagaro.com")) return !trimmed.includes("/api");
-  return host === "book.vagaro.com";
+  if (host === "book.vagaro.com") return true;
+  if (host.endsWith("glossgenius.com")) return true;
+  return false;
 }
 
 function pickBookingLink(candidate: MarketCandidate): string | undefined {

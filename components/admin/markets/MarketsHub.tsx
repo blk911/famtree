@@ -75,6 +75,8 @@ function SourceMarketCard({ title, subtitle, href, pipeline, stats }: SourceCard
 
 export function MarketsHub({ solaStats, registry }: Props) {
   const solaRegistryCount = registry?.sources.sola?.count ?? 0;
+  const ggenRegistryCount = registry?.sources.glossgenius?.count ?? 0;
+  const ggenRegistryMeta = registry?.sources.glossgenius;
 
   const sources: SourceCard[] = [
     {
@@ -96,6 +98,16 @@ export function MarketsHub({ solaStats, registry }: Props) {
       subtitle: "GGseed discovery from business names and public search",
       href: "/admin/studios/ggen-discovery",
       pipeline: "Seed text → GlossGenius probe → prospect promotion",
+      stats:
+        ggenRegistryCount > 0
+          ? [
+              { label: "Registry", value: ggenRegistryCount },
+              {
+                label: "Imported",
+                value: new Date(ggenRegistryMeta!.lastImportedAt).toLocaleDateString(),
+              },
+            ]
+          : [{ label: "Registry", value: ggenRegistryCount }],
     },
     {
       title: "StyleSeat",
@@ -123,7 +135,8 @@ export function MarketsHub({ solaStats, registry }: Props) {
       {registry ? (
         <p style={{ fontSize: 12, color: "#57534e", margin: "0 0 24px" }}>
           Registry: {registry.total} candidates · generated {new Date(registry.generatedAt).toLocaleString()}
-          {solaRegistryCount > 0 ? ` · Sola feed: ${solaRegistryCount}` : null}
+          {solaRegistryCount > 0 ? ` · Sola: ${solaRegistryCount}` : null}
+          {ggenRegistryCount > 0 ? ` · GlossGenius: ${ggenRegistryCount}` : null}
         </p>
       ) : (
         <p style={{ fontSize: 12, color: "#b45309", margin: "0 0 24px" }}>
