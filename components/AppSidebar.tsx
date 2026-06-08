@@ -35,7 +35,7 @@ const SETTINGS_ADMIN_ITEMS = [
   { href: "/settings",            label: "Settings",             icon: null },
   { href: "/admin/tools",         label: "Tools & foundation",   icon: Terminal },
   { href: "/admin/activity",      label: "Activity Log",         icon: ScrollText },
-  { href: "/admin/markets/sola",  label: "Sola",                 icon: Building2 },
+  { href: "/admin/markets",         label: "Markets",              icon: Building2 },
 ];
 
 export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: Props) {

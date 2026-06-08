@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import type {
   SolaCategoryBucket,
   SolaResolverImportArtifact,
@@ -342,7 +344,11 @@ export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
   if (!artifact) {
     return (
       <div style={{ padding: "28px 20px 60px", maxWidth: 1200, margin: "0 auto" }}>
+        <IntelligenceMarketNav />
         {smokeBanner}
+        <p style={{ fontSize: 12, color: "#57534e", margin: "0 0 16px", lineHeight: 1.5 }}>
+          Source pipeline: Sola → resolver import → review → export targets
+        </p>
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 8px" }}>Sola Market</h1>
         <p style={{ fontSize: 13, color: "#78716c", margin: 0 }}>
           No resolver import artifact found. Run{" "}
@@ -361,7 +367,22 @@ export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
 
   return (
     <div style={{ padding: "28px 20px 60px", maxWidth: 1280, margin: "0 auto" }}>
+      <IntelligenceMarketNav />
       {smokeBanner}
+      <p
+        style={{
+          fontSize: 12,
+          color: "#57534e",
+          margin: "0 0 16px",
+          lineHeight: 1.5,
+          maxWidth: 720,
+        }}
+      >
+        Source pipeline: Sola → resolver import → review → export targets ·{" "}
+        <Link href="/admin/markets" style={{ color: "#4338ca", fontWeight: 700 }}>
+          All markets
+        </Link>
+      </p>
       <div
         style={{
           display: "flex",
