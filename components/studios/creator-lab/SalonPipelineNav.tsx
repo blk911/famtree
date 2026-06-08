@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { MarketIntelNav } from "@/components/admin/MarketIntelNav";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import { SalonPipelineHeader } from "@/components/admin/intelligence/salon/SalonPipelineHeader";
@@ -87,6 +88,7 @@ export function SalonPipelineNav({ currentTool, trailing }: SalonPipelineNavProp
 
   return (
     <div style={{ marginBottom: 22 }}>
+      <MarketIntelNav />
       <IntelligenceMarketNav />
 
       <div

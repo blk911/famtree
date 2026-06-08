@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, Mail,
-  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2, Terminal, Tv2, Store,
+  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2, Terminal, Tv2, LineChart,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { User as PrismaUser } from "@prisma/client";
@@ -18,6 +18,7 @@ import {
   SidebarShell,
   SidebarVaultBadge,
 } from "@/components/ui/app-chrome";
+import { isMarketIntelPath, MARKET_INTEL_ROUTES } from "@/lib/markets/market-intel-routes";
 
 interface Props { user: PrismaUser; open?: boolean; vaultNotificationCount?: number; }
 
@@ -25,7 +26,12 @@ const INVITE = { href: "/invite", label: "Invite", icon: Mail };
 
 const MSG_VAULT_HREF = "/msg-vault";
 const FAMILY_SAFE_HREF = "/aihsafe";
-const MARKETS_HREF = "/admin/markets";
+const MARKET_INTEL_ITEMS = [
+  { href: MARKET_INTEL_ROUTES.creatorDiscovery, label: "Creator Discovery" },
+  { href: MARKET_INTEL_ROUTES.markets, label: "Markets" },
+  { href: MARKET_INTEL_ROUTES.actionItems, label: "Action Items" },
+];
+
 const FAMILY_ITEMS = [
   { href: "/tree", label: "My People" },
   { href: "/family-vault/family-units", label: "Units" },
@@ -49,12 +55,11 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
     pathname.startsWith("/tree/") ||
     pathname === "/family-vault/family-units";
 
-  const marketsActive =
-    pathname === MARKETS_HREF || pathname.startsWith(`${MARKETS_HREF}/`);
+  const marketIntelActive = isMarketIntelPath(pathname);
 
   const adminZone =
     pathname === "/admin" ||
-    (pathname.startsWith("/admin/") && !marketsActive);
+    (pathname.startsWith("/admin/") && !marketIntelActive);
 
   const settingsActive =
     pathname === "/settings" ||
@@ -62,11 +67,16 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
     adminZone;
 
   const [settingsOpen, setSettingsOpen] = useState(settingsActive);
+  const [marketIntelOpen, setMarketIntelOpen] = useState(marketIntelActive);
 
   /** Expand Settings submenu whenever we're on Settings or any /admin route (client navigations skip useState init). */
   useEffect(() => {
     if (settingsActive) setSettingsOpen(true);
   }, [settingsActive]);
+
+  useEffect(() => {
+    if (marketIntelActive) setMarketIntelOpen(true);
+  }, [marketIntelActive]);
 
   const handleLogout = async () => {
     try {
@@ -228,12 +238,68 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
           Discovery Channel
         </Link>
 
-        {/* Markets — unified acquisition workbench (admin only) */}
+        {/* Market Intel — discovery, markets, action items (admin only) */}
         {isAdmin ? (
-          <Link href={MARKETS_HREF} style={linkStyle(marketsActive)}>
-            <Store style={{width:"18px",height:"18px",flexShrink:0}} />
-            Markets
-          </Link>
+          <>
+            <button
+              onClick={() => {
+                if (!marketIntelActive) {
+                  router.push(MARKET_INTEL_ROUTES.creatorDiscovery);
+                  setMarketIntelOpen(true);
+                  return;
+                }
+                setMarketIntelOpen((v) => !v);
+              }}
+              style={{
+                ...linkStyle(marketIntelActive),
+                width: "100%",
+                background: marketIntelActive
+                  ? "linear-gradient(135deg,rgba(233,108,80,0.75),rgba(244,162,97,0.55))"
+                  : "transparent",
+                border: marketIntelActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
+                cursor: "pointer",
+              }}
+            >
+              <LineChart style={{ width: "18px", height: "18px", flexShrink: 0 }} />
+              <span style={{ flex: 1, textAlign: "left" }}>Market Intel</span>
+              <ChevronDown
+                style={{
+                  width: "15px",
+                  height: "15px",
+                  flexShrink: 0,
+                  transform: marketIntelOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s",
+                }}
+              />
+            </button>
+
+            {marketIntelOpen && (
+              <div style={{ marginBottom: "3px" }}>
+                {MARKET_INTEL_ITEMS.map(({ href, label }) => {
+                  const active =
+                    pathname === href ||
+                    (href !== MARKET_INTEL_ROUTES.creatorDiscovery && pathname.startsWith(`${href}/`)) ||
+                    (href === MARKET_INTEL_ROUTES.creatorDiscovery &&
+                      (pathname.startsWith("/admin/studios/") ||
+                        pathname.startsWith("/admin/intelligence/salon")));
+                  return (
+                    <Link key={href} href={href} style={subLinkStyle(active)}>
+                      <span
+                        style={{
+                          width: "5px",
+                          height: "5px",
+                          borderRadius: "50%",
+                          flexShrink: 0,
+                          background: active ? "white" : "rgba(255,255,255,0.3)",
+                        }}
+                      />
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </>
         ) : null}
 
         {/* Settings — accordion for admins, plain link for members */}

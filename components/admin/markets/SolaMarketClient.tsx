@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { MarketIntelNav } from "@/components/admin/MarketIntelNav";
 import type {
   SolaCategoryBucket,
   SolaResolverImportArtifact,
@@ -344,7 +344,7 @@ export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
   if (!artifact) {
     return (
       <div style={{ padding: "28px 20px 60px", maxWidth: 1200, margin: "0 auto" }}>
-        <IntelligenceMarketNav />
+        <MarketIntelNav />
         {smokeBanner}
         <p style={{ fontSize: 12, color: "#57534e", margin: "0 0 16px", lineHeight: 1.5 }}>
           Source pipeline: Sola → resolver import → review → export targets
@@ -367,7 +367,7 @@ export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
 
   return (
     <div style={{ padding: "28px 20px 60px", maxWidth: 1280, margin: "0 auto" }}>
-      <IntelligenceMarketNav />
+      <MarketIntelNav />
       {smokeBanner}
       <p
         style={{

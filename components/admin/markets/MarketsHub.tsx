@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { MarketIntelNav } from "@/components/admin/MarketIntelNav";
 import { MarketsCandidateTable } from "@/components/admin/markets/MarketsCandidateTable";
 import type { MarketCandidatesArtifact } from "@/lib/markets/types";
 import type { SolaMarketsHubStats } from "@/lib/operators/sources/sola/markets-hub-stats";
@@ -125,7 +125,7 @@ export function MarketsHub({ solaStats, registry }: Props) {
 
   return (
     <div style={{ padding: "28px 20px 60px", maxWidth: 1320, margin: "0 auto" }}>
-      <IntelligenceMarketNav />
+      <MarketIntelNav />
 
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 6px" }}>Markets</h1>
       <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 8px", lineHeight: 1.55 }}>

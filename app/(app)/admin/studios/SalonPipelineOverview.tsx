@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { MarketIntelNav } from "@/components/admin/MarketIntelNav";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
 import { SalonPipelineHeader } from "@/components/admin/intelligence/salon/SalonPipelineHeader";
 import { SALON_PIPELINE_STAGES } from "@/lib/intelligence/salon/pipeline/salon-pipeline-config";
@@ -43,6 +44,7 @@ export function SalonPipelineOverview() {
 
   return (
     <div style={{ marginBottom: 32 }}>
+      <MarketIntelNav />
       <IntelligenceMarketNav />
 
       <div style={{ marginBottom: 20 }}>

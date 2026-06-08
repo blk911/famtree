@@ -9,14 +9,12 @@ import { usePathname } from "next/navigation";
 
 const VERTICALS = [
   { key: "salon",  label: "Salon / Client-Centric", href: "/admin/intelligence/salon" },
-  { key: "markets", label: "Markets",               href: "/admin/markets" },
   { key: "transpo", label: "Transpo",               href: "/admin/intelligence/transpo" },
   { key: "hcare",  label: "HCare",                  href: "/admin/intelligence/hcare" },
   { key: "labs",   label: "Labs",                   href: "/admin/intelligence/labs" },
 ] as const;
 
 function resolveActiveVertical(pathname: string): string {
-  if (pathname.startsWith("/admin/markets")) return "markets";
   if (pathname.startsWith("/admin/intelligence/transpo")) return "transpo";
   if (pathname.startsWith("/admin/intelligence/hcare"))   return "hcare";
   if (pathname.startsWith("/admin/intelligence/labs"))    return "labs";

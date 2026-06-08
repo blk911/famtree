@@ -178,7 +178,8 @@ export function AppShell({ user, coverUrl, children, vaultNotificationCount = 0 
 
         {pathname.startsWith("/discovery") ||
         pathname.startsWith("/admin/studios") ||
-        pathname.startsWith("/admin/markets") ? (
+        pathname.startsWith("/admin/markets") ||
+        pathname.startsWith("/admin/action-items") ? (
           // Full-bleed layout for Discovery, admin Studio tools, and market inspectors
           children
         ) : (
