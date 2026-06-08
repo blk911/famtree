@@ -1,0 +1,176 @@
+{
+  "generatedAt": "2026-06-08T17:59:15.856Z",
+  "totalCounties": 1,
+  "dossiers": [
+    {
+      "countyKey": "CO:Alamosa",
+      "county": "Alamosa",
+      "state": "CO",
+      "generatedAt": "2026-06-08T17:59:15.856Z",
+      "demandGenerators": [
+        {
+          "generatorKey": "transpo:CO:alamosa:meal_program:alamosa-county-meal-delivery-program",
+          "category": "meal_program",
+          "facilityName": "Alamosa County meal delivery program",
+          "displayName": "Meal delivery / nutrition program (Alamosa)",
+          "county": "Alamosa",
+          "state": "CO",
+          "city": "Alamosa",
+          "sourceProvider": "manual_seed",
+          "sourceType": "manual_seed",
+          "notes": [
+            "Placeholder meal-program anchor for recurring senior nutrition demand.",
+            "Meal volume and official program operator not yet confirmed."
+          ],
+          "confidence": 55,
+          "createdAt": "2026-06-08T17:59:15.841Z",
+          "updatedAt": "2026-06-08T17:59:15.841Z"
+        },
+        {
+          "generatorKey": "transpo:CO:alamosa:dialysis:san-luis-valley-dialysis-center",
+          "category": "dialysis",
+          "facilityName": "San Luis Valley dialysis center",
+          "displayName": "San Luis Valley dialysis center (unconfirmed name)",
+          "county": "Alamosa",
+          "state": "CO",
+          "city": "Alamosa",
+          "sourceProvider": "manual_seed",
+          "sourceType": "manual_seed",
+          "notes": [
+            "Placeholder dialysis anchor for Alamosa County — station count and official facility name not yet confirmed in project data."
+          ],
+          "confidence": 55,
+          "createdAt": "2026-06-08T17:59:15.841Z",
+          "updatedAt": "2026-06-08T17:59:15.841Z"
+        },
+        {
+          "generatorKey": "transpo:CO:alamosa:hospital:san-luis-valley-health",
+          "category": "hospital",
+          "facilityName": "San Luis Valley Health",
+          "displayName": "San Luis Valley Health",
+          "county": "Alamosa",
+          "state": "CO",
+          "city": "Alamosa",
+          "sourceProvider": "manual_seed",
+          "sourceType": "manual_seed",
+          "notes": [
+            "Seeded from Transpo network-formation county anchors.",
+            "Beds, annual discharges, phone, and website not yet confirmed from an official source."
+          ],
+          "confidence": 55,
+          "createdAt": "2026-06-08T17:59:15.840Z",
+          "updatedAt": "2026-06-08T17:59:15.840Z"
+        },
+        {
+          "generatorKey": "transpo:CO:alamosa:senior_center:san-luis-valley-senior-center",
+          "category": "senior_center",
+          "facilityName": "San Luis Valley senior center",
+          "displayName": "Senior center / aging services (SLV)",
+          "county": "Alamosa",
+          "state": "CO",
+          "city": "Alamosa",
+          "sourceProvider": "manual_seed",
+          "sourceType": "manual_seed",
+          "notes": [
+            "Placeholder senior/aging services anchor referenced in network-formation notes.",
+            "Specific senior center name and program volume not yet confirmed."
+          ],
+          "confidence": 55,
+          "createdAt": "2026-06-08T17:59:15.841Z",
+          "updatedAt": "2026-06-08T17:59:15.841Z"
+        }
+      ],
+      "countsByCategory": {
+        "meal_program": 1,
+        "dialysis": 1,
+        "hospital": 1,
+        "senior_center": 1
+      },
+      "demandScore": 75,
+      "recurringDemandScore": 60,
+      "ruralAnchorScore": 80,
+      "topAnchors": [
+        {
+          "generatorKey": "transpo:CO:alamosa:hospital:san-luis-valley-health",
+          "category": "hospital",
+          "facilityName": "San Luis Valley Health",
+          "displayName": "San Luis Valley Health",
+          "county": "Alamosa",
+          "state": "CO",
+          "city": "Alamosa",
+          "sourceProvider": "manual_seed",
+          "sourceType": "manual_seed",
+          "notes": [
+            "Seeded from Transpo network-formation county anchors.",
+            "Beds, annual discharges, phone, and website not yet confirmed from an official source."
+          ],
+          "confidence": 55,
+          "createdAt": "2026-06-08T17:59:15.840Z",
+          "updatedAt": "2026-06-08T17:59:15.840Z"
+        },
+        {
+          "generatorKey": "transpo:CO:alamosa:dialysis:san-luis-valley-dialysis-center",
+          "category": "dialysis",
+          "facilityName": "San Luis Valley dialysis center",
+          "displayName": "San Luis Valley dialysis center (unconfirmed name)",
+          "county": "Alamosa",
+          "state": "CO",
+          "city": "Alamosa",
+          "sourceProvider": "manual_seed",
+          "sourceType": "manual_seed",
+          "notes": [
+            "Placeholder dialysis anchor for Alamosa County — station count and official facility name not yet confirmed in project data."
+          ],
+          "confidence": 55,
+          "createdAt": "2026-06-08T17:59:15.841Z",
+          "updatedAt": "2026-06-08T17:59:15.841Z"
+        },
+        {
+          "generatorKey": "transpo:CO:alamosa:meal_program:alamosa-county-meal-delivery-program",
+          "category": "meal_program",
+          "facilityName": "Alamosa County meal delivery program",
+          "displayName": "Meal delivery / nutrition program (Alamosa)",
+          "county": "Alamosa",
+          "state": "CO",
+          "city": "Alamosa",
+          "sourceProvider": "manual_seed",
+          "sourceType": "manual_seed",
+          "notes": [
+            "Placeholder meal-program anchor for recurring senior nutrition demand.",
+            "Meal volume and official program operator not yet confirmed."
+          ],
+          "confidence": 55,
+          "createdAt": "2026-06-08T17:59:15.841Z",
+          "updatedAt": "2026-06-08T17:59:15.841Z"
+        },
+        {
+          "generatorKey": "transpo:CO:alamosa:senior_center:san-luis-valley-senior-center",
+          "category": "senior_center",
+          "facilityName": "San Luis Valley senior center",
+          "displayName": "Senior center / aging services (SLV)",
+          "county": "Alamosa",
+          "state": "CO",
+          "city": "Alamosa",
+          "sourceProvider": "manual_seed",
+          "sourceType": "manual_seed",
+          "notes": [
+            "Placeholder senior/aging services anchor referenced in network-formation notes.",
+            "Specific senior center name and program volume not yet confirmed."
+          ],
+          "confidence": 55,
+          "createdAt": "2026-06-08T17:59:15.841Z",
+          "updatedAt": "2026-06-08T17:59:15.841Z"
+        }
+      ],
+      "missingData": [
+        "behavioral_health_facility_missing",
+        "broker_recruitment_signal_missing",
+        "dialysis_station_count_missing",
+        "hospital_volume_missing",
+        "meals_volume_missing",
+        "provider_capacity_missing",
+        "va_clinic_missing"
+      ]
+    }
+  ]
+}

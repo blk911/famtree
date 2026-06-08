@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "category": "hospital",
+      "facilityName": "San Luis Valley Health",
+      "displayName": "San Luis Valley Health",
+      "county": "Alamosa",
+      "state": "CO",
+      "city": "Alamosa",
+      "sourceProvider": "manual_seed",
+      "sourceType": "manual_seed",
+      "notes": [
+        "Seeded from Transpo network-formation county anchors.",
+        "Beds, annual discharges, phone, and website not yet confirmed from an official source."
+      ]
+    },
+    {
+      "category": "dialysis",
+      "facilityName": "San Luis Valley dialysis center",
+      "displayName": "San Luis Valley dialysis center (unconfirmed name)",
+      "county": "Alamosa",
+      "state": "CO",
+      "city": "Alamosa",
+      "sourceProvider": "manual_seed",
+      "sourceType": "manual_seed",
+      "notes": [
+        "Placeholder dialysis anchor for Alamosa County — station count and official facility name not yet confirmed in project data."
+      ]
+    },
+    {
+      "category": "senior_center",
+      "facilityName": "San Luis Valley senior center",
+      "displayName": "Senior center / aging services (SLV)",
+      "county": "Alamosa",
+      "state": "CO",
+      "city": "Alamosa",
+      "sourceProvider": "manual_seed",
+      "sourceType": "manual_seed",
+      "notes": [
+        "Placeholder senior/aging services anchor referenced in network-formation notes.",
+        "Specific senior center name and program volume not yet confirmed."
+      ]
+    },
+    {
+      "category": "meal_program",
+      "facilityName": "Alamosa County meal delivery program",
+      "displayName": "Meal delivery / nutrition program (Alamosa)",
+      "county": "Alamosa",
+      "state": "CO",
+      "city": "Alamosa",
+      "sourceProvider": "manual_seed",
+      "sourceType": "manual_seed",
+      "notes": [
+        "Placeholder meal-program anchor for recurring senior nutrition demand.",
+        "Meal volume and official program operator not yet confirmed."
+      ]
+    }
+  ]
+}
