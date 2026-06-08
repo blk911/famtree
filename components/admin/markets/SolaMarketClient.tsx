@@ -322,9 +322,27 @@ export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
     reviewStates,
   ]);
 
+  const smokeBanner = (
+    <div
+      style={{
+        marginBottom: 16,
+        padding: "10px 14px",
+        borderRadius: 10,
+        background: "#ecfdf5",
+        border: "1px solid #86efac",
+        fontSize: 13,
+        fontWeight: 800,
+        color: "#166534",
+      }}
+    >
+      Sola Market Loaded
+    </div>
+  );
+
   if (!artifact) {
     return (
       <div style={{ padding: "28px 20px 60px", maxWidth: 1200, margin: "0 auto" }}>
+        {smokeBanner}
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 8px" }}>Sola Market</h1>
         <p style={{ fontSize: 13, color: "#78716c", margin: 0 }}>
           No resolver import artifact found. Run{" "}
@@ -343,6 +361,7 @@ export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
 
   return (
     <div style={{ padding: "28px 20px 60px", maxWidth: 1280, margin: "0 auto" }}>
+      {smokeBanner}
       <div
         style={{
           display: "flex",
