@@ -577,7 +577,7 @@ export default function EducationSeedsPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <MarketIntelChrome />
+      <MarketIntelChrome showDiscoveryFlow />
 
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>

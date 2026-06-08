@@ -102,7 +102,7 @@ export default function SalonBackOfficeImportPage() {
   const preview = (lastRun?.normalizedPreview ?? []).slice(0, 10);
 
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px 60px" }}>
+    <>
       <CreatorIntelligenceNav current="backoffice" />
 
       <IntelligenceFeatureHeader
@@ -354,6 +354,6 @@ export default function SalonBackOfficeImportPage() {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

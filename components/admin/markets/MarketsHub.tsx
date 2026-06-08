@@ -98,7 +98,7 @@ export function MarketsHub({ solaStats, registry }: Props) {
 
   return (
     <MarketIntelPageShell>
-      <MarketIntelChrome showVerticalFilters={false} />
+      <MarketIntelChrome showVerticalFilters={false} showDiscoveryFlow={false} />
 
       <h1 className="m-0 mb-1 text-xl font-extrabold text-stone-900 sm:text-[22px]">Markets</h1>
       <p className="m-0 mb-2 text-sm leading-snug text-stone-500">

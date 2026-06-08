@@ -1,41 +1,33 @@
 "use client";
 // app/(app)/admin/studios/runs/page.tsx
-// Run history and audit trail — placeholder. Not yet built.
+// Run history and audit trail — last step in discovery flow (not an operating step).
 
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
-import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 
 export default function RunsPage() {
   return (
-    <div style={{ maxWidth: 860, margin: "0 auto", padding: "28px 20px 60px" }}>
-
+    <>
       <CreatorIntelligenceNav current="runs" />
 
-      <IntelligenceFeatureHeader
-        title="Runs"
-        description="Run history and audit trail for salon hashtag harvest, IG resolver, and prospect upserts — coming soon."
-        config={salonConfig}
-      />
+      <header className="mb-4">
+        <h1 className="m-0 text-xl font-extrabold text-stone-900 sm:text-[22px]">Run History</h1>
+        <p className="m-0 mt-1 max-w-2xl text-sm leading-snug text-stone-500">
+          Audit trail for harvests, resolver batches, profile enrichment, and imports.
+        </p>
+        <p className="m-0 mt-1 text-[11px] text-stone-400">
+          {salonConfig.label} · {salonConfig.dataScope}
+        </p>
+      </header>
 
-      <div style={{
-        background: "#fff",
-        border: "1px solid #e7e5e4",
-        borderRadius: 14,
-        padding: "40px 28px",
-        textAlign: "center",
-        color: "#a8a29e",
-      }}>
-        <div style={{ fontSize: 32, marginBottom: 12 }}>🗂️</div>
-        <div style={{ fontSize: 15, fontWeight: 600, color: "#78716c", marginBottom: 6 }}>
-          Run history and audit trail coming soon.
-        </div>
-        <div style={{ fontSize: 13, color: "#a8a29e", maxWidth: 400, margin: "0 auto" }}>
-          This will show a chronological log of all Hashtag Harvest runs, IG Resolver batches,
-          and prospect upserts — with per-run summaries and re-run capability.
-        </div>
+      <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-6 py-10 text-center">
+        <div className="mb-3 text-3xl">🗂️</div>
+        <p className="m-0 text-sm font-semibold text-stone-600">No run logs yet</p>
+        <p className="mx-auto m-0 mt-2 max-w-md text-xs leading-relaxed text-stone-500">
+          Run history will show a chronological log of hashtag harvests, IG resolver batches,
+          enrichment passes, and imports — with per-run summaries and re-run controls.
+        </p>
       </div>
-
-    </div>
+    </>
   );
 }

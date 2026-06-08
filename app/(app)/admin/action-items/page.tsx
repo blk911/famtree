@@ -16,7 +16,7 @@ export default async function AdminActionItemsPage() {
 
   return (
     <MarketIntelPageShell>
-      <MarketIntelChrome showVerticalFilters={false} />
+      <MarketIntelChrome showVerticalFilters={false} showDiscoveryFlow={false} />
 
       <h1 className="m-0 mb-1 text-xl font-extrabold text-stone-900 sm:text-[22px]">Action Items</h1>
       <p className="m-0 text-sm text-stone-500">Action Items coming soon</p>

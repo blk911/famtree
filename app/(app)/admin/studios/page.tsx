@@ -15,8 +15,8 @@ import {
 } from "@/types/studios";
 import Link from "next/link";
 import { Building2, Plus, Sprout, Inbox } from "lucide-react";
-import { MarketIntelPageShell } from "@/components/admin/MarketIntelPageShell";
 import { StudiosGatewayAccessRequestsSection } from "./StudiosGatewayAccessRequestsSection";
+import { DiscoveryInputsSection } from "@/components/admin/intelligence/salon/DiscoveryInputsSection";
 import { SalonPipelineOverview } from "./SalonPipelineOverview";
 
 const card = {
@@ -40,8 +40,10 @@ export default async function AdminStudiosPage() {
   const overview = getStudiosOverview();
 
   return (
-    <MarketIntelPageShell className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5">
       <SalonPipelineOverview />
+
+      <DiscoveryInputsSection />
 
       <hr className="m-0 border-0 border-t border-stone-200" />
 
@@ -250,7 +252,7 @@ export default async function AdminStudiosPage() {
           </p>
         </div>
       </div>
-    </MarketIntelPageShell>
+    </div>
   );
 }
 

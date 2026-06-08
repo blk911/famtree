@@ -28,12 +28,12 @@ export function SalonPipelineOverview() {
 
   return (
     <section className="mb-4">
-      <MarketIntelChrome />
+      <MarketIntelChrome showDiscoveryFlow />
 
       <div className="mb-2">
-        <h2 className="m-0 text-sm font-extrabold text-stone-900">Pipeline status</h2>
+        <h2 className="m-0 text-sm font-extrabold text-stone-900">Discovery flow status</h2>
         <p className="m-0 mt-0.5 text-xs text-stone-500">
-          Click a stage to open its tools.
+          Inputs → Resolve → Qualify → Operate → Runs. Click a stage to open tools.
         </p>
       </div>
 

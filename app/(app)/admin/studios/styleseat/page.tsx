@@ -1404,7 +1404,7 @@ export default function StyleSeatDiscoveryPage() {
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px 60px" }}>
       <div style={{ marginBottom: 22 }}>
-        <MarketIntelChrome />
+        <MarketIntelChrome showDiscoveryFlow />
         <IntelligenceSubNav config={salonConfig} showContextBadge={false} />
       </div>
 
