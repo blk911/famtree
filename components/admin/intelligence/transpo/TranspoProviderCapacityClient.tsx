@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
-import { TranspoClearRuntimeAction } from "@/components/admin/runtime/TranspoClearRuntimeAction";
 import type { CountyCapacity, ProviderCapacity } from "@/lib/transpo/provider-types";
 
 type Summary = {
@@ -103,16 +102,13 @@ export function TranspoProviderCapacityClient() {
     <div className="mx-auto w-full max-w-[1500px] px-4 pb-12 pt-5 sm:px-6 lg:px-8">
       <TranspoIntelligenceNav currentTool="provider-capacity" />
 
-      <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="m-0 text-xl font-extrabold text-stone-900 sm:text-[22px]">
-            Provider Capacity Registry
-          </h1>
-          <p className="m-0 mt-1 max-w-2xl text-sm text-stone-500">
-            Colorado HCPF NEMT providers and county service footprints.
-          </p>
-        </div>
-        <TranspoClearRuntimeAction />
+      <header className="mb-4">
+        <h1 className="m-0 text-xl font-extrabold text-stone-900 sm:text-[22px]">
+          Provider Capacity Registry
+        </h1>
+        <p className="m-0 mt-1 max-w-2xl text-sm text-stone-500">
+          Colorado HCPF NEMT providers and county service footprints.
+        </p>
       </header>
 
       {error ? (

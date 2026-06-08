@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
 import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import { TranspoPipelineHeader } from "@/components/admin/intelligence/transpo/TranspoPipelineHeader";
+import { TranspoClearRuntimeAction } from "@/components/admin/runtime/TranspoClearRuntimeAction";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import {
   pipelineStageDef,
@@ -84,7 +85,7 @@ export function TranspoIntelligenceNav({ currentTool, trailing }: Props) {
         </p>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: "100%" }}>
         <div style={{
           display: "inline-flex",
           gap: 2,
@@ -119,7 +120,18 @@ export function TranspoIntelligenceNav({ currentTool, trailing }: Props) {
             );
           })}
         </div>
-        {trailing}
+        <div
+          style={{
+            marginLeft: "auto",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
+          <TranspoClearRuntimeAction />
+          {trailing}
+        </div>
       </div>
 
       <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
