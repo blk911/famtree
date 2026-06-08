@@ -379,6 +379,22 @@ async function writeProfileEnrichmentArtifact(
   return artifact;
 }
 
+function summarizeApiDiagnostics(
+  profiles: SolaProfileEnrichment[],
+): Pick<SolaEnrichmentTimingSummary, "apiTimeouts" | "apiFailures" | "avgApiDurationMs"> {
+  const apiTimeouts = profiles.filter((profile) => profile.apiErrorType === "timeout").length;
+  const apiFailures = profiles.filter((profile) => profile.apiStatus === "failed").length;
+  const durations = profiles
+    .map((profile) => profile.apiDurationMs)
+    .filter((value): value is number => typeof value === "number" && value >= 0);
+  const avgApiDurationMs =
+    durations.length > 0
+      ? Math.round(durations.reduce((sum, value) => sum + value, 0) / durations.length)
+      : 0;
+
+  return { apiTimeouts, apiFailures, avgApiDurationMs };
+}
+
 function printEnrichmentTiming(summary: SolaEnrichmentTimingSummary): void {
   console.log(
     [
@@ -388,6 +404,9 @@ function printEnrichmentTiming(summary: SolaEnrichmentTimingSummary): void {
       `mixedEnriched=${summary.mixedEnriched}`,
       `failed=${summary.failed}`,
       `skipped=${summary.skipped}`,
+      `apiTimeouts=${summary.apiTimeouts}`,
+      `apiFailures=${summary.apiFailures}`,
+      `avgApiDurationMs=${summary.avgApiDurationMs}`,
       `durationMs=${summary.durationMs}`,
     ].join(" | "),
   );
@@ -528,10 +547,12 @@ async function enrichCandidates(
   }
 
   const methodCounts = countByMethod(profiles);
+  const apiDiagnostics = summarizeApiDiagnostics(profiles);
   const timing: SolaEnrichmentTimingSummary = {
     profilesAttempted: targets.length,
     ...methodCounts,
     skipped,
+    ...apiDiagnostics,
     durationMs: Date.now() - startedAt,
   };
   printEnrichmentTiming(timing);

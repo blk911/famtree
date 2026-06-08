@@ -42,6 +42,7 @@
     "playwright:install-chromium": "playwright install chromium",
     "test:sola": "tsx scripts/test-sola.ts",
     "harvest:sola": "tsx scripts/run-sola-harvest.ts",
+    "debug:sola:profile": "tsx scripts/debug-sola-profile-api.ts",
     "discover:sola": "tsx scripts/discover-sola-slugs.ts",
     "build:sola:resolver": "tsx scripts/build-sola-resolver-import.ts",
     "export:sola:reviewed": "tsx scripts/export-sola-reviewed-targets.ts",

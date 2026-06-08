@@ -3,6 +3,7 @@
 
 import {
   fetchSolaProfileApi,
+  type SolaProfileApiFetchOptions,
   type SolaProfileApiFetchResult,
 } from "./fetch-sola-profile-api";
 import {
@@ -195,6 +196,8 @@ function enrichmentFromParsedApi(
     apiStatus: api.apiStatus,
     apiEndpoint: api.apiEndpoint,
     apiFetchedAt: api.apiFetchedAt,
+    apiDurationMs: api.durationMs,
+    apiErrorType: api.errorType,
   };
 }
 
@@ -265,6 +268,8 @@ function mergeApiAndDom(
     apiStatus: api?.apiStatus,
     apiEndpoint: api?.apiEndpoint,
     apiFetchedAt: api?.apiFetchedAt,
+    apiDurationMs: api?.durationMs,
+    apiErrorType: api?.errorType,
   };
 }
 
@@ -272,6 +277,7 @@ export type EnrichSolaProfileOptions = {
   page?: PlaywrightPage;
   knownEndpoint?: string;
   apiOnly?: boolean;
+  apiFetch?: SolaProfileApiFetchOptions;
 };
 
 async function enrichSolaProfilePlaywright(
@@ -508,7 +514,8 @@ export async function enrichSolaProfile(
   const normalizedUrl = normalizeSolaProfileUrl(profileUrl) ?? profileUrl.trim();
   const fetchedAt = new Date().toISOString();
 
-  let apiResult = await fetchSolaProfileApi(normalizedUrl, opts?.knownEndpoint);
+  const apiFetchOpts = opts?.apiFetch;
+  let apiResult = await fetchSolaProfileApi(normalizedUrl, opts?.knownEndpoint, apiFetchOpts);
 
   if (opts?.apiOnly) {
     if (apiResult.apiStatus === "ok" && parsedApiHasSignal(apiResult.parsed)) {
@@ -530,6 +537,8 @@ export async function enrichSolaProfile(
       apiStatus: apiResult.apiStatus,
       apiEndpoint: apiResult.apiEndpoint,
       apiFetchedAt: apiResult.apiFetchedAt,
+      apiDurationMs: apiResult.durationMs,
+      apiErrorType: apiResult.errorType,
       error: apiResult.error ?? "skipped_api_unavailable",
     };
   }
@@ -541,7 +550,11 @@ export async function enrichSolaProfile(
   const domResult = await enrichSolaProfilePlaywright(normalizedUrl, opts);
 
   if (domResult.likelyProfileApiEndpoint && apiResult.apiStatus !== "ok") {
-    apiResult = await fetchSolaProfileApi(normalizedUrl, domResult.likelyProfileApiEndpoint);
+    apiResult = await fetchSolaProfileApi(
+      normalizedUrl,
+      domResult.likelyProfileApiEndpoint,
+      apiFetchOpts,
+    );
   }
 
   if (domResult.error && apiResult.apiStatus !== "ok") {
@@ -551,6 +564,8 @@ export async function enrichSolaProfile(
       apiStatus: apiResult.apiStatus,
       apiEndpoint: apiResult.apiEndpoint ?? domResult.likelyProfileApiEndpoint,
       apiFetchedAt: apiResult.apiFetchedAt,
+      apiDurationMs: apiResult.durationMs,
+      apiErrorType: apiResult.errorType,
       error: domResult.error,
     };
   }

@@ -1,113 +1,13 @@
 {
-  "generatedAt": "2026-06-07T18:54:11.627Z",
-  "slugCount": 18,
-  "totalCandidates": 443,
-  "enrichedProfiles": 443,
-  "phonesFound": 429,
-  "socialsFound": 4,
-  "bookingLinksFound": 443,
+  "generatedAt": "2026-06-08T16:59:37.436Z",
+  "slugCount": 1,
+  "totalCandidates": 19,
+  "enrichedProfiles": 19,
+  "phonesFound": 19,
+  "socialsFound": 0,
+  "bookingLinksFound": 19,
   "failures": [],
   "perSlug": [
-    {
-      "slug": "arvada",
-      "ok": true,
-      "candidates": 9,
-      "enrichedProfiles": 9,
-      "phonesFound": 9,
-      "socialsFound": 1,
-      "bookingLinksFound": 9,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "aurora",
-      "ok": true,
-      "candidates": 11,
-      "enrichedProfiles": 11,
-      "phonesFound": 11,
-      "socialsFound": 0,
-      "bookingLinksFound": 11,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "belmar",
-      "ok": true,
-      "candidates": 25,
-      "enrichedProfiles": 25,
-      "phonesFound": 24,
-      "socialsFound": 0,
-      "bookingLinksFound": 25,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "boulder",
-      "ok": true,
-      "candidates": 25,
-      "enrichedProfiles": 25,
-      "phonesFound": 25,
-      "socialsFound": 0,
-      "bookingLinksFound": 25,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "centennial",
-      "ok": true,
-      "candidates": 13,
-      "enrichedProfiles": 13,
-      "phonesFound": 12,
-      "socialsFound": 0,
-      "bookingLinksFound": 13,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "cherry-creek-clayton-lane",
-      "ok": true,
-      "candidates": 23,
-      "enrichedProfiles": 23,
-      "phonesFound": 22,
-      "socialsFound": 0,
-      "bookingLinksFound": 23,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "denver-west",
-      "ok": true,
-      "candidates": 28,
-      "enrichedProfiles": 28,
-      "phonesFound": 28,
-      "socialsFound": 1,
-      "bookingLinksFound": 28,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "downtown-loveland",
-      "ok": true,
-      "candidates": 28,
-      "enrichedProfiles": 28,
-      "phonesFound": 27,
-      "socialsFound": 0,
-      "bookingLinksFound": 28,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "front-range-village",
-      "ok": true,
-      "candidates": 24,
-      "enrichedProfiles": 24,
-      "phonesFound": 24,
-      "socialsFound": 0,
-      "bookingLinksFound": 24,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "highlands-ranch-town-center",
-      "ok": true,
-      "candidates": 47,
-      "enrichedProfiles": 47,
-      "phonesFound": 45,
-      "socialsFound": 1,
-      "bookingLinksFound": 47,
-      "recoverySource": "artifact"
-    },
     {
       "slug": "lafayette",
       "ok": true,
@@ -116,76 +16,6 @@
       "phonesFound": 19,
       "socialsFound": 0,
       "bookingLinksFound": 19,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "littleton",
-      "ok": true,
-      "candidates": 21,
-      "enrichedProfiles": 21,
-      "phonesFound": 21,
-      "socialsFound": 0,
-      "bookingLinksFound": 21,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "north-academy-blvd",
-      "ok": true,
-      "candidates": 28,
-      "enrichedProfiles": 28,
-      "phonesFound": 26,
-      "socialsFound": 0,
-      "bookingLinksFound": 28,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "orchard-town-center",
-      "ok": true,
-      "candidates": 21,
-      "enrichedProfiles": 21,
-      "phonesFound": 19,
-      "socialsFound": 0,
-      "bookingLinksFound": 21,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "parker",
-      "ok": true,
-      "candidates": 25,
-      "enrichedProfiles": 25,
-      "phonesFound": 21,
-      "socialsFound": 0,
-      "bookingLinksFound": 25,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "southlands",
-      "ok": true,
-      "candidates": 29,
-      "enrichedProfiles": 29,
-      "phonesFound": 29,
-      "socialsFound": 1,
-      "bookingLinksFound": 29,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "westminster",
-      "ok": true,
-      "candidates": 32,
-      "enrichedProfiles": 32,
-      "phonesFound": 32,
-      "socialsFound": 0,
-      "bookingLinksFound": 32,
-      "recoverySource": "artifact"
-    },
-    {
-      "slug": "westminster-city-center",
-      "ok": true,
-      "candidates": 35,
-      "enrichedProfiles": 35,
-      "phonesFound": 35,
-      "socialsFound": 0,
-      "bookingLinksFound": 35,
       "recoverySource": "artifact"
     }
   ]

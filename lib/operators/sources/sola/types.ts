@@ -127,6 +127,8 @@ export interface SolaProfileEnrichment {
   apiStatus?: "ok" | "failed" | "not_available";
   apiEndpoint?: string;
   apiFetchedAt?: string;
+  apiDurationMs?: number;
+  apiErrorType?: string;
   error?: string;
 }
 
@@ -203,6 +205,9 @@ export interface SolaEnrichmentTimingSummary {
   failed: number;
   skipped: number;
   durationMs: number;
+  apiTimeouts: number;
+  apiFailures: number;
+  avgApiDurationMs: number;
 }
 
 /** @deprecated Use SolaResolverCandidate — kept for harvest artifact compatibility */
