@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { MarketIntelNav } from "@/components/admin/MarketIntelNav";
+import { MarketIntelPageShell } from "@/components/admin/MarketIntelPageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +15,11 @@ export default async function AdminActionItemsPage() {
   if (!isAdmin(user.role)) redirect("/dashboard");
 
   return (
-    <div style={{ padding: "28px 20px 60px", maxWidth: 1320, margin: "0 auto" }}>
+    <MarketIntelPageShell>
       <MarketIntelNav />
 
-      <h1 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 6px" }}>Action Items</h1>
-      <p style={{ fontSize: 14, color: "#78716c", margin: 0 }}>Action Items coming soon</p>
-    </div>
+      <h1 className="m-0 mb-1 text-xl font-extrabold text-stone-900 sm:text-[22px]">Action Items</h1>
+      <p className="m-0 text-sm text-stone-500">Action Items coming soon</p>
+    </MarketIntelPageShell>
   );
 }

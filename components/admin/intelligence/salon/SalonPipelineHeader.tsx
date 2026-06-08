@@ -13,6 +13,13 @@ type SalonPipelineHeaderProps = {
   linkStagesToOverview?: boolean;
 };
 
+function stagePillClass(active: boolean): string {
+  if (active) {
+    return "inline-flex items-center gap-1.5 rounded-lg border border-rose-900 bg-rose-900 px-3 py-1.5 text-left shadow-sm";
+  }
+  return "inline-flex items-center gap-1.5 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-left hover:border-stone-300";
+}
+
 export function SalonPipelineHeader({
   currentStage,
   counts,
@@ -22,13 +29,7 @@ export function SalonPipelineHeader({
 }: SalonPipelineHeaderProps) {
   return (
     <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: 6,
-        alignItems: "stretch",
-        marginBottom: 10,
-      }}
+      className="mb-2 flex flex-wrap items-stretch gap-2"
       role="tablist"
       aria-label="Salon intelligence pipeline"
     >
@@ -37,44 +38,30 @@ export function SalonPipelineHeader({
         const count = counts ? counts[stage.id] : null;
         const inner = (
           <>
-            <span style={{ fontSize: 10, fontWeight: 800, color: active ? "#9d174d" : "#a8a29e" }}>
+            <span
+              className={`text-[10px] font-extrabold ${active ? "text-rose-200" : "text-stone-400"}`}
+            >
               {stage.order}
             </span>
-            <span style={{ fontSize: 13, fontWeight: active ? 800 : 600, color: active ? "#1c1917" : "#57534e" }}>
+            <span
+              className={`text-xs font-semibold sm:text-sm ${active ? "text-white" : "text-stone-700"}`}
+            >
               {stage.label}
             </span>
             <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: active ? "#9d174d" : "#78716c",
-                marginLeft: 2,
-              }}
+              className={`ml-0.5 text-[11px] font-bold ${active ? "text-rose-100" : "text-stone-500"}`}
             >
               {countsLoading ? "…" : count != null ? `(${count.toLocaleString()})` : ""}
             </span>
           </>
         );
 
-        const pillStyle: React.CSSProperties = {
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          padding: "8px 14px",
-          borderRadius: 10,
-          border: active ? "2px solid #9d174d" : "1px solid #e7e5e4",
-          background: active ? "#fdf2f8" : "#fff",
-          textDecoration: "none",
-          cursor: "pointer",
-          boxShadow: active ? "0 1px 4px rgba(157,23,77,0.12)" : "none",
-        };
-
         if (linkStagesToOverview) {
           return (
             <Link
               key={stage.id}
               href={`/admin/studios#${stage.id}`}
-              style={pillStyle}
+              className={`${stagePillClass(active)} no-underline`}
               role="tab"
               aria-selected={active}
             >
@@ -90,10 +77,7 @@ export function SalonPipelineHeader({
             role="tab"
             aria-selected={active}
             onClick={() => onStageSelect?.(stage.id)}
-            style={{
-              ...pillStyle,
-              fontFamily: "inherit",
-            }}
+            className={`${stagePillClass(active)} cursor-pointer font-[inherit]`}
           >
             {inner}
           </button>

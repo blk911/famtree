@@ -15,14 +15,15 @@ import {
 } from "@/types/studios";
 import Link from "next/link";
 import { Building2, Plus, Sprout, Inbox } from "lucide-react";
+import { MarketIntelPageShell } from "@/components/admin/MarketIntelPageShell";
 import { StudiosGatewayAccessRequestsSection } from "./StudiosGatewayAccessRequestsSection";
 import { SalonPipelineOverview } from "./SalonPipelineOverview";
 
 const card = {
   background: "white",
-  borderRadius: "16px",
-  border: "1px solid #ece9e3",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+  borderRadius: "12px",
+  border: "1px solid #e7e5e4",
+  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
   overflow: "hidden" as const,
 };
 
@@ -39,11 +40,10 @@ export default async function AdminStudiosPage() {
   const overview = getStudiosOverview();
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-
+    <MarketIntelPageShell className="flex flex-col gap-5">
       <SalonPipelineOverview />
 
-      <hr style={{ border: "none", borderTop: "1px solid #e7e5e4", margin: "8px 0" }} />
+      <hr className="m-0 border-0 border-t border-stone-200" />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "20px", flexWrap: "wrap" }}>
@@ -78,17 +78,17 @@ export default async function AdminStudiosPage() {
       </div>
 
       {/* Overview stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Total Studios",      value: overview.totalStudios,      color: "#6366f1", emoji: "🏛️" },
           { label: "Claimed Studios",    value: overview.claimedStudios,    color: "#10b981", emoji: "✓" },
           { label: "Pending Requests",   value: overview.pendingRequests,   color: "#f59e0b", emoji: "⏳" },
           { label: "Active Providers",   value: overview.activeProviders,   color: "#e96c50", emoji: "👥" },
         ].map(({ label, value, color, emoji }) => (
-          <div key={label} style={{ ...card, padding: "20px", borderTop: `3px solid ${color}` }}>
-            <div style={{ fontSize: "22px", marginBottom: "6px" }}>{emoji}</div>
-            <div style={{ fontSize: "26px", fontWeight: 700, color: "#1c1917", lineHeight: 1 }}>{value}</div>
-            <div style={{ fontSize: "13px", color: "#78716c", marginTop: "4px" }}>{label}</div>
+          <div key={label} style={{ ...card, padding: "14px 16px", borderTop: `3px solid ${color}` }}>
+            <div style={{ fontSize: "18px", marginBottom: "4px" }}>{emoji}</div>
+            <div style={{ fontSize: "22px", fontWeight: 700, color: "#1c1917", lineHeight: 1 }}>{value}</div>
+            <div style={{ fontSize: "12px", color: "#78716c", marginTop: "2px" }}>{label}</div>
           </div>
         ))}
       </div>
@@ -101,7 +101,7 @@ export default async function AdminStudiosPage() {
           display: "block",
           textDecoration: "none",
           ...card,
-          padding: "18px 22px",
+          padding: "14px 16px",
           borderLeft: "4px solid #1c1917",
         }}
       >
@@ -240,7 +240,7 @@ export default async function AdminStudiosPage() {
           </p>
         </div>
       </div>
-    </div>
+    </MarketIntelPageShell>
   );
 }
 
@@ -283,17 +283,18 @@ const linkBtn: CSSProperties = {
 function btn(variant: "primary" | "secondary"): CSSProperties {
   if (variant === "primary") {
     return {
-      display: "inline-flex", alignItems: "center", gap: "7px",
-      padding: "10px 18px", fontSize: "14px", fontWeight: 600,
+      display: "inline-flex", alignItems: "center", gap: "6px",
+      padding: "7px 14px", fontSize: "13px", fontWeight: 600,
       background: "linear-gradient(135deg,#1a1a2e,#0f3460)",
-      color: "white", border: "none", borderRadius: "10px", cursor: "pointer",
+      color: "white", border: "none", borderRadius: "8px", cursor: "pointer",
+      boxShadow: "0 1px 2px rgba(0,0,0,0.12)",
     };
   }
   return {
-    display: "inline-flex", alignItems: "center", gap: "7px",
-    padding: "10px 18px", fontSize: "14px", fontWeight: 500,
-    background: "white", color: "#44403c",
-    border: "1px solid #ece9e3", borderRadius: "10px", cursor: "pointer",
+    display: "inline-flex", alignItems: "center", gap: "6px",
+    padding: "7px 14px", fontSize: "13px", fontWeight: 500,
+    background: "transparent", color: "#44403c",
+    border: "1px solid #d6d3d1", borderRadius: "8px", cursor: "pointer",
   };
 }
 

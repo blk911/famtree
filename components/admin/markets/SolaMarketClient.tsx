@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MarketIntelNav } from "@/components/admin/MarketIntelNav";
+import { MarketIntelPageShell } from "@/components/admin/MarketIntelPageShell";
 import type {
   SolaCategoryBucket,
   SolaResolverImportArtifact,
@@ -343,7 +344,7 @@ export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
 
   if (!artifact) {
     return (
-      <div style={{ padding: "28px 20px 60px", maxWidth: 1200, margin: "0 auto" }}>
+      <MarketIntelPageShell>
         <MarketIntelNav />
         {smokeBanner}
         <p style={{ fontSize: 12, color: "#57534e", margin: "0 0 16px", lineHeight: 1.5 }}>
@@ -361,12 +362,12 @@ export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
           </code>
           .
         </p>
-      </div>
+      </MarketIntelPageShell>
     );
   }
 
   return (
-    <div style={{ padding: "28px 20px 60px", maxWidth: 1280, margin: "0 auto" }}>
+    <MarketIntelPageShell>
       <MarketIntelNav />
       {smokeBanner}
       <p
@@ -902,6 +903,6 @@ export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
           </div>
         </div>
       ) : null}
-    </div>
+    </MarketIntelPageShell>
   );
 }

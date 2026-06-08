@@ -43,15 +43,15 @@ export function SalonPipelineOverview() {
   }, [load]);
 
   return (
-    <div style={{ marginBottom: 32 }}>
+    <section className="mb-6">
       <MarketIntelNav />
       <IntelligenceMarketNav />
 
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: "#1c1917", margin: "0 0 6px" }}>
+      <div className="mb-3">
+        <h1 className="m-0 mb-1 text-xl font-extrabold text-stone-900 sm:text-2xl">
           Pipeline Overview
         </h1>
-        <p style={{ fontSize: 14, color: "#57534e", margin: 0, lineHeight: 1.6, maxWidth: 640 }}>
+        <p className="m-0 max-w-2xl text-sm leading-snug text-stone-600">
           Salon intelligence flows in five stages. Pick a stage to see its tools, or jump to a
           primary action below.
         </p>
@@ -64,18 +64,12 @@ export function SalonPipelineOverview() {
         onStageSelect={setHighlightStage}
       />
 
-      <p style={{ fontSize: 12, color: "#57534e", margin: "16px 0 20px", lineHeight: 1.5 }}>
+      <p className="mb-3 mt-2 text-xs leading-snug text-stone-600">
         <strong>Unlock Your Client Relationships</strong> — open the visualization thumbnail (upper
         right on pipeline tools) to preview private client network growth.
       </p>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-          gap: 14,
-        }}
-      >
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {SALON_PIPELINE_STAGES.map((stage) => {
           const count = counts?.[stage.id];
           const active = highlightStage === stage.id;
@@ -83,36 +77,27 @@ export function SalonPipelineOverview() {
             <div
               key={stage.id}
               id={stage.id}
-              style={{
-                background: active ? "#fdf2f8" : "#fff",
-                border: active ? "2px solid #9d174d" : "1px solid #e7e5e4",
-                borderRadius: 14,
-                padding: "18px 18px 16px",
-                scrollMarginTop: 80,
-              }}
+              className={[
+                "scroll-mt-20 rounded-xl border bg-white p-3.5 shadow-sm",
+                active
+                  ? "border-rose-800 ring-1 ring-rose-200"
+                  : "border-stone-200",
+              ].join(" ")}
             >
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#9d174d", marginBottom: 4 }}>
-                {stage.order}. {stage.label.toUpperCase()}
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-wide text-rose-800">
+                  {stage.order}. {stage.label}
+                </span>
               </div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: "#1c1917", marginBottom: 6 }}>
+              <div className="mb-1.5 text-xl font-extrabold leading-none text-stone-900">
                 {loading ? "…" : (count ?? 0).toLocaleString()}
               </div>
-              <p style={{ fontSize: 12, color: "#57534e", margin: "0 0 4px", lineHeight: 1.5 }}>
+              <p className="m-0 mb-2.5 line-clamp-2 text-xs leading-snug text-stone-600">
                 {stage.description}
               </p>
-              <p style={{ fontSize: 11, color: "#a8a29e", margin: "0 0 14px" }}>{stage.purpose}</p>
               <Link
                 href={stage.primaryHref}
-                style={{
-                  display: "inline-block",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "#fff",
-                  background: "#9d174d",
-                  padding: "8px 14px",
-                  borderRadius: 8,
-                  textDecoration: "none",
-                }}
+                className="inline-flex h-8 items-center rounded-md bg-rose-800 px-3 text-xs font-bold text-white no-underline transition-colors hover:bg-rose-900"
               >
                 {stage.primaryActionLabel}
               </Link>
@@ -122,11 +107,11 @@ export function SalonPipelineOverview() {
       </div>
 
       {counts ? (
-        <p style={{ fontSize: 11, color: "#a8a29e", marginTop: 16 }}>
+        <p className="mt-3 text-[11px] text-stone-400">
           {counts.totalOperators.toLocaleString()} salon operators in store · counts are approximate ·
           updated {new Date(counts.updatedAt).toLocaleString()}
         </p>
       ) : null}
-    </div>
+    </section>
   );
 }

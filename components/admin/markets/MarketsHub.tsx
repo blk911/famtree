@@ -1,15 +1,9 @@
 import Link from "next/link";
 import { MarketIntelNav } from "@/components/admin/MarketIntelNav";
+import { MarketIntelPageShell } from "@/components/admin/MarketIntelPageShell";
 import { MarketsCandidateTable } from "@/components/admin/markets/MarketsCandidateTable";
 import type { MarketCandidatesArtifact } from "@/lib/markets/types";
 import type { SolaMarketsHubStats } from "@/lib/operators/sources/sola/markets-hub-stats";
-
-const card = {
-  background: "white",
-  borderRadius: "16px",
-  border: "1px solid #ece9e3",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-};
 
 type SourceCard = {
   title: string;
@@ -28,43 +22,22 @@ function SourceMarketCard({ title, subtitle, href, pipeline, stats }: SourceCard
   return (
     <Link
       href={href}
-      style={{
-        ...card,
-        display: "block",
-        padding: "18px 20px",
-        textDecoration: "none",
-        color: "inherit",
-      }}
+      className="block rounded-xl border border-stone-200 bg-white p-3.5 text-inherit no-underline shadow-sm transition-shadow hover:shadow-md"
     >
-      <div style={{ fontSize: 16, fontWeight: 800, color: "#1c1917", marginBottom: 4 }}>{title}</div>
-      <p style={{ fontSize: 12, color: "#78716c", margin: "0 0 12px", lineHeight: 1.5 }}>{subtitle}</p>
+      <div className="mb-1 text-sm font-extrabold text-stone-900">{title}</div>
+      <p className="m-0 mb-2 text-xs leading-snug text-stone-500">{subtitle}</p>
       {pipeline ? (
-        <p style={{ fontSize: 11, color: "#57534e", margin: "0 0 12px", lineHeight: 1.45 }}>{pipeline}</p>
+        <p className="m-0 mb-2 text-[11px] leading-snug text-stone-600">{pipeline}</p>
       ) : null}
       {stats && stats.length > 0 ? (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
-            gap: 8,
-          }}
-        >
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-2">
           {stats.map((stat) => (
             <div
               key={stat.label}
-              style={{
-                background: "#fafaf9",
-                border: "1px solid #f0ede8",
-                borderRadius: 10,
-                padding: "8px 10px",
-              }}
+              className="rounded-lg border border-stone-100 bg-stone-50 px-2 py-1.5"
             >
-              <div style={{ fontSize: 9, fontWeight: 800, color: "#a8a29e", textTransform: "uppercase" }}>
-                {stat.label}
-              </div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "#1c1917", marginTop: 2 }}>
-                {stat.value}
-              </div>
+              <div className="text-[9px] font-extrabold uppercase text-stone-400">{stat.label}</div>
+              <div className="mt-0.5 text-base font-extrabold text-stone-900">{stat.value}</div>
             </div>
           ))}
         </div>
@@ -124,34 +97,27 @@ export function MarketsHub({ solaStats, registry }: Props) {
   ];
 
   return (
-    <div style={{ padding: "28px 20px 60px", maxWidth: 1320, margin: "0 auto" }}>
+    <MarketIntelPageShell>
       <MarketIntelNav />
 
-      <h1 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 6px" }}>Markets</h1>
-      <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 8px", lineHeight: 1.55 }}>
+      <h1 className="m-0 mb-1 text-xl font-extrabold text-stone-900 sm:text-[22px]">Markets</h1>
+      <p className="m-0 mb-2 text-sm leading-snug text-stone-500">
         Unified operator registry across market sources. Source cards link to harvest/detail tools;
         the table below is the primary workbench.
       </p>
       {registry ? (
-        <p style={{ fontSize: 12, color: "#57534e", margin: "0 0 24px" }}>
+        <p className="mb-4 text-xs text-stone-600">
           Registry: {registry.total} candidates · generated {new Date(registry.generatedAt).toLocaleString()}
           {solaRegistryCount > 0 ? ` · Sola: ${solaRegistryCount}` : null}
           {ggenRegistryCount > 0 ? ` · GlossGenius: ${ggenRegistryCount}` : null}
         </p>
       ) : (
-        <p style={{ fontSize: 12, color: "#b45309", margin: "0 0 24px" }}>
-          No unified registry yet. Run <code>npm run build:markets</code>.
+        <p className="mb-4 text-xs text-amber-700">
+          No unified registry yet. Run <code className="rounded bg-stone-100 px-1.5 py-0.5 text-[11px]">npm run build:markets</code>.
         </p>
       )}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: 14,
-          marginBottom: 8,
-        }}
-      >
+      <div className="mb-2 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
         {sources.map((source) => (
           <SourceMarketCard key={source.href} {...source} />
         ))}
@@ -160,6 +126,6 @@ export function MarketsHub({ solaStats, registry }: Props) {
       {registry && registry.candidates.length > 0 ? (
         <MarketsCandidateTable candidates={registry.candidates} />
       ) : null}
-    </div>
+    </MarketIntelPageShell>
   );
 }

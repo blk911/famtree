@@ -87,7 +87,7 @@ export function SalonPipelineNav({ currentTool, trailing }: SalonPipelineNavProp
   }
 
   return (
-    <div style={{ marginBottom: 22 }}>
+    <div className="mb-4">
       <MarketIntelNav />
       <IntelligenceMarketNav />
 
@@ -143,37 +143,19 @@ export function SalonPipelineNav({ currentTool, trailing }: SalonPipelineNavProp
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <div
-              style={{
-                display: "inline-flex",
-                gap: 2,
-                flexWrap: "wrap",
-                alignItems: "center",
-                background: "#f5f4f2",
-                border: "1px solid #e7e5e4",
-                borderRadius: 10,
-                padding: "3px 4px",
-              }}
-            >
+            <div className="inline-flex flex-wrap items-center gap-1">
               {stageNavItems.map(({ id, label, href }) => {
                 const isActive = id === activeTool;
                 return (
                   <Link
                     key={id}
                     href={href}
-                    style={{
-                      fontSize: 12,
-                      fontWeight: isActive ? 700 : 500,
-                      color: isActive ? "#1c1917" : "#78716c",
-                      background: isActive ? "#ffffff" : "transparent",
-                      border: isActive ? "1px solid #e2e0dc" : "1px solid transparent",
-                      borderRadius: 7,
-                      padding: "4px 11px",
-                      textDecoration: "none",
-                      whiteSpace: "nowrap",
-                      boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
-                      lineHeight: "1.5",
-                    }}
+                    className={[
+                      "inline-flex h-7 items-center rounded-md px-2.5 text-xs font-semibold no-underline whitespace-nowrap",
+                      isActive
+                        ? "bg-rose-900 text-white shadow-sm"
+                        : "border border-stone-200 bg-white text-stone-600 hover:border-stone-300",
+                    ].join(" ")}
                   >
                     {label}
                   </Link>

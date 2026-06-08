@@ -230,7 +230,7 @@ export function MarketsCandidateTable({ candidates }: Props) {
   }, []);
 
   return (
-    <div style={{ marginTop: 32 }}>
+    <div className="mt-5">
       <h2 style={{ fontSize: 18, fontWeight: 800, margin: "0 0 6px" }}>Unified candidates</h2>
       <p style={{ fontSize: 12, color: "#78716c", margin: "0 0 16px" }}>
         Normalized registry across market sources. Rebuild with{" "}

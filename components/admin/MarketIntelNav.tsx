@@ -21,27 +21,8 @@ export function MarketIntelNav() {
   const active = resolveMarketIntelSection(pathname);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        marginBottom: 10,
-        paddingBottom: 10,
-        borderBottom: "1px solid #ede9e4",
-        flexWrap: "wrap",
-      }}
-    >
-      <span
-        style={{
-          fontSize: 10,
-          fontWeight: 800,
-          color: "#78716c",
-          textTransform: "uppercase",
-          letterSpacing: "0.06em",
-          marginRight: 4,
-        }}
-      >
+    <div className="mb-2 flex flex-wrap items-center gap-1.5 border-b border-stone-200 pb-2">
+      <span className="mr-1 text-[10px] font-extrabold uppercase tracking-wider text-stone-500">
         Market Intel
       </span>
 
@@ -51,19 +32,12 @@ export function MarketIntelNav() {
           <Link
             key={key}
             href={href}
-            style={{
-              fontSize: 11,
-              fontWeight: isActive ? 800 : 500,
-              color: isActive ? "#fff" : "#78716c",
-              background: isActive ? "#1c1917" : "transparent",
-              border: isActive ? "1px solid #1c1917" : "1px solid #e7e5e4",
-              borderRadius: 20,
-              padding: "4px 12px",
-              textDecoration: "none",
-              whiteSpace: "nowrap",
-              letterSpacing: "0.01em",
-              transition: "all 0.12s",
-            }}
+            className={[
+              "inline-flex h-7 items-center rounded-full px-3 text-[11px] font-semibold no-underline whitespace-nowrap transition-colors",
+              isActive
+                ? "bg-stone-900 text-white"
+                : "border border-stone-200 bg-transparent text-stone-600 hover:border-stone-300",
+            ].join(" ")}
           >
             {label}
           </Link>
