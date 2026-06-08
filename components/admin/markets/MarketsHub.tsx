@@ -89,7 +89,7 @@ export function MarketsHub({ solaStats }: Props) {
         : [{ label: "Status", value: "Import missing" }],
     },
     {
-      title: "GlossGenius Seed",
+      title: "GG Seed Discovery",
       subtitle: "GGseed discovery from business names and public search",
       href: "/admin/studios/ggen-discovery",
       pipeline: "Seed text → GlossGenius probe → prospect promotion",
