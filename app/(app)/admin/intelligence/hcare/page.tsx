@@ -3,14 +3,15 @@
 // HCare vertical — Healthcare practices, clinics, allied health operators.
 // Placeholder shell — tools and integrations TBD.
 
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
+import { MarketIntelPageShell } from "@/components/admin/MarketIntelPageShell";
 import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import { hcareConfig } from "@/lib/intelligence/verticals/hcare.config";
 
 export default function HCareIntelligencePage() {
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <IntelligenceMarketNav />
+    <MarketIntelPageShell>
+      <MarketIntelChrome />
 
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>
@@ -45,6 +46,6 @@ export default function HCareIntelligencePage() {
           &nbsp;·&nbsp;Prospect: <strong>{hcareConfig.prospectLabel}</strong>
         </div>
       </div>
-    </div>
+    </MarketIntelPageShell>
   );
 }

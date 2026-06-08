@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
 import { IntelligenceSubNav } from "@/components/admin/IntelligenceSubNav";
 import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
@@ -1404,7 +1404,7 @@ export default function StyleSeatDiscoveryPage() {
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px 60px" }}>
       <div style={{ marginBottom: 22 }}>
-        <IntelligenceMarketNav />
+        <MarketIntelChrome />
         <IntelligenceSubNav config={salonConfig} showContextBadge={false} />
       </div>
 

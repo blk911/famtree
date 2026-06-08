@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MarketIntelNav } from "@/components/admin/MarketIntelNav";
+import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
 import { MarketIntelPageShell } from "@/components/admin/MarketIntelPageShell";
 import { MarketsCandidateTable } from "@/components/admin/markets/MarketsCandidateTable";
 import type { MarketCandidatesArtifact } from "@/lib/markets/types";
@@ -98,7 +98,7 @@ export function MarketsHub({ solaStats, registry }: Props) {
 
   return (
     <MarketIntelPageShell>
-      <MarketIntelNav />
+      <MarketIntelChrome showVerticalFilters={false} />
 
       <h1 className="m-0 mb-1 text-xl font-extrabold text-stone-900 sm:text-[22px]">Markets</h1>
       <p className="m-0 mb-2 text-sm leading-snug text-stone-500">

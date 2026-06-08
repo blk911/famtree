@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { MarketIntelNav } from "@/components/admin/MarketIntelNav";
+import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
 import { MarketIntelPageShell } from "@/components/admin/MarketIntelPageShell";
 import type {
   SolaCategoryBucket,
@@ -345,7 +345,7 @@ export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
   if (!artifact) {
     return (
       <MarketIntelPageShell>
-        <MarketIntelNav />
+        <MarketIntelChrome showVerticalFilters={false} />
         {smokeBanner}
         <p style={{ fontSize: 12, color: "#57534e", margin: "0 0 16px", lineHeight: 1.5 }}>
           Source pipeline: Sola → resolver import → review → export targets
@@ -368,7 +368,7 @@ export function SolaMarketClient({ artifact, reviewedTargetsExport }: Props) {
 
   return (
     <MarketIntelPageShell>
-      <MarketIntelNav />
+      <MarketIntelChrome showVerticalFilters={false} />
       {smokeBanner}
       <p
         style={{

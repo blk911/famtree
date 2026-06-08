@@ -21,6 +21,7 @@ import {
   AppTopBar,
 } from "@/components/ui/app-chrome";
 import type { User as PrismaUser } from "@prisma/client";
+import { isMarketIntelZone } from "@/lib/markets/market-intel-routes";
 
 type Announcement = { id: string; title: string; body: string };
 type AnnState = {
@@ -150,27 +151,18 @@ export function AppShell({ user, coverUrl, children, vaultNotificationCount = 0 
             <Menu className="h-[18px] w-[18px]" />
           </AppMenuButton>
 
-          {/* Temp admin shortcut — Creator Intelligence */}
-          {(user.role === "admin" || user.role === "founder") && (
-            <Link
-              href="/admin/studios/creator-lab"
-              style={{
-                marginLeft: "auto",
-                marginRight: 10,
-                fontSize: 12,
-                fontWeight: 700,
-                color: "#9d174d",
-                background: "#fdf2f8",
-                border: "1px solid #fbcfe8",
-                borderRadius: 20,
-                padding: "5px 12px",
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-                letterSpacing: "0.02em",
-              }}
+          {(user.role === "admin" || user.role === "founder") && isMarketIntelZone(pathname) ? (
+            <div
+              className="ml-auto mr-2 hidden min-w-0 text-right sm:block"
+              style={{ marginRight: 10 }}
             >
-              🧪 Creator Intelligence
-            </Link>
+              <div className="text-sm font-extrabold leading-tight text-stone-900">Market Intel</div>
+              <div className="text-[11px] font-medium text-stone-500">
+                Discover → Markets → Action Items
+              </div>
+            </div>
+          ) : (
+            <div className="ml-auto" />
           )}
 
           <TopBarUser user={user} />
@@ -179,7 +171,8 @@ export function AppShell({ user, coverUrl, children, vaultNotificationCount = 0 
         {pathname.startsWith("/discovery") ||
         pathname.startsWith("/admin/studios") ||
         pathname.startsWith("/admin/markets") ||
-        pathname.startsWith("/admin/action-items") ? (
+        pathname.startsWith("/admin/action-items") ||
+        pathname.startsWith("/admin/intelligence") ? (
           // Full-bleed layout for Discovery, admin Studio tools, and market inspectors
           children
         ) : (

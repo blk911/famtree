@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
 import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import { TranspoPipelineHeader } from "@/components/admin/intelligence/transpo/TranspoPipelineHeader";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
@@ -60,7 +60,7 @@ export function TranspoIntelligenceNav({ currentTool, trailing }: Props) {
 
   return (
     <div style={{ marginBottom: 22 }}>
-      <IntelligenceMarketNav />
+      <MarketIntelChrome />
 
       <div style={{ marginBottom: 12 }}>
         <div style={{ fontSize: 11, color: "#a8a29e", marginBottom: 8, display: "flex", alignItems: "center", gap: 5 }}>

@@ -1,21 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { MarketIntelNav } from "@/components/admin/MarketIntelNav";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { usePathname } from "next/navigation";
+import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
 import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
-import { SalonPipelineHeader } from "@/components/admin/intelligence/salon/SalonPipelineHeader";
 import { SalonNetworkVizLauncher } from "@/components/admin/intelligence/salon/SalonNetworkVizLauncher";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import {
   pipelineStageDef,
   pipelineStageForNavItem,
   pipelineStageForPathname,
-  SALON_PIPELINE_STAGES,
 } from "@/lib/intelligence/salon/pipeline/salon-pipeline-config";
-import type { SalonPipelineSummary, SalonPipelineStageId } from "@/lib/intelligence/salon/pipeline/pipeline-types";
+import type { SalonPipelineStageId } from "@/lib/intelligence/salon/pipeline/pipeline-types";
 
 type SalonPipelineNavProps = {
   currentTool: string;
@@ -33,43 +30,11 @@ function resolveCurrentTool(pathname: string, override?: string): string {
 
 export function SalonPipelineNav({ currentTool, trailing }: SalonPipelineNavProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const activeTool = resolveCurrentTool(pathname, currentTool);
   const pathStage = pipelineStageForPathname(pathname);
   const toolStage = pipelineStageForNavItem(activeTool);
 
-  const [selectedStage, setSelectedStage] = useState<SalonPipelineStageId>(
-    toolStage ?? pathStage,
-  );
-  const [counts, setCounts] = useState<SalonPipelineSummary | null>(null);
-  const [countsLoading, setCountsLoading] = useState(true);
-
-  useEffect(() => {
-    if (toolStage) setSelectedStage(toolStage);
-    else setSelectedStage(pathStage);
-  }, [toolStage, pathStage]);
-
-  const loadCounts = useCallback(async () => {
-    setCountsLoading(true);
-    try {
-      const res = await fetch("/api/admin/intelligence/salon/pipeline/summary", {
-        cache: "no-store",
-      });
-      const json = (await res.json()) as { ok: boolean; summary?: SalonPipelineSummary };
-      if (json.ok && json.summary) setCounts(json.summary);
-    } catch {
-      setCounts(null);
-    } finally {
-      setCountsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadCounts();
-    const onRefresh = () => loadCounts();
-    window.addEventListener("salon-prospects:refresh", onRefresh);
-    return () => window.removeEventListener("salon-prospects:refresh", onRefresh);
-  }, [loadCounts]);
+  const selectedStage: SalonPipelineStageId = toolStage ?? pathStage;
 
   const stageNavItems = useMemo(() => {
     const stage = pipelineStageDef(selectedStage);
@@ -77,115 +42,44 @@ export function SalonPipelineNav({ currentTool, trailing }: SalonPipelineNavProp
     return salonConfig.navItems.filter((item) => ids.has(item.id));
   }, [selectedStage]);
 
-  function handleStageSelect(stage: SalonPipelineStageId) {
-    setSelectedStage(stage);
-    const def = pipelineStageDef(stage);
-    const onStageTool = def.navItemIds.includes(activeTool);
-    if (!onStageTool) {
-      router.push(def.primaryHref);
-    }
-  }
+  const activeToolLabel =
+    salonConfig.navItems.find((item) => item.id === activeTool)?.label ?? "Tool";
 
   return (
-    <div className="mb-4">
-      <MarketIntelNav />
-      <IntelligenceMarketNav />
+    <div className="mb-3">
+      <MarketIntelChrome />
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) auto",
-          gap: 20,
-          alignItems: "start",
-        }}
-      >
-        <div style={{ minWidth: 0 }}>
-          <div style={{ marginBottom: 12 }}>
-            <div
-              style={{
-                fontSize: 11,
-                color: "#a8a29e",
-                marginBottom: 8,
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                flexWrap: "wrap",
-              }}
-            >
-              <Link href="/admin/studios" style={{ color: "#78716c", textDecoration: "none", fontWeight: 600 }}>
-                AIH Studios
-              </Link>
-              <span style={{ color: "#d6d3d1", fontSize: 10 }}>›</span>
-              <span style={{ color: "#44403c", fontWeight: 700 }}>{salonConfig.label}</span>
-              <span style={{ color: "#d6d3d1", fontSize: 10 }}>›</span>
-              <Link
-                href="/admin/studios"
-                style={{ color: "#9d174d", textDecoration: "none", fontWeight: 700 }}
-              >
-                Pipeline
-              </Link>
-            </div>
-
-            <SalonPipelineHeader
-              currentStage={selectedStage}
-              counts={counts}
-              countsLoading={countsLoading}
-              onStageSelect={handleStageSelect}
-            />
-
-            <p style={{ fontSize: 11, color: "#78716c", margin: "0 0 10px", lineHeight: 1.5 }}>
-              {pipelineStageDef(selectedStage).purpose}
-              <span style={{ color: "#a8a29e" }}>
-                {" "}
-                — Discover → Enrich → Verify → Qualify → Operate
-              </span>
-            </p>
+      <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="min-w-0 space-y-2">
+          <div className="flex flex-wrap items-center gap-1 text-[11px] text-stone-500">
+            <Link href="/admin/studios" className="font-semibold text-stone-600 no-underline hover:text-stone-900">
+              Discovery
+            </Link>
+            <span className="text-stone-300">›</span>
+            <span className="font-bold text-stone-800">{pipelineStageDef(selectedStage).label}</span>
+            <span className="text-stone-300">›</span>
+            <span className="font-semibold text-rose-900">{activeToolLabel}</span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <div className="inline-flex flex-wrap items-center gap-1">
-              {stageNavItems.map(({ id, label, href }) => {
-                const isActive = id === activeTool;
-                return (
-                  <Link
-                    key={id}
-                    href={href}
-                    className={[
-                      "inline-flex h-7 items-center rounded-md px-2.5 text-xs font-semibold no-underline whitespace-nowrap",
-                      isActive
-                        ? "bg-rose-900 text-white shadow-sm"
-                        : "border border-stone-200 bg-white text-stone-600 hover:border-stone-300",
-                    ].join(" ")}
-                  >
-                    {label}
-                  </Link>
-                );
-              })}
-            </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {stageNavItems.map(({ id, label, href }) => {
+              const isActive = id === activeTool;
+              return (
+                <Link
+                  key={id}
+                  href={href}
+                  className={[
+                    "inline-flex h-7 items-center rounded-md px-2.5 text-xs font-semibold no-underline whitespace-nowrap",
+                    isActive
+                      ? "bg-rose-900 text-white shadow-sm"
+                      : "border border-stone-200 bg-white text-stone-600 hover:border-stone-300",
+                  ].join(" ")}
+                >
+                  {label}
+                </Link>
+              );
+            })}
             {trailing}
-          </div>
-
-          <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-            {SALON_PIPELINE_STAGES.filter((s) => s.id !== selectedStage).map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => handleStageSelect(s.id)}
-                style={{
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: "#78716c",
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  textDecoration: "underline",
-                  textUnderlineOffset: 2,
-                }}
-              >
-                Next: {s.label}
-              </button>
-            ))}
           </div>
 
           <IntelligenceContextBadge
@@ -194,15 +88,8 @@ export function SalonPipelineNav({ currentTool, trailing }: SalonPipelineNavProp
           />
         </div>
 
-        <div
-          style={{
-            position: "relative",
-            zIndex: 2,
-            flexShrink: 0,
-            paddingTop: 4,
-          }}
-        >
-          <SalonNetworkVizLauncher thumbSize={160} modalWidth={700} modalHeight={800} />
+        <div className="relative z-[2] shrink-0 self-start pt-0.5">
+          <SalonNetworkVizLauncher thumbSize={120} modalWidth={700} modalHeight={800} />
         </div>
       </div>
     </div>

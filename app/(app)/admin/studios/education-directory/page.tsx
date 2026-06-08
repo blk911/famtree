@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
 import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import type { ResolveMode } from "@/lib/studios/creator-lab/ig-stubs/types";
 import type {
@@ -615,7 +615,7 @@ export default function EducationDirectoryPage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <IntelligenceMarketNav />
+      <MarketIntelChrome />
 
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1c1917", margin: "0 0 4px" }}>

@@ -1,6 +1,6 @@
 "use client";
 // components/admin/MarketIntelNav.tsx
-// Market Intel workflow: Creator Discovery → Markets → Action Items
+// Primary workflow navigation — Discovery → Markets → Action Items
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -11,21 +11,20 @@ import {
 } from "@/lib/markets/market-intel-routes";
 
 const SECTIONS: Array<{ key: MarketIntelSection; label: string; href: string }> = [
-  { key: "creator-discovery", label: "Creator Discovery", href: MARKET_INTEL_ROUTES.creatorDiscovery },
+  { key: "creator-discovery", label: "Discovery", href: MARKET_INTEL_ROUTES.creatorDiscovery },
   { key: "markets", label: "Markets", href: MARKET_INTEL_ROUTES.markets },
   { key: "action-items", label: "Action Items", href: MARKET_INTEL_ROUTES.actionItems },
 ];
 
-export function MarketIntelNav() {
+export function MarketIntelWorkflowNav() {
   const pathname = usePathname();
   const active = resolveMarketIntelSection(pathname);
 
   return (
-    <div className="mb-2 flex flex-wrap items-center gap-1.5 border-b border-stone-200 pb-2">
-      <span className="mr-1 text-[10px] font-extrabold uppercase tracking-wider text-stone-500">
-        Market Intel
-      </span>
-
+    <nav
+      aria-label="Market Intel workflow"
+      className="inline-flex w-full max-w-lg rounded-lg border border-stone-200 bg-stone-100 p-1 sm:w-auto"
+    >
       {SECTIONS.map(({ key, label, href }) => {
         const isActive = key === active;
         return (
@@ -33,16 +32,19 @@ export function MarketIntelNav() {
             key={key}
             href={href}
             className={[
-              "inline-flex h-7 items-center rounded-full px-3 text-[11px] font-semibold no-underline whitespace-nowrap transition-colors",
+              "flex-1 rounded-md px-4 py-2 text-center text-sm font-semibold no-underline transition-colors sm:flex-none sm:px-5",
               isActive
-                ? "bg-stone-900 text-white"
-                : "border border-stone-200 bg-transparent text-stone-600 hover:border-stone-300",
+                ? "bg-stone-900 text-white shadow-sm"
+                : "border border-stone-300 bg-white text-stone-600 hover:border-stone-400 hover:text-stone-900",
             ].join(" ")}
           >
             {label}
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }
+
+/** @deprecated Use MarketIntelWorkflowNav — kept for gradual migration */
+export const MarketIntelNav = MarketIntelWorkflowNav;

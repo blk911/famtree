@@ -24,7 +24,7 @@ export function resolveMarketIntelSection(pathname: string): MarketIntelSection 
   if (
     pathname === MARKET_INTEL_ROUTES.creatorDiscovery ||
     pathname.startsWith("/admin/studios/") ||
-    pathname.startsWith("/admin/intelligence/salon")
+    pathname.startsWith("/admin/intelligence/")
   ) {
     return "creator-discovery";
   }
@@ -33,4 +33,9 @@ export function resolveMarketIntelSection(pathname: string): MarketIntelSection 
 
 export function isMarketIntelPath(pathname: string): boolean {
   return resolveMarketIntelSection(pathname) !== "";
+}
+
+/** Market Intel + intelligence vertical pages share the unified chrome. */
+export function isMarketIntelZone(pathname: string): boolean {
+  return isMarketIntelPath(pathname) || pathname.startsWith("/admin/intelligence");
 }

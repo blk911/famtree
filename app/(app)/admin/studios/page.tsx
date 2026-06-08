@@ -45,53 +45,63 @@ export default async function AdminStudiosPage() {
 
       <hr className="m-0 border-0 border-t border-stone-200" />
 
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "20px", flexWrap: "wrap" }}>
-        <div>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#1c1917", marginBottom: "6px" }}>
-            🏛️ Studio Management
-          </h1>
-          <p style={{ fontSize: "16px", color: "#78716c" }}>
-            AIH Studios admin — providers, requests, directory.
-          </p>
+      <section className="space-y-3">
+        <h2 className="m-0 text-lg font-extrabold text-stone-900">Studio Management</h2>
+
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            { label: "Studios", value: overview.totalStudios },
+            { label: "Claimed", value: overview.claimedStudios },
+            { label: "Pending", value: overview.pendingRequests },
+            { label: "Active", value: overview.activeProviders },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              className="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-3 py-2 shadow-sm"
+            >
+              <span className="text-xs font-semibold text-stone-600">{label}</span>
+              <span className="text-lg font-extrabold text-stone-900">{value}</span>
+            </div>
+          ))}
         </div>
 
-        {/* Quick action buttons */}
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <button style={btn("primary")}>
-            <Plus style={{ width: "15px", height: "15px" }} /> Add Provider
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="mi-action-btn mi-action-btn--primary">
+            <Plus className="h-3.5 w-3.5" /> Add Provider
           </button>
-          <button style={btn("secondary")}>
-            <Sprout style={{ width: "15px", height: "15px" }} /> Seed Directory
+          <button type="button" className="mi-action-btn">
+            <Sprout className="h-3.5 w-3.5" /> Seed Directory
           </button>
-          <button style={btn("secondary")}>
-            <Inbox style={{ width: "15px", height: "15px" }} /> Review Requests
+          <button type="button" className="mi-action-btn">
+            <Inbox className="h-3.5 w-3.5" /> Review Requests
           </button>
-          <Link
-            href="/studios/inbox"
-            prefetch={false}
-            style={{ ...btn("secondary"), textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}
-          >
-            <Inbox style={{ width: "15px", height: "15px" }} /> Concierge inbox
+          <Link href="/studios/inbox" prefetch={false} className="mi-action-btn no-underline">
+            <Inbox className="h-3.5 w-3.5" /> Concierge Inbox
           </Link>
         </div>
-      </div>
+      </section>
 
-      {/* Overview stats */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { label: "Total Studios",      value: overview.totalStudios,      color: "#6366f1", emoji: "🏛️" },
-          { label: "Claimed Studios",    value: overview.claimedStudios,    color: "#10b981", emoji: "✓" },
-          { label: "Pending Requests",   value: overview.pendingRequests,   color: "#f59e0b", emoji: "⏳" },
-          { label: "Active Providers",   value: overview.activeProviders,   color: "#e96c50", emoji: "👥" },
-        ].map(({ label, value, color, emoji }) => (
-          <div key={label} style={{ ...card, padding: "14px 16px", borderTop: `3px solid ${color}` }}>
-            <div style={{ fontSize: "18px", marginBottom: "4px" }}>{emoji}</div>
-            <div style={{ fontSize: "22px", fontWeight: 700, color: "#1c1917", lineHeight: 1 }}>{value}</div>
-            <div style={{ fontSize: "12px", color: "#78716c", marginTop: "2px" }}>{label}</div>
-          </div>
-        ))}
-      </div>
+      <style>{`
+        .mi-action-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 7px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #44403c;
+          background: transparent;
+          border: 1px solid #d6d3d1;
+          border-radius: 8px;
+          cursor: pointer;
+        }
+        .mi-action-btn--primary {
+          color: #fff;
+          background: linear-gradient(135deg,#1a1a2e,#0f3460);
+          border: none;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+        }
+      `}</style>
 
       {/* Preset lab */}
       <Link
