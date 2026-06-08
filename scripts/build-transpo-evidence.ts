@@ -3,10 +3,12 @@
 import { buildCountyEvidenceDossiers } from "@/lib/transpo/build-county-evidence-dossiers";
 
 async function main(): Promise<void> {
-  const artifact = await buildCountyEvidenceDossiers();
+  const { artifact, overrideCount, knownOverriddenCount } = await buildCountyEvidenceDossiers();
 
   console.log("Transpo evidence registry build complete");
   console.log(`Counties: ${artifact.totalCounties}`);
+  console.log(`Evidence overrides: ${overrideCount}`);
+  console.log(`Known overridden: ${knownOverriddenCount}`);
 
   const alamosa = artifact.dossiers.find((d) => d.county === "Alamosa" && d.state === "CO");
   if (alamosa) {

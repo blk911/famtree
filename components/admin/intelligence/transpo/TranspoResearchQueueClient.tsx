@@ -65,16 +65,142 @@ const td: React.CSSProperties = {
   verticalAlign: "top",
 };
 
+type TaskUpdatePayload = {
+  taskId: string;
+  status: ResearchTaskStatus;
+  evidenceValue?: string;
+  source?: string;
+  sourceUrl?: string;
+  findings?: string;
+  notes?: string;
+};
+
+function TaskEditModal({
+  task,
+  onClose,
+  onSave,
+  saving,
+}: {
+  task: ResearchTask;
+  onClose: () => void;
+  onSave: (payload: TaskUpdatePayload) => void;
+  saving: boolean;
+}) {
+  const [status, setStatus] = useState<ResearchTaskStatus>(task.status);
+  const [evidenceValue, setEvidenceValue] = useState("");
+  const [source, setSource] = useState("");
+  const [sourceUrl, setSourceUrl] = useState(task.sourceLinks?.[0] ?? "");
+  const [findings, setFindings] = useState(task.findings ?? "");
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-stone-200 bg-white p-4 shadow-lg">
+        <h3 className="m-0 text-sm font-extrabold text-stone-900">{task.title}</h3>
+        <p className="m-0 mt-1 text-xs text-stone-500">{task.county} · {task.evidenceKey}</p>
+        <p className="mt-3 rounded-md bg-stone-50 px-2 py-2 text-[11px] text-stone-600">
+          Completing a task with an evidence value will move this evidence item from missing to
+          known on the next rebuild.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          <label className="flex flex-col gap-1 text-xs font-semibold text-stone-600">
+            Status
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as ResearchTaskStatus)}
+              className="h-8 rounded-md border border-stone-200 bg-white px-2 text-sm"
+            >
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs font-semibold text-stone-600">
+            Evidence value
+            <input
+              value={evidenceValue}
+              onChange={(e) => setEvidenceValue(e.target.value)}
+              placeholder="e.g. 6"
+              className="h-8 rounded-md border border-stone-200 bg-white px-2 text-sm"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs font-semibold text-stone-600">
+            Source name
+            <input
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              placeholder="e.g. provider website"
+              className="h-8 rounded-md border border-stone-200 bg-white px-2 text-sm"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs font-semibold text-stone-600">
+            Source URL
+            <input
+              value={sourceUrl}
+              onChange={(e) => setSourceUrl(e.target.value)}
+              placeholder="https://"
+              className="h-8 rounded-md border border-stone-200 bg-white px-2 text-sm"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs font-semibold text-stone-600">
+            Findings / notes
+            <textarea
+              value={findings}
+              onChange={(e) => setFindings(e.target.value)}
+              rows={3}
+              className="rounded-md border border-stone-200 bg-white px-2 py-1.5 text-sm"
+            />
+          </label>
+        </div>
+
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() =>
+              onSave({
+                taskId: task.taskId,
+                status,
+                evidenceValue: evidenceValue || undefined,
+                source: source || undefined,
+                sourceUrl: sourceUrl || undefined,
+                findings: findings || undefined,
+                notes: findings || undefined,
+              })
+            }
+            className="rounded-md bg-indigo-700 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TaskGroup({
   label,
   tasks,
   priority,
-  onStatusChange,
+  onEditTask,
 }: {
   label: string;
   tasks: ResearchTask[];
   priority: ResearchTaskPriority;
-  onStatusChange: (taskId: string, status: ResearchTaskStatus) => void;
+  onEditTask: (task: ResearchTask) => void;
 }) {
   const style = PRIORITY_STYLES[priority];
   if (tasks.length === 0) return null;
@@ -107,17 +233,22 @@ function TaskGroup({
               ))}
             </div>
             <div className="mt-2 flex items-center gap-2">
-              <select
-                value={task.status}
-                onChange={(e) => onStatusChange(task.taskId, e.target.value as ResearchTaskStatus)}
-                className="h-7 rounded border border-stone-200 bg-white px-2 text-[10px]"
+              <span
+                className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase"
+                style={{
+                  color: STATUS_STYLES[task.status].fg,
+                  background: STATUS_STYLES[task.status].bg,
+                }}
               >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+                {task.status}
+              </span>
+              <button
+                type="button"
+                onClick={() => onEditTask(task)}
+                className="rounded border border-stone-200 bg-white px-2 py-1 text-[10px] font-semibold text-indigo-700"
+              >
+                Edit / Complete
+              </button>
               {task.findings ? (
                 <span className="text-[10px] text-stone-500">Findings recorded</span>
               ) : null}
@@ -142,6 +273,8 @@ export function TranspoResearchQueueClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState("");
+  const [editingTask, setEditingTask] = useState<ResearchTask | null>(null);
+  const [warning, setWarning] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -179,20 +312,25 @@ export function TranspoResearchQueueClient() {
     load();
   }, [load]);
 
-  const updateStatus = useCallback(
-    async (taskId: string, status: ResearchTaskStatus) => {
-      setUpdating(taskId);
+  const saveTaskUpdate = useCallback(
+    async (payload: TaskUpdatePayload) => {
+      setUpdating(payload.taskId);
+      setWarning("");
       try {
         const res = await fetch("/api/admin/intelligence/transpo/research-queue", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ taskId, status }),
+          body: JSON.stringify(payload),
         });
         const data = await res.json();
         if (!data.ok) {
           setError(data.error ?? "Update failed");
           return;
         }
+        if (data.warning) {
+          setWarning(data.warning);
+        }
+        setEditingTask(null);
         await load();
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
@@ -252,6 +390,13 @@ export function TranspoResearchQueueClient() {
       {error ? (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
           {error}
+        </div>
+      ) : null}
+
+      {warning ? (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          Task completed without evidence value ({warning}). No override was created — run rebuild
+          after adding a value.
         </div>
       ) : null}
 
@@ -355,25 +500,25 @@ export function TranspoResearchQueueClient() {
               label="Critical"
               tasks={groupedCountyTasks.critical}
               priority="critical"
-              onStatusChange={updateStatus}
+              onEditTask={setEditingTask}
             />
             <TaskGroup
               label="High"
               tasks={groupedCountyTasks.high}
               priority="high"
-              onStatusChange={updateStatus}
+              onEditTask={setEditingTask}
             />
             <TaskGroup
               label="Medium"
               tasks={groupedCountyTasks.medium}
               priority="medium"
-              onStatusChange={updateStatus}
+              onEditTask={setEditingTask}
             />
             <TaskGroup
               label="Low"
               tasks={groupedCountyTasks.low}
               priority="low"
-              onStatusChange={updateStatus}
+              onEditTask={setEditingTask}
             />
           </div>
           {updating ? (
@@ -449,6 +594,13 @@ export function TranspoResearchQueueClient() {
                           </span>
                         ))}
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => setEditingTask(task)}
+                        className="mt-1 rounded border border-stone-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-indigo-700"
+                      >
+                        Edit
+                      </button>
                     </td>
                   </tr>
                 );
@@ -457,6 +609,15 @@ export function TranspoResearchQueueClient() {
           </tbody>
         </table>
       </section>
+
+      {editingTask ? (
+        <TaskEditModal
+          task={editingTask}
+          onClose={() => setEditingTask(null)}
+          onSave={saveTaskUpdate}
+          saving={updating === editingTask.taskId}
+        />
+      ) : null}
     </div>
   );
 }

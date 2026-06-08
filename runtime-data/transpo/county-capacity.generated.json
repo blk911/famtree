@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-08T21:21:17.641Z",
+  "generatedAt": "2026-06-08T21:36:59.861Z",
   "totalCounties": 64,
   "counties": [
     {
@@ -14,7 +14,7 @@
         "Transdev"
       ],
       "capacityScore": 20,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Alamosa",
@@ -42,7 +42,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Arapahoe",
@@ -56,7 +56,7 @@
         "Transdev"
       ],
       "capacityScore": 20,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Archuleta",
@@ -76,7 +76,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Baca",
@@ -100,7 +100,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Bent",
@@ -127,7 +127,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Boulder",
@@ -141,7 +141,7 @@
         "Transdev"
       ],
       "capacityScore": 20,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Broomfield",
@@ -155,7 +155,7 @@
         "Transdev"
       ],
       "capacityScore": 20,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Chaffee",
@@ -180,7 +180,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Cheyenne",
@@ -206,7 +206,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Clear Creek",
@@ -229,7 +229,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Conejos",
@@ -252,7 +252,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Costilla",
@@ -275,7 +275,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Crowley",
@@ -304,7 +304,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Custer",
@@ -330,7 +330,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Delta",
@@ -353,7 +353,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Denver",
@@ -367,7 +367,7 @@
         "Transdev"
       ],
       "capacityScore": 20,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Dolores",
@@ -385,7 +385,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 60,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Douglas",
@@ -399,7 +399,7 @@
         "Transdev"
       ],
       "capacityScore": 20,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Eagle",
@@ -422,7 +422,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:El Paso",
@@ -468,7 +468,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Elbert",
@@ -498,7 +498,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Fremont",
@@ -532,7 +532,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Garfield",
@@ -556,7 +556,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Gilpin",
@@ -578,7 +578,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Grand",
@@ -600,7 +600,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Gunnison",
@@ -619,7 +619,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 60,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Hinsdale",
@@ -638,7 +638,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 60,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Huerfano",
@@ -664,7 +664,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Jackson",
@@ -684,7 +684,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Jefferson",
@@ -698,7 +698,7 @@
         "Transdev"
       ],
       "capacityScore": 20,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Kiowa",
@@ -723,7 +723,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Kit Carson",
@@ -744,7 +744,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:La Plata",
@@ -764,7 +764,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Lake",
@@ -783,7 +783,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 60,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Larimer",
@@ -797,7 +797,7 @@
         "Transdev"
       ],
       "capacityScore": 20,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Las Animas",
@@ -828,7 +828,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Lincoln",
@@ -857,7 +857,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Logan",
@@ -880,7 +880,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Mesa",
@@ -903,7 +903,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Mineral",
@@ -922,7 +922,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 60,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Moffat",
@@ -942,7 +942,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Montezuma",
@@ -963,7 +963,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Montrose",
@@ -983,7 +983,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Morgan",
@@ -1008,7 +1008,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Otero",
@@ -1036,7 +1036,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Ouray",
@@ -1055,7 +1055,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 60,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Park",
@@ -1080,7 +1080,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Phillips",
@@ -1101,7 +1101,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Pitkin",
@@ -1120,7 +1120,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 60,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Prowers",
@@ -1147,7 +1147,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Pueblo",
@@ -1191,7 +1191,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Rio Blanco",
@@ -1211,7 +1211,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Rio Grande",
@@ -1234,7 +1234,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Routt",
@@ -1255,7 +1255,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Saguache",
@@ -1276,7 +1276,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:San Juan",
@@ -1295,7 +1295,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 60,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:San Miguel",
@@ -1314,7 +1314,7 @@
         "Wilderness Journeys"
       ],
       "capacityScore": 60,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Sedgwick",
@@ -1334,7 +1334,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Summit",
@@ -1353,7 +1353,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 60,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Teller",
@@ -1388,7 +1388,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Washington",
@@ -1412,7 +1412,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 100,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Weld",
@@ -1426,7 +1426,7 @@
         "Transdev"
       ],
       "capacityScore": 20,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     },
     {
       "countyKey": "CO:Yuma",
@@ -1447,7 +1447,7 @@
         "Van with a Plan"
       ],
       "capacityScore": 80,
-      "generatedAt": "2026-06-08T21:21:17.641Z"
+      "generatedAt": "2026-06-08T21:36:59.861Z"
     }
   ]
 }

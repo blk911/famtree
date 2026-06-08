@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-08T21:21:17.632Z",
+  "generatedAt": "2026-06-08T21:36:59.850Z",
   "total": 4,
   "sources": {
     "manual_seed": {
@@ -22,8 +22,8 @@
         "Meal volume and official program operator not yet confirmed."
       ],
       "confidence": 55,
-      "createdAt": "2026-06-08T21:21:17.625Z",
-      "updatedAt": "2026-06-08T21:21:17.625Z"
+      "createdAt": "2026-06-08T21:36:59.844Z",
+      "updatedAt": "2026-06-08T21:36:59.844Z"
     },
     {
       "generatorKey": "transpo:CO:alamosa:dialysis:san-luis-valley-dialysis-center",
@@ -39,8 +39,8 @@
         "Placeholder dialysis anchor for Alamosa County — station count and official facility name not yet confirmed in project data."
       ],
       "confidence": 55,
-      "createdAt": "2026-06-08T21:21:17.625Z",
-      "updatedAt": "2026-06-08T21:21:17.625Z"
+      "createdAt": "2026-06-08T21:36:59.844Z",
+      "updatedAt": "2026-06-08T21:36:59.844Z"
     },
     {
       "generatorKey": "transpo:CO:alamosa:hospital:san-luis-valley-health",
@@ -57,8 +57,8 @@
         "Beds, annual discharges, phone, and website not yet confirmed from an official source."
       ],
       "confidence": 55,
-      "createdAt": "2026-06-08T21:21:17.624Z",
-      "updatedAt": "2026-06-08T21:21:17.624Z"
+      "createdAt": "2026-06-08T21:36:59.843Z",
+      "updatedAt": "2026-06-08T21:36:59.843Z"
     },
     {
       "generatorKey": "transpo:CO:alamosa:senior_center:san-luis-valley-senior-center",
@@ -75,8 +75,8 @@
         "Specific senior center name and program volume not yet confirmed."
       ],
       "confidence": 55,
-      "createdAt": "2026-06-08T21:21:17.625Z",
-      "updatedAt": "2026-06-08T21:21:17.625Z"
+      "createdAt": "2026-06-08T21:36:59.844Z",
+      "updatedAt": "2026-06-08T21:36:59.844Z"
     }
   ]
 }

@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { readEvidenceOverrides } from "@/lib/transpo/evidence-override-store";
 import { readCountyEvidenceDossiersArtifact } from "@/lib/transpo/read-evidence-registry";
 import { readCountyResearchSummaryArtifact } from "@/lib/transpo/read-research-queue";
 import type { EvidenceCategory } from "@/lib/transpo/evidence-types";
@@ -82,6 +83,11 @@ export async function GET(request: NextRequest) {
         ) ?? null
       : null;
 
+    const allOverrides = (await readEvidenceOverrides()).overrides;
+    const evidenceOverrides = selectedDossier
+      ? allOverrides.filter((o) => o.countyKey === selectedDossier.countyKey)
+      : [];
+
     return NextResponse.json({
       ok: true,
       summary: {
@@ -97,6 +103,8 @@ export async function GET(request: NextRequest) {
       selectedDossier,
       countyResearchSummary,
       countySummaries: researchSummaryArtifact?.counties ?? [],
+      evidenceOverrides,
+      allEvidenceOverrides: allOverrides,
     });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);

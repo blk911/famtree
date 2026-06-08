@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-08T21:21:17.650Z",
+  "generatedAt": "2026-06-08T21:36:59.870Z",
   "totalCounties": 1,
   "counties": [
     {
@@ -24,7 +24,7 @@
         "City Cab LLC"
       ],
       "gapLevel": "low",
-      "generatedAt": "2026-06-08T21:21:17.650Z"
+      "generatedAt": "2026-06-08T21:36:59.870Z"
     }
   ]
 }

@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { upsertEvidenceOverride } from "@/lib/transpo/evidence-override-store";
 import {
   readCountyResearchSummaryArtifact,
   readEvidenceCollectionQueueArtifact,
@@ -110,13 +111,65 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    const tasksBefore = await readMergedResearchTasks();
+    const baseTask = tasksBefore.find((t) => t.taskId === taskId);
+    if (!baseTask) {
+      return NextResponse.json({ ok: false, error: "task not found" }, { status: 404 });
+    }
+
+    const notes: string[] = Array.isArray(body.notes)
+      ? body.notes
+      : body.notes
+        ? [String(body.notes)]
+        : body.findings
+          ? [String(body.findings)]
+          : undefined;
+
     await updateResearchTaskState(taskId, {
       status: body.status,
       findings: body.findings,
-      notes: body.notes,
-      sourceLinks: body.sourceLinks,
+      notes: notes?.join("\n"),
+      sourceLinks: body.sourceUrl ? [body.sourceUrl] : body.sourceLinks,
       assignedTo: body.assignedTo,
     });
+
+    let warning: string | undefined;
+    let evidenceOverride = null;
+
+    if (body.status === "completed") {
+      const evidenceValue = body.evidenceValue;
+      const hasValue =
+        evidenceValue !== undefined && evidenceValue !== null && evidenceValue !== "";
+
+      if (hasValue) {
+        const parsedValue =
+          typeof evidenceValue === "number" || typeof evidenceValue === "boolean"
+            ? evidenceValue
+            : !Number.isNaN(Number(evidenceValue)) && String(evidenceValue).trim() !== ""
+              ? Number(evidenceValue)
+              : evidenceValue;
+
+        const overrideNotes = [...(notes ?? [])];
+        if (body.findings && !overrideNotes.includes(String(body.findings))) {
+          overrideNotes.push(String(body.findings));
+        }
+
+        evidenceOverride = await upsertEvidenceOverride({
+          countyKey: baseTask.countyKey,
+          county: baseTask.county,
+          state: baseTask.state,
+          evidenceKey: baseTask.evidenceKey,
+          status: "known",
+          value: parsedValue,
+          source: body.source ?? "research_completion",
+          sourceUrl: body.sourceUrl,
+          notes: overrideNotes.length > 0 ? overrideNotes : undefined,
+          createdFromTaskId: taskId,
+        });
+      } else {
+        warning = "completed_without_evidence_value";
+      }
+    }
 
     const tasks = await readMergedResearchTasks();
     const task = tasks.find((t) => t.taskId === taskId) ?? null;
@@ -125,6 +178,8 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       task,
+      evidenceOverride,
+      warning,
       countySummaries: summary?.counties ?? [],
     });
   } catch (e) {

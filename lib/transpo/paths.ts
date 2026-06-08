@@ -58,3 +58,8 @@ export const RESEARCH_TASK_STATE_PATH = path.join(
   TRANSPO_DATA_DIR,
   "research-task-state.json",
 );
+
+export const EVIDENCE_OVERRIDES_PATH = path.join(
+  TRANSPO_DATA_DIR,
+  "evidence-overrides.json",
+);

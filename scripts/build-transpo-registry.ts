@@ -14,7 +14,8 @@ async function main(): Promise<void> {
   const providerRegistry = await buildProviderCapacityRegistry();
   const countyCapacity = await buildCountyCapacityDossiers();
   const demandDossiers = await buildCountyDemandDossiers();
-  const evidenceDossiers = await buildCountyEvidenceDossiers();
+  const evidenceResult = await buildCountyEvidenceDossiers();
+  const evidenceDossiers = evidenceResult.artifact;
   const researchQueue = await buildResearchQueue();
   const gap = await readCountyGapAnalysisArtifact();
 
@@ -29,6 +30,8 @@ async function main(): Promise<void> {
   console.log(`Counties (capacity): ${countyCapacity.totalCounties}`);
   console.log(`Demand dossiers: ${demandDossiers.totalCounties}`);
   console.log(`Evidence dossiers: ${evidenceDossiers.totalCounties}`);
+  console.log(`Evidence overrides: ${evidenceResult.overrideCount}`);
+  console.log(`Known overridden: ${evidenceResult.knownOverriddenCount}`);
   console.log(`Research tasks: ${researchQueue.queue.totalTasks}`);
   console.log(`Regional providers: ${regional}`);
   console.log(`Statewide providers: ${statewide}`);

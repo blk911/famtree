@@ -10,6 +10,7 @@ import type {
   EvidenceItem,
   ResearchPriority,
 } from "@/lib/transpo/evidence-types";
+import type { EvidenceOverride } from "@/lib/transpo/evidence-override-types";
 import type { CountyResearchSummary } from "@/lib/transpo/research-types";
 
 type Summary = {
@@ -77,12 +78,29 @@ function EvidenceList({
               {symbol}
             </span>
             <div className="min-w-0 flex-1">
-              <div className="font-semibold">{item.label}</div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="font-semibold">{item.label}</span>
+                {item.isOverride ? (
+                  <span className="rounded bg-indigo-100 px-1 py-0.5 text-[9px] font-bold uppercase text-indigo-800 ring-1 ring-indigo-200">
+                    Override
+                  </span>
+                ) : null}
+              </div>
               {item.value != null ? (
                 <div className="text-[10px] opacity-80">Value: {String(item.value)}</div>
               ) : null}
               {item.source ? (
                 <div className="text-[10px] opacity-70">Source: {item.source}</div>
+              ) : null}
+              {item.sourceUrl ? (
+                <a
+                  href={item.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-indigo-700 no-underline hover:underline"
+                >
+                  {item.sourceUrl}
+                </a>
               ) : null}
             </div>
           </div>
@@ -99,6 +117,8 @@ export function TranspoMissingEvidenceClient() {
   const [selected, setSelected] = useState<CountyEvidenceDossier | null>(null);
   const [countyResearch, setCountyResearch] = useState<CountyResearchSummary | null>(null);
   const [countySummaries, setCountySummaries] = useState<CountyResearchSummary[]>([]);
+  const [evidenceOverrides, setEvidenceOverrides] = useState<EvidenceOverride[]>([]);
+  const [allEvidenceOverrides, setAllEvidenceOverrides] = useState<EvidenceOverride[]>([]);
   const [counties, setCounties] = useState<string[]>([]);
   const [countyFilter, setCountyFilter] = useState(searchParams.get("county") ?? "Alamosa");
   const [minCompleteness, setMinCompleteness] = useState("");
@@ -133,6 +153,8 @@ export function TranspoMissingEvidenceClient() {
       setSelected(data.selectedDossier ?? data.dossiers?.[0] ?? null);
       setCountySummaries(data.countySummaries ?? []);
       setCountyResearch(data.countyResearchSummary ?? null);
+      setAllEvidenceOverrides(data.allEvidenceOverrides ?? []);
+      setEvidenceOverrides(data.evidenceOverrides ?? []);
       setCounties(data.counties ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -298,6 +320,23 @@ export function TranspoMissingEvidenceClient() {
             ))}
           </div>
 
+          {evidenceOverrides.length > 0 ? (
+            <div className="mt-3 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-3">
+              <div className="text-[10px] font-bold uppercase tracking-wide text-indigo-800">
+                Evidence overrides
+              </div>
+              <ul className="m-0 mt-2 list-none space-y-1.5 p-0">
+                {evidenceOverrides.map((o) => (
+                  <li key={o.overrideId} className="rounded bg-white px-2 py-1.5 text-xs text-stone-700 ring-1 ring-indigo-100">
+                    <span className="font-semibold">{o.evidenceKey}</span>
+                    {o.value != null ? ` · ${String(o.value)}` : ""}
+                    {o.source ? ` · ${o.source}` : ""}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
           {countyResearch ? (
             <div className="mt-3 rounded-lg border border-dashed border-indigo-200 bg-indigo-50 px-3 py-3">
               <div className="text-[10px] font-bold uppercase tracking-wide text-indigo-800">
@@ -401,6 +440,9 @@ export function TranspoMissingEvidenceClient() {
                     setSelected(d);
                     setCountyResearch(
                       countySummaries.find((c) => c.countyKey === d.countyKey) ?? null,
+                    );
+                    setEvidenceOverrides(
+                      allEvidenceOverrides.filter((o) => o.countyKey === d.countyKey),
                     );
                   }}
                   style={{ cursor: "pointer" }}

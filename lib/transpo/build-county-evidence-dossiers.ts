@@ -1,7 +1,12 @@
 // lib/transpo/build-county-evidence-dossiers.ts
 
 import { mkdir, readFile, writeFile } from "fs/promises";
+import {
+  applyEvidenceOverridesToDossier,
+  countKnownOverrides,
+} from "./apply-evidence-overrides";
 import { getColoradoCountyPopulation } from "./county-population";
+import { readEvidenceOverrides } from "./evidence-override-store";
 import type {
   CountyEvidenceDossier,
   CountyEvidenceDossiersArtifact,
@@ -316,7 +321,13 @@ export async function mergeEvidenceIntoDemandDossiers(
   return updated;
 }
 
-export async function buildCountyEvidenceDossiers(): Promise<CountyEvidenceDossiersArtifact> {
+export interface CountyEvidenceBuildResult {
+  artifact: CountyEvidenceDossiersArtifact;
+  overrideCount: number;
+  knownOverriddenCount: number;
+}
+
+export async function buildCountyEvidenceDossiers(): Promise<CountyEvidenceBuildResult> {
   const countyCapacity = await loadJson<CountyCapacityArtifact>(COUNTY_CAPACITY_ARTIFACT_PATH);
   if (!countyCapacity) {
     throw new Error("County capacity artifact missing — run build:transpo:providers first");
@@ -333,9 +344,14 @@ export async function buildCountyEvidenceDossiers(): Promise<CountyEvidenceDossi
   await loadJson<DemandGeneratorsArtifact>(DEMAND_GENERATORS_ARTIFACT_PATH);
 
   const generatedAt = new Date().toISOString();
-  const dossiers = countyCapacity.counties.map((county) =>
+  const overrideStore = await readEvidenceOverrides();
+  const overrides = overrideStore.overrides;
+
+  let dossiers = countyCapacity.counties.map((county) =>
     buildCountyEvidenceDossier(county, demandByKey.get(county.countyKey), generatedAt),
   );
+
+  dossiers = dossiers.map((d) => applyEvidenceOverridesToDossier(d, overrides));
 
   dossiers.sort((a, b) => {
     if (a.state !== b.state) return a.state.localeCompare(b.state);
@@ -359,5 +375,9 @@ export async function buildCountyEvidenceDossiers(): Promise<CountyEvidenceDossi
     await mergeEvidenceIntoDemandDossiers(dossiers);
   }
 
-  return artifact;
+  return {
+    artifact,
+    overrideCount: overrides.length,
+    knownOverriddenCount: countKnownOverrides(dossiers, overrides),
+  };
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-08T21:21:17.634Z",
+  "generatedAt": "2026-06-08T21:36:59.853Z",
   "totalProviders": 50,
   "providers": [
     {
@@ -29,8 +29,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 75,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:american-medical-response-of-colorado-inc",
@@ -76,8 +76,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 100,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:aponi-transport-inc",
@@ -92,8 +92,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 10,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:axel-medical-transportation",
@@ -111,8 +111,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:barb-s-transport-a-little-bit-of-sunshine",
@@ -133,8 +133,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:barentu-transport-llc",
@@ -158,8 +158,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:blue-skies-transportation",
@@ -178,8 +178,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:brave-sisters-transportation-llc",
@@ -207,8 +207,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 75,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:city-cab-llc",
@@ -242,8 +242,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 75,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:county-express-transportation",
@@ -266,8 +266,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:delta-transport",
@@ -289,8 +289,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:delta-transport-llc",
@@ -308,8 +308,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:elevate-care-transit-llc",
@@ -329,8 +329,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:fremont-county-transit",
@@ -349,8 +349,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:golden-gate-manor-transportation",
@@ -372,8 +372,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:golden-gate-manor-transportation-inc",
@@ -399,8 +399,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 75,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:graceland-transportation",
@@ -415,8 +415,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 10,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:high-mountain-taxi",
@@ -445,8 +445,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 75,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:holyoke-ems",
@@ -464,8 +464,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:i-care-ride-llc",
@@ -480,8 +480,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 10,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:kareem-ride",
@@ -496,8 +496,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 10,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:kareem-ride-llc",
@@ -530,8 +530,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 75,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:kiowa-county-transit",
@@ -546,8 +546,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 10,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:light-health-solutions",
@@ -562,8 +562,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 10,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:light-health-solutions-llc",
@@ -578,8 +578,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 10,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:londons-transportation-llc",
@@ -597,8 +597,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:luke-llc",
@@ -643,8 +643,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 100,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:maguy-medical-transport",
@@ -666,8 +666,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:med-lift-llc",
@@ -685,8 +685,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:medilyft-llc",
@@ -701,8 +701,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 10,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:medride-llc",
@@ -765,8 +765,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 100,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:met-transport",
@@ -835,8 +835,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 100,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:mountain-valley-transit",
@@ -857,8 +857,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:mt-ride-llc",
@@ -882,8 +882,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:ommega-transportation-llc",
@@ -917,8 +917,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 75,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:peak-family-transport-llc",
@@ -986,8 +986,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 100,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:royal-do-corp",
@@ -1008,8 +1008,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:sarah-kare-ride-llc",
@@ -1027,8 +1027,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:second-home-llc",
@@ -1049,8 +1049,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:simple-non-emergency-medical-transportation-llc",
@@ -1074,8 +1074,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:simply-safe-transportation-llc",
@@ -1091,8 +1091,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:sunshine-rides",
@@ -1152,8 +1152,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 100,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:sw-center-for-independence",
@@ -1169,8 +1169,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:teller-senior-coalition-tsc-transit",
@@ -1187,8 +1187,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:total-care-llc",
@@ -1205,8 +1205,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 25,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:transdev",
@@ -1229,8 +1229,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 50,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:transit-to-care",
@@ -1245,8 +1245,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 10,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:transit-to-care-llc",
@@ -1261,8 +1261,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 10,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:van-with-a-plan",
@@ -1331,8 +1331,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 100,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     },
     {
       "providerKey": "transpo:provider:wilderness-journeys",
@@ -1364,8 +1364,8 @@
       "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
       "footprintScore": 75,
       "confidence": 90,
-      "createdAt": "2026-06-08T21:21:17.634Z",
-      "updatedAt": "2026-06-08T21:21:17.634Z"
+      "createdAt": "2026-06-08T21:36:59.852Z",
+      "updatedAt": "2026-06-08T21:36:59.852Z"
     }
   ]
 }

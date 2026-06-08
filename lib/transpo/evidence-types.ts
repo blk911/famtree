@@ -18,7 +18,9 @@ export interface EvidenceItem {
   status: EvidenceStatus;
   value?: string | number | boolean;
   source?: string;
+  sourceUrl?: string;
   notes?: string[];
+  isOverride?: boolean;
 }
 
 export type ResearchPriority = "high" | "medium" | "low";
