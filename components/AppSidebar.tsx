@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, Mail,
-  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2, Terminal, Tv2,
+  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2, Terminal, Tv2, Store,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { User as PrismaUser } from "@prisma/client";
@@ -25,18 +25,17 @@ const INVITE = { href: "/invite", label: "Invite", icon: Mail };
 
 const MSG_VAULT_HREF = "/msg-vault";
 const FAMILY_SAFE_HREF = "/aihsafe";
+const MARKETS_HREF = "/admin/markets";
 const FAMILY_ITEMS = [
   { href: "/tree", label: "My People" },
   { href: "/family-vault/family-units", label: "Units" },
 ];
 
 // Settings sub-items (admin only — shown beneath the Settings accordion)
-// Markets is the hub entry only; source tools (Sola, etc.) link from /admin/markets.
 const SETTINGS_ADMIN_ITEMS = [
   { href: "/settings",       label: "Settings",           icon: null },
   { href: "/admin/tools",    label: "Tools & foundation", icon: Terminal },
   { href: "/admin/activity", label: "Activity Log",       icon: ScrollText },
-  { href: "/admin/markets",  label: "Markets",            icon: Building2 },
 ];
 
 export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: Props) {
@@ -50,7 +49,13 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
     pathname.startsWith("/tree/") ||
     pathname === "/family-vault/family-units";
 
-  const adminZone = pathname === "/admin" || pathname.startsWith("/admin/");
+  const marketsActive =
+    pathname === MARKETS_HREF || pathname.startsWith(`${MARKETS_HREF}/`);
+
+  const adminZone =
+    pathname === "/admin" ||
+    (pathname.startsWith("/admin/") && !marketsActive);
+
   const settingsActive =
     pathname === "/settings" ||
     pathname.startsWith("/settings/") ||
@@ -222,6 +227,14 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
           <Tv2 style={{width:"18px",height:"18px",flexShrink:0}} />
           Discovery Channel
         </Link>
+
+        {/* Markets — unified acquisition workbench (admin only) */}
+        {isAdmin ? (
+          <Link href={MARKETS_HREF} style={linkStyle(marketsActive)}>
+            <Store style={{width:"18px",height:"18px",flexShrink:0}} />
+            Markets
+          </Link>
+        ) : null}
 
         {/* Settings — accordion for admins, plain link for members */}
         {isAdmin ? (
