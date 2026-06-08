@@ -1,5 +1,7 @@
 // app/(app)/admin/markets/sola/page.tsx
 
+export const dynamic = "force-dynamic";
+
 import { access, readFile } from "fs/promises";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";

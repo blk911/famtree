@@ -176,8 +176,10 @@ export function AppShell({ user, coverUrl, children, vaultNotificationCount = 0 
           <TopBarUser user={user} />
         </AppTopBar>
 
-        {pathname.startsWith("/discovery") || pathname.startsWith("/admin/studios") ? (
-          // Full-bleed layout for Discovery and admin Studio tools — skip the constrained AppContentWrap
+        {pathname.startsWith("/discovery") ||
+        pathname.startsWith("/admin/studios") ||
+        pathname.startsWith("/admin/markets") ? (
+          // Full-bleed layout for Discovery, admin Studio tools, and market inspectors
           children
         ) : (
           <AppContentWrap className={pathname === "/invite" ? "app-content-pad--invite" : undefined}>
