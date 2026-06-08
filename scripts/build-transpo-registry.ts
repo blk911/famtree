@@ -3,6 +3,7 @@
 
 import { buildCountyCapacityDossiers } from "@/lib/transpo/build-county-capacity-dossiers";
 import { buildCountyDemandDossiers } from "@/lib/transpo/build-county-demand-dossiers";
+import { buildCountyEvidenceDossiers } from "@/lib/transpo/build-county-evidence-dossiers";
 import { buildDemandGeneratorRegistry } from "@/lib/transpo/build-demand-generator-registry";
 import { buildProviderCapacityRegistry } from "@/lib/transpo/build-provider-capacity-registry";
 import { readCountyGapAnalysisArtifact } from "@/lib/transpo/read-provider-registry";
@@ -12,6 +13,7 @@ async function main(): Promise<void> {
   const providerRegistry = await buildProviderCapacityRegistry();
   const countyCapacity = await buildCountyCapacityDossiers();
   const demandDossiers = await buildCountyDemandDossiers();
+  const evidenceDossiers = await buildCountyEvidenceDossiers();
   const gap = await readCountyGapAnalysisArtifact();
 
   const regional = providerRegistry.providers.filter(
@@ -24,6 +26,7 @@ async function main(): Promise<void> {
   console.log(`Providers: ${providerRegistry.totalProviders}`);
   console.log(`Counties (capacity): ${countyCapacity.totalCounties}`);
   console.log(`Demand dossiers: ${demandDossiers.totalCounties}`);
+  console.log(`Evidence dossiers: ${evidenceDossiers.totalCounties}`);
   console.log(`Regional providers: ${regional}`);
   console.log(`Statewide providers: ${statewide}`);
 
@@ -43,6 +46,14 @@ async function main(): Promise<void> {
     console.log(`  Demand Score: ${alamosaDossier?.demandScore ?? 0}`);
     console.log(`  Opportunity Score: ${alamosaDossier?.opportunityScore ?? alamosaGap?.opportunityScore ?? 0}`);
     console.log(`  Gap Level: ${alamosaDossier?.gapLevel ?? alamosaGap?.gapLevel ?? "n/a"}`);
+
+    const alamosaEvidence = evidenceDossiers.dossiers.find(
+      (d) => d.county === "Alamosa" && d.state === "CO",
+    );
+    if (alamosaEvidence) {
+      console.log(`  Evidence Completeness: ${alamosaEvidence.evidenceCompletenessScore}%`);
+      console.log(`  Research Priority: ${alamosaEvidence.researchPriority}`);
+    }
   }
 }
 

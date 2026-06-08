@@ -38,3 +38,8 @@ export const COUNTY_GAP_ANALYSIS_ARTIFACT_PATH = path.join(
   TRANSPO_DATA_DIR,
   "county-gap-analysis.generated.json",
 );
+
+export const COUNTY_EVIDENCE_DOSSIERS_ARTIFACT_PATH = path.join(
+  TRANSPO_DATA_DIR,
+  "county-evidence-dossiers.generated.json",
+);

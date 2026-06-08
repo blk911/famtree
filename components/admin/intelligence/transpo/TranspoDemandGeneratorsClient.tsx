@@ -8,6 +8,7 @@ import type {
   DemandGenerator,
   DemandGeneratorCategory,
   GapLevel,
+  ResearchPriority,
 } from "@/lib/transpo/types";
 
 const CATEGORIES: DemandGeneratorCategory[] = [
@@ -22,6 +23,12 @@ const CATEGORIES: DemandGeneratorCategory[] = [
   "pharmacy",
   "other",
 ];
+
+const PRIORITY_STYLES: Record<ResearchPriority, { fg: string; bg: string; bd: string }> = {
+  high: { fg: "#991b1b", bg: "#fef2f2", bd: "#fecaca" },
+  medium: { fg: "#92400e", bg: "#fffbeb", bd: "#fde68a" },
+  low: { fg: "#166534", bg: "#f0fdf4", bd: "#bbf7d0" },
+};
 
 const CATEGORY_LABELS: Record<DemandGeneratorCategory, string> = {
   hospital: "Hospital",
@@ -205,12 +212,20 @@ export function TranspoDemandGeneratorsClient() {
         </label>
 
         {countyFilter ? (
-          <Link
-            href={`/admin/intelligence/transpo/providers?county=${encodeURIComponent(countyFilter)}&state=CO`}
-            className="text-xs font-semibold text-indigo-700 no-underline hover:underline"
-          >
-            View provider capacity →
-          </Link>
+          <>
+            <Link
+              href={`/admin/intelligence/transpo/providers?county=${encodeURIComponent(countyFilter)}&state=CO`}
+              className="text-xs font-semibold text-indigo-700 no-underline hover:underline"
+            >
+              View provider capacity →
+            </Link>
+            <Link
+              href={`/admin/intelligence/transpo/missing-evidence?county=${encodeURIComponent(countyFilter)}`}
+              className="text-xs font-semibold text-indigo-700 no-underline hover:underline"
+            >
+              View Missing Evidence →
+            </Link>
+          </>
         ) : null}
       </div>
 
@@ -222,6 +237,44 @@ export function TranspoDemandGeneratorsClient() {
           <p className="m-0 mt-0.5 text-xs text-stone-500">
             Demand generators behind the county opportunity signal.
           </p>
+
+          {dossier.evidenceCompletenessScore != null ? (
+            <div className="mt-3 rounded-lg border border-dashed border-stone-300 bg-stone-50 px-3 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-stone-500">
+                    Evidence completeness
+                  </div>
+                  <div className="text-lg font-extrabold text-stone-900">
+                    {dossier.evidenceCompletenessScore}%
+                  </div>
+                  <div className="text-xs text-stone-600">
+                    Known: {dossier.evidenceKnownCount ?? 0} · Inferred:{" "}
+                    {dossier.evidenceInferredCount ?? 0} · Missing:{" "}
+                    {dossier.evidenceMissingCount ?? 0}
+                  </div>
+                </div>
+                {dossier.researchPriority ? (
+                  <span
+                    className="rounded-md px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide"
+                    style={{
+                      color: PRIORITY_STYLES[dossier.researchPriority].fg,
+                      background: PRIORITY_STYLES[dossier.researchPriority].bg,
+                      border: `1px solid ${PRIORITY_STYLES[dossier.researchPriority].bd}`,
+                    }}
+                  >
+                    Research: {dossier.researchPriority}
+                  </span>
+                ) : null}
+                <Link
+                  href={`/admin/intelligence/transpo/missing-evidence?county=${encodeURIComponent(dossier.county)}`}
+                  className="text-xs font-semibold text-indigo-700 no-underline hover:underline"
+                >
+                  View Missing Evidence →
+                </Link>
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
             <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">
@@ -262,6 +315,7 @@ export function TranspoDemandGeneratorsClient() {
                   ["Demand", dossier.demandScore],
                   ["Capacity", dossier.providerCapacityScore ?? 0],
                   ["Opportunity", dossier.opportunityScore ?? 0],
+                  ["Evidence", dossier.evidenceCompletenessScore ?? "—"],
                 ].map(([label, value]) => (
                   <div key={label} className="text-xs">
                     <div className="font-semibold text-stone-500">{label}</div>
