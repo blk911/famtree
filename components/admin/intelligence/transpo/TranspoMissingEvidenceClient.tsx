@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import type {
@@ -9,6 +10,7 @@ import type {
   EvidenceItem,
   ResearchPriority,
 } from "@/lib/transpo/evidence-types";
+import type { CountyResearchSummary } from "@/lib/transpo/research-types";
 
 type Summary = {
   counties: number;
@@ -95,6 +97,8 @@ export function TranspoMissingEvidenceClient() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [dossiers, setDossiers] = useState<CountyEvidenceDossier[]>([]);
   const [selected, setSelected] = useState<CountyEvidenceDossier | null>(null);
+  const [countyResearch, setCountyResearch] = useState<CountyResearchSummary | null>(null);
+  const [countySummaries, setCountySummaries] = useState<CountyResearchSummary[]>([]);
   const [counties, setCounties] = useState<string[]>([]);
   const [countyFilter, setCountyFilter] = useState(searchParams.get("county") ?? "Alamosa");
   const [minCompleteness, setMinCompleteness] = useState("");
@@ -127,6 +131,8 @@ export function TranspoMissingEvidenceClient() {
       setSummary(data.summary ?? null);
       setDossiers(data.dossiers ?? []);
       setSelected(data.selectedDossier ?? data.dossiers?.[0] ?? null);
+      setCountySummaries(data.countySummaries ?? []);
+      setCountyResearch(data.countyResearchSummary ?? null);
       setCounties(data.counties ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -292,6 +298,35 @@ export function TranspoMissingEvidenceClient() {
             ))}
           </div>
 
+          {countyResearch ? (
+            <div className="mt-3 rounded-lg border border-dashed border-indigo-200 bg-indigo-50 px-3 py-3">
+              <div className="text-[10px] font-bold uppercase tracking-wide text-indigo-800">
+                Research queue summary
+              </div>
+              <div className="mt-1 grid grid-cols-2 gap-2 text-xs text-indigo-950 sm:grid-cols-4">
+                <div>
+                  <span className="font-semibold">Research tasks:</span>{" "}
+                  {countyResearch.openTasks + countyResearch.completedTasks}
+                </div>
+                <div>
+                  <span className="font-semibold">Open:</span> {countyResearch.openTasks}
+                </div>
+                <div>
+                  <span className="font-semibold">Critical:</span> {countyResearch.criticalTasks}
+                </div>
+                <div>
+                  <span className="font-semibold">Progress:</span> {countyResearch.progressPercent}%
+                </div>
+              </div>
+              <Link
+                href={`/admin/intelligence/transpo/research?county=${encodeURIComponent(selected.county)}`}
+                className="mt-2 inline-block text-xs font-semibold text-indigo-700 no-underline hover:underline"
+              >
+                View Research Queue →
+              </Link>
+            </div>
+          ) : null}
+
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
             <div>
               <h3 className="m-0 mb-2 text-[10px] font-extrabold uppercase tracking-wide text-green-700">
@@ -362,7 +397,12 @@ export function TranspoMissingEvidenceClient() {
               sortedDossiers.map((d) => (
                 <tr
                   key={d.countyKey}
-                  onClick={() => setSelected(d)}
+                  onClick={() => {
+                    setSelected(d);
+                    setCountyResearch(
+                      countySummaries.find((c) => c.countyKey === d.countyKey) ?? null,
+                    );
+                  }}
                   style={{ cursor: "pointer" }}
                   className={selected?.countyKey === d.countyKey ? "bg-stone-50" : undefined}
                 >

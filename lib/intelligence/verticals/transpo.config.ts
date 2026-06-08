@@ -34,6 +34,7 @@ export const transpoConfig: VerticalConfig = {
     { id: "demand-generators", label: "Demand Generators", href: "/admin/intelligence/transpo/demand" },
     { id: "provider-capacity", label: "Provider Capacity", href: "/admin/intelligence/transpo/providers" },
     { id: "missing-evidence", label: "Missing Evidence", href: "/admin/intelligence/transpo/missing-evidence" },
+    { id: "research-queue", label: "Research Queue", href: "/admin/intelligence/transpo/research" },
     { id: "provider-dossiers", label: "Provider Intelligence", href: "/admin/intelligence/transpo/provider-dossiers" },
     { id: "action-queue",    label: "Action Queue",     href: "/admin/intelligence/transpo/action-queue" },
     { id: "reviews",         label: "Reviews",          href: "/admin/intelligence/transpo/reviews" },
@@ -42,7 +43,7 @@ export const transpoConfig: VerticalConfig = {
     { id: "prospects",       label: "Red Dots (deprecated)", href: "/admin/intelligence/transpo/prospects" },
   ],
 
-  enabledTools: ["source-ingest", "source-runs", "evidence", "resolver", "carriers", "verification", "opportunities", "qualified-targets", "market-dashboard", "market-gaps", "service-deficits", "data-confidence", "opportunity-radar", "network-plays", "county-opportunities", "demand-generators", "provider-capacity", "missing-evidence", "provider-dossiers", "action-queue", "reviews", "storage-status", "harvest"],
+  enabledTools: ["source-ingest", "source-runs", "evidence", "resolver", "carriers", "verification", "opportunities", "qualified-targets", "market-dashboard", "market-gaps", "service-deficits", "data-confidence", "opportunity-radar", "network-plays", "county-opportunities", "demand-generators", "provider-capacity", "missing-evidence", "research-queue", "provider-dossiers", "action-queue", "reviews", "storage-status", "harvest"],
 
   // Salon/personal-care tools are explicitly hidden from this vertical
   hiddenTools: [

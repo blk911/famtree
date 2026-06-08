@@ -62,7 +62,7 @@ export const TRANSPO_PIPELINE_STAGES: TranspoPipelineStageDef[] = [
     order: 5,
     label: "Service Deficits",
     description: "Need → payer → provider → coverage deficits.",
-    navItemIds: ["market-gaps", "service-deficits", "data-confidence", "opportunity-radar", "network-plays", "county-opportunities", "demand-generators", "provider-capacity", "missing-evidence"],
+    navItemIds: ["market-gaps", "service-deficits", "data-confidence", "opportunity-radar", "network-plays", "county-opportunities", "demand-generators", "provider-capacity", "missing-evidence", "research-queue"],
     primaryHref: "/admin/intelligence/transpo/service-deficits",
     primaryActionLabel: "Open Service Deficits",
   },

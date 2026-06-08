@@ -50,6 +50,7 @@
     "build:transpo:demand": "tsx scripts/build-transpo-demand-registry.ts",
     "build:transpo:providers": "tsx scripts/build-transpo-provider-capacity.ts",
     "build:transpo:evidence": "tsx scripts/build-transpo-evidence.ts",
+    "build:transpo:research": "tsx scripts/build-transpo-research-queue.ts",
     "build:transpo": "tsx scripts/build-transpo-registry.ts"
   },
   "dependencies": {

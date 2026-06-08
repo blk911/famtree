@@ -1,0 +1,646 @@
+{
+  "generatedAt": "2026-06-08T21:21:17.666Z",
+  "totalCounties": 64,
+  "counties": [
+    {
+      "countyKey": "CO:Adams",
+      "county": "Adams",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Alamosa",
+      "county": "Alamosa",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Arapahoe",
+      "county": "Arapahoe",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Archuleta",
+      "county": "Archuleta",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Baca",
+      "county": "Baca",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Bent",
+      "county": "Bent",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Boulder",
+      "county": "Boulder",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Broomfield",
+      "county": "Broomfield",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Chaffee",
+      "county": "Chaffee",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Cheyenne",
+      "county": "Cheyenne",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Clear Creek",
+      "county": "Clear Creek",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Conejos",
+      "county": "Conejos",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Costilla",
+      "county": "Costilla",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Crowley",
+      "county": "Crowley",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Custer",
+      "county": "Custer",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Delta",
+      "county": "Delta",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Denver",
+      "county": "Denver",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Dolores",
+      "county": "Dolores",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Douglas",
+      "county": "Douglas",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Eagle",
+      "county": "Eagle",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:El Paso",
+      "county": "El Paso",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Elbert",
+      "county": "Elbert",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Fremont",
+      "county": "Fremont",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Garfield",
+      "county": "Garfield",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Gilpin",
+      "county": "Gilpin",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Grand",
+      "county": "Grand",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Gunnison",
+      "county": "Gunnison",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Hinsdale",
+      "county": "Hinsdale",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Huerfano",
+      "county": "Huerfano",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Jackson",
+      "county": "Jackson",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Jefferson",
+      "county": "Jefferson",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Kiowa",
+      "county": "Kiowa",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Kit Carson",
+      "county": "Kit Carson",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:La Plata",
+      "county": "La Plata",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Lake",
+      "county": "Lake",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Larimer",
+      "county": "Larimer",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Las Animas",
+      "county": "Las Animas",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Lincoln",
+      "county": "Lincoln",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Logan",
+      "county": "Logan",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Mesa",
+      "county": "Mesa",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Mineral",
+      "county": "Mineral",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Moffat",
+      "county": "Moffat",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Montezuma",
+      "county": "Montezuma",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Montrose",
+      "county": "Montrose",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Morgan",
+      "county": "Morgan",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Otero",
+      "county": "Otero",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Ouray",
+      "county": "Ouray",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Park",
+      "county": "Park",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Phillips",
+      "county": "Phillips",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Pitkin",
+      "county": "Pitkin",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Prowers",
+      "county": "Prowers",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Pueblo",
+      "county": "Pueblo",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Rio Blanco",
+      "county": "Rio Blanco",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Rio Grande",
+      "county": "Rio Grande",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Routt",
+      "county": "Routt",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Saguache",
+      "county": "Saguache",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:San Juan",
+      "county": "San Juan",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:San Miguel",
+      "county": "San Miguel",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Sedgwick",
+      "county": "Sedgwick",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Summit",
+      "county": "Summit",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Teller",
+      "county": "Teller",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Washington",
+      "county": "Washington",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Weld",
+      "county": "Weld",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    },
+    {
+      "countyKey": "CO:Yuma",
+      "county": "Yuma",
+      "state": "CO",
+      "openTasks": 16,
+      "completedTasks": 0,
+      "criticalTasks": 4,
+      "highTasks": 4,
+      "progressPercent": 0
+    }
+  ]
+}

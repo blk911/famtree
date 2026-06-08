@@ -4,6 +4,7 @@
 import { buildCountyCapacityDossiers } from "@/lib/transpo/build-county-capacity-dossiers";
 import { buildCountyDemandDossiers } from "@/lib/transpo/build-county-demand-dossiers";
 import { buildCountyEvidenceDossiers } from "@/lib/transpo/build-county-evidence-dossiers";
+import { buildResearchQueue } from "@/lib/transpo/build-research-queue";
 import { buildDemandGeneratorRegistry } from "@/lib/transpo/build-demand-generator-registry";
 import { buildProviderCapacityRegistry } from "@/lib/transpo/build-provider-capacity-registry";
 import { readCountyGapAnalysisArtifact } from "@/lib/transpo/read-provider-registry";
@@ -14,6 +15,7 @@ async function main(): Promise<void> {
   const countyCapacity = await buildCountyCapacityDossiers();
   const demandDossiers = await buildCountyDemandDossiers();
   const evidenceDossiers = await buildCountyEvidenceDossiers();
+  const researchQueue = await buildResearchQueue();
   const gap = await readCountyGapAnalysisArtifact();
 
   const regional = providerRegistry.providers.filter(
@@ -27,6 +29,7 @@ async function main(): Promise<void> {
   console.log(`Counties (capacity): ${countyCapacity.totalCounties}`);
   console.log(`Demand dossiers: ${demandDossiers.totalCounties}`);
   console.log(`Evidence dossiers: ${evidenceDossiers.totalCounties}`);
+  console.log(`Research tasks: ${researchQueue.queue.totalTasks}`);
   console.log(`Regional providers: ${regional}`);
   console.log(`Statewide providers: ${statewide}`);
 

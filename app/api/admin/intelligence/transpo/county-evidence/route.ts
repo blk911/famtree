@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { readCountyEvidenceDossiersArtifact } from "@/lib/transpo/read-evidence-registry";
+import { readCountyResearchSummaryArtifact } from "@/lib/transpo/read-research-queue";
 import type { EvidenceCategory } from "@/lib/transpo/evidence-types";
 
 export async function GET(request: NextRequest) {
@@ -73,6 +74,14 @@ export async function GET(request: NextRequest) {
       new Set(artifact.dossiers.map((d) => d.county)),
     ).sort();
 
+    const selectedDossier = dossiers[0] ?? null;
+    const researchSummaryArtifact = await readCountyResearchSummaryArtifact();
+    const countyResearchSummary = selectedDossier
+      ? researchSummaryArtifact?.counties.find(
+          (c) => c.countyKey === selectedDossier.countyKey,
+        ) ?? null
+      : null;
+
     return NextResponse.json({
       ok: true,
       summary: {
@@ -85,7 +94,9 @@ export async function GET(request: NextRequest) {
       },
       counties: countyList,
       dossiers,
-      selectedDossier: dossiers[0] ?? null,
+      selectedDossier,
+      countyResearchSummary,
+      countySummaries: researchSummaryArtifact?.counties ?? [],
     });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);

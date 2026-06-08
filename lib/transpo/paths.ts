@@ -43,3 +43,18 @@ export const COUNTY_EVIDENCE_DOSSIERS_ARTIFACT_PATH = path.join(
   TRANSPO_DATA_DIR,
   "county-evidence-dossiers.generated.json",
 );
+
+export const EVIDENCE_COLLECTION_QUEUE_ARTIFACT_PATH = path.join(
+  TRANSPO_DATA_DIR,
+  "evidence-collection-queue.generated.json",
+);
+
+export const COUNTY_RESEARCH_SUMMARY_ARTIFACT_PATH = path.join(
+  TRANSPO_DATA_DIR,
+  "county-research-summary.generated.json",
+);
+
+export const RESEARCH_TASK_STATE_PATH = path.join(
+  TRANSPO_DATA_DIR,
+  "research-task-state.json",
+);
