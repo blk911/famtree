@@ -3,7 +3,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
-import type { CountyDemandDossier, DemandGenerator, DemandGeneratorCategory } from "@/lib/transpo/types";
+import type {
+  CountyDemandDossier,
+  DemandGenerator,
+  DemandGeneratorCategory,
+  GapLevel,
+} from "@/lib/transpo/types";
 
 const CATEGORIES: DemandGeneratorCategory[] = [
   "hospital",
@@ -62,6 +67,7 @@ export function TranspoDemandGeneratorsClient() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [generators, setGenerators] = useState<DemandGenerator[]>([]);
   const [dossier, setDossier] = useState<CountyDemandDossier | null>(null);
+  const [gapLevel, setGapLevel] = useState<GapLevel | null>(null);
   const [counties, setCounties] = useState<string[]>([]);
   const [countyFilter, setCountyFilter] = useState("Alamosa");
   const [stateFilter] = useState("CO");
@@ -104,7 +110,9 @@ export function TranspoDemandGeneratorsClient() {
 
       setSummary(data.summary ?? null);
       setGenerators(data.generators ?? []);
-      setDossier(data.selectedDossier ?? data.dossiers?.[0] ?? null);
+      const selected = data.selectedDossier ?? data.dossiers?.[0] ?? null;
+      setDossier(selected);
+      setGapLevel(selected?.gapLevel ?? data.selectedGap?.gapLevel ?? null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -196,12 +204,12 @@ export function TranspoDemandGeneratorsClient() {
           </select>
         </label>
 
-        {countyFilter.toLowerCase() === "alamosa" ? (
+        {countyFilter ? (
           <Link
-            href="/admin/intelligence/transpo/county-opportunities?county=Alamosa&state=CO"
+            href={`/admin/intelligence/transpo/providers?county=${encodeURIComponent(countyFilter)}&state=CO`}
             className="text-xs font-semibold text-indigo-700 no-underline hover:underline"
           >
-            View county opportunities →
+            View provider capacity →
           </Link>
         ) : null}
       </div>
@@ -215,51 +223,58 @@ export function TranspoDemandGeneratorsClient() {
             Demand generators behind the county opportunity signal.
           </p>
 
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {[
-              ["Demand score", dossier.demandScore],
-              ["Recurring demand", dossier.recurringDemandScore],
-              ["Rural anchor", dossier.ruralAnchorScore],
-            ].map(([label, value]) => (
-              <div
-                key={label}
-                className="flex items-center justify-between rounded-lg border border-stone-200 bg-stone-50 px-3 py-2"
-              >
-                <span className="text-xs font-semibold text-stone-600">{label}</span>
-                <span className="text-lg font-extrabold text-stone-900">{value}</span>
+          <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
+            <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">
+              <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-stone-500">
+                Demand
               </div>
-            ))}
-          </div>
-
-          <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
-            <div>
-              <div className="mb-1 text-[10px] font-bold uppercase tracking-wide text-stone-400">
-                Counts by category
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {Object.entries(dossier.countsByCategory).map(([cat, count]) => (
-                  <span
-                    key={cat}
-                    className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-900 ring-1 ring-indigo-100"
-                  >
-                    {CATEGORY_LABELS[cat as DemandGeneratorCategory] ?? cat}: {count}
-                  </span>
-                ))}
+              <div className="space-y-1 text-xs text-stone-700">
+                <div>Hospitals: {dossier.countsByCategory.hospital ?? 0}</div>
+                <div>Dialysis: {dossier.countsByCategory.dialysis ?? 0}</div>
+                <div>Meals: {dossier.countsByCategory.meal_program ?? 0}</div>
+                <div>Senior Centers: {dossier.countsByCategory.senior_center ?? 0}</div>
               </div>
             </div>
 
-            <div>
-              <div className="mb-1 text-[10px] font-bold uppercase tracking-wide text-stone-400">
-                Top anchors
+            <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">
+              <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-stone-500">
+                Capacity
               </div>
-              <ul className="m-0 list-disc pl-4 text-xs text-stone-700">
-                {dossier.topAnchors.map((a) => (
-                  <li key={a.generatorKey}>
-                    {a.displayName}{" "}
-                    <span className="text-stone-400">({CATEGORY_LABELS[a.category]})</span>
-                  </li>
+              <div className="space-y-1 text-xs text-stone-700">
+                <div>Provider Count: {dossier.providerCount ?? 0}</div>
+                <div className="mt-2 text-[10px] font-bold uppercase tracking-wide text-stone-400">
+                  Provider Names
+                </div>
+                <ul className="m-0 max-h-28 list-disc overflow-y-auto pl-4">
+                  {(dossier.providerNames ?? []).slice(0, 8).map((name) => (
+                    <li key={name}>{name}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">
+              <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-stone-500">
+                Result
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  ["Demand", dossier.demandScore],
+                  ["Capacity", dossier.providerCapacityScore ?? 0],
+                  ["Opportunity", dossier.opportunityScore ?? 0],
+                ].map(([label, value]) => (
+                  <div key={label} className="text-xs">
+                    <div className="font-semibold text-stone-500">{label}</div>
+                    <div className="text-lg font-extrabold text-stone-900">{value}</div>
+                  </div>
                 ))}
-              </ul>
+                <div className="col-span-2 text-xs">
+                  <div className="font-semibold text-stone-500">Gap Level</div>
+                  <div className="text-sm font-extrabold uppercase text-stone-900">
+                    {gapLevel ?? dossier.gapLevel ?? "—"}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

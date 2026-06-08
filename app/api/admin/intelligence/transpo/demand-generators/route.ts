@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { readCountyDemandDossiersArtifact, readDemandGeneratorsArtifact } from "@/lib/transpo/read-demand-registry";
+import { readCountyGapAnalysisArtifact } from "@/lib/transpo/read-provider-registry";
 import type { DemandGeneratorCategory } from "@/lib/transpo/types";
 
 export async function GET(request: NextRequest) {
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
         {
           ok: false,
           error: "demand registry not built",
-          detail: "Run npm run build:transpo:demand",
+          detail: "Run npm run build:transpo",
         },
         { status: 404 },
       );
@@ -47,6 +48,11 @@ export async function GET(request: NextRequest) {
 
     const hospitalAnchors = registry.generators.filter((g) => g.category === "hospital").length;
     const dialysisAnchors = registry.generators.filter((g) => g.category === "dialysis").length;
+    const gapArtifact = await readCountyGapAnalysisArtifact();
+    const selectedDossier = dossiers[0] ?? null;
+    const selectedGap = selectedDossier
+      ? gapArtifact?.counties.find((g) => g.countyKey === selectedDossier.countyKey) ?? null
+      : null;
 
     return NextResponse.json({
       ok: true,
@@ -59,7 +65,8 @@ export async function GET(request: NextRequest) {
       },
       generators,
       dossiers,
-      selectedDossier: dossiers.length === 1 ? dossiers[0] : dossiers[0] ?? null,
+      selectedDossier,
+      selectedGap,
     });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);

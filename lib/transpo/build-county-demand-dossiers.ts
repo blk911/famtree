@@ -2,12 +2,19 @@
 
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { getColoradoCountyPopulation } from "./county-population";
+import {
+  buildAndPersistCountyGapAnalysis,
+  calculateOpportunityScore,
+  gapLevelFromOpportunityScore,
+} from "./build-county-gap-analysis";
 import { makeCountyKey } from "./normalize-demand-generator";
 import {
+  COUNTY_CAPACITY_ARTIFACT_PATH,
   COUNTY_DEMAND_DOSSIERS_ARTIFACT_PATH,
   DEMAND_GENERATORS_ARTIFACT_PATH,
   TRANSPO_DATA_DIR,
 } from "./paths";
+import type { CountyCapacity, CountyCapacityArtifact } from "./provider-types";
 import type {
   CountyDemandDossier,
   CountyDemandDossiersArtifact,
@@ -102,11 +109,14 @@ function buildMissingData(
   county: string,
   state: string,
   generators: DemandGenerator[],
+  hasProviderCapacity: boolean,
 ): string[] {
   const missing = new Set<string>();
   const categories = new Set(generators.map((g) => g.category));
 
-  missing.add("provider_capacity_missing");
+  if (!hasProviderCapacity) {
+    missing.add("provider_capacity_missing");
+  }
   missing.add("broker_recruitment_signal_missing");
 
   if (!getColoradoCountyPopulation(state, county)) {
@@ -139,8 +149,36 @@ function buildMissingData(
   return Array.from(missing).sort();
 }
 
+function mergeCapacityIntoDossier(
+  dossier: CountyDemandDossier,
+  capacity: CountyCapacity | undefined,
+): CountyDemandDossier {
+  const providerCount = capacity?.providerCount ?? 0;
+  const providerCapacityScore = capacity?.capacityScore ?? 0;
+  const hasProviderCapacity = providerCount > 0;
+
+  const merged: CountyDemandDossier = {
+    ...dossier,
+    providerCount,
+    providerNames: capacity?.providers ?? [],
+    providerCapacityScore,
+    missingData: buildMissingData(
+      dossier.county,
+      dossier.state,
+      dossier.demandGenerators,
+      hasProviderCapacity,
+    ),
+  };
+
+  merged.opportunityScore = calculateOpportunityScore(merged, providerCapacityScore, providerCount);
+  merged.gapLevel = gapLevelFromOpportunityScore(merged.opportunityScore);
+
+  return merged;
+}
+
 export function buildCountyDossiersFromGenerators(
   generators: DemandGenerator[],
+  capacityByCountyKey: Map<string, CountyCapacity> = new Map(),
   generatedAt = new Date().toISOString(),
 ): CountyDemandDossier[] {
   const grouped = new Map<string, DemandGenerator[]>();
@@ -161,8 +199,9 @@ export function buildCountyDossiersFromGenerators(
     const demandScore = scoreFromCategories(countyGenerators, DEMAND_SCORE_BY_CATEGORY);
     const recurringDemandScore = scoreFromCategories(countyGenerators, RECURRING_SCORE_BY_CATEGORY);
     const ruralAnchorScore = scoreFromCategories(countyGenerators, RURAL_ANCHOR_SCORE_BY_CATEGORY);
+    const capacity = capacityByCountyKey.get(countyKey);
 
-    dossiers.push({
+    const base: CountyDemandDossier = {
       countyKey,
       county,
       state,
@@ -173,8 +212,10 @@ export function buildCountyDossiersFromGenerators(
       recurringDemandScore,
       ruralAnchorScore,
       topAnchors: pickTopAnchors(countyGenerators),
-      missingData: buildMissingData(county, state, countyGenerators),
-    });
+      missingData: buildMissingData(county, state, countyGenerators, (capacity?.providerCount ?? 0) > 0),
+    };
+
+    dossiers.push(mergeCapacityIntoDossier(base, capacity));
   }
 
   return dossiers.sort((a, b) => {
@@ -183,13 +224,24 @@ export function buildCountyDossiersFromGenerators(
   });
 }
 
+async function loadCapacityMap(): Promise<Map<string, CountyCapacity>> {
+  try {
+    const raw = await readFile(COUNTY_CAPACITY_ARTIFACT_PATH, "utf8");
+    const artifact = JSON.parse(raw) as CountyCapacityArtifact;
+    return new Map(artifact.counties.map((c) => [c.countyKey, c]));
+  } catch {
+    return new Map();
+  }
+}
+
 export async function buildCountyDemandDossiers(
   registryPath: string = DEMAND_GENERATORS_ARTIFACT_PATH,
 ): Promise<CountyDemandDossiersArtifact> {
   const raw = await readFile(registryPath, "utf8");
   const registry = JSON.parse(raw) as DemandGeneratorsArtifact;
+  const capacityByCountyKey = await loadCapacityMap();
   const generatedAt = new Date().toISOString();
-  const dossiers = buildCountyDossiersFromGenerators(registry.generators, generatedAt);
+  const dossiers = buildCountyDossiersFromGenerators(registry.generators, capacityByCountyKey, generatedAt);
 
   const artifact: CountyDemandDossiersArtifact = {
     generatedAt,
@@ -203,6 +255,8 @@ export async function buildCountyDemandDossiers(
     `${JSON.stringify(artifact, null, 2)}\n`,
     "utf8",
   );
+
+  await buildAndPersistCountyGapAnalysis(dossiers, capacityByCountyKey);
 
   return artifact;
 }

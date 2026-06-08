@@ -40,6 +40,8 @@ export interface DemandGenerator {
   updatedAt: string;
 }
 
+export type GapLevel = "low" | "medium" | "high" | "severe";
+
 export interface CountyDemandDossier {
   countyKey: string;
   county: string;
@@ -50,8 +52,11 @@ export interface CountyDemandDossier {
   demandScore: number;
   recurringDemandScore: number;
   ruralAnchorScore: number;
+  providerCount?: number;
+  providerNames?: string[];
   providerCapacityScore?: number;
   opportunityScore?: number;
+  gapLevel?: GapLevel;
   topAnchors: DemandGenerator[];
   missingData: string[];
 }

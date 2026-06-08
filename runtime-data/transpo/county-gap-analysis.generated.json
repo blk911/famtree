@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-06-08T19:43:14.413Z",
+  "totalCounties": 1,
+  "counties": [
+    {
+      "countyKey": "CO:Alamosa",
+      "county": "Alamosa",
+      "state": "CO",
+      "demandScore": 75,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "providerCount": 15,
+      "topDemandAnchors": [
+        "San Luis Valley Health",
+        "San Luis Valley dialysis center (unconfirmed name)",
+        "Meal delivery / nutrition program (Alamosa)",
+        "Senior center / aging services (SLV)"
+      ],
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Barentu Transport LLC",
+        "Brave Sisters Transportation LLC",
+        "City Cab LLC"
+      ],
+      "gapLevel": "low",
+      "generatedAt": "2026-06-08T19:43:14.413Z"
+    }
+  ]
+}

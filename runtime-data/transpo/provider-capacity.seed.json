@@ -1,0 +1,3097 @@
+{
+  "version": 1,
+  "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
+  "sourceProvider": "hcpf_nemt_list",
+  "records": [
+    {
+      "county": "Adams",
+      "providerName": "Transdev",
+      "phone": "(855) 489-4999"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(303) 357-2000"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "Barentu Transport LLC",
+      "phone": "(719) 755-8510"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "Mountain Valley Transit",
+      "phone": "(719) 530-8980"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "Royal Do Corp",
+      "phone": "(720) 404-1578"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "Simple Non-Emergency Medical Transportation LLC",
+      "phone": "(720) 369-3991"
+    },
+    {
+      "county": "Alamosa",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Arapahoe",
+      "providerName": "Transdev",
+      "phone": "(855) 489-4999"
+    },
+    {
+      "county": "Archuleta",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(303) 357-2000"
+    },
+    {
+      "county": "Archuleta",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Archuleta",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Archuleta",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Archuleta",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Archuleta",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Archuleta",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Baca",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Baca",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 316-1400"
+    },
+    {
+      "county": "Baca",
+      "providerName": "Barb's Transport \"A Little Bit of Sunshine\"",
+      "phone": "(719) 469-2838"
+    },
+    {
+      "county": "Baca",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Baca",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Baca",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Baca",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Baca",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Baca",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Baca",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Baca",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Bent",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 316-1400"
+    },
+    {
+      "county": "Bent",
+      "providerName": "Barb's Transport \"A Little Bit of Sunshine\"",
+      "phone": "(719) 469-2838"
+    },
+    {
+      "county": "Bent",
+      "providerName": "Barentu Transport LLC",
+      "phone": "(719) 755-8510"
+    },
+    {
+      "county": "Bent",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Bent",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Bent",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Bent",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Bent",
+      "providerName": "Maguy Medical Transport",
+      "phone": "(720) 789-3777"
+    },
+    {
+      "county": "Bent",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Bent",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Bent",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Bent",
+      "providerName": "Royal Do Corp",
+      "phone": "(720) 404-1578"
+    },
+    {
+      "county": "Bent",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Bent",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Boulder",
+      "providerName": "Transdev",
+      "phone": "(855) 489-4999"
+    },
+    {
+      "county": "Broomfield",
+      "providerName": "Transdev",
+      "phone": "(855) 489-4999"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "American Medical Response Of Colorado Inc",
+      "phone": "(719) 275-1395"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "Mountain Valley Transit",
+      "phone": "(719) 530-8980"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Chaffee",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(303) 357-2000"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "County Express Transportation",
+      "phone": "(970) 521-4857"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "Royal Do Corp",
+      "phone": "(720) 404-1578"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Cheyenne",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Clear Creek",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 275-1395"
+    },
+    {
+      "county": "Clear Creek",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Clear Creek",
+      "providerName": "Delta Transport",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "Clear Creek",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Clear Creek",
+      "providerName": "Londons Transportation LLC",
+      "phone": "(720) 324-0582"
+    },
+    {
+      "county": "Clear Creek",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Clear Creek",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Clear Creek",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Clear Creek",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Clear Creek",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Conejos",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 275-1395"
+    },
+    {
+      "county": "Conejos",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Conejos",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Conejos",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Conejos",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Conejos",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Conejos",
+      "providerName": "Mountain Valley Transit",
+      "phone": "(719) 530-8980"
+    },
+    {
+      "county": "Conejos",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Conejos",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Conejos",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Costilla",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 275-1395"
+    },
+    {
+      "county": "Costilla",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Costilla",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Costilla",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Costilla",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Costilla",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Costilla",
+      "providerName": "Mountain Valley Transit",
+      "phone": "(719) 530-8980"
+    },
+    {
+      "county": "Costilla",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Costilla",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Costilla",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 545-1226"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "Barb's Transport \"A Little Bit of Sunshine\"",
+      "phone": "(719) 469-2838"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "Maguy Medical Transport",
+      "phone": "(720) 789-3777"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "Mt Ride LLC",
+      "phone": "(303) 648-1016"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "Simple Non-Emergency Medical Transportation LLC",
+      "phone": "(720) 369-3991"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Crowley",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Custer",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Custer",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 275-1395"
+    },
+    {
+      "county": "Custer",
+      "providerName": "Barentu Transport LLC",
+      "phone": "(719) 755-8510"
+    },
+    {
+      "county": "Custer",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Custer",
+      "providerName": "Fremont County Transit",
+      "phone": "(719) 276-5200"
+    },
+    {
+      "county": "Custer",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Custer",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Custer",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Custer",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Custer",
+      "providerName": "Mt Ride LLC",
+      "phone": "(303) 648-1016"
+    },
+    {
+      "county": "Custer",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Custer",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Custer",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Delta",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Delta",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Delta",
+      "providerName": "Med Lift LLC",
+      "phone": "(970) 314-9511"
+    },
+    {
+      "county": "Delta",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Delta",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Delta",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Delta",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Delta",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Delta",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Delta",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Denver",
+      "providerName": "Transdev",
+      "phone": "(855) 489-4999"
+    },
+    {
+      "county": "Dolores",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Dolores",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Dolores",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Dolores",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Dolores",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Douglas",
+      "providerName": "Transdev",
+      "phone": "(855) 489-4999"
+    },
+    {
+      "county": "Eagle",
+      "providerName": "Delta Transport",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "Eagle",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Eagle",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Eagle",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Eagle",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Eagle",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Eagle",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Eagle",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Eagle",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Eagle",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 466-5122"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Aponi Transport Inc",
+      "phone": "(719) 785-7777"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Axel Medical Transportation",
+      "phone": "(719) 359-9999"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Barentu Transport LLC",
+      "phone": "(719) 755-8510"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Blue Skies Transportation",
+      "phone": "(719) 357-9070"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Delta Transport LLC",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Elevate Care Transit LLC",
+      "phone": "(720) 295-1740 / (720) 499-6030"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Fremont County Transit",
+      "phone": "(719) 276-5200"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Graceland Transportation",
+      "phone": "(719) 355-6500"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "I Care Ride LLC",
+      "phone": "(719) 722-7677"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Light Health Solutions LLC",
+      "phone": "(719) 785-1717"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Londons Transportation LLC",
+      "phone": "(720) 324-0582"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Mt Ride LLC",
+      "phone": "(303) 648-1016"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Royal Do Corp",
+      "phone": "(720) 404-1578"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Sarah Kare Ride LLC",
+      "phone": "(719) 661-8107"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Second Home LLC",
+      "phone": "(719) 375-8121"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Simply Safe Transportation LLC",
+      "phone": "(719) 201-4281"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Teller Senior Coalition/TSC Transit",
+      "phone": "(719) 687-3330 ext 1007"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Total Care LLC",
+      "phone": "(719) 246-7678"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Transit to Care, LLC",
+      "phone": "(719) 644-6005"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "El Paso",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Blue Skies Transportation",
+      "phone": "(719) 357-9070"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Delta Transport LLC",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Elevate Care Transit LLC",
+      "phone": "(720) 295-1740 / (720) 499-6030"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Kareem Ride",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Mt Ride LLC",
+      "phone": "(303) 648-1016"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Royal Do Corp",
+      "phone": "(720) 404-1578"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Second Home LLC",
+      "phone": "(719) 375-8121"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Simple Non-Emergency Medical Transportation LLC",
+      "phone": "(720) 369-3991"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Elbert",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 275-1395"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Axel Medical Transportation",
+      "phone": "(719) 359-9999"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Barentu Transport LLC",
+      "phone": "(719) 755-8510"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Delta Transport LLC",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Elevate Care Transit LLC",
+      "phone": "(720) 295-1740 / (720) 499-6030"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Fremont County Transit",
+      "phone": "(719) 276-5200"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Maguy Medical Transport",
+      "phone": "(720) 789-3777"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Mt Ride LLC",
+      "phone": "(303) 648-1016"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Royal Do Corp",
+      "phone": "(720) 404-1578"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Sarah Kare Ride LLC",
+      "phone": "(719) 661-8107"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Fremont",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Garfield",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(303) 357-2000"
+    },
+    {
+      "county": "Garfield",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Garfield",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Garfield",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Garfield",
+      "providerName": "Med Lift LLC",
+      "phone": "(970) 314-9511"
+    },
+    {
+      "county": "Garfield",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Garfield",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Garfield",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Garfield",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Garfield",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Garfield",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Gilpin",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(303) 357-2000"
+    },
+    {
+      "county": "Gilpin",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Gilpin",
+      "providerName": "Delta Transport",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "Gilpin",
+      "providerName": "Londons Transportation LLC",
+      "phone": "(720) 324-0582"
+    },
+    {
+      "county": "Gilpin",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Gilpin",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Gilpin",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Gilpin",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Gilpin",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Grand",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(303) 357-2000"
+    },
+    {
+      "county": "Grand",
+      "providerName": "Delta Transport LLC",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "Grand",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Grand",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Grand",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Grand",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Grand",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Grand",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Grand",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Gunnison",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Gunnison",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Gunnison",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Gunnison",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Gunnison",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Gunnison",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Hinsdale",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Hinsdale",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Hinsdale",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Hinsdale",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Hinsdale",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Hinsdale",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 466-5122"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "Barentu Transport LLC",
+      "phone": "(719) 755-8510"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "Maguy Medical Transport",
+      "phone": "(720) 789-3777"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Huerfano",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Jackson",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Jackson",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Jackson",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Jackson",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Jackson",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Jackson",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Jackson",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Jefferson",
+      "providerName": "Transdev",
+      "phone": "(855) 489-4999"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 316-1400"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "Barb's Transport \"A Little Bit of Sunshine\"",
+      "phone": "(719) 469-2838"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "Golden Gate Manor Transportation",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "Kiowa County Transit",
+      "phone": "(719) 438-5810"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "Simple Non-Emergency Medical Transportation LLC",
+      "phone": "(720) 369-3991"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Kiowa",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Kit Carson",
+      "providerName": "County Express Transportation",
+      "phone": "(970) 521-4857"
+    },
+    {
+      "county": "Kit Carson",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Kit Carson",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Kit Carson",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Kit Carson",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Kit Carson",
+      "providerName": "Second Home LLC",
+      "phone": "(719) 375-8121"
+    },
+    {
+      "county": "Kit Carson",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Kit Carson",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "La Plata",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "La Plata",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "La Plata",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "La Plata",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "La Plata",
+      "providerName": "SW Center for Independence",
+      "phone": "(970) 946-0232"
+    },
+    {
+      "county": "La Plata",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "La Plata",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Lake",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Lake",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Lake",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Lake",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Lake",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Lake",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Larimer",
+      "providerName": "Transdev",
+      "phone": "(855) 489-4999"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 545-1226"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Barentu Transport LLC",
+      "phone": "(719) 755-8510"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Golden Gate Manor Transportation Inc",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Maguy Medical Transport",
+      "phone": "(720) 789-3777"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Medilyft LLC",
+      "phone": "(719) 422-8487"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Simple Non-Emergency Medical Transportation LLC",
+      "phone": "(720) 369-3991"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Las Animas",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Barb's Transport \"A Little Bit of Sunshine\"",
+      "phone": "(719) 469-2838"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Blue Skies Transportation",
+      "phone": "(719) 357-9070"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "County Express Transportation",
+      "phone": "(970) 521-4857"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Elevate Care Transit LLC",
+      "phone": "(720) 295-1740 / (720) 499-6030"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Golden Gate Manor Transportation",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Mt Ride LLC",
+      "phone": "(303) 648-1016"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Second Home LLC",
+      "phone": "(719) 375-8121"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Simple Non-Emergency Medical Transportation LLC",
+      "phone": "(720) 369-3991"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Lincoln",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Logan",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(970) 702-3438"
+    },
+    {
+      "county": "Logan",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(303) 357-2000"
+    },
+    {
+      "county": "Logan",
+      "providerName": "County Express Transportation",
+      "phone": "(970) 521-4857"
+    },
+    {
+      "county": "Logan",
+      "providerName": "Holyoke EMS",
+      "phone": "(970) 854-2241, Ext. 2073"
+    },
+    {
+      "county": "Logan",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Logan",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Logan",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Logan",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Logan",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Logan",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Logan",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Mesa",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(303) 357-2000"
+    },
+    {
+      "county": "Mesa",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Mesa",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Mesa",
+      "providerName": "Med Lift LLC",
+      "phone": "(970) 314-9511"
+    },
+    {
+      "county": "Mesa",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Mesa",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Mesa",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Mesa",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Mesa",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Mesa",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Mineral",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Mineral",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Mineral",
+      "providerName": "Mountain Valley Transit",
+      "phone": "(719) 530-8980"
+    },
+    {
+      "county": "Mineral",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Mineral",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Mineral",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Moffat",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(303) 357-2000"
+    },
+    {
+      "county": "Moffat",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Moffat",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Moffat",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Moffat",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Moffat",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Moffat",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Montezuma",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 466-5122"
+    },
+    {
+      "county": "Montezuma",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Montezuma",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Montezuma",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Montezuma",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Montezuma",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Montezuma",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Montezuma",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Montrose",
+      "providerName": "Med Lift LLC",
+      "phone": "(970) 314-9511"
+    },
+    {
+      "county": "Montrose",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Montrose",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Montrose",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Montrose",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Montrose",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 318-0344"
+    },
+    {
+      "county": "Montrose",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(970) 702-3438"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "County Express Transportation",
+      "phone": "(970) 521-4857"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "Delta Transport",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "Simple Non-Emergency Medical Transportation LLC",
+      "phone": "(720) 369-3991"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Morgan",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Otero",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Otero",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 316-1400"
+    },
+    {
+      "county": "Otero",
+      "providerName": "Barb's Transport \"A Little Bit of Sunshine\"",
+      "phone": "(719) 469-2838"
+    },
+    {
+      "county": "Otero",
+      "providerName": "Barentu Transport LLC",
+      "phone": "(719) 755-8510"
+    },
+    {
+      "county": "Otero",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Otero",
+      "providerName": "Golden Gate Manor Transportation",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Otero",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Otero",
+      "providerName": "Maguy Medical Transport",
+      "phone": "(720) 789-3777"
+    },
+    {
+      "county": "Otero",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Otero",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Otero",
+      "providerName": "Mt Ride LLC",
+      "phone": "(303) 648-1016"
+    },
+    {
+      "county": "Otero",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Otero",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Otero",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Otero",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Ouray",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Ouray",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Ouray",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Ouray",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Ouray",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Ouray",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Park",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(303) 357-2000"
+    },
+    {
+      "county": "Park",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Park",
+      "providerName": "Delta Transport",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "Park",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Park",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Park",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Park",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Park",
+      "providerName": "Mt Ride LLC",
+      "phone": "(303) 648-1016"
+    },
+    {
+      "county": "Park",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Park",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Park",
+      "providerName": "Teller Senior Coalition/TSC Transit",
+      "phone": "(719) 687-3330 ext 1007"
+    },
+    {
+      "county": "Park",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Phillips",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(970) 702-3438"
+    },
+    {
+      "county": "Phillips",
+      "providerName": "County Express Transportation",
+      "phone": "(970) 521-4857"
+    },
+    {
+      "county": "Phillips",
+      "providerName": "Holyoke EMS",
+      "phone": "(970) 854-2241, Ext. 2073"
+    },
+    {
+      "county": "Phillips",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Phillips",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Phillips",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Phillips",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Phillips",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Pitkin",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Pitkin",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Pitkin",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Pitkin",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Pitkin",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Pitkin",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(719) 316-1400"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "Barb's Transport \"A Little Bit of Sunshine\"",
+      "phone": "(719) 469-2838"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "Fremont County Transit",
+      "phone": "(719) 276-5200"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "Golden Gate Manor Transportation",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "Maguy Medical Transport",
+      "phone": "(720) 789-3777"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "Second Home LLC",
+      "phone": "(719) 375-8121"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Prowers",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(970) 702-3438"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Axel Medical Transportation",
+      "phone": "(719) 359-9999"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Barentu Transport LLC",
+      "phone": "(719) 755-8510"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Blue Skies Transportation",
+      "phone": "(719) 357-9070"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Delta Transport",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Elevate Care Transit LLC",
+      "phone": "(720) 295-1740 / (720) 499-6030"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Fremont County Transit",
+      "phone": "(719) 276-5200"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Golden Gate Manor Transportation",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Light Health Solutions",
+      "phone": "(719) 785-1717"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Londons Transportation LLC",
+      "phone": "(720) 324-0582"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Maguy Medical Transport",
+      "phone": "(720) 789-3777"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Mt Ride LLC",
+      "phone": "(303) 648-1016"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Royal Do Corp",
+      "phone": "(720) 404-1578"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Sarah Kare Ride LLC",
+      "phone": "(719) 661-8107"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Second Home LLC",
+      "phone": "(719) 375-8121"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Simple Non-Emergency Medical Transportation LLC",
+      "phone": "(720) 369-3991"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Simply Safe Transportation LLC",
+      "phone": "(719) 201-4281"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Total Care LLC",
+      "phone": "(719) 722-6157"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Total Care LLC",
+      "phone": "(719) 246-7678"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Transit To Care",
+      "phone": "(719) 644-6005"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Pueblo",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Rio Blanco",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Rio Blanco",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Rio Blanco",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Rio Blanco",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Rio Blanco",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Rio Blanco",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Rio Blanco",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Rio Grande",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Rio Grande",
+      "providerName": "Golden Gate Manor Transportation",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Rio Grande",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Rio Grande",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Rio Grande",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Rio Grande",
+      "providerName": "Mountain Valley Transit",
+      "phone": "(719) 530-8980"
+    },
+    {
+      "county": "Rio Grande",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Rio Grande",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Rio Grande",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Rio Grande",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Routt",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(303) 357-2000"
+    },
+    {
+      "county": "Routt",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Routt",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Routt",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Routt",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Routt",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Routt",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Routt",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Saguache",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Saguache",
+      "providerName": "Golden Gate Manor Transportation",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Saguache",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Saguache",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Saguache",
+      "providerName": "Mountain Valley Transit",
+      "phone": "(719) 530-8980"
+    },
+    {
+      "county": "Saguache",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Saguache",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Saguache",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "San Juan",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "San Juan",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "San Juan",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "San Juan",
+      "providerName": "SW Center for Independence",
+      "phone": "(970) 946-0232"
+    },
+    {
+      "county": "San Juan",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "San Juan",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "San Miguel",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "San Miguel",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "San Miguel",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "San Miguel",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "San Miguel",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "San Miguel",
+      "providerName": "Wilderness Journeys",
+      "phone": "(970) 731-4081"
+    },
+    {
+      "county": "Sedgwick",
+      "providerName": "County Express Transportation",
+      "phone": "(970) 521-4857"
+    },
+    {
+      "county": "Sedgwick",
+      "providerName": "Holyoke EMS",
+      "phone": "(970) 854-2241, Ext. 2073"
+    },
+    {
+      "county": "Sedgwick",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Sedgwick",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Sedgwick",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Sedgwick",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Sedgwick",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Summit",
+      "providerName": "Delta Transport",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "Summit",
+      "providerName": "High Mountain Taxi",
+      "phone": "(970) 925-2282"
+    },
+    {
+      "county": "Summit",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Summit",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Summit",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Summit",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Axel Medical Transportation",
+      "phone": "(719) 359-9999"
+    },
+    {
+      "county": "Teller",
+      "providerName": "AlphaMed",
+      "phone": "(719) 415-8482"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Barentu Transport LLC",
+      "phone": "(719) 755-8510"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Blue Skies Transportation",
+      "phone": "(719) 357-9070"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Brave Sisters Transportation LLC",
+      "phone": "(719) 877-5555"
+    },
+    {
+      "county": "Teller",
+      "providerName": "City Cab LLC",
+      "phone": "(719) 543-2525"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Delta Transport",
+      "phone": "(720) 338-8398"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Elevate Care Transit LLC",
+      "phone": "(720) 295-1740 / (720) 499-6030"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Golden Gate Manor Transportation",
+      "phone": "(719) 544-3231"
+    },
+    {
+      "county": "Teller",
+      "providerName": "LUKE LLC",
+      "phone": "(720) 503-7506"
+    },
+    {
+      "county": "Teller",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Mt Ride LLC",
+      "phone": "(303) 648-1016"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Sarah Kare Ride LLC",
+      "phone": "(719) 661-8107"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Second Home LLC",
+      "phone": "(719) 375-8121"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Simple Non-Emergency Medical Transportation LLC",
+      "phone": "(720) 369-3991"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Teller Senior Coalition/TSC Transit",
+      "phone": "(719) 687-3330 ext 1007"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Total Care LLC",
+      "phone": "(719) 722-6157 / (719) 246-7678"
+    },
+    {
+      "county": "Teller",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Washington",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(970) 702-3438"
+    },
+    {
+      "county": "Washington",
+      "providerName": "County Express Transportation",
+      "phone": "(970) 521-4857"
+    },
+    {
+      "county": "Washington",
+      "providerName": "Holyoke EMS",
+      "phone": "(970) 854-2241, Ext. 2073"
+    },
+    {
+      "county": "Washington",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Washington",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Washington",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Washington",
+      "providerName": "Ommega Transportation LLC",
+      "phone": "(720) 505-9709"
+    },
+    {
+      "county": "Washington",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Washington",
+      "providerName": "Simple Non-Emergency Medical Transportation LLC",
+      "phone": "(720) 369-3991"
+    },
+    {
+      "county": "Washington",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Washington",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    },
+    {
+      "county": "Weld",
+      "providerName": "Transdev",
+      "phone": "(855) 489-4999"
+    },
+    {
+      "county": "Yuma",
+      "providerName": "American Medical Response of Colorado Inc",
+      "phone": "(970) 702-3438"
+    },
+    {
+      "county": "Yuma",
+      "providerName": "County Express Transportation",
+      "phone": "(970) 521-4857"
+    },
+    {
+      "county": "Yuma",
+      "providerName": "Kareem Ride LLC",
+      "phone": "(303) 620-6553"
+    },
+    {
+      "county": "Yuma",
+      "providerName": "MedRide LLC",
+      "phone": "(719) 545-3333"
+    },
+    {
+      "county": "Yuma",
+      "providerName": "Met Transport",
+      "phone": "(719) 666-2618"
+    },
+    {
+      "county": "Yuma",
+      "providerName": "Peak Family Transport LLC",
+      "phone": "(719) 716-7325"
+    },
+    {
+      "county": "Yuma",
+      "providerName": "Sunshine Rides",
+      "phone": "(970) 777-7777"
+    },
+    {
+      "county": "Yuma",
+      "providerName": "Van with a Plan",
+      "phone": "(719) 723-4266"
+    }
+  ]
+}
