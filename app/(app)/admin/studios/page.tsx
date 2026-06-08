@@ -18,6 +18,7 @@ import { Building2, Plus, Sprout, Inbox } from "lucide-react";
 import { StudiosGatewayAccessRequestsSection } from "./StudiosGatewayAccessRequestsSection";
 import { DiscoveryInputsSection } from "@/components/admin/intelligence/salon/DiscoveryInputsSection";
 import { SalonPipelineOverview } from "./SalonPipelineOverview";
+import { SalonClearRuntimeAction } from "@/components/admin/runtime/SalonClearRuntimeAction";
 
 const card = {
   background: "white",
@@ -41,6 +42,9 @@ export default async function AdminStudiosPage() {
 
   return (
     <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-center justify-end">
+        <SalonClearRuntimeAction />
+      </div>
       <SalonPipelineOverview />
 
       <DiscoveryInputsSection />

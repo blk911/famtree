@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SalonClearRuntimeAction } from "@/components/admin/runtime/SalonClearRuntimeAction";
 import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
 import { MarketIntelPageShell } from "@/components/admin/MarketIntelPageShell";
 import { MarketsCandidateTable } from "@/components/admin/markets/MarketsCandidateTable";
@@ -100,11 +101,16 @@ export function MarketsHub({ solaStats, registry }: Props) {
     <MarketIntelPageShell>
       <MarketIntelChrome showVerticalFilters={false} showDiscoveryFlow={false} />
 
-      <h1 className="m-0 mb-1 text-xl font-extrabold text-stone-900 sm:text-[22px]">Markets</h1>
-      <p className="m-0 mb-2 text-sm leading-snug text-stone-500">
-        Unified operator registry across market sources. Source cards link to harvest/detail tools;
-        the table below is the primary workbench.
-      </p>
+      <div className="mb-2 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="m-0 mb-1 text-xl font-extrabold text-stone-900 sm:text-[22px]">Markets</h1>
+          <p className="m-0 text-sm leading-snug text-stone-500">
+            Unified operator registry across market sources. Source cards link to harvest/detail tools;
+            the table below is the primary workbench.
+          </p>
+        </div>
+        <SalonClearRuntimeAction />
+      </div>
       {registry ? (
         <p className="mb-4 text-xs text-stone-600">
           Registry: {registry.total} candidates · generated {new Date(registry.generatedAt).toLocaleString()}
