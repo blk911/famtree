@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { MarketsHub } from "@/components/admin/markets/MarketsHub";
+import { readMarketCandidatesArtifact } from "@/lib/markets/read-market-candidates";
 import { loadSolaMarketsHubStats } from "@/lib/operators/sources/sola/markets-hub-stats";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,10 @@ export default async function AdminMarketsPage() {
   if (!user) redirect("/login");
   if (!isAdmin(user.role)) redirect("/dashboard");
 
-  const solaStats = await loadSolaMarketsHubStats();
+  const [solaStats, registry] = await Promise.all([
+    loadSolaMarketsHubStats(),
+    readMarketCandidatesArtifact(),
+  ]);
 
-  return <MarketsHub solaStats={solaStats} />;
+  return <MarketsHub solaStats={solaStats} registry={registry} />;
 }

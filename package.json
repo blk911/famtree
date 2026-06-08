@@ -44,7 +44,8 @@
     "harvest:sola": "tsx scripts/run-sola-harvest.ts",
     "discover:sola": "tsx scripts/discover-sola-slugs.ts",
     "build:sola:resolver": "tsx scripts/build-sola-resolver-import.ts",
-    "export:sola:reviewed": "tsx scripts/export-sola-reviewed-targets.ts"
+    "export:sola:reviewed": "tsx scripts/export-sola-reviewed-targets.ts",
+    "build:markets": "tsx scripts/build-market-candidates.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1039.0",

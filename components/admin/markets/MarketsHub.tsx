@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { IntelligenceMarketNav } from "@/components/admin/IntelligenceMarketNav";
+import { MarketsCandidateTable } from "@/components/admin/markets/MarketsCandidateTable";
+import type { MarketCandidatesArtifact } from "@/lib/markets/types";
 import type { SolaMarketsHubStats } from "@/lib/operators/sources/sola/markets-hub-stats";
 
 const card = {
@@ -19,6 +21,7 @@ type SourceCard = {
 
 type Props = {
   solaStats: SolaMarketsHubStats;
+  registry: MarketCandidatesArtifact | null;
 };
 
 function SourceMarketCard({ title, subtitle, href, pipeline, stats }: SourceCard) {
@@ -36,9 +39,7 @@ function SourceMarketCard({ title, subtitle, href, pipeline, stats }: SourceCard
       <div style={{ fontSize: 16, fontWeight: 800, color: "#1c1917", marginBottom: 4 }}>{title}</div>
       <p style={{ fontSize: 12, color: "#78716c", margin: "0 0 12px", lineHeight: 1.5 }}>{subtitle}</p>
       {pipeline ? (
-        <p style={{ fontSize: 11, color: "#57534e", margin: "0 0 12px", lineHeight: 1.45 }}>
-          {pipeline}
-        </p>
+        <p style={{ fontSize: 11, color: "#57534e", margin: "0 0 12px", lineHeight: 1.45 }}>{pipeline}</p>
       ) : null}
       {stats && stats.length > 0 ? (
         <div
@@ -72,7 +73,9 @@ function SourceMarketCard({ title, subtitle, href, pipeline, stats }: SourceCard
   );
 }
 
-export function MarketsHub({ solaStats }: Props) {
+export function MarketsHub({ solaStats, registry }: Props) {
+  const solaRegistryCount = registry?.sources.sola?.count ?? 0;
+
   const sources: SourceCard[] = [
     {
       title: "Sola",
@@ -109,26 +112,41 @@ export function MarketsHub({ solaStats }: Props) {
   ];
 
   return (
-    <div style={{ padding: "28px 20px 60px", maxWidth: 960, margin: "0 auto" }}>
+    <div style={{ padding: "28px 20px 60px", maxWidth: 1320, margin: "0 auto" }}>
       <IntelligenceMarketNav />
 
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 6px" }}>Markets</h1>
-      <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 24px", lineHeight: 1.55 }}>
-        Source-specific operator markets and suite-directory harvests. Salon pipeline tools remain
-        under Salon / Client-Centric; directory sources like Sola live here.
+      <p style={{ fontSize: 13, color: "#78716c", margin: "0 0 8px", lineHeight: 1.55 }}>
+        Unified operator registry across market sources. Source cards link to harvest/detail tools;
+        the table below is the primary workbench.
       </p>
+      {registry ? (
+        <p style={{ fontSize: 12, color: "#57534e", margin: "0 0 24px" }}>
+          Registry: {registry.total} candidates · generated {new Date(registry.generatedAt).toLocaleString()}
+          {solaRegistryCount > 0 ? ` · Sola feed: ${solaRegistryCount}` : null}
+        </p>
+      ) : (
+        <p style={{ fontSize: 12, color: "#b45309", margin: "0 0 24px" }}>
+          No unified registry yet. Run <code>npm run build:markets</code>.
+        </p>
+      )}
 
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
           gap: 14,
+          marginBottom: 8,
         }}
       >
         {sources.map((source) => (
           <SourceMarketCard key={source.href} {...source} />
         ))}
       </div>
+
+      {registry && registry.candidates.length > 0 ? (
+        <MarketsCandidateTable candidates={registry.candidates} />
+      ) : null}
     </div>
   );
 }
