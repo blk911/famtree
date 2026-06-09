@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
+import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { ReportingIntelligenceNav } from "@/components/admin/intelligence/reporting/ReportingIntelligenceNav";
 import type {
   LiveOpportunityConfidence,
@@ -77,20 +77,9 @@ export function LiveOpportunityDecisionClient() {
 
   return (
     <div className="mx-auto w-full max-w-[1500px] px-4 pb-12 pt-5 sm:px-6 lg:px-8">
-      <MarketIntelChrome />
+      <TranspoIntelligenceNav currentTool="reporting-live-opportunities" />
 
       <header className="mb-2">
-        <div className="mb-2 text-xs text-stone-500">
-          <Link href="/admin/intelligence/transpo" className="font-semibold text-stone-600 no-underline hover:underline">
-            Intelligence
-          </Link>
-          <span className="mx-1">›</span>
-          <Link href="/admin/intelligence/reporting" className="font-semibold text-stone-600 no-underline hover:underline">
-            Reporting
-          </Link>
-          <span className="mx-1">›</span>
-          <span className="font-bold text-amber-800">Live Opportunities</span>
-        </div>
         <h1 className="m-0 text-xl font-extrabold text-stone-900 sm:text-[22px]">
           Live Opportunity Decision Engine
         </h1>

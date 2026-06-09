@@ -1,6 +1,7 @@
 // lib/intelligence/transpo/pipeline/transpo-pipeline-config.ts
 
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
+import { allServiceDeficitsNavItemIds } from "./service-deficits-nav-groups";
 
 export type TranspoPipelineStageId =
   | "discover"
@@ -62,7 +63,7 @@ export const TRANSPO_PIPELINE_STAGES: TranspoPipelineStageDef[] = [
     order: 5,
     label: "Service Deficits",
     description: "Need → payer → provider → coverage deficits.",
-    navItemIds: ["market-gaps", "service-deficits", "data-confidence", "opportunity-radar", "network-plays", "county-opportunities", "demand-generators", "provider-capacity", "missing-evidence", "opportunity-synthesis", "data-owners", "research-queue"],
+    navItemIds: allServiceDeficitsNavItemIds(),
     primaryHref: "/admin/intelligence/transpo/service-deficits",
     primaryActionLabel: "Open Service Deficits",
   },
@@ -83,6 +84,9 @@ export function pipelineStageForNavItem(navItemId: string): TranspoPipelineStage
 }
 
 export function pipelineStageForPathname(pathname: string): TranspoPipelineStageId {
+  if (pathname.startsWith("/admin/intelligence/reporting")) {
+    return "service_deficits";
+  }
   const sorted = [...transpoConfig.navItems].sort((a, b) => b.href.length - a.href.length);
   const match = sorted.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
   if (match) {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import { NextDocumentsToAcquire } from "@/components/admin/intelligence/reporting/NextDocumentsToAcquire";
+import { ReportingIntelligenceNav } from "@/components/admin/intelligence/reporting/ReportingIntelligenceNav";
 import type {
   ClosestPathTarget,
   ColoradoNemtWorkflowArtifact,
@@ -129,6 +130,8 @@ export function TranspoDataOwnersClient() {
         </p>
       </header>
 
+      <ReportingIntelligenceNav current="data-owners" />
+
       {error ? (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
           {error}
@@ -155,37 +158,6 @@ export function TranspoDataOwnersClient() {
       </div>
 
       <NextDocumentsToAcquire variant="compact" />
-
-      <section className="mb-4 rounded-xl border border-amber-200 bg-amber-50/50 p-4 shadow-sm">
-        <h2 className="m-0 text-sm font-extrabold text-amber-950">Live Opportunity Decision Engine</h2>
-        <p className="m-0 mt-1 text-xs text-amber-900/80">
-          Ranked decision surface — which document to pursue first and what answer it unlocks.
-        </p>
-        <Link
-          href="/admin/intelligence/reporting/live-opportunities"
-          className="mt-2 inline-block text-sm font-bold text-amber-900 no-underline hover:underline"
-        >
-          Open Live Opportunity Decision Engine →
-        </Link>
-      </section>
-
-      <section className="mb-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-stone-400">
-          Next Layer
-        </div>
-        <h2 className="m-0 mt-1 text-sm font-extrabold text-stone-900">
-          Required Reporting Registry
-        </h2>
-        <p className="m-0 mt-1 text-xs text-stone-600">
-          Contract-required reports, KPIs, audit findings, and failure metrics — without ride-level PHI.
-        </p>
-        <Link
-          href="/admin/intelligence/reporting"
-          className="mt-2 inline-block text-sm font-bold text-indigo-700 no-underline hover:underline"
-        >
-          Open Required Reporting Registry →
-        </Link>
-      </section>
 
       <section className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 shadow-sm">
         <h2 className="m-0 text-sm font-extrabold text-indigo-950">

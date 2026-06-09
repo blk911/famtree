@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
+import { ServiceDeficitsStartHere } from "@/components/admin/intelligence/transpo/ServiceDeficitsStartHere";
 import { DataSourceStatusBadge } from "@/components/admin/intelligence/transpo/DataSourceStatusBadge";
 import { ServiceDeficitDetailDrawer } from "@/components/admin/intelligence/transpo/ServiceDeficitDetailDrawer";
 import type { TranspoConfidenceGrade } from "@/lib/intelligence/transpo/data-confidence/data-confidence-types";
@@ -219,6 +220,8 @@ export default function TranspoServiceDeficitsPage() {
         </button>
         </div>
       </div>
+
+      <ServiceDeficitsStartHere />
 
       {error ? <div style={{ marginBottom: 16, fontSize: 12, color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "10px 12px" }}>{error}</div> : null}
 

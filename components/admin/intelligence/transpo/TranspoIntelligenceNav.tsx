@@ -7,6 +7,7 @@ import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
 import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import { TranspoPipelineHeader } from "@/components/admin/intelligence/transpo/TranspoPipelineHeader";
 import { TranspoClearRuntimeAction } from "@/components/admin/runtime/TranspoClearRuntimeAction";
+import { ServiceDeficitsGroupedNav } from "@/components/admin/intelligence/transpo/ServiceDeficitsGroupedNav";
 import { transpoConfig } from "@/lib/intelligence/verticals/transpo.config";
 import {
   pipelineStageDef,
@@ -48,8 +49,9 @@ export function TranspoIntelligenceNav({ currentTool, trailing }: Props) {
 
   const stageNavItems = useMemo(() => {
     const stage = pipelineStageDef(selectedStage);
-    const ids = new Set(stage.navItemIds);
-    return transpoConfig.navItems.filter((item) => ids.has(item.id));
+    const idOrder = stage.navItemIds;
+    const byId = new Map(transpoConfig.navItems.map((item) => [item.id, item]));
+    return idOrder.map((id) => byId.get(id)).filter((item): item is (typeof transpoConfig.navItems)[number] => !!item);
   }, [selectedStage]);
 
   function handleStageSelect(stage: TranspoPipelineStageId) {
@@ -85,40 +87,57 @@ export function TranspoIntelligenceNav({ currentTool, trailing }: Props) {
         </p>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: "100%" }}>
-        <div style={{
-          display: "inline-flex",
-          gap: 2,
-          flexWrap: "wrap",
-          alignItems: "center",
-          background: "#f5f4f2",
-          border: "1px solid #e7e5e4",
-          borderRadius: 10,
-          padding: "3px 4px",
-        }}>
-          {stageNavItems.map(({ id, label, href }) => {
-            const isActive = id === activeTool;
-            return (
-              <Link
-                key={id}
-                href={href}
-                style={{
-                  fontSize: 12,
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? "#1c1917" : "#78716c",
-                  background: isActive ? "#ffffff" : "transparent",
-                  border: isActive ? "1px solid #e2e0dc" : "1px solid transparent",
-                  borderRadius: 7,
-                  padding: "4px 11px",
-                  textDecoration: "none",
-                  whiteSpace: "nowrap",
-                  boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
-                }}
-              >
-                {label}
-              </Link>
-            );
-          })}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap", width: "100%" }}>
+        <div style={{ flex: "1 1 280px", minWidth: 0 }}>
+          {selectedStage === "service_deficits" ? (
+            <div
+              style={{
+                background: "#fafaf9",
+                border: "1px solid #e7e5e4",
+                borderRadius: 12,
+                padding: "10px 12px",
+              }}
+            >
+              <ServiceDeficitsGroupedNav activeTool={activeTool} />
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "inline-flex",
+                gap: 2,
+                flexWrap: "wrap",
+                alignItems: "center",
+                background: "#f5f4f2",
+                border: "1px solid #e7e5e4",
+                borderRadius: 10,
+                padding: "3px 4px",
+              }}
+            >
+              {stageNavItems.map(({ id, label, href }) => {
+                const isActive = id === activeTool;
+                return (
+                  <Link
+                    key={id}
+                    href={href}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: isActive ? 700 : 500,
+                      color: isActive ? "#1c1917" : "#78716c",
+                      background: isActive ? "#ffffff" : "transparent",
+                      border: isActive ? "1px solid #e2e0dc" : "1px solid transparent",
+                      borderRadius: 7,
+                      padding: "4px 11px",
+                      textDecoration: "none",
+                      whiteSpace: "nowrap",
+                      boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
+                    }}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
         <div
           style={{

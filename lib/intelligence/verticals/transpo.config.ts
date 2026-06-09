@@ -25,6 +25,11 @@ export const transpoConfig: VerticalConfig = {
     { id: "carrier-opportunities", label: "Carrier Opportunities", href: "/admin/intelligence/transpo/carrier-opportunities" },
     { id: "opportunity-synthesis", label: "Opportunities", href: "/admin/intelligence/transpo/opportunities" },
     { id: "data-owners", label: "Data Owners", href: "/admin/intelligence/transpo/data-owners" },
+    { id: "reporting-registry", label: "Reporting Registry", href: "/admin/intelligence/reporting" },
+    { id: "reporting-live-opportunities", label: "Live Opportunities", href: "/admin/intelligence/reporting/live-opportunities" },
+    { id: "reporting-live-targets", label: "Live Targets", href: "/admin/intelligence/reporting/live-targets" },
+    { id: "reporting-acquisition", label: "Acquisition", href: "/admin/intelligence/reporting/acquisition" },
+    { id: "reporting-signals", label: "Signals", href: "/admin/intelligence/reporting/signals" },
     { id: "qualified-targets", label: "Qualified Targets", href: "/admin/intelligence/transpo/qualified-targets" },
     { id: "market-dashboard", label: "Market Dashboard", href: "/admin/intelligence/transpo/market-dashboard" },
     { id: "market-gaps",      label: "Market Gaps",      href: "/admin/intelligence/transpo/market-gaps" },
@@ -45,7 +50,7 @@ export const transpoConfig: VerticalConfig = {
     { id: "prospects",       label: "Red Dots (deprecated)", href: "/admin/intelligence/transpo/prospects" },
   ],
 
-  enabledTools: ["source-ingest", "source-runs", "evidence", "resolver", "carriers", "verification", "carrier-opportunities", "opportunity-synthesis", "data-owners", "qualified-targets", "market-dashboard", "market-gaps", "service-deficits", "data-confidence", "opportunity-radar", "network-plays", "county-opportunities", "demand-generators", "provider-capacity", "missing-evidence", "research-queue", "provider-dossiers", "action-queue", "reviews", "storage-status", "harvest"],
+  enabledTools: ["source-ingest", "source-runs", "evidence", "resolver", "carriers", "verification", "carrier-opportunities", "opportunity-synthesis", "data-owners", "reporting-registry", "reporting-live-opportunities", "reporting-live-targets", "reporting-acquisition", "reporting-signals", "qualified-targets", "market-dashboard", "market-gaps", "service-deficits", "data-confidence", "opportunity-radar", "network-plays", "county-opportunities", "demand-generators", "provider-capacity", "missing-evidence", "research-queue", "provider-dossiers", "action-queue", "reviews", "storage-status", "harvest"],
 
   // Salon/personal-care tools are explicitly hidden from this vertical
   hiddenTools: [
