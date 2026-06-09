@@ -156,6 +156,19 @@ export function TranspoDataOwnersClient() {
 
       <NextDocumentsToAcquire variant="compact" />
 
+      <section className="mb-4 rounded-xl border border-amber-200 bg-amber-50/50 p-4 shadow-sm">
+        <h2 className="m-0 text-sm font-extrabold text-amber-950">Live Opportunity Decision Engine</h2>
+        <p className="m-0 mt-1 text-xs text-amber-900/80">
+          Ranked decision surface — which document to pursue first and what answer it unlocks.
+        </p>
+        <Link
+          href="/admin/intelligence/reporting/live-opportunities"
+          className="mt-2 inline-block text-sm font-bold text-amber-900 no-underline hover:underline"
+        >
+          Open Live Opportunity Decision Engine →
+        </Link>
+      </section>
+
       <section className="mb-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
         <div className="text-[10px] font-bold uppercase tracking-wide text-stone-400">
           Next Layer

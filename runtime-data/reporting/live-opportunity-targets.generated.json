@@ -1,0 +1,548 @@
+{
+  "generatedAt": "2026-06-09T14:53:14.980Z",
+  "total": 10,
+  "targets": [
+    {
+      "targetKey": "live:target:monthly-performance-report",
+      "rank": 1,
+      "targetName": "Monthly Performance Report",
+      "holder": "Colorado HCPF (NEMT program oversight)",
+      "targetType": "report",
+      "sourceReportTargetKey": "target:monthly-performance-report",
+      "acquisitionStatus": "request_ready",
+      "acquisitionMethod": "cora",
+      "expectedQuestionsAnswered": [
+        "How many trips were denied?",
+        "What were the denial reasons?",
+        "Were denials tied to provider availability?",
+        "Were complaints concentrated by month or region?",
+        "Did call center KPIs fail?",
+        "Were no-shows or cancellations abnormal?"
+      ],
+      "expectedFields": [
+        "trips requested",
+        "trips completed",
+        "trips denied",
+        "denial reason",
+        "no-shows",
+        "complaints per 1,000 trips",
+        "on-time pickup",
+        "call abandonment",
+        "call wait time"
+      ],
+      "expectedOpportunitySignals": [
+        "provider shortage",
+        "geographic service gap",
+        "dispatch failure",
+        "broker performance failure",
+        "complaint concentration"
+      ],
+      "evidenceBasis": [
+        "HCPF NEMT contract §5.10.2 requires monthly performance reporting to HCPF.",
+        "15 contract KPIs defined in kpi-registry (on-time pickup, call abandonment, denials).",
+        "75 incidents that risked recipients' health or safety were not investigated or reported to HCPF.",
+        "Extracted signal: Monthly report / claims audit shows denial activity — $291,600 paid for claims without proof rides occurred.",
+        "Extracted signal: Contract requires monthly reporting of trips denied by reason — acquisition of performance report would expose denial ac"
+      ],
+      "insightValue": 100,
+      "acquisitionDifficulty": 25,
+      "probabilityOfUsefulSignal": 95,
+      "decisionScore": 100,
+      "confidence": "high",
+      "nextAction": "Submit CORA request using tpl:cora-nemt-monthly-performance — request last 12 months of broker Monthly Performance Reports from HCPF.",
+      "whyItMatters": "Contract-required monthly report is the primary broker ledger for denials, no-shows, completion rates, and complaint volume — more valuable than county scoring for exposing real unmet demand.",
+      "requestTemplateKey": "tpl:cora-nemt-monthly-performance",
+      "sourceArtifacts": [
+        "runtime-data/reporting/report-targets.generated.json",
+        "runtime-data/reporting/kpi-registry.generated.json",
+        "runtime-data/reporting/audit-findings.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json",
+        "runtime-data/reporting/operational-stress-signals.generated.json"
+      ],
+      "generatedAt": "2026-06-09T14:53:14.980Z"
+    },
+    {
+      "targetKey": "live:target:monthly-dialysis-report",
+      "rank": 2,
+      "targetName": "Monthly Dialysis Report",
+      "holder": "Colorado HCPF (NEMT program oversight)",
+      "targetType": "report",
+      "sourceReportTargetKey": "target:monthly-dialysis-report",
+      "acquisitionStatus": "request_ready",
+      "acquisitionMethod": "cora",
+      "expectedQuestionsAnswered": [
+        "Which dialysis trips were late?",
+        "Were dialysis treatments missed due to transport?",
+        "Were failures recurring by region, provider, or month?",
+        "Are dialysis transport failures tied to scheduling or capacity?"
+      ],
+      "expectedFields": [
+        "dialysis trips",
+        "late dialysis pickups",
+        "missed dialysis transportation",
+        "no-shows",
+        "provider failure reasons",
+        "impacted locations"
+      ],
+      "expectedOpportunitySignals": [
+        "dialysis transport gap",
+        "recurring medical transport failure",
+        "high-acuity capacity shortage",
+        "provider reliability issue"
+      ],
+      "evidenceBasis": [
+        "HCPF NEMT contract §5.10.2 requires monthly performance reporting to HCPF.",
+        "15 contract KPIs defined in kpi-registry (on-time pickup, call abandonment, denials).",
+        "Monthly dialysis report must include missed treatments due to late delivery and provider no-shows — direct missed-care transport signal.",
+        "Extracted signal: Dialysis transport failures reported in contract-required monthly dialysis report — missed treatments due to late delive"
+      ],
+      "insightValue": 95,
+      "acquisitionDifficulty": 25,
+      "probabilityOfUsefulSignal": 90,
+      "decisionScore": 98,
+      "confidence": "high",
+      "nextAction": "Include Monthly Dialysis Report in the same CORA package as Monthly Performance Report (tpl:cora-nemt-monthly-performance).",
+      "whyItMatters": "Dialysis transport failures directly indicate high-acuity unmet medical transportation demand — missed treatments due to late or failed NEMT rides.",
+      "requestTemplateKey": "tpl:cora-nemt-monthly-performance",
+      "sourceArtifacts": [
+        "runtime-data/reporting/report-targets.generated.json",
+        "runtime-data/reporting/kpi-registry.generated.json",
+        "runtime-data/reporting/audit-findings.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json",
+        "runtime-data/reporting/operational-stress-signals.generated.json"
+      ],
+      "generatedAt": "2026-06-09T14:53:14.980Z"
+    },
+    {
+      "targetKey": "live:target:complaint-investigation-summaries",
+      "rank": 3,
+      "targetName": "Complaint Investigation Summaries",
+      "holder": "Health Solutions by Transdev (IntelliRide) via HCPF",
+      "targetType": "complaint_records",
+      "sourceReportTargetKey": "target:complaint-investigation-summaries",
+      "acquisitionStatus": "request_ready",
+      "acquisitionMethod": "cora",
+      "expectedQuestionsAnswered": [
+        "What are members complaining about?",
+        "Are complaints about no-shows, late pickups, scheduling, driver behavior, or fraud?",
+        "Which counties/providers appear repeatedly?",
+        "How many complaints remain unresolved?"
+      ],
+      "expectedFields": [
+        "complaint date",
+        "complaint category",
+        "county",
+        "provider if disclosed",
+        "resolution status",
+        "investigation outcome"
+      ],
+      "expectedOpportunitySignals": [
+        "complaint spike",
+        "recurring provider failure",
+        "unresolved service failure",
+        "dispatch/scheduling bottleneck"
+      ],
+      "evidenceBasis": [
+        "OSA 2021 audit: 68% of broker complaints unresolved during audit period.",
+        "68 percent of complaints filed with the contractor went unresolved during the audit period.",
+        "68 percent of complaints filed with the contractor went unresolved during the audit period.",
+        "Department did not ensure contractor complied with requirements for on-time pickups, timely call answering, and complaint resolution.",
+        "Extracted signal: Audit documented 68% of broker complaints unresolved — complaint volume elevated with systemic resolution failure."
+      ],
+      "insightValue": 90,
+      "acquisitionDifficulty": 30,
+      "probabilityOfUsefulSignal": 85,
+      "decisionScore": 96,
+      "confidence": "high",
+      "nextAction": "Submit CORA request using tpl:cora-nemt-complaints for broker complaint investigation summaries.",
+      "whyItMatters": "Complaint investigation summaries reveal what members are actually experiencing — no-shows, late pickups, scheduling failures — and which providers or counties repeat.",
+      "requestTemplateKey": "tpl:cora-nemt-complaints",
+      "sourceArtifacts": [
+        "runtime-data/reporting/report-targets.generated.json",
+        "runtime-data/reporting/kpi-registry.generated.json",
+        "runtime-data/reporting/audit-findings.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json",
+        "runtime-data/reporting/operational-stress-signals.generated.json"
+      ],
+      "generatedAt": "2026-06-09T14:53:14.980Z"
+    },
+    {
+      "targetKey": "live:target:nemt-complaint-intake-records",
+      "rank": 4,
+      "targetName": "NEMT Member Feedback/Complaint Intake Records",
+      "holder": "HCPF NEMT Member Feedback / Complaint Program",
+      "targetType": "complaint_records",
+      "sourceReportTargetKey": "target:nemt-complaint-intake-records",
+      "acquisitionStatus": "request_ready",
+      "acquisitionMethod": "cora",
+      "expectedQuestionsAnswered": [
+        "What are members complaining about?",
+        "Are complaints about no-shows, late pickups, scheduling, driver behavior, or fraud?",
+        "Which counties/providers appear repeatedly?",
+        "How many complaints remain unresolved?"
+      ],
+      "expectedFields": [
+        "complaint date",
+        "complaint category",
+        "county",
+        "provider if disclosed",
+        "resolution status",
+        "investigation outcome"
+      ],
+      "expectedOpportunitySignals": [
+        "complaint spike",
+        "recurring provider failure",
+        "unresolved service failure",
+        "dispatch/scheduling bottleneck"
+      ],
+      "evidenceBasis": [
+        "OSA 2021 audit: 68% of broker complaints unresolved during audit period.",
+        "68 percent of complaints filed with the contractor went unresolved during the audit period.",
+        "68 percent of complaints filed with the contractor went unresolved during the audit period.",
+        "Department did not ensure contractor complied with requirements for on-time pickups, timely call answering, and complaint resolution.",
+        "Extracted signal: Audit documented 68% of broker complaints unresolved — complaint volume elevated with systemic resolution failure."
+      ],
+      "insightValue": 90,
+      "acquisitionDifficulty": 30,
+      "probabilityOfUsefulSignal": 85,
+      "decisionScore": 95,
+      "confidence": "high",
+      "nextAction": "Submit CORA request using tpl:cora-nemt-complaints for aggregate NEMT member feedback intake statistics.",
+      "whyItMatters": "HCPF complaint intake records capture member-reported failures before broker investigation — aggregate volume by category and county exposes service stress.",
+      "requestTemplateKey": "tpl:cora-nemt-complaints",
+      "sourceArtifacts": [
+        "runtime-data/reporting/report-targets.generated.json",
+        "runtime-data/reporting/kpi-registry.generated.json",
+        "runtime-data/reporting/audit-findings.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json",
+        "runtime-data/reporting/operational-stress-signals.generated.json"
+      ],
+      "generatedAt": "2026-06-09T14:53:14.980Z"
+    },
+    {
+      "targetKey": "live:target:corrective-action-plans",
+      "rank": 5,
+      "targetName": "Corrective Action Plans",
+      "holder": "Colorado HCPF (contract oversight)",
+      "targetType": "corrective_action",
+      "sourceReportTargetKey": "target:corrective-action-plans",
+      "acquisitionStatus": "identified",
+      "acquisitionMethod": "cora",
+      "expectedQuestionsAnswered": [
+        "What KPI failures triggered corrective action?",
+        "What remediation was required?",
+        "Were prior audit findings addressed?"
+      ],
+      "expectedFields": [
+        "corrective action date",
+        "failure type",
+        "remediation deadline",
+        "repeat violations"
+      ],
+      "expectedOpportunitySignals": [
+        "corrective action issued",
+        "repeat KPI failure",
+        "broker compliance gap"
+      ],
+      "evidenceBasis": [
+        "2021 OSA NEMT audit documents systemic broker underperformance — live reports needed."
+      ],
+      "insightValue": 85,
+      "acquisitionDifficulty": 35,
+      "probabilityOfUsefulSignal": 75,
+      "decisionScore": 29,
+      "confidence": "medium",
+      "nextAction": "Add corrective action plans to CORA complaint/performance request package.",
+      "whyItMatters": "Corrective actions document confirmed KPI failures and mandated remediation — evidence of systemic broker underperformance.",
+      "sourceArtifacts": [
+        "runtime-data/reporting/report-targets.generated.json",
+        "runtime-data/reporting/kpi-registry.generated.json",
+        "runtime-data/reporting/audit-findings.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json",
+        "runtime-data/reporting/operational-stress-signals.generated.json"
+      ],
+      "generatedAt": "2026-06-09T14:53:14.980Z"
+    },
+    {
+      "targetKey": "live:target:audit-follow-up-reports",
+      "rank": 6,
+      "targetName": "Audit Follow-Up Reports",
+      "holder": "Colorado Office of the State Auditor / HCPF",
+      "targetType": "audit",
+      "sourceReportTargetKey": "target:audit-follow-up-reports",
+      "acquisitionStatus": "identified",
+      "acquisitionMethod": "state_records_request",
+      "expectedQuestionsAnswered": [
+        "Were OSA audit recommendations implemented?",
+        "Did complaint resolution rates improve?",
+        "Are incident reporting gaps closed?"
+      ],
+      "expectedFields": [
+        "corrective action status",
+        "updated complaint metrics",
+        "repeat findings"
+      ],
+      "expectedOpportunitySignals": [
+        "unresolved audit finding",
+        "repeat compliance failure"
+      ],
+      "evidenceBasis": [
+        "2021 OSA NEMT audit documents systemic broker underperformance — live reports needed."
+      ],
+      "insightValue": 75,
+      "acquisitionDifficulty": 25,
+      "probabilityOfUsefulSignal": 65,
+      "decisionScore": 24,
+      "confidence": "medium",
+      "nextAction": "State records request to OSA or HCPF for NEMT audit follow-up status.",
+      "whyItMatters": "Follow-up reports would show whether 2021 OSA audit corrective actions reduced complaint and incident failures.",
+      "sourceArtifacts": [
+        "runtime-data/reporting/report-targets.generated.json",
+        "runtime-data/reporting/kpi-registry.generated.json",
+        "runtime-data/reporting/audit-findings.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json",
+        "runtime-data/reporting/operational-stress-signals.generated.json"
+      ],
+      "generatedAt": "2026-06-09T14:53:14.980Z"
+    },
+    {
+      "targetKey": "live:target:provider-adequacy-reviews",
+      "rank": 7,
+      "targetName": "Provider Adequacy Reviews",
+      "holder": "Colorado HCPF (NEMT program oversight)",
+      "targetType": "provider_adequacy",
+      "sourceReportTargetKey": "target:provider-adequacy-reviews",
+      "acquisitionStatus": "identified",
+      "acquisitionMethod": "cora",
+      "expectedQuestionsAnswered": [
+        "Where is provider network inadequate?",
+        "How many denials cite no provider available?",
+        "Which counties have wheelchair or ambulance shortages?"
+      ],
+      "expectedFields": [
+        "denials by reason",
+        "provider count by county",
+        "no-show rate by provider",
+        "mode availability"
+      ],
+      "expectedOpportunitySignals": [
+        "provider shortage",
+        "geographic service gap",
+        "wheelchair capacity gap"
+      ],
+      "evidenceBasis": [
+        "HCPF NEMT contract §5.10.2 requires monthly performance reporting to HCPF.",
+        "15 contract KPIs defined in kpi-registry (on-time pickup, call abandonment, denials)."
+      ],
+      "insightValue": 80,
+      "acquisitionDifficulty": 35,
+      "probabilityOfUsefulSignal": 70,
+      "decisionScore": 21,
+      "confidence": "medium",
+      "nextAction": "Request provider adequacy section within Monthly Performance Report CORA package.",
+      "whyItMatters": "Provider adequacy sections expose no-provider-available denials and county-level network gaps.",
+      "requestTemplateKey": "tpl:cora-nemt-monthly-performance",
+      "sourceArtifacts": [
+        "runtime-data/reporting/report-targets.generated.json",
+        "runtime-data/reporting/kpi-registry.generated.json",
+        "runtime-data/reporting/audit-findings.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json",
+        "runtime-data/reporting/operational-stress-signals.generated.json"
+      ],
+      "generatedAt": "2026-06-09T14:53:14.980Z"
+    },
+    {
+      "targetKey": "live:target:osa-nemt-audit-2021",
+      "rank": 8,
+      "targetName": "Medicaid NEMT Performance Audit (2021)",
+      "holder": "Colorado Office of the State Auditor",
+      "targetType": "audit",
+      "sourceReportTargetKey": "target:osa-nemt-audit-2021",
+      "acquisitionStatus": "extracted",
+      "acquisitionMethod": "public_download",
+      "expectedQuestionsAnswered": [
+        "What failure rates did the 2021 audit document?",
+        "What corrective actions were required?"
+      ],
+      "expectedFields": [
+        "complaints unresolved %",
+        "incidents unreported",
+        "noncompliant claims $"
+      ],
+      "expectedOpportunitySignals": [
+        "complaint spike",
+        "incident reporting gap",
+        "claims without ride proof"
+      ],
+      "evidenceBasis": [
+        "68 percent of complaints filed with the contractor went unresolved during the audit period.",
+        "75 incidents that risked recipients' health or safety were not investigated or reported to HCPF.",
+        "HCPF paid $291,600 for claims that did not comply with federal and state requirements, including claims without proof rides occurred."
+      ],
+      "insightValue": 80,
+      "acquisitionDifficulty": 5,
+      "probabilityOfUsefulSignal": 80,
+      "decisionScore": 14,
+      "confidence": "high",
+      "nextAction": "Use as evidence basis — pursue Monthly Performance Report for current operational metrics.",
+      "whyItMatters": "Already acquired — 68% complaints unresolved, 75 unreported incidents. Reference baseline; live monthly reports needed for current state.",
+      "sourceArtifacts": [
+        "runtime-data/reporting/report-targets.generated.json",
+        "runtime-data/reporting/kpi-registry.generated.json",
+        "runtime-data/reporting/audit-findings.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json",
+        "runtime-data/reporting/operational-stress-signals.generated.json"
+      ],
+      "generatedAt": "2026-06-09T14:53:14.980Z"
+    },
+    {
+      "targetKey": "live:target:rac-audit-findings",
+      "rank": 9,
+      "targetName": "Post-Payment Audit Finding Letters (NEMT)",
+      "holder": "Health Management Systems (Colorado Medicaid RAC)",
+      "targetType": "audit",
+      "sourceReportTargetKey": "target:rac-audit-findings",
+      "acquisitionStatus": "identified",
+      "acquisitionMethod": "cora",
+      "expectedQuestionsAnswered": [
+        "How many NEMT claims lacked ride proof?",
+        "Which providers had billing compliance failures?"
+      ],
+      "expectedFields": [
+        "noncompliant claim count",
+        "overpayment amount",
+        "provider name",
+        "finding type"
+      ],
+      "expectedOpportunitySignals": [
+        "claims without ride proof",
+        "billing compliance failure"
+      ],
+      "evidenceBasis": [
+        "2021 OSA NEMT audit documents systemic broker underperformance — live reports needed."
+      ],
+      "insightValue": 70,
+      "acquisitionDifficulty": 40,
+      "probabilityOfUsefulSignal": 55,
+      "decisionScore": 0,
+      "confidence": "low",
+      "nextAction": "CORA request using tpl:cora-nemt-rac-audits for aggregate NEMT RAC findings.",
+      "whyItMatters": "RAC findings may reveal claims paid without proof of ride — indirect signal of completion and denial patterns.",
+      "requestTemplateKey": "tpl:cora-nemt-rac-audits",
+      "sourceArtifacts": [
+        "runtime-data/reporting/report-targets.generated.json",
+        "runtime-data/reporting/kpi-registry.generated.json",
+        "runtime-data/reporting/audit-findings.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json",
+        "runtime-data/reporting/operational-stress-signals.generated.json"
+      ],
+      "generatedAt": "2026-06-09T14:53:14.980Z"
+    },
+    {
+      "targetKey": "live:target:hcpf-nemt-contract",
+      "rank": 10,
+      "targetName": "HCPF NEMT Broker Contract (reporting requirements)",
+      "holder": "Colorado HCPF",
+      "targetType": "contract_kpi",
+      "sourceReportTargetKey": "target:hcpf-nemt-contract",
+      "acquisitionStatus": "extracted",
+      "acquisitionMethod": "public_download",
+      "expectedQuestionsAnswered": [
+        "What KPIs must the broker report monthly?",
+        "What denial and dialysis fields are contractually required?"
+      ],
+      "expectedFields": [
+        "on-time pickup target",
+        "call abandonment target",
+        "monthly report schema"
+      ],
+      "expectedOpportunitySignals": [
+        "contract KPI baseline",
+        "reporting requirement mapped"
+      ],
+      "evidenceBasis": [
+        "2021 OSA NEMT audit documents systemic broker underperformance — live reports needed."
+      ],
+      "insightValue": 70,
+      "acquisitionDifficulty": 5,
+      "probabilityOfUsefulSignal": 65,
+      "decisionScore": 0,
+      "confidence": "high",
+      "nextAction": "Reference for CORA request field list — acquire actual monthly submissions.",
+      "whyItMatters": "Already acquired — defines KPI baselines and monthly report schema. Not live operational data.",
+      "sourceArtifacts": [
+        "runtime-data/reporting/report-targets.generated.json",
+        "runtime-data/reporting/kpi-registry.generated.json",
+        "runtime-data/reporting/audit-findings.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json",
+        "runtime-data/reporting/operational-stress-signals.generated.json"
+      ],
+      "generatedAt": "2026-06-09T14:53:14.980Z"
+    }
+  ],
+  "startHere": [
+    {
+      "rank": 1,
+      "targetKey": "live:target:monthly-performance-report",
+      "targetName": "Monthly Performance Report",
+      "whyItMatters": "Contract-required monthly report is the primary broker ledger for denials, no-shows, completion rates, and complaint volume — more valuable than county scoring for exposing real unmet demand.",
+      "whatItUnlocks": [
+        "provider shortage",
+        "geographic service gap",
+        "dispatch failure",
+        "broker performance failure",
+        "complaint concentration"
+      ],
+      "acquisitionStatus": "request_ready",
+      "requestTemplateKey": "tpl:cora-nemt-monthly-performance",
+      "decisionScore": 100
+    },
+    {
+      "rank": 2,
+      "targetKey": "live:target:monthly-dialysis-report",
+      "targetName": "Monthly Dialysis Report",
+      "whyItMatters": "Dialysis transport failures directly indicate high-acuity unmet medical transportation demand — missed treatments due to late or failed NEMT rides.",
+      "whatItUnlocks": [
+        "dialysis transport gap",
+        "recurring medical transport failure",
+        "high-acuity capacity shortage",
+        "provider reliability issue"
+      ],
+      "acquisitionStatus": "request_ready",
+      "requestTemplateKey": "tpl:cora-nemt-monthly-performance",
+      "decisionScore": 98
+    },
+    {
+      "rank": 3,
+      "targetKey": "live:target:complaint-investigation-summaries",
+      "targetName": "Complaint Investigation Summaries",
+      "whyItMatters": "Complaint investigation summaries reveal what members are actually experiencing — no-shows, late pickups, scheduling failures — and which providers or counties repeat.",
+      "whatItUnlocks": [
+        "complaint spike",
+        "recurring provider failure",
+        "unresolved service failure",
+        "dispatch/scheduling bottleneck"
+      ],
+      "acquisitionStatus": "request_ready",
+      "requestTemplateKey": "tpl:cora-nemt-complaints",
+      "decisionScore": 96
+    }
+  ],
+  "summary": {
+    "requestReady": 4,
+    "acquired": 0,
+    "extracted": 2,
+    "highConfidence": 6,
+    "topThree": [
+      "Monthly Performance Report",
+      "Monthly Dialysis Report",
+      "Complaint Investigation Summaries"
+    ],
+    "topDecisionScore": 100,
+    "byAcquisitionMethod": {
+      "cora": 7,
+      "state_records_request": 1,
+      "public_download": 2
+    }
+  }
+}

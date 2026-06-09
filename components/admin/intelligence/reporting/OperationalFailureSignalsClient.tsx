@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
+import { ReportingIntelligenceNav } from "@/components/admin/intelligence/reporting/ReportingIntelligenceNav";
 import type {
   ExtractedMetric,
   FailureSignal,
@@ -118,21 +119,9 @@ export function OperationalFailureSignalsClient() {
         <p className="m-0 mt-1 max-w-3xl text-sm text-stone-500">
           Measurable operational failures extracted from acquired reports — evidence-backed, not inferred demand.
         </p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <Link
-            href="/admin/intelligence/reporting/acquisition"
-            className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-800 no-underline hover:bg-indigo-100"
-          >
-            ← Acquisition engine
-          </Link>
-          <Link
-            href="/admin/intelligence/transpo/opportunities"
-            className="rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-bold text-stone-700 no-underline hover:bg-stone-50"
-          >
-            Transpo opportunities
-          </Link>
-        </div>
       </header>
+
+      <ReportingIntelligenceNav current="signals" />
 
       {error ? (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">

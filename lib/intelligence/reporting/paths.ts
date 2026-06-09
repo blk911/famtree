@@ -82,3 +82,8 @@ export const REPORT_TARGET_STATE_PATH = path.join(
   REPORTING_DATA_DIR,
   "report-target-state.json",
 );
+
+export const LIVE_OPPORTUNITY_TARGETS_ARTIFACT_PATH = path.join(
+  REPORTING_DATA_DIR,
+  "live-opportunity-targets.generated.json",
+);

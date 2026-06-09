@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
+import { ReportingIntelligenceNav } from "@/components/admin/intelligence/reporting/ReportingIntelligenceNav";
 import type {
   AcquisitionWorkflowStage,
   ReportTarget,
@@ -149,6 +150,8 @@ export function LiveReportTargetsClient() {
           Prioritized acquisition queue — what report, who has it, how to get it, what value it unlocks.
         </p>
       </header>
+
+      <ReportingIntelligenceNav current="live-targets" />
 
       {error ? (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">

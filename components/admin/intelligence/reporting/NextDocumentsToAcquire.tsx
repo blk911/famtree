@@ -61,12 +61,20 @@ export function NextDocumentsToAcquire({ variant = "full" }: NextDocumentsToAcqu
               : `${requestReadyCount} request-ready · denial counts, no-shows, missed dialysis, complaint volume`}
           </p>
         </div>
-        <Link
-          href="/admin/intelligence/reporting/live-targets"
-          className="shrink-0 rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-bold text-amber-900 no-underline hover:bg-amber-50"
-        >
-          Live targets →
-        </Link>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Link
+            href="/admin/intelligence/reporting/live-opportunities"
+            className="rounded-full border border-amber-400 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-950 no-underline hover:bg-amber-200"
+          >
+            Decision engine →
+          </Link>
+          <Link
+            href="/admin/intelligence/reporting/live-targets"
+            className="rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-bold text-amber-900 no-underline hover:bg-amber-50"
+          >
+            Live targets
+          </Link>
+        </div>
       </div>
 
       {variant === "full" ? (
