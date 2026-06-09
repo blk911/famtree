@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
 import type {
@@ -151,6 +152,24 @@ export function TranspoDataOwnersClient() {
           </div>
         ))}
       </div>
+
+      <section className="mb-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
+        <div className="text-[10px] font-bold uppercase tracking-wide text-stone-400">
+          Next Layer
+        </div>
+        <h2 className="m-0 mt-1 text-sm font-extrabold text-stone-900">
+          Required Reporting Registry
+        </h2>
+        <p className="m-0 mt-1 text-xs text-stone-600">
+          Contract-required reports, KPIs, audit findings, and failure metrics — without ride-level PHI.
+        </p>
+        <Link
+          href="/admin/intelligence/reporting"
+          className="mt-2 inline-block text-sm font-bold text-indigo-700 no-underline hover:underline"
+        >
+          Open Required Reporting Registry →
+        </Link>
+      </section>
 
       <section className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 shadow-sm">
         <h2 className="m-0 text-sm font-extrabold text-indigo-950">

@@ -1,0 +1,87 @@
+{
+  "generatedAt": "2026-06-09T13:25:30.881Z",
+  "total": 7,
+  "findings": [
+    {
+      "findingKey": "co:osa:2021-complaints-unresolved",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "auditName": "Medicaid Non-Emergent Medical Transportation Performance Audit",
+      "auditDate": "2021-09",
+      "severity": "critical",
+      "finding": "68 percent of complaints filed with the contractor went unresolved during the audit period.",
+      "correctiveAction": "OSA recommended HCPF ensure contractor tracks, resolves, and reports complaints and incidents.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "confidence": "high"
+    },
+    {
+      "findingKey": "co:osa:2021-safety-incidents-unreported",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "auditName": "Medicaid Non-Emergent Medical Transportation Performance Audit",
+      "auditDate": "2021-09",
+      "severity": "critical",
+      "finding": "75 incidents that risked recipients' health or safety were not investigated or reported to HCPF.",
+      "correctiveAction": "Contract requires incident reports within 1 business day — audit found systemic under-reporting.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "confidence": "high"
+    },
+    {
+      "findingKey": "co:osa:2021-noncompliant-claims-paid",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "auditName": "Medicaid Non-Emergent Medical Transportation Performance Audit",
+      "auditDate": "2021-09",
+      "severity": "high",
+      "finding": "HCPF paid $291,600 for claims that did not comply with federal and state requirements, including claims without proof rides occurred.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
+      "confidence": "high"
+    },
+    {
+      "findingKey": "co:osa:2021-potentially-noncompliant-claims",
+      "entityName": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "ownershipKey": "co:hcpf",
+      "auditName": "Medicaid Non-Emergent Medical Transportation Performance Audit",
+      "auditDate": "2021-09",
+      "severity": "medium",
+      "finding": "Approximately $5.2 million in claims were potentially noncompliant, including taxi claims at incorrect rates.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
+      "confidence": "high"
+    },
+    {
+      "findingKey": "co:osa:2021-mistreatment-unreported",
+      "entityName": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "ownershipKey": "co:hcpf",
+      "auditName": "Medicaid Non-Emergent Medical Transportation Performance Audit",
+      "auditDate": "2021-09",
+      "severity": "critical",
+      "finding": "32 acts of potential mistreatment of at-risk adults during NEMT rides were not reported to law enforcement as required.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "confidence": "high"
+    },
+    {
+      "findingKey": "co:osa:2021-contract-compliance-gaps",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "auditName": "Medicaid Non-Emergent Medical Transportation Performance Audit",
+      "auditDate": "2021-09",
+      "severity": "high",
+      "finding": "Department did not ensure contractor complied with requirements for on-time pickups, timely call answering, and complaint resolution.",
+      "correctiveAction": "Ensure NEMT contractor meets reliable transportation and customer service requirements; assess member satisfaction.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "confidence": "high"
+    },
+    {
+      "findingKey": "co:osa:2021-intelliride-corrective-action-stated",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "auditName": "Medicaid Non-Emergent Medical Transportation Performance Audit",
+      "auditDate": "2021-09",
+      "severity": "medium",
+      "finding": "IntelliRide publicly acknowledged audit findings and stated corrective actions were underway.",
+      "correctiveAction": "Transdev/IntelliRide committed to corrective action in all areas of concern per public statement.",
+      "sourceUrl": "https://coloradonewsline.com/2021/09/29/medicaid-audit-non-emergency-medical-transportation/",
+      "confidence": "medium"
+    }
+  ]
+}

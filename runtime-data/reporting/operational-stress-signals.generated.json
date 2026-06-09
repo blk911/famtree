@@ -1,0 +1,223 @@
+{
+  "generatedAt": "2026-06-09T13:25:30.881Z",
+  "total": 10,
+  "signals": [
+    {
+      "signalKey": "stress:co:osa:2021-complaints-unresolved",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "signalType": "complaint_pattern",
+      "severity": "critical",
+      "summary": "68 percent of complaints filed with the contractor went unresolved during the audit period.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "confidence": "high"
+    },
+    {
+      "signalKey": "stress:co:osa:2021-safety-incidents-unreported",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "signalType": "reporting_gap",
+      "severity": "critical",
+      "summary": "75 incidents that risked recipients' health or safety were not investigated or reported to HCPF.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "confidence": "high"
+    },
+    {
+      "signalKey": "stress:co:osa:2021-noncompliant-claims-paid",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "signalType": "audit_failure",
+      "severity": "high",
+      "summary": "HCPF paid $291,600 for claims that did not comply with federal and state requirements, including claims without proof rides occurred.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
+      "confidence": "high"
+    },
+    {
+      "signalKey": "stress:co:osa:2021-potentially-noncompliant-claims",
+      "entityName": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "ownershipKey": "co:hcpf",
+      "signalType": "audit_failure",
+      "severity": "medium",
+      "summary": "Approximately $5.2 million in claims were potentially noncompliant, including taxi claims at incorrect rates.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
+      "confidence": "high"
+    },
+    {
+      "signalKey": "stress:co:osa:2021-mistreatment-unreported",
+      "entityName": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "ownershipKey": "co:hcpf",
+      "signalType": "audit_failure",
+      "severity": "critical",
+      "summary": "32 acts of potential mistreatment of at-risk adults during NEMT rides were not reported to law enforcement as required.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "confidence": "high"
+    },
+    {
+      "signalKey": "stress:co:osa:2021-contract-compliance-gaps",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "signalType": "complaint_pattern",
+      "severity": "high",
+      "summary": "Department did not ensure contractor complied with requirements for on-time pickups, timely call answering, and complaint resolution.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "confidence": "high"
+    },
+    {
+      "signalKey": "stress:co:osa:2021-intelliride-corrective-action-stated",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "signalType": "audit_failure",
+      "severity": "medium",
+      "summary": "IntelliRide publicly acknowledged audit findings and stated corrective actions were underway.",
+      "sourceUrl": "https://coloradonewsline.com/2021/09/29/medicaid-audit-non-emergency-medical-transportation/",
+      "confidence": "medium"
+    },
+    {
+      "signalKey": "stress:co:transdev:contract-denials-reported",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "signalType": "missed_kpi",
+      "severity": "medium",
+      "summary": "Contract requires monthly reporting of trip denials and no-shows — key unmet-demand proxy without PHI if obtained via CORA/contract.",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high"
+    },
+    {
+      "signalKey": "stress:co:transdev:dialysis-missed-treatments",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "signalType": "missed_kpi",
+      "severity": "high",
+      "summary": "Monthly dialysis report must include missed treatments due to late delivery and provider no-shows — direct missed-care transport signal.",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high"
+    },
+    {
+      "signalKey": "stress:co:nemt-complaints:no-show-category",
+      "entityName": "HCPF NEMT Member Feedback / Complaint Program",
+      "ownershipKey": "co:nemt-complaints",
+      "signalType": "complaint_pattern",
+      "severity": "medium",
+      "summary": "Public complaint form includes Driver Issue (No Show/Late/Unsafe) — aggregate complaint data not published but intake exists.",
+      "sourceUrl": "https://hcpfccc.my.salesforce-sites.com/NEMTWebform",
+      "confidence": "medium"
+    }
+  ],
+  "closestPathToFailureMetrics": [
+    {
+      "rank": 1,
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "metricSource": "Monthly Performance Report — denials, no-shows, dialysis summary",
+      "rationale": "Colorado NEMT broker contract §5.10.2 requires monthly reporting of trips denied, provider no-shows, missed/late dialysis appointments, and complaints per 1,000 trips — the closest contractually mandated failure metrics without ride-level PHI.",
+      "failureSignals": [
+        "unmet demand (denials)",
+        "provider no-shows",
+        "missed dialysis transportation",
+        "complaint rate"
+      ],
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "entityName": "Colorado Office of the State Auditor",
+      "ownershipKey": "co:osa",
+      "metricSource": "2021 NEMT Performance Audit (public)",
+      "rationale": "OSA audit documents measured failure rates: 68% unresolved complaints, 75 unreported safety incidents, and noncompliant claim payments — evidence-backed baseline of broker stress without PHI.",
+      "failureSignals": [
+        "complaint resolution failure",
+        "incident reporting gap",
+        "billing without ride proof"
+      ],
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "metricSource": "Monthly Dialysis Report (contract §5.10.2.1.5)",
+      "rationale": "Contract mandates late-delivery time bands and count of missed dialysis treatments due to transport — direct bottleneck signal for recurring medical transport.",
+      "failureSignals": [
+        "transport delays",
+        "missed dialysis appointments",
+        "provider no-shows"
+      ],
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "entityName": "HCPF NEMT Member Feedback / Complaint Program",
+      "ownershipKey": "co:nemt-complaints",
+      "metricSource": "NEMT complaint webform categories",
+      "rationale": "Public intake captures no-show, scheduling, and driver safety complaints — obtainable in aggregate via CORA without individual trip records.",
+      "failureSignals": [
+        "no-show complaints",
+        "scheduling failures",
+        "service failures"
+      ],
+      "sourceUrl": "https://hcpfccc.my.salesforce-sites.com/NEMTWebform",
+      "confidence": "medium"
+    },
+    {
+      "rank": 5,
+      "entityName": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "ownershipKey": "co:hcpf",
+      "metricSource": "CORA request for broker Monthly Performance Reports",
+      "rationale": "HCPF receives contractor monthly reports under contract — CORA may yield aggregate denial/no-show/dialysis metrics even when trip-level PHI is redacted.",
+      "failureSignals": [
+        "broker stress",
+        "network inadequacy",
+        "corrective actions"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/contact-hcpf",
+      "confidence": "medium"
+    }
+  ],
+  "summary": {
+    "topReportingEntities": [
+      {
+        "entityName": "Health Solutions by Transdev (IntelliRide)",
+        "ownershipKey": "co:transdev-broker",
+        "score": 238
+      },
+      {
+        "entityName": "Colorado Department of Health Care Policy and Financing (HCPF)",
+        "ownershipKey": "co:hcpf",
+        "score": 33
+      },
+      {
+        "entityName": "Colorado NEMT Providers (all enrolled)",
+        "ownershipKey": "co:rural-nemt-providers",
+        "score": 18
+      },
+      {
+        "entityName": "NEMT Transportation Providers",
+        "ownershipKey": "co:nemt-regulation",
+        "score": 10
+      },
+      {
+        "entityName": "Colorado Office of the State Auditor",
+        "ownershipKey": "co:osa",
+        "score": 10
+      },
+      {
+        "entityName": "Health Management Systems (Colorado Medicaid RAC)",
+        "ownershipKey": "co:hms-rac",
+        "score": 10
+      },
+      {
+        "entityName": "HCPF NEMT Member Feedback / Complaint Program",
+        "ownershipKey": "co:nemt-complaints",
+        "score": 10
+      },
+      {
+        "entityName": "Health Solutions by Transdev (IntelliRide)",
+        "ownershipKey": "co:transdev-dispatch",
+        "score": 8
+      }
+    ]
+  }
+}

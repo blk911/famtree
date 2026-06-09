@@ -1,0 +1,317 @@
+{
+  "generatedAt": "2026-06-09T13:25:30.881Z",
+  "total": 20,
+  "discovered": 14,
+  "reportingUnknown": 6,
+  "reports": [
+    {
+      "reportKey": "co:transdev:monthly-performance-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "reportName": "Monthly Performance Report",
+      "frequency": "monthly",
+      "reportOwner": "Health Solutions by Transdev (IntelliRide)",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "publicAccess": "contract_only",
+      "confidence": "high",
+      "status": "discovered",
+      "notes": [
+        "Contract §5.10.2 — due within 10 business days after month end.",
+        "Includes denials, dialysis performance, contact center metrics, complaint summary per 1,000 trips."
+      ]
+    },
+    {
+      "reportKey": "co:transdev:monthly-trip-data-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "reportName": "Monthly Trip Data Report",
+      "frequency": "monthly",
+      "reportOwner": "Health Solutions by Transdev (IntelliRide)",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "publicAccess": "contract_only",
+      "confidence": "high",
+      "status": "discovered",
+      "notes": [
+        "Contract §5.10.2.4 — per-trip data submitted to HCPF (member-level; contract-required, not public).",
+        "Contains trip authorization, scheduling, pickup/dropoff, and mode of transport."
+      ]
+    },
+    {
+      "reportKey": "co:transdev:complaint-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "reportName": "Monthly Complaint Report (within Monthly Performance Report)",
+      "frequency": "monthly",
+      "reportOwner": "Health Solutions by Transdev (IntelliRide)",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "publicAccess": "contract_only",
+      "confidence": "high",
+      "status": "discovered",
+      "notes": [
+        "Contract §5.10.2.1.4 — provider no-shows, complaints per 1,000 trips, lateness detail, corrective actions."
+      ]
+    },
+    {
+      "reportKey": "co:transdev:dialysis-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "reportName": "Monthly Dialysis Report (within Monthly Performance Report)",
+      "frequency": "monthly",
+      "reportOwner": "Health Solutions by Transdev (IntelliRide)",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "publicAccess": "contract_only",
+      "confidence": "high",
+      "status": "discovered",
+      "notes": [
+        "Contract §5.10.2.1.5 — late delivery bands, missed treatments due to late transport, provider no-shows."
+      ]
+    },
+    {
+      "reportKey": "co:transdev:incident-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "reportName": "Incident Report",
+      "frequency": "ad_hoc",
+      "reportOwner": "Health Solutions by Transdev (IntelliRide)",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "publicAccess": "contract_only",
+      "confidence": "high",
+      "status": "discovered",
+      "notes": [
+        "Contract §5.10.4 — due within 1 business day for accidents and urgent corrective incidents."
+      ]
+    },
+    {
+      "reportKey": "co:transdev:annual-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "reportName": "Annual NEMT Report",
+      "frequency": "annual",
+      "reportOwner": "Health Solutions by Transdev (IntelliRide)",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "publicAccess": "contract_only",
+      "confidence": "high",
+      "status": "discovered",
+      "notes": [
+        "Contract §5.10.2.7 — utilization summary, major problems, improvement recommendations."
+      ]
+    },
+    {
+      "reportKey": "co:transdev:complaint-policies",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "reportName": "Written Client Complaint Policies and Procedures",
+      "frequency": "ad_hoc",
+      "reportOwner": "Health Solutions by Transdev (IntelliRide)",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "publicAccess": "contract_only",
+      "confidence": "high",
+      "status": "discovered",
+      "notes": [
+        "Contract §5.4.4.3.1 deliverable — complaint log requirements."
+      ]
+    },
+    {
+      "reportKey": "co:hcpf:standard-trip-log",
+      "entityName": "Colorado NEMT Providers (all enrolled)",
+      "ownershipKey": "co:rural-nemt-providers",
+      "reportName": "HCPF Standard Trip Log",
+      "frequency": "ad_hoc",
+      "reportOwner": "NEMT Transportation Provider",
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual",
+      "publicAccess": "unknown",
+      "confidence": "high",
+      "status": "discovered",
+      "notes": [
+        "Required for all rides effective October 1, 2024; submitted with claims, retained on file.",
+        "HCPF may request copies for any claim at any time."
+      ]
+    },
+    {
+      "reportKey": "co:regulation:trip-report",
+      "entityName": "NEMT Transportation Providers",
+      "ownershipKey": "co:nemt-regulation",
+      "reportName": "Trip Report (10 CCR 2505-10 § 8.014.3.C)",
+      "frequency": "ad_hoc",
+      "reportOwner": "NEMT Transportation Provider",
+      "sourceUrl": "https://www.law.cornell.edu/regulations/colorado/10-CCR-2505-10-8.014",
+      "publicAccess": "unknown",
+      "confidence": "high",
+      "status": "discovered",
+      "notes": [
+        "Regulation requires trip report per ride: pickup/dropoff times, client ID, driver, vehicle, confirmation of trip occurrence."
+      ]
+    },
+    {
+      "reportKey": "co:osa:nemt-performance-audit",
+      "entityName": "Colorado Office of the State Auditor",
+      "ownershipKey": "co:osa",
+      "reportName": "Medicaid Non-Emergent Medical Transportation Performance Audit",
+      "frequency": "ad_hoc",
+      "reportOwner": "Colorado Office of the State Auditor",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
+      "publicAccess": "public",
+      "confidence": "high",
+      "status": "discovered",
+      "notes": [
+        "Published September 2021 — public failure metrics on complaints, billing, and contract compliance."
+      ]
+    },
+    {
+      "reportKey": "co:hms:rac-audit-findings",
+      "entityName": "Health Management Systems (Colorado Medicaid RAC)",
+      "ownershipKey": "co:hms-rac",
+      "reportName": "Post-Payment Audit Finding Letters",
+      "frequency": "ad_hoc",
+      "reportOwner": "Health Management Systems (RAC vendor)",
+      "sourceUrl": "https://hcpf.colorado.gov/recovery-audit-contractor-rac-program",
+      "publicAccess": "open_records",
+      "confidence": "medium",
+      "status": "discovered",
+      "notes": [
+        "RAC conducts post-payment claim reviews; providers receive Notice of Adverse Action for overpayments."
+      ]
+    },
+    {
+      "reportKey": "co:hcpf:provider-bulletins",
+      "entityName": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "ownershipKey": "co:hcpf",
+      "reportName": "Monthly NEMT Provider Bulletins",
+      "frequency": "monthly",
+      "reportOwner": "HCPF",
+      "sourceUrl": "https://hcpf.colorado.gov/non-emergent-medical-transportation",
+      "publicAccess": "public",
+      "confidence": "medium",
+      "status": "discovered",
+      "notes": [
+        "HCPF publishes monthly provider bulletins with NEMT program updates and timelines."
+      ]
+    },
+    {
+      "reportKey": "co:transdev:complaint-response-sla",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "reportName": "Complaint Acknowledgment and Investigation Response",
+      "frequency": "ad_hoc",
+      "reportOwner": "Health Solutions by Transdev (IntelliRide)",
+      "sourceUrl": "https://transdevhealthsolutions.com/colorado/transportation-providers/",
+      "publicAccess": "unknown",
+      "confidence": "medium",
+      "status": "discovered",
+      "notes": [
+        "Transdev acknowledges complaints within 2 business days; written investigation response within 10 business days."
+      ]
+    },
+    {
+      "reportKey": "co:nemt-complaints:member-feedback-intake",
+      "entityName": "HCPF NEMT Member Feedback / Complaint Program",
+      "ownershipKey": "co:nemt-complaints",
+      "reportName": "NEMT Member Feedback/Complaint Intake Records",
+      "frequency": "ad_hoc",
+      "reportOwner": "HCPF NEMT Complaint Program",
+      "sourceUrl": "https://hcpfccc.my.salesforce-sites.com/NEMTWebform",
+      "publicAccess": "open_records",
+      "confidence": "medium",
+      "status": "discovered",
+      "notes": [
+        "Public webform captures no-show, scheduling, driver safety, and fraud categories — aggregate not published."
+      ]
+    },
+    {
+      "reportKey": "placeholder:co:medidrive-broker",
+      "entityName": "MediDrive (selected statewide NEMT broker)",
+      "ownershipKey": "co:medidrive-broker",
+      "reportName": "Reporting obligations not yet discovered",
+      "frequency": "unknown",
+      "reportOwner": "MediDrive (selected statewide NEMT broker)",
+      "sourceUrl": "https://hcpf.colorado.gov/non-emergent-medical-transportation",
+      "publicAccess": "unknown",
+      "confidence": "low",
+      "status": "reporting_unknown",
+      "notes": [
+        "No contract, regulation, or audit document has been linked to a specific required report for this entity yet.",
+        "Data ownership role: broker. Continue contract/procurement discovery."
+      ]
+    },
+    {
+      "reportKey": "placeholder:co:gainwell",
+      "entityName": "Gainwell Technologies (Health First Colorado fiscal agent)",
+      "ownershipKey": "co:gainwell",
+      "reportName": "Reporting obligations not yet discovered",
+      "frequency": "unknown",
+      "reportOwner": "Gainwell Technologies (Health First Colorado fiscal agent)",
+      "sourceUrl": "https://hcpf.colorado.gov/recovery-audit-contractor-rac-program",
+      "publicAccess": "unknown",
+      "confidence": "low",
+      "status": "reporting_unknown",
+      "notes": [
+        "No contract, regulation, or audit document has been linked to a specific required report for this entity yet.",
+        "Data ownership role: payer. Continue contract/procurement discovery."
+      ]
+    },
+    {
+      "reportKey": "placeholder:co:procredex",
+      "entityName": "ProCredEx (NEMT credentialing platform)",
+      "ownershipKey": "co:procredex",
+      "reportName": "Reporting obligations not yet discovered",
+      "frequency": "unknown",
+      "reportOwner": "ProCredEx (NEMT credentialing platform)",
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual",
+      "publicAccess": "unknown",
+      "confidence": "low",
+      "status": "reporting_unknown",
+      "notes": [
+        "No contract, regulation, or audit document has been linked to a specific required report for this entity yet.",
+        "Data ownership role: reporting_owner. Continue contract/procurement discovery."
+      ]
+    },
+    {
+      "reportKey": "placeholder:co:health-first-colorado-member",
+      "entityName": "Health First Colorado Members",
+      "ownershipKey": "co:health-first-colorado-member",
+      "reportName": "Reporting obligations not yet discovered",
+      "frequency": "unknown",
+      "reportOwner": "Health First Colorado Members",
+      "sourceUrl": "https://www.healthfirstcolorado.com/benefits-services/nemt/",
+      "publicAccess": "unknown",
+      "confidence": "low",
+      "status": "reporting_unknown",
+      "notes": [
+        "No contract, regulation, or audit document has been linked to a specific required report for this entity yet.",
+        "Data ownership role: request_originator. Continue contract/procurement discovery."
+      ]
+    },
+    {
+      "reportKey": "placeholder:co:cms",
+      "entityName": "Centers for Medicare & Medicaid Services (CMS)",
+      "ownershipKey": "co:cms",
+      "reportName": "Reporting obligations not yet discovered",
+      "frequency": "unknown",
+      "reportOwner": "Centers for Medicare & Medicaid Services (CMS)",
+      "sourceUrl": "https://hcpf.colorado.gov/NEMT",
+      "publicAccess": "unknown",
+      "confidence": "low",
+      "status": "reporting_unknown",
+      "notes": [
+        "No contract, regulation, or audit document has been linked to a specific required report for this entity yet.",
+        "Data ownership role: auditor. Continue contract/procurement discovery."
+      ]
+    },
+    {
+      "reportKey": "placeholder:co:hcpf-payer",
+      "entityName": "HCPF — Medicaid Claims Payment",
+      "ownershipKey": "co:hcpf-payer",
+      "reportName": "Reporting obligations not yet discovered",
+      "frequency": "unknown",
+      "reportOwner": "HCPF — Medicaid Claims Payment",
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual",
+      "publicAccess": "unknown",
+      "confidence": "low",
+      "status": "reporting_unknown",
+      "notes": [
+        "No contract, regulation, or audit document has been linked to a specific required report for this entity yet.",
+        "Data ownership role: payer. Continue contract/procurement discovery."
+      ]
+    }
+  ]
+}

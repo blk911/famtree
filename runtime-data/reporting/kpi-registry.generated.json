@@ -1,0 +1,190 @@
+{
+  "generatedAt": "2026-06-09T13:25:30.881Z",
+  "total": 15,
+  "byCategory": {
+    "timeliness": 5,
+    "scheduling": 3,
+    "complaints": 1,
+    "dispatch": 1,
+    "access": 1,
+    "completion": 2,
+    "provider_network": 1,
+    "quality": 1
+  },
+  "kpis": [
+    {
+      "kpiKey": "co:transdev:on-time-pickup-15min",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "timeliness",
+      "kpiName": "Clients picked up within 15 minutes of scheduled pickup time",
+      "targetValue": "100%",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high",
+      "notes": [
+        "Contract §5.9.1.1.1.1.1 baseline performance standard."
+      ]
+    },
+    {
+      "kpiKey": "co:transdev:delivery-not-late-15min",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "timeliness",
+      "kpiName": "No client delivered more than 15 minutes late to appointment",
+      "targetValue": "100%",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high"
+    },
+    {
+      "kpiKey": "co:transdev:will-call-90min",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "timeliness",
+      "kpiName": "Will-call pickups within 90 minutes of request",
+      "targetValue": "100%",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high"
+    },
+    {
+      "kpiKey": "co:transdev:call-wait-under-3min",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "scheduling",
+      "kpiName": "Average monthly call wait time less than 3 minutes",
+      "targetValue": "< 3 minutes",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high"
+    },
+    {
+      "kpiKey": "co:transdev:call-abandonment-rate",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "scheduling",
+      "kpiName": "Call abandonment rate",
+      "targetValue": "< 8%",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high"
+    },
+    {
+      "kpiKey": "co:transdev:calls-queue-over-3min",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "scheduling",
+      "kpiName": "Calls in queue longer than 3 minutes",
+      "targetValue": "< 5%",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high"
+    },
+    {
+      "kpiKey": "co:transdev:complaints-per-1000-trips",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "complaints",
+      "kpiName": "Client complaints per 1,000 trips",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high",
+      "notes": [
+        "Reported monthly in complaint summary — no public target threshold in contract."
+      ]
+    },
+    {
+      "kpiKey": "co:transdev:provider-no-shows",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "dispatch",
+      "kpiName": "Provider no-shows (cancelled at door)",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high",
+      "notes": [
+        "Reported monthly by county in complaint report §5.10.2.1.4.2–4.3."
+      ]
+    },
+    {
+      "kpiKey": "co:transdev:trips-denied",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "access",
+      "kpiName": "Trips denied by reason",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high",
+      "notes": [
+        "Monthly performance summary §5.10.2.1.1.4 and trip summary §5.10.2.1.2.3."
+      ]
+    },
+    {
+      "kpiKey": "co:transdev:missed-dialysis-appointments",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "completion",
+      "kpiName": "Missed and late dialysis appointments due to transport",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high",
+      "notes": [
+        "Dialysis report §5.10.2.1.5 — late bands and missed treatments."
+      ]
+    },
+    {
+      "kpiKey": "co:transdev:a-leg-on-time-delivery",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "timeliness",
+      "kpiName": "A-leg trips dropped off within 15 minutes of scheduled delivery",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high",
+      "notes": [
+        "Trip summary report §5.10.2.1.2.6 — percentage reported monthly."
+      ]
+    },
+    {
+      "kpiKey": "co:transdev:provider-record-accuracy",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "provider_network",
+      "kpiName": "Transportation provider record accuracy (semi-annual audit)",
+      "targetValue": "≥ 90% of records 100% accurate",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high",
+      "notes": [
+        "Incentive performance standard §5.9.2.1.1.2.1."
+      ]
+    },
+    {
+      "kpiKey": "co:transdev:client-satisfaction",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "category": "quality",
+      "kpiName": "Client satisfaction survey (semi-annual)",
+      "targetValue": "≥ 60% satisfied or highly satisfied (baseline)",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "confidence": "high",
+      "notes": [
+        "Incentive tiers for improvement over baseline §5.9.2.1.2."
+      ]
+    },
+    {
+      "kpiKey": "co:transdev:provider-on-time-15min-window",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-dispatch",
+      "category": "timeliness",
+      "kpiName": "Provider arrival within 15-minute window (operational policy)",
+      "targetValue": "15-minute window before no-show",
+      "sourceUrl": "https://transdevhealthsolutions.com/colorado/transportation-providers/",
+      "confidence": "medium",
+      "notes": [
+        "Transdev provider page instructs drivers to report no-show if member not arrived within 15 minutes."
+      ]
+    },
+    {
+      "kpiKey": "co:provider:trip-log-completion",
+      "entityName": "NEMT Transportation Providers",
+      "ownershipKey": "co:rural-nemt-providers",
+      "category": "completion",
+      "kpiName": "Trip report completed per ride (regulatory)",
+      "sourceUrl": "https://www.law.cornell.edu/regulations/colorado/10-CCR-2505-10-8.014",
+      "confidence": "high",
+      "notes": [
+        "10 CCR 8.014.3.C — required fields for each trip."
+      ]
+    }
+  ]
+}
