@@ -1,0 +1,152 @@
+{
+  "generatedAt": "2026-06-09T13:05:37.655Z",
+  "state": "CO",
+  "program": "Health First Colorado NEMT",
+  "summary": "Colorado NEMT ride ledger is split: Transdev brokers nine metro counties; 55 counties use self-administered providers billing HCPF directly. MediDrive statewide broker transition begins July 2026.",
+  "steps": [
+    {
+      "stepKey": "patient",
+      "stepLabel": "Patient / Member",
+      "owner": "Health First Colorado Member",
+      "ownerEntityKey": "co:health-first-colorado-member",
+      "knownDataHeld": [
+        "medical appointment need",
+        "transportation request initiation"
+      ],
+      "unknowns": [
+        "member-level unfilled ride counts"
+      ],
+      "sourceUrl": "https://www.healthfirstcolorado.com/benefits-services/nemt/"
+    },
+    {
+      "stepKey": "ride_request",
+      "stepLabel": "Ride Request",
+      "owner": "Transdev (9 metro counties) or Rural NEMT Provider (55 counties)",
+      "ownerEntityKey": "co:transdev-broker",
+      "knownSystem": "IntelliRide / gointelliride.com",
+      "knownDataHeld": [
+        "trip requested",
+        "pickup and destination",
+        "scheduled time"
+      ],
+      "unknowns": [
+        "unfilled ride queue depth",
+        "rejected ride reasons at scale"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual"
+    },
+    {
+      "stepKey": "authorization",
+      "stepLabel": "Authorization",
+      "owner": "HCPF / Colorado Medical Assistance Program",
+      "ownerEntityKey": "co:hcpf",
+      "knownSystem": "Provider Web Portal / Batch 270 eligibility",
+      "knownDataHeld": [
+        "member eligibility",
+        "prior authorization determinations"
+      ],
+      "unknowns": [
+        "real-time authorization denial rates by county"
+      ],
+      "sourceUrl": "https://www.law.cornell.edu/regulations/colorado/10-CCR-2505-10-8.014"
+    },
+    {
+      "stepKey": "broker",
+      "stepLabel": "Broker",
+      "owner": "Transdev (current metro) → MediDrive (planned statewide)",
+      "ownerEntityKey": "co:transdev-broker",
+      "knownSystem": "IntelliRide broker platform",
+      "knownDataHeld": [
+        "network provider list",
+        "trip routing rules",
+        "overflow routing"
+      ],
+      "unknowns": [
+        "broker overflow counts",
+        "unassigned trip backlog"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/non-emergent-medical-transportation"
+    },
+    {
+      "stepKey": "provider_assignment",
+      "stepLabel": "Provider Assignment",
+      "owner": "Transdev Dispatch (metro) or Rural Provider self-dispatch",
+      "ownerEntityKey": "co:transdev-dispatch",
+      "knownDataHeld": [
+        "trip assigned",
+        "driver and vehicle assignment"
+      ],
+      "unknowns": [
+        "assignment failure rate",
+        "wheelchair-capable assignment gaps"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual"
+    },
+    {
+      "stepKey": "ride_completion",
+      "stepLabel": "Ride Completion",
+      "owner": "NEMT Transportation Provider",
+      "ownerEntityKey": "co:rural-nemt-providers",
+      "knownSystem": "HCPF Standard Trip Log",
+      "knownDataHeld": [
+        "trip completed",
+        "actual pickup and drop-off times",
+        "driver and vehicle identification"
+      ],
+      "unknowns": [
+        "missed treatment transport linkage",
+        "discharge delay correlation"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual"
+    },
+    {
+      "stepKey": "claim_submission",
+      "stepLabel": "Claim Submission",
+      "owner": "Transdev (metro broker claims) or Provider (rural direct claims)",
+      "ownerEntityKey": "co:gainwell",
+      "knownSystem": "Gainwell interChange / Provider Web Portal",
+      "knownDataHeld": [
+        "claim line items",
+        "HCPCS transport codes",
+        "trip documentation attachments"
+      ],
+      "unknowns": [
+        "claims for rides never completed",
+        "denied trip volume"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual"
+    },
+    {
+      "stepKey": "payment",
+      "stepLabel": "Payment",
+      "owner": "Gainwell Technologies (fiscal agent) / HCPF",
+      "ownerEntityKey": "co:gainwell",
+      "knownDataHeld": [
+        "trip paid",
+        "payment amount",
+        "EOB codes"
+      ],
+      "unknowns": [
+        "withheld payments for incomplete documentation"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/recovery-audit-contractor-rac-program"
+    },
+    {
+      "stepKey": "complaint_audit",
+      "stepLabel": "Complaint / Audit",
+      "owner": "HCPF NEMT Complaints, OSA, HMS RAC",
+      "ownerEntityKey": "co:nemt-complaints",
+      "knownSystem": "Salesforce NEMT Webform",
+      "knownDataHeld": [
+        "complaint",
+        "audit findings",
+        "improper payment totals"
+      ],
+      "unknowns": [
+        "complaint-to-unfilled-ride linkage",
+        "hospital discharge delay evidence"
+      ],
+      "sourceUrl": "https://hcpfccc.my.salesforce-sites.com/NEMTWebform"
+    }
+  ]
+}

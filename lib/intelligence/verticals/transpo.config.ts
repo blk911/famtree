@@ -24,6 +24,7 @@ export const transpoConfig: VerticalConfig = {
     { id: "verification",    label: "Verification",     href: "/admin/intelligence/transpo/verification" },
     { id: "carrier-opportunities", label: "Carrier Opportunities", href: "/admin/intelligence/transpo/carrier-opportunities" },
     { id: "opportunity-synthesis", label: "Opportunities", href: "/admin/intelligence/transpo/opportunities" },
+    { id: "data-owners", label: "Data Owners", href: "/admin/intelligence/transpo/data-owners" },
     { id: "qualified-targets", label: "Qualified Targets", href: "/admin/intelligence/transpo/qualified-targets" },
     { id: "market-dashboard", label: "Market Dashboard", href: "/admin/intelligence/transpo/market-dashboard" },
     { id: "market-gaps",      label: "Market Gaps",      href: "/admin/intelligence/transpo/market-gaps" },
@@ -44,7 +45,7 @@ export const transpoConfig: VerticalConfig = {
     { id: "prospects",       label: "Red Dots (deprecated)", href: "/admin/intelligence/transpo/prospects" },
   ],
 
-  enabledTools: ["source-ingest", "source-runs", "evidence", "resolver", "carriers", "verification", "carrier-opportunities", "opportunity-synthesis", "qualified-targets", "market-dashboard", "market-gaps", "service-deficits", "data-confidence", "opportunity-radar", "network-plays", "county-opportunities", "demand-generators", "provider-capacity", "missing-evidence", "research-queue", "provider-dossiers", "action-queue", "reviews", "storage-status", "harvest"],
+  enabledTools: ["source-ingest", "source-runs", "evidence", "resolver", "carriers", "verification", "carrier-opportunities", "opportunity-synthesis", "data-owners", "qualified-targets", "market-dashboard", "market-gaps", "service-deficits", "data-confidence", "opportunity-radar", "network-plays", "county-opportunities", "demand-generators", "provider-capacity", "missing-evidence", "research-queue", "provider-dossiers", "action-queue", "reviews", "storage-status", "harvest"],
 
   // Salon/personal-care tools are explicitly hidden from this vertical
   hiddenTools: [

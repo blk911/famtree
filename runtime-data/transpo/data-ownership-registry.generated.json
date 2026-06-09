@@ -1,0 +1,389 @@
+{
+  "generatedAt": "2026-06-09T13:05:37.655Z",
+  "state": "CO",
+  "total": 14,
+  "records": [
+    {
+      "ownershipKey": "co:hcpf",
+      "state": "CO",
+      "entityName": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "role": "authorization_owner",
+      "organizationType": "state_agency",
+      "dataOwned": [
+        "member eligibility determinations",
+        "prior authorization decisions",
+        "NEMT program policy and oversight",
+        "aggregate NEMT expenditure reporting"
+      ],
+      "systemNames": [
+        "Gainwell Provider Web Portal",
+        "Provider Services Call Center IVR"
+      ],
+      "publicAccess": true,
+      "accessMethod": "open_records",
+      "contactKnown": true,
+      "website": "https://hcpf.colorado.gov",
+      "sourceUrl": "https://hcpf.colorado.gov/NEMT",
+      "confidence": 95,
+      "notes": [
+        "HCPF administers Health First Colorado NEMT and publishes program requirements.",
+        "CORA requests may be submitted via https://hcpf.colorado.gov/contact-hcpf"
+      ]
+    },
+    {
+      "ownershipKey": "co:transdev-broker",
+      "state": "CO",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "role": "broker",
+      "organizationType": "broker",
+      "dataOwned": [
+        "trip requested",
+        "trip assigned",
+        "trip cancelled",
+        "broker network dispatch",
+        "complaint resolution (contracted function per state audit)",
+        "provider payment within broker network"
+      ],
+      "systemNames": [
+        "IntelliRide / gointelliride.com",
+        "Transdev call center"
+      ],
+      "publicAccess": false,
+      "accessMethod": "contract",
+      "contactKnown": true,
+      "website": "https://www.gointelliride.com/colorado",
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual",
+      "confidence": 92,
+      "notes": [
+        "State Designated Entity (SDE) for Adams, Arapahoe, Boulder, Broomfield, Denver, Douglas, Jefferson, Larimer, and Weld counties.",
+        "OSA audit states IntelliRide coordinates transportation, submits claims, pays providers, and manages complaints."
+      ]
+    },
+    {
+      "ownershipKey": "co:transdev-dispatch",
+      "state": "CO",
+      "entityName": "Health Solutions by Transdev — Dispatch Operations",
+      "role": "dispatcher",
+      "organizationType": "broker",
+      "dataOwned": [
+        "trip assignment",
+        "provider routing",
+        "no-show and late pickup incidents (operational)"
+      ],
+      "systemNames": [
+        "IntelliRide scheduling platform"
+      ],
+      "publicAccess": false,
+      "accessMethod": "contract",
+      "contactKnown": true,
+      "website": "https://transdevhealthsolutions.com/colorado/",
+      "sourceUrl": "https://www.healthfirstcolorado.com/benefits-services/nemt/",
+      "confidence": 88,
+      "notes": [
+        "Members in nine metro counties schedule through Transdev at 855-489-4999 or gointelliride.com."
+      ]
+    },
+    {
+      "ownershipKey": "co:medidrive-broker",
+      "state": "CO",
+      "entityName": "MediDrive (selected statewide NEMT broker)",
+      "role": "broker",
+      "organizationType": "broker",
+      "dataOwned": [
+        "trip scheduling (planned statewide)",
+        "provider credentialing roster",
+        "network management",
+        "billing and payment (planned statewide)"
+      ],
+      "systemNames": [
+        "MediDrive broker platform (provider manual pending)"
+      ],
+      "publicAccess": false,
+      "accessMethod": "contract",
+      "contactKnown": true,
+      "sourceUrl": "https://hcpf.colorado.gov/non-emergent-medical-transportation",
+      "confidence": 85,
+      "notes": [
+        "HCPF selected MediDrive for phased statewide rollout beginning July 2026.",
+        "Trip ledger ownership will consolidate under broker model when implemented."
+      ]
+    },
+    {
+      "ownershipKey": "co:gainwell",
+      "state": "CO",
+      "entityName": "Gainwell Technologies (Health First Colorado fiscal agent)",
+      "role": "payer",
+      "organizationType": "payer",
+      "dataOwned": [
+        "trip paid",
+        "claim denial and adjustment codes",
+        "remittance and EOB data"
+      ],
+      "systemNames": [
+        "interChange claims system",
+        "Gainwell Provider Portal"
+      ],
+      "publicAccess": false,
+      "accessMethod": "contract",
+      "contactKnown": true,
+      "sourceUrl": "https://hcpf.colorado.gov/recovery-audit-contractor-rac-program",
+      "confidence": 90,
+      "notes": [
+        "Colorado OSA evaluation identifies Gainwell as HCPF fiscal agent processing Medicaid claims."
+      ]
+    },
+    {
+      "ownershipKey": "co:procredex",
+      "state": "CO",
+      "entityName": "ProCredEx (NEMT credentialing platform)",
+      "role": "reporting_owner",
+      "organizationType": "software_vendor",
+      "dataOwned": [
+        "driver credential status",
+        "vehicle roster approvals",
+        "credentialing certificates"
+      ],
+      "systemNames": [
+        "ProCredEx"
+      ],
+      "publicAccess": false,
+      "accessMethod": "contract",
+      "contactKnown": true,
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual",
+      "confidence": 88,
+      "notes": [
+        "Transdev manages statewide driver and vehicle credentialing through ProCredEx.",
+        "Does not hold trip completion ledger — fleet eligibility only."
+      ]
+    },
+    {
+      "ownershipKey": "co:nemt-complaints",
+      "state": "CO",
+      "entityName": "HCPF NEMT Member Feedback / Complaint Program",
+      "role": "complaint_owner",
+      "organizationType": "state_agency",
+      "dataOwned": [
+        "complaint",
+        "no-show reports",
+        "scheduling complaints",
+        "driver safety incidents",
+        "fraud referrals"
+      ],
+      "systemNames": [
+        "Salesforce NEMT Webform"
+      ],
+      "publicAccess": true,
+      "accessMethod": "public",
+      "contactKnown": true,
+      "website": "https://hcpfccc.my.salesforce-sites.com/NEMTWebform",
+      "sourceUrl": "https://hcpfccc.my.salesforce-sites.com/NEMTWebform",
+      "confidence": 93,
+      "notes": [
+        "Public webform categories include Driver Issue (No Show/Late/Unsafe) and Customer service scheduling problems."
+      ]
+    },
+    {
+      "ownershipKey": "co:health-first-colorado-member",
+      "state": "CO",
+      "entityName": "Health First Colorado Members",
+      "role": "request_originator",
+      "organizationType": "other",
+      "dataOwned": [
+        "trip requested (member-initiated)"
+      ],
+      "systemNames": [
+        "Member phone scheduling",
+        "gointelliride.com web chat"
+      ],
+      "publicAccess": false,
+      "accessMethod": "unknown",
+      "contactKnown": false,
+      "website": "https://www.healthfirstcolorado.com/benefits-services/nemt/",
+      "sourceUrl": "https://www.healthfirstcolorado.com/benefits-services/nemt/",
+      "confidence": 80,
+      "notes": [
+        "Members initiate ride requests; broker or local provider receives the request."
+      ]
+    },
+    {
+      "ownershipKey": "co:rural-nemt-providers",
+      "state": "CO",
+      "entityName": "Rural Colorado NEMT Providers (non-broker counties)",
+      "role": "provider",
+      "organizationType": "provider",
+      "dataOwned": [
+        "trip requested",
+        "trip assigned (self-dispatch)",
+        "trip completed",
+        "trip cancelled",
+        "standard trip logs",
+        "claims submitted to HCPF"
+      ],
+      "systemNames": [
+        "Provider-maintained trip logs",
+        "Gainwell Provider Web Portal"
+      ],
+      "publicAccess": false,
+      "accessMethod": "interview",
+      "contactKnown": true,
+      "website": "https://hcpf.colorado.gov/nemtlist",
+      "sourceUrl": "https://hcpf.colorado.gov/nemtlist",
+      "confidence": 86,
+      "notes": [
+        "Outside nine metro broker counties, local providers administer and bill NEMT directly per billing manual.",
+        "HCPF publishes county-level provider directory — 55 counties use local providers."
+      ]
+    },
+    {
+      "ownershipKey": "co:osa",
+      "state": "CO",
+      "entityName": "Colorado Office of the State Auditor",
+      "role": "auditor",
+      "organizationType": "state_agency",
+      "dataOwned": [
+        "audit",
+        "aggregate improper payment findings",
+        "broker contract compliance reviews"
+      ],
+      "systemNames": [
+        "Performance audit reports"
+      ],
+      "publicAccess": true,
+      "accessMethod": "public",
+      "contactKnown": true,
+      "website": "https://leg.colorado.gov",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "confidence": 94,
+      "notes": [
+        "2021 NEMT performance audit found claims without ride proof and complaint handling gaps."
+      ]
+    },
+    {
+      "ownershipKey": "co:hms-rac",
+      "state": "CO",
+      "entityName": "Health Management Systems (Colorado Medicaid RAC)",
+      "role": "auditor",
+      "organizationType": "other",
+      "dataOwned": [
+        "audit",
+        "post-payment claim review findings",
+        "overpayment and underpayment notices"
+      ],
+      "systemNames": [
+        "RAC audit workflows"
+      ],
+      "publicAccess": false,
+      "accessMethod": "open_records",
+      "contactKnown": true,
+      "sourceUrl": "https://hcpf.colorado.gov/recovery-audit-contractor-rac-program",
+      "confidence": 87,
+      "notes": [
+        "HMS conducts post-payment reviews of fee-for-service Medicaid claims including documentation sufficiency."
+      ]
+    },
+    {
+      "ownershipKey": "co:cms",
+      "state": "CO",
+      "entityName": "Centers for Medicare & Medicaid Services (CMS)",
+      "role": "auditor",
+      "organizationType": "federal_agency",
+      "dataOwned": [
+        "federal NEMT policy oversight",
+        "provider enrollment moratorium authority"
+      ],
+      "systemNames": [
+        "CMS Medicaid program oversight"
+      ],
+      "publicAccess": true,
+      "accessMethod": "foia",
+      "contactKnown": true,
+      "website": "https://www.cms.gov",
+      "sourceUrl": "https://hcpf.colorado.gov/NEMT",
+      "confidence": 82,
+      "notes": [
+        "HCPF documents CMS-approved NEMT provider enrollment moratorium through March 2026."
+      ]
+    },
+    {
+      "ownershipKey": "co:nemt-regulation",
+      "state": "CO",
+      "entityName": "10 CCR 2505-10 § 8.014 (NEMT regulations)",
+      "role": "reporting_owner",
+      "organizationType": "state_agency",
+      "dataOwned": [
+        "trip completed (required trip report fields)",
+        "trip documentation standards",
+        "prior authorization requirements"
+      ],
+      "systemNames": [
+        "Standard Trip Log (HCPF provider forms)"
+      ],
+      "publicAccess": true,
+      "accessMethod": "public",
+      "contactKnown": true,
+      "sourceUrl": "https://www.law.cornell.edu/regulations/colorado/10-CCR-2505-10-8.014",
+      "confidence": 96,
+      "notes": [
+        "Regulation requires trip reports with pickup/dropoff times, client ID, driver, and vehicle for each trip.",
+        "Billing manual requires HCPF Standard Trip Log effective October 1, 2024."
+      ]
+    },
+    {
+      "ownershipKey": "co:hcpf-payer",
+      "state": "CO",
+      "entityName": "HCPF — Medicaid Claims Payment",
+      "role": "payer",
+      "organizationType": "state_agency",
+      "dataOwned": [
+        "trip paid",
+        "program expenditure totals"
+      ],
+      "systemNames": [
+        "Gainwell interChange"
+      ],
+      "publicAccess": false,
+      "accessMethod": "open_records",
+      "contactKnown": true,
+      "website": "https://hcpf.colorado.gov",
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual",
+      "confidence": 91,
+      "notes": [
+        "OSA audit cites $33.2M NEMT payments in audit period; claims processed through fiscal agent."
+      ]
+    }
+  ],
+  "summary": {
+    "byRole": {
+      "authorization_owner": 1,
+      "broker": 2,
+      "dispatcher": 1,
+      "payer": 2,
+      "reporting_owner": 2,
+      "complaint_owner": 1,
+      "request_originator": 1,
+      "provider": 1,
+      "auditor": 3
+    },
+    "publicSources": 5,
+    "knownSystems": [
+      "CMS Medicaid program oversight",
+      "Gainwell Provider Portal",
+      "Gainwell Provider Web Portal",
+      "Gainwell interChange",
+      "IntelliRide / gointelliride.com",
+      "IntelliRide scheduling platform",
+      "MediDrive broker platform (provider manual pending)",
+      "Member phone scheduling",
+      "Performance audit reports",
+      "ProCredEx",
+      "Provider Services Call Center IVR",
+      "Provider-maintained trip logs",
+      "RAC audit workflows",
+      "Salesforce NEMT Webform",
+      "Standard Trip Log (HCPF provider forms)",
+      "Transdev call center",
+      "gointelliride.com web chat",
+      "interChange claims system"
+    ]
+  }
+}

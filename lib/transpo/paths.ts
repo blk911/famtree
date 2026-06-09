@@ -68,3 +68,23 @@ export const TRANSPO_OPPORTUNITIES_ARTIFACT_PATH = path.join(
   TRANSPO_DATA_DIR,
   "transpo-opportunities.generated.json",
 );
+
+export const DATA_OWNERSHIP_REGISTRY_ARTIFACT_PATH = path.join(
+  TRANSPO_DATA_DIR,
+  "data-ownership-registry.generated.json",
+);
+
+export const COLORADO_NEMT_WORKFLOW_ARTIFACT_PATH = path.join(
+  TRANSPO_DATA_DIR,
+  "colorado-nemt-workflow.generated.json",
+);
+
+export const DATA_ACCESS_PATHS_ARTIFACT_PATH = path.join(
+  TRANSPO_DATA_DIR,
+  "data-access-paths.generated.json",
+);
+
+export const HIGH_VALUE_DATA_TARGETS_ARTIFACT_PATH = path.join(
+  TRANSPO_DATA_DIR,
+  "high-value-data-targets.generated.json",
+);

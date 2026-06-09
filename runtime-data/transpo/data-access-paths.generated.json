@@ -1,0 +1,258 @@
+{
+  "generatedAt": "2026-06-09T13:05:37.655Z",
+  "total": 14,
+  "paths": [
+    {
+      "ownershipKey": "co:hcpf",
+      "entityName": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "role": "authorization_owner",
+      "canObtain": {
+        "requestedRides": "unknown",
+        "assignedRides": "unknown",
+        "completedRides": "unknown",
+        "cancelledRides": "unknown",
+        "rejectedRides": "unknown",
+        "complaints": "unknown",
+        "audits": "unknown"
+      },
+      "accessLevel": "public",
+      "accessNotes": [
+        "CORA request via https://hcpf.colorado.gov/contact-hcpf — trip-level PHI may be redacted."
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/NEMT"
+    },
+    {
+      "ownershipKey": "co:transdev-broker",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "role": "broker",
+      "canObtain": {
+        "requestedRides": "contract-only",
+        "assignedRides": "contract-only",
+        "completedRides": "contract-only",
+        "cancelledRides": "contract-only",
+        "rejectedRides": "contract-only",
+        "complaints": "contract-only",
+        "audits": "unknown"
+      },
+      "accessLevel": "contract-only",
+      "accessNotes": [
+        "Broker trip ledger requires contract, data use agreement, or broker cooperation."
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual"
+    },
+    {
+      "ownershipKey": "co:transdev-dispatch",
+      "entityName": "Health Solutions by Transdev — Dispatch Operations",
+      "role": "dispatcher",
+      "canObtain": {
+        "requestedRides": "contract-only",
+        "assignedRides": "contract-only",
+        "completedRides": "contract-only",
+        "cancelledRides": "contract-only",
+        "rejectedRides": "contract-only",
+        "complaints": "contract-only",
+        "audits": "unknown"
+      },
+      "accessLevel": "contract-only",
+      "accessNotes": [
+        "Broker trip ledger requires contract, data use agreement, or broker cooperation."
+      ],
+      "sourceUrl": "https://www.healthfirstcolorado.com/benefits-services/nemt/"
+    },
+    {
+      "ownershipKey": "co:medidrive-broker",
+      "entityName": "MediDrive (selected statewide NEMT broker)",
+      "role": "broker",
+      "canObtain": {
+        "requestedRides": "contract-only",
+        "assignedRides": "contract-only",
+        "completedRides": "contract-only",
+        "cancelledRides": "contract-only",
+        "rejectedRides": "contract-only",
+        "complaints": "contract-only",
+        "audits": "unknown"
+      },
+      "accessLevel": "contract-only",
+      "accessNotes": [
+        "Broker trip ledger requires contract, data use agreement, or broker cooperation."
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/non-emergent-medical-transportation"
+    },
+    {
+      "ownershipKey": "co:gainwell",
+      "entityName": "Gainwell Technologies (Health First Colorado fiscal agent)",
+      "role": "payer",
+      "canObtain": {
+        "requestedRides": "unknown",
+        "assignedRides": "unknown",
+        "completedRides": "requestable",
+        "cancelledRides": "unknown",
+        "rejectedRides": "requestable",
+        "complaints": "unknown",
+        "audits": "requestable"
+      },
+      "accessLevel": "contract-only",
+      "accessNotes": [],
+      "sourceUrl": "https://hcpf.colorado.gov/recovery-audit-contractor-rac-program"
+    },
+    {
+      "ownershipKey": "co:procredex",
+      "entityName": "ProCredEx (NEMT credentialing platform)",
+      "role": "reporting_owner",
+      "canObtain": {
+        "requestedRides": "unknown",
+        "assignedRides": "unknown",
+        "completedRides": "unknown",
+        "cancelledRides": "unknown",
+        "rejectedRides": "unknown",
+        "complaints": "unknown",
+        "audits": "unknown"
+      },
+      "accessLevel": "contract-only",
+      "accessNotes": [],
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual"
+    },
+    {
+      "ownershipKey": "co:nemt-complaints",
+      "entityName": "HCPF NEMT Member Feedback / Complaint Program",
+      "role": "complaint_owner",
+      "canObtain": {
+        "requestedRides": "unknown",
+        "assignedRides": "unknown",
+        "completedRides": "unknown",
+        "cancelledRides": "requestable",
+        "rejectedRides": "unknown",
+        "complaints": "public",
+        "audits": "unknown"
+      },
+      "accessLevel": "public",
+      "accessNotes": [
+        "Members may file complaints publicly; aggregate complaint data not published."
+      ],
+      "sourceUrl": "https://hcpfccc.my.salesforce-sites.com/NEMTWebform"
+    },
+    {
+      "ownershipKey": "co:health-first-colorado-member",
+      "entityName": "Health First Colorado Members",
+      "role": "request_originator",
+      "canObtain": {
+        "requestedRides": "unknown",
+        "assignedRides": "unknown",
+        "completedRides": "unknown",
+        "cancelledRides": "unknown",
+        "rejectedRides": "unknown",
+        "complaints": "unknown",
+        "audits": "unknown"
+      },
+      "accessLevel": "unknown",
+      "accessNotes": [],
+      "sourceUrl": "https://www.healthfirstcolorado.com/benefits-services/nemt/"
+    },
+    {
+      "ownershipKey": "co:rural-nemt-providers",
+      "entityName": "Rural Colorado NEMT Providers (non-broker counties)",
+      "role": "provider",
+      "canObtain": {
+        "requestedRides": "requestable",
+        "assignedRides": "requestable",
+        "completedRides": "requestable",
+        "cancelledRides": "requestable",
+        "rejectedRides": "unknown",
+        "complaints": "unknown",
+        "audits": "unknown"
+      },
+      "accessLevel": "requestable",
+      "accessNotes": [],
+      "sourceUrl": "https://hcpf.colorado.gov/nemtlist"
+    },
+    {
+      "ownershipKey": "co:osa",
+      "entityName": "Colorado Office of the State Auditor",
+      "role": "auditor",
+      "canObtain": {
+        "requestedRides": "unknown",
+        "assignedRides": "unknown",
+        "completedRides": "unknown",
+        "cancelledRides": "unknown",
+        "rejectedRides": "unknown",
+        "complaints": "requestable",
+        "audits": "public"
+      },
+      "accessLevel": "public",
+      "accessNotes": [],
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf"
+    },
+    {
+      "ownershipKey": "co:hms-rac",
+      "entityName": "Health Management Systems (Colorado Medicaid RAC)",
+      "role": "auditor",
+      "canObtain": {
+        "requestedRides": "unknown",
+        "assignedRides": "unknown",
+        "completedRides": "unknown",
+        "cancelledRides": "unknown",
+        "rejectedRides": "unknown",
+        "complaints": "requestable",
+        "audits": "public"
+      },
+      "accessLevel": "requestable",
+      "accessNotes": [
+        "CORA request via https://hcpf.colorado.gov/contact-hcpf — trip-level PHI may be redacted."
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/recovery-audit-contractor-rac-program"
+    },
+    {
+      "ownershipKey": "co:cms",
+      "entityName": "Centers for Medicare & Medicaid Services (CMS)",
+      "role": "auditor",
+      "canObtain": {
+        "requestedRides": "unknown",
+        "assignedRides": "unknown",
+        "completedRides": "unknown",
+        "cancelledRides": "unknown",
+        "rejectedRides": "unknown",
+        "complaints": "unknown",
+        "audits": "unknown"
+      },
+      "accessLevel": "public",
+      "accessNotes": [],
+      "sourceUrl": "https://hcpf.colorado.gov/NEMT"
+    },
+    {
+      "ownershipKey": "co:nemt-regulation",
+      "entityName": "10 CCR 2505-10 § 8.014 (NEMT regulations)",
+      "role": "reporting_owner",
+      "canObtain": {
+        "requestedRides": "unknown",
+        "assignedRides": "unknown",
+        "completedRides": "unknown",
+        "cancelledRides": "unknown",
+        "rejectedRides": "unknown",
+        "complaints": "unknown",
+        "audits": "public"
+      },
+      "accessLevel": "public",
+      "accessNotes": [],
+      "sourceUrl": "https://www.law.cornell.edu/regulations/colorado/10-CCR-2505-10-8.014"
+    },
+    {
+      "ownershipKey": "co:hcpf-payer",
+      "entityName": "HCPF — Medicaid Claims Payment",
+      "role": "payer",
+      "canObtain": {
+        "requestedRides": "unknown",
+        "assignedRides": "unknown",
+        "completedRides": "requestable",
+        "cancelledRides": "unknown",
+        "rejectedRides": "requestable",
+        "complaints": "unknown",
+        "audits": "requestable"
+      },
+      "accessLevel": "requestable",
+      "accessNotes": [
+        "CORA request via https://hcpf.colorado.gov/contact-hcpf — trip-level PHI may be redacted."
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual"
+    }
+  ]
+}

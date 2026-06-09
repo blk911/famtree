@@ -1,0 +1,192 @@
+{
+  "generatedAt": "2026-06-09T13:05:37.655Z",
+  "total": 8,
+  "targets": [
+    {
+      "entity": "HCPF NEMT Member Feedback / Complaint Program",
+      "ownershipKey": "co:nemt-complaints",
+      "role": "complaint_owner",
+      "dataValueScore": 72,
+      "accessDifficulty": 25,
+      "estimatedInsightValue": 73,
+      "insightTargets": [
+        "complaint rates",
+        "no-show incidents",
+        "transport delays"
+      ],
+      "sourceUrl": "https://hcpfccc.my.salesforce-sites.com/NEMTWebform"
+    },
+    {
+      "entity": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "role": "broker",
+      "dataValueScore": 95,
+      "accessDifficulty": 85,
+      "estimatedInsightValue": 71,
+      "insightTargets": [
+        "unfilled rides",
+        "trip failures",
+        "trip denials",
+        "broker overflow",
+        "transport delays"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual"
+    },
+    {
+      "entity": "MediDrive (selected statewide NEMT broker)",
+      "ownershipKey": "co:medidrive-broker",
+      "role": "broker",
+      "dataValueScore": 92,
+      "accessDifficulty": 80,
+      "estimatedInsightValue": 70,
+      "insightTargets": [
+        "unfilled rides",
+        "trip failures",
+        "trip denials",
+        "broker overflow"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/non-emergent-medical-transportation"
+    },
+    {
+      "entity": "Rural Colorado NEMT Providers (non-broker counties)",
+      "ownershipKey": "co:rural-nemt-providers",
+      "role": "provider",
+      "dataValueScore": 78,
+      "accessDifficulty": 55,
+      "estimatedInsightValue": 68,
+      "insightTargets": [
+        "trip denials",
+        "transport delays",
+        "missed dialysis transportation"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/nemtlist"
+    },
+    {
+      "entity": "Health Solutions by Transdev — Dispatch Operations",
+      "ownershipKey": "co:transdev-dispatch",
+      "role": "dispatcher",
+      "dataValueScore": 88,
+      "accessDifficulty": 82,
+      "estimatedInsightValue": 67,
+      "insightTargets": [
+        "unfilled rides",
+        "transport delays",
+        "broker overflow"
+      ],
+      "sourceUrl": "https://www.healthfirstcolorado.com/benefits-services/nemt/"
+    },
+    {
+      "entity": "Gainwell Technologies (Health First Colorado fiscal agent)",
+      "ownershipKey": "co:gainwell",
+      "role": "payer",
+      "dataValueScore": 68,
+      "accessDifficulty": 70,
+      "estimatedInsightValue": 57,
+      "insightTargets": [
+        "trip denials",
+        "trip failures"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/recovery-audit-contractor-rac-program"
+    },
+    {
+      "entity": "Colorado Office of the State Auditor",
+      "ownershipKey": "co:osa",
+      "role": "auditor",
+      "dataValueScore": 45,
+      "accessDifficulty": 15,
+      "estimatedInsightValue": 57,
+      "insightTargets": [
+        "audit gaps",
+        "improper payments"
+      ],
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf"
+    },
+    {
+      "entity": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "ownershipKey": "co:hcpf",
+      "role": "authorization_owner",
+      "dataValueScore": 60,
+      "accessDifficulty": 65,
+      "estimatedInsightValue": 53,
+      "insightTargets": [
+        "aggregate program data",
+        "authorization denials"
+      ],
+      "sourceUrl": "https://hcpf.colorado.gov/NEMT"
+    }
+  ],
+  "closestPathToUnfilledRideData": [
+    {
+      "rank": 1,
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "ownershipKey": "co:transdev-broker",
+      "rationale": "Billing manual designates Transdev as State Designated Entity for nine metro counties with trip scheduling, assignment, and broker claims. This is the only documented entity that centrally holds requested and assigned ride records in broker counties.",
+      "dataTypes": [
+        "trip requested",
+        "trip assigned",
+        "trip cancelled",
+        "unfilled queue"
+      ],
+      "accessMethod": "contract",
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual"
+    },
+    {
+      "rank": 2,
+      "entityName": "MediDrive (incoming statewide broker)",
+      "ownershipKey": "co:medidrive-broker",
+      "rationale": "HCPF selected MediDrive to manage trip scheduling, network management, and billing statewide beginning July 2026. Will become the single broker ledger for all Colorado counties.",
+      "dataTypes": [
+        "trip requested",
+        "trip assigned",
+        "provider network capacity"
+      ],
+      "accessMethod": "contract",
+      "sourceUrl": "https://hcpf.colorado.gov/non-emergent-medical-transportation"
+    },
+    {
+      "rank": 3,
+      "entityName": "Rural Colorado NEMT Providers",
+      "ownershipKey": "co:rural-nemt-providers",
+      "rationale": "In 55 non-broker counties, local providers self-administer trips and maintain Standard Trip Logs per 10 CCR 8.014.3 — closest path for rural unfilled or missed rides outside Transdev network.",
+      "dataTypes": [
+        "trip requested",
+        "trip completed",
+        "trip cancelled",
+        "trip logs"
+      ],
+      "accessMethod": "interview",
+      "sourceUrl": "https://hcpf.colorado.gov/nemtlist"
+    },
+    {
+      "rank": 4,
+      "entityName": "HCPF NEMT Member Feedback / Complaint Program",
+      "ownershipKey": "co:nemt-complaints",
+      "rationale": "Public complaint webform captures no-show, scheduling failures, and driver issues — indirect signal of unfilled or failed rides without full ledger access.",
+      "dataTypes": [
+        "complaint",
+        "no-show reports",
+        "scheduling failures"
+      ],
+      "accessMethod": "public",
+      "sourceUrl": "https://hcpfccc.my.salesforce-sites.com/NEMTWebform"
+    },
+    {
+      "rank": 5,
+      "entityName": "HCPF (CORA / program oversight)",
+      "ownershipKey": "co:hcpf",
+      "rationale": "HCPF can request broker reports under contract and may produce aggregate NEMT data via CORA, though trip-level PHI is likely redacted.",
+      "dataTypes": [
+        "aggregate trip volumes",
+        "authorization denials",
+        "program compliance"
+      ],
+      "accessMethod": "open_records",
+      "sourceUrl": "https://hcpf.colorado.gov/contact-hcpf"
+    }
+  ],
+  "summary": {
+    "topInsightValue": 73,
+    "publicSources": 5,
+    "knownSystems": 18
+  }
+}
