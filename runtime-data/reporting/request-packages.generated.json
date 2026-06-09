@@ -1,0 +1,151 @@
+{
+  "generatedAt": "2026-06-09T13:44:14.489Z",
+  "total": 8,
+  "packages": [
+    {
+      "packageKey": "pkg:target:monthly-performance-report",
+      "targetKey": "target:monthly-performance-report",
+      "reportName": "Monthly Performance Report",
+      "holder": "Colorado HCPF (NEMT program oversight)",
+      "requestPath": "https://hcpf.colorado.gov/contact-hcpf",
+      "suggestedRequestType": "cora",
+      "expectedOutput": [
+        "Trip denials by reason",
+        "Provider no-shows",
+        "Trip completion rates",
+        "Complaint counts per 1,000 trips",
+        "On-time pickup %",
+        "Call abandonment %"
+      ],
+      "priority": 95,
+      "notes": [
+        "Contract §5.10.2 — broker submits within 10 business days after month end.",
+        "Primary path to live denial counts and operational failure metrics."
+      ]
+    },
+    {
+      "packageKey": "pkg:target:monthly-dialysis-report",
+      "targetKey": "target:monthly-dialysis-report",
+      "reportName": "Monthly Dialysis Report",
+      "holder": "Colorado HCPF (NEMT program oversight)",
+      "requestPath": "https://hcpf.colorado.gov/contact-hcpf",
+      "suggestedRequestType": "cora",
+      "expectedOutput": [
+        "Missed dialysis treatments due to late transport",
+        "Late delivery bands",
+        "Dialysis provider no-shows",
+        "County-level dialysis transport failures"
+      ],
+      "priority": 90,
+      "notes": [
+        "Contract §5.10.2.1.5 — embedded in Monthly Performance Report."
+      ]
+    },
+    {
+      "packageKey": "pkg:target:complaint-investigation-summaries",
+      "targetKey": "target:complaint-investigation-summaries",
+      "reportName": "Complaint Investigation Summaries",
+      "holder": "Health Solutions by Transdev (IntelliRide) via HCPF",
+      "requestPath": "https://hcpf.colorado.gov/contact-hcpf",
+      "suggestedRequestType": "cora",
+      "expectedOutput": [
+        "Complaint volume by category",
+        "Investigation outcomes",
+        "Unresolved complaint backlog",
+        "Repeat complaint patterns"
+      ],
+      "priority": 85,
+      "notes": [
+        "Contract §5.10.2.1.4 — monthly complaint summary within performance report."
+      ]
+    },
+    {
+      "packageKey": "pkg:target:nemt-complaint-intake-records",
+      "targetKey": "target:nemt-complaint-intake-records",
+      "reportName": "NEMT Member Feedback/Complaint Intake Records",
+      "holder": "HCPF NEMT Member Feedback / Complaint Program",
+      "requestPath": "https://hcpf.colorado.gov/contact-hcpf",
+      "suggestedRequestType": "cora",
+      "expectedOutput": [
+        "No-show complaints",
+        "Scheduling failures",
+        "Driver safety complaints",
+        "Aggregate complaint volume by county"
+      ],
+      "priority": 85,
+      "notes": [
+        "Public webform — aggregate counts not published; CORA for summary statistics."
+      ]
+    },
+    {
+      "packageKey": "pkg:target:corrective-action-plans",
+      "targetKey": "target:corrective-action-plans",
+      "reportName": "Corrective Action Plans",
+      "holder": "Colorado HCPF (contract oversight)",
+      "requestPath": "https://hcpf.colorado.gov/contact-hcpf",
+      "suggestedRequestType": "cora",
+      "expectedOutput": [
+        "Issued corrective actions",
+        "Remediation timelines",
+        "Repeat KPI failures",
+        "Provider adequacy remediation"
+      ],
+      "priority": 85,
+      "notes": [
+        "OSA 2021 audit required corrective action — follow-up reports not public."
+      ]
+    },
+    {
+      "packageKey": "pkg:target:provider-adequacy-reviews",
+      "targetKey": "target:provider-adequacy-reviews",
+      "reportName": "Provider Adequacy Reviews",
+      "holder": "Colorado HCPF (NEMT program oversight)",
+      "requestPath": "https://hcpf.colorado.gov/contact-hcpf",
+      "suggestedRequestType": "cora",
+      "expectedOutput": [
+        "Provider network gaps by county",
+        "No provider available denials",
+        "Provider cancellation rates",
+        "Wheelchair/ambulance capacity shortfalls"
+      ],
+      "priority": 80,
+      "notes": [
+        "Contract §5.10.2.1.2 — provider adequacy section of monthly performance report."
+      ]
+    },
+    {
+      "packageKey": "pkg:target:audit-follow-up-reports",
+      "targetKey": "target:audit-follow-up-reports",
+      "reportName": "Audit Follow-Up Reports",
+      "holder": "Colorado Office of the State Auditor / HCPF",
+      "requestPath": "https://leg.colorado.gov/agencies/state-auditor/contact-us",
+      "suggestedRequestType": "state_records_request",
+      "expectedOutput": [
+        "Corrective action completion status",
+        "Repeat audit findings",
+        "Updated complaint resolution metrics"
+      ],
+      "priority": 75,
+      "notes": [
+        "2021 audit published; follow-up corrective action status not public."
+      ]
+    },
+    {
+      "packageKey": "pkg:target:rac-audit-findings",
+      "targetKey": "target:rac-audit-findings",
+      "reportName": "Post-Payment Audit Finding Letters (NEMT)",
+      "holder": "Health Management Systems (Colorado Medicaid RAC)",
+      "requestPath": "https://hcpf.colorado.gov/contact-hcpf",
+      "suggestedRequestType": "cora",
+      "expectedOutput": [
+        "Noncompliant claim patterns",
+        "Rides without proof of service",
+        "Provider billing failures"
+      ],
+      "priority": 70,
+      "notes": [
+        "RAC post-payment reviews — aggregate NEMT findings via CORA."
+      ]
+    }
+  ]
+}

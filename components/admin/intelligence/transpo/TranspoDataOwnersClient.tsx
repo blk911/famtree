@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TranspoIntelligenceNav } from "@/components/admin/intelligence/transpo/TranspoIntelligenceNav";
+import { NextDocumentsToAcquire } from "@/components/admin/intelligence/reporting/NextDocumentsToAcquire";
 import type {
   ClosestPathTarget,
   ColoradoNemtWorkflowArtifact,
@@ -152,6 +153,8 @@ export function TranspoDataOwnersClient() {
           </div>
         ))}
       </div>
+
+      <NextDocumentsToAcquire variant="compact" />
 
       <section className="mb-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
         <div className="text-[10px] font-bold uppercase tracking-wide text-stone-400">

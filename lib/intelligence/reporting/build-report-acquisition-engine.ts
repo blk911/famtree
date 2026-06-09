@@ -3,6 +3,11 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { buildReportSourcesFromRequired } from "./build-report-sources";
 import { buildRecordsRequestTargets } from "./build-records-request-targets";
+import {
+  buildReportTargets,
+  buildRequestPackages,
+  buildRequestTemplates,
+} from "./build-report-targets";
 import { buildExtractionArtifacts } from "./extract-report-signals";
 import type {
   AcquiredReport,
@@ -21,9 +26,17 @@ import {
   RECORDS_REQUEST_TARGETS_ARTIFACT_PATH,
   REPORT_ACQUISITION_ARTIFACT_PATH,
   REPORT_SOURCES_ARTIFACT_PATH,
+  REPORT_TARGETS_ARTIFACT_PATH,
+  REQUEST_PACKAGES_ARTIFACT_PATH,
+  REQUEST_TEMPLATES_ARTIFACT_PATH,
   REPORTING_ACQUIRED_DIR,
   REQUIRED_REPORTS_ARTIFACT_PATH,
 } from "./paths";
+import type {
+  ReportTargetsArtifact,
+  RequestPackagesArtifact,
+  RequestTemplatesArtifact,
+} from "./target-types";
 import { applyExtractedSignalsToOpportunities } from "@/lib/transpo/apply-report-failure-signals";
 
 const OSA_AUDIT_URL =
@@ -122,6 +135,9 @@ export interface ReportAcquisitionEngineResult {
   metrics: Awaited<ReturnType<typeof buildExtractionArtifacts>>["metrics"];
   failureSignals: Awaited<ReturnType<typeof buildExtractionArtifacts>>["failureSignals"];
   recordsTargets: ReturnType<typeof buildRecordsRequestTargets>;
+  reportTargets: ReportTargetsArtifact;
+  requestPackages: RequestPackagesArtifact;
+  requestTemplates: RequestTemplatesArtifact;
   opportunitiesUpdated: boolean;
 }
 
@@ -146,6 +162,9 @@ export async function buildReportAcquisitionEngine(): Promise<ReportAcquisitionE
 
   const { metrics, failureSignals } = buildExtractionArtifacts(acquired, generatedAt);
   const recordsTargets = buildRecordsRequestTargets(sources, generatedAt);
+  const reportTargets = await buildReportTargets(acquired, failureSignals, generatedAt);
+  const requestPackages = buildRequestPackages(reportTargets.targets, generatedAt);
+  const requestTemplates = buildRequestTemplates(reportTargets.targets, generatedAt);
 
   const summary = {
     discovered: sources.filter((s) => s.acquisitionStatus === "discovered").length,
@@ -175,6 +194,9 @@ export async function buildReportAcquisitionEngine(): Promise<ReportAcquisitionE
     writeFile(EXTRACTED_METRICS_ARTIFACT_PATH, JSON.stringify(metrics, null, 2), "utf8"),
     writeFile(EXTRACTED_FAILURE_SIGNALS_ARTIFACT_PATH, JSON.stringify(failureSignals, null, 2), "utf8"),
     writeFile(RECORDS_REQUEST_TARGETS_ARTIFACT_PATH, JSON.stringify(recordsTargets, null, 2), "utf8"),
+    writeFile(REPORT_TARGETS_ARTIFACT_PATH, JSON.stringify(reportTargets, null, 2), "utf8"),
+    writeFile(REQUEST_PACKAGES_ARTIFACT_PATH, JSON.stringify(requestPackages, null, 2), "utf8"),
+    writeFile(REQUEST_TEMPLATES_ARTIFACT_PATH, JSON.stringify(requestTemplates, null, 2), "utf8"),
   ]);
 
   const opportunitiesUpdated = await applyExtractedSignalsToOpportunities(failureSignals);
@@ -184,6 +206,9 @@ export async function buildReportAcquisitionEngine(): Promise<ReportAcquisitionE
     metrics,
     failureSignals,
     recordsTargets,
+    reportTargets,
+    requestPackages,
+    requestTemplates,
     opportunitiesUpdated,
   };
 }

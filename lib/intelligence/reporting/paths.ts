@@ -62,3 +62,23 @@ export const RECORDS_REQUEST_TARGETS_ARTIFACT_PATH = path.join(
 );
 
 export const REPORTING_ACQUIRED_DIR = path.join(REPORTING_DATA_DIR, "acquired");
+
+export const REPORT_TARGETS_ARTIFACT_PATH = path.join(
+  REPORTING_DATA_DIR,
+  "report-targets.generated.json",
+);
+
+export const REQUEST_PACKAGES_ARTIFACT_PATH = path.join(
+  REPORTING_DATA_DIR,
+  "request-packages.generated.json",
+);
+
+export const REQUEST_TEMPLATES_ARTIFACT_PATH = path.join(
+  REPORTING_DATA_DIR,
+  "request-templates.generated.json",
+);
+
+export const REPORT_TARGET_STATE_PATH = path.join(
+  REPORTING_DATA_DIR,
+  "report-target-state.json",
+);

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T13:36:57.605Z",
+  "generatedAt": "2026-06-09T13:44:14.489Z",
   "summary": {
     "discovered": 5,
     "requested": 0,
@@ -242,7 +242,7 @@
       "sourceKey": "co:osa:nemt-performance-audit",
       "reportName": "Medicaid Non-Emergent Medical Transportation Performance Audit",
       "entityName": "Colorado Office of the State Auditor",
-      "acquisitionDate": "2026-06-09T13:36:57.605Z",
+      "acquisitionDate": "2026-06-09T13:44:14.489Z",
       "localPath": "runtime-data/reporting/acquired/osa-nemt-audit-2021.manifest.json",
       "fileType": "manifest",
       "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
@@ -253,7 +253,7 @@
       "sourceKey": "co:transdev:monthly-performance-report",
       "reportName": "HCPF NEMT Broker RFP Contract (HCPFRFPSM14NEMT)",
       "entityName": "Colorado HCPF / Transdev contract",
-      "acquisitionDate": "2026-06-09T13:36:57.605Z",
+      "acquisitionDate": "2026-06-09T13:44:14.489Z",
       "localPath": "runtime-data/reporting/acquired/hcpf-nemt-contract.manifest.json",
       "fileType": "manifest",
       "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",

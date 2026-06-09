@@ -1,0 +1,233 @@
+{
+  "generatedAt": "2026-06-09T13:44:14.489Z",
+  "total": 10,
+  "summary": {
+    "identified": 4,
+    "requestReady": 4,
+    "requested": 0,
+    "acquired": 2,
+    "failed": 0
+  },
+  "targets": [
+    {
+      "targetKey": "target:monthly-performance-report",
+      "sourceKey": "co:transdev:monthly-performance-report",
+      "reportName": "Monthly Performance Report",
+      "holder": "Colorado HCPF (NEMT program oversight)",
+      "reportCategory": "performance_report",
+      "priority": 95,
+      "expectedInsightValue": 100,
+      "expectedInsights": [
+        "Trip denials by reason",
+        "Provider no-shows",
+        "Trip completion rates",
+        "Complaint counts per 1,000 trips",
+        "On-time pickup %",
+        "Call abandonment %"
+      ],
+      "acquisitionMethod": "cora",
+      "status": "request_ready",
+      "workflowStage": "request_ready",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "notes": [
+        "Contract §5.10.2 — broker submits within 10 business days after month end.",
+        "Primary path to live denial counts and operational failure metrics."
+      ]
+    },
+    {
+      "targetKey": "target:monthly-dialysis-report",
+      "sourceKey": "co:transdev:dialysis-report",
+      "reportName": "Monthly Dialysis Report",
+      "holder": "Colorado HCPF (NEMT program oversight)",
+      "reportCategory": "dialysis_report",
+      "priority": 90,
+      "expectedInsightValue": 95,
+      "expectedInsights": [
+        "Missed dialysis treatments due to late transport",
+        "Late delivery bands",
+        "Dialysis provider no-shows",
+        "County-level dialysis transport failures"
+      ],
+      "acquisitionMethod": "cora",
+      "status": "request_ready",
+      "workflowStage": "request_ready",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "notes": [
+        "Contract §5.10.2.1.5 — embedded in Monthly Performance Report."
+      ]
+    },
+    {
+      "targetKey": "target:complaint-investigation-summaries",
+      "sourceKey": "co:transdev:complaint-report",
+      "reportName": "Complaint Investigation Summaries",
+      "holder": "Health Solutions by Transdev (IntelliRide) via HCPF",
+      "reportCategory": "complaint_summary",
+      "priority": 85,
+      "expectedInsightValue": 90,
+      "expectedInsights": [
+        "Complaint volume by category",
+        "Investigation outcomes",
+        "Unresolved complaint backlog",
+        "Repeat complaint patterns"
+      ],
+      "acquisitionMethod": "cora",
+      "status": "request_ready",
+      "workflowStage": "request_ready",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "notes": [
+        "Contract §5.10.2.1.4 — monthly complaint summary within performance report."
+      ]
+    },
+    {
+      "targetKey": "target:nemt-complaint-intake-records",
+      "sourceKey": "co:nemt-complaints:member-feedback-intake",
+      "reportName": "NEMT Member Feedback/Complaint Intake Records",
+      "holder": "HCPF NEMT Member Feedback / Complaint Program",
+      "reportCategory": "complaint_summary",
+      "priority": 85,
+      "expectedInsightValue": 90,
+      "expectedInsights": [
+        "No-show complaints",
+        "Scheduling failures",
+        "Driver safety complaints",
+        "Aggregate complaint volume by county"
+      ],
+      "acquisitionMethod": "cora",
+      "status": "request_ready",
+      "workflowStage": "request_ready",
+      "sourceUrl": "https://hcpfccc.my.salesforce-sites.com/NEMTWebform",
+      "notes": [
+        "Public webform — aggregate counts not published; CORA for summary statistics."
+      ]
+    },
+    {
+      "targetKey": "target:corrective-action-plans",
+      "sourceKey": "co:transdev:incident-report",
+      "reportName": "Corrective Action Plans",
+      "holder": "Colorado HCPF (contract oversight)",
+      "reportCategory": "corrective_action",
+      "priority": 85,
+      "expectedInsightValue": 85,
+      "expectedInsights": [
+        "Issued corrective actions",
+        "Remediation timelines",
+        "Repeat KPI failures",
+        "Provider adequacy remediation"
+      ],
+      "acquisitionMethod": "cora",
+      "status": "identified",
+      "workflowStage": "identified",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "notes": [
+        "OSA 2021 audit required corrective action — follow-up reports not public."
+      ]
+    },
+    {
+      "targetKey": "target:provider-adequacy-reviews",
+      "sourceKey": "co:transdev:monthly-performance-report",
+      "reportName": "Provider Adequacy Reviews",
+      "holder": "Colorado HCPF (NEMT program oversight)",
+      "reportCategory": "provider_adequacy",
+      "priority": 80,
+      "expectedInsightValue": 80,
+      "expectedInsights": [
+        "Provider network gaps by county",
+        "No provider available denials",
+        "Provider cancellation rates",
+        "Wheelchair/ambulance capacity shortfalls"
+      ],
+      "acquisitionMethod": "cora",
+      "status": "identified",
+      "workflowStage": "identified",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "notes": [
+        "Contract §5.10.2.1.2 — provider adequacy section of monthly performance report."
+      ]
+    },
+    {
+      "targetKey": "target:osa-nemt-audit-2021",
+      "sourceKey": "co:osa:nemt-performance-audit",
+      "reportName": "Medicaid NEMT Performance Audit (2021)",
+      "holder": "Colorado Office of the State Auditor",
+      "reportCategory": "audit",
+      "priority": 80,
+      "expectedInsightValue": 80,
+      "expectedInsights": [
+        "68% complaints unresolved",
+        "75 unreported safety incidents",
+        "$291,600 noncompliant claims",
+        "On-time pickup failures"
+      ],
+      "acquisitionMethod": "public_download",
+      "status": "acquired",
+      "workflowStage": "signals_generated",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
+      "notes": [
+        "Public audit — already acquired and extracted."
+      ]
+    },
+    {
+      "targetKey": "target:audit-follow-up-reports",
+      "sourceKey": "co:osa:nemt-performance-audit",
+      "reportName": "Audit Follow-Up Reports",
+      "holder": "Colorado Office of the State Auditor / HCPF",
+      "reportCategory": "audit",
+      "priority": 75,
+      "expectedInsightValue": 75,
+      "expectedInsights": [
+        "Corrective action completion status",
+        "Repeat audit findings",
+        "Updated complaint resolution metrics"
+      ],
+      "acquisitionMethod": "state_records_request",
+      "status": "identified",
+      "workflowStage": "identified",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
+      "notes": [
+        "2021 audit published; follow-up corrective action status not public."
+      ]
+    },
+    {
+      "targetKey": "target:rac-audit-findings",
+      "sourceKey": "co:hms:rac-audit-findings",
+      "reportName": "Post-Payment Audit Finding Letters (NEMT)",
+      "holder": "Health Management Systems (Colorado Medicaid RAC)",
+      "reportCategory": "audit",
+      "priority": 70,
+      "expectedInsightValue": 70,
+      "expectedInsights": [
+        "Noncompliant claim patterns",
+        "Rides without proof of service",
+        "Provider billing failures"
+      ],
+      "acquisitionMethod": "cora",
+      "status": "identified",
+      "workflowStage": "identified",
+      "sourceUrl": "https://hcpf.colorado.gov/recovery-audit-contractor-rac-program",
+      "notes": [
+        "RAC post-payment reviews — aggregate NEMT findings via CORA."
+      ]
+    },
+    {
+      "targetKey": "target:hcpf-nemt-contract",
+      "sourceKey": "co:transdev:monthly-performance-report",
+      "reportName": "HCPF NEMT Broker Contract (reporting requirements)",
+      "holder": "Colorado HCPF",
+      "reportCategory": "contract_attachment",
+      "priority": 70,
+      "expectedInsightValue": 70,
+      "expectedInsights": [
+        "KPI baselines (on-time pickup, call abandonment)",
+        "Monthly report schema",
+        "Dialysis reporting requirements"
+      ],
+      "acquisitionMethod": "public_download",
+      "status": "acquired",
+      "workflowStage": "signals_generated",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "notes": [
+        "Public contract PDF — KPI baselines extracted; not live operational data."
+      ]
+    }
+  ]
+}

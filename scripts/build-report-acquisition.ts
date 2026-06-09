@@ -16,11 +16,16 @@ async function main(): Promise<void> {
   console.log(`Metrics extracted: ${result.metrics.total}`);
   console.log(`Failure signals: ${result.failureSignals.total}`);
   console.log(`Records request targets: ${result.recordsTargets.total}`);
+  console.log(`Live report targets: ${result.reportTargets.total}`);
+  console.log(`  Request ready: ${result.reportTargets.summary.requestReady}`);
+  console.log(`  Acquired: ${result.reportTargets.summary.acquired}`);
+  console.log(`Request packages: ${result.requestPackages.total}`);
+  console.log(`Request templates: ${result.requestTemplates.total}`);
   console.log(`Transpo opportunities updated: ${result.opportunitiesUpdated}`);
   console.log("");
-  console.log("Highest value report targets:");
-  for (const t of result.recordsTargets.targets.slice(0, 5)) {
-    console.log(`  ${t.priority}. ${t.reportName} (${t.holder}) — ${t.accessMethod}`);
+  console.log("Top acquisition targets:");
+  for (const t of result.reportTargets.targets.slice(0, 10)) {
+    console.log(`  ${t.priority}. ${t.reportName} (${t.holder}) — ${t.status}`);
   }
   console.log("");
   console.log("Failure signal categories:");

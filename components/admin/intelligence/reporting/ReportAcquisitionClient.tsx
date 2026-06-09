@@ -124,10 +124,16 @@ export function ReportAcquisitionClient() {
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           <Link
+            href="/admin/intelligence/reporting/live-targets"
+            className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-900 no-underline hover:bg-amber-100"
+          >
+            Live report targets →
+          </Link>
+          <Link
             href="/admin/intelligence/reporting/signals"
             className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-800 no-underline hover:bg-indigo-100"
           >
-            View failure signals →
+            Failure signals
           </Link>
         </div>
       </header>

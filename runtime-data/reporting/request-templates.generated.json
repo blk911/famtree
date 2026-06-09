@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-06-09T13:44:14.489Z",
+  "total": 3,
+  "templates": [
+    {
+      "templateKey": "tpl:cora-nemt-monthly-performance",
+      "targetKeys": [
+        "target:monthly-performance-report",
+        "target:monthly-dialysis-report",
+        "target:provider-adequacy-reviews"
+      ],
+      "subject": "Colorado Open Records Act Request — NEMT Broker Monthly Performance Reports",
+      "agency": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "requestedDocuments": [
+        "Monthly Performance Reports submitted by Health Solutions by Transdev (IntelliRide) under HCPF NEMT broker contract §5.10.2",
+        "Monthly Dialysis Reports (§5.10.2.1.5)",
+        "Provider adequacy sections including trips denied for no provider available"
+      ],
+      "dateRange": "January 2024 through most recent month available",
+      "expectedReportNames": [
+        "Monthly Performance Report",
+        "Monthly Dialysis Report",
+        "Provider Adequacy Review"
+      ],
+      "body": "Pursuant to the Colorado Open Records Act (C.R.S. § 24-72-201 et seq.), I request copies of the following records held by HCPF:\n\n1. All Monthly Performance Reports submitted by Health Solutions by Transdev (IntelliRide) pursuant to the NEMT broker contract §5.10.2, including:\n   - Trips denied by reason\n   - Provider no-shows and cancellations\n   - Trip completion rates\n   - Complaint summary per 1,000 trips\n   - On-time pickup percentages\n   - Call center abandonment rates\n\n2. Monthly Dialysis Reports (§5.10.2.1.5) including missed treatments due to late transport and late delivery bands.\n\n3. Provider adequacy data by county, including denials for no provider available.\n\nDate range: January 2024 through the most recent month available.\n\nPlease provide records in electronic format (PDF or spreadsheet) if available. I am willing to pay reasonable copying fees."
+    },
+    {
+      "templateKey": "tpl:cora-nemt-complaints",
+      "targetKeys": [
+        "target:complaint-investigation-summaries",
+        "target:nemt-complaint-intake-records"
+      ],
+      "subject": "Colorado Open Records Act Request — NEMT Complaint Records",
+      "agency": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "requestedDocuments": [
+        "Aggregate NEMT member feedback/complaint intake statistics",
+        "Complaint investigation summaries from broker monthly reports",
+        "Corrective action plans issued in response to complaint or KPI failures"
+      ],
+      "dateRange": "January 2024 through most recent month available",
+      "expectedReportNames": [
+        "NEMT Member Feedback/Complaint Intake Records (aggregate)",
+        "Complaint Investigation Summaries",
+        "Corrective Action Plans"
+      ],
+      "body": "Pursuant to the Colorado Open Records Act (C.R.S. § 24-72-201 et seq.), I request copies of the following records:\n\n1. Aggregate statistics from the HCPF NEMT Member Feedback/Complaint Program, including complaint counts by category (no-show, scheduling, driver safety, fraud) — no member-identifying information required.\n\n2. Complaint investigation summaries submitted by Health Solutions by Transdev (IntelliRide) in monthly performance reports (§5.10.2.1.4).\n\n3. Any corrective action plans issued to the NEMT broker in response to audit findings or KPI failures.\n\nDate range: January 2024 through the most recent month available.\n\nPlease provide aggregate/summary data only — no member-level PHI."
+    },
+    {
+      "templateKey": "tpl:cora-nemt-rac-audits",
+      "targetKeys": [
+        "target:rac-audit-findings"
+      ],
+      "subject": "Colorado Open Records Act Request — NEMT RAC Audit Findings",
+      "agency": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "requestedDocuments": [
+        "Aggregate post-payment audit finding letters related to NEMT transportation claims",
+        "Summary of noncompliant NEMT claims identified by Health Management Systems (RAC)"
+      ],
+      "dateRange": "January 2023 through present",
+      "expectedReportNames": [
+        "Post-Payment Audit Finding Letters (NEMT aggregate)"
+      ],
+      "body": "Pursuant to the Colorado Open Records Act, I request aggregate summary data of post-payment audit findings related to Colorado Medicaid Non-Emergent Medical Transportation (NEMT) claims reviewed by the Recovery Audit Contractor (Health Management Systems), including counts of claims without proof of ride occurrence.\n\nDate range: January 2023 through present. Aggregate data only — no member-level PHI."
+    }
+  ]
+}
