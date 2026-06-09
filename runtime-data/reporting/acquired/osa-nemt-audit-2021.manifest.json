@@ -1,0 +1,12 @@
+{
+  "reportId": "osa:nemt-audit-2021",
+  "title": "Colorado OSA NEMT Performance Audit (2021)",
+  "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
+  "acquisitionMethod": "public_download",
+  "excerptNote": "Public audit — metrics extracted from published findings, not ride-level PHI.",
+  "publicMetrics": [
+    "68% complaints unresolved",
+    "75 unreported safety incidents",
+    "$291,600 noncompliant claims"
+  ]
+}

@@ -30,3 +30,35 @@ export const TRANSPO_DATA_OWNERSHIP_REGISTRY_PATH = path.join(
   "transpo",
   "data-ownership-registry.generated.json",
 );
+
+export const REPORT_SOURCES_ARTIFACT_PATH = path.join(
+  REPORTING_DATA_DIR,
+  "report-sources.generated.json",
+);
+
+export const REPORT_ACQUISITION_ARTIFACT_PATH = path.join(
+  REPORTING_DATA_DIR,
+  "report-acquisition.generated.json",
+);
+
+export const REPORT_ACQUISITION_STATE_PATH = path.join(
+  REPORTING_DATA_DIR,
+  "report-acquisition-state.json",
+);
+
+export const EXTRACTED_METRICS_ARTIFACT_PATH = path.join(
+  REPORTING_DATA_DIR,
+  "extracted-metrics.generated.json",
+);
+
+export const EXTRACTED_FAILURE_SIGNALS_ARTIFACT_PATH = path.join(
+  REPORTING_DATA_DIR,
+  "extracted-failure-signals.generated.json",
+);
+
+export const RECORDS_REQUEST_TARGETS_ARTIFACT_PATH = path.join(
+  REPORTING_DATA_DIR,
+  "records-request-targets.generated.json",
+);
+
+export const REPORTING_ACQUIRED_DIR = path.join(REPORTING_DATA_DIR, "acquired");

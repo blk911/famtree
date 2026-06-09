@@ -1,0 +1,233 @@
+{
+  "generatedAt": "2026-06-09T13:36:57.605Z",
+  "total": 14,
+  "sources": [
+    {
+      "sourceKey": "co:osa:nemt-performance-audit",
+      "entityName": "Colorado Office of the State Auditor",
+      "reportName": "Medicaid Non-Emergent Medical Transportation Performance Audit",
+      "reportType": "audit",
+      "acquisitionMethod": "public_download",
+      "publicAvailable": true,
+      "acquisitionStatus": "acquired",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
+      "reportKey": "co:osa:nemt-performance-audit",
+      "ownershipKey": "co:osa",
+      "insightValue": 90,
+      "notes": [
+        "Published September 2021 — public failure metrics on complaints, billing, and contract compliance."
+      ]
+    },
+    {
+      "sourceKey": "co:transdev:complaint-response-sla",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "reportName": "Complaint Acknowledgment and Investigation Response",
+      "reportType": "complaint_report",
+      "acquisitionMethod": "unknown",
+      "publicAvailable": false,
+      "acquisitionStatus": "discovered",
+      "sourceUrl": "https://transdevhealthsolutions.com/colorado/transportation-providers/",
+      "reportKey": "co:transdev:complaint-response-sla",
+      "ownershipKey": "co:transdev-broker",
+      "insightValue": 85,
+      "notes": [
+        "Transdev acknowledges complaints within 2 business days; written investigation response within 10 business days."
+      ]
+    },
+    {
+      "sourceKey": "co:nemt-complaints:member-feedback-intake",
+      "entityName": "HCPF NEMT Member Feedback / Complaint Program",
+      "reportName": "NEMT Member Feedback/Complaint Intake Records",
+      "reportType": "complaint_report",
+      "acquisitionMethod": "state_records_request",
+      "publicAvailable": false,
+      "acquisitionStatus": "discovered",
+      "sourceUrl": "https://hcpfccc.my.salesforce-sites.com/NEMTWebform",
+      "reportKey": "co:nemt-complaints:member-feedback-intake",
+      "ownershipKey": "co:nemt-complaints",
+      "insightValue": 85,
+      "notes": [
+        "Public webform captures no-show, scheduling, driver safety, and fraud categories — aggregate not published."
+      ]
+    },
+    {
+      "sourceKey": "co:transdev:monthly-performance-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "reportName": "Monthly Performance Report",
+      "reportType": "performance_report",
+      "acquisitionMethod": "contract_request",
+      "publicAvailable": false,
+      "acquisitionStatus": "acquired",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "reportKey": "co:transdev:monthly-performance-report",
+      "ownershipKey": "co:transdev-broker",
+      "insightValue": 80,
+      "notes": [
+        "Contract §5.10.2 — due within 10 business days after month end.",
+        "Includes denials, dialysis performance, contact center metrics, complaint summary per 1,000 trips."
+      ]
+    },
+    {
+      "sourceKey": "co:hms:rac-audit-findings",
+      "entityName": "Health Management Systems (Colorado Medicaid RAC)",
+      "reportName": "Post-Payment Audit Finding Letters",
+      "reportType": "audit",
+      "acquisitionMethod": "state_records_request",
+      "publicAvailable": false,
+      "acquisitionStatus": "discovered",
+      "sourceUrl": "https://hcpf.colorado.gov/recovery-audit-contractor-rac-program",
+      "reportKey": "co:hms:rac-audit-findings",
+      "ownershipKey": "co:hms-rac",
+      "insightValue": 80,
+      "notes": [
+        "RAC conducts post-payment claim reviews; providers receive Notice of Adverse Action for overpayments."
+      ]
+    },
+    {
+      "sourceKey": "co:transdev:dialysis-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "reportName": "Monthly Dialysis Report (within Monthly Performance Report)",
+      "reportType": "dialysis_report",
+      "acquisitionMethod": "contract_request",
+      "publicAvailable": false,
+      "acquisitionStatus": "acquired",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "reportKey": "co:transdev:dialysis-report",
+      "ownershipKey": "co:transdev-broker",
+      "insightValue": 75,
+      "notes": [
+        "Contract §5.10.2.1.5 — late delivery bands, missed treatments due to late transport, provider no-shows."
+      ]
+    },
+    {
+      "sourceKey": "co:transdev:complaint-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "reportName": "Monthly Complaint Report (within Monthly Performance Report)",
+      "reportType": "complaint_report",
+      "acquisitionMethod": "contract_request",
+      "publicAvailable": false,
+      "acquisitionStatus": "acquired",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "reportKey": "co:transdev:complaint-report",
+      "ownershipKey": "co:transdev-broker",
+      "insightValue": 70,
+      "notes": [
+        "Contract §5.10.2.1.4 — provider no-shows, complaints per 1,000 trips, lateness detail, corrective actions."
+      ]
+    },
+    {
+      "sourceKey": "co:transdev:complaint-policies",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "reportName": "Written Client Complaint Policies and Procedures",
+      "reportType": "complaint_report",
+      "acquisitionMethod": "contract_request",
+      "publicAvailable": false,
+      "acquisitionStatus": "acquired",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "reportKey": "co:transdev:complaint-policies",
+      "ownershipKey": "co:transdev-broker",
+      "insightValue": 70,
+      "notes": [
+        "Contract §5.4.4.3.1 deliverable — complaint log requirements."
+      ]
+    },
+    {
+      "sourceKey": "co:hcpf:provider-bulletins",
+      "entityName": "Colorado Department of Health Care Policy and Financing (HCPF)",
+      "reportName": "Monthly NEMT Provider Bulletins",
+      "reportType": "other",
+      "acquisitionMethod": "public_download",
+      "publicAvailable": true,
+      "acquisitionStatus": "acquired",
+      "sourceUrl": "https://hcpf.colorado.gov/non-emergent-medical-transportation",
+      "reportKey": "co:hcpf:provider-bulletins",
+      "ownershipKey": "co:hcpf",
+      "insightValue": 50,
+      "notes": [
+        "HCPF publishes monthly provider bulletins with NEMT program updates and timelines."
+      ]
+    },
+    {
+      "sourceKey": "co:hcpf:standard-trip-log",
+      "entityName": "Colorado NEMT Providers (all enrolled)",
+      "reportName": "HCPF Standard Trip Log",
+      "reportType": "other",
+      "acquisitionMethod": "unknown",
+      "publicAvailable": false,
+      "acquisitionStatus": "discovered",
+      "sourceUrl": "https://hcpf.colorado.gov/nemt-billing-manual",
+      "reportKey": "co:hcpf:standard-trip-log",
+      "ownershipKey": "co:rural-nemt-providers",
+      "insightValue": 40,
+      "notes": [
+        "Required for all rides effective October 1, 2024; submitted with claims, retained on file.",
+        "HCPF may request copies for any claim at any time."
+      ]
+    },
+    {
+      "sourceKey": "co:regulation:trip-report",
+      "entityName": "NEMT Transportation Providers",
+      "reportName": "Trip Report (10 CCR 2505-10 § 8.014.3.C)",
+      "reportType": "other",
+      "acquisitionMethod": "unknown",
+      "publicAvailable": false,
+      "acquisitionStatus": "discovered",
+      "sourceUrl": "https://www.law.cornell.edu/regulations/colorado/10-CCR-2505-10-8.014",
+      "reportKey": "co:regulation:trip-report",
+      "ownershipKey": "co:nemt-regulation",
+      "insightValue": 40,
+      "notes": [
+        "Regulation requires trip report per ride: pickup/dropoff times, client ID, driver, vehicle, confirmation of trip occurrence."
+      ]
+    },
+    {
+      "sourceKey": "co:transdev:monthly-trip-data-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "reportName": "Monthly Trip Data Report",
+      "reportType": "other",
+      "acquisitionMethod": "contract_request",
+      "publicAvailable": false,
+      "acquisitionStatus": "acquired",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "reportKey": "co:transdev:monthly-trip-data-report",
+      "ownershipKey": "co:transdev-broker",
+      "insightValue": 25,
+      "notes": [
+        "Contract §5.10.2.4 — per-trip data submitted to HCPF (member-level; contract-required, not public).",
+        "Contains trip authorization, scheduling, pickup/dropoff, and mode of transport."
+      ]
+    },
+    {
+      "sourceKey": "co:transdev:incident-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "reportName": "Incident Report",
+      "reportType": "corrective_action",
+      "acquisitionMethod": "contract_request",
+      "publicAvailable": false,
+      "acquisitionStatus": "acquired",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "reportKey": "co:transdev:incident-report",
+      "ownershipKey": "co:transdev-broker",
+      "insightValue": 25,
+      "notes": [
+        "Contract §5.10.4 — due within 1 business day for accidents and urgent corrective incidents."
+      ]
+    },
+    {
+      "sourceKey": "co:transdev:annual-report",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "reportName": "Annual NEMT Report",
+      "reportType": "other",
+      "acquisitionMethod": "contract_request",
+      "publicAvailable": false,
+      "acquisitionStatus": "acquired",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "reportKey": "co:transdev:annual-report",
+      "ownershipKey": "co:transdev-broker",
+      "insightValue": 25,
+      "notes": [
+        "Contract §5.10.2.7 — utilization summary, major problems, improvement recommendations."
+      ]
+    }
+  ]
+}

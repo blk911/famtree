@@ -1,0 +1,116 @@
+{
+  "generatedAt": "2026-06-09T13:36:57.605Z",
+  "total": 11,
+  "metrics": [
+    {
+      "metricKey": "osa:complaints-unresolved-pct",
+      "reportId": "osa:nemt-audit-2021",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "metricName": "Complaints unresolved (audit period)",
+      "metricValue": "68%",
+      "category": "complaints",
+      "sourcePage": "OSA press release / audit summary",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf"
+    },
+    {
+      "metricKey": "osa:safety-incidents-unreported",
+      "reportId": "osa:nemt-audit-2021",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "metricName": "Health/safety incidents not investigated or reported",
+      "metricValue": "75",
+      "category": "complaints",
+      "sourcePage": "OSA press release",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf"
+    },
+    {
+      "metricKey": "osa:noncompliant-claims-paid",
+      "reportId": "osa:nemt-audit-2021",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "metricName": "Noncompliant NEMT claims paid",
+      "metricValue": "$291,600",
+      "category": "completion",
+      "sourcePage": "OSA audit report",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf"
+    },
+    {
+      "metricKey": "osa:potentially-noncompliant-claims",
+      "reportId": "osa:nemt-audit-2021",
+      "entityName": "Colorado HCPF",
+      "metricName": "Potentially noncompliant NEMT claims",
+      "metricValue": "$5.2 million",
+      "category": "completion",
+      "sourcePage": "OSA audit report",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf"
+    },
+    {
+      "metricKey": "osa:mistreatment-unreported",
+      "reportId": "osa:nemt-audit-2021",
+      "entityName": "Colorado HCPF",
+      "metricName": "Potential mistreatment acts not reported to law enforcement",
+      "metricValue": "32",
+      "category": "complaints",
+      "sourcePage": "OSA press release",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf"
+    },
+    {
+      "metricKey": "contract:on-time-pickup-target",
+      "reportId": "contract:hcpf-nemt-rfp",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "metricName": "On-time pickup within 15 minutes of scheduled time",
+      "metricValue": "100% (contract baseline)",
+      "category": "timeliness",
+      "sourcePage": "HCPF NEMT RFP §5.9.1.1.1.1.1",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf"
+    },
+    {
+      "metricKey": "contract:call-abandonment-target",
+      "reportId": "contract:hcpf-nemt-rfp",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "metricName": "Call abandonment rate",
+      "metricValue": "< 8% (contract baseline)",
+      "category": "call_center",
+      "sourcePage": "HCPF NEMT RFP §5.9.1.1.2.4.1",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf"
+    },
+    {
+      "metricKey": "contract:complaints-per-1000-trips",
+      "reportId": "contract:hcpf-nemt-rfp",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "metricName": "Complaints per 1,000 trips",
+      "metricValue": "reported monthly (no public threshold)",
+      "category": "complaints",
+      "sourcePage": "HCPF NEMT RFP §5.10.2.1.4.1",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf"
+    },
+    {
+      "metricKey": "contract:trips-denied-by-reason",
+      "reportId": "contract:hcpf-nemt-rfp",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "metricName": "Trips denied by reason",
+      "metricValue": "reported monthly in performance report",
+      "category": "denials",
+      "sourcePage": "HCPF NEMT RFP §5.10.2.1.2.3",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf"
+    },
+    {
+      "metricKey": "contract:missed-dialysis-treatments",
+      "reportId": "contract:hcpf-nemt-rfp",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "metricName": "Missed dialysis treatments due to late transport",
+      "metricValue": "reported monthly in dialysis report",
+      "category": "dialysis",
+      "sourcePage": "HCPF NEMT RFP §5.10.2.1.5.3",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf"
+    },
+    {
+      "metricKey": "contract:provider-no-shows",
+      "reportId": "contract:hcpf-nemt-rfp",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "metricName": "Provider no-shows (cancelled at door)",
+      "metricValue": "reported monthly by county",
+      "category": "provider_network",
+      "sourcePage": "HCPF NEMT RFP §5.10.2.1.4.2",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf"
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "generatedAt": "2026-06-09T13:36:57.605Z",
+  "total": 7,
+  "bySeverity": {
+    "critical": 2,
+    "high": 3,
+    "medium": 2
+  },
+  "signals": [
+    {
+      "signalKey": "osa:complaint-resolution-failure",
+      "reportId": "osa:nemt-audit-2021",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "severity": "critical",
+      "signalType": "complaint_spike",
+      "summary": "Audit documented 68% of broker complaints unresolved — complaint volume elevated with systemic resolution failure.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "appliesToCounties": [
+        "Adams",
+        "Arapahoe",
+        "Boulder",
+        "Broomfield",
+        "Denver",
+        "Douglas",
+        "Jefferson",
+        "Larimer",
+        "Weld"
+      ]
+    },
+    {
+      "signalKey": "osa:incident-reporting-gap",
+      "reportId": "osa:nemt-audit-2021",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "severity": "critical",
+      "signalType": "missed_kpi",
+      "summary": "75 health/safety incidents not investigated or reported to HCPF despite contract incident reporting requirements.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "appliesToCounties": [
+        "Adams",
+        "Arapahoe",
+        "Boulder",
+        "Broomfield",
+        "Denver",
+        "Douglas",
+        "Jefferson",
+        "Larimer",
+        "Weld"
+      ]
+    },
+    {
+      "signalKey": "osa:claims-without-ride-proof",
+      "reportId": "osa:nemt-audit-2021",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "severity": "high",
+      "signalType": "denial_spike",
+      "summary": "Monthly report / claims audit shows denial activity — $291,600 paid for claims without proof rides occurred.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/documents/audits/2152p_medicaid_non-emergent_medical_transport.pdf",
+      "appliesToCounties": [
+        "Adams",
+        "Arapahoe",
+        "Boulder",
+        "Broomfield",
+        "Denver",
+        "Douglas",
+        "Jefferson",
+        "Larimer",
+        "Weld"
+      ]
+    },
+    {
+      "signalKey": "osa:contract-compliance-corrective-action",
+      "reportId": "osa:nemt-audit-2021",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "severity": "high",
+      "signalType": "corrective_action",
+      "summary": "Corrective action issued — OSA required HCPF ensure contractor meets on-time pickup, call answer, and complaint tracking requirements.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "appliesToCounties": [
+        "Adams",
+        "Arapahoe",
+        "Boulder",
+        "Broomfield",
+        "Denver",
+        "Douglas",
+        "Jefferson",
+        "Larimer",
+        "Weld"
+      ]
+    },
+    {
+      "signalKey": "osa:on-time-pickup-contract-miss",
+      "reportId": "osa:nemt-audit-2021",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "severity": "medium",
+      "signalType": "missed_kpi",
+      "summary": "Audit found contractor did not ensure on-time pickups per contract — timeliness KPI failure signal.",
+      "sourceUrl": "https://leg.colorado.gov/sites/default/files/non-emergent_medical_transportation_press_release_final_9-27-2021.pdf",
+      "appliesToCounties": [
+        "Adams",
+        "Arapahoe",
+        "Boulder",
+        "Broomfield",
+        "Denver",
+        "Douglas",
+        "Jefferson",
+        "Larimer",
+        "Weld"
+      ]
+    },
+    {
+      "signalKey": "contract:monthly-denial-reporting-required",
+      "reportId": "contract:hcpf-nemt-rfp",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "severity": "medium",
+      "signalType": "denial_spike",
+      "summary": "Contract requires monthly reporting of trips denied by reason — acquisition of performance report would expose denial activity.",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "appliesToCounties": [
+        "Adams",
+        "Arapahoe",
+        "Boulder",
+        "Broomfield",
+        "Denver",
+        "Douglas",
+        "Jefferson",
+        "Larimer",
+        "Weld"
+      ]
+    },
+    {
+      "signalKey": "contract:dialysis-failure-reporting-required",
+      "reportId": "contract:hcpf-nemt-rfp",
+      "entityName": "Health Solutions by Transdev (IntelliRide)",
+      "severity": "high",
+      "signalType": "missed_dialysis",
+      "summary": "Dialysis transport failures reported in contract-required monthly dialysis report — missed treatments due to late delivery.",
+      "sourceUrl": "https://www.bidscolorado.com/co/portal.nsf/xsp/.ibmmodres/domino/OpenAttachment/co/CBdSols.nsf/FBC001108940F43C87257C400070C2A5/Body/HCPFRFPSM14NEMT.pdf",
+      "appliesToCounties": [
+        "Adams",
+        "Arapahoe",
+        "Boulder",
+        "Broomfield",
+        "Denver",
+        "Douglas",
+        "Jefferson",
+        "Larimer",
+        "Weld"
+      ]
+    }
+  ]
+}

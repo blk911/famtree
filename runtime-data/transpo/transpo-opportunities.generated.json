@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T12:46:02.903Z",
+  "generatedAt": "2026-06-09T13:36:57.612Z",
   "total": 64,
   "opportunities": [
     {
@@ -102,20 +102,26 @@
         "monthly_trip_volume"
       ],
       "confidence": "low",
-      "actionabilityScore": 50,
+      "actionabilityScore": 60,
       "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
       "rationale": [
         "1 credentialed providers listed by HCPF",
         "Demand score 0, capacity score 20",
         "Evidence completeness only 16%",
         "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
-        "Research priority high with 4 critical evidence gaps."
+        "Research priority high with 4 critical evidence gaps.",
+        "Complaint volume elevated (audit evidence).",
+        "75 health/safety incidents not investigated or reported to HCPF despite contract incident reporting requirements.",
+        "Monthly report shows denial activity (audit evidence).",
+        "Timeliness KPI failure documented in audit.",
+        "Dialysis transport failures reported (contract/audit)."
       ],
       "sourceArtifacts": [
         "runtime-data/transpo/county-demand-dossiers.generated.json",
         "runtime-data/transpo/county-capacity.generated.json",
         "runtime-data/transpo/county-evidence-dossiers.generated.json",
-        "runtime-data/transpo/county-research-summary.generated.json"
+        "runtime-data/transpo/county-research-summary.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json"
       ],
       "generatedAt": "2026-06-09T12:46:02.903Z"
     },
@@ -151,20 +157,26 @@
         "monthly_trip_volume"
       ],
       "confidence": "low",
-      "actionabilityScore": 50,
+      "actionabilityScore": 60,
       "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
       "rationale": [
         "1 credentialed providers listed by HCPF",
         "Demand score 0, capacity score 20",
         "Evidence completeness only 16%",
         "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
-        "Research priority high with 4 critical evidence gaps."
+        "Research priority high with 4 critical evidence gaps.",
+        "Complaint volume elevated (audit evidence).",
+        "75 health/safety incidents not investigated or reported to HCPF despite contract incident reporting requirements.",
+        "Monthly report shows denial activity (audit evidence).",
+        "Timeliness KPI failure documented in audit.",
+        "Dialysis transport failures reported (contract/audit)."
       ],
       "sourceArtifacts": [
         "runtime-data/transpo/county-demand-dossiers.generated.json",
         "runtime-data/transpo/county-capacity.generated.json",
         "runtime-data/transpo/county-evidence-dossiers.generated.json",
-        "runtime-data/transpo/county-research-summary.generated.json"
+        "runtime-data/transpo/county-research-summary.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json"
       ],
       "generatedAt": "2026-06-09T12:46:02.903Z"
     },
@@ -200,20 +212,26 @@
         "monthly_trip_volume"
       ],
       "confidence": "low",
-      "actionabilityScore": 50,
+      "actionabilityScore": 60,
       "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
       "rationale": [
         "1 credentialed providers listed by HCPF",
         "Demand score 0, capacity score 20",
         "Evidence completeness only 16%",
         "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
-        "Research priority high with 4 critical evidence gaps."
+        "Research priority high with 4 critical evidence gaps.",
+        "Complaint volume elevated (audit evidence).",
+        "75 health/safety incidents not investigated or reported to HCPF despite contract incident reporting requirements.",
+        "Monthly report shows denial activity (audit evidence).",
+        "Timeliness KPI failure documented in audit.",
+        "Dialysis transport failures reported (contract/audit)."
       ],
       "sourceArtifacts": [
         "runtime-data/transpo/county-demand-dossiers.generated.json",
         "runtime-data/transpo/county-capacity.generated.json",
         "runtime-data/transpo/county-evidence-dossiers.generated.json",
-        "runtime-data/transpo/county-research-summary.generated.json"
+        "runtime-data/transpo/county-research-summary.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json"
       ],
       "generatedAt": "2026-06-09T12:46:02.903Z"
     },
@@ -249,20 +267,26 @@
         "monthly_trip_volume"
       ],
       "confidence": "low",
-      "actionabilityScore": 50,
+      "actionabilityScore": 60,
       "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
       "rationale": [
         "1 credentialed providers listed by HCPF",
         "Demand score 0, capacity score 20",
         "Evidence completeness only 11%",
         "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
-        "Research priority high with 4 critical evidence gaps."
+        "Research priority high with 4 critical evidence gaps.",
+        "Complaint volume elevated (audit evidence).",
+        "75 health/safety incidents not investigated or reported to HCPF despite contract incident reporting requirements.",
+        "Monthly report shows denial activity (audit evidence).",
+        "Timeliness KPI failure documented in audit.",
+        "Dialysis transport failures reported (contract/audit)."
       ],
       "sourceArtifacts": [
         "runtime-data/transpo/county-demand-dossiers.generated.json",
         "runtime-data/transpo/county-capacity.generated.json",
         "runtime-data/transpo/county-evidence-dossiers.generated.json",
-        "runtime-data/transpo/county-research-summary.generated.json"
+        "runtime-data/transpo/county-research-summary.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json"
       ],
       "generatedAt": "2026-06-09T12:46:02.903Z"
     },
@@ -298,20 +322,26 @@
         "monthly_trip_volume"
       ],
       "confidence": "low",
-      "actionabilityScore": 50,
+      "actionabilityScore": 60,
       "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
       "rationale": [
         "1 credentialed providers listed by HCPF",
         "Demand score 0, capacity score 20",
         "Evidence completeness only 16%",
         "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
-        "Research priority high with 4 critical evidence gaps."
+        "Research priority high with 4 critical evidence gaps.",
+        "Complaint volume elevated (audit evidence).",
+        "75 health/safety incidents not investigated or reported to HCPF despite contract incident reporting requirements.",
+        "Monthly report shows denial activity (audit evidence).",
+        "Timeliness KPI failure documented in audit.",
+        "Dialysis transport failures reported (contract/audit)."
       ],
       "sourceArtifacts": [
         "runtime-data/transpo/county-demand-dossiers.generated.json",
         "runtime-data/transpo/county-capacity.generated.json",
         "runtime-data/transpo/county-evidence-dossiers.generated.json",
-        "runtime-data/transpo/county-research-summary.generated.json"
+        "runtime-data/transpo/county-research-summary.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json"
       ],
       "generatedAt": "2026-06-09T12:46:02.903Z"
     },
@@ -347,20 +377,26 @@
         "monthly_trip_volume"
       ],
       "confidence": "low",
-      "actionabilityScore": 50,
+      "actionabilityScore": 60,
       "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
       "rationale": [
         "1 credentialed providers listed by HCPF",
         "Demand score 0, capacity score 20",
         "Evidence completeness only 16%",
         "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
-        "Research priority high with 4 critical evidence gaps."
+        "Research priority high with 4 critical evidence gaps.",
+        "Complaint volume elevated (audit evidence).",
+        "75 health/safety incidents not investigated or reported to HCPF despite contract incident reporting requirements.",
+        "Monthly report shows denial activity (audit evidence).",
+        "Timeliness KPI failure documented in audit.",
+        "Dialysis transport failures reported (contract/audit)."
       ],
       "sourceArtifacts": [
         "runtime-data/transpo/county-demand-dossiers.generated.json",
         "runtime-data/transpo/county-capacity.generated.json",
         "runtime-data/transpo/county-evidence-dossiers.generated.json",
-        "runtime-data/transpo/county-research-summary.generated.json"
+        "runtime-data/transpo/county-research-summary.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json"
       ],
       "generatedAt": "2026-06-09T12:46:02.903Z"
     },
@@ -396,20 +432,26 @@
         "monthly_trip_volume"
       ],
       "confidence": "low",
-      "actionabilityScore": 50,
+      "actionabilityScore": 60,
       "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
       "rationale": [
         "1 credentialed providers listed by HCPF",
         "Demand score 0, capacity score 20",
         "Evidence completeness only 16%",
         "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
-        "Research priority high with 4 critical evidence gaps."
+        "Research priority high with 4 critical evidence gaps.",
+        "Complaint volume elevated (audit evidence).",
+        "75 health/safety incidents not investigated or reported to HCPF despite contract incident reporting requirements.",
+        "Monthly report shows denial activity (audit evidence).",
+        "Timeliness KPI failure documented in audit.",
+        "Dialysis transport failures reported (contract/audit)."
       ],
       "sourceArtifacts": [
         "runtime-data/transpo/county-demand-dossiers.generated.json",
         "runtime-data/transpo/county-capacity.generated.json",
         "runtime-data/transpo/county-evidence-dossiers.generated.json",
-        "runtime-data/transpo/county-research-summary.generated.json"
+        "runtime-data/transpo/county-research-summary.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json"
       ],
       "generatedAt": "2026-06-09T12:46:02.903Z"
     },
@@ -445,20 +487,26 @@
         "monthly_trip_volume"
       ],
       "confidence": "low",
-      "actionabilityScore": 50,
+      "actionabilityScore": 60,
       "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
       "rationale": [
         "1 credentialed providers listed by HCPF",
         "Demand score 0, capacity score 20",
         "Evidence completeness only 16%",
         "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
-        "Research priority high with 4 critical evidence gaps."
+        "Research priority high with 4 critical evidence gaps.",
+        "Complaint volume elevated (audit evidence).",
+        "75 health/safety incidents not investigated or reported to HCPF despite contract incident reporting requirements.",
+        "Monthly report shows denial activity (audit evidence).",
+        "Timeliness KPI failure documented in audit.",
+        "Dialysis transport failures reported (contract/audit)."
       ],
       "sourceArtifacts": [
         "runtime-data/transpo/county-demand-dossiers.generated.json",
         "runtime-data/transpo/county-capacity.generated.json",
         "runtime-data/transpo/county-evidence-dossiers.generated.json",
-        "runtime-data/transpo/county-research-summary.generated.json"
+        "runtime-data/transpo/county-research-summary.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json"
       ],
       "generatedAt": "2026-06-09T12:46:02.903Z"
     },
@@ -494,20 +542,26 @@
         "monthly_trip_volume"
       ],
       "confidence": "low",
-      "actionabilityScore": 50,
+      "actionabilityScore": 60,
       "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
       "rationale": [
         "1 credentialed providers listed by HCPF",
         "Demand score 0, capacity score 20",
         "Evidence completeness only 11%",
         "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
-        "Research priority high with 4 critical evidence gaps."
+        "Research priority high with 4 critical evidence gaps.",
+        "Complaint volume elevated (audit evidence).",
+        "75 health/safety incidents not investigated or reported to HCPF despite contract incident reporting requirements.",
+        "Monthly report shows denial activity (audit evidence).",
+        "Timeliness KPI failure documented in audit.",
+        "Dialysis transport failures reported (contract/audit)."
       ],
       "sourceArtifacts": [
         "runtime-data/transpo/county-demand-dossiers.generated.json",
         "runtime-data/transpo/county-capacity.generated.json",
         "runtime-data/transpo/county-evidence-dossiers.generated.json",
-        "runtime-data/transpo/county-research-summary.generated.json"
+        "runtime-data/transpo/county-research-summary.generated.json",
+        "runtime-data/reporting/extracted-failure-signals.generated.json"
       ],
       "generatedAt": "2026-06-09T12:46:02.903Z"
     },

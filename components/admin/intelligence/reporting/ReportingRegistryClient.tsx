@@ -122,6 +122,20 @@ export function ReportingRegistryClient() {
           Contract-required reports, KPIs, audit findings, and operational stress signals —
           evidence-backed failure metrics without ride-level PHI.
         </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <Link
+            href="/admin/intelligence/reporting/acquisition"
+            className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-800 no-underline hover:bg-indigo-100"
+          >
+            Report acquisition engine →
+          </Link>
+          <Link
+            href="/admin/intelligence/reporting/signals"
+            className="rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-bold text-stone-700 no-underline hover:bg-stone-50"
+          >
+            Operational failure signals
+          </Link>
+        </div>
       </header>
 
       {error ? (

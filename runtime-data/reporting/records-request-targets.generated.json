@@ -1,0 +1,48 @@
+{
+  "generatedAt": "2026-06-09T13:36:57.605Z",
+  "total": 3,
+  "targets": [
+    {
+      "targetKey": "rrt:co:transdev:complaint-response-sla",
+      "holder": "Health Solutions by Transdev (IntelliRide)",
+      "reportName": "Complaint Acknowledgment and Investigation Response",
+      "sourceKey": "co:transdev:complaint-response-sla",
+      "requestPath": "https://hcpf.colorado.gov/contact-hcpf",
+      "accessMethod": "unknown",
+      "priority": 85,
+      "insightValue": 85,
+      "expectedReport": "Complaint Acknowledgment and Investigation Response",
+      "notes": [
+        "Transdev acknowledges complaints within 2 business days; written investigation response within 10 business days."
+      ]
+    },
+    {
+      "targetKey": "rrt:co:nemt-complaints:member-feedback-intake",
+      "holder": "HCPF NEMT Member Feedback / Complaint Program",
+      "reportName": "NEMT Member Feedback/Complaint Intake Records",
+      "sourceKey": "co:nemt-complaints:member-feedback-intake",
+      "requestPath": "https://hcpf.colorado.gov/contact-hcpf",
+      "accessMethod": "state_records_request",
+      "priority": 85,
+      "insightValue": 85,
+      "expectedReport": "NEMT Member Feedback/Complaint Intake Records",
+      "notes": [
+        "Public webform captures no-show, scheduling, driver safety, and fraud categories — aggregate not published."
+      ]
+    },
+    {
+      "targetKey": "rrt:co:hms:rac-audit-findings",
+      "holder": "Health Management Systems (Colorado Medicaid RAC)",
+      "reportName": "Post-Payment Audit Finding Letters",
+      "sourceKey": "co:hms:rac-audit-findings",
+      "requestPath": "https://hcpf.colorado.gov/contact-hcpf",
+      "accessMethod": "state_records_request",
+      "priority": 80,
+      "insightValue": 80,
+      "expectedReport": "Post-Payment Audit Finding Letters",
+      "notes": [
+        "RAC conducts post-payment claim reviews; providers receive Notice of Adverse Action for overpayments."
+      ]
+    }
+  ]
+}

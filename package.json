@@ -54,6 +54,7 @@
     "build:transpo:opportunities": "tsx scripts/build-transpo-opportunities.ts",
     "build:transpo:data-ownership": "tsx scripts/build-transpo-data-ownership.ts",
     "build:reporting": "tsx scripts/build-reporting-registry.ts",
+    "build:reporting:acquisition": "tsx scripts/build-report-acquisition.ts",
     "build:transpo": "tsx scripts/build-transpo-registry.ts"
   },
   "dependencies": {
