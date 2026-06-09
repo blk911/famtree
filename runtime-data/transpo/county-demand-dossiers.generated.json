@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-08T21:36:59.880Z",
+  "generatedAt": "2026-06-09T12:46:02.889Z",
   "totalCounties": 1,
   "dossiers": [
     {
       "countyKey": "CO:Alamosa",
       "county": "Alamosa",
       "state": "CO",
-      "generatedAt": "2026-06-08T21:36:59.869Z",
+      "generatedAt": "2026-06-09T12:46:02.879Z",
       "demandGenerators": [
         {
           "generatorKey": "transpo:CO:alamosa:meal_program:alamosa-county-meal-delivery-program",
@@ -23,8 +23,8 @@
             "Meal volume and official program operator not yet confirmed."
           ],
           "confidence": 55,
-          "createdAt": "2026-06-08T21:36:59.844Z",
-          "updatedAt": "2026-06-08T21:36:59.844Z"
+          "createdAt": "2026-06-09T12:46:02.855Z",
+          "updatedAt": "2026-06-09T12:46:02.855Z"
         },
         {
           "generatorKey": "transpo:CO:alamosa:dialysis:san-luis-valley-dialysis-center",
@@ -40,8 +40,8 @@
             "Placeholder dialysis anchor for Alamosa County — station count and official facility name not yet confirmed in project data."
           ],
           "confidence": 55,
-          "createdAt": "2026-06-08T21:36:59.844Z",
-          "updatedAt": "2026-06-08T21:36:59.844Z"
+          "createdAt": "2026-06-09T12:46:02.855Z",
+          "updatedAt": "2026-06-09T12:46:02.855Z"
         },
         {
           "generatorKey": "transpo:CO:alamosa:hospital:san-luis-valley-health",
@@ -58,8 +58,8 @@
             "Beds, annual discharges, phone, and website not yet confirmed from an official source."
           ],
           "confidence": 55,
-          "createdAt": "2026-06-08T21:36:59.843Z",
-          "updatedAt": "2026-06-08T21:36:59.843Z"
+          "createdAt": "2026-06-09T12:46:02.854Z",
+          "updatedAt": "2026-06-09T12:46:02.854Z"
         },
         {
           "generatorKey": "transpo:CO:alamosa:senior_center:san-luis-valley-senior-center",
@@ -76,8 +76,8 @@
             "Specific senior center name and program volume not yet confirmed."
           ],
           "confidence": 55,
-          "createdAt": "2026-06-08T21:36:59.844Z",
-          "updatedAt": "2026-06-08T21:36:59.844Z"
+          "createdAt": "2026-06-09T12:46:02.855Z",
+          "updatedAt": "2026-06-09T12:46:02.855Z"
         }
       ],
       "countsByCategory": {
@@ -105,8 +105,8 @@
             "Beds, annual discharges, phone, and website not yet confirmed from an official source."
           ],
           "confidence": 55,
-          "createdAt": "2026-06-08T21:36:59.843Z",
-          "updatedAt": "2026-06-08T21:36:59.843Z"
+          "createdAt": "2026-06-09T12:46:02.854Z",
+          "updatedAt": "2026-06-09T12:46:02.854Z"
         },
         {
           "generatorKey": "transpo:CO:alamosa:dialysis:san-luis-valley-dialysis-center",
@@ -122,8 +122,8 @@
             "Placeholder dialysis anchor for Alamosa County — station count and official facility name not yet confirmed in project data."
           ],
           "confidence": 55,
-          "createdAt": "2026-06-08T21:36:59.844Z",
-          "updatedAt": "2026-06-08T21:36:59.844Z"
+          "createdAt": "2026-06-09T12:46:02.855Z",
+          "updatedAt": "2026-06-09T12:46:02.855Z"
         },
         {
           "generatorKey": "transpo:CO:alamosa:meal_program:alamosa-county-meal-delivery-program",
@@ -140,8 +140,8 @@
             "Meal volume and official program operator not yet confirmed."
           ],
           "confidence": 55,
-          "createdAt": "2026-06-08T21:36:59.844Z",
-          "updatedAt": "2026-06-08T21:36:59.844Z"
+          "createdAt": "2026-06-09T12:46:02.855Z",
+          "updatedAt": "2026-06-09T12:46:02.855Z"
         },
         {
           "generatorKey": "transpo:CO:alamosa:senior_center:san-luis-valley-senior-center",
@@ -158,8 +158,8 @@
             "Specific senior center name and program volume not yet confirmed."
           ],
           "confidence": 55,
-          "createdAt": "2026-06-08T21:36:59.844Z",
-          "updatedAt": "2026-06-08T21:36:59.844Z"
+          "createdAt": "2026-06-09T12:46:02.855Z",
+          "updatedAt": "2026-06-09T12:46:02.855Z"
         }
       ],
       "missingData": [

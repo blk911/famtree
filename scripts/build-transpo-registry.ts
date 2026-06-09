@@ -5,6 +5,7 @@ import { buildCountyCapacityDossiers } from "@/lib/transpo/build-county-capacity
 import { buildCountyDemandDossiers } from "@/lib/transpo/build-county-demand-dossiers";
 import { buildCountyEvidenceDossiers } from "@/lib/transpo/build-county-evidence-dossiers";
 import { buildResearchQueue } from "@/lib/transpo/build-research-queue";
+import { buildTranspoOpportunities } from "@/lib/transpo/build-transpo-opportunities";
 import { buildDemandGeneratorRegistry } from "@/lib/transpo/build-demand-generator-registry";
 import { buildProviderCapacityRegistry } from "@/lib/transpo/build-provider-capacity-registry";
 import { readCountyGapAnalysisArtifact } from "@/lib/transpo/read-provider-registry";
@@ -17,6 +18,7 @@ async function main(): Promise<void> {
   const evidenceResult = await buildCountyEvidenceDossiers();
   const evidenceDossiers = evidenceResult.artifact;
   const researchQueue = await buildResearchQueue();
+  const opportunities = await buildTranspoOpportunities();
   const gap = await readCountyGapAnalysisArtifact();
 
   const regional = providerRegistry.providers.filter(
@@ -33,6 +35,7 @@ async function main(): Promise<void> {
   console.log(`Evidence overrides: ${evidenceResult.overrideCount}`);
   console.log(`Known overridden: ${evidenceResult.knownOverriddenCount}`);
   console.log(`Research tasks: ${researchQueue.queue.totalTasks}`);
+  console.log(`Opportunities: ${opportunities.total}`);
   console.log(`Regional providers: ${regional}`);
   console.log(`Statewide providers: ${statewide}`);
 
@@ -59,6 +62,15 @@ async function main(): Promise<void> {
     if (alamosaEvidence) {
       console.log(`  Evidence Completeness: ${alamosaEvidence.evidenceCompletenessScore}%`);
       console.log(`  Research Priority: ${alamosaEvidence.researchPriority}`);
+    }
+
+    const alamosaOpp = opportunities.opportunities.find(
+      (o) => o.county === "Alamosa" && o.state === "CO",
+    );
+    if (alamosaOpp) {
+      console.log(`  Opportunity Type: ${alamosaOpp.opportunityType}`);
+      console.log(`  Confidence: ${alamosaOpp.confidence}`);
+      console.log(`  Actionability: ${alamosaOpp.actionabilityScore}`);
     }
   }
 }

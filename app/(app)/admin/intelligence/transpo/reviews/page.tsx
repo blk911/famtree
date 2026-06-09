@@ -64,7 +64,7 @@ export default function TranspoReviewsPage() {
       {error ? <div style={{ marginBottom: 16, fontSize: 12, color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "10px 12px" }}>{error}</div> : null}
 
       <p style={{ fontSize: 12, marginBottom: 12 }}>
-        <Link href="/admin/intelligence/transpo/opportunities" style={{ color: "#4338ca", fontWeight: 700 }}>Score carriers in Opportunities →</Link>
+        <Link href="/admin/intelligence/transpo/carrier-opportunities" style={{ color: "#4338ca", fontWeight: 700 }}>Score carriers in Carrier Opportunities →</Link>
         {" · "}
         <Link href="/admin/intelligence/transpo/qualified-targets" style={{ color: "#4338ca", fontWeight: 700 }}>Qualified Targets →</Link>
       </p>

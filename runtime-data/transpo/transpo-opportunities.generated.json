@@ -1,0 +1,4028 @@
+{
+  "generatedAt": "2026-06-09T12:46:02.903Z",
+  "total": 64,
+  "opportunities": [
+    {
+      "opportunityKey": "CO:Alamosa:low_gap_monitor",
+      "countyKey": "CO:Alamosa",
+      "county": "Alamosa",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Alamosa — Low-gap monitor",
+      "summary": "Alamosa shows strong credentialed capacity (15 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 75,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 25,
+      "researchPriority": "high",
+      "providerCount": 15,
+      "demandAnchors": {
+        "hospitals": [
+          "San Luis Valley Health"
+        ],
+        "dialysis": [
+          "San Luis Valley dialysis center (unconfirmed name)"
+        ],
+        "mealPrograms": [
+          "Meal delivery / nutrition program (Alamosa)"
+        ],
+        "seniorCenters": [
+          "Senior center / aging services (SLV)"
+        ],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Barentu Transport LLC",
+        "Brave Sisters Transportation LLC",
+        "City Cab LLC",
+        "Golden Gate Manor Transportation Inc",
+        "Kareem Ride LLC",
+        "LUKE LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 95,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "Hospital anchor present: San Luis Valley Health",
+        "Dialysis anchor present",
+        "Meal program anchor present",
+        "Senior center anchor present",
+        "15 credentialed providers listed by HCPF",
+        "Demand score 75, capacity score 100",
+        "Evidence completeness only 25%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Adams:research_priority",
+      "countyKey": "CO:Adams",
+      "county": "Adams",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Adams — Research priority",
+      "summary": "Adams has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 20,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 16,
+      "researchPriority": "high",
+      "providerCount": 1,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Transdev"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 50,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "1 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 20",
+        "Evidence completeness only 16%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Arapahoe:research_priority",
+      "countyKey": "CO:Arapahoe",
+      "county": "Arapahoe",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Arapahoe — Research priority",
+      "summary": "Arapahoe has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 20,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 16,
+      "researchPriority": "high",
+      "providerCount": 1,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Transdev"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 50,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "1 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 20",
+        "Evidence completeness only 16%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Boulder:research_priority",
+      "countyKey": "CO:Boulder",
+      "county": "Boulder",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Boulder — Research priority",
+      "summary": "Boulder has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 20,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 16,
+      "researchPriority": "high",
+      "providerCount": 1,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Transdev"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 50,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "1 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 20",
+        "Evidence completeness only 16%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Broomfield:research_priority",
+      "countyKey": "CO:Broomfield",
+      "county": "Broomfield",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Broomfield — Research priority",
+      "summary": "Broomfield has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 20,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 1,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Transdev"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 50,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "1 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 20",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Denver:research_priority",
+      "countyKey": "CO:Denver",
+      "county": "Denver",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Denver — Research priority",
+      "summary": "Denver has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 20,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 16,
+      "researchPriority": "high",
+      "providerCount": 1,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Transdev"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 50,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "1 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 20",
+        "Evidence completeness only 16%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Douglas:research_priority",
+      "countyKey": "CO:Douglas",
+      "county": "Douglas",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Douglas — Research priority",
+      "summary": "Douglas has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 20,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 16,
+      "researchPriority": "high",
+      "providerCount": 1,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Transdev"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 50,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "1 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 20",
+        "Evidence completeness only 16%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Jefferson:research_priority",
+      "countyKey": "CO:Jefferson",
+      "county": "Jefferson",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Jefferson — Research priority",
+      "summary": "Jefferson has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 20,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 16,
+      "researchPriority": "high",
+      "providerCount": 1,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Transdev"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 50,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "1 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 20",
+        "Evidence completeness only 16%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Larimer:research_priority",
+      "countyKey": "CO:Larimer",
+      "county": "Larimer",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Larimer — Research priority",
+      "summary": "Larimer has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 20,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 16,
+      "researchPriority": "high",
+      "providerCount": 1,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Transdev"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 50,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "1 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 20",
+        "Evidence completeness only 16%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Weld:research_priority",
+      "countyKey": "CO:Weld",
+      "county": "Weld",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Weld — Research priority",
+      "summary": "Weld has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 20,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 1,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Transdev"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 50,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "1 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 20",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Archuleta:research_priority",
+      "countyKey": "CO:Archuleta",
+      "county": "Archuleta",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Archuleta — Research priority",
+      "summary": "Archuleta has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 7,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan",
+        "Wilderness Journeys"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "7 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Dolores:research_priority",
+      "countyKey": "CO:Dolores",
+      "county": "Dolores",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Dolores — Research priority",
+      "summary": "Dolores has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 60,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 5,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan",
+        "Wilderness Journeys"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "5 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 60",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Gunnison:research_priority",
+      "countyKey": "CO:Gunnison",
+      "county": "Gunnison",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Gunnison — Research priority",
+      "summary": "Gunnison has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 60,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 16,
+      "researchPriority": "high",
+      "providerCount": 6,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "High Mountain Taxi",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "6 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 60",
+        "Evidence completeness only 16%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Hinsdale:research_priority",
+      "countyKey": "CO:Hinsdale",
+      "county": "Hinsdale",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Hinsdale — Research priority",
+      "summary": "Hinsdale has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 60,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 6,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan",
+        "Wilderness Journeys"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "6 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 60",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Jackson:research_priority",
+      "countyKey": "CO:Jackson",
+      "county": "Jackson",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Jackson — Research priority",
+      "summary": "Jackson has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 16,
+      "researchPriority": "high",
+      "providerCount": 7,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "High Mountain Taxi",
+        "MedRide LLC",
+        "Met Transport",
+        "Ommega Transportation LLC",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "7 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 16%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:La Plata:research_priority",
+      "countyKey": "CO:La Plata",
+      "county": "La Plata",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "La Plata — Research priority",
+      "summary": "La Plata has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 7,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "LUKE LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "SW Center for Independence",
+        "Van with a Plan",
+        "Wilderness Journeys"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "7 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Lake:research_priority",
+      "countyKey": "CO:Lake",
+      "county": "Lake",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Lake — Research priority",
+      "summary": "Lake has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 60,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 6,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "High Mountain Taxi",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "6 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 60",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Mineral:research_priority",
+      "countyKey": "CO:Mineral",
+      "county": "Mineral",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Mineral — Research priority",
+      "summary": "Mineral has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 60,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 6,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "MedRide LLC",
+        "Met Transport",
+        "Mountain Valley Transit",
+        "Peak Family Transport LLC",
+        "Van with a Plan",
+        "Wilderness Journeys"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "6 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 60",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Moffat:research_priority",
+      "countyKey": "CO:Moffat",
+      "county": "Moffat",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Moffat — Research priority",
+      "summary": "Moffat has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 7,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "High Mountain Taxi",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Sunshine Rides",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "7 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Montrose:research_priority",
+      "countyKey": "CO:Montrose",
+      "county": "Montrose",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Montrose — Research priority",
+      "summary": "Montrose has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 7,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Med Lift LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan",
+        "Wilderness Journeys"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "7 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Ouray:research_priority",
+      "countyKey": "CO:Ouray",
+      "county": "Ouray",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Ouray — Research priority",
+      "summary": "Ouray has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 60,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 6,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan",
+        "Wilderness Journeys"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "6 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 60",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Pitkin:research_priority",
+      "countyKey": "CO:Pitkin",
+      "county": "Pitkin",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Pitkin — Research priority",
+      "summary": "Pitkin has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 60,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 6,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "High Mountain Taxi",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "6 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 60",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Rio Blanco:research_priority",
+      "countyKey": "CO:Rio Blanco",
+      "county": "Rio Blanco",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Rio Blanco — Research priority",
+      "summary": "Rio Blanco has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 7,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "High Mountain Taxi",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "7 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:San Juan:research_priority",
+      "countyKey": "CO:San Juan",
+      "county": "San Juan",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "San Juan — Research priority",
+      "summary": "San Juan has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 60,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 6,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "SW Center for Independence",
+        "Van with a Plan",
+        "Wilderness Journeys"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "6 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 60",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:San Miguel:research_priority",
+      "countyKey": "CO:San Miguel",
+      "county": "San Miguel",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "San Miguel — Research priority",
+      "summary": "San Miguel has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 60,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 6,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Kareem Ride LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan",
+        "Wilderness Journeys"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "6 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 60",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Sedgwick:research_priority",
+      "countyKey": "CO:Sedgwick",
+      "county": "Sedgwick",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Sedgwick — Research priority",
+      "summary": "Sedgwick has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 7,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "County Express Transportation",
+        "Holyoke EMS",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "7 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Summit:research_priority",
+      "countyKey": "CO:Summit",
+      "county": "Summit",
+      "state": "CO",
+      "opportunityType": "research_priority",
+      "title": "Summit — Research priority",
+      "summary": "Summit has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+      "demandScore": 0,
+      "capacityScore": 60,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 6,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Delta Transport",
+        "High Mountain Taxi",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 15,
+      "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+      "rationale": [
+        "6 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 60",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "Research priority high with 4 critical evidence gaps."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Baca:low_gap_monitor",
+      "countyKey": "CO:Baca",
+      "county": "Baca",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Baca — Low-gap monitor",
+      "summary": "Baca shows strong credentialed capacity (11 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 11,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Barb's Transport \"A Little Bit of Sunshine\"",
+        "City Cab LLC",
+        "Golden Gate Manor Transportation Inc",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "11 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Bent:low_gap_monitor",
+      "countyKey": "CO:Bent",
+      "county": "Bent",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Bent — Low-gap monitor",
+      "summary": "Bent shows strong credentialed capacity (14 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 14,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "Barb's Transport \"A Little Bit of Sunshine\"",
+        "Barentu Transport LLC",
+        "City Cab LLC",
+        "Golden Gate Manor Transportation Inc",
+        "Kareem Ride LLC",
+        "LUKE LLC",
+        "Maguy Medical Transport"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "14 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Chaffee:low_gap_monitor",
+      "countyKey": "CO:Chaffee",
+      "county": "Chaffee",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Chaffee — Low-gap monitor",
+      "summary": "Chaffee shows strong credentialed capacity (12 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 12,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Brave Sisters Transportation LLC",
+        "High Mountain Taxi",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Mountain Valley Transit"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "12 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Cheyenne:low_gap_monitor",
+      "countyKey": "CO:Cheyenne",
+      "county": "Cheyenne",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Cheyenne — Low-gap monitor",
+      "summary": "Cheyenne shows strong credentialed capacity (13 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 13,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "Brave Sisters Transportation LLC",
+        "City Cab LLC",
+        "County Express Transportation",
+        "Golden Gate Manor Transportation Inc",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "13 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Clear Creek:low_gap_monitor",
+      "countyKey": "CO:Clear Creek",
+      "county": "Clear Creek",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Clear Creek — Low-gap monitor",
+      "summary": "Clear Creek shows strong credentialed capacity (10 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 10,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "Brave Sisters Transportation LLC",
+        "Delta Transport",
+        "Kareem Ride LLC",
+        "Londons Transportation LLC",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "10 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Conejos:low_gap_monitor",
+      "countyKey": "CO:Conejos",
+      "county": "Conejos",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Conejos — Low-gap monitor",
+      "summary": "Conejos shows strong credentialed capacity (10 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 10,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "City Cab LLC",
+        "Golden Gate Manor Transportation Inc",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Mountain Valley Transit",
+        "Ommega Transportation LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "10 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Costilla:low_gap_monitor",
+      "countyKey": "CO:Costilla",
+      "county": "Costilla",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Costilla — Low-gap monitor",
+      "summary": "Costilla shows strong credentialed capacity (10 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 10,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "City Cab LLC",
+        "Golden Gate Manor Transportation Inc",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Mountain Valley Transit",
+        "Ommega Transportation LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "10 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Crowley:low_gap_monitor",
+      "countyKey": "CO:Crowley",
+      "county": "Crowley",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Crowley — Low-gap monitor",
+      "summary": "Crowley shows strong credentialed capacity (16 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 16,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Barb's Transport \"A Little Bit of Sunshine\"",
+        "Brave Sisters Transportation LLC",
+        "City Cab LLC",
+        "Golden Gate Manor Transportation Inc",
+        "LUKE LLC",
+        "Maguy Medical Transport"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "16 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Custer:low_gap_monitor",
+      "countyKey": "CO:Custer",
+      "county": "Custer",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Custer — Low-gap monitor",
+      "summary": "Custer shows strong credentialed capacity (13 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 13,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Barentu Transport LLC",
+        "City Cab LLC",
+        "Fremont County Transit",
+        "Golden Gate Manor Transportation Inc",
+        "LUKE LLC",
+        "MedRide LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "13 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Delta:low_gap_monitor",
+      "countyKey": "CO:Delta",
+      "county": "Delta",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Delta — Low-gap monitor",
+      "summary": "Delta shows strong credentialed capacity (10 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 10,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "High Mountain Taxi",
+        "LUKE LLC",
+        "Med Lift LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Ommega Transportation LLC",
+        "Peak Family Transport LLC",
+        "Sunshine Rides"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "10 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Eagle:low_gap_monitor",
+      "countyKey": "CO:Eagle",
+      "county": "Eagle",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Eagle — Low-gap monitor",
+      "summary": "Eagle shows strong credentialed capacity (10 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 10,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Delta Transport",
+        "High Mountain Taxi",
+        "Kareem Ride LLC",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Ommega Transportation LLC",
+        "Peak Family Transport LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "10 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:El Paso:low_gap_monitor",
+      "countyKey": "CO:El Paso",
+      "county": "El Paso",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "El Paso — Low-gap monitor",
+      "summary": "El Paso shows strong credentialed capacity (33 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 16,
+      "researchPriority": "high",
+      "providerCount": 33,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Aponi Transport Inc",
+        "Axel Medical Transportation",
+        "Barentu Transport LLC",
+        "Blue Skies Transportation",
+        "Brave Sisters Transportation LLC",
+        "City Cab LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "33 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 16%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Elbert:low_gap_monitor",
+      "countyKey": "CO:Elbert",
+      "county": "Elbert",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Elbert — Low-gap monitor",
+      "summary": "Elbert shows strong credentialed capacity (17 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 17,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "Blue Skies Transportation",
+        "Brave Sisters Transportation LLC",
+        "Delta Transport LLC",
+        "Elevate Care Transit LLC",
+        "Kareem Ride",
+        "LUKE LLC",
+        "MedRide LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "17 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Fremont:low_gap_monitor",
+      "countyKey": "CO:Fremont",
+      "county": "Fremont",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Fremont — Low-gap monitor",
+      "summary": "Fremont shows strong credentialed capacity (21 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 21,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Axel Medical Transportation",
+        "Barentu Transport LLC",
+        "Brave Sisters Transportation LLC",
+        "City Cab LLC",
+        "Delta Transport LLC",
+        "Elevate Care Transit LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "21 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Garfield:low_gap_monitor",
+      "countyKey": "CO:Garfield",
+      "county": "Garfield",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Garfield — Low-gap monitor",
+      "summary": "Garfield shows strong credentialed capacity (11 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 11,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "High Mountain Taxi",
+        "Kareem Ride LLC",
+        "LUKE LLC",
+        "Med Lift LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Ommega Transportation LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "11 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Gilpin:low_gap_monitor",
+      "countyKey": "CO:Gilpin",
+      "county": "Gilpin",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Gilpin — Low-gap monitor",
+      "summary": "Gilpin shows strong credentialed capacity (9 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 9,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "Brave Sisters Transportation LLC",
+        "Delta Transport",
+        "Londons Transportation LLC",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "9 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Grand:low_gap_monitor",
+      "countyKey": "CO:Grand",
+      "county": "Grand",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Grand — Low-gap monitor",
+      "summary": "Grand shows strong credentialed capacity (9 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 9,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "Delta Transport LLC",
+        "High Mountain Taxi",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "9 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Huerfano:low_gap_monitor",
+      "countyKey": "CO:Huerfano",
+      "county": "Huerfano",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Huerfano — Low-gap monitor",
+      "summary": "Huerfano shows strong credentialed capacity (13 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 16,
+      "researchPriority": "high",
+      "providerCount": 13,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Barentu Transport LLC",
+        "City Cab LLC",
+        "Golden Gate Manor Transportation Inc",
+        "LUKE LLC",
+        "Maguy Medical Transport",
+        "MedRide LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "13 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 16%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Kiowa:low_gap_monitor",
+      "countyKey": "CO:Kiowa",
+      "county": "Kiowa",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Kiowa — Low-gap monitor",
+      "summary": "Kiowa shows strong credentialed capacity (12 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 12,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "Barb's Transport \"A Little Bit of Sunshine\"",
+        "City Cab LLC",
+        "Golden Gate Manor Transportation",
+        "Kareem Ride LLC",
+        "Kiowa County Transit",
+        "MedRide LLC",
+        "Met Transport"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "12 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Kit Carson:low_gap_monitor",
+      "countyKey": "CO:Kit Carson",
+      "county": "Kit Carson",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Kit Carson — Low-gap monitor",
+      "summary": "Kit Carson shows strong credentialed capacity (8 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 8,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "County Express Transportation",
+        "Kareem Ride LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Second Home LLC",
+        "Sunshine Rides",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "8 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Las Animas:low_gap_monitor",
+      "countyKey": "CO:Las Animas",
+      "county": "Las Animas",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Las Animas — Low-gap monitor",
+      "summary": "Las Animas shows strong credentialed capacity (18 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 18,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Barentu Transport LLC",
+        "Brave Sisters Transportation LLC",
+        "City Cab LLC",
+        "Golden Gate Manor Transportation Inc",
+        "Kareem Ride LLC",
+        "LUKE LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "18 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Lincoln:low_gap_monitor",
+      "countyKey": "CO:Lincoln",
+      "county": "Lincoln",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Lincoln — Low-gap monitor",
+      "summary": "Lincoln shows strong credentialed capacity (16 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 16,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "Barb's Transport \"A Little Bit of Sunshine\"",
+        "Blue Skies Transportation",
+        "Brave Sisters Transportation LLC",
+        "City Cab LLC",
+        "County Express Transportation",
+        "Elevate Care Transit LLC",
+        "Golden Gate Manor Transportation",
+        "Kareem Ride LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "16 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Logan:low_gap_monitor",
+      "countyKey": "CO:Logan",
+      "county": "Logan",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Logan — Low-gap monitor",
+      "summary": "Logan shows strong credentialed capacity (10 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 10,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "County Express Transportation",
+        "Holyoke EMS",
+        "Kareem Ride LLC",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "10 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Mesa:low_gap_monitor",
+      "countyKey": "CO:Mesa",
+      "county": "Mesa",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Mesa — Low-gap monitor",
+      "summary": "Mesa shows strong credentialed capacity (10 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 10,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "High Mountain Taxi",
+        "LUKE LLC",
+        "Med Lift LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "10 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Montezuma:low_gap_monitor",
+      "countyKey": "CO:Montezuma",
+      "county": "Montezuma",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Montezuma — Low-gap monitor",
+      "summary": "Montezuma shows strong credentialed capacity (8 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 8,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "Kareem Ride LLC",
+        "LUKE LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan",
+        "Wilderness Journeys"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "8 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Morgan:low_gap_monitor",
+      "countyKey": "CO:Morgan",
+      "county": "Morgan",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Morgan — Low-gap monitor",
+      "summary": "Morgan shows strong credentialed capacity (12 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 12,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "County Express Transportation",
+        "Delta Transport",
+        "Kareem Ride LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Ommega Transportation LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "12 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Otero:low_gap_monitor",
+      "countyKey": "CO:Otero",
+      "county": "Otero",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Otero — Low-gap monitor",
+      "summary": "Otero shows strong credentialed capacity (15 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 15,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Barb's Transport \"A Little Bit of Sunshine\"",
+        "Barentu Transport LLC",
+        "City Cab LLC",
+        "Golden Gate Manor Transportation",
+        "LUKE LLC",
+        "Maguy Medical Transport"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "15 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Park:low_gap_monitor",
+      "countyKey": "CO:Park",
+      "county": "Park",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Park — Low-gap monitor",
+      "summary": "Park shows strong credentialed capacity (12 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 12,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "Brave Sisters Transportation LLC",
+        "Delta Transport",
+        "High Mountain Taxi",
+        "Kareem Ride LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Mt Ride LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "12 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Phillips:low_gap_monitor",
+      "countyKey": "CO:Phillips",
+      "county": "Phillips",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Phillips — Low-gap monitor",
+      "summary": "Phillips shows strong credentialed capacity (8 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 8,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "County Express Transportation",
+        "Holyoke EMS",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "8 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Prowers:low_gap_monitor",
+      "countyKey": "CO:Prowers",
+      "county": "Prowers",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Prowers — Low-gap monitor",
+      "summary": "Prowers shows strong credentialed capacity (14 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 14,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Barb's Transport \"A Little Bit of Sunshine\"",
+        "City Cab LLC",
+        "Fremont County Transit",
+        "Golden Gate Manor Transportation",
+        "LUKE LLC",
+        "Maguy Medical Transport"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "14 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Pueblo:low_gap_monitor",
+      "countyKey": "CO:Pueblo",
+      "county": "Pueblo",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Pueblo — Low-gap monitor",
+      "summary": "Pueblo shows strong credentialed capacity (31 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 31,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "American Medical Response of Colorado Inc",
+        "Axel Medical Transportation",
+        "Barentu Transport LLC",
+        "Blue Skies Transportation",
+        "Brave Sisters Transportation LLC",
+        "City Cab LLC",
+        "Delta Transport"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "31 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Rio Grande:low_gap_monitor",
+      "countyKey": "CO:Rio Grande",
+      "county": "Rio Grande",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Rio Grande — Low-gap monitor",
+      "summary": "Rio Grande shows strong credentialed capacity (10 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 10,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "City Cab LLC",
+        "Golden Gate Manor Transportation",
+        "LUKE LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Mountain Valley Transit",
+        "Ommega Transportation LLC",
+        "Peak Family Transport LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "10 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Routt:low_gap_monitor",
+      "countyKey": "CO:Routt",
+      "county": "Routt",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Routt — Low-gap monitor",
+      "summary": "Routt shows strong credentialed capacity (8 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 8,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "High Mountain Taxi",
+        "Kareem Ride LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "8 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Saguache:low_gap_monitor",
+      "countyKey": "CO:Saguache",
+      "county": "Saguache",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Saguache — Low-gap monitor",
+      "summary": "Saguache shows strong credentialed capacity (8 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 8,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "City Cab LLC",
+        "Golden Gate Manor Transportation",
+        "MedRide LLC",
+        "Met Transport",
+        "Mountain Valley Transit",
+        "Peak Family Transport LLC",
+        "Van with a Plan",
+        "Wilderness Journeys"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "8 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Teller:low_gap_monitor",
+      "countyKey": "CO:Teller",
+      "county": "Teller",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Teller — Low-gap monitor",
+      "summary": "Teller shows strong credentialed capacity (22 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 22,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "AlphaMed",
+        "Axel Medical Transportation",
+        "Barentu Transport LLC",
+        "Blue Skies Transportation",
+        "Brave Sisters Transportation LLC",
+        "City Cab LLC",
+        "Delta Transport",
+        "Elevate Care Transit LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "22 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Washington:low_gap_monitor",
+      "countyKey": "CO:Washington",
+      "county": "Washington",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Washington — Low-gap monitor",
+      "summary": "Washington shows strong credentialed capacity (11 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 100,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 11,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "County Express Transportation",
+        "Holyoke EMS",
+        "Kareem Ride LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Ommega Transportation LLC",
+        "Peak Family Transport LLC"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "11 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 100",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    },
+    {
+      "opportunityKey": "CO:Yuma:low_gap_monitor",
+      "countyKey": "CO:Yuma",
+      "county": "Yuma",
+      "state": "CO",
+      "opportunityType": "low_gap_monitor",
+      "title": "Yuma — Low-gap monitor",
+      "summary": "Yuma shows strong credentialed capacity (8 providers) with incomplete operational evidence — classified as low-gap monitor, not a high-confidence service gap.",
+      "demandScore": 0,
+      "capacityScore": 80,
+      "opportunityScore": 0,
+      "evidenceCompletenessScore": 11,
+      "researchPriority": "high",
+      "providerCount": 8,
+      "demandAnchors": {
+        "hospitals": [],
+        "dialysis": [],
+        "mealPrograms": [],
+        "seniorCenters": [],
+        "va": [],
+        "behavioralHealth": []
+      },
+      "topProviders": [
+        "American Medical Response of Colorado Inc",
+        "County Express Transportation",
+        "Kareem Ride LLC",
+        "MedRide LLC",
+        "Met Transport",
+        "Peak Family Transport LLC",
+        "Sunshine Rides",
+        "Van with a Plan"
+      ],
+      "missingCriticalEvidence": [
+        "vehicle_count",
+        "driver_count",
+        "wheelchair_vehicle_count",
+        "monthly_trip_volume"
+      ],
+      "confidence": "low",
+      "actionabilityScore": 0,
+      "nextAction": "Monitor only unless complaints, broker overflow, or provider distress signals appear.",
+      "rationale": [
+        "8 credentialed providers listed by HCPF",
+        "Demand score 0, capacity score 80",
+        "Evidence completeness only 11%",
+        "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+        "High credentialed capacity — monitor unless operational distress appears."
+      ],
+      "sourceArtifacts": [
+        "runtime-data/transpo/county-demand-dossiers.generated.json",
+        "runtime-data/transpo/county-capacity.generated.json",
+        "runtime-data/transpo/county-evidence-dossiers.generated.json",
+        "runtime-data/transpo/county-research-summary.generated.json"
+      ],
+      "generatedAt": "2026-06-09T12:46:02.903Z"
+    }
+  ],
+  "summary": {
+    "byType": {
+      "provider_capacity_gap": 0,
+      "broker_transition_gap": 0,
+      "wheelchair_gap": 0,
+      "hospital_discharge_gap": 0,
+      "dialysis_transport_gap": 0,
+      "meal_route_gap": 0,
+      "rural_anchor_bundle": 0,
+      "low_gap_monitor": 38,
+      "research_priority": 26
+    },
+    "byConfidence": {
+      "high": 0,
+      "medium": 0,
+      "low": 64
+    },
+    "topHighConfidence": [],
+    "topResearchPriority": [
+      {
+        "opportunityKey": "CO:Adams:research_priority",
+        "countyKey": "CO:Adams",
+        "county": "Adams",
+        "state": "CO",
+        "opportunityType": "research_priority",
+        "title": "Adams — Research priority",
+        "summary": "Adams has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+        "demandScore": 0,
+        "capacityScore": 20,
+        "opportunityScore": 0,
+        "evidenceCompletenessScore": 16,
+        "researchPriority": "high",
+        "providerCount": 1,
+        "demandAnchors": {
+          "hospitals": [],
+          "dialysis": [],
+          "mealPrograms": [],
+          "seniorCenters": [],
+          "va": [],
+          "behavioralHealth": []
+        },
+        "topProviders": [
+          "Transdev"
+        ],
+        "missingCriticalEvidence": [
+          "vehicle_count",
+          "driver_count",
+          "wheelchair_vehicle_count",
+          "monthly_trip_volume"
+        ],
+        "confidence": "low",
+        "actionabilityScore": 50,
+        "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+        "rationale": [
+          "1 credentialed providers listed by HCPF",
+          "Demand score 0, capacity score 20",
+          "Evidence completeness only 16%",
+          "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+          "Research priority high with 4 critical evidence gaps."
+        ],
+        "sourceArtifacts": [
+          "runtime-data/transpo/county-demand-dossiers.generated.json",
+          "runtime-data/transpo/county-capacity.generated.json",
+          "runtime-data/transpo/county-evidence-dossiers.generated.json",
+          "runtime-data/transpo/county-research-summary.generated.json"
+        ],
+        "generatedAt": "2026-06-09T12:46:02.903Z"
+      },
+      {
+        "opportunityKey": "CO:Arapahoe:research_priority",
+        "countyKey": "CO:Arapahoe",
+        "county": "Arapahoe",
+        "state": "CO",
+        "opportunityType": "research_priority",
+        "title": "Arapahoe — Research priority",
+        "summary": "Arapahoe has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+        "demandScore": 0,
+        "capacityScore": 20,
+        "opportunityScore": 0,
+        "evidenceCompletenessScore": 16,
+        "researchPriority": "high",
+        "providerCount": 1,
+        "demandAnchors": {
+          "hospitals": [],
+          "dialysis": [],
+          "mealPrograms": [],
+          "seniorCenters": [],
+          "va": [],
+          "behavioralHealth": []
+        },
+        "topProviders": [
+          "Transdev"
+        ],
+        "missingCriticalEvidence": [
+          "vehicle_count",
+          "driver_count",
+          "wheelchair_vehicle_count",
+          "monthly_trip_volume"
+        ],
+        "confidence": "low",
+        "actionabilityScore": 50,
+        "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+        "rationale": [
+          "1 credentialed providers listed by HCPF",
+          "Demand score 0, capacity score 20",
+          "Evidence completeness only 16%",
+          "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+          "Research priority high with 4 critical evidence gaps."
+        ],
+        "sourceArtifacts": [
+          "runtime-data/transpo/county-demand-dossiers.generated.json",
+          "runtime-data/transpo/county-capacity.generated.json",
+          "runtime-data/transpo/county-evidence-dossiers.generated.json",
+          "runtime-data/transpo/county-research-summary.generated.json"
+        ],
+        "generatedAt": "2026-06-09T12:46:02.903Z"
+      },
+      {
+        "opportunityKey": "CO:Boulder:research_priority",
+        "countyKey": "CO:Boulder",
+        "county": "Boulder",
+        "state": "CO",
+        "opportunityType": "research_priority",
+        "title": "Boulder — Research priority",
+        "summary": "Boulder has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+        "demandScore": 0,
+        "capacityScore": 20,
+        "opportunityScore": 0,
+        "evidenceCompletenessScore": 16,
+        "researchPriority": "high",
+        "providerCount": 1,
+        "demandAnchors": {
+          "hospitals": [],
+          "dialysis": [],
+          "mealPrograms": [],
+          "seniorCenters": [],
+          "va": [],
+          "behavioralHealth": []
+        },
+        "topProviders": [
+          "Transdev"
+        ],
+        "missingCriticalEvidence": [
+          "vehicle_count",
+          "driver_count",
+          "wheelchair_vehicle_count",
+          "monthly_trip_volume"
+        ],
+        "confidence": "low",
+        "actionabilityScore": 50,
+        "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+        "rationale": [
+          "1 credentialed providers listed by HCPF",
+          "Demand score 0, capacity score 20",
+          "Evidence completeness only 16%",
+          "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+          "Research priority high with 4 critical evidence gaps."
+        ],
+        "sourceArtifacts": [
+          "runtime-data/transpo/county-demand-dossiers.generated.json",
+          "runtime-data/transpo/county-capacity.generated.json",
+          "runtime-data/transpo/county-evidence-dossiers.generated.json",
+          "runtime-data/transpo/county-research-summary.generated.json"
+        ],
+        "generatedAt": "2026-06-09T12:46:02.903Z"
+      },
+      {
+        "opportunityKey": "CO:Broomfield:research_priority",
+        "countyKey": "CO:Broomfield",
+        "county": "Broomfield",
+        "state": "CO",
+        "opportunityType": "research_priority",
+        "title": "Broomfield — Research priority",
+        "summary": "Broomfield has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+        "demandScore": 0,
+        "capacityScore": 20,
+        "opportunityScore": 0,
+        "evidenceCompletenessScore": 11,
+        "researchPriority": "high",
+        "providerCount": 1,
+        "demandAnchors": {
+          "hospitals": [],
+          "dialysis": [],
+          "mealPrograms": [],
+          "seniorCenters": [],
+          "va": [],
+          "behavioralHealth": []
+        },
+        "topProviders": [
+          "Transdev"
+        ],
+        "missingCriticalEvidence": [
+          "vehicle_count",
+          "driver_count",
+          "wheelchair_vehicle_count",
+          "monthly_trip_volume"
+        ],
+        "confidence": "low",
+        "actionabilityScore": 50,
+        "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+        "rationale": [
+          "1 credentialed providers listed by HCPF",
+          "Demand score 0, capacity score 20",
+          "Evidence completeness only 11%",
+          "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+          "Research priority high with 4 critical evidence gaps."
+        ],
+        "sourceArtifacts": [
+          "runtime-data/transpo/county-demand-dossiers.generated.json",
+          "runtime-data/transpo/county-capacity.generated.json",
+          "runtime-data/transpo/county-evidence-dossiers.generated.json",
+          "runtime-data/transpo/county-research-summary.generated.json"
+        ],
+        "generatedAt": "2026-06-09T12:46:02.903Z"
+      },
+      {
+        "opportunityKey": "CO:Denver:research_priority",
+        "countyKey": "CO:Denver",
+        "county": "Denver",
+        "state": "CO",
+        "opportunityType": "research_priority",
+        "title": "Denver — Research priority",
+        "summary": "Denver has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+        "demandScore": 0,
+        "capacityScore": 20,
+        "opportunityScore": 0,
+        "evidenceCompletenessScore": 16,
+        "researchPriority": "high",
+        "providerCount": 1,
+        "demandAnchors": {
+          "hospitals": [],
+          "dialysis": [],
+          "mealPrograms": [],
+          "seniorCenters": [],
+          "va": [],
+          "behavioralHealth": []
+        },
+        "topProviders": [
+          "Transdev"
+        ],
+        "missingCriticalEvidence": [
+          "vehicle_count",
+          "driver_count",
+          "wheelchair_vehicle_count",
+          "monthly_trip_volume"
+        ],
+        "confidence": "low",
+        "actionabilityScore": 50,
+        "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+        "rationale": [
+          "1 credentialed providers listed by HCPF",
+          "Demand score 0, capacity score 20",
+          "Evidence completeness only 16%",
+          "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+          "Research priority high with 4 critical evidence gaps."
+        ],
+        "sourceArtifacts": [
+          "runtime-data/transpo/county-demand-dossiers.generated.json",
+          "runtime-data/transpo/county-capacity.generated.json",
+          "runtime-data/transpo/county-evidence-dossiers.generated.json",
+          "runtime-data/transpo/county-research-summary.generated.json"
+        ],
+        "generatedAt": "2026-06-09T12:46:02.903Z"
+      },
+      {
+        "opportunityKey": "CO:Douglas:research_priority",
+        "countyKey": "CO:Douglas",
+        "county": "Douglas",
+        "state": "CO",
+        "opportunityType": "research_priority",
+        "title": "Douglas — Research priority",
+        "summary": "Douglas has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+        "demandScore": 0,
+        "capacityScore": 20,
+        "opportunityScore": 0,
+        "evidenceCompletenessScore": 16,
+        "researchPriority": "high",
+        "providerCount": 1,
+        "demandAnchors": {
+          "hospitals": [],
+          "dialysis": [],
+          "mealPrograms": [],
+          "seniorCenters": [],
+          "va": [],
+          "behavioralHealth": []
+        },
+        "topProviders": [
+          "Transdev"
+        ],
+        "missingCriticalEvidence": [
+          "vehicle_count",
+          "driver_count",
+          "wheelchair_vehicle_count",
+          "monthly_trip_volume"
+        ],
+        "confidence": "low",
+        "actionabilityScore": 50,
+        "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+        "rationale": [
+          "1 credentialed providers listed by HCPF",
+          "Demand score 0, capacity score 20",
+          "Evidence completeness only 16%",
+          "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+          "Research priority high with 4 critical evidence gaps."
+        ],
+        "sourceArtifacts": [
+          "runtime-data/transpo/county-demand-dossiers.generated.json",
+          "runtime-data/transpo/county-capacity.generated.json",
+          "runtime-data/transpo/county-evidence-dossiers.generated.json",
+          "runtime-data/transpo/county-research-summary.generated.json"
+        ],
+        "generatedAt": "2026-06-09T12:46:02.903Z"
+      },
+      {
+        "opportunityKey": "CO:Jefferson:research_priority",
+        "countyKey": "CO:Jefferson",
+        "county": "Jefferson",
+        "state": "CO",
+        "opportunityType": "research_priority",
+        "title": "Jefferson — Research priority",
+        "summary": "Jefferson has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+        "demandScore": 0,
+        "capacityScore": 20,
+        "opportunityScore": 0,
+        "evidenceCompletenessScore": 16,
+        "researchPriority": "high",
+        "providerCount": 1,
+        "demandAnchors": {
+          "hospitals": [],
+          "dialysis": [],
+          "mealPrograms": [],
+          "seniorCenters": [],
+          "va": [],
+          "behavioralHealth": []
+        },
+        "topProviders": [
+          "Transdev"
+        ],
+        "missingCriticalEvidence": [
+          "vehicle_count",
+          "driver_count",
+          "wheelchair_vehicle_count",
+          "monthly_trip_volume"
+        ],
+        "confidence": "low",
+        "actionabilityScore": 50,
+        "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+        "rationale": [
+          "1 credentialed providers listed by HCPF",
+          "Demand score 0, capacity score 20",
+          "Evidence completeness only 16%",
+          "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+          "Research priority high with 4 critical evidence gaps."
+        ],
+        "sourceArtifacts": [
+          "runtime-data/transpo/county-demand-dossiers.generated.json",
+          "runtime-data/transpo/county-capacity.generated.json",
+          "runtime-data/transpo/county-evidence-dossiers.generated.json",
+          "runtime-data/transpo/county-research-summary.generated.json"
+        ],
+        "generatedAt": "2026-06-09T12:46:02.903Z"
+      },
+      {
+        "opportunityKey": "CO:Larimer:research_priority",
+        "countyKey": "CO:Larimer",
+        "county": "Larimer",
+        "state": "CO",
+        "opportunityType": "research_priority",
+        "title": "Larimer — Research priority",
+        "summary": "Larimer has demand anchors but 16% evidence completeness — complete research before treating as a ranked service opportunity.",
+        "demandScore": 0,
+        "capacityScore": 20,
+        "opportunityScore": 0,
+        "evidenceCompletenessScore": 16,
+        "researchPriority": "high",
+        "providerCount": 1,
+        "demandAnchors": {
+          "hospitals": [],
+          "dialysis": [],
+          "mealPrograms": [],
+          "seniorCenters": [],
+          "va": [],
+          "behavioralHealth": []
+        },
+        "topProviders": [
+          "Transdev"
+        ],
+        "missingCriticalEvidence": [
+          "vehicle_count",
+          "driver_count",
+          "wheelchair_vehicle_count",
+          "monthly_trip_volume"
+        ],
+        "confidence": "low",
+        "actionabilityScore": 50,
+        "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+        "rationale": [
+          "1 credentialed providers listed by HCPF",
+          "Demand score 0, capacity score 20",
+          "Evidence completeness only 16%",
+          "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+          "Research priority high with 4 critical evidence gaps."
+        ],
+        "sourceArtifacts": [
+          "runtime-data/transpo/county-demand-dossiers.generated.json",
+          "runtime-data/transpo/county-capacity.generated.json",
+          "runtime-data/transpo/county-evidence-dossiers.generated.json",
+          "runtime-data/transpo/county-research-summary.generated.json"
+        ],
+        "generatedAt": "2026-06-09T12:46:02.903Z"
+      },
+      {
+        "opportunityKey": "CO:Weld:research_priority",
+        "countyKey": "CO:Weld",
+        "county": "Weld",
+        "state": "CO",
+        "opportunityType": "research_priority",
+        "title": "Weld — Research priority",
+        "summary": "Weld has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+        "demandScore": 0,
+        "capacityScore": 20,
+        "opportunityScore": 0,
+        "evidenceCompletenessScore": 11,
+        "researchPriority": "high",
+        "providerCount": 1,
+        "demandAnchors": {
+          "hospitals": [],
+          "dialysis": [],
+          "mealPrograms": [],
+          "seniorCenters": [],
+          "va": [],
+          "behavioralHealth": []
+        },
+        "topProviders": [
+          "Transdev"
+        ],
+        "missingCriticalEvidence": [
+          "vehicle_count",
+          "driver_count",
+          "wheelchair_vehicle_count",
+          "monthly_trip_volume"
+        ],
+        "confidence": "low",
+        "actionabilityScore": 50,
+        "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+        "rationale": [
+          "1 credentialed providers listed by HCPF",
+          "Demand score 0, capacity score 20",
+          "Evidence completeness only 11%",
+          "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+          "Research priority high with 4 critical evidence gaps."
+        ],
+        "sourceArtifacts": [
+          "runtime-data/transpo/county-demand-dossiers.generated.json",
+          "runtime-data/transpo/county-capacity.generated.json",
+          "runtime-data/transpo/county-evidence-dossiers.generated.json",
+          "runtime-data/transpo/county-research-summary.generated.json"
+        ],
+        "generatedAt": "2026-06-09T12:46:02.903Z"
+      },
+      {
+        "opportunityKey": "CO:Archuleta:research_priority",
+        "countyKey": "CO:Archuleta",
+        "county": "Archuleta",
+        "state": "CO",
+        "opportunityType": "research_priority",
+        "title": "Archuleta — Research priority",
+        "summary": "Archuleta has demand anchors but 11% evidence completeness — complete research before treating as a ranked service opportunity.",
+        "demandScore": 0,
+        "capacityScore": 80,
+        "opportunityScore": 0,
+        "evidenceCompletenessScore": 11,
+        "researchPriority": "high",
+        "providerCount": 7,
+        "demandAnchors": {
+          "hospitals": [],
+          "dialysis": [],
+          "mealPrograms": [],
+          "seniorCenters": [],
+          "va": [],
+          "behavioralHealth": []
+        },
+        "topProviders": [
+          "American Medical Response of Colorado Inc",
+          "MedRide LLC",
+          "Met Transport",
+          "Peak Family Transport LLC",
+          "Sunshine Rides",
+          "Van with a Plan",
+          "Wilderness Journeys"
+        ],
+        "missingCriticalEvidence": [
+          "vehicle_count",
+          "driver_count",
+          "wheelchair_vehicle_count",
+          "monthly_trip_volume"
+        ],
+        "confidence": "low",
+        "actionabilityScore": 15,
+        "nextAction": "Complete critical evidence tasks before ranking this as a service opportunity.",
+        "rationale": [
+          "7 credentialed providers listed by HCPF",
+          "Demand score 0, capacity score 80",
+          "Evidence completeness only 11%",
+          "Critical capacity evidence missing: vehicle count, driver count, wheelchair vehicle count, monthly trip volume",
+          "Research priority high with 4 critical evidence gaps."
+        ],
+        "sourceArtifacts": [
+          "runtime-data/transpo/county-demand-dossiers.generated.json",
+          "runtime-data/transpo/county-capacity.generated.json",
+          "runtime-data/transpo/county-evidence-dossiers.generated.json",
+          "runtime-data/transpo/county-research-summary.generated.json"
+        ],
+        "generatedAt": "2026-06-09T12:46:02.903Z"
+      }
+    ]
+  }
+}

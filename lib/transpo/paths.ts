@@ -63,3 +63,8 @@ export const EVIDENCE_OVERRIDES_PATH = path.join(
   TRANSPO_DATA_DIR,
   "evidence-overrides.json",
 );
+
+export const TRANSPO_OPPORTUNITIES_ARTIFACT_PATH = path.join(
+  TRANSPO_DATA_DIR,
+  "transpo-opportunities.generated.json",
+);
