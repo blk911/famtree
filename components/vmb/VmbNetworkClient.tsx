@@ -3,12 +3,14 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 import { VmbCard } from "@/components/vmb/VmbCard";
 import { VmbPageIntro } from "@/components/vmb/VmbPageIntro";
+import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { TrustedProviderIntroRequest } from "@/types/vmb/trusted-circle";
 
 const CATEGORIES = ["Nails", "Skin", "Wax", "Lashes", "Massage"] as const;
 
 export function VmbNetworkClient() {
+  const activeAnalysisId = useVmbActiveAnalysis();
   const [requests, setRequests] = useState<TrustedProviderIntroRequest[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [clientName, setClientName] = useState("");
@@ -22,9 +24,10 @@ export function VmbNetworkClient() {
     fetch("/api/vmb/trusted-intro", { cache: "no-store" })
       .then((r) => r.json())
       .then((json: { ok: boolean; data?: TrustedProviderIntroRequest[] }) => {
-        if (json.ok && json.data) setRequests(json.data);
+        if (json.ok && Array.isArray(json.data)) setRequests(json.data);
+        else setRequests([]);
       })
-      .catch(() => {});
+      .catch(() => setRequests([]));
   }, []);
 
   async function handleSubmit(e: FormEvent) {
@@ -42,6 +45,7 @@ export function VmbNetworkClient() {
           clientName: clientName.trim(),
           requestedCategory: activeCategory,
           providerName: providerName.trim() || undefined,
+          analysisId: activeAnalysisId,
         }),
       });
       const json = (await res.json()) as {

@@ -33,7 +33,8 @@ export async function createTrustedIntroRequest(
 
   const request: TrustedProviderIntroRequest = {
     requestId: `intro-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
-    trialId: input.trialId,
+    trialId: input.trialId?.trim(),
+    analysisId: input.analysisId?.trim(),
     salonName: input.salonName,
     clientName,
     clientEmail: input.clientEmail?.trim(),
@@ -56,4 +57,11 @@ export async function createTrustedIntroRequest(
 
 export async function listTrustedIntroRequests(): Promise<TrustedProviderIntroRequest[]> {
   return readJsonArray(getVmbTrustedIntroFile(), isIntroRequest);
+}
+
+export async function listTrustedIntroRequestsForTrial(
+  trialId: string,
+): Promise<TrustedProviderIntroRequest[]> {
+  const all = await listTrustedIntroRequests();
+  return all.filter((r) => r.trialId === trialId);
 }

@@ -31,7 +31,24 @@ export async function getVmbBookAnalysis(
   return all.find((a) => a.analysisId === id);
 }
 
+/** @deprecated Public APIs must use getLatestVmbBookAnalysisForTrial instead. */
 export async function getLatestVmbBookAnalysis(): Promise<VmbBookAnalysisResult | undefined> {
   const all = await listVmbBookAnalyses();
   return all[0];
+}
+
+export async function getVmbBookAnalysisForTrial(
+  id: string,
+  trialId: string,
+): Promise<VmbBookAnalysisResult | undefined> {
+  const analysis = await getVmbBookAnalysis(id);
+  if (!analysis || analysis.trialId !== trialId) return undefined;
+  return analysis;
+}
+
+export async function getLatestVmbBookAnalysisForTrial(
+  trialId: string,
+): Promise<VmbBookAnalysisResult | undefined> {
+  const all = await listVmbBookAnalyses();
+  return all.find((a) => a.trialId === trialId);
 }

@@ -1,6 +1,7 @@
 export type TrustedProviderIntroRequest = {
   requestId: string;
   trialId?: string;
+  analysisId?: string;
   salonName?: string;
   clientName: string;
   clientEmail?: string;
@@ -16,6 +17,7 @@ export type TrustedProviderIntroRequest = {
 
 export type CreateTrustedIntroInput = {
   trialId?: string;
+  analysisId?: string;
   salonName?: string;
   clientName: string;
   clientEmail?: string;

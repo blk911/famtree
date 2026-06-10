@@ -1,11 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import {
-  createVmbTrialLead,
-  getVmbTrialLead,
-  listVmbTrialLeads,
-} from "@/lib/vmb/trial-store";
+import { createVmbTrialLead, getVmbTrialLead } from "@/lib/vmb/trial-store";
+import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
 import type { VmbProviderPlatform } from "@/types/vmb/trial";
 
@@ -29,16 +26,17 @@ function normalizePlatform(raw: unknown): VmbProviderPlatform | undefined {
 }
 
 export async function GET(req: NextRequest) {
-  const id = req.nextUrl.searchParams.get("id")?.trim();
-  if (id) {
-    const lead = await getVmbTrialLead(id);
-    if (!lead) {
-      return NextResponse.json({ ok: false, error: "Trial not found" }, { status: 404 });
-    }
-    return NextResponse.json({ ok: true, data: lead });
+  const trialId = getVmbTrialIdFromRequest(req);
+  if (!trialId) {
+    return NextResponse.json({ ok: false, error: "No trial session" }, { status: 401 });
   }
-  const leads = await listVmbTrialLeads();
-  return NextResponse.json({ ok: true, data: leads });
+
+  const lead = await getVmbTrialLead(trialId);
+  if (!lead || lead.id !== trialId) {
+    return NextResponse.json({ ok: false, error: "Trial not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true, data: lead });
 }
 
 export async function POST(req: NextRequest) {

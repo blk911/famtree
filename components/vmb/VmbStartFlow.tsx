@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ChangeEvent, type CSSProperties } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { VmbCard } from "@/components/vmb/VmbCard";
 import { VMB_SAMPLE_BOOK_TEXT } from "@/lib/vmb/sample-book";
 import { VMB_THEME } from "@/lib/vmb/theme";
@@ -25,6 +26,7 @@ type ParseSummary = {
 };
 
 export function VmbStartFlow() {
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [salonName, setSalonName] = useState("");
   const [ownerName, setOwnerName] = useState("");
@@ -128,8 +130,10 @@ export function VmbStartFlow() {
         return;
       }
 
-      setAnalysis(analyzeJson.data.analysis);
+      const result = analyzeJson.data.analysis;
+      setAnalysis(result);
       setParseSummary(analyzeJson.data.parse);
+      router.push(`/vmb/dashboard?analysis=${encodeURIComponent(result.analysisId)}`);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {

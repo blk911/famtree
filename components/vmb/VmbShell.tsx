@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { appendVmbAnalysisQuery } from "@/lib/vmb/trial-scope";
 import { VMB_THEME } from "@/lib/vmb/theme";
+import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
 
 const NAV_ITEMS = [
   { href: "/vmb/clients", label: "Clients" },
@@ -21,8 +23,13 @@ type Props = {
 
 export function VmbShell({ children, variant = "app" }: Props) {
   const pathname = usePathname();
+  const activeAnalysisId = useVmbActiveAnalysis();
   const isLanding = pathname === "/vmb";
   const shellVariant = isLanding ? "marketing" : variant;
+
+  function vmbHref(href: string): string {
+    return appendVmbAnalysisQuery(href, activeAnalysisId);
+  }
 
   return (
     <div
@@ -79,7 +86,7 @@ export function VmbShell({ children, variant = "app" }: Props) {
                   return (
                     <Link
                       key={item.href}
-                      href={item.href}
+                      href={vmbHref(item.href)}
                       style={{
                         textDecoration: "none",
                         fontSize: 14,
@@ -101,7 +108,7 @@ export function VmbShell({ children, variant = "app" }: Props) {
           <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
             {shellVariant === "marketing" ? (
               <Link
-                href="/vmb/dashboard"
+                href={vmbHref("/vmb/dashboard")}
                 style={{
                   fontSize: 14,
                   fontWeight: 600,
@@ -113,28 +120,32 @@ export function VmbShell({ children, variant = "app" }: Props) {
               </Link>
             ) : (
               <>
-                <Link
-                  href="/vmb/dashboard"
+                <span
                   style={{
                     fontSize: 14,
                     fontWeight: 600,
                     color: VMB_THEME.muted,
-                    textDecoration: "none",
+                    opacity: 0.55,
+                    cursor: "not-allowed",
                   }}
+                  aria-disabled="true"
+                  title="Coming soon"
                 >
                   Profile
-                </Link>
-                <Link
-                  href="/vmb/dashboard"
+                </span>
+                <span
                   style={{
                     fontSize: 14,
                     fontWeight: 600,
                     color: VMB_THEME.muted,
-                    textDecoration: "none",
+                    opacity: 0.55,
+                    cursor: "not-allowed",
                   }}
+                  aria-disabled="true"
+                  title="Coming soon"
                 >
                   Settings
-                </Link>
+                </span>
               </>
             )}
           </div>
@@ -156,7 +167,7 @@ export function VmbShell({ children, variant = "app" }: Props) {
               return (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={vmbHref(item.href)}
                   style={{
                     textDecoration: "none",
                     fontSize: 13,

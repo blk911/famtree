@@ -2,9 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import {
-  getLatestVmbBookAnalysis,
-  getVmbBookAnalysis,
+  getLatestVmbBookAnalysisForTrial,
+  getVmbBookAnalysisForTrial,
 } from "@/lib/vmb/book-analysis/analysis-store";
+import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 import { decodeBookUploadFile } from "@/lib/vmb/provider-ingest/parse-book-upload";
 import { runVmbBookAnalysis } from "@/lib/vmb/run-book-analysis";
 import type { VmbProviderPlatform } from "@/types/vmb/trial";
@@ -25,11 +26,27 @@ function normalizePlatform(raw: unknown): VmbProviderPlatform | undefined {
 }
 
 export async function GET(req: NextRequest) {
-  const id = req.nextUrl.searchParams.get("id")?.trim();
-  const analysis = id ? await getVmbBookAnalysis(id) : await getLatestVmbBookAnalysis();
-  if (!analysis) {
-    return NextResponse.json({ ok: false, error: "No analysis found" }, { status: 404 });
+  const trialId = getVmbTrialIdFromRequest(req);
+  if (!trialId) {
+    return NextResponse.json({ ok: false, error: "No trial session", data: null }, { status: 401 });
   }
+
+  const id = req.nextUrl.searchParams.get("id")?.trim();
+  const analysis = id
+    ? await getVmbBookAnalysisForTrial(id, trialId)
+    : await getLatestVmbBookAnalysisForTrial(trialId);
+
+  if (id && !analysis) {
+    return NextResponse.json(
+      { ok: false, error: "Analysis not available for this trial", data: null },
+      { status: 403 },
+    );
+  }
+
+  if (!analysis) {
+    return NextResponse.json({ ok: true, data: null });
+  }
+
   return NextResponse.json({ ok: true, data: analysis });
 }
 
@@ -119,12 +136,27 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
 
 export async function POST(req: NextRequest) {
   try {
+    const trialId = getVmbTrialIdFromRequest(req);
+    if (!trialId) {
+      return NextResponse.json({ ok: false, error: "Trial session required" }, { status: 401 });
+    }
+
     const extracted = await extractAnalyzeInput(req);
     if ("error" in extracted) {
       return NextResponse.json({ ok: false, error: extracted.error }, { status: 400 });
     }
 
-    const outcome = await runVmbBookAnalysis(extracted);
+    if (extracted.trialId && extracted.trialId !== trialId) {
+      return NextResponse.json(
+        { ok: false, error: "trialId does not match current trial session" },
+        { status: 403 },
+      );
+    }
+
+    const outcome = await runVmbBookAnalysis({
+      ...extracted,
+      trialId,
+    });
     if (!outcome.ok) {
       return NextResponse.json({
         ok: false,
