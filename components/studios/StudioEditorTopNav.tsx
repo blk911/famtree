@@ -11,7 +11,7 @@ export const STUDIO_EDITOR_DEFAULT_NAV: readonly StudioEditorNavItem[] = [
   { href: "#portfolio", label: "PORTFOLIO" },
   { href: "#book", label: "BOOK" },
   { href: "#contact", label: "CONTACT" },
-  { href: "#vmb-salons", label: "VMB SALONS" },
+  { href: "/vmb", label: "VMB SALONS" },
 ];
 
 /** Dark salon-style anchor row for the studio editor / preview page only. */

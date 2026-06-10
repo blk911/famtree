@@ -59,7 +59,7 @@ export const FITNESS_STUDIO_TEMPLATE = {
       { href: "#portfolio", label: "PORTFOLIO" },
       { href: "#book", label: "BOOK" },
       { href: "#contact", label: "CONTACT" },
-      { href: "#vmb-salons", label: "VMB SALONS" },
+      { href: "/vmb", label: "VMB SALONS" },
     ],
   },
 } as const;

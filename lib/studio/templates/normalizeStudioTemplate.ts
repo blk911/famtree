@@ -155,7 +155,7 @@ export function normalizeStudioTemplate(envelope: NormalizableStudioTemplate): N
           { href: "#portfolio", label: "PORTFOLIO" },
           { href: "#book", label: "BOOK" },
           { href: "#contact", label: "CONTACT" },
-          { href: "#vmb-salons", label: "VMB SALONS" },
+          { href: "/vmb", label: "VMB SALONS" },
         ];
 
   const accentHex = safeStr(d.accentHex) || "#d4897a";
