@@ -23,6 +23,10 @@ export function getVmbTrustedIntroFile(): string {
   return path.join(getVmbDataDir(), "trusted-intro-requests.json");
 }
 
+export function getVmbInviteDraftsFile(): string {
+  return path.join(getVmbDataDir(), "invite-drafts.json");
+}
+
 /** Legacy file-upload imports (admin engine path) — kept separate from book paste flow. */
 export function getVmbTrialImportsDir(): string {
   return path.join(getVmbDataDir(), "trial-imports");

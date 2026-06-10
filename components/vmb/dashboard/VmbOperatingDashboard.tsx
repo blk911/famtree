@@ -6,11 +6,8 @@ import { NetworkLaunchSection } from "@/components/vmb/dashboard/NetworkLaunchSe
 import { NewClientsSection } from "@/components/vmb/dashboard/NewClientsSection";
 import { StandardOffersSection } from "@/components/vmb/dashboard/StandardOffersSection";
 import { WeeklyRevenueSection } from "@/components/vmb/dashboard/WeeklyRevenueSection";
+import { useInviteDrafts } from "@/components/vmb/dashboard/useInviteDrafts";
 import { buildVmbOperatingSnapshot } from "@/lib/vmb/operating-system";
-import {
-  readNetworkInviteState,
-  writeNetworkInviteState,
-} from "@/lib/vmb/operating-system/local-state";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
@@ -20,30 +17,25 @@ type Props = {
 };
 
 export function VmbOperatingDashboard({ analysis, isDemo = false }: Props) {
-  const [inviteState, setInviteState] = useState(() =>
-    readNetworkInviteState(analysis.analysisId),
-  );
-  const [networkPreviewOpen, setNetworkPreviewOpen] = useState(false);
+  const {
+    drafts,
+    loading: draftsLoading,
+    saving,
+    readyThisWeek,
+    patchDraft,
+    approveAllDrafts,
+  } = useInviteDrafts({ analysis, isDemo });
+
   const [revenuePreviewOpen, setRevenuePreviewOpen] = useState(false);
   const [welcomePreviewId, setWelcomePreviewId] = useState<string | null>(null);
   const [approvedWelcomeIds, setApprovedWelcomeIds] = useState<string[]>([]);
 
   const snapshot = useMemo(
-    () => buildVmbOperatingSnapshot(analysis, { inviteState }),
-    [analysis, inviteState],
+    () => buildVmbOperatingSnapshot(analysis, { inviteState: { invited: 0, joined: 0 } }),
+    [analysis],
   );
 
   if (!snapshot) return null;
-
-  function handleApproveNetwork() {
-    setInviteState((prev) => {
-      const snap = buildVmbOperatingSnapshot(analysis, { inviteState: prev });
-      const ready = snap?.network.readyThisWeek ?? 0;
-      const next = { invited: prev.invited + ready, joined: prev.joined };
-      writeNetworkInviteState(analysis.analysisId, next);
-      return next;
-    });
-  }
 
   return (
     <div style={{ maxWidth: 680, margin: "0 auto", padding: "36px 24px 72px" }}>
@@ -95,10 +87,12 @@ export function VmbOperatingDashboard({ analysis, isDemo = false }: Props) {
       </header>
 
       <NetworkLaunchSection
-        summary={snapshot.network}
-        previewOpen={networkPreviewOpen}
-        onPreview={() => setNetworkPreviewOpen((open) => !open)}
-        onApprove={handleApproveNetwork}
+        drafts={drafts}
+        loading={draftsLoading}
+        saving={saving}
+        readyThisWeek={readyThisWeek}
+        onApproveAll={approveAllDrafts}
+        onPatchDraft={patchDraft}
       />
 
       <NewClientsSection
