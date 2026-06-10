@@ -6,6 +6,14 @@ const LABELS: Record<VmbProviderPlatform, string> = {
   square: "Square",
   fresha: "Fresha",
   sola: "Sola",
+  booksy: "Booksy",
+  styleseat: "StyleSeat",
+  acuity: "Acuity",
+  schedulicity: "Schedulicity",
+  boulevard: "Boulevard",
+  mindbody: "Mindbody",
+  mangomint: "Mangomint",
+  phorest: "Phorest",
   other: "Other",
 };
 

@@ -4,6 +4,14 @@ export type VmbProviderPlatform =
   | "square"
   | "fresha"
   | "sola"
+  | "booksy"
+  | "styleseat"
+  | "acuity"
+  | "schedulicity"
+  | "boulevard"
+  | "mindbody"
+  | "mangomint"
+  | "phorest"
   | "other";
 
 export type VmbTrialLead = {
@@ -17,7 +25,7 @@ export type VmbTrialLead = {
 };
 
 export type CreateVmbTrialLeadInput = {
-  salonName: string;
+  salonName?: string;
   ownerName: string;
   email: string;
   phone?: string;

@@ -8,20 +8,12 @@ import {
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 import { decodeBookUploadFile } from "@/lib/vmb/provider-ingest/parse-book-upload";
 import { runVmbBookAnalysis } from "@/lib/vmb/run-book-analysis";
+import { VMB_PROVIDER_PLATFORMS } from "@/lib/vmb/provider-guide";
 import type { VmbProviderPlatform } from "@/types/vmb/trial";
-
-const PLATFORMS: VmbProviderPlatform[] = [
-  "glossgenius",
-  "vagaro",
-  "square",
-  "fresha",
-  "sola",
-  "other",
-];
 
 function normalizePlatform(raw: unknown): VmbProviderPlatform | undefined {
   const v = String(raw ?? "").trim().toLowerCase();
-  if (PLATFORMS.includes(v as VmbProviderPlatform)) return v as VmbProviderPlatform;
+  if (VMB_PROVIDER_PLATFORMS.includes(v as VmbProviderPlatform)) return v as VmbProviderPlatform;
   return undefined;
 }
 

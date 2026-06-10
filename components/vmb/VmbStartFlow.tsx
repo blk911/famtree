@@ -1,22 +1,17 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { VmbCard } from "@/components/vmb/VmbCard";
+import {
+  getProviderExportGuide,
+  moreProviders,
+  topProviders,
+} from "@/lib/vmb/provider-guide";
 import { VMB_SAMPLE_BOOK_TEXT } from "@/lib/vmb/sample-book";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { VmbProviderPlatform } from "@/types/vmb/trial";
-
-const PROVIDERS: { id: VmbProviderPlatform; label: string }[] = [
-  { id: "glossgenius", label: "GlossGenius" },
-  { id: "vagaro", label: "Vagaro" },
-  { id: "square", label: "Square" },
-  { id: "fresha", label: "Fresha" },
-  { id: "sola", label: "Sola" },
-  { id: "other", label: "Other" },
-];
 
 type ParseSummary = {
   parsedRecordCount: number;
@@ -28,21 +23,37 @@ type ParseSummary = {
 export function VmbStartFlow() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [salonName, setSalonName] = useState("");
+  const uploadSectionRef = useRef<HTMLDivElement>(null);
+
+  const [provider, setProvider] = useState<VmbProviderPlatform | "">("");
+  const [otherProviderName, setOtherProviderName] = useState("");
+  const [showMoreProviders, setShowMoreProviders] = useState(false);
+
   const [ownerName, setOwnerName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [provider, setProvider] = useState<VmbProviderPlatform | "">("");
+  const [salonName, setSalonName] = useState("");
+
   const [bookText, setBookText] = useState("");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [usingSample, setUsingSample] = useState(false);
+
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [analysis, setAnalysis] = useState<VmbBookAnalysisResult | null>(null);
-  const [parseSummary, setParseSummary] = useState<ParseSummary | null>(null);
+
+  const identityComplete = !!provider && !!ownerName.trim() && !!email.trim();
+  const hasBookData = usingSample || !!uploadFile || !!bookText.trim();
+  const canSubmit = identityComplete && hasBookData;
+
+  function selectProvider(id: VmbProviderPlatform) {
+    setProvider(id);
+    setError(null);
+    if (id !== "other") setOtherProviderName("");
+  }
 
   function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
     setUploadFile(file);
+    setUsingSample(false);
     if (file && file.name.toLowerCase().endsWith(".csv")) {
       const reader = new FileReader();
       reader.onload = () => {
@@ -52,34 +63,38 @@ export function VmbStartFlow() {
     }
   }
 
-  async function handleRunAnalysis() {
+  function handleUseSampleBook() {
+    setUploadFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setBookText(VMB_SAMPLE_BOOK_TEXT);
+    setUsingSample(true);
+    setError(null);
+  }
+
+  function handleHaveExport() {
+    setError(null);
+    uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function handleFindTheMoney() {
     setBusy(true);
     setError(null);
-    setAnalysis(null);
-    setParseSummary(null);
 
     try {
-      if (!salonName.trim() || !ownerName.trim() || !email.trim()) {
-        setError("Salon name, your name, and email are required.");
+      if (!canSubmit || !provider) {
+        setError("Choose your provider, enter your details, and add your client book.");
         return;
       }
-      if (!provider) {
-        setError("Choose your booking provider.");
-        return;
-      }
-      if (!bookText.trim() && !uploadFile) {
-        setError("Paste your client book, upload a CSV, or use the sample book.");
-        return;
-      }
+
+      const resolvedSalonName = salonName.trim() || "Your Salon";
 
       const trialRes = await fetch("/api/vmb/trial", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          salonName: salonName.trim(),
+          salonName: resolvedSalonName,
           ownerName: ownerName.trim(),
           email: email.trim(),
-          phone: phone.trim() || undefined,
           providerPlatform: provider,
         }),
       });
@@ -97,7 +112,7 @@ export function VmbStartFlow() {
       if (uploadFile) {
         const form = new FormData();
         form.append("trialId", trialJson.data.id);
-        form.append("salonName", salonName.trim());
+        form.append("salonName", resolvedSalonName);
         form.append("providerPlatform", provider);
         form.append("file", uploadFile);
         if (bookText.trim()) form.append("inputText", bookText);
@@ -108,10 +123,10 @@ export function VmbStartFlow() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             trialId: trialJson.data.id,
-            salonName: salonName.trim(),
+            salonName: resolvedSalonName,
             providerPlatform: provider,
             inputText: bookText,
-            sourceType: bookText === VMB_SAMPLE_BOOK_TEXT ? "sample" : "paste",
+            sourceType: usingSample || bookText === VMB_SAMPLE_BOOK_TEXT ? "sample" : "paste",
           }),
         });
       }
@@ -125,14 +140,11 @@ export function VmbStartFlow() {
         error?: string;
       };
       if (!analyzeJson.ok || !analyzeJson.data?.analysis) {
-        setError(analyzeJson.error ?? "Analysis failed.");
-        if (analyzeJson.data?.parse) setParseSummary(analyzeJson.data.parse);
+        setError(analyzeJson.error ?? "We could not read your book. Try another export.");
         return;
       }
 
       const result = analyzeJson.data.analysis;
-      setAnalysis(result);
-      setParseSummary(analyzeJson.data.parse);
       router.push(`/vmb/dashboard?analysis=${encodeURIComponent(result.analysisId)}`);
     } catch {
       setError("Something went wrong. Please try again.");
@@ -142,122 +154,182 @@ export function VmbStartFlow() {
   }
 
   return (
-    <div style={{ maxWidth: 680, margin: "0 auto", padding: "48px 24px 80px" }}>
-      <VmbCard padding="lg">
+    <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px 80px" }}>
+      <div style={{ marginBottom: 36 }}>
         <h1
           style={{
-            margin: "0 0 8px",
-            fontSize: 28,
+            margin: "0 0 10px",
+            fontSize: "clamp(28px, 4vw, 36px)",
             fontWeight: 800,
             letterSpacing: "-0.03em",
           }}
         >
-          Let&apos;s Find The Gold In Your Book
+          Find The Money
         </h1>
-        <p style={{ margin: "0 0 28px", fontSize: 15, lineHeight: 1.6, color: VMB_THEME.muted }}>
-          Upload a CSV export from GlossGenius or your booking platform, paste client data, or try
-          the sample book.
+        <p style={{ margin: 0, fontSize: 16, lineHeight: 1.55, color: VMB_THEME.muted }}>
+          Start with your booking provider, share where to send results, then upload your client book.
         </p>
+      </div>
 
-        <div style={{ display: "grid", gap: 24 }}>
-          <section>
-            <p style={{ margin: "0 0 12px", fontSize: 13, fontWeight: 700 }}>Your salon</p>
-            <div style={{ display: "grid", gap: 10 }}>
-              <input
-                placeholder="Salon name"
-                value={salonName}
-                onChange={(e) => setSalonName(e.target.value)}
-                style={fieldStyle}
-              />
-              <input
-                placeholder="Your name"
-                value={ownerName}
-                onChange={(e) => setOwnerName(e.target.value)}
-                style={fieldStyle}
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={fieldStyle}
-              />
-              <input
-                type="tel"
-                placeholder="Phone (optional)"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                style={fieldStyle}
-              />
-            </div>
-          </section>
+      <div style={{ display: "grid", gap: 28 }}>
+        {/* 1. Provider */}
+        <section>
+          <h2 style={sectionTitleStyle}>Who holds your client book?</h2>
+          <div
+            className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+            style={{ marginBottom: 14 }}
+          >
+            {topProviders.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => selectProvider(p.id)}
+                style={providerCardStyle(provider === p.id)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
 
-          <section>
-            <p style={{ margin: "0 0 12px", fontSize: 13, fontWeight: 700 }}>
-              Booking provider
-            </p>
-            <div style={{ display: "grid", gap: 8 }}>
-              {PROVIDERS.map((p) => (
+          {!showMoreProviders ? (
+            <button
+              type="button"
+              onClick={() => setShowMoreProviders(true)}
+              style={{
+                padding: "10px 0",
+                border: "none",
+                background: "none",
+                fontSize: 14,
+                fontWeight: 600,
+                color: VMB_THEME.muted,
+                cursor: "pointer",
+                textDecoration: "underline",
+                textUnderlineOffset: 3,
+              }}
+            >
+              More providers
+            </button>
+          ) : (
+            <div
+              className="grid grid-cols-2 gap-2 sm:grid-cols-3"
+              style={{ marginTop: 4 }}
+            >
+              {moreProviders.map((p) => (
                 <button
                   key={p.id}
                   type="button"
-                  onClick={() => setProvider(p.id)}
-                  style={{
-                    textAlign: "left",
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    border: `1px solid ${provider === p.id ? VMB_THEME.accent : VMB_THEME.line}`,
-                    background: provider === p.id ? VMB_THEME.accentSoft : "#fff",
-                    fontSize: 15,
-                    fontWeight: provider === p.id ? 700 : 500,
-                    cursor: "pointer",
-                  }}
+                  onClick={() => selectProvider(p.id)}
+                  style={moreProviderCardStyle(provider === p.id)}
                 >
                   {p.label}
                 </button>
               ))}
             </div>
-          </section>
+          )}
 
+          {provider === "other" ? (
+            <label style={{ display: "grid", gap: 6, marginTop: 16, fontSize: 13, fontWeight: 600 }}>
+              What booking system do you use?
+              <input
+                value={otherProviderName}
+                onChange={(e) => setOtherProviderName(e.target.value)}
+                placeholder="e.g. Zenoti, Meevo, custom spreadsheet"
+                style={fieldStyle}
+              />
+            </label>
+          ) : null}
+        </section>
+
+        {/* 2. Identity */}
+        {provider ? (
           <section>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 8,
-                marginBottom: 10,
-              }}
-            >
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>Client book</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setUploadFile(null);
-                  if (fileInputRef.current) fileInputRef.current.value = "";
-                  setBookText(VMB_SAMPLE_BOOK_TEXT);
-                }}
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: VMB_THEME.accent,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                }}
-              >
-                Use Sample Book
-              </button>
+            <h2 style={sectionTitleStyle}>Where should we send your results?</h2>
+            <div style={{ display: "grid", gap: 10 }}>
+              <input
+                placeholder="Your name"
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
+                style={fieldStyle}
+                autoComplete="name"
+              />
+              <input
+                type="email"
+                placeholder="Salon email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={fieldStyle}
+                autoComplete="email"
+              />
+              <input
+                placeholder="Salon name (optional)"
+                value={salonName}
+                onChange={(e) => setSalonName(e.target.value)}
+                style={fieldStyle}
+                autoComplete="organization"
+              />
             </div>
+          </section>
+        ) : null}
 
+        {/* 3. Export guide */}
+        {provider ? (
+          <section>
+            <h2 style={sectionTitleStyle}>Get your client book</h2>
+            <VmbCard padding="md">
+              <p style={{ margin: "0 0 18px", fontSize: 15, lineHeight: 1.6, color: VMB_THEME.muted }}>
+                {getProviderExportGuide(provider, otherProviderName)}
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={handleHaveExport}
+                  disabled={!identityComplete}
+                  style={{
+                    padding: "12px 18px",
+                    borderRadius: 12,
+                    border: `1px solid ${VMB_THEME.line}`,
+                    background: "#fff",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: identityComplete ? "pointer" : "not-allowed",
+                    opacity: identityComplete ? 1 : 0.55,
+                  }}
+                >
+                  I have my export
+                </button>
+                <button
+                  type="button"
+                  onClick={handleUseSampleBook}
+                  disabled={!identityComplete}
+                  style={{
+                    padding: "12px 18px",
+                    borderRadius: 12,
+                    border: "none",
+                    background: VMB_THEME.accentSoft,
+                    color: VMB_THEME.accent,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: identityComplete ? "pointer" : "not-allowed",
+                    opacity: identityComplete ? 1 : 0.55,
+                  }}
+                >
+                  Use sample book
+                </button>
+              </div>
+            </VmbCard>
+          </section>
+        ) : null}
+
+        {/* 4. Upload / paste */}
+        {identityComplete ? (
+          <section ref={uploadSectionRef}>
+            <h2 style={sectionTitleStyle}>Add your client book</h2>
             <label
               style={{
                 display: "block",
                 marginBottom: 12,
-                padding: "16px 14px",
-                borderRadius: 12,
+                padding: "18px 16px",
+                borderRadius: 14,
                 border: `1px dashed ${VMB_THEME.line}`,
                 background: "#fff",
                 cursor: "pointer",
@@ -270,7 +342,7 @@ export function VmbStartFlow() {
                 type="file"
                 accept=".csv,.txt,text/csv"
                 onChange={handleFileChange}
-                style={{ display: "block", marginBottom: 6, fontSize: 13, width: "100%" }}
+                style={{ display: "block", marginBottom: 8, fontSize: 13, width: "100%" }}
               />
               Upload CSV export
               {uploadFile ? (
@@ -282,9 +354,13 @@ export function VmbStartFlow() {
 
             <textarea
               value={bookText}
-              onChange={(e) => setBookText(e.target.value)}
-              placeholder="Or paste CSV / pipe-separated rows"
-              rows={8}
+              onChange={(e) => {
+                setBookText(e.target.value);
+                setUsingSample(e.target.value === VMB_SAMPLE_BOOK_TEXT);
+                if (e.target.value.trim()) setUploadFile(null);
+              }}
+              placeholder="Or paste CSV rows here"
+              rows={7}
               style={{
                 ...fieldStyle,
                 resize: "vertical",
@@ -292,108 +368,70 @@ export function VmbStartFlow() {
                 lineHeight: 1.45,
               }}
             />
-            <p style={{ margin: "8px 0 0", fontSize: 12, color: VMB_THEME.muted }}>
-              GlossGenius: Client Name, Email, Last Appointment, Service, Total Spent, Visit Count
-            </p>
           </section>
+        ) : null}
 
-          {error ? (
-            <p style={{ margin: 0, fontSize: 14, color: "#b91c1c" }}>{error}</p>
-          ) : null}
+        {error ? (
+          <p style={{ margin: 0, fontSize: 14, color: "#b91c1c" }}>{error}</p>
+        ) : null}
 
-          <button
-            type="button"
-            onClick={handleRunAnalysis}
-            disabled={busy}
-            style={{
-              padding: "14px 18px",
-              borderRadius: 12,
-              border: "none",
-              background: VMB_THEME.accent,
-              color: "#fff",
-              fontSize: 15,
-              fontWeight: 700,
-              cursor: busy ? "wait" : "pointer",
-              opacity: busy ? 0.85 : 1,
-            }}
-          >
-            {busy ? "Analyzing your book…" : "Run Analysis"}
-          </button>
-
-          {parseSummary ? (
-            <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>
-              Parsed {parseSummary.parsedRecordCount} records
-              {parseSummary.skippedRows > 0 ? ` · ${parseSummary.skippedRows} skipped` : ""}
-              {parseSummary.detectedColumns.length > 0
-                ? ` · Columns: ${parseSummary.detectedColumns.slice(0, 4).join(", ")}`
-                : ""}
-            </p>
-          ) : null}
-
-          {analysis ? (
-            <div
-              style={{
-                padding: "20px 18px",
-                borderRadius: 14,
-                background: VMB_THEME.accentSoft,
-                border: `1px solid ${VMB_THEME.accentMuted}`,
-              }}
-            >
-              <p
-                style={{
-                  margin: "0 0 14px",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: VMB_THEME.accent,
-                }}
-              >
-                Analysis complete
-              </p>
-              <ul style={{ margin: "0 0 16px", padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
-                <li style={{ fontSize: 16, fontWeight: 600 }}>
-                  {analysis.reactivationTargets.length} Reactivation Targets
-                </li>
-                <li style={{ fontSize: 16, fontWeight: 600 }}>
-                  {analysis.referralOpportunities.length} Referral Opportunities
-                </li>
-                <li style={{ fontSize: 16, fontWeight: 600 }}>
-                  {analysis.giftOpportunities.length} Gift Opportunities
-                </li>
-                <li style={{ fontSize: 16, fontWeight: 600 }}>
-                  {analysis.trustedProviderIntroOpportunities.length} Trusted Provider Intros
-                </li>
-              </ul>
-              <p style={{ margin: "0 0 16px", fontSize: 15, color: VMB_THEME.muted }}>
-                Estimated Recoverable Revenue:{" "}
-                <strong style={{ color: VMB_THEME.ink, fontSize: 22 }}>
-                  ${analysis.estimatedRecoverableRevenue.toLocaleString()}
-                </strong>
-              </p>
-              {parseSummary?.warnings && parseSummary.warnings.length > 0 ? (
-                <p style={{ margin: "0 0 12px", fontSize: 12, color: VMB_THEME.muted }}>
-                  {parseSummary.warnings.slice(0, 3).join(" · ")}
-                </p>
-              ) : null}
-              <Link
-                href={`/vmb/dashboard?analysis=${encodeURIComponent(analysis.analysisId)}`}
-                style={{
-                  display: "inline-block",
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: VMB_THEME.accent,
-                  textDecoration: "none",
-                }}
-              >
-                View your dashboard →
-              </Link>
-            </div>
-          ) : null}
-        </div>
-      </VmbCard>
+        <button
+          type="button"
+          onClick={handleFindTheMoney}
+          disabled={busy || !canSubmit}
+          style={{
+            padding: "16px 22px",
+            borderRadius: 14,
+            border: "none",
+            background: VMB_THEME.accent,
+            color: "#fff",
+            fontSize: 16,
+            fontWeight: 800,
+            cursor: busy || !canSubmit ? "not-allowed" : "pointer",
+            opacity: busy || !canSubmit ? 0.55 : 1,
+          }}
+        >
+          {busy ? "Finding the money…" : "Find The Money"}
+        </button>
+      </div>
     </div>
   );
+}
+
+const sectionTitleStyle: CSSProperties = {
+  margin: "0 0 14px",
+  fontSize: 18,
+  fontWeight: 800,
+  letterSpacing: "-0.02em",
+};
+
+function providerCardStyle(selected: boolean): CSSProperties {
+  return {
+    textAlign: "left",
+    padding: "20px 18px",
+    borderRadius: 16,
+    border: `1px solid ${selected ? VMB_THEME.accent : VMB_THEME.line}`,
+    background: selected ? VMB_THEME.accentSoft : "#fff",
+    fontSize: 17,
+    fontWeight: selected ? 800 : 600,
+    color: VMB_THEME.ink,
+    cursor: "pointer",
+    boxShadow: selected ? "0 2px 8px rgba(157, 23, 77, 0.08)" : "0 1px 3px rgba(28, 25, 23, 0.04)",
+  };
+}
+
+function moreProviderCardStyle(selected: boolean): CSSProperties {
+  return {
+    textAlign: "left",
+    padding: "12px 14px",
+    borderRadius: 12,
+    border: `1px solid ${selected ? VMB_THEME.accent : VMB_THEME.line}`,
+    background: selected ? VMB_THEME.accentSoft : "#fff",
+    fontSize: 14,
+    fontWeight: selected ? 700 : 500,
+    color: VMB_THEME.ink,
+    cursor: "pointer",
+  };
 }
 
 const fieldStyle: CSSProperties = {

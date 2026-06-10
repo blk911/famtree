@@ -21,11 +21,9 @@ function isTrialLead(item: unknown): item is VmbTrialLead {
 export async function createVmbTrialLead(
   input: CreateVmbTrialLeadInput,
 ): Promise<{ lead: VmbTrialLead } | { error: string }> {
-  const salonName = input.salonName?.trim();
+  const salonName = input.salonName?.trim() || "Your Salon";
   const ownerName = input.ownerName?.trim();
   const email = input.email?.trim().toLowerCase();
-
-  if (!salonName) return { error: "salonName is required" };
   if (!ownerName) return { error: "ownerName is required" };
   if (!email) return { error: "email is required" };
 
