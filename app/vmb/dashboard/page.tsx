@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { VmbDashboardView } from "@/components/vmb/VmbDashboardView";
+import { VmbDashboardClient } from "@/components/vmb/VmbDashboardClient";
 
 export const metadata: Metadata = {
   title: "Dashboard",
 };
 
-export default function VmbDashboardPage() {
-  return <VmbDashboardView />;
+type Props = {
+  searchParams: Promise<{ analysis?: string }>;
+};
+
+export default async function VmbDashboardPage({ searchParams }: Props) {
+  const params = await searchParams;
+  return <VmbDashboardClient analysisId={params.analysis?.trim()} />;
 }

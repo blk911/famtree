@@ -1,75 +1,56 @@
-import { promises as fs } from "fs";
-import path from "path";
 import crypto from "crypto";
-import type { VmbTrialLead, VmbTrialRecord, VmbTrialSignupInput } from "./types";
-import { getVmbTrialsDir } from "./paths";
-import { readTrialImportRuns } from "./trial-import-store";
-
-const TRIALS_FILE = "trials.v1.json";
+import type { CreateVmbTrialLeadInput, VmbTrialLead } from "@/types/vmb/trial";
+import { getVmbTrialsFile } from "./paths";
+import { readJsonArray, writeJsonArray } from "./runtime-json-store";
 
 function generateTrialId(): string {
   return `vmb-trial-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
 }
 
-async function readAllLeads(): Promise<VmbTrialLead[]> {
-  const dir = getVmbTrialsDir();
-  const filePath = path.join(dir, TRIALS_FILE);
-  try {
-    const raw = await fs.readFile(filePath, "utf8");
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (r): r is VmbTrialLead =>
-        !!r &&
-        typeof r === "object" &&
-        typeof (r as VmbTrialLead).id === "string" &&
-        typeof (r as VmbTrialLead).email === "string",
-    );
-  } catch {
-    return [];
-  }
-}
-
-async function writeAllLeads(leads: VmbTrialLead[]): Promise<string | null> {
-  const dir = getVmbTrialsDir();
-  const filePath = path.join(dir, TRIALS_FILE);
-  try {
-    await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(filePath, JSON.stringify(leads, null, 2), "utf8");
-    return null;
-  } catch (e) {
-    return e instanceof Error ? e.message : String(e);
-  }
+function isTrialLead(item: unknown): item is VmbTrialLead {
+  return (
+    !!item &&
+    typeof item === "object" &&
+    typeof (item as VmbTrialLead).id === "string" &&
+    typeof (item as VmbTrialLead).salonName === "string" &&
+    typeof (item as VmbTrialLead).ownerName === "string" &&
+    typeof (item as VmbTrialLead).email === "string"
+  );
 }
 
 export async function createVmbTrialLead(
-  input: VmbTrialSignupInput,
+  input: CreateVmbTrialLeadInput,
 ): Promise<{ lead: VmbTrialLead } | { error: string }> {
+  const salonName = input.salonName?.trim();
+  const ownerName = input.ownerName?.trim();
+  const email = input.email?.trim().toLowerCase();
+
+  if (!salonName) return { error: "salonName is required" };
+  if (!ownerName) return { error: "ownerName is required" };
+  if (!email) return { error: "email is required" };
+
   const lead: VmbTrialLead = {
     id: generateTrialId(),
-    name: input.name.trim(),
-    email: input.email.trim().toLowerCase(),
-    phone: input.phone.trim(),
-    salonName: input.salonName.trim(),
-    providerPlatform: input.providerPlatform.trim(),
+    salonName,
+    ownerName,
+    email,
+    phone: input.phone?.trim() || undefined,
+    providerPlatform: input.providerPlatform,
     createdAt: new Date().toISOString(),
   };
 
-  const existing = await readAllLeads();
+  const existing = await listVmbTrialLeads();
   existing.unshift(lead);
-  const err = await writeAllLeads(existing);
+  const err = await writeJsonArray(getVmbTrialsFile(), existing);
   if (err) return { error: err };
   return { lead };
 }
 
-export async function getVmbTrialLead(id: string): Promise<VmbTrialLead | undefined> {
-  const leads = await readAllLeads();
-  return leads.find((l) => l.id === id);
+export async function listVmbTrialLeads(): Promise<VmbTrialLead[]> {
+  return readJsonArray(getVmbTrialsFile(), isTrialLead);
 }
 
-export async function getVmbTrialRecord(id: string): Promise<VmbTrialRecord | undefined> {
-  const lead = await getVmbTrialLead(id);
-  if (!lead) return undefined;
-  const importRuns = await readTrialImportRuns(id);
-  return { ...lead, importRuns };
+export async function getVmbTrialLead(id: string): Promise<VmbTrialLead | undefined> {
+  const leads = await listVmbTrialLeads();
+  return leads.find((l) => l.id === id);
 }

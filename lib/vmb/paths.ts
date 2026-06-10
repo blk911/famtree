@@ -1,15 +1,31 @@
 import path from "path";
 
-export function getVmbTrialsDir(): string {
+/** Single VMB runtime root — local disk or Vercel /tmp. */
+export function getVmbDataDir(): string {
   return process.env.VERCEL
-    ? path.join("/tmp", "vmb-trials")
-    : path.join(process.cwd(), "runtime-data", "vmb", "trials");
+    ? path.join("/tmp", "vmb")
+    : path.join(process.cwd(), "runtime-data", "vmb");
 }
 
+export function getVmbTrialsFile(): string {
+  return path.join(getVmbDataDir(), "trials.json");
+}
+
+export function getVmbBookUploadsFile(): string {
+  return path.join(getVmbDataDir(), "book-uploads.json");
+}
+
+export function getVmbBookAnalysisFile(): string {
+  return path.join(getVmbDataDir(), "book-analysis-results.json");
+}
+
+export function getVmbTrustedIntroFile(): string {
+  return path.join(getVmbDataDir(), "trusted-intro-requests.json");
+}
+
+/** Legacy file-upload imports (admin engine path) — kept separate from book paste flow. */
 export function getVmbTrialImportsDir(): string {
-  return process.env.VERCEL
-    ? path.join("/tmp", "vmb-trial-imports")
-    : path.join(process.cwd(), "runtime-data", "vmb", "trial-imports");
+  return path.join(getVmbDataDir(), "trial-imports");
 }
 
 export const VMB_TRIAL_COOKIE = "vmb_trial_id";

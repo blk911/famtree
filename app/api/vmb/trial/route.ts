@@ -1,55 +1,70 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { createVmbTrialLead, getVmbTrialRecord } from "@/lib/vmb/trial-store";
+import {
+  createVmbTrialLead,
+  getVmbTrialLead,
+  listVmbTrialLeads,
+} from "@/lib/vmb/trial-store";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
+import type { VmbProviderPlatform } from "@/types/vmb/trial";
+
+const PLATFORMS: VmbProviderPlatform[] = [
+  "glossgenius",
+  "vagaro",
+  "square",
+  "fresha",
+  "sola",
+  "other",
+];
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function normalizePlatform(raw: unknown): VmbProviderPlatform | undefined {
+  const v = String(raw ?? "").trim().toLowerCase();
+  if (PLATFORMS.includes(v as VmbProviderPlatform)) return v as VmbProviderPlatform;
+  return undefined;
+}
+
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id")?.trim();
-  if (!id) {
-    return NextResponse.json({ ok: false, error: "id is required" }, { status: 400 });
+  if (id) {
+    const lead = await getVmbTrialLead(id);
+    if (!lead) {
+      return NextResponse.json({ ok: false, error: "Trial not found" }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true, data: lead });
   }
-  const record = await getVmbTrialRecord(id);
-  if (!record) {
-    return NextResponse.json({ ok: false, error: "Trial not found" }, { status: 404 });
-  }
-  return NextResponse.json({ ok: true, record });
+  const leads = await listVmbTrialLeads();
+  return NextResponse.json({ ok: true, data: leads });
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Record<string, unknown>;
-    const name = String(body.name ?? "").trim();
-    const email = String(body.email ?? "").trim();
-    const phone = String(body.phone ?? "").trim();
     const salonName = String(body.salonName ?? "").trim();
-    const providerPlatform = String(body.providerPlatform ?? "").trim();
+    const ownerName = String(body.ownerName ?? body.name ?? "").trim();
+    const email = String(body.email ?? "").trim();
+    const phone = String(body.phone ?? "").trim() || undefined;
+    const providerPlatform = normalizePlatform(body.providerPlatform);
 
-    if (!name) {
-      return NextResponse.json({ ok: false, error: "name is required" }, { status: 400 });
+    if (!salonName) {
+      return NextResponse.json({ ok: false, error: "salonName is required" }, { status: 400 });
+    }
+    if (!ownerName) {
+      return NextResponse.json({ ok: false, error: "ownerName is required" }, { status: 400 });
     }
     if (!email || !isValidEmail(email)) {
       return NextResponse.json({ ok: false, error: "valid email is required" }, { status: 400 });
     }
-    if (!phone) {
-      return NextResponse.json({ ok: false, error: "phone is required" }, { status: 400 });
-    }
-    if (!salonName) {
-      return NextResponse.json({ ok: false, error: "salonName is required" }, { status: 400 });
-    }
-    if (!providerPlatform) {
-      return NextResponse.json({ ok: false, error: "providerPlatform is required" }, { status: 400 });
-    }
 
     const result = await createVmbTrialLead({
-      name,
+      salonName,
+      ownerName,
       email,
       phone,
-      salonName,
       providerPlatform,
     });
 
@@ -57,12 +72,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: result.error }, { status: 500 });
     }
 
-    const redirectUrl = `/vmb/trial/dashboard?trialId=${encodeURIComponent(result.lead.id)}`;
-    const res = NextResponse.json({
-      ok: true,
-      trialId: result.lead.id,
-      redirectUrl,
-    });
+    const res = NextResponse.json({ ok: true, data: result.lead });
     res.cookies.set(VMB_TRIAL_COOKIE, result.lead.id, {
       httpOnly: true,
       sameSite: "lax",

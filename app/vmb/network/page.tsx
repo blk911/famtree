@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { VmbNetworkView } from "@/components/vmb/VmbNetworkView";
+import { VmbNetworkClient } from "@/components/vmb/VmbNetworkClient";
 
 export const metadata: Metadata = {
   title: "Network",
 };
 
 export default function VmbNetworkPage() {
-  return <VmbNetworkView />;
+  return <VmbNetworkClient />;
 }

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { VmbSalonImportPanel } from "@/components/studios/salon/VmbSalonImportPanel";
-import type { VmbTrialRecord } from "@/lib/vmb/types";
+import type { VmbTrialLead } from "@/types/vmb/trial";
 import { STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 
 const ACCENT = "#9d174d";
@@ -22,7 +22,7 @@ type Props = {
 };
 
 export function VmbTrialDashboardClient({ trialId }: Props) {
-  const [record, setRecord] = useState<VmbTrialRecord | null>(null);
+  const [record, setRecord] = useState<VmbTrialLead | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(0);
@@ -36,18 +36,15 @@ export function VmbTrialDashboardClient({ trialId }: Props) {
       });
       const data = (await res.json()) as {
         ok: boolean;
-        record?: VmbTrialRecord;
+        data?: VmbTrialLead;
         error?: string;
       };
-      if (!data.ok || !data.record) {
+      if (!data.ok || !data.data) {
         setError(data.error ?? "Trial not found");
         setRecord(null);
         return;
       }
-      setRecord(data.record);
-      if (data.record.importRuns.length > 0) {
-        setActiveStep(4);
-      }
+      setRecord(data.data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load trial");
     } finally {
@@ -192,8 +189,8 @@ export function VmbTrialDashboardClient({ trialId }: Props) {
   );
 }
 
-function normalizeProvider(raw: string): string {
-  const v = raw.trim().toLowerCase();
+function normalizeProvider(raw?: string): string {
+  const v = (raw ?? "").trim().toLowerCase();
   if (v.includes("gloss")) return "glossgenius";
   if (v.includes("vagaro")) return "vagaro";
   if (v.includes("square")) return "square";
