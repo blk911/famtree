@@ -9,13 +9,6 @@ const ACCENT = "#9d174d";
 const ACCENT_SOFT = "#fdf2f8";
 const WARM_BG = "#faf8f5";
 
-const PROOF_CHIPS = [
-  "30-day free trial",
-  "No software migration",
-  "Works with your current booking system",
-  "Social media + referral growth",
-] as const;
-
 const COMPARISON_CARDS: Array<{ title: string; body: string; highlight?: boolean }> = [
   {
     title: "Social Media",
@@ -111,7 +104,7 @@ export function VmbSalonsLanding() {
         >
           VMB for Salons
         </p>
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-12">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2 lg:gap-12">
           <div>
             <h1
               style={{
@@ -159,7 +152,7 @@ export function VmbSalonsLanding() {
               <li>No monthly or annual fee.</li>
               <li>Start with a 30-day free trial.</li>
             </ul>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
               <button
                 type="button"
                 onClick={() => scrollToId("vmb-trial")}
@@ -193,35 +186,17 @@ export function VmbSalonsLanding() {
                 See How VMB Works
               </button>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {PROOF_CHIPS.map((chip) => (
-                <span
-                  key={chip}
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    padding: "8px 12px",
-                    borderRadius: 999,
-                    background: "#fff",
-                    border: `1px solid ${STUDIOS_LINE}`,
-                    color: STUDIOS_INK,
-                  }}
-                >
-                  {chip}
-                </span>
-              ))}
-            </div>
           </div>
 
-          <div>
+          <div style={{ paddingTop: 4 }}>
             <p
               style={{
-                margin: "0 0 10px",
-                fontSize: 12,
+                margin: "0 0 12px",
+                fontSize: 11,
                 fontWeight: 800,
-                letterSpacing: "0.1em",
+                letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                color: STUDIOS_MUTED,
+                color: ACCENT,
                 textAlign: "center",
               }}
             >
