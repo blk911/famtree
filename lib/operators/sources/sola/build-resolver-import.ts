@@ -2,6 +2,7 @@
 
 import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { getSolaDataDir } from "./paths";
 import { CANDIDATES_ARTIFACT_PATH } from "./run-sola-harvest";
 import type {
   SolaCategoryBucket,
@@ -18,9 +19,7 @@ import type {
 import { SOLA_PARENT_CONTAINER_BRAND, SOLA_SOURCE_PROVIDER, SOLA_SOURCE_TYPE } from "./types";
 
 export const RESOLVER_IMPORT_ARTIFACT_PATH = path.join(
-  process.cwd(),
-  "runtime-data",
-  "sola",
+  getSolaDataDir(),
   "sola-resolver-import.generated.json",
 );
 

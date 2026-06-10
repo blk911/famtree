@@ -2,6 +2,7 @@
 
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { getSolaDataDir } from "./paths";
 import { readSolaResolverImport } from "./read-sola-resolver-import";
 import { readSolaReviewStates } from "./sola-review-state-store";
 import type {
@@ -11,16 +12,12 @@ import type {
 } from "./types";
 
 export const SOLA_REVIEWED_TARGETS_JSON_PATH = path.join(
-  process.cwd(),
-  "runtime-data",
-  "sola",
+  getSolaDataDir(),
   "sola-reviewed-targets.generated.json",
 );
 
 export const SOLA_REVIEWED_TARGETS_CSV_PATH = path.join(
-  process.cwd(),
-  "runtime-data",
-  "sola",
+  getSolaDataDir(),
   "sola-reviewed-targets.csv",
 );
 

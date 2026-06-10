@@ -3,6 +3,7 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { buildSolaCandidateKey, extractProfileSlug } from "./candidate-key";
+import { getSolaDataDir } from "./paths";
 import { dedupeSolaListings } from "./dedupe-listings";
 import {
   readProfileApiEndpointCache,
@@ -41,7 +42,7 @@ import { SOLA_SOURCE_PROVIDER, SOLA_SOURCE_TYPE } from "./types";
 
 export { buildSolaCandidateKey, extractProfileSlug };
 
-const SOLA_DATA_DIR = path.join(process.cwd(), "runtime-data", "sola");
+const SOLA_DATA_DIR = getSolaDataDir();
 
 export const HARVEST_ARTIFACT_PATH = path.join(
   SOLA_DATA_DIR,

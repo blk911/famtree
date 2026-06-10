@@ -2,12 +2,11 @@
 
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
+import { getSolaDataDir } from "./paths";
 import type { SolaReviewState, SolaReviewStateMap, SolaReviewStatus } from "./types";
 
 export const SOLA_REVIEW_STATES_PATH = path.join(
-  process.cwd(),
-  "runtime-data",
-  "sola",
+  getSolaDataDir(),
   "sola-review-states.json",
 );
 

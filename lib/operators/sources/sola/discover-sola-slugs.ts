@@ -2,9 +2,10 @@
 
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
+import { getSolaDataDir } from "./paths";
 import { SOLA_BOOK_ORIGIN } from "./profile-url-utils";
 
-const SOLA_DATA_DIR = path.join(process.cwd(), "runtime-data", "sola");
+const SOLA_DATA_DIR = getSolaDataDir();
 const SLUGS_SEED_PATH = path.join(SOLA_DATA_DIR, "sola-slugs.seed.json");
 
 const VALIDATE_TIMEOUT_MS = 20_000;

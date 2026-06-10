@@ -2,6 +2,7 @@
 
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
+import { getSolaDataDir } from "./paths";
 import { extractProfileSlug } from "./profile-url-utils";
 import {
   parseSolaProfileApi,
@@ -10,7 +11,7 @@ import {
 } from "./parse-sola-profile-api";
 import { normalizeSolaProfileUrl } from "./profile-url-utils";
 
-const SOLA_DATA_DIR = path.join(process.cwd(), "runtime-data", "sola");
+const SOLA_DATA_DIR = getSolaDataDir();
 
 export const PROFILE_API_ENDPOINTS_PATH = path.join(
   SOLA_DATA_DIR,
