@@ -8,6 +8,7 @@ node_modules/
 out/
 dist/
 build/
+!app/api/vmb/invite-drafts/build/
 
 # ── Environment / secrets ─────────────────────────────────────
 .env
