@@ -140,13 +140,23 @@ function linkBtn(href: string, label: string): React.ReactNode {
 
 type Props = {
   candidates: MarketCandidate[];
+  initialSourceFilter?: string;
+  initialLocationFilter?: string;
 };
 
-export function MarketsCandidateTable({ candidates }: Props) {
+export function MarketsCandidateTable({
+  candidates,
+  initialSourceFilter,
+  initialLocationFilter,
+}: Props) {
   const [rows, setRows] = useState(candidates);
-  const [sourceFilter, setSourceFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState(
+    initialSourceFilter && initialSourceFilter !== "all" ? initialSourceFilter : "all",
+  );
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [locationFilter, setLocationFilter] = useState("all");
+  const [locationFilter, setLocationFilter] = useState(
+    initialLocationFilter && initialLocationFilter !== "all" ? initialLocationFilter : "all",
+  );
   const [verificationFilter, setVerificationFilter] = useState("all");
   const [actionFilter, setActionFilter] = useState("all");
   const [reviewFilter, setReviewFilter] = useState("all");

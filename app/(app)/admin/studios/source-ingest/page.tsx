@@ -12,15 +12,30 @@ import {
   ADMIN_INTEL_META,
 } from "@/components/admin/intelligence/salon/admin-intelligence-typography";
 
+type ScanNextLinks = {
+  markets: string;
+  solaDetail: string;
+  viewRun: string;
+};
+
 type ScanResponse = {
   ok: boolean;
   sourceType?: string;
   provider?: string;
   providerLabel?: string;
   directoryUrl?: string;
+  sourceProvider?: string;
+  slug?: string;
   solaSlug?: string;
   listingsFound?: number;
   profilesEnriched?: number;
+  resolverCandidatesCreated?: number;
+  marketCandidatesCreated?: number;
+  harvestSucceeded?: boolean;
+  promotionSucceeded?: boolean;
+  promotionStatus?: string;
+  artifactPaths?: Record<string, string>;
+  nextLinks?: ScanNextLinks;
   market?: string;
   category?: string;
   candidatesFound?: number;
@@ -33,6 +48,7 @@ type ScanResponse = {
   duplicates?: number;
   warnings?: string[];
   errors?: string[];
+  ingestRunId?: string;
   detail?: string;
   error?: string;
 };
@@ -98,12 +114,16 @@ export default function SourceIngestPage() {
         },
       );
       const data = (await res.json()) as ScanResponse;
+      setResult(data);
       if (!data.ok) {
-        setError(data.detail ?? data.error ?? "Scan failed");
-        setResult(data);
+        if (data.harvestSucceeded && !data.promotionSucceeded) {
+          setError("Harvest succeeded, promotion failed");
+        } else {
+          setError(data.detail ?? data.error ?? data.errors?.[0] ?? "Scan failed");
+        }
         return;
       }
-      setResult(data);
+      setError(null);
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("salon-prospects:refresh"));
       }
@@ -267,68 +287,168 @@ export default function SourceIngestPage() {
       {result ? (
         <div
           style={{
-            background: "#fafaf9",
-            border: "1px solid #e7e5e4",
+            background: result.provider === "sola" ? "#fff" : "#fafaf9",
+            border: `1px solid ${
+              result.provider === "sola" && result.ok
+                ? "#a7f3d0"
+                : result.harvestSucceeded && !result.promotionSucceeded
+                  ? "#fcd34d"
+                  : "#e7e5e4"
+            }`,
             borderRadius: 14,
             padding: "18px 20px",
           }}
         >
-          <h3 style={{ ...ADMIN_INTEL_CARD_LABEL, margin: "0 0 12px" }}>Scan results</h3>
-          {result.provider === "sola" && result.solaSlug ? (
-            <p style={{ ...ADMIN_INTEL_BODY, margin: "0 0 12px", fontWeight: 600 }}>
-              Sola location detected: {result.solaSlug}
-            </p>
-          ) : null}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-              gap: 10,
-              marginBottom: 14,
-            }}
-          >
-            {(
-              result.provider === "sola"
-                ? [
-                    ["Provider detected", result.providerLabel ?? "Sola Salon Studios"],
-                    ["Listings found", String(result.listingsFound ?? result.candidatesFound ?? 0)],
-                    ["Profiles enriched", String(result.profilesEnriched ?? 0)],
-                    ["Candidates created", String(result.candidatesCreated ?? 0)],
-                  ]
-                : [
-                    ["Provider detected", result.providerLabel ?? result.provider ?? "—"],
-                    ["Source type", result.sourceType ?? "directory"],
-                    ["Candidates found", String(result.candidatesFound ?? 0)],
-                    ["Static (SSR)", String(result.staticCandidatesFound ?? "—")],
-                    ["Browser scroll", String(result.browserCandidatesFound ?? "—")],
-                    ["Scroll mode", result.scrollModeUsed ?? "—"],
-                    ["Scroll attempts", String(result.scrollAttempts ?? 0)],
-                    [
-                      "Browser available",
-                      result.browserAvailable === true
-                        ? "Yes"
-                        : result.browserAvailable === false
-                          ? "No"
-                          : "—",
-                    ],
-                    ["Candidates created", String(result.candidatesCreated ?? 0)],
-                    ["Duplicates", String(result.duplicates ?? 0)],
-                  ]
-            ).map(([label, value]) => (
+          <h3 style={{ ...ADMIN_INTEL_CARD_LABEL, margin: "0 0 12px" }}>
+            {result.provider === "sola" ? "Sola ingest completion" : "Scan results"}
+          </h3>
+
+          {result.provider === "sola" ? (
+            <>
+              <p style={{ ...ADMIN_INTEL_BODY, margin: "0 0 12px", fontWeight: 600 }}>
+                Sola location detected: {result.slug ?? result.solaSlug ?? "—"}
+              </p>
               <div
-                key={label}
                 style={{
-                  background: "#fff",
-                  border: "1px solid #e7e5e4",
-                  borderRadius: 10,
-                  padding: "10px 12px",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+                  gap: 10,
+                  marginBottom: 14,
                 }}
               >
-                <div style={ADMIN_INTEL_META}>{label}</div>
-                <div style={{ ...ADMIN_INTEL_BODY, fontWeight: 700, marginTop: 4 }}>{value}</div>
+                {[
+                  ["Listings found", String(result.listingsFound ?? 0)],
+                  ["Profiles enriched", String(result.profilesEnriched ?? 0)],
+                  ["Resolver candidates", String(result.resolverCandidatesCreated ?? 0)],
+                  ["Market candidates", String(result.marketCandidatesCreated ?? 0)],
+                  ["Promotion status", result.promotionStatus ?? (result.ok ? "complete" : "—")],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    style={{
+                      background: "#fafaf9",
+                      border: "1px solid #e7e5e4",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                    }}
+                  >
+                    <div style={ADMIN_INTEL_META}>{label}</div>
+                    <div style={{ ...ADMIN_INTEL_BODY, fontWeight: 700, marginTop: 4 }}>{value}</div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+
+              {result.nextLinks ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
+                  <Link
+                    href={result.nextLinks.markets}
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      padding: "8px 14px",
+                      borderRadius: 8,
+                      background: "#9d174d",
+                      color: "#fff",
+                      textDecoration: "none",
+                    }}
+                  >
+                    Open Unified Markets
+                  </Link>
+                  <Link
+                    href={result.nextLinks.solaDetail}
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      padding: "8px 14px",
+                      borderRadius: 8,
+                      border: "1px solid #e7e5e4",
+                      background: "#fff",
+                      color: "#9d174d",
+                      textDecoration: "none",
+                    }}
+                  >
+                    Open Sola Detail
+                  </Link>
+                  <Link
+                    href={result.nextLinks.viewRun}
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      padding: "8px 14px",
+                      borderRadius: 8,
+                      border: "1px solid #e7e5e4",
+                      background: "#fff",
+                      color: "#44403c",
+                      textDecoration: "none",
+                    }}
+                  >
+                    View Run
+                  </Link>
+                </div>
+              ) : null}
+
+              {result.ingestRunId ? (
+                <p style={{ ...ADMIN_INTEL_META, margin: "0 0 10px" }}>Run ID: {result.ingestRunId}</p>
+              ) : null}
+
+              {result.artifactPaths ? (
+                <details style={{ marginBottom: 12 }}>
+                  <summary style={{ ...ADMIN_INTEL_CARD_LABEL, cursor: "pointer" }}>
+                    Artifact paths
+                  </summary>
+                  <ul style={{ margin: "8px 0 0", paddingLeft: 18, ...ADMIN_INTEL_META }}>
+                    {Object.entries(result.artifactPaths).map(([key, value]) => (
+                      <li key={key} style={{ marginBottom: 4, wordBreak: "break-all" }}>
+                        {key}: {value}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ) : null}
+            </>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+                gap: 10,
+                marginBottom: 14,
+              }}
+            >
+              {[
+                ["Provider detected", result.providerLabel ?? result.provider ?? "—"],
+                ["Source type", result.sourceType ?? "directory"],
+                ["Candidates found", String(result.candidatesFound ?? 0)],
+                ["Static (SSR)", String(result.staticCandidatesFound ?? "—")],
+                ["Browser scroll", String(result.browserCandidatesFound ?? "—")],
+                ["Scroll mode", result.scrollModeUsed ?? "—"],
+                ["Scroll attempts", String(result.scrollAttempts ?? 0)],
+                [
+                  "Browser available",
+                  result.browserAvailable === true
+                    ? "Yes"
+                    : result.browserAvailable === false
+                      ? "No"
+                      : "—",
+                ],
+                ["Candidates created", String(result.candidatesCreated ?? 0)],
+                ["Duplicates", String(result.duplicates ?? 0)],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  style={{
+                    background: "#fff",
+                    border: "1px solid #e7e5e4",
+                    borderRadius: 10,
+                    padding: "10px 12px",
+                  }}
+                >
+                  <div style={ADMIN_INTEL_META}>{label}</div>
+                  <div style={{ ...ADMIN_INTEL_BODY, fontWeight: 700, marginTop: 4 }}>{value}</div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {result.directoryUrl ? (
             <p style={{ ...ADMIN_INTEL_META, margin: "0 0 10px", wordBreak: "break-all" }}>
@@ -364,19 +484,21 @@ export default function SourceIngestPage() {
             </div>
           ) : null}
 
-          <Link
-            href="/admin/studios/import-candidates"
-            style={{
-              display: "inline-block",
-              marginTop: 8,
-              fontSize: 13,
-              fontWeight: 700,
-              color: "#9d174d",
-              textDecoration: "none",
-            }}
-          >
-            Review in Import Candidates →
-          </Link>
+          {result.provider !== "sola" ? (
+            <Link
+              href="/admin/studios/import-candidates"
+              style={{
+                display: "inline-block",
+                marginTop: 8,
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#9d174d",
+                textDecoration: "none",
+              }}
+            >
+              Review in Import Candidates →
+            </Link>
+          ) : null}
         </div>
       ) : null}
     </div>

@@ -62,15 +62,30 @@ export interface DirectoryIngestRequest {
   fullScroll?: boolean;
 }
 
+export interface DirectoryIngestNextLinks {
+  markets: string;
+  solaDetail: string;
+  viewRun: string;
+}
+
 export interface DirectoryIngestResult {
   ok: boolean;
   sourceType: DirectorySourceType;
   provider: SalonDirectoryProvider;
   providerLabel: string;
   directoryUrl: string;
+  sourceProvider?: string;
+  slug?: string;
   solaSlug?: string;
   listingsFound?: number;
   profilesEnriched?: number;
+  resolverCandidatesCreated?: number;
+  marketCandidatesCreated?: number;
+  harvestSucceeded?: boolean;
+  promotionSucceeded?: boolean;
+  promotionStatus?: "complete" | "harvest_only" | "failed";
+  artifactPaths?: Record<string, string>;
+  nextLinks?: DirectoryIngestNextLinks;
   market?: string;
   category?: string;
   notes?: string;

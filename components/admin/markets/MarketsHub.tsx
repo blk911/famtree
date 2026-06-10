@@ -17,6 +17,8 @@ type SourceCard = {
 type Props = {
   solaStats: SolaMarketsHubStats;
   registry: MarketCandidatesArtifact | null;
+  initialSourceFilter?: string;
+  initialLocationFilter?: string;
 };
 
 function SourceMarketCard({ title, subtitle, href, pipeline, stats }: SourceCard) {
@@ -47,7 +49,12 @@ function SourceMarketCard({ title, subtitle, href, pipeline, stats }: SourceCard
   );
 }
 
-export function MarketsHub({ solaStats, registry }: Props) {
+export function MarketsHub({
+  solaStats,
+  registry,
+  initialSourceFilter,
+  initialLocationFilter,
+}: Props) {
   const solaRegistryCount = registry?.sources.sola?.count ?? 0;
   const ggenRegistryCount = registry?.sources.glossgenius?.count ?? 0;
   const ggenRegistryMeta = registry?.sources.glossgenius;
@@ -130,7 +137,11 @@ export function MarketsHub({ solaStats, registry }: Props) {
       </div>
 
       {registry && registry.candidates.length > 0 ? (
-        <MarketsCandidateTable candidates={registry.candidates} />
+        <MarketsCandidateTable
+          candidates={registry.candidates}
+          initialSourceFilter={initialSourceFilter}
+          initialLocationFilter={initialLocationFilter}
+        />
       ) : null}
     </MarketIntelPageShell>
   );

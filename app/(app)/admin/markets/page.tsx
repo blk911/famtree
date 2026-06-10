@@ -10,7 +10,14 @@ export const dynamic = "force-dynamic";
 
 const isAdmin = (role: string) => role === "founder" || role === "admin";
 
-export default async function AdminMarketsPage() {
+type PageProps = {
+  searchParams?: {
+    source?: string;
+    location?: string;
+  };
+};
+
+export default async function AdminMarketsPage({ searchParams }: PageProps) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (!isAdmin(user.role)) redirect("/dashboard");
@@ -20,5 +27,12 @@ export default async function AdminMarketsPage() {
     readMarketCandidatesArtifact(),
   ]);
 
-  return <MarketsHub solaStats={solaStats} registry={registry} />;
+  return (
+    <MarketsHub
+      solaStats={solaStats}
+      registry={registry}
+      initialSourceFilter={searchParams?.source}
+      initialLocationFilter={searchParams?.location}
+    />
+  );
 }

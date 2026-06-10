@@ -1,10 +1,13 @@
 // lib/intelligence/salon/source-ingest/directory-ingest-engine.ts
 
-import { buildMarketCandidatesRegistry } from "@/lib/markets/build-market-candidates";
-import { buildSolaResolverImport } from "@/lib/operators/sources/sola/build-resolver-import";
 import { runSolaHarvest } from "@/lib/operators/sources/sola/run-sola-harvest";
+import { appendSalonSourceRun } from "@/lib/studios/source-runs/store";
 import { filterProspects, upsertProspect } from "@/lib/studios/prospects/store";
 import { classifyDirectoryUrl } from "./directory-classifier";
+import {
+  buildSolaIngestOutcome,
+  promoteSolaHarvestToMarkets,
+} from "./sola-ingest-handoff";
 import {
   directoryListingToUpsertInput,
   isDuplicateDirectoryCandidate,
@@ -162,46 +165,73 @@ async function runSolaDirectoryIngest(
   try {
     const { harvest } = await runSolaHarvest(slug, { enrichProfiles: true });
     const slugResult = harvest.results.find((row) => row.slug === slug) ?? harvest.results[0];
+    const harvestSucceeded = Boolean(slugResult?.ok);
+    const listingsFound = slugResult?.listingsFound ?? 0;
+    const profilesEnriched = slugResult?.profilesEnriched ?? 0;
+    const candidatesCreated = slugResult?.candidatesCreated ?? 0;
 
-    if (!slugResult?.ok) {
-      errors.push(slugResult?.error ?? `Sola harvest failed for slug "${slug}".`);
-      return {
-        ok: false,
-        sourceType: classification.sourceType,
-        provider: classification.provider,
-        providerLabel: classification.providerLabel,
-        directoryUrl: classification.directoryUrl,
-        solaSlug: slug,
-        listingsFound: slugResult?.listingsFound ?? 0,
-        profilesEnriched: slugResult?.profilesEnriched ?? 0,
-        market: input.market,
-        category: input.category,
-        notes: input.notes,
-        candidatesFound: slugResult?.candidatesCreated ?? 0,
-        candidatesCreated: slugResult?.candidatesCreated ?? 0,
-        duplicates: 0,
-        warnings,
-        errors,
-        ingestRunId,
-      };
-    }
+    const promotion = harvestSucceeded
+      ? await promoteSolaHarvestToMarkets(slug)
+      : {
+          resolverCandidatesCreated: 0,
+          marketCandidatesCreated: 0,
+          artifactPaths: {},
+          errors: [] as string[],
+          succeeded: false,
+        };
 
-    await buildSolaResolverImport();
-    await buildMarketCandidatesRegistry();
+    const outcome = buildSolaIngestOutcome({
+      slug,
+      runId: ingestRunId,
+      harvestSucceeded,
+      listingsFound,
+      profilesEnriched,
+      promotion,
+      harvestErrors: harvestSucceeded
+        ? []
+        : [slugResult?.error ?? `Sola harvest failed for slug "${slug}".`],
+    });
 
-    const listingsFound = slugResult.listingsFound;
-    const profilesEnriched = slugResult.profilesEnriched ?? 0;
-    const candidatesCreated = slugResult.candidatesCreated;
+    warnings.push(...outcome.warnings);
+    errors.push(...outcome.errors);
+
+    await appendSalonSourceRun({
+      runId: ingestRunId,
+      sourceProvider: "sola",
+      slug,
+      inputUrl: input.url,
+      listingsFound,
+      profilesEnriched,
+      resolverCandidatesCreated: outcome.resolverCandidatesCreated,
+      marketCandidatesCreated: outcome.marketCandidatesCreated,
+      status: outcome.status,
+      harvestSucceeded: outcome.harvestSucceeded,
+      promotionSucceeded: outcome.promotionSucceeded,
+      createdAt: new Date().toISOString(),
+      artifactPaths: outcome.artifactPaths,
+      nextLinks: outcome.nextLinks,
+      errors: outcome.errors,
+      warnings: outcome.warnings,
+    });
 
     return {
-      ok: true,
+      ok: outcome.ok,
       sourceType: classification.sourceType,
       provider: classification.provider,
       providerLabel: classification.providerLabel,
       directoryUrl: classification.directoryUrl,
+      sourceProvider: "sola",
+      slug,
       solaSlug: slug,
       listingsFound,
       profilesEnriched,
+      resolverCandidatesCreated: outcome.resolverCandidatesCreated,
+      marketCandidatesCreated: outcome.marketCandidatesCreated,
+      harvestSucceeded: outcome.harvestSucceeded,
+      promotionSucceeded: outcome.promotionSucceeded,
+      promotionStatus: outcome.status,
+      artifactPaths: outcome.artifactPaths,
+      nextLinks: outcome.nextLinks,
       market: input.market,
       category: input.category,
       notes: input.notes,
@@ -221,7 +251,12 @@ async function runSolaDirectoryIngest(
       provider: classification.provider,
       providerLabel: classification.providerLabel,
       directoryUrl: classification.directoryUrl,
+      sourceProvider: "sola",
+      slug,
       solaSlug: slug,
+      harvestSucceeded: false,
+      promotionSucceeded: false,
+      promotionStatus: "failed",
       market: input.market,
       category: input.category,
       notes: input.notes,
