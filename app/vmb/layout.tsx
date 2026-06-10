@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { VmbShell } from "@/components/vmb/VmbShell";
+import { VmbLayoutGate } from "@/components/vmb/VmbLayoutGate";
 
 export const metadata: Metadata = {
   title: {
@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function VmbLayout({ children }: { children: React.ReactNode }) {
-  return <VmbShell>{children}</VmbShell>;
+  return <VmbLayoutGate>{children}</VmbLayoutGate>;
 }
