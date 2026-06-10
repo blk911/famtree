@@ -1,12 +1,16 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { CreatorIntelligenceNav } from "@/components/studios/creator-lab/CreatorIntelligenceNav";
 import { IntelligenceFeatureHeader } from "@/components/admin/IntelligenceFeatureHeader";
 import { salonConfig } from "@/lib/intelligence/verticals/salon.config";
 import { BookingProviderPill } from "@/components/admin/intelligence/salon/BookingProviderPill";
-import type { GgenDiscoveryRun, GgenSeedDiscoveryResult } from "@/lib/intelligence/salon/ggen-seed-discovery/types";
+import type {
+  GgenDiscoveryRun,
+  GgenDiscoveryRunSummary,
+  GgenSeedDiscoveryResult,
+} from "@/lib/intelligence/salon/ggen-seed-discovery/types";
 
 const PLACEHOLDER = `# One salon/beauty business per line
 # Plain name, CSV, or pipe-delimited
@@ -30,6 +34,13 @@ type PromoteResponse = {
   detail?: string;
 };
 
+type RunsListResponse = {
+  ok: boolean;
+  runs?: GgenDiscoveryRunSummary[];
+  storePath?: string;
+  warning?: string;
+};
+
 function confColor(n: number) {
   if (n >= 75) return "#15803d";
   if (n >= 50) return "#d97706";
@@ -45,8 +56,38 @@ export default function GgenDiscoveryPage() {
   const [promoting, setPromoting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [run, setRun] = useState<GgenDiscoveryRun | null>(null);
+  const [recentRuns, setRecentRuns] = useState<GgenDiscoveryRunSummary[]>([]);
+  const [storePath, setStorePath] = useState<string | null>(null);
+  const [runsLoading, setRunsLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadRecentRuns() {
+      setRunsLoading(true);
+      try {
+        const res = await fetch("/api/admin/intelligence/salon/ggen-discovery/runs", {
+          cache: "no-store",
+        });
+        const data = (await res.json()) as RunsListResponse;
+        if (cancelled) return;
+        setRecentRuns(Array.isArray(data.runs) ? data.runs : []);
+        setStorePath(data.storePath ?? null);
+      } catch (e) {
+        if (!cancelled) {
+          console.error("[ggen-discovery] failed to load recent runs", e);
+          setRecentRuns([]);
+        }
+      } finally {
+        if (!cancelled) setRunsLoading(false);
+      }
+    }
+    void loadRecentRuns();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const lineCount = inputText
     .split("\n")
@@ -88,6 +129,16 @@ export default function GgenDiscoveryPage() {
         return;
       }
       setRun(data.run);
+      setRecentRuns((prev) => {
+        const summary: GgenDiscoveryRunSummary = {
+          runId: data.run!.runId,
+          createdAt: data.run!.createdAt,
+          seedCount: data.run!.seedCount,
+          foundCount: data.run!.foundCount,
+        };
+        return [summary, ...prev.filter((r) => r.runId !== summary.runId)].slice(0, 50);
+      });
+      if (data.storePath) setStorePath(data.storePath);
       const autoSelect = new Set(
         data.run.results.filter((r) => r.importCandidate).map((r) => r.id),
       );
@@ -257,6 +308,51 @@ export default function GgenDiscoveryPage() {
       {error ? (
         <div style={{ marginBottom: 16, padding: 12, background: "#fef2f2", color: "#b91c1c", borderRadius: 8, fontSize: 13 }}>
           {error}
+        </div>
+      ) : null}
+
+      {!runsLoading && recentRuns.length === 0 && !run ? (
+        <div
+          style={{
+            marginBottom: 16,
+            padding: "14px 16px",
+            background: "#fafaf9",
+            border: "1px dashed #d6d3d1",
+            borderRadius: 12,
+            fontSize: 13,
+            color: "#57534e",
+          }}
+        >
+          No GG Seed runs yet. Upload or paste seeds to start discovery.
+          {storePath ? (
+            <div style={{ marginTop: 8, fontSize: 11, color: "#a8a29e", wordBreak: "break-all" }}>
+              Store: {storePath}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {!runsLoading && recentRuns.length > 0 && !run ? (
+        <div
+          style={{
+            marginBottom: 16,
+            padding: "12px 14px",
+            background: "#fff",
+            border: "1px solid #e7e5e4",
+            borderRadius: 12,
+          }}
+        >
+          <div style={{ fontSize: 11, fontWeight: 800, color: "#a8a29e", marginBottom: 8 }}>
+            RECENT RUNS
+          </div>
+          <div style={{ display: "grid", gap: 6 }}>
+            {recentRuns.slice(0, 5).map((summary) => (
+              <div key={summary.runId} style={{ fontSize: 12, color: "#57534e" }}>
+                <strong>{summary.runId}</strong> · {summary.foundCount}/{summary.seedCount} found ·{" "}
+                {new Date(summary.createdAt).toLocaleString()}
+              </div>
+            ))}
+          </div>
         </div>
       ) : null}
 

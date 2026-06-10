@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);
-    console.error("[ggen-discovery/run]", detail);
+    console.error("[ggen-discovery/run] failed:", detail, e);
     return NextResponse.json({ ok: false, error: "run failed", detail }, { status: 500 });
   }
 }
