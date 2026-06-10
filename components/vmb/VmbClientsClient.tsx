@@ -8,48 +8,119 @@ import {
   type ClientOpportunityRow,
   type ClientOpportunitySummary,
 } from "@/lib/vmb/client-opportunities";
+import { analysisHasOpportunityArrays } from "@/lib/vmb/normalize-analysis";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
-export function VmbClientsClient() {
-  const activeAnalysisId = useVmbActiveAnalysis();
-  const [loading, setLoading] = useState(true);
+type LoadState = "loading" | "invalid" | "empty" | "ready";
+
+type Props = {
+  initialAnalysisId?: string;
+};
+
+type DebugSummary = {
+  recordCount: number;
+  reactivationCount: number;
+  referralCount: number;
+  giftCount: number;
+  trustedIntroCount: number;
+  rowCount: number;
+};
+
+export function VmbClientsClient({ initialAnalysisId }: Props) {
+  const activeAnalysisId = useVmbActiveAnalysis(initialAnalysisId);
+  const [loadState, setLoadState] = useState<LoadState>("loading");
   const [summary, setSummary] = useState<ClientOpportunitySummary | null>(null);
   const [selectedRow, setSelectedRow] = useState<ClientOpportunityRow | null>(null);
+  const [debugSummary, setDebugSummary] = useState<DebugSummary | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+
+    async function fetchAnalysis(url: string) {
+      const res = await fetch(url, { cache: "no-store", credentials: "include" });
+      return (await res.json()) as {
+        ok: boolean;
+        data?: VmbBookAnalysisResult | null;
+        error?: string;
+      };
+    }
+
     async function load() {
-      setLoading(true);
+      setLoading();
+      const requestedId = activeAnalysisId?.trim();
+
       try {
-        const url = activeAnalysisId
-          ? `/api/vmb/analyze-book?id=${encodeURIComponent(activeAnalysisId)}`
-          : "/api/vmb/analyze-book";
-        const res = await fetch(url, { cache: "no-store" });
-        const json = (await res.json()) as {
+        let json: {
           ok: boolean;
           data?: VmbBookAnalysisResult | null;
+          error?: string;
         };
-        if (!cancelled) {
-          if (json.ok && json.data) {
-            setSummary(buildClientOpportunities(json.data));
-          } else {
-            setSummary(null);
+
+        if (requestedId) {
+          json = await fetchAnalysis(
+            `/api/vmb/analyze-book?id=${encodeURIComponent(requestedId)}`,
+          );
+          if (!json.ok || !json.data) {
+            json = await fetchAnalysis("/api/vmb/analyze-book");
           }
+        } else {
+          json = await fetchAnalysis("/api/vmb/analyze-book");
         }
+
+        if (cancelled) return;
+
+        if (!json.ok || !json.data) {
+          if (requestedId) {
+            setLoadState("invalid");
+            setSummary(null);
+            setDebugSummary(null);
+          } else {
+            setLoadState("empty");
+            setSummary(null);
+            setDebugSummary(null);
+          }
+          return;
+        }
+
+        const built = buildClientOpportunities(json.data);
+        setDebugSummary({
+          recordCount: built.clientsAnalyzed,
+          reactivationCount: built.reactivationCount,
+          referralCount: built.referralCount,
+          giftCount: built.giftCount,
+          trustedIntroCount: built.trustedIntroCount,
+          rowCount: built.rows.length,
+        });
+
+        if (built.rows.length > 0 || analysisHasOpportunityArrays(json.data)) {
+          setSummary(built);
+          setLoadState(built.rows.length > 0 ? "ready" : "empty");
+          return;
+        }
+
+        setSummary(built);
+        setLoadState("empty");
       } catch {
-        if (!cancelled) setSummary(null);
-      } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoadState(requestedId ? "invalid" : "empty");
+          setSummary(null);
+          setDebugSummary(null);
+        }
       }
     }
+
+    function setLoading() {
+      setLoadState("loading");
+    }
+
     load();
     return () => {
       cancelled = true;
     };
   }, [activeAnalysisId]);
 
-  if (loading) {
+  if (loadState === "loading") {
     return (
       <div style={{ padding: 48, textAlign: "center", color: VMB_THEME.muted }}>
         Loading opportunities…
@@ -57,11 +128,11 @@ export function VmbClientsClient() {
     );
   }
 
-  if (!summary || summary.rows.length === 0) {
+  if (loadState === "invalid") {
     return (
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px 72px", textAlign: "center" }}>
         <p style={{ margin: "0 0 16px", fontSize: 17, color: VMB_THEME.muted }}>
-          No client opportunities yet. Run your book analysis to see who to contact today.
+          No active book analysis found. Start with Find The Money.
         </p>
         <Link
           href="/vmb/start"
@@ -78,6 +149,37 @@ export function VmbClientsClient() {
         >
           Find The Money
         </Link>
+        {process.env.NODE_ENV === "development" && activeAnalysisId ? (
+          <DevDebugPanel analysisId={activeAnalysisId} debug={debugSummary} />
+        ) : null}
+      </div>
+    );
+  }
+
+  if (loadState === "empty" || !summary || summary.rows.length === 0) {
+    return (
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px 72px", textAlign: "center" }}>
+        <p style={{ margin: "0 0 16px", fontSize: 17, color: VMB_THEME.muted }}>
+          Analysis loaded, but no client opportunities were found in this book yet.
+        </p>
+        <Link
+          href="/vmb/start"
+          style={{
+            display: "inline-block",
+            padding: "12px 20px",
+            borderRadius: 12,
+            background: VMB_THEME.accent,
+            color: "#fff",
+            fontSize: 14,
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          Try another export
+        </Link>
+        {process.env.NODE_ENV === "development" ? (
+          <DevDebugPanel analysisId={activeAnalysisId} debug={debugSummary} />
+        ) : null}
       </div>
     );
   }
@@ -140,6 +242,10 @@ export function VmbClientsClient() {
         </div>
       </header>
 
+      {process.env.NODE_ENV === "development" ? (
+        <DevDebugPanel analysisId={activeAnalysisId} debug={debugSummary} />
+      ) : null}
+
       <div
         style={{
           background: "#fff",
@@ -180,9 +286,30 @@ export function VmbClientsClient() {
                 }}
               >
                 <td style={{ padding: "9px 14px", fontWeight: 700, color: VMB_THEME.ink }}>
-                  {row.clientName}
+                  <div>{row.clientName}</div>
+                  {row.secondaryBadges?.length ? (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+                      {row.secondaryBadges.map((badge) => (
+                        <span
+                          key={`${row.id}-${badge}`}
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: "0.04em",
+                            textTransform: "uppercase",
+                            color: VMB_THEME.accent,
+                            background: VMB_THEME.accentSoft,
+                            borderRadius: 6,
+                            padding: "2px 6px",
+                          }}
+                        >
+                          {badge}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                 </td>
-                <td style={{ padding: "9px 14px", color: VMB_THEME.muted }}>{row.triggerLabel}</td>
+                <td style={{ padding: "9px 14px", color: VMB_THEME.muted }}>{row.trigger}</td>
                 <td style={{ padding: "9px 14px", fontWeight: 600, color: VMB_THEME.ink }}>
                   {row.action}
                 </td>
@@ -206,6 +333,33 @@ export function VmbClientsClient() {
         <OpportunityDrawer row={selectedRow} onClose={() => setSelectedRow(null)} />
       ) : null}
     </div>
+  );
+}
+
+function DevDebugPanel({
+  analysisId,
+  debug,
+}: {
+  analysisId?: string;
+  debug: DebugSummary | null;
+}) {
+  if (!debug && !analysisId) return null;
+  return (
+    <pre
+      style={{
+        margin: "16px 0 0",
+        padding: "12px 14px",
+        borderRadius: 10,
+        background: "#fff",
+        border: `1px dashed ${VMB_THEME.line}`,
+        fontSize: 11,
+        color: VMB_THEME.muted,
+        textAlign: "left",
+        overflowX: "auto",
+      }}
+    >
+      {JSON.stringify({ analysisId: analysisId ?? null, ...debug }, null, 2)}
+    </pre>
   );
 }
 
@@ -275,6 +429,7 @@ function OpportunityDrawer({
             accent
           />
           <DetailItem label="Opportunity Type" value={row.opportunityType} />
+          <DetailItem label="Confidence" value={row.confidence} />
           <DetailItem label="Suggested Campaign" value={row.suggestedCampaign} />
         </dl>
 

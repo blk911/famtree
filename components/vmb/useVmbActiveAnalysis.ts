@@ -9,9 +9,11 @@ function readAnalysisFromUrl(): string | undefined {
   return new URLSearchParams(window.location.search).get("analysis")?.trim() || undefined;
 }
 
-export function useVmbActiveAnalysis(): string | undefined {
+export function useVmbActiveAnalysis(initialAnalysisId?: string): string | undefined {
   const pathname = usePathname();
-  const [activeAnalysisId, setActiveAnalysisId] = useState<string | undefined>();
+  const [activeAnalysisId, setActiveAnalysisId] = useState<string | undefined>(
+    () => initialAnalysisId?.trim() || readAnalysisFromUrl() || readActiveAnalysisId(),
+  );
 
   useEffect(() => {
     const paramId = readAnalysisFromUrl();
@@ -20,8 +22,13 @@ export function useVmbActiveAnalysis(): string | undefined {
       setActiveAnalysisId(paramId);
       return;
     }
+    if (initialAnalysisId?.trim()) {
+      writeActiveAnalysisId(initialAnalysisId.trim());
+      setActiveAnalysisId(initialAnalysisId.trim());
+      return;
+    }
     setActiveAnalysisId(readActiveAnalysisId());
-  }, [pathname]);
+  }, [pathname, initialAnalysisId]);
 
   return activeAnalysisId;
 }

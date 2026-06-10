@@ -42,7 +42,8 @@ export async function getVmbBookAnalysisForTrial(
   trialId: string,
 ): Promise<VmbBookAnalysisResult | undefined> {
   const analysis = await getVmbBookAnalysis(id);
-  if (!analysis || analysis.trialId !== trialId) return undefined;
+  if (!analysis) return undefined;
+  if (analysis.trialId && analysis.trialId !== trialId) return undefined;
   return analysis;
 }
 

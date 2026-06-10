@@ -1,3 +1,4 @@
+import { normalizeVmbBookAnalysisResult } from "@/lib/vmb/normalize-analysis";
 import type {
   VmbBookAnalysisResult,
   VmbBookOpportunity,
@@ -28,13 +29,15 @@ export type ClientOpportunityAction =
 export type ClientOpportunityRow = {
   id: string;
   clientName: string;
-  triggerLabel: string;
+  trigger: string;
   triggerType: ClientOpportunityTrigger;
   action: ClientOpportunityAction;
   value: number;
   opportunityType: string;
-  suggestedCampaign: string;
+  confidence: "low" | "medium" | "high";
   suggestedMessage: string;
+  secondaryBadges?: string[];
+  suggestedCampaign: string;
   lastVisit?: string;
   lastService?: string;
   lifetimeSpend?: number;
@@ -139,17 +142,18 @@ function mapReactivationRow(opp: VmbBookOpportunity): ClientOpportunityRow {
   const triggerType: ClientOpportunityTrigger =
     days && days > 90 ? "Lapsed" : "Reactivation";
   const action = actionForTrigger(triggerType);
-  const triggerLabel =
+  const trigger =
     days && days > 0 ? `${days} days inactive` : "No recent visit on file";
 
   return {
     id: opp.id,
     clientName: opp.clientName,
-    triggerLabel,
+    trigger,
     triggerType,
     action,
     value: opp.estimatedValue,
     opportunityType: "Reactivation",
+    confidence: opp.confidence,
     suggestedCampaign: campaignForAction(action),
     suggestedMessage: buildSuggestedMessage(opp.clientName, action),
     lastVisit: days ? `${days} days ago` : undefined,
@@ -168,7 +172,7 @@ function mapReferralRow(opp: VmbBookOpportunity): ClientOpportunityRow {
       ? "Frequent Visitor"
       : "Referral";
   const action = actionForTrigger(triggerType);
-  const triggerLabel = isVip
+  const trigger = isVip
     ? "VIP spender"
     : isFrequent
       ? "Favorite client"
@@ -177,11 +181,12 @@ function mapReferralRow(opp: VmbBookOpportunity): ClientOpportunityRow {
   return {
     id: opp.id,
     clientName: opp.clientName,
-    triggerLabel,
+    trigger,
     triggerType,
     action,
     value: opp.estimatedValue,
     opportunityType: "Referral",
+    confidence: opp.confidence,
     suggestedCampaign: campaignForAction(action),
     suggestedMessage: buildSuggestedMessage(opp.clientName, action),
     lastService: visits ? `${visits} visits on file` : undefined,
@@ -194,22 +199,22 @@ function mapGiftRow(opp: VmbBookOpportunity): ClientOpportunityRow {
   const summaryLower = opp.summary.toLowerCase();
   const service = parseServiceName(opp.summary);
   let triggerType: ClientOpportunityTrigger = "Event Client";
-  let triggerLabel = "Celebration moment";
+  let trigger = "Celebration moment";
 
   if (summaryLower.includes("bridal")) {
     triggerType = "Bridal Client";
-    triggerLabel = "Bridal client";
+    trigger = "Bridal client";
   } else if (summaryLower.includes("birthday")) {
     triggerType = "Birthday";
-    triggerLabel = "Birthday next week";
+    trigger = "Birthday next week";
   } else if (summaryLower.includes("gift")) {
-    triggerLabel = "Gift opportunity";
+    trigger = "Gift opportunity";
   } else if (opp.estimatedValue >= 200) {
     triggerType = "High Spend";
-    triggerLabel = "High spend visit";
+    trigger = "High spend visit";
   } else if (summaryLower.includes("event") || summaryLower.includes("package")) {
     triggerType = "Event Client";
-    triggerLabel = "Event client";
+    trigger = "Event client";
   }
 
   const action = actionForTrigger(triggerType);
@@ -217,11 +222,12 @@ function mapGiftRow(opp: VmbBookOpportunity): ClientOpportunityRow {
   return {
     id: opp.id,
     clientName: opp.clientName,
-    triggerLabel,
+    trigger,
     triggerType,
     action,
     value: opp.estimatedValue,
     opportunityType: "Gift",
+    confidence: opp.confidence,
     suggestedCampaign: campaignForAction(action),
     suggestedMessage: buildSuggestedMessage(opp.clientName, action),
     lastService: service,
@@ -238,30 +244,73 @@ function trustedIntroValue(intro: VmbTrustedIntroOpportunity): number {
 
 function mapTrustedIntroRow(intro: VmbTrustedIntroOpportunity): ClientOpportunityRow {
   const action: ClientOpportunityAction = "Ask For Intro";
+  const value = trustedIntroValue(intro);
   return {
     id: intro.id,
     clientName: intro.clientName,
-    triggerLabel: "Favorite client",
+    trigger: "Favorite client",
     triggerType: "Trusted Intro",
     action,
-    value: trustedIntroValue(intro),
-    opportunityType: `Trusted Intro · ${intro.introCategory}`,
+    value,
+    opportunityType: "Trusted Intro",
+    confidence: "medium",
     suggestedCampaign: campaignForAction(action),
     suggestedMessage: buildSuggestedMessage(intro.clientName, action),
     lastService: `${intro.introCategory} intro`,
-    potentialRevenue: trustedIntroValue(intro),
+    potentialRevenue: value,
   };
 }
 
+function dedupeRowsByClient(rows: ClientOpportunityRow[]): ClientOpportunityRow[] {
+  const groups = new Map<string, ClientOpportunityRow[]>();
+
+  for (const row of rows) {
+    const key = row.clientName.trim().toLowerCase();
+    const bucket = groups.get(key) ?? [];
+    bucket.push(row);
+    groups.set(key, bucket);
+  }
+
+  const deduped: ClientOpportunityRow[] = [];
+  for (const group of Array.from(groups.values())) {
+    const sorted = [...group].sort((a, b) => b.value - a.value);
+    const [primary, ...rest] = sorted;
+    const secondaryBadges = Array.from(
+      new Set(rest.map((row) => row.opportunityType.replace(/^Trusted Intro · /, "Trusted Intro"))),
+    );
+    deduped.push({
+      ...primary,
+      secondaryBadges: secondaryBadges.length > 0 ? secondaryBadges : undefined,
+    });
+  }
+
+  return deduped.sort((a, b) => b.value - a.value);
+}
+
 export function buildClientOpportunities(
-  analysis: VmbBookAnalysisResult,
+  raw: VmbBookAnalysisResult,
 ): ClientOpportunitySummary {
-  const rows: ClientOpportunityRow[] = [
+  const analysis = normalizeVmbBookAnalysisResult(raw);
+  if (!analysis) {
+    return {
+      clientsAnalyzed: 0,
+      recoverableRevenue: 0,
+      reactivationCount: 0,
+      referralCount: 0,
+      giftCount: 0,
+      trustedIntroCount: 0,
+      rows: [],
+    };
+  }
+
+  const allRows: ClientOpportunityRow[] = [
     ...analysis.reactivationTargets.map(mapReactivationRow),
     ...analysis.referralOpportunities.map(mapReferralRow),
     ...analysis.giftOpportunities.map(mapGiftRow),
     ...analysis.trustedProviderIntroOpportunities.map(mapTrustedIntroRow),
-  ].sort((a, b) => b.value - a.value);
+  ];
+
+  const rows = dedupeRowsByClient(allRows);
 
   const trustedIntroClients = new Set(
     analysis.trustedProviderIntroOpportunities.map((i) => i.clientName),
