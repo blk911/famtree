@@ -2,6 +2,8 @@
 
 import { useState, type CSSProperties, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { VmbSampleResultsSection } from "@/components/studios/salon/VmbSampleResultsSection";
 import { StudioHeroVideoSlot } from "@/components/studios/trainer/StudioHeroVideoSlot";
 import { STUDIOS_CARD_SHADOW, STUDIOS_INK, STUDIOS_LINE, STUDIOS_MUTED } from "@/lib/studios/visual";
 
@@ -70,16 +72,58 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+const PROVIDER_OPTIONS = [
+  { value: "", label: "Select your booking platform" },
+  { value: "glossgenius", label: "GlossGenius" },
+  { value: "vagaro", label: "Vagaro" },
+  { value: "square", label: "Square" },
+  { value: "fresha", label: "Fresha" },
+  { value: "boulevard", label: "Boulevard" },
+  { value: "mangomint", label: "Mangomint" },
+  { value: "csv", label: "CSV export / other" },
+] as const;
+
 export function VmbSalonsLanding() {
+  const router = useRouter();
+  const [name, setName] = useState("");
   const [salonName, setSalonName] = useState("");
   const [email, setEmail] = useState("");
-  const [platform, setPlatform] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [providerPlatform, setProviderPlatform] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  function handleTrialSubmit(e: FormEvent) {
+  async function handleTrialSubmit(e: FormEvent) {
     e.preventDefault();
-    // TODO(vmb:api): POST trial signup
-    setSubmitted(true);
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const res = await fetch("/api/vmb/trial", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          salonName,
+          providerPlatform,
+        }),
+      });
+      const data = (await res.json()) as {
+        ok: boolean;
+        redirectUrl?: string;
+        error?: string;
+      };
+      if (!data.ok || !data.redirectUrl) {
+        setSubmitError(data.error ?? "Could not start trial. Please try again.");
+        return;
+      }
+      router.push(data.redirectUrl);
+    } catch {
+      setSubmitError("Could not start trial. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -169,10 +213,10 @@ export function VmbSalonsLanding() {
               >
                 Start Free Trial
               </button>
-              <button
-                type="button"
-                onClick={() => scrollToId("vmb-how-it-works")}
+              <Link
+                href="/vmb/demo"
                 style={{
+                  display: "inline-block",
                   padding: "14px 24px",
                   borderRadius: 12,
                   border: `1px solid ${STUDIOS_LINE}`,
@@ -180,11 +224,11 @@ export function VmbSalonsLanding() {
                   color: STUDIOS_INK,
                   fontSize: 15,
                   fontWeight: 700,
-                  cursor: "pointer",
+                  textDecoration: "none",
                 }}
               >
                 See How VMB Works
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -375,6 +419,8 @@ export function VmbSalonsLanding() {
         </div>
       </section>
 
+      <VmbSampleResultsSection />
+
       {/* Trial offer */}
       <section
         id="vmb-trial"
@@ -406,82 +452,98 @@ export function VmbSalonsLanding() {
             software.
           </p>
 
-          {submitted ? (
-            <div
-              style={{
-                padding: "24px",
-                borderRadius: 16,
-                background: "#fff",
-                border: `1px solid ${STUDIOS_LINE}`,
-                fontSize: 16,
-                fontWeight: 600,
-                color: "#15803d",
-              }}
-            >
-              Thanks — we&apos;ll reach out to start your 30-day trial.
-            </div>
-          ) : (
-            <form
-              onSubmit={handleTrialSubmit}
-              style={{
-                textAlign: "left",
-                padding: "28px",
-                borderRadius: 20,
-                background: "#fff",
-                border: `1px solid ${STUDIOS_LINE}`,
-                boxShadow: STUDIOS_CARD_SHADOW,
-                display: "grid",
-                gap: 14,
-              }}
-            >
-              <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700 }}>
-                Salon or business name
-                <input
-                  required
-                  value={salonName}
-                  onChange={(e) => setSalonName(e.target.value)}
-                  style={inputStyle}
-                  placeholder="Your salon name"
-                />
-              </label>
-              <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700 }}>
-                Email
-                <input
-                  required
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={inputStyle}
-                  placeholder="you@yoursalon.com"
-                />
-              </label>
-              <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700 }}>
-                Current booking platform (optional)
-                <input
-                  value={platform}
-                  onChange={(e) => setPlatform(e.target.value)}
-                  style={inputStyle}
-                  placeholder="Vagaro, GlossGenius, Square, etc."
-                />
-              </label>
-              <button
-                type="submit"
-                style={{
-                  marginTop: 8,
-                  padding: "16px 24px",
-                  borderRadius: 12,
-                  border: "none",
-                  background: ACCENT,
-                  color: "#fff",
-                  fontSize: 16,
-                  fontWeight: 800,
-                  cursor: "pointer",
-                }}
+          <form
+            onSubmit={handleTrialSubmit}
+            style={{
+              textAlign: "left",
+              padding: "28px",
+              borderRadius: 20,
+              background: "#fff",
+              border: `1px solid ${STUDIOS_LINE}`,
+              boxShadow: STUDIOS_CARD_SHADOW,
+              display: "grid",
+              gap: 14,
+            }}
+          >
+            <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700 }}>
+              Your name
+              <input
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={inputStyle}
+                placeholder="Jane Smith"
+              />
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700 }}>
+              Salon or business name
+              <input
+                required
+                value={salonName}
+                onChange={(e) => setSalonName(e.target.value)}
+                style={inputStyle}
+                placeholder="Your salon name"
+              />
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700 }}>
+              Email
+              <input
+                required
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={inputStyle}
+                placeholder="you@yoursalon.com"
+              />
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700 }}>
+              Phone
+              <input
+                required
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                style={inputStyle}
+                placeholder="(555) 555-5555"
+              />
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700 }}>
+              Current booking platform
+              <select
+                required
+                value={providerPlatform}
+                onChange={(e) => setProviderPlatform(e.target.value)}
+                style={inputStyle}
               >
-                Start My 30-Day Trial
-              </button>
-            </form>
-          )}
+                {PROVIDER_OPTIONS.map((opt) => (
+                  <option key={opt.value || "empty"} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {submitError ? (
+              <div style={{ color: "#b91c1c", fontSize: 13 }}>{submitError}</div>
+            ) : null}
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{
+                marginTop: 8,
+                padding: "16px 24px",
+                borderRadius: 12,
+                border: "none",
+                background: ACCENT,
+                color: "#fff",
+                fontSize: 16,
+                fontWeight: 800,
+                cursor: submitting ? "wait" : "pointer",
+                opacity: submitting ? 0.8 : 1,
+              }}
+            >
+              {submitting ? "Starting trial…" : "Start My 30-Day Trial"}
+            </button>
+          </form>
 
           <ul
             style={{

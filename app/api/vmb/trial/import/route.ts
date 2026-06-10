@@ -1,27 +1,26 @@
-// app/api/admin/intelligence/salon/backoffice/import/route.ts
-// POST multipart: analyze owner-approved salon export
-// GET: import run history
-
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeSalonBackOfficeUpload } from "@/lib/intelligence/salon/backoffice/analyze-import";
-import {
-  appendSalonBackOfficeImportRun,
-  readSalonBackOfficeImportRuns,
-} from "@/lib/intelligence/salon/backoffice/import-store";
-
-export async function GET() {
-  const runs = await readSalonBackOfficeImportRuns();
-  return NextResponse.json({ ok: true, runs });
-}
+import { getVmbTrialLead } from "@/lib/vmb/trial-store";
+import { appendTrialImportRun } from "@/lib/vmb/trial-import-store";
 
 export async function POST(req: NextRequest) {
   try {
     const form = await req.formData();
     const file = form.get("file");
+    const trialId = (form.get("trialId")?.toString() ?? "").trim();
     const providerRaw = (form.get("provider")?.toString() ?? "").trim().toLowerCase();
     const entityRaw = (form.get("entity")?.toString() ?? "").trim().toLowerCase();
+
+    if (!trialId) {
+      return NextResponse.json({ ok: false, error: "trialId is required" }, { status: 400 });
+    }
+
+    const trial = await getVmbTrialLead(trialId);
+    if (!trial) {
+      return NextResponse.json({ ok: false, error: "Trial not found" }, { status: 404 });
+    }
 
     if (!file || !(file instanceof File)) {
       return NextResponse.json({ ok: false, error: "file is required" }, { status: 400 });
@@ -41,21 +40,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: analyzed.error, detail: analyzed.detail });
     }
 
-    const run = analyzed.run;
-
-    const persistError = await appendSalonBackOfficeImportRun(run);
+    const persistError = await appendTrialImportRun(trialId, analyzed.run);
     if (persistError) {
       return NextResponse.json({
         ok: false,
         error: `Import run save failed: ${persistError}`,
-        debug: { runId: run.id },
       });
     }
 
-    return NextResponse.json({
-      ok: true,
-      run,
-    });
+    return NextResponse.json({ ok: true, run: analyzed.run });
   } catch (e) {
     return NextResponse.json(
       {
