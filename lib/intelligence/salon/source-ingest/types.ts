@@ -24,6 +24,7 @@ export interface DirectoryClassification {
   providerLabel: string;
   sourceType: DirectorySourceType;
   directoryUrl: string;
+  solaSlug?: string;
   market?: string;
   category?: string;
   warnings: string[];
@@ -67,6 +68,9 @@ export interface DirectoryIngestResult {
   provider: SalonDirectoryProvider;
   providerLabel: string;
   directoryUrl: string;
+  solaSlug?: string;
+  listingsFound?: number;
+  profilesEnriched?: number;
   market?: string;
   category?: string;
   notes?: string;

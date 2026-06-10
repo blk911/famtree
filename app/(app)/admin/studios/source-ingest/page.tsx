@@ -18,6 +18,9 @@ type ScanResponse = {
   provider?: string;
   providerLabel?: string;
   directoryUrl?: string;
+  solaSlug?: string;
+  listingsFound?: number;
+  profilesEnriched?: number;
   market?: string;
   category?: string;
   candidatesFound?: number;
@@ -159,7 +162,9 @@ export default function SourceIngestPage() {
               Examples:{" "}
               <span style={{ wordBreak: "break-all" }}>
                 https://www.vagaro.com/professionals/nails/parker--co ·
-                https://www.solasalonstudios.com/locations/... ·
+                https://book.solasalonstudios.com/castle-rock/location ·
+                https://www.solasalonstudios.com/locations/castle-rock ·
+                castle-rock (Sola slug) ·
                 https://www.styleseat.com/...
               </span>
             </span>
@@ -269,6 +274,11 @@ export default function SourceIngestPage() {
           }}
         >
           <h3 style={{ ...ADMIN_INTEL_CARD_LABEL, margin: "0 0 12px" }}>Scan results</h3>
+          {result.provider === "sola" && result.solaSlug ? (
+            <p style={{ ...ADMIN_INTEL_BODY, margin: "0 0 12px", fontWeight: 600 }}>
+              Sola location detected: {result.solaSlug}
+            </p>
+          ) : null}
           <div
             style={{
               display: "grid",
@@ -277,25 +287,34 @@ export default function SourceIngestPage() {
               marginBottom: 14,
             }}
           >
-            {[
-              ["Provider detected", result.providerLabel ?? result.provider ?? "—"],
-              ["Source type", result.sourceType ?? "directory"],
-              ["Candidates found", String(result.candidatesFound ?? 0)],
-              ["Static (SSR)", String(result.staticCandidatesFound ?? "—")],
-              ["Browser scroll", String(result.browserCandidatesFound ?? "—")],
-              ["Scroll mode", result.scrollModeUsed ?? "—"],
-              ["Scroll attempts", String(result.scrollAttempts ?? 0)],
-              [
-                "Browser available",
-                result.browserAvailable === true
-                  ? "Yes"
-                  : result.browserAvailable === false
-                    ? "No"
-                    : "—",
-              ],
-              ["Candidates created", String(result.candidatesCreated ?? 0)],
-              ["Duplicates", String(result.duplicates ?? 0)],
-            ].map(([label, value]) => (
+            {(
+              result.provider === "sola"
+                ? [
+                    ["Provider detected", result.providerLabel ?? "Sola Salon Studios"],
+                    ["Listings found", String(result.listingsFound ?? result.candidatesFound ?? 0)],
+                    ["Profiles enriched", String(result.profilesEnriched ?? 0)],
+                    ["Candidates created", String(result.candidatesCreated ?? 0)],
+                  ]
+                : [
+                    ["Provider detected", result.providerLabel ?? result.provider ?? "—"],
+                    ["Source type", result.sourceType ?? "directory"],
+                    ["Candidates found", String(result.candidatesFound ?? 0)],
+                    ["Static (SSR)", String(result.staticCandidatesFound ?? "—")],
+                    ["Browser scroll", String(result.browserCandidatesFound ?? "—")],
+                    ["Scroll mode", result.scrollModeUsed ?? "—"],
+                    ["Scroll attempts", String(result.scrollAttempts ?? 0)],
+                    [
+                      "Browser available",
+                      result.browserAvailable === true
+                        ? "Yes"
+                        : result.browserAvailable === false
+                          ? "No"
+                          : "—",
+                    ],
+                    ["Candidates created", String(result.candidatesCreated ?? 0)],
+                    ["Duplicates", String(result.duplicates ?? 0)],
+                  ]
+            ).map(([label, value]) => (
               <div
                 key={label}
                 style={{

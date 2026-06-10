@@ -1,5 +1,6 @@
 // lib/intelligence/salon/source-ingest/directory-classifier.ts
 
+import { normalizeSolaSourceUrl } from "./normalize-sola-source-url";
 import type {
   DirectoryClassification,
   DirectorySourceType,
@@ -48,6 +49,21 @@ export function classifyDirectoryUrl(
   rawUrl: string,
   opts?: { market?: string; category?: string },
 ): DirectoryClassification {
+  const sola = normalizeSolaSourceUrl(rawUrl);
+  if (sola.recognized) {
+    return {
+      kind: "directory",
+      provider: "sola",
+      providerLabel: PROVIDER_LABELS.sola,
+      sourceType: "suite_directory",
+      directoryUrl: sola.normalization.directoryUrl,
+      solaSlug: sola.normalization.slug,
+      market: opts?.market,
+      category: opts?.category,
+      warnings: [],
+    };
+  }
+
   const directoryUrl = normalizeUrl(rawUrl);
   const warnings: string[] = [];
   const host = hostOf(directoryUrl);

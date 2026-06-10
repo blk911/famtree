@@ -1,5 +1,8 @@
 // lib/intelligence/salon/source-ingest/directory-ingest-engine.ts
 
+import { buildMarketCandidatesRegistry } from "@/lib/markets/build-market-candidates";
+import { buildSolaResolverImport } from "@/lib/operators/sources/sola/build-resolver-import";
+import { runSolaHarvest } from "@/lib/operators/sources/sola/run-sola-harvest";
 import { filterProspects, upsertProspect } from "@/lib/studios/prospects/store";
 import { classifyDirectoryUrl } from "./directory-classifier";
 import {
@@ -128,6 +131,110 @@ async function scrapeDirectoryListings(
   return { listings: [], warnings, errors, ...emptyMetrics };
 }
 
+async function runSolaDirectoryIngest(
+  classification: ReturnType<typeof classifyDirectoryUrl>,
+  input: DirectoryIngestRequest,
+  ingestRunId: string,
+): Promise<DirectoryIngestResult> {
+  const slug = classification.solaSlug;
+  const warnings = [...classification.warnings];
+  const errors: string[] = [];
+
+  if (!slug) {
+    return {
+      ok: false,
+      sourceType: classification.sourceType,
+      provider: classification.provider,
+      providerLabel: classification.providerLabel,
+      directoryUrl: classification.directoryUrl,
+      market: input.market,
+      category: input.category,
+      notes: input.notes,
+      candidatesFound: 0,
+      candidatesCreated: 0,
+      duplicates: 0,
+      warnings,
+      errors: ["Sola location slug could not be parsed from the URL."],
+      ingestRunId,
+    };
+  }
+
+  try {
+    const { harvest } = await runSolaHarvest(slug, { enrichProfiles: true });
+    const slugResult = harvest.results.find((row) => row.slug === slug) ?? harvest.results[0];
+
+    if (!slugResult?.ok) {
+      errors.push(slugResult?.error ?? `Sola harvest failed for slug "${slug}".`);
+      return {
+        ok: false,
+        sourceType: classification.sourceType,
+        provider: classification.provider,
+        providerLabel: classification.providerLabel,
+        directoryUrl: classification.directoryUrl,
+        solaSlug: slug,
+        listingsFound: slugResult?.listingsFound ?? 0,
+        profilesEnriched: slugResult?.profilesEnriched ?? 0,
+        market: input.market,
+        category: input.category,
+        notes: input.notes,
+        candidatesFound: slugResult?.candidatesCreated ?? 0,
+        candidatesCreated: slugResult?.candidatesCreated ?? 0,
+        duplicates: 0,
+        warnings,
+        errors,
+        ingestRunId,
+      };
+    }
+
+    await buildSolaResolverImport();
+    await buildMarketCandidatesRegistry();
+
+    const listingsFound = slugResult.listingsFound;
+    const profilesEnriched = slugResult.profilesEnriched ?? 0;
+    const candidatesCreated = slugResult.candidatesCreated;
+
+    return {
+      ok: true,
+      sourceType: classification.sourceType,
+      provider: classification.provider,
+      providerLabel: classification.providerLabel,
+      directoryUrl: classification.directoryUrl,
+      solaSlug: slug,
+      listingsFound,
+      profilesEnriched,
+      market: input.market,
+      category: input.category,
+      notes: input.notes,
+      candidatesFound: candidatesCreated,
+      candidatesCreated,
+      duplicates: 0,
+      warnings,
+      errors,
+      ingestRunId,
+    };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    errors.push(message);
+    return {
+      ok: false,
+      sourceType: classification.sourceType,
+      provider: classification.provider,
+      providerLabel: classification.providerLabel,
+      directoryUrl: classification.directoryUrl,
+      solaSlug: slug,
+      market: input.market,
+      category: input.category,
+      notes: input.notes,
+      candidatesFound: 0,
+      candidatesCreated: 0,
+      duplicates: 0,
+      warnings,
+      errors,
+      ingestRunId,
+    };
+  }
+}
+
 export async function runDirectoryUrlIngest(
   input: DirectoryIngestRequest,
 ): Promise<DirectoryIngestResult> {
@@ -137,6 +244,10 @@ export async function runDirectoryUrlIngest(
   });
 
   const ingestRunId = generateIngestRunId();
+
+  if (classification.provider === "sola" && classification.solaSlug) {
+    return runSolaDirectoryIngest(classification, input, ingestRunId);
+  }
   const fullScroll =
     input.fullScroll === true ||
     (input.fullScroll !== false &&

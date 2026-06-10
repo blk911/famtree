@@ -44,28 +44,40 @@ export function parseSolaSlugInput(input: string): SolaSlugParseResult {
 
   const looksLikeUrl =
     /^https?:\/\//i.test(trimmed) ||
-    trimmed.includes("book.solasalonstudios.com") ||
-    trimmed.startsWith("book.solasalonstudios.com");
+    trimmed.includes("solasalonstudios.com") ||
+    trimmed.startsWith("book.solasalonstudios.com") ||
+    trimmed.startsWith("www.solasalonstudios.com");
 
   if (looksLikeUrl) {
     try {
       const url = new URL(trimmed, SOLA_BOOK_ORIGIN);
+      url.search = "";
+      url.hash = "";
       const host = url.hostname.replace(/^www\./, "").toLowerCase();
-      if (host !== "book.solasalonstudios.com") {
-        return { input: trimmed, skipped: true, skipReason: "non_sola_book_host" };
-      }
-
       const segments = url.pathname.replace(/^\/+/, "").split("/").filter(Boolean);
-      if (segments.length >= 2 && segments[1].toLowerCase() === "pro") {
-        return { input: trimmed, skipped: true, skipReason: "profile_url" };
+
+      if (host === "book.solasalonstudios.com") {
+        if (segments.length >= 2 && segments[1].toLowerCase() === "pro") {
+          return { input: trimmed, skipped: true, skipReason: "profile_url" };
+        }
+
+        const slug = segments[0]?.toLowerCase();
+        if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
+          return { input: trimmed, skipped: true, skipReason: "unparseable_url" };
+        }
+
+        return { input: trimmed, slug, skipped: false };
       }
 
-      const slug = segments[0]?.toLowerCase();
-      if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
-        return { input: trimmed, skipped: true, skipReason: "unparseable_url" };
+      if (host === "solasalonstudios.com" && segments[0]?.toLowerCase() === "locations") {
+        const slug = segments[1]?.toLowerCase();
+        if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
+          return { input: trimmed, skipped: true, skipReason: "unparseable_url" };
+        }
+        return { input: trimmed, slug, skipped: false };
       }
 
-      return { input: trimmed, slug, skipped: false };
+      return { input: trimmed, skipped: true, skipReason: "non_sola_host" };
     } catch {
       return { input: trimmed, skipped: true, skipReason: "invalid_url" };
     }
