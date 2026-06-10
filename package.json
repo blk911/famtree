@@ -43,6 +43,7 @@
     "test:sola": "tsx scripts/test-sola.ts",
     "test:sola-source-url": "tsx scripts/test-sola-source-url-normalizer.ts",
     "test:sola-ingest-handoff": "tsx scripts/test-sola-ingest-handoff.ts",
+    "test:vmb:parse": "tsx scripts/test-vmb-parse.ts",
     "harvest:sola": "tsx scripts/run-sola-harvest.ts",
     "debug:sola:profile": "tsx scripts/debug-sola-profile-api.ts",
     "discover:sola": "tsx scripts/discover-sola-slugs.ts",

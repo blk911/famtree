@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { VmbCard } from "@/components/vmb/VmbCard";
 import { DEMO_DASHBOARD_CARDS, DEMO_DASHBOARD_HERO } from "@/lib/vmb/demo-data";
+import { vmbProviderLabel } from "@/lib/vmb/provider-labels";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult, VmbBookOpportunity } from "@/types/vmb/book-analysis";
 
@@ -173,6 +174,47 @@ export function VmbDashboardClient({ analysisId }: Props) {
         <p style={{ margin: "8px 0 0", fontSize: 15, color: VMB_THEME.muted }}>
           Potential revenue found
         </p>
+        {!isDemo && analysis ? (
+          <div
+            style={{
+              marginTop: 20,
+              paddingTop: 16,
+              borderTop: `1px solid ${VMB_THEME.line}`,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 16,
+              fontSize: 14,
+              color: VMB_THEME.muted,
+            }}
+          >
+            <span>
+              <strong style={{ color: VMB_THEME.ink }}>Provider:</strong>{" "}
+              {vmbProviderLabel(analysis.providerPlatform)}
+            </span>
+            <span>
+              <strong style={{ color: VMB_THEME.ink }}>Records analyzed:</strong>{" "}
+              {analysis.recordCount}
+            </span>
+            {analysis.parseSummary?.fileName ? (
+              <span>
+                <strong style={{ color: VMB_THEME.ink }}>File:</strong>{" "}
+                {analysis.parseSummary.fileName}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+        {!isDemo && analysis?.parseSummary?.warnings && analysis.parseSummary.warnings.length > 0 ? (
+          <p
+            style={{
+              margin: "12px 0 0",
+              fontSize: 13,
+              color: "#b45309",
+              lineHeight: 1.5,
+            }}
+          >
+            {analysis.parseSummary.warnings.slice(0, 4).join(" · ")}
+          </p>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

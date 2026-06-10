@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useRef, useState, type ChangeEvent, type CSSProperties } from "react";
 import Link from "next/link";
 import { VmbCard } from "@/components/vmb/VmbCard";
 import { VMB_SAMPLE_BOOK_TEXT } from "@/lib/vmb/sample-book";
@@ -17,23 +17,44 @@ const PROVIDERS: { id: VmbProviderPlatform; label: string }[] = [
   { id: "other", label: "Other" },
 ];
 
+type ParseSummary = {
+  parsedRecordCount: number;
+  skippedRows: number;
+  warnings: string[];
+  detectedColumns: string[];
+};
+
 export function VmbStartFlow() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [salonName, setSalonName] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [provider, setProvider] = useState<VmbProviderPlatform | "">("");
   const [bookText, setBookText] = useState("");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<VmbBookAnalysisResult | null>(null);
-  const [warnings, setWarnings] = useState<string[]>([]);
+  const [parseSummary, setParseSummary] = useState<ParseSummary | null>(null);
+
+  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    setUploadFile(file);
+    if (file && file.name.toLowerCase().endsWith(".csv")) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") setBookText(reader.result);
+      };
+      reader.readAsText(file);
+    }
+  }
 
   async function handleRunAnalysis() {
     setBusy(true);
     setError(null);
     setAnalysis(null);
-    setWarnings([]);
+    setParseSummary(null);
 
     try {
       if (!salonName.trim() || !ownerName.trim() || !email.trim()) {
@@ -44,8 +65,8 @@ export function VmbStartFlow() {
         setError("Choose your booking provider.");
         return;
       }
-      if (!bookText.trim()) {
-        setError("Paste your client book or use the sample book.");
+      if (!bookText.trim() && !uploadFile) {
+        setError("Paste your client book, upload a CSV, or use the sample book.");
         return;
       }
 
@@ -70,28 +91,45 @@ export function VmbStartFlow() {
         return;
       }
 
-      const analyzeRes = await fetch("/api/vmb/analyze-book", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          trialId: trialJson.data.id,
-          salonName: salonName.trim(),
-          providerPlatform: provider,
-          inputText: bookText,
-        }),
-      });
+      let analyzeRes: Response;
+      if (uploadFile) {
+        const form = new FormData();
+        form.append("trialId", trialJson.data.id);
+        form.append("salonName", salonName.trim());
+        form.append("providerPlatform", provider);
+        form.append("file", uploadFile);
+        if (bookText.trim()) form.append("inputText", bookText);
+        analyzeRes = await fetch("/api/vmb/analyze-book", { method: "POST", body: form });
+      } else {
+        analyzeRes = await fetch("/api/vmb/analyze-book", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            trialId: trialJson.data.id,
+            salonName: salonName.trim(),
+            providerPlatform: provider,
+            inputText: bookText,
+            sourceType: bookText === VMB_SAMPLE_BOOK_TEXT ? "sample" : "paste",
+          }),
+        });
+      }
+
       const analyzeJson = (await analyzeRes.json()) as {
         ok: boolean;
-        data?: { analysis: VmbBookAnalysisResult; warnings: string[] };
+        data?: {
+          analysis: VmbBookAnalysisResult;
+          parse: ParseSummary;
+        };
         error?: string;
       };
       if (!analyzeJson.ok || !analyzeJson.data?.analysis) {
         setError(analyzeJson.error ?? "Analysis failed.");
+        if (analyzeJson.data?.parse) setParseSummary(analyzeJson.data.parse);
         return;
       }
 
       setAnalysis(analyzeJson.data.analysis);
-      setWarnings(analyzeJson.data.warnings ?? []);
+      setParseSummary(analyzeJson.data.parse);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -113,8 +151,8 @@ export function VmbStartFlow() {
           Let&apos;s Find The Gold In Your Book
         </h1>
         <p style={{ margin: "0 0 28px", fontSize: 15, lineHeight: 1.6, color: VMB_THEME.muted }}>
-          Tell us about your salon, choose your booking platform, and paste your client export.
-          VMB surfaces reactivation, referral, gift, and trusted-provider opportunities.
+          Upload a CSV export from GlossGenius or your booking platform, paste client data, or try
+          the sample book.
         </p>
 
         <div style={{ display: "grid", gap: 24 }}>
@@ -191,7 +229,11 @@ export function VmbStartFlow() {
               <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>Client book</p>
               <button
                 type="button"
-                onClick={() => setBookText(VMB_SAMPLE_BOOK_TEXT)}
+                onClick={() => {
+                  setUploadFile(null);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                  setBookText(VMB_SAMPLE_BOOK_TEXT);
+                }}
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
@@ -205,11 +247,40 @@ export function VmbStartFlow() {
                 Use Sample Book
               </button>
             </div>
+
+            <label
+              style={{
+                display: "block",
+                marginBottom: 12,
+                padding: "16px 14px",
+                borderRadius: 12,
+                border: `1px dashed ${VMB_THEME.line}`,
+                background: "#fff",
+                cursor: "pointer",
+                fontSize: 14,
+                color: VMB_THEME.muted,
+              }}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.txt,text/csv"
+                onChange={handleFileChange}
+                style={{ display: "block", marginBottom: 6, fontSize: 13, width: "100%" }}
+              />
+              Upload CSV export
+              {uploadFile ? (
+                <span style={{ display: "block", marginTop: 6, fontWeight: 600, color: VMB_THEME.ink }}>
+                  {uploadFile.name}
+                </span>
+              ) : null}
+            </label>
+
             <textarea
               value={bookText}
               onChange={(e) => setBookText(e.target.value)}
-              placeholder="Paste CSV or pipe-separated rows — one client per line"
-              rows={10}
+              placeholder="Or paste CSV / pipe-separated rows"
+              rows={8}
               style={{
                 ...fieldStyle,
                 resize: "vertical",
@@ -218,7 +289,7 @@ export function VmbStartFlow() {
               }}
             />
             <p style={{ margin: "8px 0 0", fontSize: 12, color: VMB_THEME.muted }}>
-              CSV headers or pipe format: Name | email | phone | service | date | amount
+              GlossGenius: Client Name, Email, Last Appointment, Service, Total Spent, Visit Count
             </p>
           </section>
 
@@ -244,6 +315,16 @@ export function VmbStartFlow() {
           >
             {busy ? "Analyzing your book…" : "Run Analysis"}
           </button>
+
+          {parseSummary ? (
+            <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>
+              Parsed {parseSummary.parsedRecordCount} records
+              {parseSummary.skippedRows > 0 ? ` · ${parseSummary.skippedRows} skipped` : ""}
+              {parseSummary.detectedColumns.length > 0
+                ? ` · Columns: ${parseSummary.detectedColumns.slice(0, 4).join(", ")}`
+                : ""}
+            </p>
+          ) : null}
 
           {analysis ? (
             <div
@@ -286,9 +367,9 @@ export function VmbStartFlow() {
                   ${analysis.estimatedRecoverableRevenue.toLocaleString()}
                 </strong>
               </p>
-              {warnings.length > 0 ? (
+              {parseSummary?.warnings && parseSummary.warnings.length > 0 ? (
                 <p style={{ margin: "0 0 12px", fontSize: 12, color: VMB_THEME.muted }}>
-                  {warnings.slice(0, 3).join(" · ")}
+                  {parseSummary.warnings.slice(0, 3).join(" · ")}
                 </p>
               ) : null}
               <Link

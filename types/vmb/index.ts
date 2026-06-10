@@ -12,6 +12,7 @@ export type {
 export type {
   VmbBookRecord,
   VmbBookUpload,
+  ParseBookUploadInput,
   ParseBookUploadResult,
 } from "./provider-ingest";
 export type {
@@ -19,6 +20,7 @@ export type {
   VmbBookOpportunity,
   VmbTrustedIntroOpportunity,
   VmbBookAnalysisResult,
+  VmbParseSummary,
   AnalyzeBookInput,
 } from "./book-analysis";
 export type {

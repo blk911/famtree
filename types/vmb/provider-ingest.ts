@@ -1,3 +1,5 @@
+import type { VmbProviderPlatform } from "./trial";
+
 export type VmbBookRecord = {
   id: string;
   clientName: string;
@@ -17,11 +19,23 @@ export type VmbBookUpload = {
   salonName?: string;
   providerPlatform?: string;
   recordCount: number;
+  skippedRows: number;
+  detectedColumns: string[];
   parseWarnings: string[];
+  fileName?: string;
   createdAt: string;
+};
+
+export type ParseBookUploadInput = {
+  rawText: string;
+  providerPlatform?: VmbProviderPlatform;
 };
 
 export type ParseBookUploadResult = {
   records: VmbBookRecord[];
   warnings: string[];
+  skippedRows: number;
+  detectedColumns: string[];
+  parsedRecordCount: number;
+  providerMode?: VmbProviderPlatform | "generic";
 };

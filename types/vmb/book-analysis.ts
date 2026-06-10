@@ -20,6 +20,14 @@ export type VmbTrustedIntroOpportunity = {
   status: "not_requested" | "requested" | "introduced" | "joined";
 };
 
+export type VmbParseSummary = {
+  skippedRows: number;
+  warnings: string[];
+  detectedColumns: string[];
+  sourceType: "paste" | "csv_upload" | "sample";
+  fileName?: string;
+};
+
 export type VmbBookAnalysisResult = {
   analysisId: string;
   trialId?: string;
@@ -32,6 +40,7 @@ export type VmbBookAnalysisResult = {
   trustedProviderIntroOpportunities: VmbTrustedIntroOpportunity[];
   estimatedRecoverableRevenue: number;
   generatedAt: string;
+  parseSummary?: VmbParseSummary;
 };
 
 export type AnalyzeBookInput = {
