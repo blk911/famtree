@@ -10,7 +10,7 @@ export default async function VmbSettingsPage() {
   const ctx = await loadVmbPageContext();
   return (
     <VmbPlaceholderPage
-      title="Settings"
+      title="Profile"
       purpose="Salon profile and workspace preferences."
       context={ctx}
     />

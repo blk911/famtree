@@ -1,42 +1,35 @@
+import { answerMockQuestion } from "@/lib/taikos/adapters/mock-questions";
 import { buildMorningBriefing } from "@/lib/taikos/orchestrator/morning-briefing";
-import type { AiosResponse, GenerateAiosInput } from "@/lib/taikos/types";
+import type { AiosAction, AiosResponse, GenerateAiosInput } from "@/lib/taikos/types";
 
-/** Deterministic adapter — no external LLM. Default for Phase 1. */
+function baseResponse(
+  partial: Omit<AiosResponse, "recommendedActions"> & { recommendedActions?: AiosAction[] },
+): AiosResponse {
+  const recommendedActions =
+    partial.recommendedActions ??
+    partial.cards.flatMap((c) => c.actions ?? []).slice(0, 4);
+  return {
+    showQuestionInput: true,
+    layout: "center-panel",
+    collapseAfterSeconds: 30,
+    ...partial,
+    recommendedActions,
+  };
+}
+
+/** Deterministic adapter — no external LLM. */
 export async function mockAiosAdapter(input: GenerateAiosInput): Promise<AiosResponse> {
   const { context, mode, question } = input;
 
   if (mode === "question" && question?.trim()) {
-    return {
-      mode: "question",
-      summary: `I can help with ${context.currentPage.title.toLowerCase()}. Try reviewing invites or client moves from Home.`,
-      cards: [
-        {
-          id: "question-stub",
-          title: "tAIkOS",
-          body: `You asked: “${question.trim()}”. Phase 1 routes questions through deterministic context — model adapters come in Phase 2.`,
-          actions: context.currentPage.availableActions.slice(0, 2),
-        },
-      ],
-      opportunities: context.opportunities.slice(0, 3),
-      recommendations: context.recommendations.slice(0, 3).map((r) => r.message),
-      estimatedValue: context.revenueSummary.potentialRevenue,
-      pageContextLine: context.currentPage.description,
-    };
+    return baseResponse(answerMockQuestion(context, question));
   }
 
   if (mode === "page-assistant") {
-    const line =
-      context.currentPage.pageId === "clients"
-        ? "You're viewing clients."
-        : context.currentPage.pageId === "network"
-          ? "You're viewing your private client network."
-          : context.currentPage.pageId === "appointments"
-            ? "You're viewing your calendar."
-            : context.currentPage.description;
-
-    return {
+    return baseResponse({
       mode: "page-assistant",
-      summary: line,
+      message: context.currentPage.assistantIntro,
+      summary: context.currentPage.assistantIntro,
       cards: [
         {
           id: "page-assist",
@@ -48,16 +41,20 @@ export async function mockAiosAdapter(input: GenerateAiosInput): Promise<AiosRes
       ],
       opportunities: context.opportunities,
       recommendations: context.recommendations.map((r) => r.message),
+      recommendedActions: context.currentPage.availableActions,
       estimatedValue: context.revenueSummary.potentialRevenue,
-      pageContextLine: line,
-      followUpPrompt: "What would you like to do here?",
-    };
+      pageContextLine: context.currentPage.assistantIntro,
+      pageContext: context.currentPage,
+      followUpPrompt: "Ask tAIkOS anything about this page.",
+    });
   }
 
   if (mode === "idle-summary") {
-    return {
+    return baseResponse({
       mode: "idle-summary",
+      message: "Here's a quick summary of your week.\nIf anything changes, let's talk.",
       summary: "Here's a quick summary of your week.\nIf anything changes, let's talk.",
+      showQuestionInput: false,
       cards: [
         {
           id: "idle-week",
@@ -68,38 +65,50 @@ export async function mockAiosAdapter(input: GenerateAiosInput): Promise<AiosRes
       opportunities: context.opportunities.slice(0, 2),
       recommendations: [],
       estimatedValue: context.revenueSummary.potentialRevenue,
-    };
+      collapseAfterSeconds: 3,
+    });
   }
 
   const briefing = buildMorningBriefing(context);
   if (briefing.variant === "skip") {
-    return {
+    return baseResponse({
       mode: "page-assistant",
-      summary: context.currentPage.description,
+      message: context.currentPage.assistantIntro,
+      summary: context.currentPage.assistantIntro,
       cards: [],
       opportunities: [],
       recommendations: [],
       estimatedValue: 0,
-      pageContextLine: context.currentPage.description,
-    };
+      pageContextLine: context.currentPage.assistantIntro,
+      pageContext: context.currentPage,
+    });
   }
 
-  return {
+  return baseResponse({
     mode: "briefing",
     greeting: briefing.greeting,
+    message: briefing.summary,
     summary: briefing.summary,
     cards: [
       {
         id: "morning-briefing",
-        title: briefing.greeting,
+        title: briefing.greeting ?? "Your briefing",
         body: briefing.summary,
         opportunities: briefing.opportunities,
         actions: context.currentPage.availableActions.slice(0, 3),
       },
+      ...briefing.opportunities.slice(0, 4).map((o) => ({
+        id: o.id,
+        title: o.title,
+        body: o.description,
+        meta: o.estimatedValue > 0 ? `+$${o.estimatedValue.toLocaleString()}` : undefined,
+      })),
     ],
     opportunities: briefing.opportunities,
     recommendations: briefing.recommendations,
+    recommendedActions: context.currentPage.availableActions.slice(0, 4),
     estimatedValue: briefing.estimatedValue,
     followUpPrompt: briefing.followUpPrompt,
-  };
+    showQuestionInput: true,
+  });
 }

@@ -6,6 +6,7 @@ import { listInviteDraftsForTrial } from "@/lib/vmb/invite-drafts/invite-draft-s
 import { isRefreshDue, workspaceLatestAnalysisId } from "@/lib/vmb/workspace-lifecycle";
 import { getWorkspaceForTrial } from "@/lib/vmb/workspace-store";
 import { buildClientSummaryFromAnalysis } from "@/lib/taikos/context/client-summary-builder";
+import { buildContactSignals } from "@/lib/taikos/context/contact-signals";
 import { resolvePageContext } from "@/lib/taikos/context/page-registry";
 import { runAllAiosRules } from "@/lib/taikos/rules";
 import {
@@ -71,6 +72,7 @@ export async function buildAiosContextPacket(
   const snapshot = buildVmbOperatingSnapshot(analysis, { inviteState });
   const openings = analysis ? buildAppointmentOpeningsSummary(analysis) : { count: 0, slots: [] };
   const clientSummary = buildClientSummaryFromAnalysis(analysis);
+  const contactSignals = buildContactSignals(analysis);
   const page = resolvePageContext(input.pathname, input.searchParams);
 
   const ruleResults = runAllAiosRules(analysis, { inviteState });
@@ -108,12 +110,18 @@ export async function buildAiosContextPacket(
     (!session.lastActivityWatermark || activityWatermark > session.lastActivityWatermark);
 
   const salonName = workspace.salonName?.trim() || analysis?.salonName?.trim() || "Your Salon";
+  const operatorName = workspace.ownerName?.trim() || input.trialId;
 
   return {
     salonId,
     operatorId,
+    operatorName,
     salonName,
     analysisId: analysis?.analysisId ?? analysisId,
+    hasRealBookData: contactSignals.hasRealBookData,
+    contactCandidates: contactSignals.contactCandidates,
+    overdueClients: contactSignals.overdueClients,
+    saturdayCandidates: contactSignals.saturdayCandidates,
     currentPage: page,
     currentSession: session,
     calendarSummary: {

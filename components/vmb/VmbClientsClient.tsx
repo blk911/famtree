@@ -123,7 +123,7 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
   return (
     <VmbPageFrame
       width="wide"
-      title="Client Book"
+      title="Clients"
       subtitle="All imported clients and VMB tags. Weekly actions are managed from Home."
     >
       <Link

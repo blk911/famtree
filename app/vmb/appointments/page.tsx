@@ -15,7 +15,7 @@ export default async function VmbAppointmentsPage({ searchParams }: Props) {
   const ctx = await loadVmbPageContext({ analysisId: params.analysis?.trim() });
   return (
     <VmbPlaceholderPage
-      title="Appointments"
+      title="Calendar"
       purpose="Open appointment windows and fill options from your client book."
       context={ctx}
     />

@@ -59,7 +59,7 @@ export function VmbNetworkClient({ initialAnalysisId }: Props = {}) {
   return (
     <VmbPageFrame
       width="wide"
-      title="Private Client Network"
+      title="Network"
       subtitle="Your private client network and trusted introductions."
     >
       <Link

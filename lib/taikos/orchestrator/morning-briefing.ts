@@ -1,9 +1,13 @@
-import { greetingForOperator } from "@/lib/taikos/context/context-builder";
 import { briefingVariant } from "@/lib/taikos/session/session-manager";
 import type { AiosContextPacket, MorningBriefing } from "@/lib/taikos/types";
 
 function formatCurrency(value: number): string {
   return `+$${value.toLocaleString()}`;
+}
+
+function operatorFirstName(ctx: AiosContextPacket): string {
+  const raw = ctx.operatorName ?? ctx.salonName;
+  return raw.trim().split(/\s+/)[0] || "there";
 }
 
 function buildSinceLastVisitLines(ctx: AiosContextPacket): string[] {
@@ -35,6 +39,10 @@ function buildSinceLastVisitLines(ctx: AiosContextPacket): string[] {
     );
   }
 
+  if (ctx.clientSummary.overdueClients > 0) {
+    lines.push(`${ctx.clientSummary.overdueClients} clients are overdue for a visit.`);
+  }
+
   if (ctx.revenueSummary.touchesReady > 0) {
     lines.push(`${ctx.revenueSummary.touchesReady} revenue touches are ready.`);
   }
@@ -54,7 +62,6 @@ export function buildMorningBriefing(ctx: AiosContextPacket): MorningBriefing {
 
   if (variant === "skip") {
     return {
-      greeting: greetingForOperator(ctx.salonName),
       summary: "",
       opportunities: [],
       recommendations: [],
@@ -64,53 +71,59 @@ export function buildMorningBriefing(ctx: AiosContextPacket): MorningBriefing {
     };
   }
 
-  const greeting = greetingForOperator(ctx.salonName);
   const lines = buildSinceLastVisitLines(ctx);
+  const jenny = operatorFirstName(ctx);
 
   if (variant === "abbreviated") {
-    const summary =
-      lines.length > 0
-        ? `Quick update: ${lines[0]}`
-        : `${ctx.clientSummary.totalClients} clients in your book.`;
+    const summary = ctx.newActivity
+      ? lines.length > 0
+        ? lines.join(" ")
+        : "A few new signals appeared since your last check-in."
+      : "No major changes since your last check-in.";
+
     return {
-      greeting,
-      summary,
+      summary: `Hope your day is going well.\n${summary}`,
       opportunities: ctx.opportunities.slice(0, 2),
       recommendations: ctx.recommendations.slice(0, 2).map((r) => r.message),
       estimatedValue,
-      followUpPrompt: "What are you working on today?",
+      followUpPrompt: "Anything you want me to work on?",
       variant: "abbreviated",
+      showSunGreeting: false,
     };
   }
 
   if (variant === "activity-only") {
-    const summary = lines.length > 0 ? lines.join(" ") : "No new activity since your last visit.";
+    const summary =
+      lines.length > 0 ? lines.join(" ") : "No new activity since your last visit.";
     return {
-      greeting,
-      summary,
+      summary: ctx.currentSession.briefingShownToday
+        ? `Here's what's new:\n${summary}`
+        : summary,
       opportunities: ctx.opportunities.slice(0, 3),
       recommendations: ctx.recommendations.slice(0, 3).map((r) => r.message),
       estimatedValue,
       followUpPrompt: "What would you like to tackle?",
       variant: "activity-only",
+      showSunGreeting: false,
     };
   }
 
   const sinceBlock =
-    lines.length > 0 ? `Since your last visit:\n${lines.map((l) => `• ${l}`).join("\n")}` : "Your book is connected.";
+    lines.length > 0
+      ? lines.map((l) => `• ${l}`).join("\n")
+      : "Your book is connected and ready.";
 
   const valueLine =
-    estimatedValue > 0
-      ? `\n\nEstimated opportunity value:\n${formatCurrency(estimatedValue)}`
-      : "";
+    estimatedValue > 0 ? `\n\nEstimated opportunity value:\n${formatCurrency(estimatedValue)}` : "";
 
   return {
-    greeting,
-    summary: `${sinceBlock}${valueLine}`,
+    greeting: `🌞 Good Morning ${jenny}.`,
+    summary: `Here's what happened since your last visit.\n\n${sinceBlock}${valueLine}`,
     opportunities: ctx.opportunities,
     recommendations: ctx.recommendations.map((r) => r.message),
     estimatedValue,
     followUpPrompt: "What are you working on today?",
     variant: "full",
+    showSunGreeting: true,
   };
 }

@@ -15,7 +15,7 @@ export default async function VmbHistoryPage({ searchParams }: Props) {
   const ctx = await loadVmbPageContext({ analysisId: params.analysis?.trim() });
   return (
     <VmbPlaceholderPage
-      title="History"
+      title="Campaigns"
       purpose="Sent invites, replies, and campaign history for your salon."
       context={ctx}
     />

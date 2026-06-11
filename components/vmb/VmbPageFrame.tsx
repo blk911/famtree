@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AiosHeaderSparkle } from "@/components/taikos/AiosHeaderSparkle";
 import { VMB_THEME } from "@/lib/vmb/theme";
 
 export type VmbPageFrameWidth = "feed" | "standard" | "wide";
@@ -13,6 +14,8 @@ type Props = {
   headerless?: boolean;
   /** Home feed uses uppercase “This Week” styling. */
   titleVariant?: "default" | "home";
+  /** Show ✨ tAIkOS sparkle beside page title. */
+  showAiosSparkle?: boolean;
 };
 
 export function VmbPageFrame({
@@ -23,6 +26,7 @@ export function VmbPageFrame({
   width = "standard",
   headerless = false,
   titleVariant = "default",
+  showAiosSparkle = true,
 }: Props) {
   const showHeader = !headerless && (title || subtitle || eyebrow);
   const titleClass =
@@ -35,7 +39,12 @@ export function VmbPageFrame({
       {showHeader ? (
         <header className="vmb-page-frame__header">
           {eyebrow ? <p className="vmb-page-frame__eyebrow">{eyebrow}</p> : null}
-          {title ? <h1 className={titleClass}>{title}</h1> : null}
+          {title ? (
+            <div className="vmb-page-frame__title-row">
+              <h1 className={titleClass}>{title}</h1>
+              {showAiosSparkle ? <AiosHeaderSparkle label={title} /> : null}
+            </div>
+          ) : null}
           {subtitle ? <p className="vmb-page-frame__subtitle">{subtitle}</p> : null}
         </header>
       ) : null}

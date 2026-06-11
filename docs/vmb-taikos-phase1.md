@@ -73,7 +73,17 @@ VMB cookie → workspace → analysis → context-builder → AiosContextPacket
 
 Idle 30s → week summary message → panel collapses (non-blocking).
 
-## Phase 2 recommendations
+## Phase 2 (shipped)
+
+- Center-content panel mode (`AiosCenterHost` in `VmbSalonShell`)
+- Page header ✨ sparkle (`AiosHeaderSparkle` + `VmbPageFrame`)
+- Question input + suggestion chips
+- Mock question routing (`lib/taikos/adapters/mock-questions.ts`)
+- `assistantIntro` on every registered page
+- Second-login abbreviated copy (no repeated Good Morning)
+- Tests: `npm run test:taikos:phase2`
+
+## Phase 3 recommendations
 
 1. Wire `openai` / `local` adapters with schema validation
 2. Tool execution (send invite, approve draft) behind confirmation gates

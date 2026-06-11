@@ -33,23 +33,15 @@ export type AiosCard = {
   title: string;
   body: string;
   severity?: AiosSeverity;
+  subtitle?: string;
+  meta?: string;
   opportunities?: AiosOpportunity[];
   actions?: AiosAction[];
 };
 
 export type AiosPanelMode = "briefing" | "page-assistant" | "question" | "collapsed" | "idle-summary";
 
-export type AiosResponse = {
-  mode: AiosPanelMode;
-  greeting?: string;
-  summary: string;
-  cards: AiosCard[];
-  opportunities: AiosOpportunity[];
-  recommendations: string[];
-  estimatedValue: number;
-  followUpPrompt?: string;
-  pageContextLine?: string;
-};
+export type AiosPanelLayout = "modal" | "center-panel" | "docked" | "collapsed";
 
 export type AiosPageId =
   | "dashboard"
@@ -69,7 +61,32 @@ export type AiosPageContext = {
   pageId: AiosPageId;
   title: string;
   description: string;
+  assistantIntro: string;
   availableActions: AiosAction[];
+};
+
+export type AiosContactCandidate = {
+  clientName: string;
+  reason: string;
+  estimatedValue: number;
+};
+
+export type AiosResponse = {
+  mode: AiosPanelMode;
+  layout?: AiosPanelLayout;
+  greeting?: string;
+  message?: string;
+  summary: string;
+  cards: AiosCard[];
+  opportunities: AiosOpportunity[];
+  recommendations: string[];
+  recommendedActions: AiosAction[];
+  estimatedValue: number;
+  followUpPrompt?: string;
+  pageContextLine?: string;
+  pageContext?: AiosPageContext;
+  showQuestionInput?: boolean;
+  collapseAfterSeconds?: number;
 };
 
 export type AiosClientSummary = {
@@ -114,8 +131,13 @@ export type AiosRecommendation = {
 export type AiosContextPacket = {
   salonId: string;
   operatorId: string;
+  operatorName?: string;
   salonName: string;
   analysisId?: string;
+  hasRealBookData: boolean;
+  contactCandidates: AiosContactCandidate[];
+  overdueClients: AiosContactCandidate[];
+  saturdayCandidates: AiosContactCandidate[];
   currentPage: AiosPageContext;
   currentSession: AiosSessionSnapshot;
   calendarSummary: AiosCalendarSummary;
@@ -145,13 +167,14 @@ export type AiosSessionSnapshot = {
 };
 
 export type MorningBriefing = {
-  greeting: string;
+  greeting?: string;
   summary: string;
   opportunities: AiosOpportunity[];
   recommendations: string[];
   estimatedValue: number;
   followUpPrompt: string;
   variant: "full" | "abbreviated" | "activity-only" | "skip";
+  showSunGreeting?: boolean;
 };
 
 export type AiosRuleResult = {

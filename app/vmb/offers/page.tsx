@@ -15,7 +15,7 @@ export default async function VmbOffersPage({ searchParams }: Props) {
   const ctx = await loadVmbPageContext({ analysisId: params.analysis?.trim() });
   return (
     <VmbPlaceholderPage
-      title="Service Offers"
+      title="Offers"
       purpose="Standard offers and salon promotions tied to your active book."
       context={ctx}
     />

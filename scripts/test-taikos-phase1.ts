@@ -26,6 +26,7 @@ async function run(): Promise<void> {
   const page = resolvePageContext("/vmb/network");
   assert(page.pageId === "network", "network page context");
   assert(page.availableActions.length > 0, "network actions");
+  assert(page.assistantIntro.length > 0, "assistant intro");
 
   const trial = await createVmbTrialLead({
     salonName: "tAIkOS Test Salon",
@@ -67,7 +68,10 @@ async function run(): Promise<void> {
   assert(rules.length > 0, "rules fire on sample book");
 
   const briefing = buildMorningBriefing(ctx!);
-  assert(briefing.greeting.includes("Jenny") || briefing.greeting.includes("tAIkOS"), "greeting");
+  assert(
+    (briefing.greeting?.includes("Jenny") ?? false) || briefing.summary.includes("Jenny"),
+    "greeting",
+  );
   assert(briefing.variant !== "skip" || ctx!.currentSession.briefingShownToday, "briefing variant");
 
   const response = await generateAiosResponse({ context: ctx!, mode: "briefing" });
@@ -76,6 +80,7 @@ async function run(): Promise<void> {
 
   const assistant = await generateAiosResponse({ context: ctx!, mode: "page-assistant" });
   assert(assistant.pageContextLine !== undefined, "page assistant line");
+  assert(Array.isArray(assistant.recommendedActions), "recommended actions array");
 
   assert(greetingForOperator("Salon", "Jenny").includes("Jenny"), "operator greeting");
 
