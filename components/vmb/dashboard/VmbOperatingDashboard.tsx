@@ -1,13 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ActionBlock } from "@/components/vmb/feed/ActionBlock";
-import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftPreviewModal";
-import { useInviteDrafts } from "@/components/vmb/dashboard/useInviteDrafts";
-import { InviteQueue } from "@/components/vmb/workflows/InviteQueue";
-import { RevenueQueue } from "@/components/vmb/workflows/RevenueQueue";
-import { WelcomeQueue } from "@/components/vmb/workflows/WelcomeQueue";
 import { buildAppointmentOpeningsSummary, buildVmbOperatingSnapshot } from "@/lib/vmb/operating-system";
+import { buildVmbInviteSectionHref } from "@/lib/vmb/salon-href";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
@@ -25,16 +21,6 @@ type Props = {
 };
 
 export function VmbOperatingDashboard({ analysis }: Props) {
-  const { drafts, loading: draftsLoading, saving, patchDraft } = useInviteDrafts({
-    analysis,
-    isDemo: false,
-  });
-
-  const [inviteQueueOpen, setInviteQueueOpen] = useState(false);
-  const [revenueQueueOpen, setRevenueQueueOpen] = useState(false);
-  const [welcomeQueueOpen, setWelcomeQueueOpen] = useState(false);
-  const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
-
   const snapshot = useMemo(
     () => buildVmbOperatingSnapshot(analysis, { inviteState: { invited: 0, joined: 0 } }),
     [analysis],
@@ -42,16 +28,9 @@ export function VmbOperatingDashboard({ analysis }: Props) {
 
   if (!snapshot) return null;
 
-  const inviteReady =
-    drafts.length > 0
-      ? drafts.filter((d) => d.status === "draft").length
-      : snapshot.network.readyThisWeek;
-  const inviteNames =
-    drafts.length > 0
-      ? drafts.map((d) => d.clientName)
-      : snapshot.network.candidates.map((c) => c.clientName);
-  const activeDraft = drafts.find((d) => d.draftId === activeDraftId) ?? null;
-
+  const analysisId = analysis.analysisId;
+  const inviteReady = snapshot.network.readyThisWeek;
+  const inviteNames = snapshot.network.candidates.map((c) => c.clientName);
   const welcomeRows = snapshot.newClients.rows;
   const revenue = snapshot.weeklyRevenue;
   const openings = buildAppointmentOpeningsSummary(analysis);
@@ -83,8 +62,7 @@ export function VmbOperatingDashboard({ analysis }: Props) {
         summary={`${inviteReady} invites ready`}
         names={inviteNames}
         ctaLabel="Preview Invites"
-        onCta={() => setInviteQueueOpen(true)}
-        ctaDisabled={draftsLoading && inviteNames.length === 0}
+        ctaHref={buildVmbInviteSectionHref(analysisId, "private_client_network")}
       />
 
       <ActionBlock
@@ -92,7 +70,7 @@ export function VmbOperatingDashboard({ analysis }: Props) {
         summary={`${revenue.readyThisWeek} touches ready · $${revenue.potentialRevenue.toLocaleString()} potential`}
         names={revenue.opportunities.map((o) => o.clientName)}
         ctaLabel="Review Revenue Moves"
-        onCta={() => setRevenueQueueOpen(true)}
+        ctaHref={buildVmbInviteSectionHref(analysisId, "revenue_touch")}
         ctaDisabled={revenue.opportunities.length === 0}
       />
 
@@ -101,7 +79,7 @@ export function VmbOperatingDashboard({ analysis }: Props) {
         summary={`${welcomeRows.length} welcomes ready`}
         names={welcomeRows.map((r) => r.clientName)}
         ctaLabel="Preview Welcomes"
-        onCta={() => setWelcomeQueueOpen(true)}
+        ctaHref={buildVmbInviteSectionHref(analysisId, "new_client_welcome")}
         ctaDisabled={welcomeRows.length === 0}
       />
 
@@ -127,45 +105,6 @@ export function VmbOperatingDashboard({ analysis }: Props) {
           ))}
         </ul>
       </ActionBlock>
-
-      {inviteQueueOpen ? (
-        <InviteQueue
-          drafts={drafts}
-          onClose={() => setInviteQueueOpen(false)}
-          onPreview={(id) => {
-            setInviteQueueOpen(false);
-            setActiveDraftId(id);
-          }}
-        />
-      ) : null}
-
-      {revenueQueueOpen ? (
-        <RevenueQueue
-          opportunities={revenue.opportunities}
-          analysisId={analysis.analysisId}
-          onClose={() => setRevenueQueueOpen(false)}
-        />
-      ) : null}
-
-      {welcomeQueueOpen ? (
-        <WelcomeQueue rows={welcomeRows} onClose={() => setWelcomeQueueOpen(false)} />
-      ) : null}
-
-      {activeDraft ? (
-        <InviteDraftPreviewModal
-          draft={activeDraft}
-          saving={saving}
-          onClose={() => setActiveDraftId(null)}
-          onApprove={(message) => {
-            void patchDraft(activeDraft.draftId, { editableMessage: message, status: "approved" });
-            setActiveDraftId(null);
-          }}
-          onSkip={() => {
-            void patchDraft(activeDraft.draftId, { status: "skipped" });
-            setActiveDraftId(null);
-          }}
-        />
-      ) : null}
     </div>
   );
 }

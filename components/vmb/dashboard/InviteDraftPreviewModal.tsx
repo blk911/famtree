@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { INVITE_SECTION_LABELS } from "@/lib/vmb/invites/sections";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 
 type Props = {
   draft: VmbInviteDraft;
+  salonName?: string;
   onClose: () => void;
+  onSave: (message: string) => void;
   onApprove: (message: string) => void;
   onSkip: () => void;
   saving?: boolean;
@@ -14,16 +17,23 @@ type Props = {
 
 export function InviteDraftPreviewModal({
   draft,
+  salonName = "Your Salon",
   onClose,
+  onSave,
   onApprove,
   onSkip,
   saving = false,
 }: Props) {
   const [message, setMessage] = useState(draft.editableMessage);
+  const categoryLabel = INVITE_SECTION_LABELS[draft.inviteCategory] ?? draft.inviteCategory;
 
   useEffect(() => {
     setMessage(draft.editableMessage);
   }, [draft.draftId, draft.editableMessage]);
+
+  const footer =
+    draft.lockedFooter ||
+    `\n\nSent from VMB on behalf of ${salonName}\nPrivate client network · Reply links coming soon.`;
 
   return (
     <div
@@ -72,18 +82,14 @@ export function InviteDraftPreviewModal({
           </button>
         </div>
 
-        <div style={{ marginBottom: 14, fontSize: 14 }}>
-          <div style={{ color: VMB_THEME.muted, marginBottom: 4 }}>To:</div>
-          <div style={{ fontWeight: 700 }}>{draft.clientName}</div>
-        </div>
-
-        <div style={{ marginBottom: 14, fontSize: 14 }}>
-          <div style={{ color: VMB_THEME.muted, marginBottom: 4 }}>Subject:</div>
-          <div>{draft.subject}</div>
-        </div>
+        <LockedRow label="Recipient" value={draft.clientName} />
+        {draft.email ? <LockedRow label="Email" value={draft.email} /> : null}
+        {draft.phone ? <LockedRow label="Phone" value={draft.phone} /> : null}
+        <LockedRow label="Category" value={categoryLabel} />
+        <LockedRow label="Subject" value={draft.subject} />
 
         <label style={{ display: "block", marginBottom: 6, fontSize: 13, color: VMB_THEME.muted }}>
-          Message
+          Message (editable)
         </label>
         <textarea
           value={message}
@@ -115,14 +121,24 @@ export function InviteDraftPreviewModal({
             fontFamily: "inherit",
           }}
         >
-          {draft.lockedFooter}
+          {footer}
         </pre>
 
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+          <ModalButton label="Save" variant="secondary" disabled={saving} onClick={() => onSave(message)} />
           <ModalButton label="Approve" disabled={saving} onClick={() => onApprove(message)} />
           <ModalButton label="Skip" variant="secondary" disabled={saving} onClick={onSkip} />
         </div>
       </div>
+    </div>
+  );
+}
+
+function LockedRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ marginBottom: 14, fontSize: 14 }}>
+      <div style={{ color: VMB_THEME.muted, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontWeight: label === "Recipient" ? 700 : 500 }}>{value}</div>
     </div>
   );
 }

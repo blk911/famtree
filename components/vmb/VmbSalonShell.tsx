@@ -7,6 +7,7 @@ import { VmbSummaryRail } from "@/components/vmb/VmbSummaryRail";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import { VMB_SALON_MOBILE_NAV_IDS, VMB_SALON_NAV, type VmbSalonNavItem } from "@/lib/vmb/salon-nav";
 import { buildVmbSalonNavHref } from "@/lib/vmb/salon-nav-href";
+import { isRefreshDue } from "@/lib/vmb/workspace-lifecycle";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbSalonWorkspace } from "@/types/vmb/workspace";
 
@@ -20,6 +21,7 @@ export function VmbSalonShell({ children }: Props) {
   const { analysisId: activeAnalysisId } = useVmbActiveAnalysisState();
   const [railOpen, setRailOpen] = useState(false);
   const [salonName, setSalonName] = useState("Your Salon");
+  const [refreshDue, setRefreshDue] = useState(false);
 
   useEffect(() => {
     setRailOpen(false);
@@ -31,8 +33,9 @@ export function VmbSalonShell({ children }: Props) {
       try {
         const res = await fetch("/api/vmb/workspace", { cache: "no-store", credentials: "include" });
         const json = (await res.json()) as { ok: boolean; data?: VmbSalonWorkspace | null };
-        if (!cancelled && json.ok && json.data?.salonName?.trim()) {
-          setSalonName(json.data.salonName.trim());
+        if (!cancelled && json.ok && json.data) {
+          if (json.data.salonName?.trim()) setSalonName(json.data.salonName.trim());
+          setRefreshDue(isRefreshDue(json.data));
         }
       } catch {
         // keep default
@@ -114,6 +117,9 @@ export function VmbSalonShell({ children }: Props) {
                 }}
               >
                 {item.label}
+                {item.id === "refresh" && refreshDue ? (
+                  <span style={{ marginLeft: 6, fontSize: 11, color: VMB_THEME.accent }}>· due</span>
+                ) : null}
               </Link>
             );
           })}

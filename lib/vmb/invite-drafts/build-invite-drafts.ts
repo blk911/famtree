@@ -106,6 +106,7 @@ export function buildInviteDraftRecords(
     email: candidate.email,
     phone: candidate.phone,
     reasonSelected: candidate.reasonSelected,
+    inviteCategory: "private_client_network" as const,
     inviteType: "private_client_network" as const,
     potentialValue: candidate.potentialValue,
     status: "draft" as const,

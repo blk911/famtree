@@ -1,6 +1,13 @@
 export type InviteDraftStatus = "draft" | "approved" | "skipped" | "sent";
 
+/** @deprecated Use InviteDraftCategory — kept for stored JSON compatibility. */
 export type InviteDraftType = "private_client_network";
+
+export type InviteDraftCategory =
+  | "private_client_network"
+  | "new_client_welcome"
+  | "revenue_touch"
+  | "trusted_intro_request";
 
 export type VmbInviteDraft = {
   draftId: string;
@@ -9,14 +16,17 @@ export type VmbInviteDraft = {
   clientName: string;
   email?: string;
   phone?: string;
+  /** Human-readable reason shown in salon UI. */
   reasonSelected: string;
-  inviteType: InviteDraftType;
+  inviteCategory: InviteDraftCategory;
+  /** Legacy alias — mirrors inviteCategory for private network rows. */
+  inviteType?: InviteDraftType;
   potentialValue: number;
   status: InviteDraftStatus;
   subject: string;
   editableMessage: string;
   lockedFooter: string;
-  candidateScore: number;
+  candidateScore?: number;
   createdAt: string;
   updatedAt: string;
 };

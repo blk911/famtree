@@ -27,3 +27,9 @@ export type {
   TrustedProviderIntroRequest,
   CreateTrustedIntroInput,
 } from "./trusted-circle";
+export type {
+  InviteDraftCategory,
+  InviteDraftStatus,
+  VmbInviteDraft,
+  PatchInviteDraftInput,
+} from "./invite-draft";

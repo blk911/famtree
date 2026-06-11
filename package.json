@@ -49,6 +49,8 @@
     "test:vmb:workspace": "tsx scripts/test-vmb-workspace.ts",
     "test:vmb:flow": "tsx scripts/test-vmb-flow.ts",
     "test:vmb:runtime": "tsx scripts/test-vmb-runtime.ts",
+    "test:vmb:integration-map": "tsx scripts/test-vmb-integration-map.ts",
+    "test:vmb:invite-drafts": "tsx scripts/test-vmb-invite-drafts.ts",
     "harvest:sola": "tsx scripts/run-sola-harvest.ts",
     "debug:sola:profile": "tsx scripts/debug-sola-profile-api.ts",
     "discover:sola": "tsx scripts/discover-sola-slugs.ts",

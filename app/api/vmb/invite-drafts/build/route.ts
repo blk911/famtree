@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { buildInviteDraftsForTrial } from "@/lib/vmb/invite-drafts/invite-draft-store";
+import { ensureInviteDraftsForAnalysis } from "@/lib/vmb/invite-drafts/invite-draft-store";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 
 export async function POST(req: NextRequest) {
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "analysisId is required" }, { status: 400 });
     }
 
-    const result = await buildInviteDraftsForTrial(trialId, analysisId);
+    const result = await ensureInviteDraftsForAnalysis(trialId, analysisId);
     if ("error" in result) {
       const status = result.error.includes("not available") ? 403 : 500;
       return NextResponse.json({ ok: false, error: result.error }, { status });

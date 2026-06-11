@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { VmbHistoryClient } from "@/components/vmb/VmbHistoryClient";
+import { VmbPlaceholderPage } from "@/components/vmb/VmbPlaceholderPage";
+import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
 
 export const metadata: Metadata = {
   title: "History",
@@ -11,5 +12,12 @@ type Props = {
 
 export default async function VmbHistoryPage({ searchParams }: Props) {
   const params = await searchParams;
-  return <VmbHistoryClient initialAnalysisId={params.analysis?.trim()} />;
+  const ctx = await loadVmbPageContext({ analysisId: params.analysis?.trim() });
+  return (
+    <VmbPlaceholderPage
+      title="History"
+      purpose="Sent invites, replies, and campaign history for your salon."
+      context={ctx}
+    />
+  );
 }

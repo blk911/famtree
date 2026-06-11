@@ -37,3 +37,15 @@ export function buildVmbSalonHref(route: string, activeAnalysisId?: string): str
 
   return path;
 }
+
+/** Dashboard → Invites handoff with section focus. */
+export function buildVmbInviteSectionHref(
+  analysisId: string,
+  section: string,
+): string {
+  const base = buildVmbSalonHref("/vmb/invites", analysisId);
+  const [path, query = ""] = base.split("?");
+  const params = new URLSearchParams(query);
+  params.set("section", section.trim());
+  return `${path}?${params.toString()}`;
+}

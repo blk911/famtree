@@ -138,6 +138,10 @@ export function NetworkLaunchSection({
           draft={activeDraft}
           saving={saving}
           onClose={() => setActiveDraftId(null)}
+          onSave={async (message) => {
+            await onPatchDraft(activeDraft.draftId, { editableMessage: message });
+            setActiveDraftId(null);
+          }}
           onApprove={handleApprove}
           onSkip={handleSkip}
         />
