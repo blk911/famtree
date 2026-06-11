@@ -24,11 +24,15 @@ type ActionPreviewState = {
   confirming: boolean;
   preview: TaikosActionPreviewResult | null;
   confirmedMessage: string | null;
+  draftId: string | null;
   draftHref: string | null;
   draftReviewHint: string | null;
+  queueMessage: string | null;
+  queued: boolean;
   sourceActionId?: string;
   logRefresh: number;
   draftRefresh: number;
+  queueRefresh: number;
 };
 
 type AiosContextValue = {
@@ -42,6 +46,8 @@ type AiosContextValue = {
   askQuestion: (question: string) => void;
   runContractAction: (action: AiosAction) => void;
   confirmContractAction: () => void;
+  enqueueConfirmedDraft: () => void;
+  skipQueueAfterConfirm: () => void;
   cancelContractPreview: () => void;
 };
 
@@ -61,6 +67,8 @@ export function useAios(): AiosContextValue {
       askQuestion: () => undefined,
       runContractAction: () => undefined,
       confirmContractAction: () => undefined,
+      enqueueConfirmedDraft: () => undefined,
+      skipQueueAfterConfirm: () => undefined,
       cancelContractPreview: () => undefined,
     };
   }
@@ -212,11 +220,15 @@ export function AiosProvider({ children, analysisId }: Props) {
         confirming: false,
         preview: null,
         confirmedMessage: null,
+        draftId: null,
         draftHref: null,
         draftReviewHint: null,
+        queueMessage: null,
+        queued: false,
         sourceActionId: action.id,
         logRefresh: 0,
         draftRefresh: 0,
+        queueRefresh: 0,
       });
 
       try {
@@ -241,11 +253,15 @@ export function AiosProvider({ children, analysisId }: Props) {
             confirming: false,
             preview: json.data,
             confirmedMessage: null,
+            draftId: null,
             draftHref: null,
             draftReviewHint: null,
+            queueMessage: null,
+            queued: false,
             sourceActionId: action.id,
             logRefresh: 0,
             draftRefresh: 0,
+            queueRefresh: 0,
           });
         } else {
           setActionPreview(null);
@@ -294,8 +310,11 @@ export function AiosProvider({ children, analysisId }: Props) {
                 ...prev,
                 confirming: false,
                 confirmedMessage: json.data!.message,
+                draftId: json.data!.draftId ?? null,
                 draftHref: json.data!.draftHref ?? null,
                 draftReviewHint: json.data!.draftReviewHint ?? null,
+                queueMessage: null,
+                queued: false,
                 logRefresh: prev.logRefresh + 1,
                 draftRefresh: prev.draftRefresh + 1,
               }
@@ -309,6 +328,46 @@ export function AiosProvider({ children, analysisId }: Props) {
     }
     await recordInteraction();
   }, [actionPreview, pathname, analysisId, recordInteraction]);
+
+  const enqueueConfirmedDraft = useCallback(async () => {
+    if (!actionPreview?.draftId) return;
+    try {
+      const res = await fetch("/api/taikos/queue", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draftId: actionPreview.draftId }),
+      });
+      const json = (await res.json()) as { ok: boolean; data?: { message: string } };
+      if (res.ok && json.ok) {
+        setActionPreview((prev) =>
+          prev
+            ? {
+                ...prev,
+                queueMessage: json.data?.message ?? "Added to queue. No message sent yet.",
+                queued: true,
+                queueRefresh: prev.queueRefresh + 1,
+              }
+            : prev,
+        );
+      }
+    } catch {
+      // silent
+    }
+    await recordInteraction();
+  }, [actionPreview, recordInteraction]);
+
+  const skipQueueAfterConfirm = useCallback(() => {
+    setActionPreview((prev) =>
+      prev
+        ? {
+            ...prev,
+            queueMessage: "Draft saved. Skipped queue for now.",
+            queued: true,
+          }
+        : prev,
+    );
+  }, []);
 
   const cancelContractPreview = useCallback(() => {
     setActionPreview(null);
@@ -380,6 +439,8 @@ export function AiosProvider({ children, analysisId }: Props) {
       askQuestion,
       runContractAction,
       confirmContractAction,
+      enqueueConfirmedDraft,
+      skipQueueAfterConfirm,
       cancelContractPreview,
     }),
     [
@@ -393,6 +454,8 @@ export function AiosProvider({ children, analysisId }: Props) {
       askQuestion,
       runContractAction,
       confirmContractAction,
+      enqueueConfirmedDraft,
+      skipQueueAfterConfirm,
       cancelContractPreview,
     ],
   );
@@ -412,6 +475,8 @@ export function AiosCenterHost() {
     askQuestion,
     runContractAction,
     confirmContractAction,
+    enqueueConfirmedDraft,
+    skipQueueAfterConfirm,
     cancelContractPreview,
   } = useAios();
 
@@ -440,6 +505,8 @@ export function AiosCenterHost() {
       onAskQuestion={(q) => void askQuestion(q)}
       onContractAction={(action) => void runContractAction(action)}
       onConfirmAction={() => void confirmContractAction()}
+      onEnqueueAction={() => void enqueueConfirmedDraft()}
+      onSkipQueue={skipQueueAfterConfirm}
       onCancelPreview={cancelContractPreview}
     />
   );

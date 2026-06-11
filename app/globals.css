@@ -1808,6 +1808,278 @@
   color: #1d4ed8;
 }
 
+.taikos-opp-list__hint {
+  margin: -4px 0 12px;
+  font-size: 13px;
+  color: #78716c;
+}
+
+.taikos-opp-card--workflow {
+  display: grid;
+  gap: 10px;
+}
+
+.taikos-opp-card--expanded {
+  border-color: #f9a8d4;
+}
+
+.taikos-opp-lifecycle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin: 0 0 4px;
+  padding: 0;
+  list-style: none;
+}
+
+.taikos-opp-lifecycle__step {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #a8a29e;
+}
+
+.taikos-opp-lifecycle__step--active {
+  color: #9d174d;
+}
+
+.taikos-opp-lifecycle__step--done {
+  color: #57534e;
+}
+
+.taikos-opp-lifecycle__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #e7e5e4;
+}
+
+.taikos-opp-lifecycle__step--active .taikos-opp-lifecycle__dot {
+  background: #9d174d;
+}
+
+.taikos-opp-lifecycle__step--done .taikos-opp-lifecycle__dot {
+  background: #d6d3d1;
+}
+
+.taikos-inline-workflow {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid #f5f5f4;
+  display: grid;
+  gap: 12px;
+}
+
+.taikos-inline-workflow__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.taikos-inline-workflow__message {
+  margin: 0;
+  font-size: 13px;
+  color: #44403c;
+}
+
+.taikos-inline-workflow__message--success {
+  color: #166534;
+  font-weight: 600;
+}
+
+.taikos-inline-workflow__error {
+  margin: 0;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+.taikos-marketing-card {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e7e5e4;
+  background: linear-gradient(145deg, #fff 0%, #fdf8f6 100%);
+}
+
+.taikos-marketing-card__visual {
+  min-height: 72px;
+  background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 55%, #f9a8d4 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: 10px 12px;
+}
+
+.taikos-marketing-card__visual--invite {
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 55%, #c4b5fd 100%);
+}
+
+.taikos-marketing-card__badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1c1917;
+}
+
+.taikos-marketing-card__body {
+  padding: 12px 14px 14px;
+}
+
+.taikos-marketing-card__title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1c1917;
+}
+
+.taikos-marketing-card__desc,
+.taikos-marketing-card__message,
+.taikos-marketing-card__meta {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #57534e;
+}
+
+.taikos-marketing-card__price {
+  margin: 8px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #9d174d;
+}
+
+.taikos-marketing-card__cta {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9d174d;
+}
+
+.taikos-goal-workflow-card {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+}
+
+.taikos-goal-workflow-card__opp {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f5f5f4;
+}
+
+.taikos-goal-workflow-card__opp-label {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.taikos-goal-workflow-card__opp-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.taikos-goal-workflow-card__opp-value {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #57534e;
+}
+
+.taikos-goal-workflow-card__empty {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #a8a29e;
+}
+
+.taikos-today-queue__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.taikos-today-queue__stat {
+  padding: 10px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e7e5e4;
+  text-align: center;
+}
+
+.taikos-today-queue__stat-value {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  color: #9d174d;
+}
+
+.taikos-today-queue__stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #78716c;
+}
+
+.taikos-today-queue__recent-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.taikos-today-drafts__list {
+  display: grid;
+  gap: 10px;
+}
+
+.taikos-today-drafts__item {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+}
+
+.taikos-today-drafts__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.taikos-today-drafts__head h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.taikos-today-drafts__actions,
+.taikos-today-drafts__edit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.taikos-today-drafts__edit input {
+  flex: 1;
+  min-width: 140px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e7e5e4;
+  font: inherit;
+}
+
 @media (max-width: 767px) {
   .aios-center-layer {
     position: fixed;

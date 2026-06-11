@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { GoalCard } from "@/components/taikos/goals/GoalCard";
+import { GoalWorkflowCard } from "@/components/taikos/workflow/GoalWorkflowCard";
 import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
+import type { TaikosOpportunity } from "@/lib/taikos/opportunities/types";
 
 type Props = {
   summary: TaikosGoalSummary;
+  opportunities?: TaikosOpportunity[];
+  onRefresh?: () => void;
 };
 
-export function GoalSummary({ summary }: Props) {
+export function GoalSummary({ summary, opportunities = [], onRefresh }: Props) {
   if (summary.goals.length === 0) return null;
   return (
     <section className="taikos-goal-summary">
@@ -20,7 +23,12 @@ export function GoalSummary({ summary }: Props) {
       </div>
       <div className="taikos-goal-summary__grid">
         {summary.goals.map((goal) => (
-          <GoalCard key={goal.goalId} goal={goal} />
+          <GoalWorkflowCard
+            key={goal.goalId}
+            goal={goal}
+            opportunities={opportunities}
+            onRefresh={onRefresh}
+          />
         ))}
       </div>
     </section>

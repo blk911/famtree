@@ -16,10 +16,14 @@ type ActionPreviewState = {
   confirming: boolean;
   preview: TaikosActionPreviewResult | null;
   confirmedMessage: string | null;
+  draftId: string | null;
   draftHref: string | null;
   draftReviewHint: string | null;
+  queueMessage: string | null;
+  queued: boolean;
   logRefresh: number;
   draftRefresh: number;
+  queueRefresh: number;
 };
 
 type Props = {
@@ -33,6 +37,8 @@ type Props = {
   onAskQuestion: (question: string) => void;
   onContractAction: (action: AiosAction) => void;
   onConfirmAction: () => void;
+  onEnqueueAction: () => void;
+  onSkipQueue: () => void;
   onCancelPreview: () => void;
 };
 
@@ -47,6 +53,8 @@ export function AiosPanel({
   onAskQuestion,
   onContractAction,
   onConfirmAction,
+  onEnqueueAction,
+  onSkipQueue,
   onCancelPreview,
 }: Props) {
   if (!open) return null;
@@ -102,9 +110,14 @@ export function AiosPanel({
           preview={actionPreview.preview}
           confirming={actionPreview.confirming}
           confirmedMessage={actionPreview.confirmedMessage}
+          draftId={actionPreview.draftId}
           draftHref={actionPreview.draftHref}
           draftReviewHint={actionPreview.draftReviewHint}
+          queueMessage={actionPreview.queueMessage}
+          queued={actionPreview.queued}
           onConfirm={onConfirmAction}
+          onEnqueue={onEnqueueAction}
+          onSkipQueue={onSkipQueue}
           onCancel={onCancelPreview}
         />
       ) : null}

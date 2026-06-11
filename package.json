@@ -57,6 +57,7 @@
     "test:taikos:phase4": "tsx scripts/test-taikos-phase4.ts",
     "test:taikos:phase5": "tsx scripts/test-taikos-phase5.ts",
     "test:taikos:phase6": "tsx scripts/test-taikos-phase6.ts",
+    "test:taikos:phase9": "tsx scripts/test-taikos-phase9.ts",
     "harvest:sola": "tsx scripts/run-sola-harvest.ts",
     "debug:sola:profile": "tsx scripts/debug-sola-profile-api.ts",
     "discover:sola": "tsx scripts/discover-sola-slugs.ts",
