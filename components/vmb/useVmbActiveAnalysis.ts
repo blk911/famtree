@@ -2,59 +2,57 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { readActiveAnalysisId, writeActiveAnalysisId } from "@/lib/vmb/active-analysis";
-import type { VmbSalonWorkspace } from "@/types/vmb/workspace";
+import { readActiveAnalysisId } from "@/lib/vmb/active-analysis";
+import { resolveActiveVmbAnalysisClient } from "@/lib/vmb/resolve-active-analysis-client";
+import type { ActiveVmbAnalysisSource } from "@/lib/vmb/active-analysis-resolver";
 
 function readAnalysisFromUrl(): string | undefined {
   if (typeof window === "undefined") return undefined;
   return new URLSearchParams(window.location.search).get("analysis")?.trim() || undefined;
 }
 
+export type UseVmbActiveAnalysisState = {
+  analysisId?: string;
+  source: ActiveVmbAnalysisSource;
+  resolving: boolean;
+};
+
 export function useVmbActiveAnalysis(initialAnalysisId?: string): string | undefined {
+  const state = useVmbActiveAnalysisState(initialAnalysisId);
+  return state.analysisId;
+}
+
+export function useVmbActiveAnalysisState(initialAnalysisId?: string): UseVmbActiveAnalysisState {
   const pathname = usePathname();
-  const [activeAnalysisId, setActiveAnalysisId] = useState<string | undefined>(
-    () => initialAnalysisId?.trim() || readAnalysisFromUrl() || readActiveAnalysisId(),
-  );
+  const [state, setState] = useState<UseVmbActiveAnalysisState>(() => ({
+    analysisId:
+      initialAnalysisId?.trim() || readAnalysisFromUrl() || readActiveAnalysisId(),
+    source: "none",
+    resolving: true,
+  }));
 
   useEffect(() => {
     let cancelled = false;
 
-    const paramId = readAnalysisFromUrl();
-    if (paramId) {
-      writeActiveAnalysisId(paramId);
-      setActiveAnalysisId(paramId);
-      return;
-    }
-    if (initialAnalysisId?.trim()) {
-      writeActiveAnalysisId(initialAnalysisId.trim());
-      setActiveAnalysisId(initialAnalysisId.trim());
-      return;
+    async function resolve() {
+      setState((prev) => ({ ...prev, resolving: true }));
+      const queryId = readAnalysisFromUrl() || initialAnalysisId?.trim();
+      const sessionId = readActiveAnalysisId();
+      const resolved = await resolveActiveVmbAnalysisClient({ queryId, sessionId });
+
+      if (cancelled) return;
+      setState({
+        analysisId: resolved.analysisId,
+        source: resolved.source,
+        resolving: false,
+      });
     }
 
-    const sessionId = readActiveAnalysisId();
-    if (sessionId) {
-      setActiveAnalysisId(sessionId);
-      return;
-    }
-
-    async function loadWorkspaceAnalysis() {
-      try {
-        const res = await fetch("/api/vmb/workspace", { cache: "no-store", credentials: "include" });
-        const json = (await res.json()) as { ok: boolean; data?: VmbSalonWorkspace | null };
-        if (cancelled || !json.ok || !json.data?.latestAnalysisId) return;
-        if (!json.data.firstIngestCompleted) return;
-        writeActiveAnalysisId(json.data.latestAnalysisId);
-        setActiveAnalysisId(json.data.latestAnalysisId);
-      } catch {
-        // ignore — nav works without analysis param
-      }
-    }
-
-    void loadWorkspaceAnalysis();
+    void resolve();
     return () => {
       cancelled = true;
     };
   }, [pathname, initialAnalysisId]);
 
-  return activeAnalysisId;
+  return state;
 }

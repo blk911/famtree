@@ -6,10 +6,5 @@ export const metadata: Metadata = {
 };
 
 export default function VmbOffersPage() {
-  return (
-    <VmbPlaceholderPage
-      title="Service Offers"
-      description="Standard offers and salon promotions will be managed here. Preview offers from Home for now."
-    />
-  );
+  return <VmbPlaceholderPage title="Service Offers" />;
 }

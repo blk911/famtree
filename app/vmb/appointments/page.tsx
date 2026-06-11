@@ -6,10 +6,5 @@ export const metadata: Metadata = {
 };
 
 export default function VmbAppointmentsPage() {
-  return (
-    <VmbPlaceholderPage
-      title="Appointments"
-      description="Open appointment windows and fill options will live here. For now, review weekly openings from Home."
-    />
-  );
+  return <VmbPlaceholderPage title="Appointments" />;
 }

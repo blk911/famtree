@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { VmbOperatingDashboard } from "@/components/vmb/dashboard/VmbOperatingDashboard";
-import { writeActiveAnalysisId } from "@/lib/vmb/active-analysis";
+import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
+import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
 import { isRefreshDue } from "@/lib/vmb/workspace-lifecycle";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
@@ -15,11 +16,13 @@ type Props = {
   analysisId?: string;
 };
 
-function EmptyHome() {
+function EmptyHome({ noSession }: { noSession?: boolean }) {
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "64px 24px 80px", textAlign: "center" }}>
       <p style={{ margin: "0 0 20px", fontSize: 16, lineHeight: 1.5, color: VMB_THEME.muted }}>
-        Start by finding the money in your book.
+        {noSession
+          ? "Your salon session expired. Run Find The Money again to restore your workspace."
+          : "Start by finding the money in your book."}
       </p>
       <Link
         href="/vmb/start"
@@ -124,39 +127,40 @@ function dismissRefreshForSession(): void {
 }
 
 export function VmbDashboardClient({ analysisId }: Props) {
+  const resolved = useVmbActiveAnalysisState(analysisId);
   const [analysis, setAnalysis] = useState<VmbBookAnalysisResult | null>(null);
   const [workspace, setWorkspace] = useState<VmbSalonWorkspace | null>(null);
   const [loading, setLoading] = useState(true);
+  const [noSession, setNoSession] = useState(false);
   const [refreshDismissed, setRefreshDismissed] = useState(isRefreshDismissed);
 
   useEffect(() => {
-    if (analysisId) writeActiveAnalysisId(analysisId);
-  }, [analysisId]);
-
-  useEffect(() => {
+    if (resolved.resolving) return;
     let cancelled = false;
+
     async function load() {
       setLoading(true);
+      setNoSession(false);
       try {
-        const analysisUrl = analysisId
-          ? `/api/vmb/analyze-book?id=${encodeURIComponent(analysisId)}`
-          : "/api/vmb/analyze-book";
-
-        const [analysisRes, workspaceRes] = await Promise.all([
-          fetch(analysisUrl, { cache: "no-store", credentials: "include" }),
+        const [analysisOutcome, workspaceRes] = await Promise.all([
+          fetchVmbAnalysisForSalon(resolved),
           fetch("/api/vmb/workspace", { cache: "no-store", credentials: "include" }),
         ]);
 
-        const analysisJson = (await analysisRes.json()) as {
-          ok: boolean;
-          data?: VmbBookAnalysisResult | null;
-        };
         const workspaceJson = (await workspaceRes.json()) as {
           ok: boolean;
           data?: VmbSalonWorkspace | null;
+          error?: string;
         };
 
         if (cancelled) return;
+
+        if (workspaceRes.status === 401) {
+          setNoSession(true);
+          setWorkspace(null);
+          setAnalysis(null);
+          return;
+        }
 
         if (workspaceJson.ok && workspaceJson.data) {
           setWorkspace(workspaceJson.data);
@@ -164,9 +168,8 @@ export function VmbDashboardClient({ analysisId }: Props) {
           setWorkspace(null);
         }
 
-        if (analysisJson.ok && analysisJson.data) {
-          setAnalysis(analysisJson.data);
-          writeActiveAnalysisId(analysisJson.data.analysisId);
+        if (analysisOutcome.ok) {
+          setAnalysis(analysisOutcome.data);
         } else {
           setAnalysis(null);
         }
@@ -179,13 +182,14 @@ export function VmbDashboardClient({ analysisId }: Props) {
         if (!cancelled) setLoading(false);
       }
     }
-    load();
+
+    void load();
     return () => {
       cancelled = true;
     };
-  }, [analysisId]);
+  }, [analysisId, resolved.analysisId, resolved.resolving, resolved.source]);
 
-  if (loading) {
+  if (loading || resolved.resolving) {
     return (
       <div style={{ padding: 48, textAlign: "center", color: VMB_THEME.muted }}>
         Loading your week…
@@ -194,7 +198,7 @@ export function VmbDashboardClient({ analysisId }: Props) {
   }
 
   if (!analysis) {
-    return <EmptyHome />;
+    return <EmptyHome noSession={noSession} />;
   }
 
   const showRefreshBanner =

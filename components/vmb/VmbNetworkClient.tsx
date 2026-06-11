@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
-import { appendVmbAnalysisQuery } from "@/lib/vmb/trial-scope";
+import { buildVmbSalonHref } from "@/lib/vmb/salon-href";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 import type { TrustedProviderIntroRequest } from "@/types/vmb/trusted-circle";
@@ -61,7 +61,7 @@ export function VmbNetworkClient({ initialAnalysisId }: Props = {}) {
     <div style={{ maxWidth: PAGE_MAX, margin: "0 auto", padding: "32px 20px 72px" }}>
       <header style={{ marginBottom: 20, paddingBottom: 18, borderBottom: `1px solid ${VMB_THEME.line}` }}>
         <Link
-          href={appendVmbAnalysisQuery("/vmb/dashboard", activeAnalysisId)}
+          href={buildVmbSalonHref("/vmb/dashboard", activeAnalysisId)}
           style={{
             display: "inline-block",
             marginBottom: 12,

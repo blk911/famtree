@@ -2,6 +2,8 @@ import { promises as fs } from "fs";
 import path from "path";
 import { getVmbDataDir } from "./paths";
 
+// TODO(vmb:storage): VMB runtime JSON is ephemeral on Vercel; move to durable storage before real salon use.
+
 export async function readJsonArray<T>(
   filePath: string,
   isValid: (item: unknown) => item is T,

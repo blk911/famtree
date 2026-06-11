@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { VmbSummaryRail } from "@/components/vmb/VmbSummaryRail";
-import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
-import { VMB_SALON_MOBILE_NAV_IDS, VMB_SALON_NAV } from "@/lib/vmb/salon-nav";
+import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
+import { VMB_SALON_MOBILE_NAV_IDS, VMB_SALON_NAV, type VmbSalonNavItem } from "@/lib/vmb/salon-nav";
 import { buildVmbSalonNavHref } from "@/lib/vmb/salon-nav-href";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbSalonWorkspace } from "@/types/vmb/workspace";
@@ -16,7 +16,8 @@ type Props = {
 
 export function VmbSalonShell({ children }: Props) {
   const pathname = usePathname();
-  const activeAnalysisId = useVmbActiveAnalysis();
+  const searchParams = useSearchParams();
+  const { analysisId: activeAnalysisId } = useVmbActiveAnalysisState();
   const [railOpen, setRailOpen] = useState(false);
   const [salonName, setSalonName] = useState("Your Salon");
 
@@ -41,11 +42,16 @@ export function VmbSalonShell({ children }: Props) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pathname, activeAnalysisId]);
 
-  function isActive(href: string): boolean {
-    const path = href.split("?")[0];
-    return pathname === path || pathname.startsWith(`${path}/`);
+  function isNavActive(item: VmbSalonNavItem): boolean {
+    const path = item.href.split("?")[0];
+    if (pathname !== path && !pathname.startsWith(`${path}/`)) return false;
+    if (item.id === "refresh") {
+      return searchParams.get("mode") === "refresh";
+    }
+    if (path === "/vmb/start") return false;
+    return true;
   }
 
   const mobileNav = VMB_SALON_NAV.filter((item) =>
@@ -91,7 +97,7 @@ export function VmbSalonShell({ children }: Props) {
         </div>
         <nav style={{ display: "grid", gap: 2, padding: "8px 10px 20px" }}>
           {VMB_SALON_NAV.map((item) => {
-            const active = isActive(item.href);
+            const active = isNavActive(item);
             return (
               <Link
                 key={item.id}
@@ -172,7 +178,7 @@ export function VmbSalonShell({ children }: Props) {
 
         <nav className="vmb-salon-mobile-nav" aria-label="Quick salon navigation">
           {mobileNav.map((item) => {
-            const active = isActive(item.href);
+            const active = isNavActive(item);
             return (
               <Link
                 key={item.id}

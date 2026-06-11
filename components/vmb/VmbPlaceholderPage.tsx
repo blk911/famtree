@@ -2,17 +2,16 @@
 
 import Link from "next/link";
 import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
-import { appendVmbAnalysisQuery } from "@/lib/vmb/trial-scope";
+import { buildVmbSalonHref } from "@/lib/vmb/salon-href";
 import { VMB_THEME } from "@/lib/vmb/theme";
 
 type Props = {
   title: string;
-  description: string;
 };
 
-export function VmbPlaceholderPage({ title, description }: Props) {
+export function VmbPlaceholderPage({ title }: Props) {
   const activeAnalysisId = useVmbActiveAnalysis();
-  const homeHref = appendVmbAnalysisQuery("/vmb/dashboard", activeAnalysisId);
+  const homeHref = buildVmbSalonHref("/vmb/dashboard", activeAnalysisId);
 
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 20px 72px" }}>
@@ -27,7 +26,7 @@ export function VmbPlaceholderPage({ title, description }: Props) {
         {title}
       </h1>
       <p style={{ margin: "0 0 24px", fontSize: 15, lineHeight: 1.55, color: VMB_THEME.muted }}>
-        {description}
+        Coming soon — this will use your latest book analysis.
       </p>
       <Link
         href={homeHref}

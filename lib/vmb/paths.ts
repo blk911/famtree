@@ -1,6 +1,9 @@
 import path from "path";
 
-/** Single VMB runtime root — local disk or Vercel /tmp. */
+/**
+ * Single VMB runtime root — local disk or Vercel /tmp.
+ * TODO(vmb:storage): VMB runtime JSON is ephemeral on Vercel; move to durable storage before real salon use.
+ */
 export function getVmbDataDir(): string {
   return process.env.VERCEL
     ? path.join("/tmp", "vmb")

@@ -6,10 +6,5 @@ export const metadata: Metadata = {
 };
 
 export default function VmbSettingsPage() {
-  return (
-    <VmbPlaceholderPage
-      title="Settings"
-      description="Salon profile and workspace settings are coming soon."
-    />
-  );
+  return <VmbPlaceholderPage title="Settings" />;
 }

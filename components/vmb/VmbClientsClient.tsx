@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
 import {
   buildClientOpportunities,
   type ClientOpportunityRow,
@@ -14,7 +13,9 @@ import {
   buildThisWeekSelection,
   isThisWeekRow,
 } from "@/lib/vmb/this-week-selection";
-import { appendVmbAnalysisQuery } from "@/lib/vmb/trial-scope";
+import { buildVmbSalonHref } from "@/lib/vmb/salon-href";
+import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
+import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
@@ -28,59 +29,35 @@ type Props = {
 const PAGE_MAX = 800;
 
 export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
-  const activeAnalysisId = useVmbActiveAnalysis(initialAnalysisId);
+  const resolved = useVmbActiveAnalysisState(initialAnalysisId);
+  const activeAnalysisId = resolved.analysisId;
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [analysis, setAnalysis] = useState<VmbBookAnalysisResult | null>(null);
   const [summary, setSummary] = useState<ClientOpportunitySummary | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (resolved.resolving) return;
     let cancelled = false;
-
-    async function fetchAnalysis(url: string) {
-      const res = await fetch(url, { cache: "no-store", credentials: "include" });
-      return (await res.json()) as {
-        ok: boolean;
-        data?: VmbBookAnalysisResult | null;
-        error?: string;
-      };
-    }
 
     async function load() {
       setLoadState("loading");
-      const requestedId = activeAnalysisId?.trim();
 
       try {
-        let json: {
-          ok: boolean;
-          data?: VmbBookAnalysisResult | null;
-          error?: string;
-        };
-
-        if (requestedId) {
-          json = await fetchAnalysis(
-            `/api/vmb/analyze-book?id=${encodeURIComponent(requestedId)}`,
-          );
-          if (!json.ok || !json.data) {
-            json = await fetchAnalysis("/api/vmb/analyze-book");
-          }
-        } else {
-          json = await fetchAnalysis("/api/vmb/analyze-book");
-        }
-
+        const outcome = await fetchVmbAnalysisForSalon(resolved);
         if (cancelled) return;
 
-        if (!json.ok || !json.data) {
+        if (!outcome.ok) {
           setAnalysis(null);
           setSummary(null);
-          setLoadState(requestedId ? "invalid" : "empty");
+          setLoadState(outcome.reason === "no_analysis" ? "empty" : "invalid");
           return;
         }
 
-        setAnalysis(json.data);
-        const built = buildClientOpportunities(json.data);
+        setAnalysis(outcome.data);
+        const built = buildClientOpportunities(outcome.data);
 
-        if (built.rows.length > 0 || analysisHasOpportunityArrays(json.data)) {
+        if (built.rows.length > 0 || analysisHasOpportunityArrays(outcome.data)) {
           setSummary(built);
           setLoadState(built.rows.length > 0 ? "ready" : "empty");
           return;
@@ -92,16 +69,16 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
         if (!cancelled) {
           setAnalysis(null);
           setSummary(null);
-          setLoadState(requestedId ? "invalid" : "empty");
+          setLoadState("invalid");
         }
       }
     }
 
-    load();
+    void load();
     return () => {
       cancelled = true;
     };
-  }, [activeAnalysisId]);
+  }, [resolved.analysisId, resolved.resolving, resolved.source]);
 
   const thisWeekSelection = useMemo(
     () =>
@@ -120,7 +97,7 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
     return rows;
   }, [summary, initialView, thisWeekSelection]);
 
-  if (loadState === "loading") {
+  if (loadState === "loading" || resolved.resolving) {
     return (
       <div style={{ padding: 48, textAlign: "center", color: VMB_THEME.muted }}>
         Loading client book…
@@ -152,7 +129,7 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
     <div style={{ maxWidth: PAGE_MAX, margin: "0 auto", padding: "32px 20px 72px" }}>
       <header style={{ marginBottom: 20, paddingBottom: 18, borderBottom: `1px solid ${VMB_THEME.line}` }}>
         <Link
-          href={appendVmbAnalysisQuery("/vmb/dashboard", activeAnalysisId)}
+          href={buildVmbSalonHref("/vmb/dashboard", activeAnalysisId)}
           style={{
             display: "inline-block",
             marginBottom: 12,

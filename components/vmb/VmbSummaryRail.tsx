@@ -5,7 +5,8 @@ import { isRefreshDue } from "@/lib/vmb/workspace-lifecycle";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { VmbSalonWorkspace } from "@/types/vmb/workspace";
-import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
+import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
+import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
 
 type SummaryRow = {
   label: string;
@@ -13,35 +14,29 @@ type SummaryRow = {
 };
 
 export function VmbSummaryRail() {
-  const activeAnalysisId = useVmbActiveAnalysis();
+  const resolved = useVmbActiveAnalysisState();
   const [analysis, setAnalysis] = useState<VmbBookAnalysisResult | null>(null);
   const [workspace, setWorkspace] = useState<VmbSalonWorkspace | null>(null);
   const [inviteReady, setInviteReady] = useState<number | null>(null);
 
   useEffect(() => {
+    if (resolved.resolving) return;
     let cancelled = false;
     async function load() {
       try {
-        const analysisUrl = activeAnalysisId
-          ? `/api/vmb/analyze-book?id=${encodeURIComponent(activeAnalysisId)}`
-          : "/api/vmb/analyze-book";
-        const [analysisRes, workspaceRes] = await Promise.all([
-          fetch(analysisUrl, { cache: "no-store", credentials: "include" }),
+        const [analysisOutcome, workspaceRes] = await Promise.all([
+          fetchVmbAnalysisForSalon(resolved),
           fetch("/api/vmb/workspace", { cache: "no-store", credentials: "include" }),
         ]);
-        const analysisJson = (await analysisRes.json()) as {
-          ok: boolean;
-          data?: VmbBookAnalysisResult | null;
-        };
         const workspaceJson = (await workspaceRes.json()) as {
           ok: boolean;
           data?: VmbSalonWorkspace | null;
         };
         if (cancelled) return;
-        setAnalysis(analysisJson.ok && analysisJson.data ? analysisJson.data : null);
+        setAnalysis(analysisOutcome.ok ? analysisOutcome.data : null);
         setWorkspace(workspaceJson.ok && workspaceJson.data ? workspaceJson.data : null);
 
-        const analysisId = analysisJson.data?.analysisId ?? activeAnalysisId;
+        const analysisId = analysisOutcome.ok ? analysisOutcome.data.analysisId : resolved.analysisId;
         if (analysisId) {
           const draftRes = await fetch(
             `/api/vmb/invite-drafts?analysisId=${encodeURIComponent(analysisId)}`,
@@ -66,7 +61,7 @@ export function VmbSummaryRail() {
     return () => {
       cancelled = true;
     };
-  }, [activeAnalysisId]);
+  }, [resolved.analysisId, resolved.resolving, resolved.source]);
 
   const rows: SummaryRow[] = [];
   if (analysis) {

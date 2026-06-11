@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
-import { appendVmbAnalysisQuery } from "@/lib/vmb/trial-scope";
+import { buildVmbSalonHref } from "@/lib/vmb/salon-href";
+import { fetchVmbAnalysisForSalon, resolveActiveVmbAnalysisClient } from "@/lib/vmb/resolve-active-analysis-client";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
@@ -33,16 +34,14 @@ export function VmbInvitesClient({ initialAnalysisId }: Props) {
     async function load() {
       setLoading(true);
       try {
-        const analysisUrl = activeAnalysisId
-          ? `/api/vmb/analyze-book?id=${encodeURIComponent(activeAnalysisId)}`
-          : "/api/vmb/analyze-book";
-        const analysisRes = await fetch(analysisUrl, { cache: "no-store", credentials: "include" });
-        const analysisJson = (await analysisRes.json()) as {
-          ok: boolean;
-          data?: VmbBookAnalysisResult | null;
-        };
+        const resolved = await resolveActiveVmbAnalysisClient({
+          queryId: initialAnalysisId?.trim() || activeAnalysisId,
+          sessionId: activeAnalysisId,
+        });
+        const analysisOutcome = await fetchVmbAnalysisForSalon(resolved);
         if (cancelled) return;
-        const loadedAnalysis = analysisJson.ok && analysisJson.data ? analysisJson.data : null;
+
+        const loadedAnalysis = analysisOutcome.ok ? analysisOutcome.data : null;
         setAnalysis(loadedAnalysis);
 
         if (!loadedAnalysis?.analysisId) {
@@ -74,7 +73,7 @@ export function VmbInvitesClient({ initialAnalysisId }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [activeAnalysisId]);
+  }, [activeAnalysisId, initialAnalysisId]);
 
   const filtered = useMemo(() => {
     if (tab === "replies") return [];
@@ -83,7 +82,7 @@ export function VmbInvitesClient({ initialAnalysisId }: Props) {
     return drafts.filter((d) => d.status === "sent");
   }, [drafts, tab]);
 
-  const homeHref = appendVmbAnalysisQuery("/vmb/dashboard", activeAnalysisId);
+  const homeHref = buildVmbSalonHref("/vmb/dashboard", activeAnalysisId);
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: "32px 20px 72px" }}>

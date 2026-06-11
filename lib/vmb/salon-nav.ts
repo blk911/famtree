@@ -15,7 +15,7 @@ export const VMB_SALON_NAV: VmbSalonNavItem[] = [
   { id: "offers", label: "Service Offers", href: "/vmb/offers", preserveAnalysis: true },
   { id: "clients", label: "Client Book", href: "/vmb/clients", preserveAnalysis: true },
   { id: "history", label: "History", href: "/vmb/history", preserveAnalysis: true },
-  { id: "settings", label: "Settings", href: "/vmb/settings", preserveAnalysis: true },
+  { id: "settings", label: "Settings", href: "/vmb/settings", preserveAnalysis: false },
 ];
 
 export const VMB_SALON_MOBILE_NAV_IDS = ["home", "invites", "clients", "network"] as const;
