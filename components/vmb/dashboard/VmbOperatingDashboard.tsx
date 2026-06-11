@@ -7,7 +7,7 @@ import { useInviteDrafts } from "@/components/vmb/dashboard/useInviteDrafts";
 import { InviteQueue } from "@/components/vmb/workflows/InviteQueue";
 import { RevenueQueue } from "@/components/vmb/workflows/RevenueQueue";
 import { WelcomeQueue } from "@/components/vmb/workflows/WelcomeQueue";
-import { buildVmbOperatingSnapshot } from "@/lib/vmb/operating-system";
+import { buildAppointmentOpeningsSummary, buildVmbOperatingSnapshot } from "@/lib/vmb/operating-system";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
@@ -18,7 +18,7 @@ const HOME_OFFERS = [
   "Bring A Friend",
 ] as const;
 
-const FEED_MAX = 800;
+const FEED_MAX = 640;
 
 type Props = {
   analysis: VmbBookAnalysisResult;
@@ -42,12 +42,19 @@ export function VmbOperatingDashboard({ analysis }: Props) {
 
   if (!snapshot) return null;
 
-  const inviteReady = drafts.length > 0 ? drafts.filter((d) => d.status === "draft").length : 10;
-  const inviteNames = drafts.map((d) => d.clientName);
+  const inviteReady =
+    drafts.length > 0
+      ? drafts.filter((d) => d.status === "draft").length
+      : snapshot.network.readyThisWeek;
+  const inviteNames =
+    drafts.length > 0
+      ? drafts.map((d) => d.clientName)
+      : snapshot.network.candidates.map((c) => c.clientName);
   const activeDraft = drafts.find((d) => d.draftId === activeDraftId) ?? null;
 
   const welcomeRows = snapshot.newClients.rows;
   const revenue = snapshot.weeklyRevenue;
+  const openings = buildAppointmentOpeningsSummary(analysis);
 
   return (
     <div style={{ maxWidth: FEED_MAX, margin: "0 auto", padding: "32px 20px 72px" }}>
@@ -74,10 +81,10 @@ export function VmbOperatingDashboard({ analysis }: Props) {
       <ActionBlock
         title="Launch My Private Client Network"
         summary={`${inviteReady} invites ready`}
-        names={draftsLoading ? [] : inviteNames}
+        names={inviteNames}
         ctaLabel="Preview Invites"
         onCta={() => setInviteQueueOpen(true)}
-        ctaDisabled={draftsLoading || drafts.length === 0}
+        ctaDisabled={draftsLoading && inviteNames.length === 0}
       />
 
       <ActionBlock
@@ -96,6 +103,14 @@ export function VmbOperatingDashboard({ analysis }: Props) {
         ctaLabel="Preview Welcomes"
         onCta={() => setWelcomeQueueOpen(true)}
         ctaDisabled={welcomeRows.length === 0}
+      />
+
+      <ActionBlock
+        title="Open Appointment Windows"
+        summary={`${openings.count} opening${openings.count === 1 ? "" : "s"} this week`}
+        names={openings.slots}
+        ctaLabel="Review Fill Options"
+        ctaDisabled
       />
 
       <ActionBlock

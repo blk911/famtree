@@ -13,6 +13,8 @@ export { buildNetworkLaunchSummary } from "./network-launch";
 export { buildNewClientSummary } from "./new-clients";
 export { buildWeeklyRevenueSummary } from "./weekly-revenue";
 export { buildStandardOffers } from "./standard-offers";
+export { buildAppointmentOpeningsSummary } from "./appointment-openings";
+export type { AppointmentOpeningsSummary } from "./appointment-openings";
 export { scoreCandidate, extractClientPool, recencyScore, spendScoreFromValue } from "./client-pool";
 
 export function buildVmbOperatingSnapshot(

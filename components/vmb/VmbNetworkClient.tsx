@@ -10,8 +10,12 @@ import type { TrustedProviderIntroRequest } from "@/types/vmb/trusted-circle";
 
 const PAGE_MAX = 800;
 
-export function VmbNetworkClient() {
-  const activeAnalysisId = useVmbActiveAnalysis();
+type Props = {
+  initialAnalysisId?: string;
+};
+
+export function VmbNetworkClient({ initialAnalysisId }: Props = {}) {
+  const activeAnalysisId = useVmbActiveAnalysis(initialAnalysisId);
   const [drafts, setDrafts] = useState<VmbInviteDraft[]>([]);
   const [intros, setIntros] = useState<TrustedProviderIntroRequest[]>([]);
   const [loading, setLoading] = useState(true);

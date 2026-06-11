@@ -46,13 +46,9 @@ export function ActionBlock({
       </h2>
       <p style={{ margin: "0 0 10px", fontSize: 15, color: VMB_THEME.ink }}>{summary}</p>
       {names.length > 0 ? (
-        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
-          {names.slice(0, 3).map((name) => (
-            <li key={name} style={{ fontSize: 14, color: VMB_THEME.muted }}>
-              {name}
-            </li>
-          ))}
-        </ul>
+        <p style={{ margin: 0, fontSize: 14, color: VMB_THEME.muted, lineHeight: 1.5 }}>
+          {names.slice(0, 3).join(" · ")}
+        </p>
       ) : null}
       {children}
       {ctaHref && !ctaDisabled ? (

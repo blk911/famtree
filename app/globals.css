@@ -325,3 +325,133 @@
   height: auto;
 }
 
+/* ── VMB salon operating shell ─────────────────────────────────────────── */
+.vmb-salon-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.vmb-salon-rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  width: 220px;
+  height: 100vh;
+  border-right: 1px solid #e7e5e4;
+  background: #faf8f5;
+  transform: translateX(-100%);
+  transition: transform 0.22s ease;
+  overflow-y: auto;
+}
+
+.vmb-salon-rail--open {
+  transform: translateX(0);
+}
+
+.vmb-salon-rail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  border: none;
+  background: rgba(28, 25, 23, 0.28);
+  cursor: pointer;
+}
+
+.vmb-salon-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.vmb-salon-topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.vmb-salon-menu-btn {
+  display: inline-flex;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #78716c;
+  cursor: pointer;
+}
+
+.vmb-salon-content-row {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.vmb-salon-content {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 72px;
+}
+
+.vmb-salon-summary {
+  display: none;
+  width: 200px;
+  flex-shrink: 0;
+  padding: 28px 20px 40px 0;
+  border-left: 1px solid #e7e5e4;
+  margin-right: 20px;
+}
+
+.vmb-salon-mobile-nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 35;
+  border-top: 1px solid #e7e5e4;
+  background: rgba(250, 248, 245, 0.96);
+  backdrop-filter: blur(8px);
+}
+
+@media (min-width: 768px) {
+  .vmb-salon-rail {
+    position: sticky;
+    top: 0;
+    transform: translateX(0) !important;
+    flex-shrink: 0;
+  }
+
+  .vmb-salon-rail-backdrop {
+    display: none;
+  }
+
+  .vmb-salon-main {
+    margin-left: 0;
+  }
+
+  .vmb-salon-menu-btn {
+    display: none;
+  }
+
+  .vmb-salon-mobile-nav {
+    display: none;
+  }
+
+  .vmb-salon-content {
+    padding-bottom: 40px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .vmb-salon-summary {
+    display: block;
+  }
+}
+

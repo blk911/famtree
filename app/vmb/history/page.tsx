@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "History",
 };
 
-export default function VmbHistoryPage() {
-  return <VmbHistoryClient />;
+type Props = {
+  searchParams: Promise<{ analysis?: string }>;
+};
+
+export default async function VmbHistoryPage({ searchParams }: Props) {
+  const params = await searchParams;
+  return <VmbHistoryClient initialAnalysisId={params.analysis?.trim()} />;
 }
