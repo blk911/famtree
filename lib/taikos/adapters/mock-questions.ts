@@ -151,6 +151,88 @@ export function answerMockQuestion(ctx: AiosContextPacket, question: string): Ai
     };
   }
 
+  if (q.includes("what drafts") || q.includes("my drafts") || q.includes("saved drafts")) {
+    const recent = ctx.draftSummary.recentDrafts;
+    return {
+      mode: "question",
+      layout: "center-panel",
+      message: recent.length
+        ? `You have ${ctx.draftSummary.openDrafts} open draft${ctx.draftSummary.openDrafts === 1 ? "" : "s"}.`
+        : "No saved drafts yet — confirm a tAIkOS preview to save one.",
+      summary: recent.length
+        ? recent.map((d) => d.title).join(" · ")
+        : "Preview a move in tAIkOS, then confirm to save a draft.",
+      pageContextLine: ctx.currentPage.assistantIntro,
+      pageContext: ctx.currentPage,
+      showQuestionInput: true,
+      cards: recent.slice(0, 4).map((d) => ({
+        id: d.draftId,
+        title: d.title,
+        body: `${d.draftType.replace(/_/g, " ")} · ${d.status}`,
+        meta: d.estimatedValue > 0 ? `+$${d.estimatedValue.toLocaleString()}` : undefined,
+      })),
+      opportunities: ctx.opportunities.slice(0, 2),
+      recommendations: [],
+      recommendedActions: stubActions(ctx).slice(0, 2),
+      estimatedValue: recent.reduce((s, d) => s + d.estimatedValue, 0),
+      followUpPrompt: "Open Invites, Campaigns, or Service Cards to review saved drafts.",
+    };
+  }
+
+  if (q.includes("invite draft")) {
+    const inviteDrafts = ctx.draftSummary.recentDrafts.filter(
+      (d) => d.draftType === "pcn_invite" || d.draftType === "referral_ask",
+    );
+    return {
+      mode: "question",
+      layout: "center-panel",
+      message: inviteDrafts.length
+        ? `${inviteDrafts.length} invite draft${inviteDrafts.length === 1 ? "" : "s"} saved.`
+        : "No invite drafts saved yet.",
+      summary: "Review invite drafts from the Invites page.",
+      pageContextLine: ctx.currentPage.assistantIntro,
+      pageContext: ctx.currentPage,
+      showQuestionInput: true,
+      cards: inviteDrafts.slice(0, 4).map((d) => ({
+        id: d.draftId,
+        title: d.title,
+        body: d.status,
+      })),
+      opportunities: [],
+      recommendations: [],
+      recommendedActions: [
+        contractAction("preview-invite", "CREATE_INVITE_DRAFT", "Preview Invite"),
+      ],
+      estimatedValue: 0,
+      followUpPrompt: "Review this invite later from Invites.",
+    };
+  }
+
+  if (q.includes("ready to send") || q.includes("anything ready")) {
+    const ready = ctx.draftSummary.recentDrafts.filter((d) => d.status === "ready_to_send");
+    return {
+      mode: "question",
+      layout: "center-panel",
+      message: ready.length
+        ? `${ready.length} draft${ready.length === 1 ? "" : "s"} marked ready to send.`
+        : "No drafts are marked ready to send yet.",
+      summary: "Sending is not enabled yet — drafts can be reviewed and edited, but no messages will go out.",
+      pageContextLine: ctx.currentPage.assistantIntro,
+      pageContext: ctx.currentPage,
+      showQuestionInput: true,
+      cards: ready.slice(0, 4).map((d) => ({
+        id: d.draftId,
+        title: d.title,
+        body: "Ready to send (send coming later)",
+      })),
+      opportunities: [],
+      recommendations: ["Mark drafts ready when you're happy with the copy."],
+      recommendedActions: stubActions(ctx).slice(0, 2),
+      estimatedValue: 0,
+      followUpPrompt: "When send is available, ready drafts will be first in line.",
+    };
+  }
+
   if (q.includes("what should i do") || q.includes("what's next") || q.includes("next")) {
     const top = ctx.opportunities.slice(0, 3);
     return {

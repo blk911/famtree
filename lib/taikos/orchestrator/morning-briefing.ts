@@ -1,3 +1,4 @@
+import { draftBriefingLine } from "@/lib/taikos/context/draft-context";
 import { briefingVariant } from "@/lib/taikos/session/session-manager";
 import type { AiosContextPacket, MorningBriefing } from "@/lib/taikos/types";
 
@@ -45,6 +46,11 @@ function buildSinceLastVisitLines(ctx: AiosContextPacket): string[] {
 
   if (ctx.revenueSummary.touchesReady > 0) {
     lines.push(`${ctx.revenueSummary.touchesReady} revenue touches are ready.`);
+  }
+
+  const draftLine = draftBriefingLine(ctx.draftSummary);
+  if (draftLine) {
+    lines.push(draftLine.replace(/\.$/, "") + ".");
   }
 
   if (lines.length === 0 && ctx.pcnSummary.invitesReady > 0) {

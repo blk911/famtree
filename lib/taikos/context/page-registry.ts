@@ -107,6 +107,7 @@ export function pathnameToPageId(pathname: string): AiosPageId {
   if (pathname === "/vmb/network") return "network";
   if (pathname === "/vmb/offers") return "offers";
   if (pathname === "/vmb/campaigns") return "campaigns";
+  if (pathname === "/vmb/service-cards") return "offers";
   if (pathname === "/vmb/invites") return "invites";
   if (pathname === "/vmb/appointments") return "appointments";
   if (pathname === "/vmb/history") return "history";

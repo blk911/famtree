@@ -29,6 +29,9 @@ export function confirmButtonLabel(type: TaikosActionType): string {
   return "Record Draft";
 }
 
-export function afterConfirmMessage(): string {
+export function afterConfirmMessage(savedDraft = false): string {
+  if (savedDraft) {
+    return "Recorded. Draft saved. No message sent yet.";
+  }
   return "Recorded. No message sent yet.";
 }

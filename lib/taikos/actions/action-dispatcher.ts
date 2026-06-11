@@ -9,6 +9,13 @@ import type { TaikosDeliverable } from "@/lib/taikos/deliverables/types";
 import type { AiosContextPacket } from "@/lib/taikos/types";
 import { ACTION_REGISTRY } from "./action-registry";
 import { afterConfirmMessage, isDestructive, requiresConfirmation } from "./confirm-gates";
+import {
+  actionTypeCreatesDraft,
+  buildDraftFromDeliverable,
+  draftDetailHref,
+  draftReviewHint,
+} from "@/lib/taikos/drafts/draft-router";
+import { createDraft } from "@/lib/taikos/drafts/draft-store";
 import { appendActionLogEntry } from "./action-log-store";
 import type {
   TaikosActionContract,
@@ -110,6 +117,27 @@ export async function confirmTaikosAction(
   const reg = ACTION_REGISTRY[type];
   const deliverable = buildDeliverable(type, ctx, options.payload);
 
+  let savedDraftId: string | undefined;
+  let savedDraftHref: string | undefined;
+  let savedDraftReviewHint: string | undefined;
+
+  if (actionTypeCreatesDraft(type)) {
+    const draftInput = buildDraftFromDeliverable(deliverable, {
+      salonId: ctx.salonId,
+      operatorId: ctx.operatorId,
+      sourcePage: options.sourcePage,
+      sourceRecommendationId: options.sourceRecommendationId,
+      sourceActionId: options.previewId,
+      actionType: type,
+    });
+    if (draftInput) {
+      const saved = await createDraft(draftInput);
+      savedDraftId = saved.draftId;
+      savedDraftHref = draftDetailHref(saved.draftType, saved.draftId);
+      savedDraftReviewHint = draftReviewHint(saved);
+    }
+  }
+
   const logEntry = await appendActionLogEntry({
     id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     timestamp: new Date().toISOString(),
@@ -122,12 +150,15 @@ export async function confirmTaikosAction(
     sourcePage: options.sourcePage,
     sourceRecommendationId: options.sourceRecommendationId,
     deliverableType: deliverable.type,
-    deliverableId: deliverable.draftId,
+    deliverableId: savedDraftId ?? deliverable.draftId,
   });
 
   return {
     ok: true,
     logEntry,
-    message: afterConfirmMessage(),
+    message: afterConfirmMessage(!!savedDraftId),
+    draftId: savedDraftId,
+    draftHref: savedDraftHref,
+    draftReviewHint: savedDraftReviewHint,
   };
 }

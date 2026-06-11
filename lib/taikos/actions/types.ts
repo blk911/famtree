@@ -48,4 +48,7 @@ export type TaikosConfirmResult = {
   ok: true;
   logEntry: TaikosActionLogEntry;
   message: string;
+  draftId?: string;
+  draftHref?: string;
+  draftReviewHint?: string;
 };

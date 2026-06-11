@@ -14,3 +14,7 @@ export function getTaikosSessionsFile(): string {
 export function getTaikosActionLogFile(): string {
   return path.join(getTaikosDataDir(), "action-log.json");
 }
+
+export function getTaikosDraftsFile(): string {
+  return path.join(getTaikosDataDir(), "drafts.json");
+}

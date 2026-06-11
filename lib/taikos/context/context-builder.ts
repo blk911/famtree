@@ -7,7 +7,9 @@ import { isRefreshDue, workspaceLatestAnalysisId } from "@/lib/vmb/workspace-lif
 import { getWorkspaceForTrial } from "@/lib/vmb/workspace-store";
 import { buildClientSummaryFromAnalysis } from "@/lib/taikos/context/client-summary-builder";
 import { buildContactSignals } from "@/lib/taikos/context/contact-signals";
+import { enrichPageContextWithDrafts } from "@/lib/taikos/context/draft-context";
 import { resolvePageContext } from "@/lib/taikos/context/page-registry";
+import { summarizeDraftsForSalon } from "@/lib/taikos/drafts/draft-store";
 import { runAllAiosRules } from "@/lib/taikos/rules";
 import {
   getSessionSnapshot,
@@ -73,7 +75,11 @@ export async function buildAiosContextPacket(
   const openings = analysis ? buildAppointmentOpeningsSummary(analysis) : { count: 0, slots: [] };
   const clientSummary = buildClientSummaryFromAnalysis(analysis);
   const contactSignals = buildContactSignals(analysis);
-  const page = resolvePageContext(input.pathname, input.searchParams);
+  const draftSummary = await summarizeDraftsForSalon(salonId);
+  const page = enrichPageContextWithDrafts(
+    resolvePageContext(input.pathname, input.searchParams),
+    draftSummary,
+  );
 
   const ruleResults = runAllAiosRules(analysis, { inviteState });
   const opportunities: AiosOpportunity[] = ruleResults
@@ -147,6 +153,7 @@ export async function buildAiosContextPacket(
     loginCountToday: session.loginCountToday,
     lastViewedPage: session.lastViewedPage,
     newActivity,
+    draftSummary,
     generatedAt: new Date().toISOString(),
   };
 }

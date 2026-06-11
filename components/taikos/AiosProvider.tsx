@@ -24,8 +24,11 @@ type ActionPreviewState = {
   confirming: boolean;
   preview: TaikosActionPreviewResult | null;
   confirmedMessage: string | null;
+  draftHref: string | null;
+  draftReviewHint: string | null;
   sourceActionId?: string;
   logRefresh: number;
+  draftRefresh: number;
 };
 
 type AiosContextValue = {
@@ -209,8 +212,11 @@ export function AiosProvider({ children, analysisId }: Props) {
         confirming: false,
         preview: null,
         confirmedMessage: null,
+        draftHref: null,
+        draftReviewHint: null,
         sourceActionId: action.id,
         logRefresh: 0,
+        draftRefresh: 0,
       });
 
       try {
@@ -235,8 +241,11 @@ export function AiosProvider({ children, analysisId }: Props) {
             confirming: false,
             preview: json.data,
             confirmedMessage: null,
+            draftHref: null,
+            draftReviewHint: null,
             sourceActionId: action.id,
             logRefresh: 0,
+            draftRefresh: 0,
           });
         } else {
           setActionPreview(null);
@@ -271,7 +280,12 @@ export function AiosProvider({ children, analysisId }: Props) {
       });
       const json = (await res.json()) as {
         ok: boolean;
-        data?: { message: string };
+        data?: {
+          message: string;
+          draftId?: string;
+          draftHref?: string;
+          draftReviewHint?: string;
+        };
       };
       if (res.ok && json.ok && json.data) {
         setActionPreview((prev) =>
@@ -280,7 +294,10 @@ export function AiosProvider({ children, analysisId }: Props) {
                 ...prev,
                 confirming: false,
                 confirmedMessage: json.data!.message,
+                draftHref: json.data!.draftHref ?? null,
+                draftReviewHint: json.data!.draftReviewHint ?? null,
                 logRefresh: prev.logRefresh + 1,
+                draftRefresh: prev.draftRefresh + 1,
               }
             : prev,
         );

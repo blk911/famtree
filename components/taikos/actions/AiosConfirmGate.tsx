@@ -14,7 +14,7 @@ export function AiosConfirmGate({ actionType, confirming, onConfirm, onCancel }:
   return (
     <div className="aios-confirm-gate">
       <p className="aios-confirm-gate__hint">
-        Preview only — confirm records this draft. No message will be sent.
+        Preview only — confirm saves this draft to your workspace. No message will be sent.
       </p>
       <div className="aios-confirm-gate__actions">
         <button

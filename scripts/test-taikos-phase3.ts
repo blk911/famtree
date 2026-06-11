@@ -138,7 +138,11 @@ async function run(): Promise<void> {
     sourceRecommendationId: "continue-pcn",
   });
   assert(confirm.ok, "confirm ok");
-  assert(confirm.message === "Recorded. No message sent yet.", "confirm no-send copy");
+  assert(
+    confirm.message === "Recorded. Draft saved. No message sent yet.",
+    "confirm saves draft message",
+  );
+  assert(!!confirm.draftId, "confirm creates persisted draft");
   assert(confirm.logEntry.status === "confirmed", "log status confirmed");
   assert(confirm.logEntry.salonId === trialId, "log salon id");
 

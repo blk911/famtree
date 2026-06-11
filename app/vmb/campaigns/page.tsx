@@ -1,10 +1,21 @@
 import type { Metadata } from "next";
-import { VmbCampaignsView } from "@/components/vmb/VmbCampaignsView";
+import { Suspense } from "react";
+import { VmbTaikosDraftWorkspace } from "@/components/vmb/VmbTaikosDraftWorkspace";
+import { VmbPageLoading } from "@/components/vmb/VmbPageFrame";
 
 export const metadata: Metadata = {
   title: "Campaigns",
 };
 
 export default function VmbCampaignsPage() {
-  return <VmbCampaignsView />;
+  return (
+    <Suspense fallback={<VmbPageLoading label="Loading campaign drafts…" />}>
+      <VmbTaikosDraftWorkspace
+        workspace="campaigns"
+        eyebrow="Campaigns"
+        title="Campaign drafts"
+        subtitle="Saved campaigns, reactivation messages, and calendar opportunities from tAIkOS."
+      />
+    </Suspense>
+  );
 }

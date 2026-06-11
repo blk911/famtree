@@ -1,6 +1,7 @@
 "use client";
 
 import { AiosActionLog } from "@/components/taikos/actions/AiosActionLog";
+import { AiosDraftList } from "@/components/taikos/drafts/AiosDraftList";
 import { AiosActionPreview } from "@/components/taikos/actions/AiosActionPreview";
 import { AiosCard } from "@/components/taikos/AiosCard";
 import { AiosActionButton } from "@/components/taikos/AiosActionButton";
@@ -15,7 +16,10 @@ type ActionPreviewState = {
   confirming: boolean;
   preview: TaikosActionPreviewResult | null;
   confirmedMessage: string | null;
+  draftHref: string | null;
+  draftReviewHint: string | null;
   logRefresh: number;
+  draftRefresh: number;
 };
 
 type Props = {
@@ -98,6 +102,8 @@ export function AiosPanel({
           preview={actionPreview.preview}
           confirming={actionPreview.confirming}
           confirmedMessage={actionPreview.confirmedMessage}
+          draftHref={actionPreview.draftHref}
+          draftReviewHint={actionPreview.draftReviewHint}
           onConfirm={onConfirmAction}
           onCancel={onCancelPreview}
         />
@@ -152,6 +158,7 @@ export function AiosPanel({
             </>
           ) : null}
 
+          <AiosDraftList refreshKey={actionPreview?.draftRefresh ?? 0} />
           <AiosActionLog refreshKey={actionPreview?.logRefresh ?? 0} />
         </div>
       ) : (

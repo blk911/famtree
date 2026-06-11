@@ -1,5 +1,7 @@
 /** tAIkOS response schema — UI renders schema, never raw model output. */
 
+import type { TaikosDraftSummary } from "@/lib/taikos/drafts/types";
+
 export type AiosSeverity = "info" | "notice" | "priority" | "urgent";
 
 export type AiosActionKind =
@@ -166,6 +168,7 @@ export type AiosContextPacket = {
   loginCountToday: number;
   lastViewedPage?: string;
   newActivity: boolean;
+  draftSummary: TaikosDraftSummary;
   generatedAt: string;
 };
 

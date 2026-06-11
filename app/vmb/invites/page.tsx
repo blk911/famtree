@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { VmbInvitesClient } from "@/components/vmb/VmbInvitesClient";
+import { VmbTaikosDraftWorkspace } from "@/components/vmb/VmbTaikosDraftWorkspace";
+import { VmbPageLoading } from "@/components/vmb/VmbPageFrame";
 import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
 
 export const metadata: Metadata = {
@@ -7,12 +10,26 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: Promise<{ analysis?: string; section?: string }>;
+  searchParams: Promise<{ analysis?: string; section?: string; draft?: string }>;
 };
 
 export default async function VmbInvitesPage({ searchParams }: Props) {
   const params = await searchParams;
   const ctx = await loadVmbPageContext({ analysisId: params.analysis?.trim() });
+
+  if (params.draft?.trim()) {
+    return (
+      <Suspense fallback={<VmbPageLoading label="Loading invite draft…" />}>
+        <VmbTaikosDraftWorkspace
+          workspace="invites"
+          eyebrow="Invites"
+          title="Invite drafts"
+          subtitle="Saved PCN invites and referral asks from tAIkOS."
+        />
+      </Suspense>
+    );
+  }
+
   return (
     <VmbInvitesClient
       initialAnalysisId={ctx.activeAnalysisId ?? params.analysis?.trim()}
