@@ -81,49 +81,42 @@ export function VmbSalonShell({ children }: Props) {
       ) : null}
 
       <aside className={`vmb-salon-rail${railOpen ? " vmb-salon-rail--open" : ""}`} aria-label="Salon menu">
-        <div style={{ padding: "20px 18px 12px" }}>
-          <Link
-            href="/vmb"
-            style={{
-              textDecoration: "none",
-              color: VMB_THEME.ink,
-              fontSize: 15,
-              fontWeight: 800,
-              letterSpacing: "-0.03em",
-            }}
-          >
-            VMB
-          </Link>
-          <p style={{ margin: "6px 0 0", fontSize: 12, color: VMB_THEME.muted, lineHeight: 1.35 }}>
-            {salonName}
-          </p>
+        <div className="vmb-salon-rail-inner">
+          <div>
+            <Link
+              href="/vmb"
+              style={{
+                textDecoration: "none",
+                color: VMB_THEME.ink,
+                fontSize: 15,
+                fontWeight: 800,
+                letterSpacing: "-0.03em",
+              }}
+            >
+              VMB
+            </Link>
+            <p style={{ margin: "6px 0 0", fontSize: 12, color: VMB_THEME.muted, lineHeight: 1.35 }}>
+              {salonName}
+            </p>
+          </div>
+          <nav className="vmb-salon-nav" aria-label="Salon pages">
+            {VMB_SALON_NAV.map((item) => {
+              const active = isNavActive(item);
+              return (
+                <Link
+                  key={item.id}
+                  href={buildVmbSalonNavHref(item, activeAnalysisId)}
+                  className={`vmb-salon-nav-link${active ? " vmb-salon-nav-link--active" : ""}`}
+                >
+                  {item.label}
+                  {item.id === "refresh" && refreshDue ? (
+                    <span className="vmb-salon-nav-link__due">· due</span>
+                  ) : null}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
-        <nav style={{ display: "grid", gap: 2, padding: "8px 10px 20px" }}>
-          {VMB_SALON_NAV.map((item) => {
-            const active = isNavActive(item);
-            return (
-              <Link
-                key={item.id}
-                href={buildVmbSalonNavHref(item, activeAnalysisId)}
-                style={{
-                  display: "block",
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  textDecoration: "none",
-                  fontSize: 14,
-                  fontWeight: active ? 700 : 500,
-                  color: active ? VMB_THEME.ink : VMB_THEME.muted,
-                  background: active ? VMB_THEME.accentSoft : "transparent",
-                }}
-              >
-                {item.label}
-                {item.id === "refresh" && refreshDue ? (
-                  <span style={{ marginLeft: 6, fontSize: 11, color: VMB_THEME.accent }}>· due</span>
-                ) : null}
-              </Link>
-            );
-          })}
-        </nav>
       </aside>
 
       <div className="vmb-salon-main">

@@ -15,6 +15,7 @@ import {
 } from "@/lib/vmb/this-week-selection";
 import { buildVmbSalonHref } from "@/lib/vmb/salon-href";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
+import { VmbPageEmpty, VmbPageFrame, VmbPageLoading } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
@@ -25,8 +26,6 @@ type Props = {
   initialAnalysisId?: string;
   initialView?: string;
 };
-
-const PAGE_MAX = 800;
 
 export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
   const resolved = useVmbActiveAnalysisState(initialAnalysisId);
@@ -98,11 +97,7 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
   }, [summary, initialView, thisWeekSelection]);
 
   if (loadState === "loading" || resolved.resolving) {
-    return (
-      <div style={{ padding: 48, textAlign: "center", color: VMB_THEME.muted }}>
-        Loading client book…
-      </div>
-    );
+    return <VmbPageLoading label="Loading client book…" />;
   }
 
   if (loadState === "invalid") {
@@ -126,31 +121,29 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
   }
 
   return (
-    <div style={{ maxWidth: PAGE_MAX, margin: "0 auto", padding: "32px 20px 72px" }}>
-      <header style={{ marginBottom: 20, paddingBottom: 18, borderBottom: `1px solid ${VMB_THEME.line}` }}>
-        <Link
-          href={buildVmbSalonHref("/vmb/dashboard", activeAnalysisId)}
-          style={{
-            display: "inline-block",
-            marginBottom: 12,
-            fontSize: 13,
-            fontWeight: 700,
-            color: VMB_THEME.accent,
-            textDecoration: "none",
-          }}
-        >
-          ← Home
-        </Link>
-        <h1 style={{ margin: "0 0 8px", fontSize: 24, fontWeight: 800 }}>Client Book</h1>
-        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: VMB_THEME.muted }}>
-          All imported clients and VMB tags. Weekly actions are managed from Home.
+    <VmbPageFrame
+      width="wide"
+      title="Client Book"
+      subtitle="All imported clients and VMB tags. Weekly actions are managed from Home."
+    >
+      <Link
+        href={buildVmbSalonHref("/vmb/dashboard", activeAnalysisId)}
+        style={{
+          display: "inline-block",
+          marginBottom: 16,
+          fontSize: 13,
+          fontWeight: 700,
+          color: VMB_THEME.accent,
+          textDecoration: "none",
+        }}
+      >
+        ← Home
+      </Link>
+      {initialView === "this-week" ? (
+        <p style={{ margin: "0 0 16px", fontSize: 13, color: VMB_THEME.accent, fontWeight: 600 }}>
+          Showing this week&apos;s revenue moves
         </p>
-        {initialView === "this-week" ? (
-          <p style={{ margin: "10px 0 0", fontSize: 13, color: VMB_THEME.accent, fontWeight: 600 }}>
-            Showing this week&apos;s revenue moves
-          </p>
-        ) : null}
-      </header>
+      ) : null}
 
       <div>
         <div
@@ -182,7 +175,7 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
           />
         ))}
       </div>
-    </div>
+    </VmbPageFrame>
   );
 }
 
@@ -244,23 +237,25 @@ function EmptyState({
   ctaHref: string;
 }) {
   return (
-    <div style={{ maxWidth: PAGE_MAX, margin: "0 auto", padding: "64px 20px 80px", textAlign: "center" }}>
-      <p style={{ margin: "0 0 20px", fontSize: 16, color: VMB_THEME.muted }}>{message}</p>
-      <Link
-        href={ctaHref}
-        style={{
-          display: "inline-block",
-          padding: "12px 20px",
-          borderRadius: 12,
-          background: VMB_THEME.accent,
-          color: "#fff",
-          fontSize: 14,
-          fontWeight: 700,
-          textDecoration: "none",
-        }}
-      >
-        {ctaLabel}
-      </Link>
-    </div>
+    <VmbPageEmpty
+      message={message}
+      action={
+        <Link
+          href={ctaHref}
+          style={{
+            display: "inline-block",
+            padding: "12px 20px",
+            borderRadius: 12,
+            background: VMB_THEME.accent,
+            color: "#fff",
+            fontSize: 14,
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          {ctaLabel}
+        </Link>
+      }
+    />
   );
 }

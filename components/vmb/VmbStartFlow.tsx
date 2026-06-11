@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { VmbCard } from "@/components/vmb/VmbCard";
+import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import {
   getProviderExportGuide,
   moreProviders,
@@ -266,23 +267,15 @@ export function VmbStartFlow({ refreshMode = false }: Props) {
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px 80px" }}>
-      <div style={{ marginBottom: 36 }}>
-        <h1
-          style={{
-            margin: "0 0 10px",
-            fontSize: "clamp(28px, 4vw, 36px)",
-            fontWeight: 800,
-            letterSpacing: "-0.03em",
-          }}
-        >
-          Find The Money
-        </h1>
-        <p style={{ margin: 0, fontSize: 16, lineHeight: 1.55, color: VMB_THEME.muted }}>
-          Start with your booking provider, share where to send results, then upload your client book.
-        </p>
-      </div>
-
+    <VmbPageFrame
+      width="standard"
+      title={isRefreshMode ? "Book Refresh" : "Find The Money"}
+      subtitle={
+        isRefreshMode
+          ? "Upload a fresh client export to update this week's moves."
+          : "Start with your booking provider, share where to send results, then upload your client book."
+      }
+    >
       <div style={{ display: "grid", gap: 28 }}>
         {/* 1. Provider */}
         <section>
@@ -513,7 +506,7 @@ export function VmbStartFlow({ refreshMode = false }: Props) {
               : "Find The Money"}
         </button>
       </div>
-    </div>
+    </VmbPageFrame>
   );
 }
 

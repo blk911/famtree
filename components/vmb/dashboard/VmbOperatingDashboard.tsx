@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { ActionBlock } from "@/components/vmb/feed/ActionBlock";
 import { buildAppointmentOpeningsSummary, buildVmbOperatingSnapshot } from "@/lib/vmb/operating-system";
 import { buildVmbInviteSectionHref } from "@/lib/vmb/salon-href";
@@ -36,27 +37,13 @@ export function VmbOperatingDashboard({ analysis }: Props) {
   const openings = buildAppointmentOpeningsSummary(analysis);
 
   return (
-    <div style={{ maxWidth: FEED_MAX, margin: "0 auto", padding: "32px 20px 72px" }}>
-      <header style={{ marginBottom: 4, paddingBottom: 20, borderBottom: `1px solid ${VMB_THEME.line}` }}>
-        <p style={{ margin: "0 0 10px", fontSize: 14, color: VMB_THEME.muted }}>
-          {snapshot.salonName}
-        </p>
-        <h1
-          style={{
-            margin: "0 0 10px",
-            fontSize: "clamp(26px, 4vw, 34px)",
-            fontWeight: 800,
-            letterSpacing: "0.06em",
-            textTransform: "uppercase",
-          }}
-        >
-          This Week
-        </h1>
-        <p style={{ margin: 0, fontSize: 15, lineHeight: 1.5, color: VMB_THEME.muted }}>
-          VMB found your next relationship moves.
-        </p>
-      </header>
-
+    <VmbPageFrame
+      width="feed"
+      titleVariant="home"
+      eyebrow={snapshot.salonName}
+      title="This Week"
+      subtitle="VMB found your next relationship moves."
+    >
       <ActionBlock
         title="Launch My Private Client Network"
         summary={`${inviteReady} invites ready`}
@@ -105,6 +92,6 @@ export function VmbOperatingDashboard({ analysis }: Props) {
           ))}
         </ul>
       </ActionBlock>
-    </div>
+    </VmbPageFrame>
   );
 }

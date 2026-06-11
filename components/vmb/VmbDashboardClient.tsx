@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { VmbOperatingDashboard } from "@/components/vmb/dashboard/VmbOperatingDashboard";
+import { VmbPageEmpty, VmbPageFrame, VmbPageLoading } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
 import { isRefreshDue } from "@/lib/vmb/workspace-lifecycle";
@@ -18,28 +19,30 @@ type Props = {
 
 function EmptyHome({ noSession }: { noSession?: boolean }) {
   return (
-    <div style={{ maxWidth: 560, margin: "0 auto", padding: "64px 24px 80px", textAlign: "center" }}>
-      <p style={{ margin: "0 0 20px", fontSize: 16, lineHeight: 1.5, color: VMB_THEME.muted }}>
-        {noSession
+    <VmbPageEmpty
+      message={
+        noSession
           ? "Your salon session expired. Run Find The Money again to restore your workspace."
-          : "Start by finding the money in your book."}
-      </p>
-      <Link
-        href="/vmb/start"
-        style={{
-          display: "inline-block",
-          padding: "12px 20px",
-          borderRadius: 12,
-          background: VMB_THEME.accent,
-          color: "#fff",
-          fontSize: 14,
-          fontWeight: 700,
-          textDecoration: "none",
-        }}
-      >
-        Find The Money
-      </Link>
-    </div>
+          : "Start by finding the money in your book."
+      }
+      action={
+        <Link
+          href="/vmb/start"
+          style={{
+            display: "inline-block",
+            padding: "12px 20px",
+            borderRadius: 12,
+            background: VMB_THEME.accent,
+            color: "#fff",
+            fontSize: 14,
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          Find The Money
+        </Link>
+      }
+    />
   );
 }
 
@@ -51,15 +54,10 @@ function RefreshBanner({
   onDismiss: () => void;
 }) {
   return (
-    <div
-      style={{
-        maxWidth: 800,
-        margin: "0 auto",
-        padding: "12px 20px 0",
-      }}
-    >
+    <VmbPageFrame width="feed">
       <div
         style={{
+          marginBottom: 16,
           padding: "12px 14px",
           borderRadius: 10,
           border: `1px solid ${VMB_THEME.line}`,
@@ -102,7 +100,7 @@ function RefreshBanner({
           </button>
         </div>
       </div>
-    </div>
+    </VmbPageFrame>
   );
 }
 
@@ -190,11 +188,7 @@ export function VmbDashboardClient({ analysisId }: Props) {
   }, [analysisId, resolved.analysisId, resolved.resolving, resolved.source]);
 
   if (loading || resolved.resolving) {
-    return (
-      <div style={{ padding: 48, textAlign: "center", color: VMB_THEME.muted }}>
-        Loading your week…
-      </div>
-    );
+    return <VmbPageLoading label="Loading your week…" />;
   }
 
   if (!analysis) {

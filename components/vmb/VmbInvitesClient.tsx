@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftPreviewModal";
+import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import {
   INVITE_SECTION_LABELS,
@@ -154,22 +155,12 @@ export function VmbInvitesClient({
   }
 
   return (
-    <div style={{ maxWidth: 680, margin: "0 auto", padding: "32px 20px 72px" }}>
-      <h1
-        style={{
-          margin: "0 0 8px",
-          fontSize: "clamp(26px, 4vw, 32px)",
-          fontWeight: 800,
-          letterSpacing: "-0.02em",
-        }}
-      >
-        Invites
-      </h1>
-      <p style={{ margin: "0 0 20px", fontSize: 15, color: VMB_THEME.muted, lineHeight: 1.5 }}>
-        Review the messages VMB prepared from this week&apos;s client book.
-      </p>
-      <p style={{ margin: "0 0 16px", fontSize: 13, color: VMB_THEME.muted }}>{salonName}</p>
-
+    <VmbPageFrame
+      width="feed"
+      title="Invites"
+      subtitle="Review the messages VMB prepared from this week's client book."
+      eyebrow={typeof salonName === "string" ? salonName : undefined}
+    >
       <div
         style={{
           display: "flex",
@@ -316,6 +307,6 @@ export function VmbInvitesClient({
           }}
         />
       ) : null}
-    </div>
+    </VmbPageFrame>
   );
 }

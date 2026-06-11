@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
 import { buildVmbSalonHref } from "@/lib/vmb/salon-href";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 import type { TrustedProviderIntroRequest } from "@/types/vmb/trusted-circle";
-
-const PAGE_MAX = 800;
 
 type Props = {
   initialAnalysisId?: string;
@@ -58,26 +57,24 @@ export function VmbNetworkClient({ initialAnalysisId }: Props = {}) {
   const pending = drafts.filter((d) => d.status === "draft").length;
 
   return (
-    <div style={{ maxWidth: PAGE_MAX, margin: "0 auto", padding: "32px 20px 72px" }}>
-      <header style={{ marginBottom: 20, paddingBottom: 18, borderBottom: `1px solid ${VMB_THEME.line}` }}>
-        <Link
-          href={buildVmbSalonHref("/vmb/dashboard", activeAnalysisId)}
-          style={{
-            display: "inline-block",
-            marginBottom: 12,
-            fontSize: 13,
-            fontWeight: 700,
-            color: VMB_THEME.accent,
-            textDecoration: "none",
-          }}
-        >
-          ← Home
-        </Link>
-        <h1 style={{ margin: "0 0 8px", fontSize: 24, fontWeight: 800 }}>Network</h1>
-        <p style={{ margin: 0, fontSize: 14, color: VMB_THEME.muted }}>
-          Your private client network and trusted introductions.
-        </p>
-      </header>
+    <VmbPageFrame
+      width="wide"
+      title="Private Client Network"
+      subtitle="Your private client network and trusted introductions."
+    >
+      <Link
+        href={buildVmbSalonHref("/vmb/dashboard", activeAnalysisId)}
+        style={{
+          display: "inline-block",
+          marginBottom: 16,
+          fontSize: 13,
+          fontWeight: 700,
+          color: VMB_THEME.accent,
+          textDecoration: "none",
+        }}
+      >
+        ← Home
+      </Link>
 
       {loading ? (
         <p style={{ fontSize: 14, color: VMB_THEME.muted }}>Loading…</p>
@@ -118,7 +115,7 @@ export function VmbNetworkClient({ initialAnalysisId }: Props = {}) {
           </section>
         </>
       )}
-    </div>
+    </VmbPageFrame>
   );
 }
 

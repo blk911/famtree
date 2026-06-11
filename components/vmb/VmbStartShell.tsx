@@ -22,9 +22,8 @@ export function VmbStartShell({ children }: { children: ReactNode }) {
         }}
       >
         <div
+          className="vmb-start-shell-header"
           style={{
-            maxWidth: 720,
-            margin: "0 auto",
             padding: "14px 20px",
             display: "flex",
             alignItems: "center",
