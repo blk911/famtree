@@ -7,7 +7,7 @@ export type VmbSalonNavItem = {
 };
 
 export const VMB_SALON_NAV: VmbSalonNavItem[] = [
-  { id: "home", label: "Home", href: "/vmb/dashboard", preserveAnalysis: true },
+  { id: "home", label: "Today", href: "/vmb/today", preserveAnalysis: true },
   { id: "refresh", label: "Book Refresh", href: "/vmb/start?mode=refresh", preserveAnalysis: false },
   { id: "network", label: "Private Client Network", href: "/vmb/network", preserveAnalysis: true },
   { id: "invites", label: "Invites", href: "/vmb/invites", preserveAnalysis: true },

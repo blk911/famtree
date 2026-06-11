@@ -18,3 +18,11 @@ export function getTaikosActionLogFile(): string {
 export function getTaikosDraftsFile(): string {
   return path.join(getTaikosDataDir(), "drafts.json");
 }
+
+export function getTaikosGoalsFile(): string {
+  return path.join(getTaikosDataDir(), "goals.json");
+}
+
+export function getTaikosExecutionQueueFile(): string {
+  return path.join(getTaikosDataDir(), "execution-queue.json");
+}

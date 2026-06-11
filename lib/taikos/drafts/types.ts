@@ -36,6 +36,7 @@ export type TaikosDraft = {
   status: TaikosDraftStatus;
   payload: Record<string, unknown>;
   estimatedValue: number;
+  linkedGoalId?: string;
   audit: TaikosDraftAudit;
 };
 
@@ -57,6 +58,7 @@ export type TaikosDraftSummary = {
 
 export type CreateTaikosDraftInput = Omit<TaikosDraft, "draftId" | "createdAt" | "updatedAt"> & {
   draftId?: string;
+  linkedGoalId?: string;
 };
 
 export type UpdateTaikosDraftInput = {
@@ -64,4 +66,5 @@ export type UpdateTaikosDraftInput = {
   status?: TaikosDraftStatus;
   payload?: Record<string, unknown>;
   estimatedValue?: number;
+  linkedGoalId?: string;
 };

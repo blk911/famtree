@@ -15,7 +15,10 @@ import {
   draftDetailHref,
   draftReviewHint,
 } from "@/lib/taikos/drafts/draft-router";
-import { createDraft } from "@/lib/taikos/drafts/draft-store";
+import { createDraft, updateDraft } from "@/lib/taikos/drafts/draft-store";
+import type { TaikosDraftType } from "@/lib/taikos/drafts/types";
+import { findActiveGoalForCategory, goalCategoryForDraftType } from "@/lib/taikos/goals/goal-router";
+import { linkDraftToGoal } from "@/lib/taikos/goals/goal-store";
 import { appendActionLogEntry } from "./action-log-store";
 import type {
   TaikosActionContract,
@@ -131,7 +134,16 @@ export async function confirmTaikosAction(
       actionType: type,
     });
     if (draftInput) {
-      const saved = await createDraft(draftInput);
+      const goalCategory = goalCategoryForDraftType(draftInput.draftType as TaikosDraftType);
+      const linkedGoalId = findActiveGoalForCategory(ctx.goalSummary.goals, goalCategory);
+      const saved = await createDraft({
+        ...draftInput,
+        linkedGoalId,
+      });
+      if (linkedGoalId) {
+        await linkDraftToGoal(ctx.salonId, linkedGoalId, saved.draftId);
+        await updateDraft(ctx.salonId, saved.draftId, { linkedGoalId });
+      }
       savedDraftId = saved.draftId;
       savedDraftHref = draftDetailHref(saved.draftType, saved.draftId);
       savedDraftReviewHint = draftReviewHint(saved);

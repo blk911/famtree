@@ -151,6 +151,145 @@ export function answerMockQuestion(ctx: AiosContextPacket, question: string): Ai
     };
   }
 
+  if (q.includes("what goals") || q.includes("my goals")) {
+    const goals = ctx.goalSummary.goals;
+    return {
+      mode: "question",
+      layout: "center-panel",
+      message: goals.length
+        ? `You have ${ctx.goalSummary.activeGoals} active goal${ctx.goalSummary.activeGoals === 1 ? "" : "s"}.`
+        : "No active goals yet.",
+      summary: goals.map((g) => `${g.title}: ${g.progressPercent}%`).join(" · ") || "Goals track outcomes, not tools.",
+      pageContextLine: ctx.currentPage.assistantIntro,
+      pageContext: ctx.currentPage,
+      showQuestionInput: true,
+      cards: goals.slice(0, 4).map((g) => ({
+        id: g.goalId,
+        title: g.title,
+        body: `${g.currentValue} / ${g.targetValue}`,
+        meta: `${g.progressPercent}%`,
+      })),
+      opportunities: ctx.opportunities.slice(0, 2),
+      recommendations: [],
+      recommendedActions: stubActions(ctx).slice(0, 2),
+      estimatedValue: 0,
+      followUpPrompt: "Ask about opportunities or your queue.",
+    };
+  }
+
+  if (q.includes("biggest opportunity") || q.includes("top opportunity")) {
+    const top = ctx.opportunitySummary.topOpportunity;
+    return {
+      mode: "question",
+      layout: "center-panel",
+      message: top ? top.title : "No ranked opportunities yet.",
+      summary: top
+        ? `${top.recommendation} · $${top.estimatedValue.toLocaleString()} · ${top.priority} priority`
+        : "Connect your book for ranked opportunities.",
+      pageContextLine: ctx.currentPage.assistantIntro,
+      pageContext: ctx.currentPage,
+      showQuestionInput: true,
+      cards: ctx.opportunitySummary.opportunities.slice(0, 3).map((o) => ({
+        id: o.opportunityId,
+        title: o.title,
+        body: o.recommendation,
+        meta: `$${o.estimatedValue.toLocaleString()} · ${o.priority}`,
+      })),
+      opportunities: ctx.opportunities.slice(0, 2),
+      recommendations: [],
+      recommendedActions: top
+        ? [contractAction("create-from-opp", top.suggestedAction, "Create Draft")]
+        : stubActions(ctx).slice(0, 1),
+      estimatedValue: top?.estimatedValue ?? 0,
+      followUpPrompt: "Want me to draft this move?",
+    };
+  }
+
+  if (q.includes("in my queue") || q.includes("what is in my queue") || q.includes("execution queue")) {
+    const items = ctx.queueSummary.recentItems;
+    return {
+      mode: "question",
+      layout: "center-panel",
+      message: items.length
+        ? `${ctx.queueSummary.queuedItems} item${ctx.queueSummary.queuedItems === 1 ? "" : "s"} in your queue.`
+        : "Your queue is empty.",
+      summary: "Queued work is approved and ready for a future send — nothing goes out yet.",
+      pageContextLine: ctx.currentPage.assistantIntro,
+      pageContext: ctx.currentPage,
+      showQuestionInput: true,
+      cards: items.slice(0, 4).map((i) => ({
+        id: i.queueId,
+        title: i.draftTitle,
+        body: `${i.status} · ${i.draftType.replace(/_/g, " ")}`,
+        meta: i.goalTitle,
+      })),
+      opportunities: [],
+      recommendations: [],
+      recommendedActions: [{ id: "today", label: "Open Today", kind: "navigate", href: "/vmb/today" }],
+      estimatedValue: items.reduce((s, i) => s + i.estimatedValue, 0),
+      followUpPrompt: "Approve drafts from your workspace to add more queue items.",
+    };
+  }
+
+  if (q.includes("revenue goal") || (q.includes("how close") && q.includes("revenue"))) {
+    const revenueGoal = ctx.goalSummary.goals.find((g) => g.category === "REVENUE");
+    return {
+      mode: "question",
+      layout: "center-panel",
+      message: revenueGoal
+        ? `Revenue goal: $${revenueGoal.currentValue.toLocaleString()} of $${revenueGoal.targetValue.toLocaleString()}.`
+        : "No revenue goal set yet.",
+      summary: revenueGoal
+        ? `${revenueGoal.progressPercent}% toward your revenue target.`
+        : "Goals are created automatically when your book connects.",
+      pageContextLine: ctx.currentPage.assistantIntro,
+      pageContext: ctx.currentPage,
+      showQuestionInput: true,
+      cards: revenueGoal
+        ? [{ id: "rev", title: revenueGoal.title, body: `${revenueGoal.progressPercent}% complete` }]
+        : [],
+      opportunities: ctx.opportunities.slice(0, 2),
+      recommendations: [],
+      recommendedActions: [contractAction("build-campaign", "CREATE_CAMPAIGN_DRAFT", "Build Campaign")],
+      estimatedValue: revenueGoal?.currentValue ?? 0,
+      followUpPrompt: "Want to queue a campaign draft?",
+    };
+  }
+
+  if (q.includes("what should i do today") || (q.includes("today") && q.includes("what should"))) {
+    const top = ctx.opportunitySummary.topOpportunity;
+    return {
+      mode: "question",
+      layout: "center-panel",
+      message: "Here's your best move for today.",
+      summary: [
+        `${ctx.goalSummary.activeGoals} active goals`,
+        `${ctx.opportunitySummary.totalOpportunities} opportunities`,
+        `${ctx.queueSummary.queuedItems} queued actions`,
+      ].join(" · "),
+      pageContextLine: ctx.currentPage.assistantIntro,
+      pageContext: ctx.currentPage,
+      showQuestionInput: true,
+      cards: [
+        ...ctx.goalSummary.goals.slice(0, 2).map((g) => ({
+          id: g.goalId,
+          title: g.title,
+          body: `${g.progressPercent}% progress`,
+        })),
+        ...(top
+          ? [{ id: top.opportunityId, title: top.title, body: top.recommendation, meta: top.priority }]
+          : []),
+      ],
+      opportunities: ctx.opportunities.slice(0, 2),
+      recommendations: [],
+      recommendedActions: top
+        ? [contractAction("today-top", top.suggestedAction, "Create Draft")]
+        : stubActions(ctx).slice(0, 2),
+      estimatedValue: top?.estimatedValue ?? 0,
+      followUpPrompt: "Open Today for your full operating view.",
+    };
+  }
+
   if (q.includes("what drafts") || q.includes("my drafts") || q.includes("saved drafts")) {
     const recent = ctx.draftSummary.recentDrafts;
     return {

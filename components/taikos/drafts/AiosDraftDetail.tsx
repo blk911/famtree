@@ -22,6 +22,7 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [queueMessage, setQueueMessage] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
@@ -92,6 +93,32 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
       setDraft(json.data);
     } catch {
       setError("Save failed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleAddToQueue() {
+    if (!draft) return;
+    setSaving(true);
+    setQueueMessage(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/taikos/queue", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draftId }),
+      });
+      const json = (await res.json()) as { ok: boolean; data?: { message: string }; error?: string };
+      if (!res.ok || !json.ok) {
+        setError(json.error ?? "Could not add to queue.");
+        return;
+      }
+      setQueueMessage(json.data?.message ?? "Added to queue. No message sent yet.");
+      setStatus("approved");
+    } catch {
+      setError("Could not add to queue.");
     } finally {
       setSaving(false);
     }
@@ -176,11 +203,21 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
         </select>
       </label>
 
+      {draft.linkedGoalId || typeof draft.payload.linkedGoalId === "string" ? (
+        <p className="aios-draft-detail__goal">
+          Goal linked · review from Today or your draft workspace
+        </p>
+      ) : null}
+
       {error ? <p className="aios-draft-detail__error">{error}</p> : null}
+      {queueMessage ? <p className="aios-draft-detail__queued">{queueMessage}</p> : null}
 
       <div className="aios-draft-detail__actions">
         <button type="button" className="aios-draft-detail__save" onClick={() => void handleSave()} disabled={saving}>
           {saving ? "Saving…" : "Save Draft"}
+        </button>
+        <button type="button" className="aios-draft-detail__queue" onClick={() => void handleAddToQueue()} disabled={saving}>
+          Add To Queue
         </button>
         <button type="button" className="aios-draft-detail__archive" onClick={() => void handleArchive()} disabled={saving}>
           Archive

@@ -1,6 +1,9 @@
 /** tAIkOS response schema — UI renders schema, never raw model output. */
 
 import type { TaikosDraftSummary } from "@/lib/taikos/drafts/types";
+import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
+import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
+import type { TaikosQueueSummary } from "@/lib/taikos/queue/types";
 
 export type AiosSeverity = "info" | "notice" | "priority" | "urgent";
 
@@ -71,6 +74,7 @@ export type AiosPageId =
   | "history"
   | "settings"
   | "refresh"
+  | "today"
   | "unknown";
 
 export type AiosPageContext = {
@@ -169,6 +173,9 @@ export type AiosContextPacket = {
   lastViewedPage?: string;
   newActivity: boolean;
   draftSummary: TaikosDraftSummary;
+  goalSummary: TaikosGoalSummary;
+  opportunitySummary: TaikosOpportunitySummary;
+  queueSummary: TaikosQueueSummary;
   generatedAt: string;
 };
 

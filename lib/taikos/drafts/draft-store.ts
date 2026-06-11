@@ -99,6 +99,7 @@ export async function updateDraft(
     status: patch.status ?? current.status,
     payload: patch.payload ? { ...current.payload, ...patch.payload } : current.payload,
     estimatedValue: patch.estimatedValue ?? current.estimatedValue,
+    linkedGoalId: patch.linkedGoalId ?? current.linkedGoalId,
     updatedAt: now,
     audit: {
       ...current.audit,

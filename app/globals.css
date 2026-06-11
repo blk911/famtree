@@ -1354,6 +1354,187 @@
   gap: 12px;
 }
 
+.taikos-section-title {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-today__greeting {
+  margin: 0 0 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.vmb-today > section + section {
+  margin-top: 24px;
+}
+
+.taikos-goal-summary__grid,
+.taikos-opp-list__items,
+.taikos-queue-list__items {
+  display: grid;
+  gap: 10px;
+}
+
+.taikos-goal-card,
+.taikos-opp-card,
+.taikos-queue-card {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.taikos-goal-card__title,
+.taikos-opp-card__title,
+.taikos-queue-card__title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #292524;
+}
+
+.taikos-goal-card__counts {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #57534e;
+}
+
+.taikos-goal-progress__track {
+  height: 8px;
+  border-radius: 999px;
+  background: #f5f5f4;
+  overflow: hidden;
+}
+
+.taikos-goal-progress__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f9a8d4, #9d174d);
+}
+
+.taikos-goal-progress__pct {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9d174d;
+}
+
+.taikos-opp-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.taikos-opp-card__priority {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 7px;
+  border-radius: 999px;
+}
+
+.taikos-opp-card__priority--high {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.taikos-opp-card__priority--medium {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.taikos-opp-card__priority--low {
+  background: #f5f5f4;
+  color: #78716c;
+}
+
+.taikos-opp-card__rec {
+  margin: 8px 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #57534e;
+}
+
+.taikos-opp-card__value {
+  margin: 0;
+  font-size: 13px;
+  color: #44403c;
+}
+
+.taikos-opp-card__conf {
+  color: #a8a29e;
+  font-weight: 500;
+}
+
+.taikos-opp-card__cta {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 1px solid #e7e5e4;
+  background: #faf8f5;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9d174d;
+  cursor: pointer;
+}
+
+.taikos-queue-list__count {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9d174d;
+}
+
+.taikos-queue-list__empty {
+  margin: 0;
+  font-size: 14px;
+  color: #78716c;
+}
+
+.taikos-queue-card__meta,
+.taikos-queue-card__value {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #78716c;
+}
+
+.aios-draft-detail__queue {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #1c1917;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.aios-draft-detail__queued {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  font-size: 13px;
+  color: #1d4ed8;
+}
+
+.aios-draft-detail__goal {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #57534e;
+}
+
 @media (max-width: 767px) {
   .aios-center-layer {
     position: fixed;

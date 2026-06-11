@@ -10,6 +10,11 @@ import { buildContactSignals } from "@/lib/taikos/context/contact-signals";
 import { enrichPageContextWithDrafts } from "@/lib/taikos/context/draft-context";
 import { resolvePageContext } from "@/lib/taikos/context/page-registry";
 import { summarizeDraftsForSalon } from "@/lib/taikos/drafts/draft-store";
+import { summarizeGoalsForSalon } from "@/lib/taikos/goals/goal-store";
+import { buildRankedOpportunities } from "@/lib/taikos/opportunities/opportunity-builder";
+import { summarizeOpportunities } from "@/lib/taikos/opportunities/opportunity-summary";
+import { listQueueItems } from "@/lib/taikos/queue/queue-store";
+import { summarizeQueue } from "@/lib/taikos/queue/queue-summary";
 import { runAllAiosRules } from "@/lib/taikos/rules";
 import {
   getSessionSnapshot,
@@ -36,9 +41,7 @@ function operatorIdFromWorkspace(ownerName?: string, email?: string): string {
   return (email?.trim() || ownerName?.trim() || "operator").toLowerCase();
 }
 
-function firstName(name: string): string {
-  return name.trim().split(/\s+/)[0] || name;
-}
+export { greetingForOperator } from "@/lib/taikos/context/greeting";
 
 export async function buildAiosContextPacket(
   input: BuildAiosContextInput,
@@ -118,7 +121,7 @@ export async function buildAiosContextPacket(
   const salonName = workspace.salonName?.trim() || analysis?.salonName?.trim() || "Your Salon";
   const operatorName = workspace.ownerName?.trim() || input.trialId;
 
-  return {
+  const basePacket = {
     salonId,
     operatorId,
     operatorName,
@@ -155,12 +158,25 @@ export async function buildAiosContextPacket(
     newActivity,
     draftSummary,
     generatedAt: new Date().toISOString(),
+  } satisfies Omit<
+    AiosContextPacket,
+    "goalSummary" | "opportunitySummary" | "queueSummary"
+  >;
+
+  const goalSummary = await summarizeGoalsForSalon(basePacket as AiosContextPacket);
+  const ranked = buildRankedOpportunities(
+    { ...basePacket, goalSummary } as AiosContextPacket,
+    goalSummary.goals,
+  );
+  const opportunitySummary = summarizeOpportunities(ranked);
+  const queueItems = await listQueueItems(salonId);
+  const queueSummary = summarizeQueue(queueItems);
+
+  return {
+    ...basePacket,
+    goalSummary,
+    opportunitySummary,
+    queueSummary,
   };
 }
 
-export function greetingForOperator(salonName: string, operatorName?: string): string {
-  const hour = new Date().getHours();
-  const period = hour < 12 ? "Morning" : hour < 17 ? "Afternoon" : "Evening";
-  const who = operatorName ? firstName(operatorName) : firstName(salonName);
-  return `Good ${period} ${who}`;
-}

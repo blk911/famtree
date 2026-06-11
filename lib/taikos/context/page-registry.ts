@@ -16,7 +16,11 @@ const PAGE_ACTIONS: Record<AiosPageId, AiosAction[]> = {
   history: [contractAction("build-campaign", "CREATE_CAMPAIGN_DRAFT", "Build Campaign")],
   settings: [{ id: "settings", label: "Profile", kind: "navigate", href: "/vmb/settings" }],
   refresh: [contractAction("refresh-book", "REFRESH_BOOK_ANALYSIS", "Refresh book")],
-  unknown: [{ id: "home", label: "Go to Home", kind: "navigate", href: "/vmb/dashboard" }],
+  today: [
+    contractAction("top-opp", "CREATE_INVITE_DRAFT", "Create Draft"),
+    contractAction("view-queue", "VIEW_CLIENT_SEGMENT", "View Queue"),
+  ],
+  unknown: [{ id: "home", label: "Go to Today", kind: "navigate", href: "/vmb/today" }],
 };
 
 const PAGE_META: Record<
@@ -93,6 +97,12 @@ const PAGE_META: Record<
     description: "Upload a fresh client export.",
     assistantIntro: "You are refreshing your client book.",
   },
+  today: {
+    title: "Today",
+    headerTitle: "Today",
+    description: "Goals, opportunities, and your execution queue.",
+    assistantIntro: "This is your operating home. I can show goals, top opportunities, and queued work.",
+  },
   unknown: {
     title: "VMB",
     headerTitle: "VMB",
@@ -102,6 +112,7 @@ const PAGE_META: Record<
 };
 
 export function pathnameToPageId(pathname: string): AiosPageId {
+  if (pathname === "/vmb/today" || pathname.startsWith("/vmb/today/")) return "today";
   if (pathname === "/vmb/dashboard" || pathname.startsWith("/vmb/dashboard/")) return "dashboard";
   if (pathname === "/vmb/clients") return "clients";
   if (pathname === "/vmb/network") return "network";
