@@ -1,11 +1,14 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getLatestVmbBookAnalysisForTrial,
-  getVmbBookAnalysisForTrial,
-} from "@/lib/vmb/book-analysis/analysis-store";
+import { getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
+import { workspaceLatestAnalysisId } from "@/lib/vmb/workspace-lifecycle";
+import {
+  getWorkspaceForTrial,
+  setLatestAnalysis,
+  upsertWorkspaceForTrial,
+} from "@/lib/vmb/workspace-store";
 import { decodeBookUploadFile } from "@/lib/vmb/provider-ingest/parse-book-upload";
 import { runVmbBookAnalysis } from "@/lib/vmb/run-book-analysis";
 import { VMB_PROVIDER_PLATFORMS } from "@/lib/vmb/provider-guide";
@@ -24,9 +27,16 @@ export async function GET(req: NextRequest) {
   }
 
   const id = req.nextUrl.searchParams.get("id")?.trim();
-  const analysis = id
-    ? await getVmbBookAnalysisForTrial(id, trialId)
-    : await getLatestVmbBookAnalysisForTrial(trialId);
+  let analysis;
+  if (id) {
+    analysis = await getVmbBookAnalysisForTrial(id, trialId);
+  } else {
+    const workspace = await getWorkspaceForTrial(trialId);
+    const latestId = workspaceLatestAnalysisId(workspace);
+    analysis = latestId
+      ? await getVmbBookAnalysisForTrial(latestId, trialId)
+      : undefined;
+  }
 
   if (id && !analysis) {
     return NextResponse.json(
@@ -168,6 +178,17 @@ export async function POST(req: NextRequest) {
     }
 
     const { analysis, parse } = outcome.data;
+
+    await upsertWorkspaceForTrial({
+      trialId,
+      salonName: extracted.salonName ?? analysis.salonName ?? "Your Salon",
+      providerPlatform: extracted.providerPlatform ?? analysis.providerPlatform,
+    });
+    const workspaceUpdate = await setLatestAnalysis(trialId, analysis.analysisId);
+    if ("error" in workspaceUpdate) {
+      return NextResponse.json({ ok: false, error: workspaceUpdate.error }, { status: 500 });
+    }
+
     return NextResponse.json({
       ok: true,
       data: {

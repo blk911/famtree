@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { VmbCard } from "@/components/vmb/VmbCard";
 import {
   getProviderExportGuide,
@@ -23,6 +23,8 @@ type ParseSummary = {
 
 export function VmbStartFlow() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isRefreshMode = searchParams.get("mode") === "refresh";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
 
@@ -44,6 +46,46 @@ export function VmbStartFlow() {
   const identityComplete = !!provider && !!ownerName.trim() && !!email.trim();
   const hasBookData = usingSample || !!uploadFile || !!bookText.trim();
   const canSubmit = identityComplete && hasBookData;
+
+  useEffect(() => {
+    if (!isRefreshMode) return;
+    let cancelled = false;
+    async function prefillFromWorkspace() {
+      try {
+        const [trialRes, workspaceRes] = await Promise.all([
+          fetch("/api/vmb/trial", { cache: "no-store", credentials: "include" }),
+          fetch("/api/vmb/workspace", { cache: "no-store", credentials: "include" }),
+        ]);
+        const trialJson = (await trialRes.json()) as {
+          ok: boolean;
+          data?: { salonName: string; ownerName: string; email: string; providerPlatform?: VmbProviderPlatform };
+        };
+        const workspaceJson = (await workspaceRes.json()) as {
+          ok: boolean;
+          data?: {
+            salonName: string;
+            ownerName?: string;
+            email?: string;
+            providerPlatform?: VmbProviderPlatform;
+          } | null;
+        };
+        if (cancelled) return;
+        const lead = trialJson.ok ? trialJson.data : undefined;
+        const ws = workspaceJson.ok ? workspaceJson.data : undefined;
+        if (lead?.ownerName) setOwnerName(lead.ownerName);
+        if (lead?.email) setEmail(lead.email);
+        if (lead?.salonName || ws?.salonName) setSalonName(lead?.salonName ?? ws?.salonName ?? "");
+        const platform = lead?.providerPlatform ?? ws?.providerPlatform;
+        if (platform) setProvider(platform);
+      } catch {
+        // refresh still works with manual entry
+      }
+    }
+    void prefillFromWorkspace();
+    return () => {
+      cancelled = true;
+    };
+  }, [isRefreshMode]);
 
   function selectProvider(id: VmbProviderPlatform) {
     setProvider(id);
@@ -89,30 +131,48 @@ export function VmbStartFlow() {
 
       const resolvedSalonName = salonName.trim() || "Your Salon";
 
-      const trialRes = await fetch("/api/vmb/trial", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          salonName: resolvedSalonName,
-          ownerName: ownerName.trim(),
-          email: email.trim(),
-          providerPlatform: provider,
-        }),
-      });
-      const trialJson = (await trialRes.json()) as {
-        ok: boolean;
-        data?: { id: string };
-        error?: string;
-      };
-      if (!trialJson.ok || !trialJson.data?.id) {
-        setError(trialJson.error ?? "Could not start trial.");
-        return;
+      let trialId: string | undefined;
+      if (isRefreshMode) {
+        const existingTrialRes = await fetch("/api/vmb/trial", {
+          cache: "no-store",
+          credentials: "include",
+        });
+        const existingTrialJson = (await existingTrialRes.json()) as {
+          ok: boolean;
+          data?: { id: string };
+        };
+        if (!existingTrialJson.ok || !existingTrialJson.data?.id) {
+          setError("Sign in to your salon session first, or start from Find The Money.");
+          return;
+        }
+        trialId = existingTrialJson.data.id;
+      } else {
+        const trialRes = await fetch("/api/vmb/trial", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            salonName: resolvedSalonName,
+            ownerName: ownerName.trim(),
+            email: email.trim(),
+            providerPlatform: provider,
+          }),
+        });
+        const trialJson = (await trialRes.json()) as {
+          ok: boolean;
+          data?: { id: string };
+          error?: string;
+        };
+        if (!trialJson.ok || !trialJson.data?.id) {
+          setError(trialJson.error ?? "Could not start trial.");
+          return;
+        }
+        trialId = trialJson.data.id;
       }
 
       let analyzeRes: Response;
       if (uploadFile) {
         const form = new FormData();
-        form.append("trialId", trialJson.data.id);
+        form.append("trialId", trialId);
         form.append("salonName", resolvedSalonName);
         form.append("providerPlatform", provider);
         form.append("file", uploadFile);
@@ -123,7 +183,7 @@ export function VmbStartFlow() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            trialId: trialJson.data.id,
+            trialId,
             salonName: resolvedSalonName,
             providerPlatform: provider,
             inputText: bookText,
@@ -393,7 +453,13 @@ export function VmbStartFlow() {
             opacity: busy || !canSubmit ? 0.55 : 1,
           }}
         >
-          {busy ? "Finding the money…" : "Find The Money"}
+          {busy
+            ? isRefreshMode
+              ? "Refreshing your book…"
+              : "Finding the money…"
+            : isRefreshMode
+              ? "Refresh My Book"
+              : "Find The Money"}
         </button>
       </div>
     </div>

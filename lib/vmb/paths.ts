@@ -27,6 +27,10 @@ export function getVmbInviteDraftsFile(): string {
   return path.join(getVmbDataDir(), "invite-drafts.json");
 }
 
+export function getVmbWorkspacesFile(): string {
+  return path.join(getVmbDataDir(), "workspaces.json");
+}
+
 /** Legacy file-upload imports (admin engine path) — kept separate from book paste flow. */
 export function getVmbTrialImportsDir(): string {
   return path.join(getVmbDataDir(), "trial-imports");

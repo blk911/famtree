@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { createVmbTrialLead, getVmbTrialLead } from "@/lib/vmb/trial-store";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
+import { upsertWorkspaceForTrial } from "@/lib/vmb/workspace-store";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
 import { VMB_PROVIDER_PLATFORMS } from "@/lib/vmb/provider-guide";
 import type { VmbProviderPlatform } from "@/types/vmb/trial";
@@ -56,6 +57,17 @@ export async function POST(req: NextRequest) {
 
     if ("error" in result) {
       return NextResponse.json({ ok: false, error: result.error }, { status: 500 });
+    }
+
+    const workspaceResult = await upsertWorkspaceForTrial({
+      trialId: result.lead.id,
+      salonName,
+      ownerName,
+      email,
+      providerPlatform,
+    });
+    if ("error" in workspaceResult) {
+      return NextResponse.json({ ok: false, error: workspaceResult.error }, { status: 500 });
     }
 
     const res = NextResponse.json({ ok: true, data: result.lead });
