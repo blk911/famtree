@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { VmbCard } from "@/components/vmb/VmbCard";
 import {
   getProviderExportGuide,
@@ -10,6 +10,7 @@ import {
 } from "@/lib/vmb/provider-guide";
 import { writeActiveAnalysisId } from "@/lib/vmb/active-analysis";
 import { VMB_SAMPLE_BOOK_TEXT } from "@/lib/vmb/sample-book";
+import { validateVmbStartFlowSubmit } from "@/lib/vmb/start-flow-validation";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { VmbProviderPlatform } from "@/types/vmb/trial";
@@ -21,10 +22,22 @@ type ParseSummary = {
   detectedColumns: string[];
 };
 
-export function VmbStartFlow() {
+type Props = {
+  refreshMode?: boolean;
+};
+
+function vmbDevLog(label: string, detail?: unknown): void {
+  if (process.env.NODE_ENV !== "development") return;
+  if (detail === undefined) {
+    console.info(`[vmb:start] ${label}`);
+    return;
+  }
+  console.info(`[vmb:start] ${label}`, detail);
+}
+
+export function VmbStartFlow({ refreshMode = false }: Props) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const isRefreshMode = searchParams.get("mode") === "refresh";
+  const isRefreshMode = refreshMode;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
 
@@ -88,6 +101,7 @@ export function VmbStartFlow() {
   }, [isRefreshMode]);
 
   function selectProvider(id: VmbProviderPlatform) {
+    vmbDevLog("provider selected", id);
     setProvider(id);
     setError(null);
     if (id !== "other") setOtherProviderName("");
@@ -119,6 +133,21 @@ export function VmbStartFlow() {
     uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function handleFindTheMoneyClick() {
+    const validation = validateVmbStartFlowSubmit({
+      provider,
+      ownerName,
+      email,
+      hasBookData,
+    });
+    if (!validation.ok) {
+      vmbDevLog("submit blocked", validation);
+      setError(validation.message);
+      return;
+    }
+    void handleFindTheMoney();
+  }
+
   async function handleFindTheMoney() {
     setBusy(true);
     setError(null);
@@ -142,14 +171,21 @@ export function VmbStartFlow() {
           data?: { id: string };
         };
         if (!existingTrialJson.ok || !existingTrialJson.data?.id) {
-          setError("Sign in to your salon session first, or start from Find The Money.");
+          vmbDevLog("trial refresh failed", existingTrialJson);
+          setError(
+            existingTrialRes.status === 401
+              ? "No salon session cookie — start from Find The Money or refresh after analyzing a book."
+              : "Sign in to your salon session first, or start from Find The Money.",
+          );
           return;
         }
         trialId = existingTrialJson.data.id;
+        vmbDevLog("trial refresh ok", trialId);
       } else {
         const trialRes = await fetch("/api/vmb/trial", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             salonName: resolvedSalonName,
             ownerName: ownerName.trim(),
@@ -163,10 +199,12 @@ export function VmbStartFlow() {
           error?: string;
         };
         if (!trialJson.ok || !trialJson.data?.id) {
+          vmbDevLog("trial create failed", { status: trialRes.status, trialJson });
           setError(trialJson.error ?? "Could not start trial.");
           return;
         }
         trialId = trialJson.data.id;
+        vmbDevLog("trial create ok", trialId);
       }
 
       let analyzeRes: Response;
@@ -177,11 +215,16 @@ export function VmbStartFlow() {
         form.append("providerPlatform", provider);
         form.append("file", uploadFile);
         if (bookText.trim()) form.append("inputText", bookText);
-        analyzeRes = await fetch("/api/vmb/analyze-book", { method: "POST", body: form });
+        analyzeRes = await fetch("/api/vmb/analyze-book", {
+          method: "POST",
+          credentials: "include",
+          body: form,
+        });
       } else {
         analyzeRes = await fetch("/api/vmb/analyze-book", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             trialId,
             salonName: resolvedSalonName,
@@ -201,14 +244,21 @@ export function VmbStartFlow() {
         error?: string;
       };
       if (!analyzeJson.ok || !analyzeJson.data?.analysis) {
-        setError(analyzeJson.error ?? "We could not read your book. Try another export.");
+        vmbDevLog("analyze failed", { status: analyzeRes.status, analyzeJson });
+        if (analyzeRes.status === 401) {
+          setError("Trial session missing — your cookie may have expired. Start again from step one.");
+        } else {
+          setError(analyzeJson.error ?? "We could not read your book. Try another export.");
+        }
         return;
       }
 
       const result = analyzeJson.data.analysis;
+      vmbDevLog("analyze ok", result.analysisId);
       writeActiveAnalysisId(result.analysisId);
       router.push(`/vmb/dashboard?analysis=${encodeURIComponent(result.analysisId)}`);
-    } catch {
+    } catch (e) {
+      vmbDevLog("submit error", e);
       setError("Something went wrong. Please try again.");
     } finally {
       setBusy(false);
@@ -439,8 +489,9 @@ export function VmbStartFlow() {
 
         <button
           type="button"
-          onClick={handleFindTheMoney}
-          disabled={busy || !canSubmit}
+          onClick={handleFindTheMoneyClick}
+          disabled={busy}
+          aria-disabled={busy || !canSubmit}
           style={{
             padding: "16px 22px",
             borderRadius: 14,
@@ -449,8 +500,8 @@ export function VmbStartFlow() {
             color: "#fff",
             fontSize: 16,
             fontWeight: 800,
-            cursor: busy || !canSubmit ? "not-allowed" : "pointer",
-            opacity: busy || !canSubmit ? 0.55 : 1,
+            cursor: busy ? "not-allowed" : "pointer",
+            opacity: busy ? 0.55 : canSubmit ? 1 : 0.72,
           }}
         >
           {busy
