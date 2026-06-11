@@ -1,34 +1,35 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { NetworkLaunchSection } from "@/components/vmb/dashboard/NetworkLaunchSection";
-import { NewClientsSection } from "@/components/vmb/dashboard/NewClientsSection";
-import { StandardOffersSection } from "@/components/vmb/dashboard/StandardOffersSection";
-import { WeeklyRevenueSection } from "@/components/vmb/dashboard/WeeklyRevenueSection";
+import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftPreviewModal";
+import { SimplePreviewModal } from "@/components/vmb/dashboard/SimplePreviewModal";
+import { WeeklyHomeItem } from "@/components/vmb/dashboard/WeeklyHomeItem";
 import { useInviteDrafts } from "@/components/vmb/dashboard/useInviteDrafts";
 import { buildVmbOperatingSnapshot } from "@/lib/vmb/operating-system";
+import { appendVmbAnalysisQuery } from "@/lib/vmb/trial-scope";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
+const HOME_OFFERS = [
+  "Gel X Refresh",
+  "Gloss + Blowout",
+  "Birthday Touch",
+  "Bring A Friend",
+] as const;
+
 type Props = {
   analysis: VmbBookAnalysisResult;
-  isDemo?: boolean;
 };
 
-export function VmbOperatingDashboard({ analysis, isDemo = false }: Props) {
-  const {
-    drafts,
-    loading: draftsLoading,
-    saving,
-    readyThisWeek,
-    patchDraft,
-    approveAllDrafts,
-  } = useInviteDrafts({ analysis, isDemo });
+export function VmbOperatingDashboard({ analysis }: Props) {
+  const { drafts, loading: draftsLoading, saving, patchDraft } = useInviteDrafts({
+    analysis,
+    isDemo: false,
+  });
 
-  const [revenuePreviewOpen, setRevenuePreviewOpen] = useState(false);
-  const [welcomePreviewId, setWelcomePreviewId] = useState<string | null>(null);
-  const [approvedWelcomeIds, setApprovedWelcomeIds] = useState<string[]>([]);
+  const [inviteListOpen, setInviteListOpen] = useState(false);
+  const [welcomeListOpen, setWelcomeListOpen] = useState(false);
+  const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
 
   const snapshot = useMemo(
     () => buildVmbOperatingSnapshot(analysis, { inviteState: { invited: 0, joined: 0 } }),
@@ -37,85 +38,155 @@ export function VmbOperatingDashboard({ analysis, isDemo = false }: Props) {
 
   if (!snapshot) return null;
 
-  return (
-    <div style={{ maxWidth: 680, margin: "0 auto", padding: "36px 24px 72px" }}>
-      {isDemo ? (
-        <p
-          style={{
-            margin: "0 0 20px",
-            padding: "12px 16px",
-            borderRadius: 12,
-            background: "#fff",
-            border: `1px solid ${VMB_THEME.line}`,
-            fontSize: 14,
-            color: VMB_THEME.muted,
-          }}
-        >
-          Sample operating view.{" "}
-          <Link href="/vmb/start" style={{ color: VMB_THEME.accent, fontWeight: 700 }}>
-            Find The Money →
-          </Link>
-        </p>
-      ) : null}
+  const inviteReady = drafts.length > 0 ? drafts.filter((d) => d.status === "draft").length : 10;
+  const topCandidates = drafts.slice(0, 5).map((d) => d.clientName);
+  const activeDraft = drafts.find((d) => d.draftId === activeDraftId) ?? null;
 
-      <header style={{ marginBottom: 28 }}>
+  const welcomeRows = snapshot.newClients.rows;
+  const revenue = snapshot.weeklyRevenue;
+
+  return (
+    <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 24px 80px" }}>
+      <header style={{ marginBottom: 8, paddingBottom: 20, borderBottom: `1px solid ${VMB_THEME.line}` }}>
         <p
           style={{
-            margin: "0 0 6px",
-            fontSize: 11,
-            fontWeight: 800,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: VMB_THEME.accent,
+            margin: "0 0 8px",
+            fontSize: 13,
+            fontWeight: 600,
+            color: VMB_THEME.muted,
           }}
         >
           {snapshot.salonName}
         </p>
         <h1
           style={{
-            margin: "0 0 8px",
-            fontSize: "clamp(28px, 4vw, 36px)",
+            margin: "0 0 10px",
+            fontSize: "clamp(30px, 4vw, 38px)",
             fontWeight: 800,
             letterSpacing: "-0.03em",
           }}
         >
-          What should I do this week?
+          This Week
         </h1>
         <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: VMB_THEME.muted }}>
-          Grow your network, welcome new clients, generate revenue, and use your standard offers.
+          VMB found the next relationship moves in your client book.
         </p>
       </header>
 
-      <NetworkLaunchSection
-        drafts={drafts}
-        loading={draftsLoading}
-        saving={saving}
-        readyThisWeek={readyThisWeek}
-        onApproveAll={approveAllDrafts}
-        onPatchDraft={patchDraft}
+      <WeeklyHomeItem
+        title="Launch My Private Client Network"
+        summary={`${inviteReady} invites ready`}
+        detail={
+          draftsLoading ? (
+            "Loading candidates…"
+          ) : topCandidates.length > 0 ? (
+            <span>{topCandidates.join(" · ")}</span>
+          ) : (
+            "Top candidates from your active analysis."
+          )
+        }
+        ctaLabel="Preview Invites"
+        onCta={() => setInviteListOpen(true)}
+        ctaDisabled={draftsLoading || drafts.length === 0}
       />
 
-      <NewClientsSection
-        summary={{
-          ...snapshot.newClients,
-          rows: snapshot.newClients.rows.filter((row) => !approvedWelcomeIds.includes(row.id)),
-        }}
-        previewId={welcomePreviewId}
-        onPreview={(id) => setWelcomePreviewId((current) => (current === id ? null : id))}
-        onApprove={(id) => {
-          setApprovedWelcomeIds((ids) => [...ids, id]);
-          setWelcomePreviewId(null);
-        }}
+      <WeeklyHomeItem
+        title="Welcome New Clients"
+        summary={`${welcomeRows.length} welcomes ready`}
+        detail={
+          welcomeRows.length > 0 ? (
+            <span>{welcomeRows.map((r) => r.clientName).join(" · ")}</span>
+          ) : (
+            "New clients ready for a personal welcome."
+          )
+        }
+        ctaLabel="Preview Welcomes"
+        onCta={() => setWelcomeListOpen(true)}
+        ctaDisabled={welcomeRows.length === 0}
       />
 
-      <WeeklyRevenueSection
-        summary={snapshot.weeklyRevenue}
-        analysisId={analysis.analysisId}
-        showOpportunities={revenuePreviewOpen}
-        onToggleOpportunities={() => setRevenuePreviewOpen((open) => !open)}
+      <WeeklyHomeItem
+        title="Revenue Moves"
+        summary={`${revenue.readyThisWeek} touches ready · $${revenue.potentialRevenue.toLocaleString()} potential`}
+        detail={
+          revenue.opportunities.length > 0 ? (
+            <span>
+              {revenue.opportunities
+                .slice(0, 4)
+                .map((o) => o.clientName)
+                .join(" · ")}
+            </span>
+          ) : (
+            "Win-back and rebooking opportunities from your book."
+          )
+        }
+        ctaLabel="Review Revenue Moves"
+        ctaHref={appendVmbAnalysisQuery("/vmb/clients", analysis.analysisId, "this-week")}
       />
 
-      <StandardOffersSection offers={snapshot.standardOffers} />
+      <WeeklyHomeItem
+        title="Standard Offers"
+        summary="Your go-to offers for this week"
+        detail={
+          <ul style={{ margin: 0, padding: "0 0 0 18px" }}>
+            {HOME_OFFERS.map((offer) => (
+              <li key={offer} style={{ marginBottom: 4 }}>
+                {offer}
+              </li>
+            ))}
+          </ul>
+        }
+        ctaLabel="Coming Soon"
+        ctaDisabled
+      />
+
+      {inviteListOpen ? (
+        <SimplePreviewModal
+          title="Private Client Invites"
+          rows={drafts.map((d) => ({
+            id: d.draftId,
+            label: d.clientName,
+            sublabel: d.reasonSelected,
+          }))}
+          onClose={() => setInviteListOpen(false)}
+          onSelectRow={(id) => {
+            setInviteListOpen(false);
+            setActiveDraftId(id);
+          }}
+        />
+      ) : null}
+
+      {welcomeListOpen ? (
+        <SimplePreviewModal
+          title="Welcome Messages"
+          rows={welcomeRows.map((r) => ({
+            id: r.id,
+            label: r.clientName,
+            body: r.welcomeMessage,
+          }))}
+          onClose={() => setWelcomeListOpen(false)}
+        />
+      ) : null}
+
+      {activeDraft ? (
+        <InviteDraftPreviewModal
+          draft={activeDraft}
+          saving={saving}
+          onClose={() => setActiveDraftId(null)}
+          onSaveDraft={(message) => {
+            void patchDraft(activeDraft.draftId, { editableMessage: message, status: "draft" });
+            setActiveDraftId(null);
+          }}
+          onApprove={(message) => {
+            void patchDraft(activeDraft.draftId, { editableMessage: message, status: "approved" });
+            setActiveDraftId(null);
+          }}
+          onSkip={() => {
+            void patchDraft(activeDraft.draftId, { status: "skipped" });
+            setActiveDraftId(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { VmbOperatingDashboard } from "@/components/vmb/dashboard/VmbOperatingDashboard";
 import { writeActiveAnalysisId } from "@/lib/vmb/active-analysis";
-import { buildDemoOperatingAnalysis } from "@/lib/vmb/operating-system/demo-analysis";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
@@ -12,11 +11,34 @@ type Props = {
   analysisId?: string;
 };
 
+function EmptyHome() {
+  return (
+    <div style={{ maxWidth: 560, margin: "0 auto", padding: "64px 24px 80px", textAlign: "center" }}>
+      <p style={{ margin: "0 0 20px", fontSize: 17, lineHeight: 1.5, color: VMB_THEME.muted }}>
+        Start by finding the money in your book.
+      </p>
+      <Link
+        href="/vmb/start"
+        style={{
+          display: "inline-block",
+          padding: "12px 20px",
+          borderRadius: 12,
+          background: VMB_THEME.accent,
+          color: "#fff",
+          fontSize: 14,
+          fontWeight: 700,
+          textDecoration: "none",
+        }}
+      >
+        Find The Money
+      </Link>
+    </div>
+  );
+}
+
 export function VmbDashboardClient({ analysisId }: Props) {
   const [analysis, setAnalysis] = useState<VmbBookAnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isDemo, setIsDemo] = useState(false);
-  const [invalidAnalysis, setInvalidAnalysis] = useState(false);
 
   useEffect(() => {
     if (analysisId) writeActiveAnalysisId(analysisId);
@@ -26,7 +48,6 @@ export function VmbDashboardClient({ analysisId }: Props) {
     let cancelled = false;
     async function load() {
       setLoading(true);
-      setInvalidAnalysis(false);
       try {
         const url = analysisId
           ? `/api/vmb/analyze-book?id=${encodeURIComponent(analysisId)}`
@@ -39,28 +60,13 @@ export function VmbDashboardClient({ analysisId }: Props) {
         if (!cancelled) {
           if (json.ok && json.data) {
             setAnalysis(json.data);
-            setIsDemo(false);
             writeActiveAnalysisId(json.data.analysisId);
-          } else if (analysisId) {
-            setAnalysis(null);
-            setIsDemo(false);
-            setInvalidAnalysis(true);
           } else {
             setAnalysis(null);
-            setIsDemo(true);
           }
         }
       } catch {
-        if (!cancelled) {
-          if (analysisId) {
-            setAnalysis(null);
-            setIsDemo(false);
-            setInvalidAnalysis(true);
-          } else {
-            setAnalysis(null);
-            setIsDemo(true);
-          }
-        }
+        if (!cancelled) setAnalysis(null);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -79,32 +85,9 @@ export function VmbDashboardClient({ analysisId }: Props) {
     );
   }
 
-  if (invalidAnalysis) {
-    return (
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px 72px", textAlign: "center" }}>
-        <p style={{ margin: "0 0 16px", fontSize: 17, color: VMB_THEME.muted }}>
-          No active book analysis found. Start with Find The Money.
-        </p>
-        <Link
-          href="/vmb/start"
-          style={{
-            display: "inline-block",
-            padding: "12px 20px",
-            borderRadius: 12,
-            background: VMB_THEME.accent,
-            color: "#fff",
-            fontSize: 14,
-            fontWeight: 700,
-            textDecoration: "none",
-          }}
-        >
-          Find The Money
-        </Link>
-      </div>
-    );
+  if (!analysis) {
+    return <EmptyHome />;
   }
 
-  const operatingAnalysis = analysis ?? buildDemoOperatingAnalysis();
-
-  return <VmbOperatingDashboard analysis={operatingAnalysis} isDemo={isDemo} />;
+  return <VmbOperatingDashboard analysis={analysis} />;
 }

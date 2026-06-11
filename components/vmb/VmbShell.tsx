@@ -8,12 +8,11 @@ import { VMB_THEME } from "@/lib/vmb/theme";
 import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
 
 const NAV_ITEMS = [
-  { href: "/vmb/dashboard", label: "This Week" },
-  { href: "/vmb/clients", label: "Clients" },
+  { href: "/vmb/dashboard", label: "Home" },
+  { href: "/vmb/clients", label: "Client Book" },
   { href: "/vmb/network", label: "Network" },
-  { href: "/vmb/opportunities", label: "Opportunities" },
-  { href: "/vmb/campaigns", label: "Campaigns" },
-  { href: "/vmb/revenue", label: "Revenue" },
+  { href: "/vmb/opportunities", label: "Offers" },
+  { href: "/vmb/revenue", label: "History" },
 ] as const;
 
 type Props = {
@@ -117,7 +116,7 @@ export function VmbShell({ children, variant = "app" }: Props) {
                   textDecoration: "none",
                 }}
               >
-                This Week
+                Home
               </Link>
             ) : (
               <>

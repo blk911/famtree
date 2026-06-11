@@ -298,7 +298,7 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
             textDecoration: "none",
           }}
         >
-          ← This Week
+          ← Home
         </Link>
         <p
           style={{
@@ -323,12 +323,12 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
           Client Book
         </h1>
         <p style={{ margin: "0 0 14px", fontSize: 14, lineHeight: 1.5, color: VMB_THEME.muted }}>
-          Full opportunity list from your active book. Actions start on{" "}
+          All imported clients and VMB tags. Your weekly actions live on{" "}
           <Link
             href={appendVmbAnalysisQuery("/vmb/dashboard", activeAnalysisId)}
             style={{ color: VMB_THEME.accent, fontWeight: 700, textDecoration: "none" }}
           >
-            This Week
+            Home
           </Link>
           .
         </p>

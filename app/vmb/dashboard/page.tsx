@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { VmbDashboardClient } from "@/components/vmb/VmbDashboardClient";
 
 export const metadata: Metadata = {
-  title: "This Week",
+  title: "Home",
 };
 
 type Props = {
