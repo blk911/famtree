@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { resolveContractType } from "@/lib/taikos/actions/action-registry";
 import type { AiosAction } from "@/lib/taikos/types";
 
 type Props = {
@@ -9,9 +10,16 @@ type Props = {
 };
 
 export function AiosActionButton({ action, onClick }: Props) {
-  const handleClick = () => onClick?.(action);
+  const isContract = action.kind === "contract" || !!resolveContractType(action);
 
-  if (action.href) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (isContract) {
+      e.preventDefault();
+    }
+    onClick?.(action);
+  };
+
+  if (action.href && !isContract) {
     return (
       <Link href={action.href} className="aios-action-btn" onClick={handleClick}>
         {action.label}

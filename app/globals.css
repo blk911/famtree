@@ -940,6 +940,209 @@
   cursor: not-allowed;
 }
 
+.aios-deliverable {
+  margin: 14px 0;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid #f5d0fe;
+  background: linear-gradient(180deg, #fff 0%, #fdf4ff 100%);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.aios-deliverable__head {
+  margin-bottom: 10px;
+}
+
+.aios-deliverable__type {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a21caf;
+}
+
+.aios-deliverable__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.aios-deliverable__label {
+  margin: 10px 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #78716c;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.aios-deliverable__value {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #44403c;
+}
+
+.aios-deliverable__message {
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e7e5e4;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #292524;
+  white-space: pre-wrap;
+}
+
+.aios-deliverable__meta {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #78716c;
+}
+
+.aios-deliverable__value-tag {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #9d174d;
+}
+
+.aios-deliverable__cta {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #9d174d;
+}
+
+.aios-action-preview {
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e7e5e4;
+}
+
+.aios-action-preview__head {
+  margin-bottom: 8px;
+}
+
+.aios-action-preview__eyebrow {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a21caf;
+}
+
+.aios-action-preview__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.aios-action-preview__desc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #57534e;
+}
+
+.aios-action-preview__recorded {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #047857;
+}
+
+.aios-confirm-gate {
+  margin-top: 12px;
+}
+
+.aios-confirm-gate__hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #78716c;
+}
+
+.aios-confirm-gate__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.aios-confirm-gate__confirm {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #9d174d;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.aios-confirm-gate__confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.aios-confirm-gate__cancel {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  color: #57534e;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.aios-action-log {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e7e5e4;
+}
+
+.aios-action-log__title {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.aios-action-log__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aios-action-log__list li {
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f4;
+}
+
+.aios-action-log__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #44403c;
+}
+
+.aios-action-log__meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: #a8a29e;
+}
+
 @media (max-width: 767px) {
   .aios-center-layer {
     position: fixed;

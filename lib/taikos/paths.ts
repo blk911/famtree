@@ -10,3 +10,7 @@ export function getTaikosDataDir(): string {
 export function getTaikosSessionsFile(): string {
   return path.join(getTaikosDataDir(), "sessions.json");
 }
+
+export function getTaikosActionLogFile(): string {
+  return path.join(getTaikosDataDir(), "action-log.json");
+}

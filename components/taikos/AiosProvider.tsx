@@ -13,18 +13,33 @@ import {
 } from "react";
 import { AiosLauncher } from "@/components/taikos/AiosLauncher";
 import { AiosPanel } from "@/components/taikos/AiosPanel";
-import type { AiosPanelLayout, AiosPanelMode, AiosResponse } from "@/lib/taikos/types";
+import { resolveContractType } from "@/lib/taikos/actions/action-registry";
+import type { TaikosActionPreviewResult } from "@/lib/taikos/actions/types";
+import type { AiosAction, AiosPanelLayout, AiosPanelMode, AiosResponse } from "@/lib/taikos/types";
 
 const IDLE_MS = 30_000;
+
+type ActionPreviewState = {
+  loading: boolean;
+  confirming: boolean;
+  preview: TaikosActionPreviewResult | null;
+  confirmedMessage: string | null;
+  sourceActionId?: string;
+  logRefresh: number;
+};
 
 type AiosContextValue = {
   open: boolean;
   loading: boolean;
   response: AiosResponse | null;
   panelLayout: AiosPanelLayout;
+  actionPreview: ActionPreviewState | null;
   openPanel: (mode?: AiosPanelMode) => void;
   closePanel: () => void;
   askQuestion: (question: string) => void;
+  runContractAction: (action: AiosAction) => void;
+  confirmContractAction: () => void;
+  cancelContractPreview: () => void;
 };
 
 const AiosCtx = createContext<AiosContextValue | null>(null);
@@ -37,9 +52,13 @@ export function useAios(): AiosContextValue {
       loading: false,
       response: null,
       panelLayout: "center-panel",
+      actionPreview: null,
       openPanel: () => undefined,
       closePanel: () => undefined,
       askQuestion: () => undefined,
+      runContractAction: () => undefined,
+      confirmContractAction: () => undefined,
+      cancelContractPreview: () => undefined,
     };
   }
   return ctx;
@@ -70,6 +89,7 @@ export function AiosProvider({ children, analysisId }: Props) {
   const [response, setResponse] = useState<AiosResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasSession, setHasSession] = useState(false);
+  const [actionPreview, setActionPreview] = useState<ActionPreviewState | null>(null);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoOpened = useRef(false);
@@ -176,7 +196,106 @@ export function AiosProvider({ children, analysisId }: Props) {
   const closePanel = useCallback(() => {
     clearIdleTimer();
     setOpen(false);
+    setActionPreview(null);
   }, [clearIdleTimer]);
+
+  const runContractAction = useCallback(
+    async (action: AiosAction) => {
+      const contractType = resolveContractType(action);
+      if (!contractType) return;
+
+      setActionPreview({
+        loading: true,
+        confirming: false,
+        preview: null,
+        confirmedMessage: null,
+        sourceActionId: action.id,
+        logRefresh: 0,
+      });
+
+      try {
+        const res = await fetch("/api/taikos/actions/preview", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            actionType: contractType,
+            pathname,
+            analysisId,
+            payload: action.payload,
+          }),
+        });
+        const json = (await res.json()) as {
+          ok: boolean;
+          data?: TaikosActionPreviewResult;
+        };
+        if (res.ok && json.ok && json.data) {
+          setActionPreview({
+            loading: false,
+            confirming: false,
+            preview: json.data,
+            confirmedMessage: null,
+            sourceActionId: action.id,
+            logRefresh: 0,
+          });
+        } else {
+          setActionPreview(null);
+        }
+      } catch {
+        setActionPreview(null);
+      }
+      await recordInteraction();
+    },
+    [pathname, analysisId, recordInteraction],
+  );
+
+  const confirmContractAction = useCallback(async () => {
+    if (!actionPreview?.preview) return;
+
+    setActionPreview((prev) =>
+      prev ? { ...prev, confirming: true } : prev,
+    );
+
+    try {
+      const res = await fetch("/api/taikos/actions/confirm", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          actionType: actionPreview.preview.action.type,
+          previewId: actionPreview.preview.previewId,
+          pathname,
+          analysisId,
+          sourceRecommendationId: actionPreview.sourceActionId,
+        }),
+      });
+      const json = (await res.json()) as {
+        ok: boolean;
+        data?: { message: string };
+      };
+      if (res.ok && json.ok && json.data) {
+        setActionPreview((prev) =>
+          prev
+            ? {
+                ...prev,
+                confirming: false,
+                confirmedMessage: json.data!.message,
+                logRefresh: prev.logRefresh + 1,
+              }
+            : prev,
+        );
+      } else {
+        setActionPreview((prev) => (prev ? { ...prev, confirming: false } : prev));
+      }
+    } catch {
+      setActionPreview((prev) => (prev ? { ...prev, confirming: false } : prev));
+    }
+    await recordInteraction();
+  }, [actionPreview, pathname, analysisId, recordInteraction]);
+
+  const cancelContractPreview = useCallback(() => {
+    setActionPreview(null);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -238,11 +357,27 @@ export function AiosProvider({ children, analysisId }: Props) {
       loading,
       response,
       panelLayout,
+      actionPreview,
       openPanel,
       closePanel,
       askQuestion,
+      runContractAction,
+      confirmContractAction,
+      cancelContractPreview,
     }),
-    [open, loading, response, panelLayout, openPanel, closePanel, askQuestion],
+    [
+      open,
+      loading,
+      response,
+      panelLayout,
+      actionPreview,
+      openPanel,
+      closePanel,
+      askQuestion,
+      runContractAction,
+      confirmContractAction,
+      cancelContractPreview,
+    ],
   );
 
   return <AiosCtx.Provider value={value}>{children}</AiosCtx.Provider>;
@@ -250,7 +385,18 @@ export function AiosProvider({ children, analysisId }: Props) {
 
 /** Renders tAIkOS inside the center content column. */
 export function AiosCenterHost() {
-  const { open, loading, response, panelLayout, closePanel, askQuestion } = useAios();
+  const {
+    open,
+    loading,
+    response,
+    panelLayout,
+    actionPreview,
+    closePanel,
+    askQuestion,
+    runContractAction,
+    confirmContractAction,
+    cancelContractPreview,
+  } = useAios();
 
   const recordInteraction = useCallback(async () => {
     try {
@@ -271,9 +417,13 @@ export function AiosCenterHost() {
       response={response}
       loading={loading}
       layout={response?.layout ?? panelLayout}
+      actionPreview={actionPreview}
       onClose={closePanel}
       onInteraction={recordInteraction}
       onAskQuestion={(q) => void askQuestion(q)}
+      onContractAction={(action) => void runContractAction(action)}
+      onConfirmAction={() => void confirmContractAction()}
+      onCancelPreview={cancelContractPreview}
     />
   );
 }

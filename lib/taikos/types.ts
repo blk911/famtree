@@ -9,12 +9,26 @@ export type AiosActionKind =
   | "open_network"
   | "refresh_book"
   | "dismiss"
-  | "ask";
+  | "ask"
+  | "contract";
+
+export type TaikosActionType =
+  | "CREATE_INVITE_DRAFT"
+  | "CREATE_SERVICE_CARD_DRAFT"
+  | "CREATE_CAMPAIGN_DRAFT"
+  | "VIEW_CLIENT_SEGMENT"
+  | "VIEW_CALENDAR_GAP"
+  | "CONTINUE_PCN_INVITES"
+  | "PREVIEW_REFERRAL_ASK"
+  | "PREVIEW_REACTIVATION_MESSAGE"
+  | "REFRESH_BOOK_ANALYSIS";
 
 export type AiosAction = {
   id: string;
   label: string;
   kind: AiosActionKind;
+  /** Typed VMB action contract — preview/confirm only in Phase 3. */
+  contractType?: TaikosActionType;
   href?: string;
   payload?: Record<string, string>;
 };

@@ -1,0 +1,46 @@
+"use client";
+
+import { AiosConfirmGate } from "@/components/taikos/actions/AiosConfirmGate";
+import { AiosDeliverableCard } from "@/components/taikos/actions/AiosDeliverableCard";
+import type { TaikosActionPreviewResult } from "@/lib/taikos/actions/types";
+
+type Props = {
+  preview: TaikosActionPreviewResult;
+  confirming?: boolean;
+  confirmedMessage?: string | null;
+  onConfirm: () => void;
+  onCancel: () => void;
+};
+
+export function AiosActionPreview({
+  preview,
+  confirming,
+  confirmedMessage,
+  onConfirm,
+  onCancel,
+}: Props) {
+  return (
+    <section className="aios-action-preview" aria-label="Action preview">
+      <header className="aios-action-preview__head">
+        <p className="aios-action-preview__eyebrow">Recommended action</p>
+        <h3 className="aios-action-preview__title">{preview.action.label}</h3>
+        <p className="aios-action-preview__desc">{preview.action.description}</p>
+      </header>
+
+      <AiosDeliverableCard deliverable={preview.deliverable} />
+
+      {confirmedMessage ? (
+        <p className="aios-action-preview__recorded" role="status">
+          {confirmedMessage}
+        </p>
+      ) : (
+        <AiosConfirmGate
+          actionType={preview.action.type}
+          confirming={confirming}
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+        />
+      )}
+    </section>
+  );
+}

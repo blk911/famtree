@@ -1,3 +1,4 @@
+import { contractAction } from "@/lib/taikos/actions/action-registry";
 import type { AiosAction, AiosContextPacket, AiosResponse } from "@/lib/taikos/types";
 
 const FALLBACK_CONTACTS = [
@@ -43,8 +44,8 @@ function candidateCards(
       body: c.reason,
       meta: c.estimatedValue > 0 ? `+$${c.estimatedValue.toLocaleString()}` : undefined,
       actions: [
-        { id: `preview-${i}`, label: "Preview Invite", kind: "open_invites", href: "/vmb/invites" },
-        { id: `view-${i}`, label: "View Details", kind: "open_clients", href: "/vmb/clients" },
+        contractAction(`preview-${i}`, "CREATE_INVITE_DRAFT", "Preview Invite"),
+        contractAction(`reactivation-${i}`, "PREVIEW_REACTIVATION_MESSAGE", "Preview Reactivation"),
       ],
     })),
     opportunities: ctx.opportunities.slice(0, 3),
@@ -114,8 +115,8 @@ export function answerMockQuestion(ctx: AiosContextPacket, question: string): Ai
       opportunities: ctx.opportunities.filter((o) => o.sourceRule === "reactivation").slice(0, 3),
       recommendations: ["Review revenue touches for overdue clients."],
       recommendedActions: [
-        { id: "view-clients", label: "View Clients", kind: "open_clients", href: "/vmb/clients" },
-        { id: "preview-invite", label: "Preview Invite", kind: "open_invites", href: "/vmb/invites" },
+        contractAction("view-clients", "VIEW_CLIENT_SEGMENT", "Show overdue clients"),
+        contractAction("reactivation", "PREVIEW_REACTIVATION_MESSAGE", "Preview Reactivation"),
       ],
       estimatedValue: overdue.reduce((s, c) => s + c.estimatedValue, 0),
       followUpPrompt: "Want me to draft touches for these clients?",
@@ -141,7 +142,10 @@ export function answerMockQuestion(ctx: AiosContextPacket, question: string): Ai
       })),
       opportunities: referralOpps,
       recommendations: [],
-      recommendedActions: stubActions(ctx).slice(0, 2),
+      recommendedActions: [
+        contractAction("referral-ask", "PREVIEW_REFERRAL_ASK", "Preview Referral Ask"),
+        ...stubActions(ctx).slice(0, 1),
+      ],
       estimatedValue: referralOpps.reduce((s, o) => s + o.estimatedValue, 0),
       pageContextLine: ctx.currentPage.assistantIntro,
     };

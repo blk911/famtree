@@ -1,20 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { AiosActionLog } from "@/components/taikos/actions/AiosActionLog";
+import { AiosActionPreview } from "@/components/taikos/actions/AiosActionPreview";
 import { AiosCard } from "@/components/taikos/AiosCard";
 import { AiosActionButton } from "@/components/taikos/AiosActionButton";
 import { AiosQuestionInput } from "@/components/taikos/AiosQuestionInput";
 import { AiosSuggestionChips } from "@/components/taikos/AiosSuggestionChips";
+import { resolveContractType } from "@/lib/taikos/actions/action-registry";
+import type { TaikosActionPreviewResult } from "@/lib/taikos/actions/types";
 import type { AiosAction, AiosPanelLayout, AiosResponse } from "@/lib/taikos/types";
+
+type ActionPreviewState = {
+  loading: boolean;
+  confirming: boolean;
+  preview: TaikosActionPreviewResult | null;
+  confirmedMessage: string | null;
+  logRefresh: number;
+};
 
 type Props = {
   open: boolean;
   response: AiosResponse | null;
   loading?: boolean;
   layout?: AiosPanelLayout;
+  actionPreview?: ActionPreviewState | null;
   onClose: () => void;
   onInteraction: () => void;
   onAskQuestion: (question: string) => void;
+  onContractAction: (action: AiosAction) => void;
+  onConfirmAction: () => void;
+  onCancelPreview: () => void;
 };
 
 export function AiosPanel({
@@ -22,18 +37,14 @@ export function AiosPanel({
   response,
   loading,
   layout = "center-panel",
+  actionPreview,
   onClose,
   onInteraction,
   onAskQuestion,
+  onContractAction,
+  onConfirmAction,
+  onCancelPreview,
 }: Props) {
-  const [toast, setToast] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 2400);
-    return () => clearTimeout(t);
-  }, [toast]);
-
   if (!open) return null;
 
   const isCenter = layout === "center-panel" || layout === "docked";
@@ -41,8 +52,8 @@ export function AiosPanel({
 
   function handleAction(action: AiosAction) {
     onInteraction();
-    if (!action.href) {
-      setToast("Action preview only — execution comes in a later phase.");
+    if (resolveContractType(action)) {
+      onContractAction(action);
     }
   }
 
@@ -78,7 +89,19 @@ export function AiosPanel({
         </button>
       </header>
 
-      {toast ? <p className="aios-panel__toast">{toast}</p> : null}
+      {actionPreview?.loading ? (
+        <p className="aios-panel__loading">Building your draft preview…</p>
+      ) : null}
+
+      {actionPreview?.preview ? (
+        <AiosActionPreview
+          preview={actionPreview.preview}
+          confirming={actionPreview.confirming}
+          confirmedMessage={actionPreview.confirmedMessage}
+          onConfirm={onConfirmAction}
+          onCancel={onCancelPreview}
+        />
+      ) : null}
 
       {loading ? (
         <p className="aios-panel__loading">Preparing your operating brief…</p>
@@ -128,6 +151,8 @@ export function AiosPanel({
               <AiosQuestionInput onSubmit={onAskQuestion} disabled={loading} />
             </>
           ) : null}
+
+          <AiosActionLog refreshKey={actionPreview?.logRefresh ?? 0} />
         </div>
       ) : (
         <p className="aios-panel__loading">Connect your book to unlock tAIkOS.</p>

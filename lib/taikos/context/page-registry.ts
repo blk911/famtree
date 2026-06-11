@@ -1,30 +1,21 @@
+import { contractAction } from "@/lib/taikos/actions/action-registry";
 import type { AiosAction, AiosPageContext, AiosPageId } from "@/lib/taikos/types";
 
 const PAGE_ACTIONS: Record<AiosPageId, AiosAction[]> = {
   dashboard: [
-    { id: "view-invites", label: "Preview Invites", kind: "open_invites", href: "/vmb/invites" },
-    { id: "view-clients", label: "View Clients", kind: "open_clients", href: "/vmb/clients" },
+    contractAction("preview-invite", "CREATE_INVITE_DRAFT", "Preview Invite"),
+    contractAction("view-clients", "VIEW_CLIENT_SEGMENT", "View Clients"),
   ],
-  calendar: [
-    { id: "view-appointments", label: "Open Calendar", kind: "navigate", href: "/vmb/appointments" },
-  ],
-  clients: [
-    { id: "this-week", label: "View Clients", kind: "open_clients", href: "/vmb/clients?view=this-week" },
-  ],
-  network: [
-    { id: "network-invites", label: "Continue PCN", kind: "open_network", href: "/vmb/network" },
-  ],
-  offers: [{ id: "manage-offers", label: "Service Offers", kind: "navigate", href: "/vmb/offers" }],
-  campaigns: [{ id: "history", label: "Build Campaign", kind: "navigate", href: "/vmb/history" }],
-  invites: [
-    { id: "approve-drafts", label: "Preview Invite", kind: "open_invites", href: "/vmb/invites" },
-  ],
-  appointments: [
-    { id: "fill-slots", label: "Open Calendar", kind: "navigate", href: "/vmb/appointments" },
-  ],
-  history: [{ id: "view-history", label: "View Details", kind: "navigate", href: "/vmb/history" }],
+  calendar: [contractAction("fill-slots", "VIEW_CALENDAR_GAP", "Fill Saturday")],
+  clients: [contractAction("this-week", "VIEW_CLIENT_SEGMENT", "Show overdue clients")],
+  network: [contractAction("continue-pcn", "CONTINUE_PCN_INVITES", "Continue PCN")],
+  offers: [contractAction("service-card", "CREATE_SERVICE_CARD_DRAFT", "Create Service Card")],
+  campaigns: [contractAction("build-campaign", "CREATE_CAMPAIGN_DRAFT", "Build Campaign")],
+  invites: [contractAction("approve-drafts", "CREATE_INVITE_DRAFT", "Preview Invite")],
+  appointments: [contractAction("fill-slots", "VIEW_CALENDAR_GAP", "Fill Saturday")],
+  history: [contractAction("build-campaign", "CREATE_CAMPAIGN_DRAFT", "Build Campaign")],
   settings: [{ id: "settings", label: "Profile", kind: "navigate", href: "/vmb/settings" }],
-  refresh: [{ id: "refresh-book", label: "Refresh book", kind: "refresh_book", href: "/vmb/start?mode=refresh" }],
+  refresh: [contractAction("refresh-book", "REFRESH_BOOK_ANALYSIS", "Refresh book")],
   unknown: [{ id: "home", label: "Go to Home", kind: "navigate", href: "/vmb/dashboard" }],
 };
 
