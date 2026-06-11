@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildAiosContextPacket } from "@/lib/taikos/context/context-builder";
-import { createGoal, summarizeGoalsForSalon } from "@/lib/taikos/goals/goal-store";
+import { recordActivity } from "@/lib/taikos/activity/activity-builder";
+import { summarizeAllGoals } from "@/lib/taikos/goals/goal-summary";
+import { createGoal, listAllGoals } from "@/lib/taikos/goals/goal-store";
 import type { TaikosGoalCategory } from "@/lib/taikos/goals/types";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
 
@@ -29,7 +31,8 @@ export async function GET(req: NextRequest) {
     if (!ctx) {
       return NextResponse.json({ ok: false, error: "Workspace not found" }, { status: 404 });
     }
-    const summary = await summarizeGoalsForSalon(ctx);
+    const allGoals = await listAllGoals(trialId);
+    const summary = summarizeAllGoals(allGoals);
     return NextResponse.json({ ok: true, data: summary });
   } catch (err) {
     console.error("[taikos:goals:GET]", err);
@@ -55,15 +58,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Invalid goal payload" }, { status: 400 });
     }
 
+    const operatorId = body.operatorId?.trim() || "operator";
     const goal = await createGoal({
       salonId: trialId,
-      operatorId: body.operatorId?.trim() || "operator",
+      operatorId,
       title: body.title.trim(),
       category: body.category as TaikosGoalCategory,
       targetValue: body.targetValue ?? 10,
       currentValue: body.currentValue ?? 0,
       status: "active",
     });
+
+    await recordActivity({
+      salonId: trialId,
+      operatorId,
+      kind: "goal_progress",
+      emoji: "🎯",
+      headline: `New goal: ${goal.title}`,
+      detail: `Target ${goal.targetValue}`,
+      linkedGoalId: goal.goalId,
+    });
+
     return NextResponse.json({ ok: true, data: goal });
   } catch (err) {
     console.error("[taikos:goals:POST]", err);

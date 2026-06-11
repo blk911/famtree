@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildAiosContextPacket } from "@/lib/taikos/context/context-builder";
 import { enqueueDraft } from "@/lib/taikos/queue/queue-builder";
-import { listQueueItems } from "@/lib/taikos/queue/queue-store";
+import { listAllQueueItems } from "@/lib/taikos/queue/queue-store";
 import { summarizeQueue } from "@/lib/taikos/queue/queue-summary";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const items = await listQueueItems(trialId);
+    const items = await listAllQueueItems(trialId);
     return NextResponse.json({ ok: true, data: summarizeQueue(items) });
   } catch (err) {
     console.error("[taikos:queue:GET]", err);

@@ -1535,6 +1535,279 @@
   color: #57534e;
 }
 
+.taikos-opp-card__goal {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #78716c;
+}
+
+.taikos-opp-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.taikos-opp-card__cta--secondary {
+  background: #fff;
+}
+
+.taikos-opp-card__cta--ghost {
+  background: transparent;
+  color: #78716c;
+}
+
+.taikos-activity-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.taikos-activity-timeline__item {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+}
+
+.taikos-activity-timeline__emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.taikos-activity-timeline__headline {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #292524;
+}
+
+.taikos-activity-timeline__detail {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #57534e;
+  line-height: 1.45;
+}
+
+.taikos-activity-timeline__time {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #a8a29e;
+}
+
+.vmb-opp-center__section + .vmb-opp-center__section,
+.vmb-queue-center__section + .vmb-queue-center__section,
+.vmb-goals-center__section + .vmb-goals-center__section {
+  margin-top: 28px;
+}
+
+.vmb-opp-center__grid,
+.vmb-goals-center__grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.vmb-goals-center__toolbar {
+  margin-bottom: 16px;
+}
+
+.vmb-goals-center__editor {
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+}
+
+.taikos-goal-editor {
+  display: grid;
+  gap: 12px;
+}
+
+.taikos-goal-editor__field {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.taikos-goal-editor__field input,
+.taikos-goal-editor__field select,
+.taikos-goal-editor__field textarea {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e7e5e4;
+  font: inherit;
+}
+
+.taikos-goal-editor__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.taikos-goal-editor__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.taikos-goal-editor__btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #9d174d;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.taikos-goal-editor__btn--ghost {
+  background: #f5f5f4;
+  color: #44403c;
+}
+
+.taikos-goal-editor__error {
+  margin: 0;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+.vmb-goals-center__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.vmb-payments-banner {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.vmb-payments-stub__section + .vmb-payments-stub__section {
+  margin-top: 20px;
+}
+
+.vmb-payments-stub__list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  color: #57534e;
+  line-height: 1.6;
+}
+
+.vmb-calendar-slot-card {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  margin-bottom: 12px;
+}
+
+.vmb-calendar-slot-card__title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.vmb-calendar-slot-card__value,
+.vmb-calendar-slot-card__goal {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #57534e;
+}
+
+.vmb-client-scores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9d174d;
+}
+
+.vmb-today__section {
+  margin-top: 24px;
+}
+
+.vmb-today__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.vmb-today__link {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9d174d;
+  text-decoration: none;
+}
+
+.vmb-today__briefing {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #44403c;
+}
+
+.taikos-queue-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.taikos-queue-card__head h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.taikos-queue-card__status {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.taikos-queue-card__goal,
+.taikos-queue-card__value {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #57534e;
+}
+
+.taikos-queue-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.vmb-queue-center__message {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #eff6ff;
+  font-size: 13px;
+  color: #1d4ed8;
+}
+
 @media (max-width: 767px) {
   .aios-center-layer {
     position: fixed;

@@ -20,6 +20,14 @@ const PAGE_ACTIONS: Record<AiosPageId, AiosAction[]> = {
     contractAction("top-opp", "CREATE_INVITE_DRAFT", "Create Draft"),
     contractAction("view-queue", "VIEW_CLIENT_SEGMENT", "View Queue"),
   ],
+  activity: [{ id: "activity-today", label: "Go to Today", kind: "navigate", href: "/vmb/today" }],
+  opportunities: [
+    contractAction("opp-draft", "CREATE_CAMPAIGN_DRAFT", "Preview Draft"),
+    contractAction("opp-invite", "CREATE_INVITE_DRAFT", "Preview Invite"),
+  ],
+  queue: [{ id: "queue-today", label: "Today", kind: "navigate", href: "/vmb/today" }],
+  goals: [{ id: "goals-today", label: "Today", kind: "navigate", href: "/vmb/today" }],
+  payments: [{ id: "payments-today", label: "Today", kind: "navigate", href: "/vmb/today" }],
   unknown: [{ id: "home", label: "Go to Today", kind: "navigate", href: "/vmb/today" }],
 };
 
@@ -101,7 +109,37 @@ const PAGE_META: Record<
     title: "Today",
     headerTitle: "Today",
     description: "Goals, opportunities, and your execution queue.",
-    assistantIntro: "This is your operating home. I can show goals, top opportunities, and queued work.",
+    assistantIntro: "This is your operating home. I can show goals, top opportunities, queued work, activity, and drafts.",
+  },
+  activity: {
+    title: "Activity",
+    headerTitle: "Activity",
+    description: "Human-readable business timeline — what happened in your salon.",
+    assistantIntro: "You are viewing Activity. I can explain joins, referrals, drafts, and queue moves in plain language.",
+  },
+  opportunities: {
+    title: "Opportunities",
+    headerTitle: "Opportunities",
+    description: "All ranked revenue and relationship moves from your book.",
+    assistantIntro: "You are viewing Opportunities. I can prioritize high-value moves and help preview drafts.",
+  },
+  queue: {
+    title: "Queue",
+    headerTitle: "Queue",
+    description: "Planned work waiting for future execution — no sends yet.",
+    assistantIntro: "You are viewing the execution queue. I can explain what is queued, ready, blocked, or completed.",
+  },
+  goals: {
+    title: "Goals",
+    headerTitle: "Goals",
+    description: "Outcome targets that drive recommendations and queue priorities.",
+    assistantIntro: "You are viewing Goals. I can explain progress toward revenue, referrals, PCN growth, and retention.",
+  },
+  payments: {
+    title: "Payments",
+    headerTitle: "Payments",
+    description: "Future home for payments and credits — presentation only.",
+    assistantIntro: "You are viewing Payments. Execution and processors are not wired yet.",
   },
   unknown: {
     title: "VMB",
@@ -113,6 +151,11 @@ const PAGE_META: Record<
 
 export function pathnameToPageId(pathname: string): AiosPageId {
   if (pathname === "/vmb/today" || pathname.startsWith("/vmb/today/")) return "today";
+  if (pathname === "/vmb/activity") return "activity";
+  if (pathname === "/vmb/opportunities") return "opportunities";
+  if (pathname === "/vmb/queue") return "queue";
+  if (pathname === "/vmb/goals") return "goals";
+  if (pathname === "/vmb/payments") return "payments";
   if (pathname === "/vmb/dashboard" || pathname.startsWith("/vmb/dashboard/")) return "dashboard";
   if (pathname === "/vmb/clients") return "clients";
   if (pathname === "/vmb/network") return "network";

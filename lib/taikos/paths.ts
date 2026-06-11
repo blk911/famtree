@@ -26,3 +26,7 @@ export function getTaikosGoalsFile(): string {
 export function getTaikosExecutionQueueFile(): string {
   return path.join(getTaikosDataDir(), "execution-queue.json");
 }
+
+export function getTaikosActivityStreamFile(): string {
+  return path.join(getTaikosDataDir(), "activity-stream.json");
+}

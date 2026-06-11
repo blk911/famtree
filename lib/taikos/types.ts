@@ -1,5 +1,6 @@
 /** tAIkOS response schema — UI renders schema, never raw model output. */
 
+import type { TaikosActivitySummary } from "@/lib/taikos/activity/activity-types";
 import type { TaikosDraftSummary } from "@/lib/taikos/drafts/types";
 import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
 import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
@@ -75,6 +76,11 @@ export type AiosPageId =
   | "settings"
   | "refresh"
   | "today"
+  | "activity"
+  | "opportunities"
+  | "queue"
+  | "goals"
+  | "payments"
   | "unknown";
 
 export type AiosPageContext = {
@@ -176,6 +182,7 @@ export type AiosContextPacket = {
   goalSummary: TaikosGoalSummary;
   opportunitySummary: TaikosOpportunitySummary;
   queueSummary: TaikosQueueSummary;
+  activitySummary: TaikosActivitySummary;
   generatedAt: string;
 };
 

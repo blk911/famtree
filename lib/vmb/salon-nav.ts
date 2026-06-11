@@ -8,14 +8,16 @@ export type VmbSalonNavItem = {
 
 export const VMB_SALON_NAV: VmbSalonNavItem[] = [
   { id: "home", label: "Today", href: "/vmb/today", preserveAnalysis: true },
-  { id: "refresh", label: "Book Refresh", href: "/vmb/start?mode=refresh", preserveAnalysis: false },
-  { id: "network", label: "Private Client Network", href: "/vmb/network", preserveAnalysis: true },
+  { id: "clients", label: "Clients", href: "/vmb/clients", preserveAnalysis: true },
+  { id: "appointments", label: "Calendar", href: "/vmb/appointments", preserveAnalysis: true },
+  { id: "network", label: "Network", href: "/vmb/network", preserveAnalysis: true },
+  { id: "opportunities", label: "Opportunities", href: "/vmb/opportunities", preserveAnalysis: true },
+  { id: "campaigns", label: "Campaigns", href: "/vmb/campaigns", preserveAnalysis: true },
   { id: "invites", label: "Invites", href: "/vmb/invites", preserveAnalysis: true },
-  { id: "appointments", label: "Appointments", href: "/vmb/appointments", preserveAnalysis: true },
-  { id: "offers", label: "Service Offers", href: "/vmb/offers", preserveAnalysis: true },
-  { id: "clients", label: "Client Book", href: "/vmb/clients", preserveAnalysis: true },
-  { id: "history", label: "History", href: "/vmb/history", preserveAnalysis: true },
+  { id: "queue", label: "Queue", href: "/vmb/queue", preserveAnalysis: true },
+  { id: "activity", label: "Activity", href: "/vmb/activity", preserveAnalysis: true },
+  { id: "payments", label: "Payments", href: "/vmb/payments", preserveAnalysis: true },
   { id: "settings", label: "Settings", href: "/vmb/settings", preserveAnalysis: false },
 ];
 
-export const VMB_SALON_MOBILE_NAV_IDS = ["home", "invites", "clients", "network"] as const;
+export const VMB_SALON_MOBILE_NAV_IDS = ["home", "clients", "opportunities", "queue", "activity"] as const;

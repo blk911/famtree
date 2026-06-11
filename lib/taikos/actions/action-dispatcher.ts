@@ -1,3 +1,4 @@
+import { recordActivity } from "@/lib/taikos/activity/activity-builder";
 import { buildCalendarGapDeliverable } from "@/lib/taikos/deliverables/calendar-gap-builder";
 import { buildCampaignDeliverable } from "@/lib/taikos/deliverables/campaign-draft-builder";
 import { buildClientSegmentDeliverable } from "@/lib/taikos/deliverables/client-segment-builder";
@@ -148,6 +149,18 @@ export async function confirmTaikosAction(
       savedDraftHref = draftDetailHref(saved.draftType, saved.draftId);
       savedDraftReviewHint = draftReviewHint(saved);
     }
+  }
+
+  if (savedDraftId) {
+    await recordActivity({
+      salonId: ctx.salonId,
+      operatorId: ctx.operatorId,
+      kind: "draft_created",
+      emoji: "📄",
+      headline: `${reg.label} saved as draft`,
+      detail: deliverableSummary(deliverable),
+      linkedDraftId: savedDraftId,
+    });
   }
 
   const logEntry = await appendActionLogEntry({

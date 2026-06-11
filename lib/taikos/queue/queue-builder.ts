@@ -1,3 +1,4 @@
+import { recordActivity } from "@/lib/taikos/activity/activity-builder";
 import { getDraftById, updateDraft } from "@/lib/taikos/drafts/draft-store";
 import { findActiveGoalForCategory, goalCategoryForDraftType } from "@/lib/taikos/goals/goal-router";
 import { getGoalById, linkDraftToGoal } from "@/lib/taikos/goals/goal-store";
@@ -45,6 +46,19 @@ export async function enqueueDraft(
     draftType: draft.draftType,
     goalId,
     goalTitle,
+    estimatedValue: draft.estimatedValue,
+  });
+
+  await recordActivity({
+    salonId,
+    operatorId,
+    kind: "queue_added",
+    emoji: "✅",
+    headline: `${draft.title} added to queue`,
+    detail: goalTitle ? `Linked to goal: ${goalTitle}` : "Ready for future execution.",
+    linkedDraftId: draftId,
+    linkedQueueId: item.queueId,
+    linkedGoalId: goalId,
     estimatedValue: draft.estimatedValue,
   });
 

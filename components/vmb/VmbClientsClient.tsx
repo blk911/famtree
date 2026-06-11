@@ -17,6 +17,7 @@ import { buildVmbSalonHref } from "@/lib/vmb/salon-href";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
 import { VmbPageEmpty, VmbPageFrame, VmbPageLoading } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
+import { clientOperatingScores } from "@/lib/vmb/client-operating-scores";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
@@ -124,10 +125,10 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
     <VmbPageFrame
       width="wide"
       title="Clients"
-      subtitle="All imported clients and VMB tags. Weekly actions are managed from Home."
+      subtitle="Client book with relationship signals and suggested actions."
     >
       <Link
-        href={buildVmbSalonHref("/vmb/dashboard", activeAnalysisId)}
+        href={buildVmbSalonHref("/vmb/today", activeAnalysisId)}
         style={{
           display: "inline-block",
           marginBottom: 16,
@@ -137,7 +138,7 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
           textDecoration: "none",
         }}
       >
-        ← Home
+        ← Today
       </Link>
       {initialView === "this-week" ? (
         <p style={{ margin: "0 0 16px", fontSize: 13, color: VMB_THEME.accent, fontWeight: 600 }}>
@@ -190,6 +191,7 @@ function ClientBookRow({
 }) {
   const tags = clientBookTags(row);
   const status = clientBookStatus(row.triggerType);
+  const scores = clientOperatingScores(row.clientName);
 
   return (
     <div style={{ borderBottom: `1px solid ${VMB_THEME.line}` }}>
@@ -216,10 +218,18 @@ function ClientBookRow({
         <span style={{ fontSize: 13, color: VMB_THEME.muted }}>{tags.join(" · ")}</span>
       </button>
       {expanded ? (
-        <div style={{ padding: "0 0 16px", fontSize: 14, lineHeight: 1.55, color: VMB_THEME.ink }}>
+        <div className="vmb-client-operating-detail" style={{ padding: "0 0 16px", fontSize: 14, lineHeight: 1.55, color: VMB_THEME.ink }}>
+          <div className="vmb-client-scores">
+            <span>Relationship {scores.relationshipScore}</span>
+            <span>Referral {scores.referralScore}</span>
+            <span>Retention {scores.retentionScore}</span>
+            <span>LTV ${scores.lifetimeValue.toLocaleString()}</span>
+            <span>PCN {scores.pcnStatus}</span>
+          </div>
           {row.lastService ? (
             <p style={{ margin: "0 0 8px", color: VMB_THEME.muted }}>Last service: {row.lastService}</p>
           ) : null}
+          <p style={{ margin: "0 0 8px", fontWeight: 600 }}>Suggested action</p>
           <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{row.suggestedMessage}</p>
         </div>
       ) : null}

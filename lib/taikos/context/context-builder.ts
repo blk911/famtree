@@ -7,13 +7,15 @@ import { isRefreshDue, workspaceLatestAnalysisId } from "@/lib/vmb/workspace-lif
 import { getWorkspaceForTrial } from "@/lib/vmb/workspace-store";
 import { buildClientSummaryFromAnalysis } from "@/lib/taikos/context/client-summary-builder";
 import { buildContactSignals } from "@/lib/taikos/context/contact-signals";
+import { enrichPageContextWithOperatingState } from "@/lib/taikos/context/page-context-enrichment";
 import { enrichPageContextWithDrafts } from "@/lib/taikos/context/draft-context";
 import { resolvePageContext } from "@/lib/taikos/context/page-registry";
 import { summarizeDraftsForSalon } from "@/lib/taikos/drafts/draft-store";
 import { summarizeGoalsForSalon } from "@/lib/taikos/goals/goal-store";
 import { buildRankedOpportunities } from "@/lib/taikos/opportunities/opportunity-builder";
 import { summarizeOpportunities } from "@/lib/taikos/opportunities/opportunity-summary";
-import { listQueueItems } from "@/lib/taikos/queue/queue-store";
+import { ensureSeedActivityFromContext, summarizeActivityForSalon } from "@/lib/taikos/activity/activity-builder";
+import { listAllQueueItems } from "@/lib/taikos/queue/queue-store";
 import { summarizeQueue } from "@/lib/taikos/queue/queue-summary";
 import { runAllAiosRules } from "@/lib/taikos/rules";
 import {
@@ -79,10 +81,7 @@ export async function buildAiosContextPacket(
   const clientSummary = buildClientSummaryFromAnalysis(analysis);
   const contactSignals = buildContactSignals(analysis);
   const draftSummary = await summarizeDraftsForSalon(salonId);
-  const page = enrichPageContextWithDrafts(
-    resolvePageContext(input.pathname, input.searchParams),
-    draftSummary,
-  );
+  const basePage = resolvePageContext(input.pathname, input.searchParams);
 
   const ruleResults = runAllAiosRules(analysis, { inviteState });
   const opportunities: AiosOpportunity[] = ruleResults
@@ -131,7 +130,7 @@ export async function buildAiosContextPacket(
     contactCandidates: contactSignals.contactCandidates,
     overdueClients: contactSignals.overdueClients,
     saturdayCandidates: contactSignals.saturdayCandidates,
-    currentPage: page,
+    currentPage: enrichPageContextWithDrafts(basePage, draftSummary),
     currentSession: session,
     calendarSummary: {
       openSlots: openings.count,
@@ -160,7 +159,7 @@ export async function buildAiosContextPacket(
     generatedAt: new Date().toISOString(),
   } satisfies Omit<
     AiosContextPacket,
-    "goalSummary" | "opportunitySummary" | "queueSummary"
+    "goalSummary" | "opportunitySummary" | "queueSummary" | "activitySummary"
   >;
 
   const goalSummary = await summarizeGoalsForSalon(basePacket as AiosContextPacket);
@@ -169,14 +168,34 @@ export async function buildAiosContextPacket(
     goalSummary.goals,
   );
   const opportunitySummary = summarizeOpportunities(ranked);
-  const queueItems = await listQueueItems(salonId);
+  const queueItems = await listAllQueueItems(salonId);
   const queueSummary = summarizeQueue(queueItems);
 
-  return {
+  const partialCtx = {
     ...basePacket,
     goalSummary,
     opportunitySummary,
     queueSummary,
+    activitySummary: { totalEvents: 0, recentEvents: [] },
+  } as AiosContextPacket;
+  await ensureSeedActivityFromContext(partialCtx);
+  const activitySummary = await summarizeActivityForSalon(salonId);
+
+  const currentPage = enrichPageContextWithOperatingState(basePacket.currentPage, {
+    draftSummary,
+    goalSummary,
+    opportunitySummary,
+    queueSummary,
+    activitySummary,
+  });
+
+  return {
+    ...basePacket,
+    currentPage,
+    goalSummary,
+    opportunitySummary,
+    queueSummary,
+    activitySummary,
   };
 }
 

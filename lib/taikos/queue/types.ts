@@ -1,4 +1,10 @@
-export type TaikosQueueStatus = "queued" | "ready" | "executed" | "cancelled" | "failed";
+export type TaikosQueueStatus =
+  | "queued"
+  | "ready"
+  | "blocked"
+  | "executed"
+  | "cancelled"
+  | "failed";
 
 export type TaikosQueueItem = {
   queueId: string;
@@ -19,7 +25,10 @@ export type TaikosQueueSummary = {
   totalItems: number;
   queuedItems: number;
   readyItems: number;
+  blockedItems: number;
+  completedItems: number;
   recentItems: TaikosQueueItem[];
+  allItems: TaikosQueueItem[];
 };
 
 export type CreateQueueItemInput = {

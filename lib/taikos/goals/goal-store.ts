@@ -46,6 +46,14 @@ export async function listGoals(salonId: string, limit = 50): Promise<TaikosGoal
     .slice(0, limit);
 }
 
+export async function listAllGoals(salonId: string, limit = 100): Promise<TaikosGoal[]> {
+  const all = await readAll();
+  return all
+    .filter((g) => g.salonId === salonId)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .slice(0, limit);
+}
+
 export async function getGoalById(salonId: string, goalId: string): Promise<TaikosGoal | null> {
   const all = await readAll();
   return all.find((g) => g.salonId === salonId && g.goalId === goalId) ?? null;
@@ -87,6 +95,9 @@ export async function updateGoal(
     targetValue,
     currentValue,
     status: patch.status ?? current.status,
+    deadline: patch.deadline ?? current.deadline,
+    priority: patch.priority ?? current.priority,
+    notes: patch.notes ?? current.notes,
     linkedDrafts: patch.linkedDrafts ?? current.linkedDrafts,
     progressPercent: computeProgressPercent(currentValue, targetValue),
     updatedAt: new Date().toISOString(),

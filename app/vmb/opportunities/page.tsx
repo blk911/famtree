@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { VmbOpportunitiesView } from "@/components/vmb/VmbOpportunitiesView";
+import { VmbOpportunitiesCenterClient } from "@/components/vmb/VmbOpportunitiesCenterClient";
 
 export const metadata: Metadata = {
   title: "Opportunities",
 };
 
 export default function VmbOpportunitiesPage() {
-  return <VmbOpportunitiesView />;
+  return <VmbOpportunitiesCenterClient />;
 }

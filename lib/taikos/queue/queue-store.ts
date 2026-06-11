@@ -28,11 +28,18 @@ async function writeAll(items: QueueFile): Promise<void> {
   await fs.rename(tmp, file);
 }
 
-export async function listQueueItems(salonId: string, limit = 50): Promise<TaikosQueueItem[]> {
+export async function listAllQueueItems(salonId: string, limit = 100): Promise<TaikosQueueItem[]> {
   const all = await readAll();
   return all
-    .filter((q) => q.salonId === salonId && q.status !== "cancelled" && q.status !== "executed")
+    .filter((q) => q.salonId === salonId)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .slice(0, limit);
+}
+
+export async function listQueueItems(salonId: string, limit = 50): Promise<TaikosQueueItem[]> {
+  const all = await listAllQueueItems(salonId, limit * 2);
+  return all
+    .filter((q) => q.status !== "cancelled" && q.status !== "executed")
     .slice(0, limit);
 }
 

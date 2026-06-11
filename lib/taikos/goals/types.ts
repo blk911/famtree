@@ -7,6 +7,8 @@ export type TaikosGoalCategory =
   | "CLIENT_RETENTION"
   | "CUSTOM";
 
+export type TaikosGoalPriority = "low" | "medium" | "high";
+
 export type TaikosGoalStatus = "draft" | "active" | "completed" | "paused" | "archived";
 
 export type TaikosGoal = {
@@ -18,6 +20,9 @@ export type TaikosGoal = {
   targetValue: number;
   currentValue: number;
   status: TaikosGoalStatus;
+  deadline?: string;
+  priority?: TaikosGoalPriority;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
   opportunities: string[];
@@ -33,11 +38,16 @@ export type TaikosGoalListItem = {
   currentValue: number;
   progressPercent: number;
   status: TaikosGoalStatus;
+  deadline?: string;
+  priority?: TaikosGoalPriority;
+  notes?: string;
 };
 
 export type TaikosGoalSummary = {
   totalGoals: number;
   activeGoals: number;
+  completedGoals: number;
+  archivedGoals: number;
   goals: TaikosGoalListItem[];
 };
 
@@ -56,5 +66,8 @@ export type UpdateTaikosGoalInput = {
   targetValue?: number;
   currentValue?: number;
   status?: TaikosGoalStatus;
+  deadline?: string;
+  priority?: TaikosGoalPriority;
+  notes?: string;
   linkedDrafts?: string[];
 };
