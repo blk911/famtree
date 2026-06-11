@@ -8,6 +8,7 @@ import {
   moreProviders,
   topProviders,
 } from "@/lib/vmb/provider-guide";
+import { writeActiveAnalysisId } from "@/lib/vmb/active-analysis";
 import { VMB_SAMPLE_BOOK_TEXT } from "@/lib/vmb/sample-book";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
@@ -145,6 +146,7 @@ export function VmbStartFlow() {
       }
 
       const result = analyzeJson.data.analysis;
+      writeActiveAnalysisId(result.analysisId);
       router.push(`/vmb/dashboard?analysis=${encodeURIComponent(result.analysisId)}`);
     } catch {
       setError("Something went wrong. Please try again.");

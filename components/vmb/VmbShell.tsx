@@ -8,6 +8,7 @@ import { VMB_THEME } from "@/lib/vmb/theme";
 import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
 
 const NAV_ITEMS = [
+  { href: "/vmb/dashboard", label: "This Week" },
   { href: "/vmb/clients", label: "Clients" },
   { href: "/vmb/network", label: "Network" },
   { href: "/vmb/opportunities", label: "Opportunities" },
@@ -116,7 +117,7 @@ export function VmbShell({ children, variant = "app" }: Props) {
                   textDecoration: "none",
                 }}
               >
-                Dashboard
+                This Week
               </Link>
             ) : (
               <>

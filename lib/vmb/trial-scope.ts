@@ -36,12 +36,18 @@ export function filterIntrosForTrial(
   return requests.filter((r) => r.trialId === trialId);
 }
 
-/** Preserve active analysis id across VMB app nav links. */
-export function appendVmbAnalysisQuery(href: string, analysisId?: string): string {
+/** Preserve active analysis id (and optional view) across VMB app nav links. */
+export function appendVmbAnalysisQuery(
+  href: string,
+  analysisId?: string,
+  view?: string,
+): string {
   const id = analysisId?.trim();
-  if (!id) return href;
+  const viewParam = view?.trim();
+  if (!id && !viewParam) return href;
   const [path, query = ""] = href.split("?");
   const params = new URLSearchParams(query);
-  params.set("analysis", id);
+  if (id) params.set("analysis", id);
+  if (viewParam) params.set("view", viewParam);
   return `${path}?${params.toString()}`;
 }

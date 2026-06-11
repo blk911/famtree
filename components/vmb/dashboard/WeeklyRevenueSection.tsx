@@ -51,7 +51,7 @@ export function WeeklyRevenueSection({
           onClick={onToggleOpportunities}
         />
         <Link
-          href={appendVmbAnalysisQuery("/vmb/clients", analysisId)}
+          href={appendVmbAnalysisQuery("/vmb/clients", analysisId, "this-week")}
           style={{
             display: "inline-block",
             padding: "11px 16px",
@@ -63,7 +63,7 @@ export function WeeklyRevenueSection({
             textDecoration: "none",
           }}
         >
-          Open Client List
+          Client Book · This Week
         </Link>
       </div>
 

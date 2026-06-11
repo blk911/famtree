@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useVmbActiveAnalysis } from "@/components/vmb/useVmbActiveAnalysis";
 import {
@@ -9,14 +9,48 @@ import {
   type ClientOpportunitySummary,
 } from "@/lib/vmb/client-opportunities";
 import { analysisHasOpportunityArrays } from "@/lib/vmb/normalize-analysis";
+import {
+  buildThisWeekSelection,
+  isThisWeekRow,
+  type ThisWeekSelection,
+} from "@/lib/vmb/this-week-selection";
+import { appendVmbAnalysisQuery } from "@/lib/vmb/trial-scope";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
 type LoadState = "loading" | "invalid" | "empty" | "ready";
 
+type OpportunityFilter =
+  | "all"
+  | "this-week"
+  | "reactivation"
+  | "referral"
+  | "gift"
+  | "trusted-intro"
+  | "vip";
+
+type SortOption = "value-desc" | "value-asc" | "name-asc";
+
 type Props = {
   initialAnalysisId?: string;
+  initialView?: string;
 };
+
+const FILTER_PILLS: { id: OpportunityFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "this-week", label: "This Week" },
+  { id: "reactivation", label: "Reactivation" },
+  { id: "referral", label: "Referral" },
+  { id: "gift", label: "Gift" },
+  { id: "trusted-intro", label: "Trusted Intro" },
+  { id: "vip", label: "VIP" },
+];
+
+const SORT_OPTIONS: { id: SortOption; label: string }[] = [
+  { id: "value-desc", label: "Value (high)" },
+  { id: "value-asc", label: "Value (low)" },
+  { id: "name-asc", label: "Name (A–Z)" },
+];
 
 type DebugSummary = {
   recordCount: number;
@@ -27,12 +61,63 @@ type DebugSummary = {
   rowCount: number;
 };
 
-export function VmbClientsClient({ initialAnalysisId }: Props) {
+function matchesFilter(
+  row: ClientOpportunityRow,
+  filter: OpportunityFilter,
+  thisWeek: ThisWeekSelection,
+): boolean {
+  switch (filter) {
+    case "all":
+      return true;
+    case "this-week":
+      return isThisWeekRow(row, thisWeek);
+    case "reactivation":
+      return (
+        row.opportunityType === "Reactivation" ||
+        row.triggerType === "Lapsed" ||
+        row.triggerType === "Reactivation"
+      );
+    case "referral":
+      return row.opportunityType === "Referral";
+    case "gift":
+      return row.opportunityType === "Gift";
+    case "trusted-intro":
+      return row.opportunityType === "Trusted Intro";
+    case "vip":
+      return row.triggerType === "VIP";
+    default:
+      return true;
+  }
+}
+
+function sortRows(rows: ClientOpportunityRow[], sort: SortOption): ClientOpportunityRow[] {
+  const next = [...rows];
+  switch (sort) {
+    case "value-asc":
+      return next.sort((a, b) => a.value - b.value);
+    case "name-asc":
+      return next.sort((a, b) => a.clientName.localeCompare(b.clientName));
+    case "value-desc":
+    default:
+      return next.sort((a, b) => b.value - a.value);
+  }
+}
+
+export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
   const activeAnalysisId = useVmbActiveAnalysis(initialAnalysisId);
   const [loadState, setLoadState] = useState<LoadState>("loading");
+  const [analysis, setAnalysis] = useState<VmbBookAnalysisResult | null>(null);
   const [summary, setSummary] = useState<ClientOpportunitySummary | null>(null);
   const [selectedRow, setSelectedRow] = useState<ClientOpportunityRow | null>(null);
   const [debugSummary, setDebugSummary] = useState<DebugSummary | null>(null);
+  const [filter, setFilter] = useState<OpportunityFilter>(
+    initialView === "this-week" ? "this-week" : "all",
+  );
+  const [sort, setSort] = useState<SortOption>("value-desc");
+
+  useEffect(() => {
+    if (initialView === "this-week") setFilter("this-week");
+  }, [initialView]);
 
   useEffect(() => {
     let cancelled = false;
@@ -73,16 +158,19 @@ export function VmbClientsClient({ initialAnalysisId }: Props) {
         if (!json.ok || !json.data) {
           if (requestedId) {
             setLoadState("invalid");
+            setAnalysis(null);
             setSummary(null);
             setDebugSummary(null);
           } else {
             setLoadState("empty");
+            setAnalysis(null);
             setSummary(null);
             setDebugSummary(null);
           }
           return;
         }
 
+        setAnalysis(json.data);
         const built = buildClientOpportunities(json.data);
         setDebugSummary({
           recordCount: built.clientsAnalyzed,
@@ -104,6 +192,7 @@ export function VmbClientsClient({ initialAnalysisId }: Props) {
       } catch {
         if (!cancelled) {
           setLoadState(requestedId ? "invalid" : "empty");
+          setAnalysis(null);
           setSummary(null);
           setDebugSummary(null);
         }
@@ -119,6 +208,17 @@ export function VmbClientsClient({ initialAnalysisId }: Props) {
       cancelled = true;
     };
   }, [activeAnalysisId]);
+
+  const thisWeekSelection = useMemo(
+    () => (analysis ? buildThisWeekSelection(analysis) : { rowIds: new Set<string>(), clientNames: new Set<string>() }),
+    [analysis],
+  );
+
+  const visibleRows = useMemo(() => {
+    if (!summary) return [];
+    const filtered = summary.rows.filter((row) => matchesFilter(row, filter, thisWeekSelection));
+    return sortRows(filtered, sort);
+  }, [summary, filter, sort, thisWeekSelection]);
 
   if (loadState === "loading") {
     return (
@@ -187,6 +287,19 @@ export function VmbClientsClient({ initialAnalysisId }: Props) {
   return (
     <div style={{ maxWidth: 1120, margin: "0 auto", padding: "32px 24px 72px" }}>
       <header style={{ marginBottom: 24 }}>
+        <Link
+          href={appendVmbAnalysisQuery("/vmb/dashboard", activeAnalysisId)}
+          style={{
+            display: "inline-block",
+            marginBottom: 12,
+            fontSize: 13,
+            fontWeight: 700,
+            color: VMB_THEME.accent,
+            textDecoration: "none",
+          }}
+        >
+          ← This Week
+        </Link>
         <p
           style={{
             margin: "0 0 6px",
@@ -197,18 +310,28 @@ export function VmbClientsClient({ initialAnalysisId }: Props) {
             color: VMB_THEME.accent,
           }}
         >
-          Client Opportunities
+          Expansion View
         </p>
         <h1
           style={{
-            margin: "0 0 12px",
+            margin: "0 0 8px",
             fontSize: "clamp(24px, 3vw, 32px)",
             fontWeight: 800,
             letterSpacing: "-0.03em",
           }}
         >
-          Who should I contact today?
+          Client Book
         </h1>
+        <p style={{ margin: "0 0 14px", fontSize: 14, lineHeight: 1.5, color: VMB_THEME.muted }}>
+          Full opportunity list from your active book. Actions start on{" "}
+          <Link
+            href={appendVmbAnalysisQuery("/vmb/dashboard", activeAnalysisId)}
+            style={{ color: VMB_THEME.accent, fontWeight: 700, textDecoration: "none" }}
+          >
+            This Week
+          </Link>
+          .
+        </p>
         <div
           style={{
             display: "flex",
@@ -216,6 +339,7 @@ export function VmbClientsClient({ initialAnalysisId }: Props) {
             gap: "8px 20px",
             fontSize: 14,
             color: VMB_THEME.muted,
+            marginBottom: 16,
           }}
         >
           <span>
@@ -228,22 +352,67 @@ export function VmbClientsClient({ initialAnalysisId }: Props) {
             </strong>
           </span>
           <span>
-            <strong style={{ color: VMB_THEME.ink }}>{summary.reactivationCount}</strong> Reactivation
+            Showing <strong style={{ color: VMB_THEME.ink }}>{visibleRows.length}</strong> of{" "}
+            <strong style={{ color: VMB_THEME.ink }}>{summary.rows.length}</strong>
           </span>
-          <span>
-            <strong style={{ color: VMB_THEME.ink }}>{summary.referralCount}</strong> Referral
-          </span>
-          <span>
-            <strong style={{ color: VMB_THEME.ink }}>{summary.giftCount}</strong> Gift
-          </span>
-          <span>
-            <strong style={{ color: VMB_THEME.ink }}>{summary.trustedIntroCount}</strong> Trusted Intro
-          </span>
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+          {FILTER_PILLS.map((pill) => (
+            <FilterPill
+              key={pill.id}
+              label={pill.label}
+              active={filter === pill.id}
+              onClick={() => setFilter(pill.id)}
+            />
+          ))}
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: VMB_THEME.muted }}>Sort:</span>
+          {SORT_OPTIONS.map((option) => (
+            <FilterPill
+              key={option.id}
+              label={option.label}
+              active={sort === option.id}
+              onClick={() => setSort(option.id)}
+            />
+          ))}
         </div>
       </header>
 
       {process.env.NODE_ENV === "development" ? (
         <DevDebugPanel analysisId={activeAnalysisId} debug={debugSummary} />
+      ) : null}
+
+      {visibleRows.length === 0 ? (
+        <p
+          style={{
+            margin: "0 0 24px",
+            padding: "16px 18px",
+            borderRadius: 12,
+            background: "#fff",
+            border: `1px solid ${VMB_THEME.line}`,
+            fontSize: 14,
+            color: VMB_THEME.muted,
+          }}
+        >
+          No opportunities match this filter.{" "}
+          <button
+            type="button"
+            onClick={() => setFilter("all")}
+            style={{
+              border: "none",
+              background: "none",
+              padding: 0,
+              color: VMB_THEME.accent,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            Show all
+          </button>
+        </p>
       ) : null}
 
       <div
@@ -275,7 +444,7 @@ export function VmbClientsClient({ initialAnalysisId }: Props) {
             </tr>
           </thead>
           <tbody>
-            {summary.rows.map((row) => (
+            {visibleRows.map((row) => (
               <tr
                 key={row.id}
                 onClick={() => setSelectedRow(row)}
@@ -333,6 +502,35 @@ export function VmbClientsClient({ initialAnalysisId }: Props) {
         <OpportunityDrawer row={selectedRow} onClose={() => setSelectedRow(null)} />
       ) : null}
     </div>
+  );
+}
+
+function FilterPill({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        padding: "6px 12px",
+        borderRadius: 999,
+        border: `1px solid ${active ? VMB_THEME.accent : VMB_THEME.line}`,
+        background: active ? VMB_THEME.accentSoft : "#fff",
+        color: active ? VMB_THEME.accent : VMB_THEME.muted,
+        fontSize: 12,
+        fontWeight: 700,
+        cursor: "pointer",
+      }}
+    >
+      {label}
+    </button>
   );
 }
 
