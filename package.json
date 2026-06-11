@@ -51,6 +51,7 @@
     "test:vmb:runtime": "tsx scripts/test-vmb-runtime.ts",
     "test:vmb:integration-map": "tsx scripts/test-vmb-integration-map.ts",
     "test:vmb:invite-drafts": "tsx scripts/test-vmb-invite-drafts.ts",
+    "test:taikos:phase1": "tsx scripts/test-taikos-phase1.ts",
     "harvest:sola": "tsx scripts/run-sola-harvest.ts",
     "debug:sola:profile": "tsx scripts/debug-sola-profile-api.ts",
     "discover:sola": "tsx scripts/discover-sola-slugs.ts",

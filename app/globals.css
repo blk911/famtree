@@ -548,3 +548,186 @@
   }
 }
 
+/* ── tAIkOS operating layer ─────────────────────────────────────────────── */
+.aios-launcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #9d174d;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(28, 25, 23, 0.05);
+}
+
+.aios-launcher[aria-pressed="true"] {
+  background: #fce7f3;
+  border-color: #f9a8d4;
+}
+
+.aios-launcher__spark {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.aios-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(28, 25, 23, 0.32);
+  backdrop-filter: blur(4px);
+}
+
+.aios-panel {
+  width: 100%;
+  max-width: 520px;
+  max-height: min(82vh, 680px);
+  overflow: auto;
+  border-radius: 18px;
+  border: 1px solid #e7e5e4;
+  background: #faf8f5;
+  box-shadow: 0 12px 40px rgba(28, 25, 23, 0.18);
+  text-align: left;
+}
+
+.aios-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid #e7e5e4;
+}
+
+.aios-panel__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9d174d;
+}
+
+.aios-panel__mode {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #78716c;
+}
+
+.aios-panel__close {
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+  color: #78716c;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.aios-panel__body {
+  padding: 16px 20px 22px;
+}
+
+.aios-panel__loading {
+  padding: 24px 20px;
+  font-size: 14px;
+  color: #78716c;
+}
+
+.aios-panel__greeting {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.aios-panel__context-line {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #78716c;
+}
+
+.aios-panel__summary {
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #1c1917;
+}
+
+.aios-panel__section {
+  margin-bottom: 16px;
+}
+
+.aios-panel__section h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.aios-panel__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.aios-panel__list li {
+  display: grid;
+  gap: 2px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.aios-panel__list li span {
+  color: #78716c;
+  font-size: 13px;
+}
+
+.aios-panel__list li em {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9d174d;
+}
+
+.aios-panel__bullets {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #44403c;
+}
+
+.aios-panel__value {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: #1c1917;
+}
+
+.aios-panel__followup {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1c1917;
+}
+
+.aios-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+

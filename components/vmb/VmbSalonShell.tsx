@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import { AiosProvider, AiosTopbarLauncher } from "@/components/taikos/AiosProvider";
 import { VmbSummaryRail } from "@/components/vmb/VmbSummaryRail";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import { VMB_SALON_MOBILE_NAV_IDS, VMB_SALON_NAV, type VmbSalonNavItem } from "@/lib/vmb/salon-nav";
@@ -62,6 +63,7 @@ export function VmbSalonShell({ children }: Props) {
   );
 
   return (
+    <AiosProvider analysisId={activeAnalysisId}>
     <div
       className="vmb-salon-shell"
       style={{
@@ -155,18 +157,7 @@ export function VmbSalonShell({ children }: Props) {
                 {salonName}
               </span>
             </div>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: VMB_THEME.muted,
-                opacity: 0.55,
-                flexShrink: 0,
-              }}
-              title="Coming soon"
-            >
-              Profile
-            </span>
+            <AiosTopbarLauncher />
           </div>
         </header>
 
@@ -198,5 +189,6 @@ export function VmbSalonShell({ children }: Props) {
         </nav>
       </div>
     </div>
+    </AiosProvider>
   );
 }
