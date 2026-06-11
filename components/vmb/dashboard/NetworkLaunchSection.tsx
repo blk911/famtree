@@ -35,12 +35,6 @@ export function NetworkLaunchSection({
   const joined = drafts.filter((d) => d.status === "sent").length;
   const remaining = drafts.filter((d) => d.status === "draft" || d.status === "approved").length;
 
-  async function handleSaveDraft(message: string) {
-    if (!activeDraft) return;
-    await onPatchDraft(activeDraft.draftId, { editableMessage: message, status: "draft" });
-    setActiveDraftId(null);
-  }
-
   async function handleApprove(message: string) {
     if (!activeDraft) return;
     await onPatchDraft(activeDraft.draftId, { editableMessage: message, status: "approved" });
@@ -144,7 +138,6 @@ export function NetworkLaunchSection({
           draft={activeDraft}
           saving={saving}
           onClose={() => setActiveDraftId(null)}
-          onSaveDraft={handleSaveDraft}
           onApprove={handleApprove}
           onSkip={handleSkip}
         />

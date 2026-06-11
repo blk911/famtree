@@ -11,13 +11,13 @@ const NAV_ITEMS = [
   { href: "/vmb/dashboard", label: "Home" },
   { href: "/vmb/clients", label: "Client Book" },
   { href: "/vmb/network", label: "Network" },
-  { href: "/vmb/opportunities", label: "Offers" },
-  { href: "/vmb/revenue", label: "History" },
+  { href: "/vmb/history", label: "History" },
 ] as const;
+
+const SHELL_MAX = 840;
 
 type Props = {
   children: ReactNode;
-  /** Landing uses a lighter nav without app chrome emphasis */
   variant?: "marketing" | "app";
 };
 
@@ -45,42 +45,37 @@ export function VmbShell({ children, variant = "app" }: Props) {
           position: "sticky",
           top: 0,
           zIndex: 40,
-          background: "rgba(250, 248, 245, 0.92)",
-          backdropFilter: "blur(12px)",
+          background: "rgba(250, 248, 245, 0.94)",
+          backdropFilter: "blur(10px)",
           borderBottom: `1px solid ${VMB_THEME.line}`,
         }}
       >
         <div
           style={{
-            maxWidth: 1120,
+            maxWidth: SHELL_MAX,
             margin: "0 auto",
-            padding: "18px 24px",
+            padding: "16px 20px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 24,
+            gap: 16,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 32, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 20, minWidth: 0, flexWrap: "wrap" }}>
             <Link
               href="/vmb"
               style={{
                 textDecoration: "none",
                 color: VMB_THEME.ink,
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: 800,
                 letterSpacing: "-0.03em",
-                whiteSpace: "nowrap",
               }}
             >
               VMB
             </Link>
             {shellVariant === "app" ? (
-              <nav
-                className="hidden md:flex"
-                style={{ alignItems: "center", gap: 4 }}
-                aria-label="VMB primary"
-              >
+              <nav style={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }} aria-label="VMB">
                 {NAV_ITEMS.map((item) => {
                   const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
                   return (
@@ -91,10 +86,8 @@ export function VmbShell({ children, variant = "app" }: Props) {
                         textDecoration: "none",
                         fontSize: 14,
                         fontWeight: active ? 700 : 500,
-                        color: active ? VMB_THEME.accent : VMB_THEME.muted,
-                        padding: "8px 12px",
-                        borderRadius: 10,
-                        background: active ? VMB_THEME.accentSoft : "transparent",
+                        color: active ? VMB_THEME.ink : VMB_THEME.muted,
+                        padding: "6px 10px",
                       }}
                     >
                       {item.label}
@@ -105,86 +98,27 @@ export function VmbShell({ children, variant = "app" }: Props) {
             ) : null}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-            {shellVariant === "marketing" ? (
-              <Link
-                href={vmbHref("/vmb/dashboard")}
-                style={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: VMB_THEME.muted,
-                  textDecoration: "none",
-                }}
-              >
-                Home
-              </Link>
-            ) : (
-              <>
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: VMB_THEME.muted,
-                    opacity: 0.55,
-                    cursor: "not-allowed",
-                  }}
-                  aria-disabled="true"
-                  title="Coming soon"
-                >
-                  Profile
-                </span>
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: VMB_THEME.muted,
-                    opacity: 0.55,
-                    cursor: "not-allowed",
-                  }}
-                  aria-disabled="true"
-                  title="Coming soon"
-                >
-                  Settings
-                </span>
-              </>
-            )}
-          </div>
+          {shellVariant === "marketing" ? (
+            <Link
+              href={vmbHref("/vmb/dashboard")}
+              style={{ fontSize: 14, fontWeight: 600, color: VMB_THEME.muted, textDecoration: "none" }}
+            >
+              Home
+            </Link>
+          ) : (
+            <span
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: VMB_THEME.muted,
+                opacity: 0.55,
+              }}
+              title="Coming soon"
+            >
+              Profile
+            </span>
+          )}
         </div>
-
-        {shellVariant === "app" ? (
-          <nav
-            className="flex md:hidden overflow-x-auto"
-            style={{
-              gap: 4,
-              padding: "0 24px 12px",
-              borderTop: `1px solid ${VMB_THEME.line}`,
-              paddingTop: 12,
-            }}
-            aria-label="VMB mobile"
-          >
-            {NAV_ITEMS.map((item) => {
-              const active = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={vmbHref(item.href)}
-                  style={{
-                    textDecoration: "none",
-                    fontSize: 13,
-                    fontWeight: active ? 700 : 500,
-                    color: active ? VMB_THEME.accent : VMB_THEME.muted,
-                    padding: "6px 10px",
-                    borderRadius: 8,
-                    whiteSpace: "nowrap",
-                    background: active ? VMB_THEME.accentSoft : "transparent",
-                  }}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        ) : null}
       </header>
 
       <main>{children}</main>

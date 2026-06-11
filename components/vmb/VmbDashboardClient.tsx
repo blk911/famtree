@@ -14,7 +14,7 @@ type Props = {
 function EmptyHome() {
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "64px 24px 80px", textAlign: "center" }}>
-      <p style={{ margin: "0 0 20px", fontSize: 17, lineHeight: 1.5, color: VMB_THEME.muted }}>
+        <p style={{ margin: "0 0 20px", fontSize: 16, lineHeight: 1.5, color: VMB_THEME.muted }}>
         Start by finding the money in your book.
       </p>
       <Link
