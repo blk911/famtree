@@ -40,6 +40,7 @@ const ENGINE_MODULES = [
   "docs/vmb-mvp-integration-map.md",
   "components/vmb/VmbPageFrame.tsx",
   "components/vmb/VmbStartLayoutBranch.tsx",
+  "app/vmb/start/layout.tsx",
 ];
 
 async function run(): Promise<void> {

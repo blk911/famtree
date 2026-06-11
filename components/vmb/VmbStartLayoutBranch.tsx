@@ -1,11 +1,16 @@
 "use client";
 
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { VmbSalonShell } from "@/components/vmb/VmbSalonShell";
 import { VmbStartShell } from "@/components/vmb/VmbStartShell";
 import { VMB_THEME } from "@/lib/vmb/theme";
-import type { VmbSalonWorkspace } from "@/types/vmb/workspace";
+
+type Props = {
+  children: ReactNode;
+  /** Set server-side from vmb_trial_id cookie — durable even when /tmp workspace JSON is empty on Vercel. */
+  hasTrialSession: boolean;
+};
 
 function StartShellFallback({ children }: { children: ReactNode }) {
   return (
@@ -15,48 +20,33 @@ function StartShellFallback({ children }: { children: ReactNode }) {
   );
 }
 
-function VmbStartLayoutBranchInner({ children }: { children: ReactNode }) {
+function VmbStartLayoutBranchForNewSession({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
   const refreshMode = searchParams.get("mode") === "refresh";
-  const [useSalonShell, setUseSalonShell] = useState<boolean | null>(refreshMode ? true : null);
 
-  useEffect(() => {
-    if (refreshMode) return;
-
-    let cancelled = false;
-    async function resolveShell() {
-      try {
-        const res = await fetch("/api/vmb/workspace", { cache: "no-store", credentials: "include" });
-        const json = (await res.json()) as { ok: boolean; data?: VmbSalonWorkspace | null };
-        if (cancelled) return;
-        const workspace = json.ok ? json.data : null;
-        setUseSalonShell(!!workspace?.firstIngestCompleted);
-      } catch {
-        if (!cancelled) setUseSalonShell(false);
-      }
-    }
-    void resolveShell();
-    return () => {
-      cancelled = true;
-    };
-  }, [refreshMode]);
-
-  if (useSalonShell === null) {
-    return <StartShellFallback>{children}</StartShellFallback>;
-  }
-
-  if (useSalonShell) {
+  if (refreshMode) {
     return <VmbSalonShell>{children}</VmbSalonShell>;
   }
 
   return <VmbStartShell>{children}</VmbStartShell>;
 }
 
-/** /vmb/start uses minimal shell for first ingest; returning salons keep salon rail + nav. */
-export function VmbStartLayoutBranch({ children }: { children: ReactNode }) {
+/**
+ * /vmb/start uses minimal shell for first ingest.
+ * Returning salons (trial cookie) and book refresh keep salon rail + nav.
+ */
+export function VmbStartLayoutBranch({ children, hasTrialSession }: Props) {
+  if (hasTrialSession) {
+    return (
+      <Suspense fallback={<StartShellFallback>{children}</StartShellFallback>}>
+        <VmbSalonShell>{children}</VmbSalonShell>
+      </Suspense>
+    );
+  }
+
   return (
     <Suspense fallback={<StartShellFallback>{children}</StartShellFallback>}>
-      <VmbStartLayoutBranchInner>{children}</VmbStartLayoutBranchInner>
+      <VmbStartLayoutBranchForNewSession>{children}</VmbStartLayoutBranchForNewSession>
     </Suspense>
   );
 }

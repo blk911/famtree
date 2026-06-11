@@ -3,7 +3,6 @@
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { VmbSalonShell } from "@/components/vmb/VmbSalonShell";
-import { VmbStartLayoutBranch } from "@/components/vmb/VmbStartLayoutBranch";
 import { VMB_THEME } from "@/lib/vmb/theme";
 
 function SalonShellFallback({ children }: { children: React.ReactNode }) {
@@ -20,7 +19,7 @@ export function VmbLayoutGate({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
   if (pathname === "/vmb/start" || pathname.startsWith("/vmb/start/")) {
-    return <VmbStartLayoutBranch>{children}</VmbStartLayoutBranch>;
+    return <>{children}</>;
   }
   return (
     <Suspense fallback={<SalonShellFallback>{children}</SalonShellFallback>}>
