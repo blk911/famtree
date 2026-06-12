@@ -1,16 +1,8 @@
 import { clientNameFromOpportunity } from "@/lib/taikos/workflow/opportunity-display";
+import type { VmbCardType } from "@/lib/vmb/cards/card-types";
 import type { TaikosOpportunity } from "@/lib/taikos/opportunities/types";
 
-export type SuggestedCardType =
-  | "pcn_invite"
-  | "refresh_card"
-  | "reactivation_card"
-  | "vip_thank_you"
-  | "referral_invite"
-  | "birthday_card"
-  | "open_slot_fill"
-  | "service_card";
-
+export type SuggestedCardType = VmbCardType;
 export type OpportunityIntelligence = {
   opportunityId: string;
   subjectName?: string;

@@ -159,7 +159,27 @@ export function InlineAiosPanel({
     <section className="inline-aios-panel" aria-label="tAIkOS">
       {panelState === "open_intro" ? (
         <div className="inline-aios-panel__body">
-          <p className="inline-aios-panel__message">{introLine}</p>
+          {assistant && assistant.recommendations.length > 0 ? (
+            <div className="inline-aios-panel__insight-first">
+              <p className="inline-aios-panel__intel-label">tAIkOS insight</p>
+              <ul className="inline-aios-panel__recs">
+                {assistant.recommendations.slice(0, 3).map((rec) => (
+                  <li key={rec}>{rec}</li>
+                ))}
+              </ul>
+              {assistant.potentialValue > 0 ? (
+                <p className="inline-aios-panel__value">
+                  Estimated opportunity:{" "}
+                  <strong>+${assistant.potentialValue.toLocaleString()}</strong>
+                </p>
+              ) : null}
+              <p className="inline-aios-panel__soft">
+                Suggested cards appear on each opportunity below — preview before you approve.
+              </p>
+            </div>
+          ) : (
+            <p className="inline-aios-panel__message">{introLine}</p>
+          )}
           {!context ? (
             <p className="inline-aios-panel__soft">Guidance will sharpen once Today finishes loading your book summary.</p>
           ) : null}
@@ -183,9 +203,10 @@ export function InlineAiosPanel({
 
       {panelState === "open_input" ? (
         <div className="inline-aios-panel__body">
-          <p className="inline-aios-panel__message">What would you like to know about your book?</p>
+          <p className="inline-aios-panel__intel-label">What are you thinking about?</p>
+          <p className="inline-aios-panel__message">Ask about a client, opportunity, or next move.</p>
           <AiosQuestionInput onSubmit={handleQuestion} disabled={loading} />
-          <div className="inline-aios-panel__actions">
+          <div className="inline-aios-panel__actions inline-aios-panel__actions--after-input">
             <button type="button" className="inline-aios-panel__btn inline-aios-panel__btn--ghost" onClick={handleClose}>
               Close
             </button>
@@ -206,11 +227,14 @@ export function InlineAiosPanel({
                 </p>
               ) : null}
               {assistant && assistant.recommendations.length > 0 ? (
-                <ul className="inline-aios-panel__recs">
-                  {assistant.recommendations.map((rec) => (
-                    <li key={rec}>{rec}</li>
-                  ))}
-                </ul>
+                <>
+                  <p className="inline-aios-panel__intel-label">tAIkOS insight</p>
+                  <ul className="inline-aios-panel__recs">
+                    {assistant.recommendations.map((rec) => (
+                      <li key={rec}>{rec}</li>
+                    ))}
+                  </ul>
+                </>
               ) : (
                 <p className="inline-aios-panel__soft">No ranked opportunities yet — check back after your book refresh.</p>
               )}
@@ -220,6 +244,9 @@ export function InlineAiosPanel({
                   <strong>+${assistant.potentialValue.toLocaleString()}</strong>
                 </p>
               ) : null}
+              <p className="inline-aios-panel__soft">
+                Open an opportunity below to preview its suggested card before you approve.
+              </p>
             </>
           ) : null}
 
@@ -255,14 +282,12 @@ export function InlineAiosPanel({
             </div>
           ) : null}
 
+          <div className="inline-aios-panel__ask-last">
+            <p className="inline-aios-panel__intel-label">What are you thinking about?</p>
+            <AiosQuestionInput onSubmit={handleQuestion} disabled={loading} />
+          </div>
+
           <div className="inline-aios-panel__actions">
-            <button
-              type="button"
-              className="inline-aios-panel__btn inline-aios-panel__btn--secondary"
-              onClick={() => setPanelState("open_input")}
-            >
-              Ask tAIkOS
-            </button>
             <button type="button" className="inline-aios-panel__btn inline-aios-panel__btn--ghost" onClick={handleClose}>
               Close
             </button>
