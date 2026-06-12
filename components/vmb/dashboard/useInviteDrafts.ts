@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { buildInviteDraftRecords } from "@/lib/vmb/invite-drafts/build-invite-drafts";
+import { friendlyInviteDraftError } from "@/lib/vmb/invite-drafts/invite-draft-storage-errors";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { InviteDraftStatus, VmbInviteDraft } from "@/types/vmb/invite-draft";
 
@@ -33,7 +34,7 @@ export function useInviteDrafts({ analysis, isDemo = false }: Options) {
       const json = (await res.json()) as { ok: boolean; data?: VmbInviteDraft[]; error?: string };
 
       if (!res.ok || !json.ok) {
-        setError(json.error ?? "Failed to load invite drafts");
+        setError(friendlyInviteDraftError(json.error));
         setDrafts([]);
         return;
       }
@@ -56,7 +57,7 @@ export function useInviteDrafts({ analysis, isDemo = false }: Options) {
       };
 
       if (!buildRes.ok || !buildJson.ok || !buildJson.data) {
-        setError(buildJson.error ?? "Failed to build invite drafts");
+        setError(friendlyInviteDraftError(buildJson.error));
         setDrafts([]);
         return;
       }
@@ -101,7 +102,7 @@ export function useInviteDrafts({ analysis, isDemo = false }: Options) {
         });
         const json = (await res.json()) as { ok: boolean; data?: VmbInviteDraft; error?: string };
         if (!res.ok || !json.ok || !json.data) {
-          setError(json.error ?? "Failed to update draft");
+          setError(friendlyInviteDraftError(json.error));
           return false;
         }
         setDrafts((current) =>

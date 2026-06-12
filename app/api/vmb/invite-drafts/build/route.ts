@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { ensureInviteDraftsForAnalysis } from "@/lib/vmb/invite-drafts/invite-draft-store";
+import { mapInviteDraftStoreErrorForApi } from "@/lib/vmb/invite-drafts/invite-draft-storage-errors";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 
 export async function POST(req: NextRequest) {
@@ -27,8 +28,11 @@ export async function POST(req: NextRequest) {
 
     const result = await ensureInviteDraftsForAnalysis(trialId, analysisId);
     if ("error" in result) {
-      const status = result.error.includes("not available") ? 403 : 500;
-      return NextResponse.json({ ok: false, error: result.error }, { status });
+      const mapped = mapInviteDraftStoreErrorForApi(result.error);
+      return NextResponse.json(
+        { ok: false, error: mapped.error, message: mapped.message },
+        { status: mapped.status },
+      );
     }
 
     return NextResponse.json({ ok: true, data: result.drafts });

@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { patchInviteDraftForTrial } from "@/lib/vmb/invite-drafts/invite-draft-store";
+import { mapInviteDraftStoreErrorForApi } from "@/lib/vmb/invite-drafts/invite-draft-storage-errors";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 import type { InviteDraftStatus } from "@/types/vmb/invite-draft";
 
@@ -40,8 +41,11 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     });
 
     if ("error" in result) {
-      const status = result.error === "Draft not found" ? 404 : 500;
-      return NextResponse.json({ ok: false, error: result.error }, { status });
+      const mapped = mapInviteDraftStoreErrorForApi(result.error);
+      return NextResponse.json(
+        { ok: false, error: mapped.error, message: mapped.message },
+        { status: mapped.status },
+      );
     }
 
     return NextResponse.json({ ok: true, data: result.draft });

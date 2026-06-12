@@ -1,8 +1,21 @@
 import type { InviteDraftStatus, PatchInviteDraftInput, VmbInviteDraft } from "@/types/vmb/invite-draft";
 import { buildInviteDraftsForAnalysis } from "@/lib/vmb/invites/build-invite-drafts-for-analysis";
+import { resolveVmbStorageBackend } from "@/lib/vmb/db";
 import { getVmbBookAnalysisForTrial } from "../book-analysis/analysis-store";
 import { getVmbInviteDraftsFile } from "../paths";
 import { readJsonArray, writeJsonArray } from "../runtime-json-store";
+import { assertVmbWritableBackend, vmbJsonFallbackAllowed, vmbProductionRequiresPostgres } from "../storage-policy";
+import {
+  getInviteDraftForTrialPostgres,
+  listInviteDraftsForTrialAnalysisPostgres,
+  listInviteDraftsPostgres,
+  normalizeInviteDraft,
+  patchInviteDraftForTrialPostgres,
+  replaceInviteDraftsForTrialAnalysisPostgres,
+} from "./invite-draft-store-postgres";
+import { INVITE_DRAFT_POSTGRES_REQUIRED } from "./invite-draft-storage-errors";
+
+export { INVITE_DRAFT_POSTGRES_REQUIRED } from "./invite-draft-storage-errors";
 
 function isInviteDraft(item: unknown): item is VmbInviteDraft {
   if (!item || typeof item !== "object") return false;
@@ -15,20 +28,30 @@ function isInviteDraft(item: unknown): item is VmbInviteDraft {
   );
 }
 
-function normalizeDraft(item: VmbInviteDraft): VmbInviteDraft {
-  const category =
-    item.inviteCategory ??
-    (item.inviteType === "private_client_network" ? "private_client_network" : "private_client_network");
-  return {
-    ...item,
-    inviteCategory: category,
-    inviteType: category === "private_client_network" ? "private_client_network" : item.inviteType,
-  };
+async function assertInviteDraftWritable(): Promise<
+  { ok: true; backend: "postgres" | "json" } | { error: string }
+> {
+  const writable = await assertVmbWritableBackend();
+  if (!writable.ok) {
+    if (vmbProductionRequiresPostgres()) {
+      return { error: INVITE_DRAFT_POSTGRES_REQUIRED };
+    }
+    return { error: writable.error };
+  }
+  return { ok: true, backend: writable.backend };
+}
+
+async function listInviteDraftsJson(): Promise<VmbInviteDraft[]> {
+  const all = await readJsonArray(getVmbInviteDraftsFile(), isInviteDraft);
+  return all.map(normalizeInviteDraft);
 }
 
 export async function listInviteDrafts(): Promise<VmbInviteDraft[]> {
-  const all = await readJsonArray(getVmbInviteDraftsFile(), isInviteDraft);
-  return all.map(normalizeDraft);
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    return listInviteDraftsPostgres();
+  }
+  return listInviteDraftsJson();
 }
 
 export async function listInviteDraftsForTrial(
@@ -46,6 +69,10 @@ export async function listInviteDraftsForTrialAnalysis(
   trialId: string,
   analysisId: string,
 ): Promise<VmbInviteDraft[]> {
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    return listInviteDraftsForTrialAnalysisPostgres(trialId, analysisId);
+  }
   return listInviteDraftsForTrial(trialId, analysisId);
 }
 
@@ -53,7 +80,11 @@ export async function getInviteDraftForTrial(
   draftId: string,
   trialId: string,
 ): Promise<VmbInviteDraft | undefined> {
-  const all = await listInviteDrafts();
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    return getInviteDraftForTrialPostgres(draftId, trialId);
+  }
+  const all = await listInviteDraftsJson();
   const draft = all.find((d) => d.draftId === draftId);
   if (!draft || draft.trialId !== trialId) return undefined;
   return draft;
@@ -78,6 +109,50 @@ function mergePreservingEdits(
   });
 }
 
+function dedupeInviteDraftsById(drafts: VmbInviteDraft[]): VmbInviteDraft[] {
+  const byId = new Map<string, VmbInviteDraft>();
+  for (const draft of drafts) {
+    byId.set(draft.draftId, draft);
+  }
+  return Array.from(byId.values());
+}
+
+async function persistInviteDraftsForTrialAnalysis(
+  trialId: string,
+  analysisId: string,
+  merged: VmbInviteDraft[],
+): Promise<{ ok: true } | { error: string }> {
+  const writable = await assertInviteDraftWritable();
+  if ("error" in writable) return { error: writable.error };
+
+  if (writable.backend === "postgres") {
+    const saved = await replaceInviteDraftsForTrialAnalysisPostgres(trialId, analysisId, merged);
+    if ("error" in saved) {
+      return vmbProductionRequiresPostgres()
+        ? { error: INVITE_DRAFT_POSTGRES_REQUIRED }
+        : saved;
+    }
+    if (vmbJsonFallbackAllowed()) {
+      const all = await listInviteDraftsJson();
+      const others = all.filter(
+        (d) => !(d.trialId === trialId && d.analysisId === analysisId),
+      );
+      await writeJsonArray(getVmbInviteDraftsFile(), [...merged, ...others]);
+    }
+    return { ok: true };
+  }
+
+  const all = await listInviteDraftsJson();
+  const others = all.filter(
+    (d) => !(d.trialId === trialId && d.analysisId === analysisId),
+  );
+  const err = await writeJsonArray(getVmbInviteDraftsFile(), [...merged, ...others]);
+  if (err) {
+    return vmbProductionRequiresPostgres() ? { error: INVITE_DRAFT_POSTGRES_REQUIRED } : { error: err };
+  }
+  return { ok: true };
+}
+
 export async function buildInviteDraftsForAnalysisStore(
   trialId: string,
   analysisId: string,
@@ -99,15 +174,13 @@ export async function buildInviteDraftsForTrial(
 
   const built = buildInviteDraftsForAnalysis(analysis, trialId);
   const existing = await listInviteDraftsForTrialAnalysis(trialId, analysis.analysisId);
-  const merged = mergePreservingEdits(built, existing);
+  const merged = dedupeInviteDraftsById(mergePreservingEdits(built, existing));
 
-  const all = await listInviteDrafts();
-  const others = all.filter(
-    (d) => !(d.trialId === trialId && d.analysisId === analysis.analysisId),
-  );
-  const err = await writeJsonArray(getVmbInviteDraftsFile(), [...merged, ...others]);
-  if (err) return { error: err };
-  return { drafts: merged };
+  const persisted = await persistInviteDraftsForTrialAnalysis(trialId, analysis.analysisId, merged);
+  if ("error" in persisted) return persisted;
+
+  const stored = await listInviteDraftsForTrialAnalysis(trialId, analysis.analysisId);
+  return { drafts: stored };
 }
 
 /** Resolve drafts for analysis — builds if missing, never duplicates stable keys. */
@@ -121,7 +194,7 @@ export async function ensureInviteDraftsForAnalysis(
     return { error: "Analysis not available for this trial" };
   }
 
-  const built = buildInviteDraftsForAnalysis(analysis, trialId);
+  const built = dedupeInviteDraftsById(buildInviteDraftsForAnalysis(analysis, trialId));
   const hasAllCategories =
     existing.length >= built.length &&
     built.every((b) => existing.some((e) => e.draftId === b.draftId));
@@ -154,11 +227,12 @@ export async function patchInviteDraftForTrial(
   trialId: string,
   patch: PatchInviteDraftInput,
 ): Promise<{ draft: VmbInviteDraft } | { error: string }> {
-  const all = await listInviteDrafts();
-  const index = all.findIndex((d) => d.draftId === draftId && d.trialId === trialId);
-  if (index < 0) return { error: "Draft not found" };
+  const writable = await assertInviteDraftWritable();
+  if ("error" in writable) return writable;
 
-  const current = all[index];
+  const current = await getInviteDraftForTrial(draftId, trialId);
+  if (!current) return { error: "Draft not found" };
+
   const next: VmbInviteDraft = {
     ...current,
     status: patch.status ?? current.status,
@@ -167,8 +241,31 @@ export async function patchInviteDraftForTrial(
     updatedAt: new Date().toISOString(),
   };
 
+  if (writable.backend === "postgres") {
+    const updated = await patchInviteDraftForTrialPostgres(draftId, trialId, next);
+    if ("error" in updated) {
+      return vmbProductionRequiresPostgres()
+        ? { error: INVITE_DRAFT_POSTGRES_REQUIRED }
+        : updated;
+    }
+    if (vmbJsonFallbackAllowed()) {
+      const all = await listInviteDraftsJson();
+      const index = all.findIndex((d) => d.draftId === draftId && d.trialId === trialId);
+      if (index >= 0) {
+        all[index] = updated.draft;
+        await writeJsonArray(getVmbInviteDraftsFile(), all);
+      }
+    }
+    return updated;
+  }
+
+  const all = await listInviteDraftsJson();
+  const index = all.findIndex((d) => d.draftId === draftId && d.trialId === trialId);
+  if (index < 0) return { error: "Draft not found" };
   all[index] = next;
   const err = await writeJsonArray(getVmbInviteDraftsFile(), all);
-  if (err) return { error: err };
+  if (err) {
+    return vmbProductionRequiresPostgres() ? { error: INVITE_DRAFT_POSTGRES_REQUIRED } : { error: err };
+  }
   return { draft: next };
 }

@@ -97,6 +97,11 @@ export async function ensureVmbStorageTables(): Promise<boolean> {
 
 let _backend: VmbStorageBackend | null = null;
 
+export function resetVmbStorageBackendCache(): void {
+  _backend = null;
+  _ensure = null;
+}
+
 export async function resolveVmbStorageBackend(): Promise<VmbStorageBackend> {
   if (_backend === "postgres") return "postgres";
   if (!vmbDatabaseUrlPresent()) {

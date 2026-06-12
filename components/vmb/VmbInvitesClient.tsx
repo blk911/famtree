@@ -18,6 +18,7 @@ import { VMB_THEME } from "@/lib/vmb/theme";
 import { useSortableList } from "@/lib/vmb/useSortableList";
 import type { VmbInviteDraft, InviteDraftStatus } from "@/types/vmb/invite-draft";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
+import { friendlyInviteDraftError } from "@/lib/vmb/invite-drafts/invite-draft-storage-errors";
 
 type TabId = "drafts" | "approved" | "skipped" | "sent";
 
@@ -77,7 +78,7 @@ export function VmbInvitesClient({
       };
       if (!draftRes.ok || !draftJson.ok) {
         setDrafts([]);
-        setError(draftJson.error ?? "Could not load invite drafts.");
+        setError(friendlyInviteDraftError(draftJson.error));
         return;
       }
       setDrafts(
@@ -143,7 +144,7 @@ export function VmbInvitesClient({
       });
       const json = (await res.json()) as { ok: boolean; data?: VmbInviteDraft; error?: string };
       if (!res.ok || !json.ok || !json.data) {
-        setError(json.error ?? "Update failed");
+        setError(friendlyInviteDraftError(json.error));
         return false;
       }
       setDrafts((current) => current.map((d) => (d.draftId === draftId ? json.data! : d)));

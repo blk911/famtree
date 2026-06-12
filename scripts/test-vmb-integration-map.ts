@@ -35,6 +35,7 @@ const ENGINE_MODULES = [
   "lib/vmb/load-vmb-page-context.ts",
   "lib/vmb/invites/build-invite-drafts-for-analysis.ts",
   "lib/vmb/invite-drafts/invite-draft-store.ts",
+  "lib/vmb/invite-drafts/invite-draft-store-postgres.ts",
   "lib/vmb/operating-system/index.ts",
   "lib/vmb/client-opportunities.ts",
   "docs/vmb-mvp-integration-map.md",
