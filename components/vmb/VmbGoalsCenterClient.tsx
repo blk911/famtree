@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { GoalCard } from "@/components/taikos/goals/GoalCard";
 import { GoalEditor } from "@/components/taikos/goals/GoalEditor";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
+import { logTodayLockBranch } from "@/lib/vmb/today-lock-debug";
 import type { TaikosGoalListItem, TaikosGoalSummary } from "@/lib/taikos/goals/types";
 
 export function VmbGoalsCenterClient() {
@@ -113,8 +114,21 @@ export function VmbGoalsCenterClient() {
           {renderGoals("Archived Goals", grouped.archived)}
         </div>
       ) : (
-        <p className="vmb-page-state">Connect your book to unlock goals.</p>
+        <GoalsLockedState />
       )}
     </VmbPageFrame>
   );
+}
+
+function GoalsLockedState() {
+  useEffect(() => {
+    logTodayLockBranch({
+      file: "components/vmb/VmbGoalsCenterClient.tsx",
+      component: "GoalsLockedState",
+      message: "Connect your book to unlock goals.",
+      dataLoaded: false,
+    });
+  }, []);
+
+  return <p className="vmb-page-state">Connect your book to unlock goals.</p>;
 }

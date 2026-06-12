@@ -21,6 +21,7 @@ import type { TaikosQueueSummary } from "@/lib/taikos/queue/types";
 import { greetingForOperator } from "@/lib/taikos/context/greeting";
 import type { AiosContextPacket } from "@/lib/taikos/types";
 import type { VmbFullFlowDebug } from "@/lib/vmb/debug-full-flow";
+import { logTodayLockBranch, logTodayLockRendered } from "@/lib/vmb/today-lock-debug";
 
 type TodayData = {
   greeting: string;
@@ -75,14 +76,24 @@ type Props = {
   operatorName?: string;
   /** Original VMB process handoff — server-derived, not AIOS/CODA. */
   hasCompletedFirstIngest?: boolean;
+  wouldUnlockToday?: boolean;
+  lockReason?: string | null;
   activeAnalysisId?: string;
+  recordCount?: number;
+  clientCount?: number;
+  pageContext?: Record<string, unknown>;
 };
 
 export function VmbTodayClient({
   salonName = "Your Salon",
   operatorName = "Owner",
   hasCompletedFirstIngest = false,
+  wouldUnlockToday = false,
+  lockReason = null,
   activeAnalysisId,
+  recordCount = 0,
+  clientCount = 0,
+  pageContext,
 }: Props) {
   const [data, setData] = useState<TodayData | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
@@ -155,7 +166,12 @@ export function VmbTodayClient({
     let cancelled = false;
     async function loadFlowDebug() {
       try {
-        const res = await fetch("/api/vmb/debug/full-flow", {
+        const params = new URLSearchParams(window.location.search);
+        const analysis = params.get("analysis");
+        const url = analysis
+          ? `/api/vmb/debug/full-flow?analysis=${encodeURIComponent(analysis)}`
+          : "/api/vmb/debug/full-flow";
+        const res = await fetch(url, {
           cache: "no-store",
           credentials: "include",
         });
@@ -171,9 +187,53 @@ export function VmbTodayClient({
     return () => {
       cancelled = true;
     };
-  }, [hasCompletedFirstIngest]);
+  }, [hasCompletedFirstIngest, activeAnalysisId]);
 
   const todayUnlocked = hasCompletedFirstIngest;
+  const debugWouldUnlock = flowDebug?.todayLoader.wouldUnlockToday ?? wouldUnlockToday;
+  const debugLockReason = flowDebug?.todayLoader.lockReason ?? lockReason;
+  const debugAnalysisId =
+    flowDebug?.todayLoader.usesAnalysisId ?? activeAnalysisId ?? null;
+  const debugRecordCount = flowDebug?.todayLoader.recordCount ?? recordCount;
+  const debugClientCount = flowDebug?.todayLoader.clientCount ?? clientCount;
+
+  useEffect(() => {
+    if (todayUnlocked) return;
+    logTodayLockRendered({
+      hasCompletedFirstIngest,
+      wouldUnlockToday: debugWouldUnlock,
+      lockReason: debugLockReason,
+      analysisId: debugAnalysisId,
+      recordCount: debugRecordCount,
+      clientCount: debugClientCount,
+      dataLoaded: !!data,
+      pageContext,
+    });
+    logTodayLockBranch({
+      file: "components/vmb/VmbTodayClient.tsx",
+      component: "VmbTodayClient",
+      hasCompletedFirstIngest,
+      wouldUnlockToday: debugWouldUnlock,
+      lockReason: debugLockReason,
+      analysisId: debugAnalysisId,
+      recordCount: debugRecordCount,
+      clientCount: debugClientCount,
+      dataLoaded: !!data,
+      message: "Connect your book to unlock Today.",
+      pageContext,
+    });
+  }, [
+    todayUnlocked,
+    hasCompletedFirstIngest,
+    debugWouldUnlock,
+    debugLockReason,
+    debugAnalysisId,
+    debugRecordCount,
+    debugClientCount,
+    data,
+    pageContext,
+  ]);
+
   const codaSummary = data?.codaSummary ?? emptyCodaSummary(operatorName);
   const insights = codaSummary.insights ?? [];
   const greeting = data?.greeting ?? greetingForOperator(salonName, operatorName);
@@ -213,23 +273,20 @@ export function VmbTodayClient({
 
       {!todayUnlocked ? (
         <div className="vmb-page-state">
-          {process.env.NODE_ENV === "development" && flowDebug ? (
+          {process.env.NODE_ENV === "development" ? (
             <pre className="vmb-today-flow-debug">
               {[
-                `workspaceId: ${flowDebug.currentWorkspace.workspaceId ?? "—"}`,
-                `salonId: ${flowDebug.currentWorkspace.salonId ?? "—"}`,
-                `trialId: ${flowDebug.currentWorkspace.trialId ?? "—"}`,
-                `latestAnalysisId: ${flowDebug.currentWorkspace.latestAnalysisId ?? "—"}`,
-                `activePointer.analysisId: ${flowDebug.activeBookPointer.analysisId ?? "—"}`,
-                `todayLoader.usesAnalysisId: ${flowDebug.todayLoader.usesAnalysisId ?? "—"}`,
-                `recordCount: ${flowDebug.todayLoader.recordCount}`,
-                `clientCount: ${flowDebug.todayLoader.clientCount}`,
-                `hasCompletedFirstIngest: ${String(flowDebug.todayLoader.hasCompletedFirstIngest)}`,
-                `wouldUnlockToday: ${String(flowDebug.todayLoader.wouldUnlockToday)}`,
-                `lockReason: ${flowDebug.todayLoader.lockReason ?? "—"}`,
-                `findTheMoney.reason: ${flowDebug.findTheMoney.reason ?? "—"}`,
-                `ggenConversion.exists: ${String(flowDebug.ggenConversion.exists)}`,
-                `analysisStore.recordCount: ${flowDebug.analysisStore.recordCount}`,
+                "TODAY DEBUG",
+                `hasCompletedFirstIngest: ${String(hasCompletedFirstIngest)}`,
+                `wouldUnlockToday: ${String(debugWouldUnlock)}`,
+                `lockReason: ${debugLockReason ?? "—"}`,
+                `analysisId: ${debugAnalysisId ?? "—"}`,
+                `recordCount: ${debugRecordCount}`,
+                `clientCount: ${debugClientCount}`,
+                `activeAnalysisId: ${activeAnalysisId ?? "—"}`,
+                `server.trialId: ${String(pageContext?.trialId ?? "—")}`,
+                `api.latestAnalysisId: ${flowDebug?.currentWorkspace.latestAnalysisId ?? "—"}`,
+                `api.resolvedAnalysisFound: ${String(flowDebug?.todayLoader.resolvedAnalysisFound ?? "—")}`,
               ].join("\n")}
             </pre>
           ) : null}

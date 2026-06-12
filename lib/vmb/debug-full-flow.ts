@@ -177,15 +177,17 @@ export async function buildVmbFullFlowDebug(
       trialId: id ?? undefined,
     });
 
-  let lockReason: string | null = null;
-  if (!id) {
+  const wouldUnlockToday = pageContext?.wouldUnlockToday ?? hasCompletedFirstIngest;
+
+  let lockReason: string | null = pageContext?.lockReason ?? null;
+  if (lockReason === null && !id) {
     lockReason = "NO_TRIAL_SESSION";
-  } else if (!workspace) {
+  } else if (lockReason === null && !workspace) {
     lockReason = latestAnalysis || latestGgen ? "WORKSPACE_MISSING_BUT_DATA_EXISTS" : "WORKSPACE_MISSING";
-  } else if (!hasCompletedFirstIngest) {
+  } else if (lockReason === null && !hasCompletedFirstIngest) {
     if (latestGgen && !latestAnalysis) lockReason = "GGEN_CONVERTED_NO_ANALYSIS";
-    else if (latestAnalysis && !workspace.latestAnalysisId) lockReason = "ANALYSIS_NOT_LINKED_IN_WORKSPACE";
-    else if (latestAnalysis && workspace.latestAnalysisId !== latestAnalysis.analysisId) {
+    else if (latestAnalysis && !workspace?.latestAnalysisId) lockReason = "ANALYSIS_NOT_LINKED_IN_WORKSPACE";
+    else if (latestAnalysis && workspace?.latestAnalysisId !== latestAnalysis.analysisId) {
       lockReason = "WORKSPACE_ANALYSIS_ID_MISMATCH";
     } else if (activeBookPointer && usesAnalysisId && activeBookPointer.analysisId !== usesAnalysisId) {
       lockReason = "ACTIVE_POINTER_STALE";
@@ -274,7 +276,7 @@ export async function buildVmbFullFlowDebug(
       recordCount: activeAnalysis?.recordCount ?? 0,
       clientCount: activeAnalysis?.recordCount ?? 0,
       hasCompletedFirstIngest,
-      wouldUnlockToday: hasCompletedFirstIngest,
+      wouldUnlockToday,
       lockReason,
     },
   };

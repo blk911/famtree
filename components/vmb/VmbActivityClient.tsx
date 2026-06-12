@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ActivityTimeline } from "@/components/taikos/activity/ActivityTimeline";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
+import { logTodayLockBranch } from "@/lib/vmb/today-lock-debug";
 import type { TaikosActivitySummary } from "@/lib/taikos/activity/activity-types";
 
 export function VmbActivityClient() {
@@ -36,8 +37,21 @@ export function VmbActivityClient() {
       ) : summary ? (
         <ActivityTimeline summary={summary} />
       ) : (
-        <p className="vmb-page-state">Connect your book to unlock activity.</p>
+        <ActivityLockedState />
       )}
     </VmbPageFrame>
   );
+}
+
+function ActivityLockedState() {
+  useEffect(() => {
+    logTodayLockBranch({
+      file: "components/vmb/VmbActivityClient.tsx",
+      component: "ActivityLockedState",
+      message: "Connect your book to unlock activity.",
+      dataLoaded: false,
+    });
+  }, []);
+
+  return <p className="vmb-page-state">Connect your book to unlock activity.</p>;
 }

@@ -15,6 +15,7 @@ import {
 } from "@/lib/vmb/this-week-selection";
 import { buildVmbSalonHref } from "@/lib/vmb/salon-href";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
+import { logTodayLockBranch } from "@/lib/vmb/today-lock-debug";
 import { VmbPageEmpty, VmbPageFrame, VmbPageLoading } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import { clientOperatingScores } from "@/lib/vmb/client-operating-scores";
@@ -423,6 +424,15 @@ function EmptyState({
   ctaLabel: string;
   ctaHref: string;
 }) {
+  useEffect(() => {
+    logTodayLockBranch({
+      file: "components/vmb/VmbClientsClient.tsx",
+      component: "EmptyState",
+      message,
+      dataLoaded: false,
+    });
+  }, [message]);
+
   return (
     <VmbPageEmpty
       message={message}

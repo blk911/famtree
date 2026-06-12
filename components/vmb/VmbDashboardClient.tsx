@@ -6,6 +6,7 @@ import { VmbOperatingDashboard } from "@/components/vmb/dashboard/VmbOperatingDa
 import { VmbPageEmpty, VmbPageFrame, VmbPageLoading } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
+import { logTodayLockBranch } from "@/lib/vmb/today-lock-debug";
 import { isRefreshDue } from "@/lib/vmb/workspace-lifecycle";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
@@ -18,13 +19,23 @@ type Props = {
 };
 
 function EmptyHome({ noSession }: { noSession?: boolean }) {
+  const message = noSession
+    ? "Your salon session expired. Run Find The Money again to restore your workspace."
+    : "Start by finding the money in your book.";
+
+  useEffect(() => {
+    logTodayLockBranch({
+      file: "components/vmb/VmbDashboardClient.tsx",
+      component: "EmptyHome",
+      message,
+      dataLoaded: false,
+      lockReason: noSession ? "NO_TRIAL_SESSION" : "NO_ANALYSIS",
+    });
+  }, [message, noSession]);
+
   return (
     <VmbPageEmpty
-      message={
-        noSession
-          ? "Your salon session expired. Run Find The Money again to restore your workspace."
-          : "Start by finding the money in your book."
-      }
+      message={message}
       action={
         <Link
           href="/vmb/start"
