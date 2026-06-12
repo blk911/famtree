@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ActivityTimeline } from "@/components/taikos/activity/ActivityTimeline";
 import { TaikosInsightList } from "@/components/taikos/coda/TaikosInsightList";
 import { TodayCodaBanner } from "@/components/taikos/coda/TodayCodaBanner";
+import { TodayInlineAios } from "@/components/taikos/TodayInlineAios";
 import { GoalSummary } from "@/components/taikos/goals/GoalSummary";
 import { OpportunityList } from "@/components/taikos/opportunities/OpportunityList";
 import { TodayDraftPanel } from "@/components/taikos/workflow/TodayDraftPanel";
@@ -18,27 +19,17 @@ import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
 import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
 import type { TaikosQueueSummary } from "@/lib/taikos/queue/types";
 import { greetingForOperator } from "@/lib/taikos/context/greeting";
-import { resolveBookLoadedState } from "@/lib/vmb/book-status";
+import type { AiosContextPacket } from "@/lib/taikos/types";
 
 type TodayData = {
   greeting: string;
+  context: AiosContextPacket;
   codaSummary: CodaSummary;
   goalSummary: TaikosGoalSummary;
   opportunitySummary: TaikosOpportunitySummary;
   queueSummary: TaikosQueueSummary;
   activitySummary: TaikosActivitySummary;
   draftSummary: TaikosDraftSummary;
-};
-
-type BookDebugState = {
-  salonId?: string;
-  analysisId?: string;
-  hasRealBookData?: boolean;
-  totalClients?: number;
-  importedClientCount?: number;
-  recordCount?: number;
-  clientsLength?: number;
-  bookLoadedResolved: boolean;
 };
 
 const EMPTY_GOAL_SUMMARY: TaikosGoalSummary = {
@@ -81,15 +72,26 @@ const EMPTY_DRAFT_SUMMARY: TaikosDraftSummary = {
 type Props = {
   salonName?: string;
   operatorName?: string;
+  hasCompletedFirstIngest?: boolean;
+  activeAnalysisId?: string;
 };
 
-export function VmbTodayClient({ salonName, operatorName }: Props) {
+export function VmbTodayClient({
+  salonName,
+  operatorName,
+  hasCompletedFirstIngest = false,
+  activeAnalysisId,
+}: Props) {
   const [data, setData] = useState<TodayData | null>(null);
-  const [bookLoaded, setBookLoaded] = useState(false);
-  const [debug, setDebug] = useState<BookDebugState | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    if (!hasCompletedFirstIngest) {
+      setData(null);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const ctxRes = await fetch(
@@ -98,56 +100,16 @@ export function VmbTodayClient({ salonName, operatorName }: Props) {
       );
       const ctxJson = (await ctxRes.json()) as {
         ok: boolean;
-        data?: {
-          salonId: string;
-          salonName: string;
-          operatorName?: string;
-          analysisId?: string;
-          hasRealBookData?: boolean;
-          recordCount?: number;
-          clientSummary?: { totalClients?: number };
-          codaSummary?: CodaSummary;
-          goalSummary?: TaikosGoalSummary;
-          opportunitySummary?: TaikosOpportunitySummary;
-          queueSummary?: TaikosQueueSummary;
-          activitySummary?: TaikosActivitySummary;
-          draftSummary?: TaikosDraftSummary;
-        };
+        data?: AiosContextPacket;
       };
 
-      const slice = ctxJson.data;
-      const loaded = slice
-        ? resolveBookLoadedState({
-            hasRealBookData: slice.hasRealBookData,
-            clientSummary: slice.clientSummary,
-            codaSummary: slice.codaSummary,
-            analysisId: slice.analysisId,
-            recordCount: slice.recordCount,
-          })
-        : false;
-
-      setBookLoaded(loaded);
-
-      if (process.env.NODE_ENV === "development") {
-        const debugState: BookDebugState = {
-          salonId: slice?.salonId,
-          analysisId: slice?.analysisId,
-          hasRealBookData: slice?.hasRealBookData,
-          totalClients: slice?.clientSummary?.totalClients,
-          importedClientCount: slice?.codaSummary?.context?.importedClientCount,
-          recordCount: slice?.recordCount,
-          clientsLength: 0,
-          bookLoadedResolved: loaded,
-        };
-        setDebug(debugState);
-        console.log("[vmb:today:debug]", debugState);
-      }
-
-      if (ctxRes.ok && ctxJson.ok && slice) {
+      if (ctxRes.ok && ctxJson.ok && ctxJson.data) {
+        const slice = ctxJson.data;
         const owner = slice.operatorName ?? operatorName ?? "Owner";
         const codaSummary = slice.codaSummary ?? emptyCodaSummary(owner);
         setData({
           greeting: greetingForOperator(slice.salonName ?? salonName ?? "Your Salon", owner),
+          context: slice,
           codaSummary,
           goalSummary: slice.goalSummary ?? EMPTY_GOAL_SUMMARY,
           opportunitySummary: slice.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY,
@@ -160,11 +122,10 @@ export function VmbTodayClient({ salonName, operatorName }: Props) {
       }
     } catch {
       setData(null);
-      setBookLoaded(false);
     } finally {
       setLoading(false);
     }
-  }, [operatorName, salonName]);
+  }, [hasCompletedFirstIngest, operatorName, salonName]);
 
   useEffect(() => {
     void load();
@@ -172,56 +133,50 @@ export function VmbTodayClient({ salonName, operatorName }: Props) {
 
   const codaSummary = data?.codaSummary ?? emptyCodaSummary(operatorName ?? "Owner");
   const insights = codaSummary.insights ?? [];
-  const showToday = !!data && bookLoaded;
 
   return (
     <VmbPageFrame
       eyebrow={salonName ?? "Your Salon"}
       title="Today"
       subtitle="Relationship guidance — context, objective, discovery, and your next action."
+      showAiosSparkle={false}
     >
-      {process.env.NODE_ENV === "development" && debug ? (
-        <pre
-          className="vmb-page-state"
-          style={{ fontSize: 11, marginBottom: 12, whiteSpace: "pre-wrap" }}
-        >
-          {[
-            `salonId: ${debug.salonId ?? "—"}`,
-            `analysisId: ${debug.analysisId ?? "—"}`,
-            `hasRealBookData: ${String(debug.hasRealBookData ?? false)}`,
-            `clientSummary.totalClients: ${debug.totalClients ?? 0}`,
-            `codaSummary.context.importedClientCount: ${debug.importedClientCount ?? 0}`,
-            `recordCount: ${debug.recordCount ?? 0}`,
-            `clients.length: ${debug.clientsLength ?? 0}`,
-            `bookLoadedResolved: ${String(debug.bookLoadedResolved)}`,
-          ].join("\n")}
-        </pre>
-      ) : null}
-
       {loading ? (
         <p className="vmb-page-state">Loading your operating brief…</p>
-      ) : showToday ? (
+      ) : !hasCompletedFirstIngest ? (
+        <div className="vmb-page-state">
+          <p>Connect your book to unlock Today.</p>
+          <p style={{ marginTop: 12 }}>
+            <Link href="/vmb/start">Find The Money</Link>
+          </p>
+        </div>
+      ) : data ? (
         <div className="vmb-today">
-          <TodayCodaBanner greeting={data!.greeting} coda={codaSummary} />
+          <TodayCodaBanner greeting={data.greeting} coda={codaSummary} />
+
+          <TodayInlineAios
+            context={data.context}
+            analysisId={activeAnalysisId ?? data.context.analysisId}
+          />
 
           <TaikosInsightList insights={insights} onRefresh={load} />
 
           <OpportunityList
-            summary={data!.opportunitySummary}
+            summary={data.opportunitySummary}
             insights={insights}
-            goals={data!.goalSummary.goals}
+            goals={data.goalSummary.goals}
             onRefresh={load}
           />
 
           <GoalSummary
-            summary={data!.goalSummary}
-            opportunities={data!.opportunitySummary.opportunities}
+            summary={data.goalSummary}
+            opportunities={data.opportunitySummary.opportunities}
             onRefresh={load}
           />
 
-          <TodayQueuePanel summary={data!.queueSummary} />
+          <TodayQueuePanel summary={data.queueSummary} />
 
-          <TodayDraftPanel drafts={data!.draftSummary.recentDrafts} onRefresh={load} />
+          <TodayDraftPanel drafts={data.draftSummary.recentDrafts} onRefresh={load} />
 
           <section className="vmb-today__section">
             <div className="vmb-today__section-head">
@@ -230,11 +185,11 @@ export function VmbTodayClient({ salonName, operatorName }: Props) {
                 View all
               </Link>
             </div>
-            <ActivityTimeline summary={data!.activitySummary} compact />
+            <ActivityTimeline summary={data.activitySummary} compact />
           </section>
         </div>
       ) : (
-        <p className="vmb-page-state">Connect your book to unlock Today.</p>
+        <p className="vmb-page-state">Could not load Today — refresh or re-upload your book.</p>
       )}
     </VmbPageFrame>
   );

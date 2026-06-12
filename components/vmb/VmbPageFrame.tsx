@@ -26,7 +26,7 @@ export function VmbPageFrame({
   width = "standard",
   headerless = false,
   titleVariant = "default",
-  showAiosSparkle = true,
+  showAiosSparkle = false,
 }: Props) {
   const showHeader = !headerless && (title || subtitle || eyebrow);
   const titleClass =

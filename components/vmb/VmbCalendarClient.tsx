@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useAios } from "@/components/taikos/AiosProvider";
+import { InlineDeliverablePreview } from "@/components/taikos/workflow/InlineDeliverablePreview";
+import { OpportunityLifecycle } from "@/components/taikos/workflow/OpportunityLifecycle";
+import { useInlineActionWorkflow } from "@/components/taikos/workflow/useInlineActionWorkflow";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
-import { contractAction } from "@/lib/taikos/actions/action-registry";
 import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
 import type { AiosCalendarSummary } from "@/lib/taikos/types";
 
@@ -13,15 +14,82 @@ type CalendarData = {
   goalTitle?: string;
 };
 
+function CalendarSlotWorkflow({ goalTitle }: { goalTitle?: string }) {
+  const workflow = useInlineActionWorkflow({
+    actionType: "VIEW_CALENDAR_GAP",
+    sourceId: "cal-gap",
+    pathname: "/vmb/appointments",
+  });
+
+  return (
+    <>
+      <OpportunityLifecycle stage={workflow.stage} />
+      {goalTitle ? <p className="vmb-calendar-slot-card__goal">Goal: {goalTitle}</p> : null}
+      {workflow.stage === "detected" ? (
+        <div className="taikos-opp-card__actions">
+          <button
+            type="button"
+            className="taikos-opp-card__cta"
+            disabled={workflow.busy}
+            onClick={() => void workflow.runPreview()}
+          >
+            Preview Campaign
+          </button>
+          <button
+            type="button"
+            className="taikos-opp-card__cta taikos-opp-card__cta--secondary"
+            disabled={workflow.busy}
+            onClick={() => void workflow.runPreview()}
+          >
+            Add To Queue
+          </button>
+        </div>
+      ) : null}
+
+      {workflow.expanded && workflow.preview ? (
+        <div className="taikos-inline-workflow">
+          <InlineDeliverablePreview deliverable={workflow.preview.deliverable} />
+          {workflow.stage === "previewed" ? (
+            <div className="taikos-inline-workflow__actions">
+              <button
+                type="button"
+                className="taikos-opp-card__cta"
+                disabled={workflow.busy}
+                onClick={() => void workflow.runApprove()}
+              >
+                Approve
+              </button>
+            </div>
+          ) : null}
+          {workflow.stage === "approved" ? (
+            <div className="taikos-inline-workflow__approved">
+              <p className="taikos-inline-workflow__message">{workflow.statusMessage}</p>
+              {workflow.canQueue ? (
+                <button
+                  type="button"
+                  className="taikos-opp-card__cta"
+                  disabled={workflow.busy}
+                  onClick={() => void workflow.runQueue()}
+                >
+                  Add To Queue
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 export function VmbCalendarClient() {
-  const { openPanel, runContractAction } = useAios();
   const [data, setData] = useState<CalendarData | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/taikos/context?pathname=/vmb/appointments", {
+      const res = await fetch("/api/taikos/context?pathname=/vmb/appointments&recordLogin=0", {
         cache: "no-store",
         credentials: "include",
       });
@@ -53,11 +121,6 @@ export function VmbCalendarClient() {
     void load();
   }, [load]);
 
-  function handlePreview() {
-    void openPanel("page-assistant");
-    runContractAction(contractAction("cal-gap", "VIEW_CALENDAR_GAP", "Preview Campaign"));
-  }
-
   return (
     <VmbPageFrame title="Calendar" subtitle="Open slots, cancellations, and fill opportunities from your book.">
       {loading ? (
@@ -70,21 +133,10 @@ export function VmbCalendarClient() {
               <p className="vmb-calendar-slot-card__value">
                 Potential value:{" "}
                 <strong>
-                  $
-                  {(
-                    data.opportunitySummary.topOpportunity?.estimatedValue ?? 95
-                  ).toLocaleString()}
+                  ${(data.opportunitySummary.topOpportunity?.estimatedValue ?? 95).toLocaleString()}
                 </strong>
               </p>
-              {data.goalTitle ? <p className="vmb-calendar-slot-card__goal">Goal: {data.goalTitle}</p> : null}
-              <div className="taikos-opp-card__actions">
-                <button type="button" className="taikos-opp-card__cta" onClick={handlePreview}>
-                  Preview Campaign
-                </button>
-                <button type="button" className="taikos-opp-card__cta taikos-opp-card__cta--secondary" onClick={handlePreview}>
-                  Add To Queue
-                </button>
-              </div>
+              <CalendarSlotWorkflow goalTitle={data.goalTitle} />
             </article>
           ))}
         </div>

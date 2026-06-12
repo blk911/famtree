@@ -1,16 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAios } from "@/components/taikos/AiosProvider";
-import { OpportunityCard } from "@/components/taikos/opportunities/OpportunityCard";
+import { OpportunityWorkflowCard } from "@/components/taikos/workflow/OpportunityWorkflowCard";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
-import { contractAction } from "@/lib/taikos/actions/action-registry";
 import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
 import type { TaikosOpportunity, TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
-import type { TaikosActionType } from "@/lib/taikos/types";
 
 export function VmbOpportunitiesCenterClient() {
-  const { openPanel, runContractAction } = useAios();
   const [summary, setSummary] = useState<TaikosOpportunitySummary | null>(null);
   const [goals, setGoals] = useState<TaikosGoalSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,11 +48,6 @@ export function VmbOpportunitiesCenterClient() {
     return goals.goals.find((g) => g.goalId === opp.linkedGoalId)?.title;
   }
 
-  function handlePreview(actionType: TaikosActionType) {
-    void openPanel("page-assistant");
-    runContractAction(contractAction(`opp-${actionType}`, actionType, "Preview Draft"));
-  }
-
   return (
     <VmbPageFrame
       title="Opportunities"
@@ -72,11 +63,11 @@ export function VmbOpportunitiesCenterClient() {
                 <h3 className="taikos-section-title">{priority} Priority</h3>
                 <div className="vmb-opp-center__grid">
                   {grouped[priority].map((opp) => (
-                    <OpportunityCard
+                    <OpportunityWorkflowCard
                       key={opp.opportunityId}
                       opportunity={opp}
                       goalTitle={goalTitleFor(opp)}
-                      onPreviewDraft={handlePreview}
+                      onRefresh={load}
                     />
                   ))}
                 </div>

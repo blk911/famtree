@@ -1404,6 +1404,70 @@
   color: #78716c;
 }
 
+.today-inline-aios {
+  margin: 12px 0 20px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.today-inline-aios__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.today-inline-aios__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a16207;
+}
+
+.today-inline-aios__mode {
+  margin: 0;
+  font-size: 12px;
+  color: #78716c;
+}
+
+.today-inline-aios__intro,
+.today-inline-aios__objective,
+.today-inline-aios__value,
+.today-inline-aios__loading,
+.today-inline-aios__error,
+.today-inline-aios__search-summary {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #44403c;
+}
+
+.today-inline-aios__recs {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-size: 14px;
+  color: #57534e;
+}
+
+.today-inline-aios__search ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  color: #57534e;
+}
+
+.today-inline-aios__cards {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
 .vmb-today-coda-banner__search {
   margin-top: 14px;
   display: grid;

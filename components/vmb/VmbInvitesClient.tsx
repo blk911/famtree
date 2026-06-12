@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftPreviewModal";
-import { AiosHeaderSparkle } from "@/components/taikos/AiosHeaderSparkle";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import {
@@ -162,10 +161,7 @@ export function VmbInvitesClient({
     >
       <header className="vmb-page-frame__header">
         <p className="vmb-page-frame__eyebrow">{typeof salonName === "string" ? salonName : undefined}</p>
-        <div className="vmb-page-frame__title-row">
-          <h1 className="vmb-page-frame__title">Invites</h1>
-          <AiosHeaderSparkle label="Invites" />
-        </div>
+        <h1 className="vmb-page-frame__title">Invites</h1>
         <p className="vmb-page-frame__subtitle">
           Review the messages VMB prepared from this week&apos;s client book.
         </p>

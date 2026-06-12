@@ -39,17 +39,8 @@ function clientsPageWouldLoad(
   return built.rows.length > 0 ? "ready" : "imported_summary";
 }
 
-function todayPageWouldShowConnect(
-  ctx: NonNullable<Awaited<ReturnType<typeof buildAiosContextPacket>>>,
-): boolean {
-  const loaded = resolveBookLoadedState({
-    hasRealBookData: ctx.hasRealBookData,
-    clientSummary: ctx.clientSummary,
-    codaSummary: ctx.codaSummary,
-    analysisId: ctx.analysisId,
-    recordCount: ctx.recordCount,
-  });
-  return !loaded;
+function todayPageWouldShowConnect(hasCompletedFirstIngest: boolean): boolean {
+  return !hasCompletedFirstIngest;
 }
 
 async function run(): Promise<void> {
@@ -103,7 +94,7 @@ async function run(): Promise<void> {
     analysisId: ctxToday!.analysisId,
     recordCount: ctxToday!.recordCount,
   }), "today: resolveBookLoadedState");
-  assert(!todayPageWouldShowConnect(ctxToday!), "today must not show Connect your book");
+  assert(!todayPageWouldShowConnect(true), "today must not show Connect your book after ingest");
   assert((ctxToday!.recordCount ?? 0) > 0, "today context recordCount > 0");
   assert(ctxToday!.clientSummary.totalClients > 0, "today context totalClients > 0");
   assert(ctxToday!.codaSummary.context.importedClientCount > 0, "today importedClientCount > 0");

@@ -8,5 +8,12 @@ export const metadata: Metadata = {
 
 export default async function VmbTodayPage() {
   const ctx = await loadVmbPageContext({});
-  return <VmbTodayClient salonName={ctx.salonName} />;
+  return (
+    <VmbTodayClient
+      salonName={ctx.salonName}
+      operatorName={ctx.workspace?.ownerName}
+      hasCompletedFirstIngest={ctx.hasCompletedFirstIngest}
+      activeAnalysisId={ctx.activeAnalysisId}
+    />
+  );
 }
