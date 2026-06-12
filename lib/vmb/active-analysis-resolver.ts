@@ -1,9 +1,10 @@
-import { getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
+import { getActiveBookPointer } from "@/lib/vmb/active-book-pointer";
+import { getVmbBookAnalysis, getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
 import { workspaceLatestAnalysisId } from "@/lib/vmb/workspace-lifecycle";
 import { getWorkspaceForTrial } from "@/lib/vmb/workspace-store";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
-export type ActiveVmbAnalysisSource = "query" | "session" | "workspace" | "none";
+export type ActiveVmbAnalysisSource = "query" | "session" | "workspace" | "active-book" | "none";
 
 export type ResolvedActiveVmbAnalysis = {
   analysisId?: string;
@@ -48,6 +49,17 @@ export async function getActiveVmbAnalysis(
   if (latestId) {
     const analysis = await tryAnalysisForTrial(trialId, latestId);
     if (analysis) return { analysisId: analysis.analysisId, source: "workspace" };
+  }
+
+  const pointer = await getActiveBookPointer(trialId);
+  if (pointer?.analysisId) {
+    const analysis = await tryAnalysisForTrial(trialId, pointer.analysisId);
+    if (analysis) return { analysisId: analysis.analysisId, source: "active-book" };
+    const loose = await getVmbBookAnalysis(pointer.analysisId);
+    if (loose && (!loose.trialId || loose.trialId === trialId)) {
+      return { analysisId: loose.analysisId, source: "active-book" };
+    }
+    return { analysisId: pointer.analysisId, source: "active-book" };
   }
 
   return { source: "none" };

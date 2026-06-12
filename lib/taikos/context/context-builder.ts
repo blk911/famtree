@@ -1,5 +1,7 @@
+import { getActiveBookPointer } from "@/lib/vmb/active-book-pointer";
 import { getActiveVmbAnalysis } from "@/lib/vmb/active-analysis-resolver";
-import { getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
+import { getVmbBookAnalysis, getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
+import { resolveBookLoadedState } from "@/lib/vmb/book-status";
 import { buildVmbOperatingSnapshot } from "@/lib/vmb/operating-system";
 import { buildAppointmentOpeningsSummary } from "@/lib/vmb/operating-system/appointment-openings";
 import { listInviteDraftsForTrial } from "@/lib/vmb/invite-drafts/invite-draft-store";
@@ -17,6 +19,7 @@ import { summarizeOpportunities } from "@/lib/taikos/opportunities/opportunity-s
 import { ensureSeedActivityFromContext, summarizeActivityForSalon } from "@/lib/taikos/activity/activity-builder";
 import { listAllQueueItems } from "@/lib/taikos/queue/queue-store";
 import { summarizeQueue } from "@/lib/taikos/queue/queue-summary";
+import { buildCodaSummary } from "@/lib/taikos/coda/coda";
 import { runAllAiosRules } from "@/lib/taikos/rules";
 import {
   getSessionSnapshot,
@@ -59,13 +62,25 @@ export async function buildAiosContextPacket(
   }
   await recordPageView(salonId, operatorId, input.pathname);
 
+  const activeBookPointer = await getActiveBookPointer(salonId);
+
   const resolved = await getActiveVmbAnalysis(input.trialId, {
     queryId: input.analysisId?.trim(),
   });
-  const analysisId = resolved.analysisId ?? workspaceLatestAnalysisId(workspace);
-  const analysis = analysisId
+  const analysisId =
+    resolved.analysisId ??
+    activeBookPointer?.analysisId ??
+    workspaceLatestAnalysisId(workspace);
+
+  let analysis = analysisId
     ? await getVmbBookAnalysisForTrial(analysisId, input.trialId)
     : undefined;
+  if (!analysis && analysisId && activeBookPointer?.salonId === salonId) {
+    const loose = await getVmbBookAnalysis(analysisId);
+    if (loose && (!loose.trialId || loose.trialId === salonId)) {
+      analysis = loose;
+    }
+  }
 
   const drafts = analysisId
     ? await listInviteDraftsForTrial(input.trialId, analysisId)
@@ -78,8 +93,34 @@ export async function buildAiosContextPacket(
 
   const snapshot = buildVmbOperatingSnapshot(analysis, { inviteState });
   const openings = analysis ? buildAppointmentOpeningsSummary(analysis) : { count: 0, slots: [] };
-  const clientSummary = buildClientSummaryFromAnalysis(analysis);
-  const contactSignals = buildContactSignals(analysis);
+  let clientSummary = buildClientSummaryFromAnalysis(analysis);
+  let contactSignals = buildContactSignals(analysis);
+
+  const pointerRecordCount = activeBookPointer?.recordCount ?? 0;
+  const pointerClientCount = activeBookPointer?.clientCount ?? 0;
+  const recordCount = analysis?.recordCount ?? pointerRecordCount;
+
+  if (
+    activeBookPointer &&
+    activeBookPointer.salonId === salonId &&
+    resolveBookLoadedState({
+      hasRealBookData: contactSignals.hasRealBookData,
+      clientSummary,
+      analysisId: analysis?.analysisId ?? analysisId,
+      recordCount,
+    }) === false
+  ) {
+    const imported = Math.max(pointerClientCount, pointerRecordCount);
+    clientSummary = {
+      ...clientSummary,
+      totalClients: Math.max(clientSummary.totalClients, imported),
+      activeClients: Math.max(clientSummary.activeClients, imported),
+    };
+    contactSignals = {
+      ...contactSignals,
+      hasRealBookData: imported > 0,
+    };
+  }
   const draftSummary = await summarizeDraftsForSalon(salonId);
   const basePage = resolvePageContext(input.pathname, input.searchParams);
 
@@ -120,13 +161,24 @@ export async function buildAiosContextPacket(
   const salonName = workspace.salonName?.trim() || analysis?.salonName?.trim() || "Your Salon";
   const operatorName = workspace.ownerName?.trim() || input.trialId;
 
+  const resolvedAnalysisId = analysis?.analysisId ?? analysisId ?? activeBookPointer?.analysisId;
+  const hasRealBookData =
+    contactSignals.hasRealBookData ||
+    resolveBookLoadedState({
+      hasRealBookData: contactSignals.hasRealBookData,
+      clientSummary,
+      analysisId: resolvedAnalysisId,
+      recordCount,
+    });
+
   const basePacket = {
     salonId,
     operatorId,
     operatorName,
     salonName,
-    analysisId: analysis?.analysisId ?? analysisId,
-    hasRealBookData: contactSignals.hasRealBookData,
+    analysisId: resolvedAnalysisId,
+    recordCount,
+    hasRealBookData,
     contactCandidates: contactSignals.contactCandidates,
     overdueClients: contactSignals.overdueClients,
     saturdayCandidates: contactSignals.saturdayCandidates,
@@ -159,7 +211,7 @@ export async function buildAiosContextPacket(
     generatedAt: new Date().toISOString(),
   } satisfies Omit<
     AiosContextPacket,
-    "goalSummary" | "opportunitySummary" | "queueSummary" | "activitySummary"
+    "goalSummary" | "opportunitySummary" | "queueSummary" | "activitySummary" | "codaSummary"
   >;
 
   const goalSummary = await summarizeGoalsForSalon(basePacket as AiosContextPacket);
@@ -171,11 +223,37 @@ export async function buildAiosContextPacket(
   const queueItems = await listAllQueueItems(salonId);
   const queueSummary = summarizeQueue(queueItems);
 
+  let codaSummary = buildCodaSummary(
+    { ...basePacket, goalSummary, opportunitySummary, queueSummary } as AiosContextPacket,
+    analysis,
+    workspace,
+  );
+
+  if (activeBookPointer && activeBookPointer.salonId === salonId) {
+    const imported = Math.max(
+      codaSummary.context.importedClientCount,
+      clientSummary.totalClients,
+      pointerClientCount,
+      pointerRecordCount,
+    );
+    if (imported > codaSummary.context.importedClientCount) {
+      codaSummary = {
+        ...codaSummary,
+        context: {
+          ...codaSummary.context,
+          importedClientCount: imported,
+          verified: codaSummary.context.verified || workspace.firstIngestCompleted,
+        },
+      };
+    }
+  }
+
   const partialCtx = {
     ...basePacket,
     goalSummary,
     opportunitySummary,
     queueSummary,
+    codaSummary,
     activitySummary: { totalEvents: 0, recentEvents: [] },
   } as AiosContextPacket;
   await ensureSeedActivityFromContext(partialCtx);
@@ -195,6 +273,7 @@ export async function buildAiosContextPacket(
     goalSummary,
     opportunitySummary,
     queueSummary,
+    codaSummary,
     activitySummary,
   };
 }

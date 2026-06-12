@@ -96,6 +96,7 @@ export function AiosProvider({ children, analysisId }: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const panelLayout = usePanelLayout();
+  const shouldAutoBrief = !pathname?.startsWith("/vmb/today");
   const [open, setOpen] = useState(false);
   const [response, setResponse] = useState<AiosResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -104,6 +105,7 @@ export function AiosProvider({ children, analysisId }: Props) {
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoOpened = useRef(false);
+  const panelLayoutRef = useRef(panelLayout);
 
   const query = useMemo(() => {
     const params = new URLSearchParams();
@@ -114,39 +116,45 @@ export function AiosProvider({ children, analysisId }: Props) {
     return params.toString();
   }, [pathname, analysisId, searchParams]);
 
-  const fetchBriefing = useCallback(
-    async (mode: AiosPanelMode, question?: string) => {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams(query);
-        params.set("mode", mode);
-        if (question) params.set("question", question);
-        const res = await fetch(`/api/taikos/briefing?${params}`, {
-          cache: "no-store",
-          credentials: "include",
+  useEffect(() => {
+    panelLayoutRef.current = panelLayout;
+  }, [panelLayout]);
+
+  const fetchBriefing = useCallback(async (mode: AiosPanelMode, question?: string) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams(query);
+      params.set("mode", mode);
+      if (question) params.set("question", question);
+      const res = await fetch(`/api/taikos/briefing?${params}`, {
+        cache: "no-store",
+        credentials: "include",
+      });
+      const json = (await res.json()) as {
+        ok: boolean;
+        data?: { response: AiosResponse };
+      };
+      if (res.ok && json.ok && json.data?.response) {
+        setResponse({
+          ...json.data.response,
+          layout: json.data.response.layout ?? panelLayoutRef.current,
         });
-        const json = (await res.json()) as {
-          ok: boolean;
-          data?: { response: AiosResponse };
-        };
-        if (res.ok && json.ok && json.data?.response) {
-          setResponse({
-            ...json.data.response,
-            layout: json.data.response.layout ?? panelLayout,
-          });
-          setHasSession(true);
-        } else if (res.status === 401) {
-          setHasSession(false);
-          setResponse(null);
-        }
-      } catch {
+        setHasSession(true);
+      } else if (res.status === 401) {
+        setHasSession(false);
         setResponse(null);
-      } finally {
-        setLoading(false);
       }
-    },
-    [query, panelLayout],
-  );
+    } catch {
+      setResponse(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [query]);
+
+  const fetchBriefingRef = useRef(fetchBriefing);
+  useEffect(() => {
+    fetchBriefingRef.current = fetchBriefing;
+  }, [fetchBriefing]);
 
   const clearIdleTimer = useCallback(() => {
     if (idleTimer.current) {
@@ -162,13 +170,18 @@ export function AiosProvider({ children, analysisId }: Props) {
   const scheduleIdleCollapse = useCallback(() => {
     clearIdleTimer();
     idleTimer.current = setTimeout(async () => {
-      await fetchBriefing("idle-summary");
+      await fetchBriefingRef.current("idle-summary");
       collapseTimer.current = setTimeout(() => {
         setOpen(false);
         setResponse(null);
       }, 3200);
     }, IDLE_MS);
-  }, [clearIdleTimer, fetchBriefing]);
+  }, [clearIdleTimer]);
+
+  const scheduleIdleCollapseRef = useRef(scheduleIdleCollapse);
+  useEffect(() => {
+    scheduleIdleCollapseRef.current = scheduleIdleCollapse;
+  }, [scheduleIdleCollapse]);
 
   const recordInteraction = useCallback(async () => {
     try {
@@ -181,27 +194,27 @@ export function AiosProvider({ children, analysisId }: Props) {
     } catch {
       // non-blocking
     }
-    scheduleIdleCollapse();
-  }, [scheduleIdleCollapse]);
+    scheduleIdleCollapseRef.current();
+  }, []);
 
   const openPanel = useCallback(
     async (mode: AiosPanelMode = "page-assistant") => {
       setOpen(true);
-      await fetchBriefing(mode);
+      await fetchBriefingRef.current(mode);
       await recordInteraction();
-      scheduleIdleCollapse();
+      scheduleIdleCollapseRef.current();
     },
-    [fetchBriefing, recordInteraction, scheduleIdleCollapse],
+    [recordInteraction],
   );
 
   const askQuestion = useCallback(
     async (question: string) => {
       setOpen(true);
-      await fetchBriefing("question", question);
+      await fetchBriefingRef.current("question", question);
       await recordInteraction();
-      scheduleIdleCollapse();
+      scheduleIdleCollapseRef.current();
     },
-    [fetchBriefing, recordInteraction, scheduleIdleCollapse],
+    [recordInteraction],
   );
 
   const closePanel = useCallback(() => {
@@ -374,10 +387,12 @@ export function AiosProvider({ children, analysisId }: Props) {
   }, []);
 
   useEffect(() => {
+    if (!shouldAutoBrief) return;
+
     let cancelled = false;
     async function maybeAutoBrief() {
       try {
-        const ctxRes = await fetch(`/api/taikos/context?${query}&aiosOpen=0`, {
+        const ctxRes = await fetch(`/api/taikos/context?${query}&aiosOpen=0&recordLogin=0`, {
           cache: "no-store",
           credentials: "include",
         });
@@ -402,8 +417,8 @@ export function AiosProvider({ children, analysisId }: Props) {
         if (shouldOpen && !autoOpened.current) {
           autoOpened.current = true;
           setOpen(true);
-          await fetchBriefing("briefing");
-          scheduleIdleCollapse();
+          await fetchBriefingRef.current("briefing");
+          scheduleIdleCollapseRef.current();
         }
       } catch {
         // silent
@@ -413,7 +428,7 @@ export function AiosProvider({ children, analysisId }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [query, fetchBriefing, scheduleIdleCollapse]);
+  }, [query, shouldAutoBrief]);
 
   useEffect(() => {
     if (!hasSession) return;

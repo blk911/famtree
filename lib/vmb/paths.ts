@@ -34,6 +34,11 @@ export function getVmbWorkspacesFile(): string {
   return path.join(getVmbDataDir(), "workspaces.json");
 }
 
+/** Canonical active book pointer — one row per salon (trialId). */
+export function getVmbActiveBookFile(): string {
+  return path.join(getVmbDataDir(), "active-book.json");
+}
+
 /** Legacy file-upload imports (admin engine path) — kept separate from book paste flow. */
 export function getVmbTrialImportsDir(): string {
   return path.join(getVmbDataDir(), "trial-imports");

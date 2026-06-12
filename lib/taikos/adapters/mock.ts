@@ -1,4 +1,5 @@
 import { answerMockQuestion } from "@/lib/taikos/adapters/mock-questions";
+import { hasLoadedBookData } from "@/lib/taikos/context/has-loaded-book";
 import { buildMorningBriefing } from "@/lib/taikos/orchestrator/morning-briefing";
 import type { AiosAction, AiosResponse, GenerateAiosInput } from "@/lib/taikos/types";
 
@@ -26,10 +27,14 @@ export async function mockAiosAdapter(input: GenerateAiosInput): Promise<AiosRes
   }
 
   if (mode === "page-assistant") {
+    const bookLoaded = hasLoadedBookData(context);
+    const intro = bookLoaded
+      ? context.currentPage.assistantIntro
+      : "Complete Find The Money to load your client book, then I can guide today's moves.";
     return baseResponse({
       mode: "page-assistant",
-      message: context.currentPage.assistantIntro,
-      summary: context.currentPage.assistantIntro,
+      message: intro,
+      summary: intro,
       cards: [
         {
           id: "page-assist",
@@ -43,7 +48,7 @@ export async function mockAiosAdapter(input: GenerateAiosInput): Promise<AiosRes
       recommendations: context.recommendations.map((r) => r.message),
       recommendedActions: context.currentPage.availableActions,
       estimatedValue: context.revenueSummary.potentialRevenue,
-      pageContextLine: context.currentPage.assistantIntro,
+      pageContextLine: intro,
       pageContext: context.currentPage,
       followUpPrompt: "Ask tAIkOS anything about this page.",
     });

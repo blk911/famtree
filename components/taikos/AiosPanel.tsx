@@ -119,6 +119,7 @@ export function AiosPanel({
           onEnqueue={onEnqueueAction}
           onSkipQueue={onSkipQueue}
           onCancel={onCancelPreview}
+          onSkip={onCancelPreview}
         />
       ) : null}
 

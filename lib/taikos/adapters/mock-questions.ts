@@ -1,4 +1,5 @@
 import { contractAction } from "@/lib/taikos/actions/action-registry";
+import { hasLoadedBookData } from "@/lib/taikos/context/has-loaded-book";
 import type { AiosAction, AiosContextPacket, AiosResponse } from "@/lib/taikos/types";
 
 const FALLBACK_CONTACTS = [
@@ -60,28 +61,28 @@ export function answerMockQuestion(ctx: AiosContextPacket, question: string): Ai
   const q = normalizeQuestion(question);
 
   if (q.includes("who should i contact") || q.includes("contact today")) {
-    const candidates = ctx.hasRealBookData
+    const candidates = hasLoadedBookData(ctx)
       ? ctx.contactCandidates
       : FALLBACK_CONTACTS;
     return candidateCards(
       ctx,
       candidates,
       "Today's contacts",
-      ctx.hasRealBookData
+      hasLoadedBookData(ctx)
         ? "These clients are your strongest moves for today."
         : "Connect your book to see real client names. Showing placeholder until ingest completes.",
     );
   }
 
   if (q.includes("saturday") || q.includes("likely to book")) {
-    const candidates = ctx.hasRealBookData ? ctx.saturdayCandidates : FALLBACK_CONTACTS;
+    const candidates = hasLoadedBookData(ctx) ? ctx.saturdayCandidates : FALLBACK_CONTACTS;
     const slots = ctx.calendarSummary.slots.join(" · ");
     return {
       ...candidateCards(
         ctx,
         candidates,
         "Saturday bookings",
-        ctx.hasRealBookData
+        hasLoadedBookData(ctx)
           ? `Likely Saturday fills from your book${slots ? ` · Openings: ${slots}` : ""}.`
           : "Upload your client book to see likely Saturday bookings.",
       ),
@@ -93,14 +94,14 @@ export function answerMockQuestion(ctx: AiosContextPacket, question: string): Ai
   }
 
   if (q.includes("overdue")) {
-    const overdue = ctx.hasRealBookData ? ctx.overdueClients : FALLBACK_CONTACTS;
+    const overdue = hasLoadedBookData(ctx) ? ctx.overdueClients : FALLBACK_CONTACTS;
     return {
       mode: "question",
       layout: "center-panel",
-      message: ctx.hasRealBookData
+      message: hasLoadedBookData(ctx)
         ? `${ctx.clientSummary.overdueClients} overdue clients in your book.`
         : "Connect your book to see overdue clients.",
-      summary: ctx.hasRealBookData
+      summary: hasLoadedBookData(ctx)
         ? `Top overdue segments ready for a revenue touch.`
         : "No book analysis connected yet.",
       pageContextLine: ctx.currentPage.assistantIntro,

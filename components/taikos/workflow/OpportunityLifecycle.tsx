@@ -1,35 +1,49 @@
 "use client";
 
-import type { InlineWorkflowStage } from "@/components/taikos/workflow/useInlineActionWorkflow";
+import type { WorkflowState } from "@/components/taikos/workflow/useInlineActionWorkflow";
 
-const STEPS: { id: InlineWorkflowStage; label: string }[] = [
+const STEPS: { id: WorkflowState; label: string }[] = [
   { id: "detected", label: "Detected" },
-  { id: "drafted", label: "Drafted" },
+  { id: "previewed", label: "Previewed" },
   { id: "approved", label: "Approved" },
   { id: "queued", label: "Queued" },
 ];
 
-const ORDER: InlineWorkflowStage[] = ["detected", "drafted", "approved", "queued"];
+const ORDER: WorkflowState[] = ["detected", "previewed", "approved", "queued"];
+
+function progressIndex(stage: WorkflowState): number {
+  if (stage === "blocked") return ORDER.indexOf("queued");
+  if (stage === "skipped") return -1;
+  return ORDER.indexOf(stage);
+}
 
 type Props = {
-  stage: InlineWorkflowStage;
+  stage: WorkflowState;
 };
 
 export function OpportunityLifecycle({ stage }: Props) {
-  const activeIdx = ORDER.indexOf(stage);
+  const activeIdx = progressIndex(stage);
+  const skipped = stage === "skipped";
+  const blocked = stage === "blocked";
 
   return (
-    <ol className="taikos-opp-lifecycle" aria-label="Opportunity progress">
+    <ol
+      className={`taikos-opp-lifecycle${skipped ? " taikos-opp-lifecycle--skipped" : ""}${blocked ? " taikos-opp-lifecycle--blocked" : ""}`}
+      aria-label="Opportunity progress"
+    >
       {STEPS.map((step, idx) => {
-        const done = idx < activeIdx;
-        const active = idx === activeIdx;
+        const done = !skipped && idx < activeIdx;
+        const active = !skipped && idx === activeIdx;
+        const blockedStep = blocked && step.id === "queued";
         return (
           <li
             key={step.id}
-            className={`taikos-opp-lifecycle__step${done ? " taikos-opp-lifecycle__step--done" : ""}${active ? " taikos-opp-lifecycle__step--active" : ""}`}
+            className={`taikos-opp-lifecycle__step${done ? " taikos-opp-lifecycle__step--done" : ""}${active ? " taikos-opp-lifecycle__step--active" : ""}${blockedStep ? " taikos-opp-lifecycle__step--blocked" : ""}`}
           >
             <span className="taikos-opp-lifecycle__dot" aria-hidden />
-            <span className="taikos-opp-lifecycle__label">{step.label}</span>
+            <span className="taikos-opp-lifecycle__label">
+              {skipped && step.id === "detected" ? "Skipped" : step.label}
+            </span>
           </li>
         );
       })}

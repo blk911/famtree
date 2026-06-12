@@ -1,16 +1,19 @@
 "use client";
 
 import { OpportunityWorkflowCard } from "@/components/taikos/workflow/OpportunityWorkflowCard";
+import { insightForOpportunity } from "@/lib/taikos/coda/coda";
+import type { TaikosInsight } from "@/lib/taikos/coda/types";
 import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
 import type { TaikosGoalListItem } from "@/lib/taikos/goals/types";
 
 type Props = {
   summary: TaikosOpportunitySummary;
+  insights?: TaikosInsight[];
   goals?: TaikosGoalListItem[];
   onRefresh?: () => void;
 };
 
-export function OpportunityList({ summary, goals = [], onRefresh }: Props) {
+export function OpportunityList({ summary, insights = [], goals = [], onRefresh }: Props) {
   if (summary.opportunities.length === 0) return null;
 
   function goalTitleFor(linkedGoalId?: string): string | undefined {
@@ -27,6 +30,7 @@ export function OpportunityList({ summary, goals = [], onRefresh }: Props) {
           <OpportunityWorkflowCard
             key={opp.opportunityId}
             opportunity={opp}
+            insight={insightForOpportunity(opp, insights)}
             goalTitle={goalTitleFor(opp.linkedGoalId)}
             onRefresh={onRefresh}
           />

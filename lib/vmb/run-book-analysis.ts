@@ -1,3 +1,4 @@
+import { setActiveBookPointer } from "@/lib/vmb/active-book-pointer";
 import { analyzeVmbBook } from "@/lib/vmb/book-analysis/analyze-book";
 import { saveVmbBookAnalysis } from "@/lib/vmb/book-analysis/analysis-store";
 import { saveVmbBookUpload } from "@/lib/vmb/book-upload-store";
@@ -64,6 +65,16 @@ export async function runVmbBookAnalysis(
   const saved = await saveVmbBookAnalysis(analysisWithMeta);
   if ("error" in saved) {
     return { ok: false, error: saved.error, parse: parsed };
+  }
+
+  if (input.trialId?.trim()) {
+    await setActiveBookPointer({
+      salonId: input.trialId.trim(),
+      analysisId: saved.saved.analysisId,
+      clientCount: saved.saved.recordCount,
+      recordCount: saved.saved.recordCount,
+      sourceFileName: input.fileName,
+    });
   }
 
   return {

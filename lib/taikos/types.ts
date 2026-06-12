@@ -5,6 +5,7 @@ import type { TaikosDraftSummary } from "@/lib/taikos/drafts/types";
 import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
 import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
 import type { TaikosQueueSummary } from "@/lib/taikos/queue/types";
+import type { CodaSummary } from "@/lib/taikos/coda/types";
 
 export type AiosSeverity = "info" | "notice" | "priority" | "urgent";
 
@@ -160,6 +161,7 @@ export type AiosContextPacket = {
   operatorName?: string;
   salonName: string;
   analysisId?: string;
+  recordCount?: number;
   hasRealBookData: boolean;
   contactCandidates: AiosContactCandidate[];
   overdueClients: AiosContactCandidate[];
@@ -183,6 +185,7 @@ export type AiosContextPacket = {
   opportunitySummary: TaikosOpportunitySummary;
   queueSummary: TaikosQueueSummary;
   activitySummary: TaikosActivitySummary;
+  codaSummary: CodaSummary;
   generatedAt: string;
 };
 

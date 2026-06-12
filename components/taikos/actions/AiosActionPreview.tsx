@@ -18,6 +18,7 @@ type Props = {
   onEnqueue?: () => void;
   onSkipQueue?: () => void;
   onCancel: () => void;
+  onSkip?: () => void;
 };
 
 export function AiosActionPreview({
@@ -33,6 +34,7 @@ export function AiosActionPreview({
   onEnqueue,
   onSkipQueue,
   onCancel,
+  onSkip,
 }: Props) {
   const canQueue = !!draftId && actionTypeCreatesDraft(preview.action.type);
 
@@ -83,10 +85,10 @@ export function AiosActionPreview({
           <button
             type="button"
             className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
-            onClick={onCancel}
+            onClick={onSkip ?? onCancel}
             disabled={confirming}
           >
-            Cancel
+            Skip
           </button>
         </div>
       )}

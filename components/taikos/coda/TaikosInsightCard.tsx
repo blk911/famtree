@@ -3,68 +3,52 @@
 import { InlineDeliverablePreview } from "@/components/taikos/workflow/InlineDeliverablePreview";
 import { OpportunityLifecycle } from "@/components/taikos/workflow/OpportunityLifecycle";
 import { useInlineActionWorkflow } from "@/components/taikos/workflow/useInlineActionWorkflow";
-import { TaikosInsightBlock } from "@/components/taikos/coda/TaikosInsightBlock";
-import {
-  clientNameFromOpportunity,
-  reasonFromOpportunity,
-  suggestedActionLabel,
-} from "@/lib/taikos/workflow/opportunity-display";
 import type { TaikosInsight } from "@/lib/taikos/coda/types";
-import type { TaikosOpportunity } from "@/lib/taikos/opportunities/types";
 
 type Props = {
-  opportunity: TaikosOpportunity;
-  insight?: TaikosInsight;
-  goalTitle?: string;
-  embedded?: boolean;
+  insight: TaikosInsight;
   onRefresh?: () => void;
 };
 
-export function OpportunityWorkflowCard({ opportunity, insight, goalTitle, embedded, onRefresh }: Props) {
+export function TaikosInsightCard({ insight, onRefresh }: Props) {
   const workflow = useInlineActionWorkflow({
-    actionType: opportunity.suggestedAction,
-    sourceId: opportunity.opportunityId,
+    actionType: insight.actionType,
+    sourceId: insight.id,
     onRefresh,
   });
 
-  const clientName = clientNameFromOpportunity(opportunity);
-  const reason = reasonFromOpportunity(opportunity);
-  const actionLabel = suggestedActionLabel(opportunity);
-  const terminal = workflow.stage === "queued" || workflow.stage === "skipped";
-
   return (
     <article
-      className={`taikos-opp-card taikos-opp-card--workflow${workflow.expanded ? " taikos-opp-card--expanded" : ""}${terminal ? " taikos-opp-card--terminal" : ""}`}
+      className={`taikos-insight-card${workflow.expanded ? " taikos-insight-card--expanded" : ""}`}
     >
       <OpportunityLifecycle stage={workflow.stage} />
 
-      {!embedded ? (
-        <>
-          <div className="taikos-opp-card__head">
-            <h4 className="taikos-opp-card__title">{opportunity.title}</h4>
-            <span
-              className={`taikos-opp-card__priority taikos-opp-card__priority--${opportunity.priority.toLowerCase()}`}
-            >
-              {opportunity.priority}
-            </span>
-          </div>
-          <p className="taikos-opp-card__client">
-            Client: <strong>{clientName}</strong>
-          </p>
-          <p className="taikos-opp-card__reason">
-            Reason: <span>{reason}</span>
-          </p>
-          <p className="taikos-opp-card__action-hint">
-            Suggested: <strong>{actionLabel}</strong>
-          </p>
-          <p className="taikos-opp-card__value">
-            Value: <strong>${opportunity.estimatedValue.toLocaleString()}</strong>
-            <span className="taikos-opp-card__conf"> · {opportunity.confidence}% confidence</span>
-          </p>
-          {goalTitle ? <p className="taikos-opp-card__goal">Goal: {goalTitle}</p> : null}
-          {insight ? <TaikosInsightBlock insight={insight} /> : null}
-        </>
-      ) : null}
+      <div className="taikos-insight-card__head">
+        <div>
+          <h4 className="taikos-insight-card__name">{insight.subjectName.split(/\s+/)[0]}</h4>
+          <p className="taikos-insight-card__label">{insight.subjectLabel}</p>
+        </div>
+        <span className="taikos-insight-card__confidence">{insight.confidence}%</span>
+      </div>
+
+      <div className="taikos-insight-card__coda">
+        <p className="taikos-insight-card__field">
+          <span className="taikos-insight-card__field-label">Objective</span>
+          {insight.objective}
+        </p>
+        <p className="taikos-insight-card__field">
+          <span className="taikos-insight-card__field-label">Discovery</span>
+          {insight.discovery}
+        </p>
+        <p className="taikos-insight-card__field taikos-insight-card__field--curiosity">
+          <span className="taikos-insight-card__field-label">Curiosity</span>
+          {insight.curiosityPrompt}
+        </p>
+        <p className="taikos-insight-card__field">
+          <span className="taikos-insight-card__field-label">Suggested Action</span>
+          {insight.suggestedAction}
+        </p>
+      </div>
 
       {workflow.stage === "detected" ? (
         <div className="taikos-opp-card__actions">
@@ -142,22 +126,10 @@ export function OpportunityWorkflowCard({ opportunity, insight, goalTitle, embed
               {workflow.statusMessage ?? "Added to queue. No message sent yet."}
             </p>
           ) : null}
-
-          {workflow.stage === "blocked" ? (
-            <p className="taikos-inline-workflow__error" role="alert">
-              {workflow.error ?? "Queue blocked — try again or skip."}
-            </p>
-          ) : null}
         </div>
       ) : null}
 
-      {workflow.stage === "skipped" && workflow.statusMessage ? (
-        <p className="taikos-inline-workflow__message">{workflow.statusMessage}</p>
-      ) : null}
-
-      {workflow.error && workflow.stage !== "blocked" ? (
-        <p className="taikos-inline-workflow__error">{workflow.error}</p>
-      ) : null}
+      {workflow.error ? <p className="taikos-inline-workflow__error">{workflow.error}</p> : null}
     </article>
   );
 }

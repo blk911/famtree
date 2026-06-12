@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
+import { getActiveBookPointer } from "@/lib/vmb/active-book-pointer";
 import { getActiveVmbAnalysis } from "@/lib/vmb/active-analysis-resolver";
-import { getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
+import { getVmbBookAnalysis, getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
 import { isRefreshDue, workspaceLatestAnalysisId } from "@/lib/vmb/workspace-lifecycle";
 import { getWorkspaceForTrial } from "@/lib/vmb/workspace-store";
@@ -44,11 +45,21 @@ export async function loadVmbPageContext(
   if (!trialId) return { ...EMPTY_CONTEXT };
 
   const workspace = await getWorkspaceForTrial(trialId);
+  const activeBookPointer = await getActiveBookPointer(trialId);
   const resolved = await getActiveVmbAnalysis(trialId, { queryId: input.analysisId?.trim() });
-  const activeAnalysisId = resolved.analysisId ?? workspaceLatestAnalysisId(workspace);
-  const activeAnalysis = activeAnalysisId
+  const activeAnalysisId =
+    resolved.analysisId ??
+    activeBookPointer?.analysisId ??
+    workspaceLatestAnalysisId(workspace);
+  let activeAnalysis = activeAnalysisId
     ? await getVmbBookAnalysisForTrial(activeAnalysisId, trialId)
     : undefined;
+  if (!activeAnalysis && activeAnalysisId && activeBookPointer?.salonId === trialId) {
+    const loose = await getVmbBookAnalysis(activeAnalysisId);
+    if (loose && (!loose.trialId || loose.trialId === trialId)) {
+      activeAnalysis = loose;
+    }
+  }
 
   const salonName =
     workspace?.salonName?.trim() ||

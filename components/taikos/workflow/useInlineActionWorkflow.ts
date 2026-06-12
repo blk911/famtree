@@ -5,13 +5,23 @@ import { actionTypeCreatesDraft } from "@/lib/taikos/drafts/draft-router";
 import type { TaikosActionPreviewResult } from "@/lib/taikos/actions/types";
 import type { TaikosActionType } from "@/lib/taikos/types";
 
-export type InlineWorkflowStage = "detected" | "drafted" | "approved" | "queued";
+export type WorkflowState =
+  | "detected"
+  | "previewed"
+  | "approved"
+  | "queued"
+  | "blocked"
+  | "skipped";
+
+/** @deprecated Use WorkflowState */
+export type InlineWorkflowStage = WorkflowState;
 
 type Options = {
   actionType: TaikosActionType;
   sourceId: string;
   pathname?: string;
   analysisId?: string;
+  /** Called only after queue (or queue-without-draft) — never after preview/approve. */
   onRefresh?: () => void;
 };
 
@@ -22,7 +32,7 @@ export function useInlineActionWorkflow({
   analysisId,
   onRefresh,
 }: Options) {
-  const [stage, setStage] = useState<InlineWorkflowStage>("detected");
+  const [stage, setStage] = useState<WorkflowState>("detected");
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState<TaikosActionPreviewResult | null>(null);
@@ -62,7 +72,7 @@ export function useInlineActionWorkflow({
         return;
       }
       setPreview(json.data);
-      setStage("drafted");
+      setStage("previewed");
     } catch {
       setError("Preview failed");
     } finally {
@@ -99,18 +109,18 @@ export function useInlineActionWorkflow({
       setStatusMessage(json.data.message);
       if (json.data.draftId) setDraftId(json.data.draftId);
       setStage("approved");
-      onRefresh?.();
     } catch {
       setError("Approve failed");
     } finally {
       setBusy(false);
     }
-  }, [preview, pathname, analysisId, sourceId, onRefresh]);
+  }, [preview, pathname, analysisId, sourceId]);
 
   const runQueue = useCallback(async () => {
     if (!draftId) {
       setStatusMessage("Recorded. No draft to queue for this action.");
       setStage("queued");
+      onRefresh?.();
       return;
     }
     setBusy(true);
@@ -125,6 +135,7 @@ export function useInlineActionWorkflow({
       const json = (await res.json()) as { ok: boolean; data?: { message: string }; error?: string };
       if (!res.ok || !json.ok) {
         setError(json.error ?? "Queue failed");
+        setStage("blocked");
         return;
       }
       setStatusMessage(json.data?.message ?? "Added to queue. No message sent yet.");
@@ -132,14 +143,21 @@ export function useInlineActionWorkflow({
       onRefresh?.();
     } catch {
       setError("Queue failed");
+      setStage("blocked");
     } finally {
       setBusy(false);
     }
   }, [draftId, onRefresh]);
 
   const skipQueue = useCallback(() => {
-    setStatusMessage((prev) => prev ?? "Draft saved. Skipped queue for now.");
-    setStage("queued");
+    setStatusMessage("Draft saved. Skipped queue for now.");
+    setStage("skipped");
+  }, []);
+
+  const skipReject = useCallback(() => {
+    setStatusMessage("Opportunity skipped.");
+    setStage("skipped");
+    setExpanded(false);
   }, []);
 
   const canQueue = !!draftId && actionTypeCreatesDraft(actionType);
@@ -157,6 +175,7 @@ export function useInlineActionWorkflow({
     runApprove,
     runQueue,
     skipQueue,
+    skipReject,
     reset,
     collapse: () => setExpanded(false),
   };
