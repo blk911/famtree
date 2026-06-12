@@ -1,5 +1,10 @@
 import type { UpsertWorkspaceInput, VmbSalonWorkspace } from "@/types/vmb/workspace";
 import { logVmbFlow } from "@/lib/vmb/flow-log";
+import { resolveVmbStorageBackend } from "@/lib/vmb/db";
+import {
+  getWorkspaceForTrialPostgres,
+  saveWorkspacePostgres,
+} from "@/lib/vmb/workspace-store-postgres";
 import { getVmbWorkspacesFile } from "./paths";
 import { readJsonArray, writeJsonArray } from "./runtime-json-store";
 
@@ -24,11 +29,35 @@ export async function listWorkspaces(): Promise<VmbSalonWorkspace[]> {
   return readJsonArray(getVmbWorkspacesFile(), isWorkspace);
 }
 
+async function persistWorkspace(workspace: VmbSalonWorkspace): Promise<string | null> {
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    const err = await saveWorkspacePostgres(workspace);
+    if (!err) return null;
+  }
+
+  const all = await listWorkspaces();
+  const index = all.findIndex((w) => w.trialId === workspace.trialId);
+  if (index >= 0) {
+    all[index] = workspace;
+  } else {
+    all.unshift(workspace);
+  }
+  return writeJsonArray(getVmbWorkspacesFile(), all);
+}
+
 export async function getWorkspaceForTrial(
   trialId: string,
 ): Promise<VmbSalonWorkspace | undefined> {
   const id = trialId.trim();
   if (!id) return undefined;
+
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    const pg = await getWorkspaceForTrialPostgres(id);
+    if (pg) return pg;
+  }
+
   const all = await listWorkspaces();
   return all.find((w) => w.trialId === id);
 }
@@ -40,9 +69,12 @@ export async function upsertWorkspaceForTrial(
   if (!trialId) return { error: "trialId is required" };
 
   const now = new Date().toISOString();
-  const all = await listWorkspaces();
-  const index = all.findIndex((w) => w.trialId === trialId);
-  const existing = index >= 0 ? all[index] : undefined;
+  const existing =
+    (await getWorkspaceForTrial(trialId)) ??
+    (await (async () => {
+      const all = await listWorkspaces();
+      return all.find((w) => w.trialId === trialId);
+    })());
 
   const workspace: VmbSalonWorkspace = {
     trialId,
@@ -59,13 +91,7 @@ export async function upsertWorkspaceForTrial(
     updatedAt: now,
   };
 
-  if (index >= 0) {
-    all[index] = workspace;
-  } else {
-    all.unshift(workspace);
-  }
-
-  const err = await writeJsonArray(getVmbWorkspacesFile(), all);
+  const err = await persistWorkspace(workspace);
   if (err) return { error: err };
   return { workspace };
 }
@@ -73,19 +99,17 @@ export async function upsertWorkspaceForTrial(
 export async function markFirstIngestComplete(
   trialId: string,
 ): Promise<{ workspace: VmbSalonWorkspace } | { error: string }> {
-  const all = await listWorkspaces();
-  const index = all.findIndex((w) => w.trialId === trialId);
-  if (index < 0) return { error: "Workspace not found" };
+  const existing = await getWorkspaceForTrial(trialId);
+  if (!existing) return { error: "Workspace not found" };
 
   const now = new Date().toISOString();
   const workspace: VmbSalonWorkspace = {
-    ...all[index],
+    ...existing,
     firstIngestCompleted: true,
     updatedAt: now,
   };
-  all[index] = workspace;
 
-  const err = await writeJsonArray(getVmbWorkspacesFile(), all);
+  const err = await persistWorkspace(workspace);
   if (err) return { error: err };
   return { workspace };
 }
@@ -97,19 +121,14 @@ export async function setLatestAnalysis(
   const id = analysisId.trim();
   if (!id) return { error: "analysisId is required" };
 
-  const all = await listWorkspaces();
-  let index = all.findIndex((w) => w.trialId === trialId);
-  if (index < 0) {
+  let existing = await getWorkspaceForTrial(trialId);
+  if (!existing) {
     const created = await upsertWorkspaceForTrial({ trialId, salonName: "Your Salon" });
     if ("error" in created) return { error: created.error };
-    const refreshed = await listWorkspaces();
-    index = refreshed.findIndex((w) => w.trialId === trialId);
-    if (index < 0) return { error: "Workspace not found" };
-    all.splice(0, all.length, ...refreshed);
+    existing = created.workspace;
   }
 
   const now = new Date();
-  const existing = all[index];
   const analysisIds = existing.analysisIds.includes(id)
     ? existing.analysisIds
     : [...existing.analysisIds, id];
@@ -123,9 +142,8 @@ export async function setLatestAnalysis(
     nextRefreshDueAt: refreshDueAtFrom(now),
     updatedAt: now.toISOString(),
   };
-  all[index] = workspace;
 
-  const err = await writeJsonArray(getVmbWorkspacesFile(), all);
+  const err = await persistWorkspace(workspace);
   if (err) return { error: err };
 
   logVmbFlow("workspace updated", {

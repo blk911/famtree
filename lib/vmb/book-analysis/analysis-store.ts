@@ -1,4 +1,11 @@
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
+import {
+  getLatestVmbBookAnalysisForTrialPostgres,
+  getVmbBookAnalysisPostgres,
+  listVmbBookAnalysesPostgres,
+  saveVmbBookAnalysisPostgres,
+} from "@/lib/vmb/book-analysis/analysis-store-postgres";
+import { resolveVmbStorageBackend } from "@/lib/vmb/db";
 import { getVmbBookAnalysisFile } from "../paths";
 import { readJsonArray, writeJsonArray } from "../runtime-json-store";
 
@@ -10,10 +17,20 @@ function isAnalysis(item: unknown): item is VmbBookAnalysisResult {
   );
 }
 
+async function listVmbBookAnalysesJson(): Promise<VmbBookAnalysisResult[]> {
+  return readJsonArray(getVmbBookAnalysisFile(), isAnalysis);
+}
+
 export async function saveVmbBookAnalysis(
   result: VmbBookAnalysisResult,
 ): Promise<{ saved: VmbBookAnalysisResult } | { error: string }> {
-  const all = await listVmbBookAnalyses();
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    const pg = await saveVmbBookAnalysisPostgres(result);
+    if (!("error" in pg)) return pg;
+  }
+
+  const all = await listVmbBookAnalysesJson();
   all.unshift(result);
   const err = await writeJsonArray(getVmbBookAnalysisFile(), all);
   if (err) return { error: err };
@@ -21,14 +38,28 @@ export async function saveVmbBookAnalysis(
 }
 
 export async function listVmbBookAnalyses(): Promise<VmbBookAnalysisResult[]> {
-  return readJsonArray(getVmbBookAnalysisFile(), isAnalysis);
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    const pg = await listVmbBookAnalysesPostgres();
+    if (pg.length > 0) return pg;
+  }
+  return listVmbBookAnalysesJson();
 }
 
 export async function getVmbBookAnalysis(
   id: string,
 ): Promise<VmbBookAnalysisResult | undefined> {
-  const all = await listVmbBookAnalyses();
-  return all.find((a) => a.analysisId === id);
+  const trimmed = id.trim();
+  if (!trimmed) return undefined;
+
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    const pg = await getVmbBookAnalysisPostgres(trimmed);
+    if (pg) return pg;
+  }
+
+  const all = await listVmbBookAnalysesJson();
+  return all.find((a) => a.analysisId === trimmed);
 }
 
 /** @deprecated Public APIs must use getLatestVmbBookAnalysisForTrial instead. */
@@ -50,6 +81,19 @@ export async function getVmbBookAnalysisForTrial(
 export async function getLatestVmbBookAnalysisForTrial(
   trialId: string,
 ): Promise<VmbBookAnalysisResult | undefined> {
-  const all = await listVmbBookAnalyses();
-  return all.find((a) => a.trialId === trialId);
+  const trimmed = trialId.trim();
+  if (!trimmed) return undefined;
+
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    const pg = await getLatestVmbBookAnalysisForTrialPostgres(trimmed);
+    if (pg) return pg;
+  }
+
+  const all = await listVmbBookAnalysesJson();
+  return all.find((a) => a.trialId === trimmed);
+}
+
+export async function getVmbAnalysisStorageBackend(): Promise<"postgres" | "json"> {
+  return resolveVmbStorageBackend();
 }
