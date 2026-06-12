@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftPreviewModal";
+import { SortableListHeader } from "@/components/vmb/SortableListHeader";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import {
@@ -14,6 +15,7 @@ import {
 import { buildVmbSalonHref } from "@/lib/vmb/salon-href";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
 import { VMB_THEME } from "@/lib/vmb/theme";
+import { useSortableList } from "@/lib/vmb/useSortableList";
 import type { VmbInviteDraft, InviteDraftStatus } from "@/types/vmb/invite-draft";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
@@ -91,7 +93,7 @@ export function VmbInvitesClient({
     } finally {
       setLoading(false);
     }
-  }, [resolved]);
+  }, [resolved.analysisId, resolved.resolving, resolved.source]);
 
   useEffect(() => {
     void loadDrafts();
@@ -245,44 +247,7 @@ export function VmbInvitesClient({
                 <h2 style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 800 }}>
                   {INVITE_SECTION_LABELS[section]}
                 </h2>
-                <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
-                  {rows.map((draft) => (
-                    <li
-                      key={draft.draftId}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr auto",
-                        gap: 8,
-                        alignItems: "center",
-                        padding: "12px 0",
-                        borderTop: `1px solid ${VMB_THEME.line}`,
-                      }}
-                    >
-                      <div>
-                        <p style={{ margin: "0 0 2px", fontSize: 15, fontWeight: 700 }}>{draft.clientName}</p>
-                        <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>{draft.reasonSelected}</p>
-                        <p style={{ margin: "4px 0 0", fontSize: 12, color: VMB_THEME.muted }}>
-                          ${draft.potentialValue.toLocaleString()} · {draft.status}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setActiveDraftId(draft.draftId)}
-                        style={{
-                          padding: "8px 12px",
-                          borderRadius: 8,
-                          border: `1px solid ${VMB_THEME.line}`,
-                          background: "#fff",
-                          fontSize: 13,
-                          fontWeight: 600,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Preview
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <InviteSectionRows rows={rows} onPreview={(draftId) => setActiveDraftId(draftId)} />
               </section>
             );
           })}
@@ -313,5 +278,86 @@ export function VmbInvitesClient({
         />
       ) : null}
     </VmbPageFrame>
+  );
+}
+
+type InviteSortKey = "clientName" | "reason" | "value" | "status";
+
+function InviteSectionRows({
+  rows,
+  onPreview,
+}: {
+  rows: VmbInviteDraft[];
+  onPreview: (draftId: string) => void;
+}) {
+  const accessors = useMemo(
+    () => ({
+      clientName: (d: VmbInviteDraft) => d.clientName,
+      reason: (d: VmbInviteDraft) => d.reasonSelected,
+      value: (d: VmbInviteDraft) => d.potentialValue,
+      status: (d: VmbInviteDraft) => d.status,
+    }),
+    [],
+  );
+
+  const { sortedItems, sortKey, sortDirection, setSort } = useSortableList(rows, {
+    defaultKey: "value",
+    defaultDirection: "desc",
+    accessors,
+  });
+
+  return (
+    <div>
+      <SortableListHeader<InviteSortKey>
+        columns={[
+          { key: "clientName", label: "Client" },
+          { key: "reason", label: "Reason" },
+          { key: "value", label: "Value", align: "right" },
+          { key: "status", label: "Status" },
+        ]}
+        sortKey={sortKey}
+        sortDirection={sortDirection}
+        onSort={setSort}
+        gridTemplateColumns="1fr 1.2fr 0.7fr 0.7fr auto"
+        trailingColumn=""
+      />
+      <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 0 }}>
+        {sortedItems.map((draft) => (
+          <li
+            key={draft.draftId}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1.2fr 0.7fr 0.7fr auto",
+              gap: 8,
+              alignItems: "center",
+              padding: "12px 0",
+              borderTop: `1px solid ${VMB_THEME.line}`,
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{draft.clientName}</p>
+            <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>{draft.reasonSelected}</p>
+            <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted, textAlign: "right" }}>
+              ${draft.potentialValue.toLocaleString()}
+            </p>
+            <p style={{ margin: 0, fontSize: 12, color: VMB_THEME.muted }}>{draft.status}</p>
+            <button
+              type="button"
+              onClick={() => onPreview(draft.draftId)}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 8,
+                border: `1px solid ${VMB_THEME.line}`,
+                background: "#fff",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Preview
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

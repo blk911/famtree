@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { SortableListHeader } from "@/components/vmb/SortableListHeader";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import type { TaikosQueueItem, TaikosQueueSummary } from "@/lib/taikos/queue/types";
+import { useSortableList } from "@/lib/vmb/useSortableList";
 
 const STATUS_LABELS: Record<string, string> = {
   queued: "Queued",
@@ -13,6 +15,8 @@ const STATUS_LABELS: Record<string, string> = {
   failed: "Blocked",
 };
 
+type QueueSortKey = "title" | "value" | "status";
+
 export function VmbQueueCenterClient() {
   const [summary, setSummary] = useState<TaikosQueueSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,6 +26,11 @@ export function VmbQueueCenterClient() {
     setLoading(true);
     try {
       const res = await fetch("/api/taikos/queue", { cache: "no-store", credentials: "include" });
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        setSummary(null);
+        return;
+      }
       const json = (await res.json()) as { ok: boolean; data?: TaikosQueueSummary };
       setSummary(res.ok && json.ok && json.data ? json.data : null);
     } catch {
@@ -65,36 +74,12 @@ export function VmbQueueCenterClient() {
   function renderSection(title: string, items: TaikosQueueItem[]) {
     if (items.length === 0) return null;
     return (
-      <section className="vmb-queue-center__section">
-        <h3 className="taikos-section-title">{title}</h3>
-        <div className="vmb-queue-center__list">
-          {items.map((item) => (
-            <article key={item.queueId} className="taikos-queue-card">
-              <div className="taikos-queue-card__head">
-                <h4>{item.draftTitle}</h4>
-                <span className="taikos-queue-card__status">{STATUS_LABELS[item.status] ?? item.status}</span>
-              </div>
-              {item.goalTitle ? <p className="taikos-queue-card__goal">Goal: {item.goalTitle}</p> : null}
-              <p className="taikos-queue-card__value">
-                Est. value: <strong>${item.estimatedValue.toLocaleString()}</strong>
-              </p>
-              <div className="taikos-queue-card__actions">
-                <button type="button" className="taikos-opp-card__cta taikos-opp-card__cta--secondary" onClick={() => void patchQueue(item.queueId, "execute")}>
-                  Preview Execution
-                </button>
-                {item.status === "queued" ? (
-                  <button type="button" className="taikos-opp-card__cta taikos-opp-card__cta--secondary" onClick={() => void patchQueue(item.queueId, "ready")}>
-                    Mark Ready
-                  </button>
-                ) : null}
-                <button type="button" className="taikos-opp-card__cta taikos-opp-card__cta--ghost" onClick={() => void patchQueue(item.queueId, "archive")}>
-                  Archive
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+      <QueueSection
+        key={title}
+        title={title}
+        items={items}
+        onPatch={(queueId, action) => void patchQueue(queueId, action)}
+      />
     );
   }
 
@@ -117,5 +102,74 @@ export function VmbQueueCenterClient() {
         <p className="vmb-page-state">Queue is empty — approve drafts and add them from Today or Opportunities.</p>
       )}
     </VmbPageFrame>
+  );
+}
+
+function QueueSection({
+  title,
+  items,
+  onPatch,
+}: {
+  title: string;
+  items: TaikosQueueItem[];
+  onPatch: (queueId: string, action: "remove" | "archive" | "ready" | "execute") => void;
+}) {
+  const accessors = useMemo(
+    () => ({
+      title: (item: TaikosQueueItem) => item.draftTitle,
+      value: (item: TaikosQueueItem) => item.estimatedValue,
+      status: (item: TaikosQueueItem) => STATUS_LABELS[item.status] ?? item.status,
+    }),
+    [],
+  );
+
+  const { sortedItems, sortKey, sortDirection, setSort } = useSortableList(items, {
+    defaultKey: "value",
+    defaultDirection: "desc",
+    accessors,
+  });
+
+  return (
+    <section className="vmb-queue-center__section">
+      <h3 className="taikos-section-title">{title}</h3>
+      <SortableListHeader<QueueSortKey>
+        columns={[
+          { key: "title", label: "Draft" },
+          { key: "value", label: "Value", align: "right" },
+          { key: "status", label: "Status" },
+        ]}
+        sortKey={sortKey}
+        sortDirection={sortDirection}
+        onSort={setSort}
+        gridTemplateColumns="1.4fr 0.7fr 0.8fr"
+      />
+      <div className="vmb-queue-center__list">
+        {sortedItems.map((item) => (
+          <article key={item.queueId} className="taikos-queue-card">
+            <div className="taikos-queue-card__head">
+              <h4>{item.draftTitle}</h4>
+              <span className="taikos-queue-card__status">{STATUS_LABELS[item.status] ?? item.status}</span>
+            </div>
+            {item.goalTitle ? <p className="taikos-queue-card__goal">Goal: {item.goalTitle}</p> : null}
+            <p className="taikos-queue-card__value">
+              Est. value: <strong>${item.estimatedValue.toLocaleString()}</strong>
+            </p>
+            <div className="taikos-queue-card__actions">
+              <button type="button" className="taikos-opp-card__cta taikos-opp-card__cta--secondary" onClick={() => onPatch(item.queueId, "execute")}>
+                Preview Execution
+              </button>
+              {item.status === "queued" ? (
+                <button type="button" className="taikos-opp-card__cta taikos-opp-card__cta--secondary" onClick={() => onPatch(item.queueId, "ready")}>
+                  Mark Ready
+                </button>
+              ) : null}
+              <button type="button" className="taikos-opp-card__cta taikos-opp-card__cta--ghost" onClick={() => onPatch(item.queueId, "archive")}>
+                Archive
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }

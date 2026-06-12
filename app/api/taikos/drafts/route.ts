@@ -25,7 +25,10 @@ const VALID_STATUSES = new Set<string>([
 export async function GET(req: NextRequest) {
   const trialId = req.cookies.get(VMB_TRIAL_COOKIE)?.value?.trim();
   if (!trialId) {
-    return NextResponse.json({ ok: false, error: "No salon session" }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: "FORBIDDEN", message: "No salon session" },
+      { status: 401 },
+    );
   }
 
   const status = req.nextUrl.searchParams.get("status")?.trim();
@@ -56,7 +59,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const trialId = req.cookies.get(VMB_TRIAL_COOKIE)?.value?.trim();
   if (!trialId) {
-    return NextResponse.json({ ok: false, error: "No salon session" }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: "FORBIDDEN", message: "No salon session" },
+      { status: 401 },
+    );
   }
 
   try {

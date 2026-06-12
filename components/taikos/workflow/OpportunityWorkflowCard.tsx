@@ -63,6 +63,26 @@ export function OpportunityWorkflowCard({ opportunity, insight, goalTitle, embed
           </p>
           {goalTitle ? <p className="taikos-opp-card__goal">Goal: {goalTitle}</p> : null}
           {insight ? <TaikosInsightBlock insight={insight} /> : null}
+          <div className="taikos-opp-card__next-layer" aria-label="Upcoming content">
+            <div className="taikos-opp-card__next-slot">
+              <p className="taikos-opp-card__next-slot-label">tAIkOS insight</p>
+              <p className="taikos-opp-card__next-slot-copy">
+                Conversation insight from tAIkOS will appear here in the next pass.
+              </p>
+            </div>
+            <div className="taikos-opp-card__next-slot">
+              <p className="taikos-opp-card__next-slot-label">Why this matters</p>
+              <p className="taikos-opp-card__next-slot-copy">
+                Brief context on revenue impact and timing will land here.
+              </p>
+            </div>
+            <div className="taikos-opp-card__next-slot">
+              <p className="taikos-opp-card__next-slot-label">Suggested invite / card</p>
+              <p className="taikos-opp-card__next-slot-copy">
+                Recommended deliverable preview will appear here — no auto-fetch yet.
+              </p>
+            </div>
+          </div>
         </>
       ) : null}
 

@@ -17,7 +17,9 @@ import { buildVmbSalonHref } from "@/lib/vmb/salon-href";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
 import { logTodayLockBranch } from "@/lib/vmb/today-lock-debug";
 import { VmbPageEmpty, VmbPageFrame, VmbPageLoading } from "@/components/vmb/VmbPageFrame";
+import { SortableListHeader } from "@/components/vmb/SortableListHeader";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
+import { useSortableList } from "@/lib/vmb/useSortableList";
 import { clientOperatingScores } from "@/lib/vmb/client-operating-scores";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { CodaSummary } from "@/lib/taikos/coda/types";
@@ -139,14 +141,30 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
     [analysis],
   );
 
-  const visibleRows = useMemo(() => {
+  const baseRows = useMemo(() => {
     if (!summary) return [];
-    const rows = [...summary.rows].sort((a, b) => b.value - a.value);
+    const rows = [...summary.rows];
     if (initialView === "this-week") {
       return rows.filter((row) => isThisWeekRow(row, thisWeekSelection));
     }
     return rows;
   }, [summary, initialView, thisWeekSelection]);
+
+  const clientAccessors = useMemo(
+    () => ({
+      clientName: (row: ClientOpportunityRow) => row.clientName,
+      status: (row: ClientOpportunityRow) => clientBookStatus(row.triggerType),
+      lastVisit: (row: ClientOpportunityRow) => row.lastVisit ?? "",
+      tags: (row: ClientOpportunityRow) => clientBookTags(row).join(" · "),
+    }),
+    [],
+  );
+
+  const { sortedItems: visibleRows, sortKey, sortDirection, setSort } = useSortableList(baseRows, {
+    defaultKey: "clientName",
+    defaultDirection: "asc",
+    accessors: clientAccessors,
+  });
 
   const importCount = knownImportCount(salonContext, analysis, summary);
 
@@ -232,25 +250,18 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
       ) : null}
 
       <div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.4fr 0.8fr 0.9fr 1fr",
-            gap: 8,
-            padding: "8px 0 10px",
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
-            color: VMB_THEME.muted,
-            borderBottom: `1px solid ${VMB_THEME.line}`,
-          }}
-        >
-          <span>Client</span>
-          <span>Status</span>
-          <span>Last Visit</span>
-          <span>Tags</span>
-        </div>
+        <SortableListHeader<"clientName" | "status" | "lastVisit" | "tags">
+          columns={[
+            { key: "clientName", label: "Client" },
+            { key: "status", label: "Status" },
+            { key: "lastVisit", label: "Last Visit" },
+            { key: "tags", label: "Tags" },
+          ]}
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onSort={setSort}
+          gridTemplateColumns="1.4fr 0.8fr 0.9fr 1fr"
+        />
 
         {visibleRows.map((row) => (
           <ClientBookRow

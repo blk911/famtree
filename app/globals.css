@@ -1914,6 +1914,36 @@
   color: #78716c;
 }
 
+.taikos-opp-card__next-layer {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #e7e5e4;
+}
+
+.taikos-opp-card__next-slot-label {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #a8a29e;
+}
+
+.taikos-opp-card__next-slot-copy {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #78716c;
+}
+
+.aios-draft-list__unavailable {
+  margin: 0;
+  font-size: 13px;
+  color: #78716c;
+}
+
 .taikos-opp-card__actions {
   display: flex;
   flex-wrap: wrap;

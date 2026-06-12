@@ -13,6 +13,8 @@ import type {
 
 type DraftFile = TaikosDraft[];
 
+/** Phase 3: migrate tAIkOS queue/drafts/goals/activity/sessions to Postgres. */
+
 async function ensureDir(): Promise<void> {
   await fs.mkdir(path.dirname(getTaikosDraftsFile()), { recursive: true });
 }

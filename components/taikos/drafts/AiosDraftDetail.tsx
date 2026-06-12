@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AiosDraftBadge } from "@/components/taikos/drafts/AiosDraftBadge";
+import { fetchTaikosJson } from "@/lib/taikos/fetch-taikos-json";
 import type { TaikosDraft, TaikosDraftStatus } from "@/lib/taikos/drafts/types";
 import { VMB_THEME } from "@/lib/vmb/theme";
 
@@ -35,20 +36,23 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/taikos/drafts/${encodeURIComponent(draftId)}`, {
-        cache: "no-store",
-        credentials: "include",
-      });
-      const json = (await res.json()) as { ok: boolean; data?: TaikosDraft; error?: string };
-      if (!res.ok || !json.ok || !json.data) {
+      const outcome = await fetchTaikosJson<TaikosDraft>(
+        `/api/taikos/drafts/${encodeURIComponent(draftId)}`,
+      );
+      if (outcome.authBlocked) {
         setDraft(null);
-        setError(json.error ?? "Draft not found.");
+        setError("Drafts unavailable. Please refresh or sign back in.");
         return;
       }
-      setDraft(json.data);
-      setTitle(json.data.title);
-      setStatus(json.data.status);
-      const p = json.data.payload;
+      if (!outcome.ok || !outcome.data) {
+        setDraft(null);
+        setError(outcome.error ?? "Draft not found.");
+        return;
+      }
+      setDraft(outcome.data);
+      setTitle(outcome.data.title);
+      setStatus(outcome.data.status);
+      const p = outcome.data.payload;
       if (typeof p.message === "string") setMessage(p.message);
       if (typeof p.serviceName === "string") setServiceName(p.serviceName);
       if (typeof p.description === "string") setDescription(p.description);

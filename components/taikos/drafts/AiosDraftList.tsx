@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AiosDraftCard } from "@/components/taikos/drafts/AiosDraftCard";
+import { fetchTaikosJson } from "@/lib/taikos/fetch-taikos-json";
 import type { TaikosDraftListItem } from "@/lib/taikos/drafts/types";
 
 type Props = {
@@ -12,29 +13,35 @@ type Props = {
 export function AiosDraftList({ refreshKey = 0, limit = 5 }: Props) {
   const [drafts, setDrafts] = useState<TaikosDraftListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setUnavailable(false);
       try {
-        const res = await fetch(`/api/taikos/drafts?limit=${limit}`, {
-          cache: "no-store",
-          credentials: "include",
-        });
-        const json = (await res.json()) as {
-          ok: boolean;
-          data?: Array<{
+        const outcome = await fetchTaikosJson<
+          Array<{
             draftId: string;
             title: string;
             draftType: TaikosDraftListItem["draftType"];
             status: TaikosDraftListItem["status"];
             createdAt: string;
             estimatedValue: number;
-          }>;
-        };
-        if (!cancelled && res.ok && json.ok && json.data) {
-          const open = json.data.filter((d) => d.status !== "archived" && d.status !== "cancelled");
+          }>
+        >(`/api/taikos/drafts?limit=${limit}`);
+
+        if (cancelled) return;
+
+        if (outcome.authBlocked) {
+          setDrafts([]);
+          setUnavailable(true);
+          return;
+        }
+
+        if (outcome.ok && outcome.data) {
+          const open = outcome.data.filter((d) => d.status !== "archived" && d.status !== "cancelled");
           setDrafts(
             open.slice(0, limit).map((d) => ({
               draftId: d.draftId,
@@ -45,7 +52,10 @@ export function AiosDraftList({ refreshKey = 0, limit = 5 }: Props) {
               estimatedValue: d.estimatedValue,
             })),
           );
+          return;
         }
+
+        setDrafts([]);
       } catch {
         if (!cancelled) setDrafts([]);
       } finally {
@@ -58,7 +68,15 @@ export function AiosDraftList({ refreshKey = 0, limit = 5 }: Props) {
     };
   }, [refreshKey, limit]);
 
-  if (loading || drafts.length === 0) return null;
+  if (loading) return null;
+  if (unavailable) {
+    return (
+      <section className="aios-draft-list" aria-label="Recent drafts">
+        <p className="aios-draft-list__unavailable">Drafts unavailable. Please refresh or sign back in.</p>
+      </section>
+    );
+  }
+  if (drafts.length === 0) return null;
 
   return (
     <section className="aios-draft-list" aria-label="Recent drafts">

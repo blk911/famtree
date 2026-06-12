@@ -38,10 +38,19 @@ export function draftDetailHref(draftType: TaikosDraftType, draftId: string): st
   return `${draftWorkspacePath(draftType)}?draft=${encodeURIComponent(draftId)}`;
 }
 
-export function draftTypesForWorkspace(workspace: "invites" | "campaigns" | "service-cards"): TaikosDraftType[] {
-  if (workspace === "invites") return ["pcn_invite", "referral_ask"];
-  if (workspace === "service-cards") return ["service_card"];
-  return ["campaign", "reactivation", "calendar_gap"];
+const WORKSPACE_DRAFT_TYPES: Record<
+  "invites" | "campaigns" | "service-cards",
+  readonly TaikosDraftType[]
+> = {
+  invites: ["pcn_invite", "referral_ask"],
+  campaigns: ["campaign", "reactivation", "calendar_gap"],
+  "service-cards": ["service_card"],
+};
+
+export function draftTypesForWorkspace(
+  workspace: "invites" | "campaigns" | "service-cards",
+): readonly TaikosDraftType[] {
+  return WORKSPACE_DRAFT_TYPES[workspace];
 }
 
 export function buildDraftFromDeliverable(
