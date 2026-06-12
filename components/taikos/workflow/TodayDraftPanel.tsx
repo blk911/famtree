@@ -21,6 +21,7 @@ export function TodayDraftPanel({ drafts, onRefresh }: Props) {
   async function archiveDraft(draftId: string) {
     setBusy(true);
     try {
+      console.count("[drafts-fetch]");
       await fetch(`/api/taikos/drafts/${draftId}`, {
         method: "PATCH",
         credentials: "include",
@@ -36,6 +37,7 @@ export function TodayDraftPanel({ drafts, onRefresh }: Props) {
   async function saveTitle(draftId: string) {
     setBusy(true);
     try {
+      console.count("[drafts-fetch]");
       await fetch(`/api/taikos/drafts/${draftId}`, {
         method: "PATCH",
         credentials: "include",

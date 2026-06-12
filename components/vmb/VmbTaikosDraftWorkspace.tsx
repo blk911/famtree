@@ -68,6 +68,7 @@ export function VmbTaikosDraftWorkspace({ workspace, title, subtitle, eyebrow }:
           if (workspace === "campaigns") {
             console.count("[campaign-fetch]");
           }
+          console.count("[drafts-fetch]");
           const outcome = await fetchTaikosJson<TaikosDraft[]>(
             `/api/taikos/drafts?type=${type}&limit=30`,
           );

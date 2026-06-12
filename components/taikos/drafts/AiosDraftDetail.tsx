@@ -36,6 +36,7 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
     setLoading(true);
     setError(null);
     try {
+      console.count("[drafts-fetch]");
       const outcome = await fetchTaikosJson<TaikosDraft>(
         `/api/taikos/drafts/${encodeURIComponent(draftId)}`,
       );
@@ -83,6 +84,7 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
         payload.message = message;
       }
 
+      console.count("[drafts-fetch]");
       const res = await fetch(`/api/taikos/drafts/${encodeURIComponent(draftId)}`, {
         method: "PATCH",
         credentials: "include",
@@ -132,6 +134,7 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
     if (!draft) return;
     setSaving(true);
     try {
+      console.count("[drafts-fetch]");
       const res = await fetch(`/api/taikos/drafts/${encodeURIComponent(draftId)}`, {
         method: "DELETE",
         credentials: "include",

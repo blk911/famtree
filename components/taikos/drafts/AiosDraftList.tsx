@@ -21,6 +21,7 @@ export function AiosDraftList({ refreshKey = 0, limit = 5 }: Props) {
       setLoading(true);
       setUnavailable(false);
       try {
+        console.count("[drafts-fetch]");
         const outcome = await fetchTaikosJson<
           Array<{
             draftId: string;
