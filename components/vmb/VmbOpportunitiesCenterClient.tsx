@@ -6,11 +6,16 @@ import { SortableListHeader } from "@/components/vmb/SortableListHeader";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
 import type { TaikosOpportunity, TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
+import type { OpportunityAnalysisContext } from "@/lib/vmb/opportunities/opportunity-intelligence";
 import { useSortableList } from "@/lib/vmb/useSortableList";
 
 type OppSortKey = "title" | "value" | "confidence";
 
-export function VmbOpportunitiesCenterClient() {
+type Props = {
+  initialAnalysisId?: string;
+};
+
+export function VmbOpportunitiesCenterClient({ initialAnalysisId }: Props) {
   const [summary, setSummary] = useState<TaikosOpportunitySummary | null>(null);
   const [goals, setGoals] = useState<TaikosGoalSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,6 +79,11 @@ export function VmbOpportunitiesCenterClient() {
     return goals.goals.find((g) => g.goalId === opp.linkedGoalId)?.title;
   }
 
+  const analysisContext: OpportunityAnalysisContext = {
+    analysisId: initialAnalysisId,
+    hasRealBookData: (summary?.totalOpportunities ?? 0) > 0,
+  };
+
   return (
     <VmbPageFrame
       title="Opportunities"
@@ -90,6 +100,7 @@ export function VmbOpportunitiesCenterClient() {
                 priority={priority}
                 opportunities={grouped[priority]}
                 goalTitleFor={goalTitleFor}
+                analysisContext={analysisContext}
                 onRefresh={load}
               />
             ) : null,
@@ -106,11 +117,13 @@ function OpportunityPrioritySection({
   priority,
   opportunities,
   goalTitleFor,
+  analysisContext,
   onRefresh,
 }: {
   priority: string;
   opportunities: TaikosOpportunity[];
   goalTitleFor: (opp: TaikosOpportunity) => string | undefined;
+  analysisContext?: OpportunityAnalysisContext;
   onRefresh: () => void;
 }) {
   const accessors = useMemo(
@@ -148,6 +161,7 @@ function OpportunityPrioritySection({
             key={opp.opportunityId}
             opportunity={opp}
             goalTitle={goalTitleFor(opp)}
+            analysisContext={analysisContext}
             onRefresh={onRefresh}
           />
         ))}

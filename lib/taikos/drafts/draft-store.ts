@@ -1,6 +1,15 @@
-import { promises as fs } from "fs";
-import path from "path";
 import { getTaikosDraftsFile } from "@/lib/taikos/paths";
+import {
+  archiveDraftPostgres,
+  createDraftPostgres,
+  getDraftByIdPostgres,
+  listAllDraftsForSalonPostgres,
+  listDraftsPostgres,
+  updateDraftPostgres,
+} from "@/lib/taikos/drafts/draft-store-postgres";
+import { readJsonArray, writeJsonArray } from "@/lib/taikos/storage/taikos-json-store";
+import { assertTaikosWritableBackend, taikosJsonFallbackAllowed } from "@/lib/taikos/storage/taikos-storage-policy";
+import { resolveTaikosStorageBackend } from "@/lib/taikos/storage/taikos-db";
 import { summarizeDrafts } from "./draft-summary";
 import type {
   CreateTaikosDraftInput,
@@ -11,31 +20,21 @@ import type {
   UpdateTaikosDraftInput,
 } from "./types";
 
-type DraftFile = TaikosDraft[];
-
-/** Phase 3: migrate tAIkOS queue/drafts/goals/activity/sessions to Postgres. */
-
-async function ensureDir(): Promise<void> {
-  await fs.mkdir(path.dirname(getTaikosDraftsFile()), { recursive: true });
+function isDraft(item: unknown): item is TaikosDraft {
+  return (
+    !!item &&
+    typeof item === "object" &&
+    typeof (item as TaikosDraft).draftId === "string"
+  );
 }
 
-async function readAll(): Promise<DraftFile> {
-  try {
-    const raw = await fs.readFile(getTaikosDraftsFile(), "utf8");
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as DraftFile) : [];
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw err;
-  }
+async function readAllJson(): Promise<TaikosDraft[]> {
+  return readJsonArray(getTaikosDraftsFile(), isDraft);
 }
 
-async function writeAll(drafts: DraftFile): Promise<void> {
-  await ensureDir();
-  const file = getTaikosDraftsFile();
-  const tmp = `${file}.tmp`;
-  await fs.writeFile(tmp, JSON.stringify(drafts, null, 2), "utf8");
-  await fs.rename(tmp, file);
+async function writeAllJson(drafts: TaikosDraft[]): Promise<void> {
+  const err = await writeJsonArray(getTaikosDraftsFile(), drafts);
+  if (err) throw new Error(err);
 }
 
 export type ListDraftsOptions = {
@@ -46,30 +45,43 @@ export type ListDraftsOptions = {
 };
 
 export async function listDrafts(options: ListDraftsOptions): Promise<TaikosDraft[]> {
-  const all = await readAll();
+  const backend = await resolveTaikosStorageBackend();
+  if (backend === "postgres") {
+    const rows = await listDraftsPostgres(options);
+    if (rows.length > 0 || !taikosJsonFallbackAllowed()) return rows;
+  }
+
+  const all = await readAllJson();
   let rows = all.filter((d) => d.salonId === options.salonId);
-
-  if (options.status) {
-    rows = rows.filter((d) => d.status === options.status);
-  }
-  if (options.type) {
-    rows = rows.filter((d) => d.draftType === options.type);
-  }
-
+  if (options.status) rows = rows.filter((d) => d.status === options.status);
+  if (options.type) rows = rows.filter((d) => d.draftType === options.type);
   rows.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-  const limit = options.limit ?? 50;
-  return rows.slice(0, limit);
+  return rows.slice(0, options.limit ?? 50);
 }
 
 export async function getDraftById(
   salonId: string,
   draftId: string,
 ): Promise<TaikosDraft | null> {
-  const all = await readAll();
+  const backend = await resolveTaikosStorageBackend();
+  if (backend === "postgres") {
+    const row = await getDraftByIdPostgres(salonId, draftId);
+    if (row || !taikosJsonFallbackAllowed()) return row;
+  }
+  const all = await readAllJson();
   return all.find((d) => d.salonId === salonId && d.draftId === draftId) ?? null;
 }
 
 export async function createDraft(input: CreateTaikosDraftInput): Promise<TaikosDraft> {
+  const writable = await assertTaikosWritableBackend();
+  if (!writable.ok) throw new Error(writable.error);
+
+  if (writable.backend === "postgres") {
+    const created = await createDraftPostgres(input);
+    if ("error" in created) throw new Error(created.error);
+    return created;
+  }
+
   const now = new Date().toISOString();
   const draft: TaikosDraft = {
     ...input,
@@ -77,10 +89,9 @@ export async function createDraft(input: CreateTaikosDraftInput): Promise<Taikos
     createdAt: now,
     updatedAt: now,
   };
-
-  const all = await readAll();
+  const all = await readAllJson();
   all.push(draft);
-  await writeAll(all);
+  await writeAllJson(all);
   return draft;
 }
 
@@ -89,10 +100,18 @@ export async function updateDraft(
   draftId: string,
   patch: UpdateTaikosDraftInput,
 ): Promise<TaikosDraft | null> {
-  const all = await readAll();
+  const writable = await assertTaikosWritableBackend();
+  if (!writable.ok) throw new Error(writable.error);
+
+  if (writable.backend === "postgres") {
+    const updated = await updateDraftPostgres(salonId, draftId, patch);
+    if (updated && "error" in updated) throw new Error(updated.error);
+    return updated && !("error" in updated) ? updated : null;
+  }
+
+  const all = await readAllJson();
   const idx = all.findIndex((d) => d.salonId === salonId && d.draftId === draftId);
   if (idx < 0) return null;
-
   const now = new Date().toISOString();
   const current = all[idx];
   const next: TaikosDraft = {
@@ -103,13 +122,10 @@ export async function updateDraft(
     estimatedValue: patch.estimatedValue ?? current.estimatedValue,
     linkedGoalId: patch.linkedGoalId ?? current.linkedGoalId,
     updatedAt: now,
-    audit: {
-      ...current.audit,
-      lastEditedAt: now,
-    },
+    audit: { ...current.audit, lastEditedAt: now },
   };
   all[idx] = next;
-  await writeAll(all);
+  await writeAllJson(all);
   return next;
 }
 
@@ -117,23 +133,27 @@ export async function archiveDraft(
   salonId: string,
   draftId: string,
 ): Promise<TaikosDraft | null> {
+  const writable = await assertTaikosWritableBackend();
+  if (!writable.ok) throw new Error(writable.error);
+
+  if (writable.backend === "postgres") {
+    const archived = await archiveDraftPostgres(salonId, draftId);
+    if (archived && "error" in archived) throw new Error(archived.error);
+    return archived && !("error" in archived) ? archived : null;
+  }
+
   const now = new Date().toISOString();
-  const all = await readAll();
+  const all = await readAllJson();
   const idx = all.findIndex((d) => d.salonId === salonId && d.draftId === draftId);
   if (idx < 0) return null;
-
   const next: TaikosDraft = {
     ...all[idx],
     status: "archived",
     updatedAt: now,
-    audit: {
-      ...all[idx].audit,
-      archivedAt: now,
-      lastEditedAt: now,
-    },
+    audit: { ...all[idx].audit, archivedAt: now, lastEditedAt: now },
   };
   all[idx] = next;
-  await writeAll(all);
+  await writeAllJson(all);
   return next;
 }
 
@@ -141,6 +161,10 @@ export async function summarizeDraftsForSalon(
   salonId: string,
   recentLimit = 6,
 ): Promise<TaikosDraftSummary> {
-  const drafts = await listDrafts({ salonId, limit: 200 });
+  const backend = await resolveTaikosStorageBackend();
+  const drafts =
+    backend === "postgres"
+      ? await listAllDraftsForSalonPostgres(salonId, 200)
+      : await listDrafts({ salonId, limit: 200 });
   return summarizeDrafts(drafts, recentLimit);
 }

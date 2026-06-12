@@ -23,6 +23,7 @@ export async function GET() {
       activeBookCount: stats.activeBookCount,
       trialCount: stats.trialCount,
       inviteDraftCount: stats.inviteDraftCount,
+      taikos: stats.taikos,
       note:
         stats.vercel && !stats.durable
           ? "VMB requires Postgres on Vercel — set DATABASE_URL and redeploy."

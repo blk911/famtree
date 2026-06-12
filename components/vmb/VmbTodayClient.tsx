@@ -351,6 +351,11 @@ export function VmbTodayClient({
             summary={data?.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY}
             insights={insights}
             goals={data?.goalSummary.goals ?? []}
+            analysisContext={{
+              analysisId: activeAnalysisId,
+              salonName,
+              hasRealBookData: hasCompletedFirstIngest,
+            }}
             onRefresh={loadContext}
           />
 

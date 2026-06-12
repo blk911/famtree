@@ -6,8 +6,9 @@ import { AiosDraftCard } from "@/components/taikos/drafts/AiosDraftCard";
 import { AiosDraftDetail } from "@/components/taikos/drafts/AiosDraftDetail";
 import { SortableListHeader } from "@/components/vmb/SortableListHeader";
 import { VmbPageEmpty, VmbPageFrame } from "@/components/vmb/VmbPageFrame";
-import { fetchTaikosJson } from "@/lib/taikos/fetch-taikos-json";
+import { countCampaignDebug, countDraftFetch } from "@/lib/taikos/debug/draft-fetch-count";
 import { draftTypesForWorkspace } from "@/lib/taikos/drafts/draft-router";
+import { fetchTaikosJson } from "@/lib/taikos/fetch-taikos-json";
 import type { TaikosDraft } from "@/lib/taikos/drafts/types";
 import { useSortableList } from "@/lib/vmb/useSortableList";
 
@@ -26,7 +27,7 @@ type DraftSortKey = "title" | "type" | "updatedAt" | "value";
 
 export function VmbTaikosDraftWorkspace({ workspace, title, subtitle, eyebrow }: Props) {
   if (workspace === "campaigns") {
-    console.count("[campaign-render]");
+    countCampaignDebug("render");
   }
 
   const pathname = usePathname();
@@ -58,7 +59,7 @@ export function VmbTaikosDraftWorkspace({ workspace, title, subtitle, eyebrow }:
 
   const loadDrafts = useCallback(async () => {
     if (workspace === "campaigns") {
-      console.count("[campaign-load]");
+      countCampaignDebug("load");
     }
     setLoading(true);
     setFetchError(null);
@@ -66,9 +67,9 @@ export function VmbTaikosDraftWorkspace({ workspace, title, subtitle, eyebrow }:
       const results = await Promise.allSettled(
         types.map(async (type) => {
           if (workspace === "campaigns") {
-            console.count("[campaign-fetch]");
+            countCampaignDebug("fetch");
           }
-          console.count("[drafts-fetch]");
+          countDraftFetch();
           const outcome = await fetchTaikosJson<TaikosDraft[]>(
             `/api/taikos/drafts?type=${type}&limit=30`,
           );

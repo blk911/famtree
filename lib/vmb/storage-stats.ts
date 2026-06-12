@@ -4,6 +4,7 @@ import {
   resolveVmbStorageBackend,
   vmbDatabaseUrlPresent,
 } from "@/lib/vmb/db";
+import { getTaikosStorageStats, type TaikosStorageStats } from "@/lib/taikos/storage/taikos-storage-stats";
 
 export type VmbStorageStats = {
   backend: "postgres" | "json";
@@ -18,6 +19,16 @@ export type VmbStorageStats = {
   activeBookCount: number;
   trialCount: number;
   inviteDraftCount: number;
+  taikos?: Pick<
+    TaikosStorageStats,
+    | "backend"
+    | "durable"
+    | "queueCount"
+    | "draftCount"
+    | "goalCount"
+    | "activityCount"
+    | "sessionCount"
+  >;
 };
 
 export async function probeVmbDatabaseConnected(): Promise<boolean> {
@@ -78,8 +89,22 @@ export async function getVmbStorageStats(): Promise<VmbStorageStats> {
       activeBookCount: Number(activeBookRow[0]?.count ?? 0),
       trialCount: Number(trialRow[0]?.count ?? 0),
       inviteDraftCount: Number(inviteRow[0]?.count ?? 0),
+      taikos: await getTaikosStorageSummary(),
     };
   } catch {
     return empty;
   }
+}
+
+async function getTaikosStorageSummary(): Promise<VmbStorageStats["taikos"]> {
+  const stats = await getTaikosStorageStats();
+  return {
+    backend: stats.backend,
+    durable: stats.durable,
+    queueCount: stats.queueCount,
+    draftCount: stats.draftCount,
+    goalCount: stats.goalCount,
+    activityCount: stats.activityCount,
+    sessionCount: stats.sessionCount,
+  };
 }

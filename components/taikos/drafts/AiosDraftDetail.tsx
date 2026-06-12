@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AiosDraftBadge } from "@/components/taikos/drafts/AiosDraftBadge";
+import { countDraftFetch } from "@/lib/taikos/debug/draft-fetch-count";
 import { fetchTaikosJson } from "@/lib/taikos/fetch-taikos-json";
 import type { TaikosDraft, TaikosDraftStatus } from "@/lib/taikos/drafts/types";
 import { VMB_THEME } from "@/lib/vmb/theme";
@@ -36,7 +37,7 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
     setLoading(true);
     setError(null);
     try {
-      console.count("[drafts-fetch]");
+      countDraftFetch();
       const outcome = await fetchTaikosJson<TaikosDraft>(
         `/api/taikos/drafts/${encodeURIComponent(draftId)}`,
       );
@@ -84,7 +85,7 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
         payload.message = message;
       }
 
-      console.count("[drafts-fetch]");
+      countDraftFetch();
       const res = await fetch(`/api/taikos/drafts/${encodeURIComponent(draftId)}`, {
         method: "PATCH",
         credentials: "include",
@@ -134,7 +135,7 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
     if (!draft) return;
     setSaving(true);
     try {
-      console.count("[drafts-fetch]");
+      countDraftFetch();
       const res = await fetch(`/api/taikos/drafts/${encodeURIComponent(draftId)}`, {
         method: "DELETE",
         credentials: "include",

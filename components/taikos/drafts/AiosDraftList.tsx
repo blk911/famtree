@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AiosDraftCard } from "@/components/taikos/drafts/AiosDraftCard";
+import { countDraftFetch } from "@/lib/taikos/debug/draft-fetch-count";
 import { fetchTaikosJson } from "@/lib/taikos/fetch-taikos-json";
 import type { TaikosDraftListItem } from "@/lib/taikos/drafts/types";
 
@@ -21,7 +22,7 @@ export function AiosDraftList({ refreshKey = 0, limit = 5 }: Props) {
       setLoading(true);
       setUnavailable(false);
       try {
-        console.count("[drafts-fetch]");
+        countDraftFetch();
         const outcome = await fetchTaikosJson<
           Array<{
             draftId: string;

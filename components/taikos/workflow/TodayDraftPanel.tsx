@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { countDraftFetch } from "@/lib/taikos/debug/draft-fetch-count";
 import Link from "next/link";
 import { AiosDraftBadge } from "@/components/taikos/drafts/AiosDraftBadge";
 import { draftDetailHref } from "@/lib/taikos/drafts/draft-router";
@@ -21,7 +22,7 @@ export function TodayDraftPanel({ drafts, onRefresh }: Props) {
   async function archiveDraft(draftId: string) {
     setBusy(true);
     try {
-      console.count("[drafts-fetch]");
+      countDraftFetch();
       await fetch(`/api/taikos/drafts/${draftId}`, {
         method: "PATCH",
         credentials: "include",
@@ -37,7 +38,7 @@ export function TodayDraftPanel({ drafts, onRefresh }: Props) {
   async function saveTitle(draftId: string) {
     setBusy(true);
     try {
-      console.count("[drafts-fetch]");
+      countDraftFetch();
       await fetch(`/api/taikos/drafts/${draftId}`, {
         method: "PATCH",
         credentials: "include",

@@ -1,35 +1,37 @@
-import { promises as fs } from "fs";
-import path from "path";
 import { getTaikosActivityStreamFile } from "@/lib/taikos/paths";
+import {
+  listActivitiesPostgres,
+  recordActivityPostgres,
+} from "@/lib/taikos/activity/activity-store-postgres";
+import { readJsonArray, writeJsonArray } from "@/lib/taikos/storage/taikos-json-store";
+import { assertTaikosWritableBackend, taikosJsonFallbackAllowed } from "@/lib/taikos/storage/taikos-storage-policy";
+import { resolveTaikosStorageBackend } from "@/lib/taikos/storage/taikos-db";
 import type { RecordActivityInput, TaikosActivityEvent } from "./activity-types";
 
-type ActivityFile = TaikosActivityEvent[];
-
-async function ensureDir(): Promise<void> {
-  await fs.mkdir(path.dirname(getTaikosActivityStreamFile()), { recursive: true });
+function isActivity(item: unknown): item is TaikosActivityEvent {
+  return (
+    !!item &&
+    typeof item === "object" &&
+    typeof (item as TaikosActivityEvent).activityId === "string"
+  );
 }
 
-async function readAll(): Promise<ActivityFile> {
-  try {
-    const raw = await fs.readFile(getTaikosActivityStreamFile(), "utf8");
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as ActivityFile) : [];
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw err;
-  }
+async function readAllJson(): Promise<TaikosActivityEvent[]> {
+  return readJsonArray(getTaikosActivityStreamFile(), isActivity);
 }
 
-async function writeAll(events: ActivityFile): Promise<void> {
-  await ensureDir();
-  const file = getTaikosActivityStreamFile();
-  const tmp = `${file}.tmp`;
-  await fs.writeFile(tmp, JSON.stringify(events, null, 2), "utf8");
-  await fs.rename(tmp, file);
+async function writeAllJson(events: TaikosActivityEvent[]): Promise<void> {
+  const err = await writeJsonArray(getTaikosActivityStreamFile(), events);
+  if (err) throw new Error(err);
 }
 
 export async function listActivities(salonId: string, limit = 40): Promise<TaikosActivityEvent[]> {
-  const all = await readAll();
+  const backend = await resolveTaikosStorageBackend();
+  if (backend === "postgres") {
+    const rows = await listActivitiesPostgres(salonId, limit);
+    if (rows.length > 0 || !taikosJsonFallbackAllowed()) return rows;
+  }
+  const all = await readAllJson();
   return all
     .filter((e) => e.salonId === salonId)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -37,6 +39,15 @@ export async function listActivities(salonId: string, limit = 40): Promise<Taiko
 }
 
 export async function recordActivity(input: RecordActivityInput): Promise<TaikosActivityEvent> {
+  const writable = await assertTaikosWritableBackend();
+  if (!writable.ok) throw new Error(writable.error);
+
+  if (writable.backend === "postgres") {
+    const created = await recordActivityPostgres(input);
+    if ("error" in created) throw new Error(created.error);
+    return created;
+  }
+
   const now = new Date().toISOString();
   const event: TaikosActivityEvent = {
     activityId: `act-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -52,8 +63,8 @@ export async function recordActivity(input: RecordActivityInput): Promise<Taikos
     estimatedValue: input.estimatedValue,
     createdAt: now,
   };
-  const all = await readAll();
+  const all = await readAllJson();
   all.unshift(event);
-  await writeAll(all.slice(0, 500));
+  await writeAllJson(all.slice(0, 500));
   return event;
 }

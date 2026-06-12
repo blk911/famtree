@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { InlineDeliverablePreview } from "@/components/taikos/workflow/InlineDeliverablePreview";
 import { OpportunityLifecycle } from "@/components/taikos/workflow/OpportunityLifecycle";
 import { useInlineActionWorkflow } from "@/components/taikos/workflow/useInlineActionWorkflow";
@@ -11,16 +12,37 @@ import {
 } from "@/lib/taikos/workflow/opportunity-display";
 import type { TaikosInsight } from "@/lib/taikos/coda/types";
 import type { TaikosOpportunity } from "@/lib/taikos/opportunities/types";
+import {
+  buildOpportunityIntelligence,
+  suggestedCardTypeLabel,
+  type OpportunityAnalysisContext,
+  type OpportunityIntelligence,
+} from "@/lib/vmb/opportunities/opportunity-intelligence";
 
 type Props = {
   opportunity: TaikosOpportunity;
   insight?: TaikosInsight;
+  intelligence?: OpportunityIntelligence;
+  analysisContext?: OpportunityAnalysisContext;
   goalTitle?: string;
   embedded?: boolean;
   onRefresh?: () => void;
 };
 
-export function OpportunityWorkflowCard({ opportunity, insight, goalTitle, embedded, onRefresh }: Props) {
+export function OpportunityWorkflowCard({
+  opportunity,
+  insight,
+  intelligence: intelligenceProp,
+  analysisContext,
+  goalTitle,
+  embedded,
+  onRefresh,
+}: Props) {
+  const intelligence = useMemo(
+    () => intelligenceProp ?? buildOpportunityIntelligence(opportunity, analysisContext),
+    [intelligenceProp, opportunity, analysisContext],
+  );
+
   const workflow = useInlineActionWorkflow({
     actionType: opportunity.suggestedAction,
     sourceId: opportunity.opportunityId,
@@ -63,25 +85,34 @@ export function OpportunityWorkflowCard({ opportunity, insight, goalTitle, embed
           </p>
           {goalTitle ? <p className="taikos-opp-card__goal">Goal: {goalTitle}</p> : null}
           {insight ? <TaikosInsightBlock insight={insight} /> : null}
-          <div className="taikos-opp-card__next-layer" aria-label="Upcoming content">
-            <div className="taikos-opp-card__next-slot">
-              <p className="taikos-opp-card__next-slot-label">tAIkOS insight</p>
-              <p className="taikos-opp-card__next-slot-copy">
-                Conversation insight from tAIkOS will appear here in the next pass.
+
+          <div className="taikos-opp-card__intel">
+            <div className="taikos-opp-card__intel-section">
+              <p className="taikos-opp-card__intel-label">tAIkOS insight</p>
+              <p className="taikos-opp-card__intel-title">{intelligence.insightTitle}</p>
+              <p className="taikos-opp-card__intel-copy">{intelligence.whatTaikosSees}</p>
+            </div>
+            <div className="taikos-opp-card__intel-section">
+              <p className="taikos-opp-card__intel-label">Why this matters</p>
+              <p className="taikos-opp-card__intel-copy">{intelligence.whyThisMatters}</p>
+            </div>
+            <div className="taikos-opp-card__intel-section">
+              <p className="taikos-opp-card__intel-label">Suggested move</p>
+              <p className="taikos-opp-card__intel-copy">{intelligence.suggestedRelationshipMove}</p>
+              <p className="taikos-opp-card__intel-card-type">
+                Card: <strong>{suggestedCardTypeLabel(intelligence.suggestedCardType)}</strong>
               </p>
             </div>
-            <div className="taikos-opp-card__next-slot">
-              <p className="taikos-opp-card__next-slot-label">Why this matters</p>
-              <p className="taikos-opp-card__next-slot-copy">
-                Brief context on revenue impact and timing will land here.
-              </p>
-            </div>
-            <div className="taikos-opp-card__next-slot">
-              <p className="taikos-opp-card__next-slot-label">Suggested invite / card</p>
-              <p className="taikos-opp-card__next-slot-copy">
-                Recommended deliverable preview will appear here — no auto-fetch yet.
-              </p>
-            </div>
+            {intelligence.evidence.length > 0 ? (
+              <details className="taikos-opp-card__intel-evidence">
+                <summary>Evidence</summary>
+                <ul>
+                  {intelligence.evidence.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
           </div>
         </>
       ) : null}

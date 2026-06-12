@@ -1,53 +1,55 @@
-import { promises as fs } from "fs";
-import path from "path";
 import type { AiosContextPacket } from "@/lib/taikos/types";
 import { getTaikosGoalsFile } from "@/lib/taikos/paths";
-import { applyGoalProgress, computeProgressPercent } from "./goal-progress";
+import { applyGoalProgress } from "./goal-progress";
 import { defaultGoalsForSalon } from "./goal-router";
 import { summarizeGoals } from "./goal-summary";
+import {
+  createGoalPostgres,
+  getGoalByIdPostgres,
+  listAllGoalsPostgres,
+  updateGoalPostgres,
+  upsertGoalsPostgres,
+} from "@/lib/taikos/goals/goal-store-postgres";
+import { readJsonArray, writeJsonArray } from "@/lib/taikos/storage/taikos-json-store";
+import { assertTaikosWritableBackend, taikosJsonFallbackAllowed } from "@/lib/taikos/storage/taikos-storage-policy";
+import { resolveTaikosStorageBackend } from "@/lib/taikos/storage/taikos-db";
 import type {
   CreateTaikosGoalInput,
   TaikosGoal,
-  TaikosGoalStatus,
   TaikosGoalSummary,
   UpdateTaikosGoalInput,
 } from "./types";
+import { computeProgressPercent } from "./goal-progress";
 
-type GoalFile = TaikosGoal[];
-
-async function ensureDir(): Promise<void> {
-  await fs.mkdir(path.dirname(getTaikosGoalsFile()), { recursive: true });
+function isGoal(item: unknown): item is TaikosGoal {
+  return (
+    !!item &&
+    typeof item === "object" &&
+    typeof (item as TaikosGoal).goalId === "string"
+  );
 }
 
-async function readAll(): Promise<GoalFile> {
-  try {
-    const raw = await fs.readFile(getTaikosGoalsFile(), "utf8");
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as GoalFile) : [];
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw err;
-  }
+async function readAllJson(): Promise<TaikosGoal[]> {
+  return readJsonArray(getTaikosGoalsFile(), isGoal);
 }
 
-async function writeAll(goals: GoalFile): Promise<void> {
-  await ensureDir();
-  const file = getTaikosGoalsFile();
-  const tmp = `${file}.tmp`;
-  await fs.writeFile(tmp, JSON.stringify(goals, null, 2), "utf8");
-  await fs.rename(tmp, file);
+async function writeAllJson(goals: TaikosGoal[]): Promise<void> {
+  const err = await writeJsonArray(getTaikosGoalsFile(), goals);
+  if (err) throw new Error(err);
 }
 
 export async function listGoals(salonId: string, limit = 50): Promise<TaikosGoal[]> {
-  const all = await readAll();
-  return all
-    .filter((g) => g.salonId === salonId && g.status !== "archived")
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, limit);
+  const all = await listAllGoals(salonId, limit * 2);
+  return all.filter((g) => g.status !== "archived").slice(0, limit);
 }
 
 export async function listAllGoals(salonId: string, limit = 100): Promise<TaikosGoal[]> {
-  const all = await readAll();
+  const backend = await resolveTaikosStorageBackend();
+  if (backend === "postgres") {
+    const rows = await listAllGoalsPostgres(salonId, limit);
+    if (rows.length > 0 || !taikosJsonFallbackAllowed()) return rows;
+  }
+  const all = await readAllJson();
   return all
     .filter((g) => g.salonId === salonId)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
@@ -55,11 +57,25 @@ export async function listAllGoals(salonId: string, limit = 100): Promise<Taikos
 }
 
 export async function getGoalById(salonId: string, goalId: string): Promise<TaikosGoal | null> {
-  const all = await readAll();
+  const backend = await resolveTaikosStorageBackend();
+  if (backend === "postgres") {
+    const row = await getGoalByIdPostgres(salonId, goalId);
+    if (row || !taikosJsonFallbackAllowed()) return row;
+  }
+  const all = await readAllJson();
   return all.find((g) => g.salonId === salonId && g.goalId === goalId) ?? null;
 }
 
 export async function createGoal(input: CreateTaikosGoalInput): Promise<TaikosGoal> {
+  const writable = await assertTaikosWritableBackend();
+  if (!writable.ok) throw new Error(writable.error);
+
+  if (writable.backend === "postgres") {
+    const created = await createGoalPostgres(input);
+    if ("error" in created) throw new Error(created.error);
+    return created;
+  }
+
   const now = new Date().toISOString();
   const goal: TaikosGoal = {
     ...input,
@@ -70,9 +86,9 @@ export async function createGoal(input: CreateTaikosGoalInput): Promise<TaikosGo
     createdAt: now,
     updatedAt: now,
   };
-  const all = await readAll();
+  const all = await readAllJson();
   all.push(goal);
-  await writeAll(all);
+  await writeAllJson(all);
   return goal;
 }
 
@@ -81,10 +97,18 @@ export async function updateGoal(
   goalId: string,
   patch: UpdateTaikosGoalInput,
 ): Promise<TaikosGoal | null> {
-  const all = await readAll();
+  const writable = await assertTaikosWritableBackend();
+  if (!writable.ok) throw new Error(writable.error);
+
+  if (writable.backend === "postgres") {
+    const updated = await updateGoalPostgres(salonId, goalId, patch);
+    if (updated && "error" in updated) throw new Error(updated.error);
+    return updated && !("error" in updated) ? updated : null;
+  }
+
+  const all = await readAllJson();
   const idx = all.findIndex((g) => g.salonId === salonId && g.goalId === goalId);
   if (idx < 0) return null;
-
   const current = all[idx];
   const targetValue = patch.targetValue ?? current.targetValue;
   const currentValue = patch.currentValue ?? current.currentValue;
@@ -103,7 +127,7 @@ export async function updateGoal(
     updatedAt: new Date().toISOString(),
   };
   all[idx] = next;
-  await writeAll(all);
+  await writeAllJson(all);
   return next;
 }
 
@@ -120,13 +144,9 @@ export async function linkDraftToGoal(
   return updateGoal(salonId, goalId, { linkedDrafts });
 }
 
-export async function ensureDefaultGoals(
-  ctx: AiosContextPacket,
-): Promise<TaikosGoal[]> {
+export async function ensureDefaultGoals(ctx: AiosContextPacket): Promise<TaikosGoal[]> {
   const existing = await listGoals(ctx.salonId, 100);
-  if (existing.length > 0) {
-    return syncGoalsWithContext(ctx);
-  }
+  if (existing.length > 0) return syncGoalsWithContext(ctx);
 
   const defaults = defaultGoalsForSalon(ctx.salonId, ctx.operatorId, ctx);
   for (const d of defaults) {
@@ -144,25 +164,28 @@ export async function ensureDefaultGoals(
 }
 
 export async function syncGoalsWithContext(ctx: AiosContextPacket): Promise<TaikosGoal[]> {
-  const all = await readAll();
-  const salonGoals = all.filter((g) => g.salonId === ctx.salonId && g.status !== "archived");
-  const updated: TaikosGoal[] = [];
+  const backend = await resolveTaikosStorageBackend();
+  const salonGoals = (await listAllGoals(ctx.salonId, 100)).filter(
+    (g) => g.status !== "archived",
+  );
+  const updated: TaikosGoal[] = salonGoals.map((goal) => applyGoalProgress(goal, ctx));
 
-  for (const goal of salonGoals) {
-    const synced = applyGoalProgress(goal, ctx);
-    const idx = all.findIndex((g) => g.goalId === goal.goalId);
-    if (idx >= 0) {
-      all[idx] = synced;
-      updated.push(synced);
-    }
+  if (backend === "postgres") {
+    const result = await upsertGoalsPostgres(updated);
+    if (result.error) throw new Error(result.error);
+    return updated;
   }
-  await writeAll(all);
+
+  const all = await readAllJson();
+  for (const goal of updated) {
+    const idx = all.findIndex((g) => g.goalId === goal.goalId);
+    if (idx >= 0) all[idx] = goal;
+  }
+  await writeAllJson(all);
   return updated;
 }
 
-export async function summarizeGoalsForSalon(
-  ctx: AiosContextPacket,
-): Promise<TaikosGoalSummary> {
+export async function summarizeGoalsForSalon(ctx: AiosContextPacket): Promise<TaikosGoalSummary> {
   const goals = await ensureDefaultGoals(ctx);
   return summarizeGoals(goals);
 }
