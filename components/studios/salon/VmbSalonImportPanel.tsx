@@ -34,7 +34,11 @@ export function VmbSalonImportPanel({ trialId, defaultProvider = "glossgenius", 
       form.append("provider", provider);
       form.append("entity", entity);
       form.append("trialId", trialId);
-      const res = await fetch("/api/vmb/trial/import", { method: "POST", body: form });
+      const res = await fetch("/api/vmb/trial/import", {
+        method: "POST",
+        body: form,
+        credentials: "include",
+      });
       const data = (await res.json()) as {
         ok: boolean;
         run?: SalonBackOfficeImportRun;

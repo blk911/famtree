@@ -118,6 +118,12 @@ export function VmbStartFlow({ refreshMode = false }: Props) {
         if (typeof reader.result === "string") setBookText(reader.result);
       };
       reader.readAsText(file);
+    } else if (file && (file.name.toLowerCase().endsWith(".txt") || file.name.toLowerCase().endsWith(".c"))) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") setBookText(reader.result);
+      };
+      reader.readAsText(file);
     }
   }
 
@@ -445,7 +451,7 @@ export function VmbStartFlow({ refreshMode = false }: Props) {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".csv,.txt,text/csv"
+                accept=".csv,.txt,.c,text/csv"
                 onChange={handleFileChange}
                 style={{ display: "block", marginBottom: 8, fontSize: 13, width: "100%" }}
               />

@@ -6,8 +6,13 @@ export const metadata: Metadata = {
   title: "Today",
 };
 
-export default async function VmbTodayPage() {
-  const ctx = await loadVmbPageContext({});
+type Props = {
+  searchParams: Promise<{ analysis?: string }>;
+};
+
+export default async function VmbTodayPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const ctx = await loadVmbPageContext({ analysisId: params.analysis?.trim() });
   return (
     <VmbTodayClient
       salonName={ctx.salonName}

@@ -20,6 +20,7 @@ import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types"
 import type { TaikosQueueSummary } from "@/lib/taikos/queue/types";
 import { greetingForOperator } from "@/lib/taikos/context/greeting";
 import type { AiosContextPacket } from "@/lib/taikos/types";
+import type { VmbFullFlowDebug } from "@/lib/vmb/debug-full-flow";
 
 type TodayData = {
   greeting: string;
@@ -86,6 +87,7 @@ export function VmbTodayClient({
   const [data, setData] = useState<TodayData | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
   const [aiosOpen, setAiosOpen] = useState(false);
+  const [flowDebug, setFlowDebug] = useState<VmbFullFlowDebug | null>(null);
 
   const loadContext = useCallback(async () => {
     if (!hasCompletedFirstIngest) return;
@@ -148,6 +150,29 @@ export function VmbTodayClient({
     void loadContext();
   }, [loadContext]);
 
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
+    let cancelled = false;
+    async function loadFlowDebug() {
+      try {
+        const res = await fetch("/api/vmb/debug/full-flow", {
+          cache: "no-store",
+          credentials: "include",
+        });
+        const json = (await res.json()) as { ok: boolean; data?: VmbFullFlowDebug };
+        if (!cancelled && res.ok && json.ok && json.data) {
+          setFlowDebug(json.data);
+        }
+      } catch {
+        // non-blocking debug
+      }
+    }
+    void loadFlowDebug();
+    return () => {
+      cancelled = true;
+    };
+  }, [hasCompletedFirstIngest]);
+
   const todayUnlocked = hasCompletedFirstIngest;
   const codaSummary = data?.codaSummary ?? emptyCodaSummary(operatorName);
   const insights = codaSummary.insights ?? [];
@@ -188,6 +213,26 @@ export function VmbTodayClient({
 
       {!todayUnlocked ? (
         <div className="vmb-page-state">
+          {process.env.NODE_ENV === "development" && flowDebug ? (
+            <pre className="vmb-today-flow-debug">
+              {[
+                `workspaceId: ${flowDebug.currentWorkspace.workspaceId ?? "—"}`,
+                `salonId: ${flowDebug.currentWorkspace.salonId ?? "—"}`,
+                `trialId: ${flowDebug.currentWorkspace.trialId ?? "—"}`,
+                `latestAnalysisId: ${flowDebug.currentWorkspace.latestAnalysisId ?? "—"}`,
+                `activePointer.analysisId: ${flowDebug.activeBookPointer.analysisId ?? "—"}`,
+                `todayLoader.usesAnalysisId: ${flowDebug.todayLoader.usesAnalysisId ?? "—"}`,
+                `recordCount: ${flowDebug.todayLoader.recordCount}`,
+                `clientCount: ${flowDebug.todayLoader.clientCount}`,
+                `hasCompletedFirstIngest: ${String(flowDebug.todayLoader.hasCompletedFirstIngest)}`,
+                `wouldUnlockToday: ${String(flowDebug.todayLoader.wouldUnlockToday)}`,
+                `lockReason: ${flowDebug.todayLoader.lockReason ?? "—"}`,
+                `findTheMoney.reason: ${flowDebug.findTheMoney.reason ?? "—"}`,
+                `ggenConversion.exists: ${String(flowDebug.ggenConversion.exists)}`,
+                `analysisStore.recordCount: ${flowDebug.analysisStore.recordCount}`,
+              ].join("\n")}
+            </pre>
+          ) : null}
           <p>Connect your book to unlock Today.</p>
           <p style={{ marginTop: 12 }}>
             <Link href="/vmb/start">Find The Money</Link>

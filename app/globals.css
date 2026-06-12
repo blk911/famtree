@@ -1404,6 +1404,19 @@
   color: #78716c;
 }
 
+.vmb-today-flow-debug {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px dashed #d6d3d1;
+  background: #fffbeb;
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  color: #57534e;
+  text-align: left;
+}
+
 .today-aios-sparkle {
   flex-shrink: 0;
   width: 36px;

@@ -2,6 +2,9 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeSalonBackOfficeUpload } from "@/lib/intelligence/salon/backoffice/analyze-import";
+import { bridgeGgenImportToVmbAnalysis } from "@/lib/vmb/ggen-conversion-bridge";
+import { logVmbFlow } from "@/lib/vmb/flow-log";
+import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
 import { getVmbTrialLead } from "@/lib/vmb/trial-store";
 import { appendTrialImportRun } from "@/lib/vmb/trial-import-store";
 
@@ -48,7 +51,42 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ ok: true, run: analyzed.run });
+    const bridge = await bridgeGgenImportToVmbAnalysis({
+      trialId,
+      salonName: trial.salonName,
+      providerPlatform: trial.providerPlatform,
+      importRun: analyzed.run,
+    });
+
+    if (!bridge.ok) {
+      logVmbFlow("ggen converted", {
+        trialId,
+        salonId: trialId,
+        workspaceId: trialId,
+        bridgeFailed: true,
+        reason: bridge.reason,
+        sourceUploadId: analyzed.run.id,
+      });
+    }
+
+    const res = NextResponse.json({
+      ok: true,
+      run: analyzed.run,
+      bridge: bridge.ok
+        ? {
+            analysisId: bridge.analysisId,
+            recordCount: bridge.recordCount,
+            clientCount: bridge.clientCount,
+          }
+        : { error: bridge.reason },
+    });
+    res.cookies.set(VMB_TRIAL_COOKIE, trialId, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 45,
+    });
+    return res;
   } catch (e) {
     return NextResponse.json(
       {

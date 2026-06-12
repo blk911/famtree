@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { getActiveBookPointer } from "@/lib/vmb/active-book-pointer";
 import { getActiveVmbAnalysis } from "@/lib/vmb/active-analysis-resolver";
+import { logVmbFlow } from "@/lib/vmb/flow-log";
 import { isVmbProcessComplete } from "@/lib/vmb/process-complete";
 import { getVmbBookAnalysis, getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
@@ -67,18 +68,31 @@ export async function loadVmbPageContext(
     activeAnalysis?.salonName?.trim() ||
     EMPTY_CONTEXT.salonName;
 
+  const hasCompletedFirstIngest = isVmbProcessComplete({
+    workspace,
+    activeAnalysis,
+    activeAnalysisId: activeAnalysis?.analysisId ?? activeAnalysisId,
+    activeBookPointer,
+    trialId,
+  });
+
+  logVmbFlow("today loader resolved", {
+    trialId,
+    salonId: trialId,
+    workspaceId: trialId,
+    analysisId: activeAnalysis?.analysisId ?? activeAnalysisId,
+    recordCount: activeAnalysis?.recordCount ?? 0,
+    clientCount: activeAnalysis?.recordCount ?? 0,
+    hasCompletedFirstIngest,
+    wouldUnlockToday: hasCompletedFirstIngest,
+  });
+
   return {
     trialId,
     workspace: workspace ?? undefined,
     activeAnalysis,
     activeAnalysisId: activeAnalysis?.analysisId ?? activeAnalysisId,
-    hasCompletedFirstIngest: isVmbProcessComplete({
-      workspace,
-      activeAnalysis,
-      activeAnalysisId: activeAnalysis?.analysisId ?? activeAnalysisId,
-      activeBookPointer,
-      trialId,
-    }),
+    hasCompletedFirstIngest,
     refreshDue: workspace ? isRefreshDue(workspace) : false,
     salonName,
     providerPlatform: workspace?.providerPlatform ?? activeAnalysis?.providerPlatform,

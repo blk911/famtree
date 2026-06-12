@@ -1,4 +1,5 @@
 import type { UpsertWorkspaceInput, VmbSalonWorkspace } from "@/types/vmb/workspace";
+import { logVmbFlow } from "@/lib/vmb/flow-log";
 import { getVmbWorkspacesFile } from "./paths";
 import { readJsonArray, writeJsonArray } from "./runtime-json-store";
 
@@ -97,8 +98,15 @@ export async function setLatestAnalysis(
   if (!id) return { error: "analysisId is required" };
 
   const all = await listWorkspaces();
-  const index = all.findIndex((w) => w.trialId === trialId);
-  if (index < 0) return { error: "Workspace not found" };
+  let index = all.findIndex((w) => w.trialId === trialId);
+  if (index < 0) {
+    const created = await upsertWorkspaceForTrial({ trialId, salonName: "Your Salon" });
+    if ("error" in created) return { error: created.error };
+    const refreshed = await listWorkspaces();
+    index = refreshed.findIndex((w) => w.trialId === trialId);
+    if (index < 0) return { error: "Workspace not found" };
+    all.splice(0, all.length, ...refreshed);
+  }
 
   const now = new Date();
   const existing = all[index];
@@ -119,6 +127,18 @@ export async function setLatestAnalysis(
 
   const err = await writeJsonArray(getVmbWorkspacesFile(), all);
   if (err) return { error: err };
+
+  logVmbFlow("workspace updated", {
+    trialId,
+    salonId: trialId,
+    workspaceId: trialId,
+    analysisId: id,
+    recordCount: workspace.analysisIds.length,
+    clientCount: workspace.analysisIds.length,
+    firstIngestCompleted: workspace.firstIngestCompleted,
+    latestAnalysisId: workspace.latestAnalysisId,
+  });
+
   return { workspace };
 }
 

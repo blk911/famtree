@@ -1,8 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
+import { analyzeSalonBackOfficeUpload } from "@/lib/intelligence/salon/backoffice/analyze-import";
+import { getVmbBookAnalysis, getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
+import { bridgeGgenImportToVmbAnalysis } from "@/lib/vmb/ggen-conversion-bridge";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
+import { appendTrialImportRun } from "@/lib/vmb/trial-import-store";
 import { workspaceLatestAnalysisId } from "@/lib/vmb/workspace-lifecycle";
 import {
   getWorkspaceForTrial,
@@ -12,6 +15,7 @@ import {
 import { decodeBookUploadFile } from "@/lib/vmb/provider-ingest/parse-book-upload";
 import { runVmbBookAnalysis } from "@/lib/vmb/run-book-analysis";
 import { VMB_PROVIDER_PLATFORMS } from "@/lib/vmb/provider-guide";
+import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { VmbProviderPlatform } from "@/types/vmb/trial";
 
 function normalizePlatform(raw: unknown): VmbProviderPlatform | undefined {
@@ -60,6 +64,7 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
       rawText: string;
       sourceType: "paste" | "csv_upload" | "sample";
       fileName?: string;
+      fileBuffer?: Buffer;
     }
   | { error: string }
 > {
@@ -84,6 +89,7 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
         rawText: decoded.text,
         sourceType: "csv_upload",
         fileName: file.name,
+        fileBuffer: buffer,
       };
     }
 
@@ -119,6 +125,7 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
       rawText: decoded.text,
       sourceType: "csv_upload",
       fileName,
+      fileBuffer: buffer,
     };
   }
 
@@ -134,6 +141,51 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
     sourceType: body.sourceType === "sample" ? "sample" : "paste",
     fileName: body.fileName ? fileName : undefined,
   };
+}
+
+async function tryGgenBridgeFallback(input: {
+  trialId: string;
+  salonName?: string;
+  providerPlatform?: VmbProviderPlatform;
+  fileBuffer: Buffer;
+  fileName: string;
+}): Promise<
+  | { ok: true; analysis: VmbBookAnalysisResult; parsedRecordCount: number }
+  | { ok: false; reason: string }
+> {
+  if (input.providerPlatform !== "glossgenius") {
+    return { ok: false, reason: "GGEN fallback only applies to glossgenius uploads" };
+  }
+
+  const analyzed = await analyzeSalonBackOfficeUpload({
+    buffer: input.fileBuffer,
+    fileName: input.fileName,
+    providerRaw: "glossgenius",
+  });
+  if (!analyzed.ok) {
+    return { ok: false, reason: analyzed.error };
+  }
+
+  await appendTrialImportRun(input.trialId, analyzed.run);
+
+  const bridge = await bridgeGgenImportToVmbAnalysis({
+    trialId: input.trialId,
+    salonName: input.salonName,
+    providerPlatform: input.providerPlatform,
+    importRun: analyzed.run,
+  });
+  if (!bridge.ok) {
+    return { ok: false, reason: bridge.reason };
+  }
+
+  const analysis =
+    (await getVmbBookAnalysisForTrial(bridge.analysisId, input.trialId)) ??
+    (await getVmbBookAnalysis(bridge.analysisId));
+  if (!analysis) {
+    return { ok: false, reason: "GGEN bridge succeeded but analysis not found in store" };
+  }
+
+  return { ok: true, analysis, parsedRecordCount: bridge.recordCount };
 }
 
 export async function POST(req: NextRequest) {
@@ -160,6 +212,39 @@ export async function POST(req: NextRequest) {
       trialId,
     });
     if (!outcome.ok) {
+      const zeroRecords =
+        outcome.parse?.parsedRecordCount === 0 ||
+        outcome.error.toLowerCase().includes("no client records");
+      if (zeroRecords && extracted.fileBuffer && extracted.fileName) {
+        const ggen = await tryGgenBridgeFallback({
+          trialId,
+          salonName: extracted.salonName,
+          providerPlatform: extracted.providerPlatform,
+          fileBuffer: extracted.fileBuffer,
+          fileName: extracted.fileName,
+        });
+        if (ggen.ok) {
+          await upsertWorkspaceForTrial({
+            trialId,
+            salonName: extracted.salonName ?? ggen.analysis.salonName ?? "Your Salon",
+            providerPlatform: extracted.providerPlatform ?? ggen.analysis.providerPlatform,
+          });
+          return NextResponse.json({
+            ok: true,
+            data: {
+              analysis: ggen.analysis,
+              parse: {
+                parsedRecordCount: ggen.parsedRecordCount,
+                skippedRows: 0,
+                warnings: [`ggen-fallback:${extracted.fileName}`],
+                detectedColumns: ["ggen-normalized"],
+                providerMode: "glossgenius",
+              },
+            },
+          });
+        }
+      }
+
       return NextResponse.json({
         ok: false,
         error: outcome.error,
