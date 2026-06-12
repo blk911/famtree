@@ -48,18 +48,45 @@ export async function saveWorkspacePostgres(
     if (backend !== "postgres") return "Postgres backend unavailable";
 
     await prisma.$executeRaw`
-      INSERT INTO vmb_salon_workspace (trial_id, payload, updated_at)
+      INSERT INTO vmb_salon_workspace (
+        trial_id,
+        salon_id,
+        payload,
+        first_ingest_completed,
+        latest_analysis_id,
+        updated_at
+      )
       VALUES (
         ${workspace.trialId},
+        ${workspace.trialId},
         ${JSON.stringify(workspace)}::jsonb,
+        ${workspace.firstIngestCompleted ?? false},
+        ${workspace.latestAnalysisId ?? null},
         now()
       )
       ON CONFLICT (trial_id) DO UPDATE SET
+        salon_id = EXCLUDED.salon_id,
         payload = EXCLUDED.payload,
+        first_ingest_completed = EXCLUDED.first_ingest_completed,
+        latest_analysis_id = EXCLUDED.latest_analysis_id,
         updated_at = now()
     `;
     return null;
   } catch (e) {
     return e instanceof Error ? e.message : String(e);
+  }
+}
+
+export async function listWorkspacesPostgres(): Promise<VmbSalonWorkspace[]> {
+  const backend = await resolveVmbStorageBackend();
+  if (backend !== "postgres") return [];
+
+  try {
+    const rows = await prisma.$queryRaw<WorkspaceRow[]>`
+      SELECT payload FROM vmb_salon_workspace ORDER BY updated_at DESC
+    `;
+    return rows.map((row) => parsePayload(row.payload)).filter((w): w is VmbSalonWorkspace => !!w);
+  } catch {
+    return [];
   }
 }

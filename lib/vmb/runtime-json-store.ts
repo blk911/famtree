@@ -1,8 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { getVmbDataDir } from "./paths";
-
-// TODO(vmb:storage): VMB runtime JSON is ephemeral on Vercel; move to durable storage before real salon use.
+import { vmbJsonFallbackAllowed } from "@/lib/vmb/storage-policy";
 
 export async function readJsonArray<T>(
   filePath: string,
@@ -19,6 +17,9 @@ export async function readJsonArray<T>(
 }
 
 export async function writeJsonArray<T>(filePath: string, items: T[]): Promise<string | null> {
+  if (!vmbJsonFallbackAllowed()) {
+    return "JSON filesystem storage is disabled in production — Postgres required";
+  }
   try {
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, JSON.stringify(items, null, 2), "utf8");
@@ -29,5 +30,7 @@ export async function writeJsonArray<T>(filePath: string, items: T[]): Promise<s
 }
 
 export async function ensureVmbDataDir(): Promise<void> {
+  if (!vmbJsonFallbackAllowed()) return;
+  const { getVmbDataDir } = await import("./paths");
   await fs.mkdir(getVmbDataDir(), { recursive: true });
 }

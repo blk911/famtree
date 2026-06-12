@@ -1,6 +1,7 @@
 import type { UpsertWorkspaceInput, VmbSalonWorkspace } from "@/types/vmb/workspace";
 import { logVmbFlow } from "@/lib/vmb/flow-log";
 import { resolveVmbStorageBackend } from "@/lib/vmb/db";
+import { assertVmbWritableBackend, vmbJsonFallbackAllowed } from "@/lib/vmb/storage-policy";
 import {
   getWorkspaceForTrialPostgres,
   saveWorkspacePostgres,
@@ -25,25 +26,41 @@ function refreshDueAtFrom(now: Date): string {
   return next.toISOString();
 }
 
-export async function listWorkspaces(): Promise<VmbSalonWorkspace[]> {
+async function listWorkspacesJson(): Promise<VmbSalonWorkspace[]> {
   return readJsonArray(getVmbWorkspacesFile(), isWorkspace);
 }
 
+async function persistWorkspaceJson(workspace: VmbSalonWorkspace): Promise<string | null> {
+  const all = await listWorkspacesJson();
+  const index = all.findIndex((w) => w.trialId === workspace.trialId);
+  if (index >= 0) all[index] = workspace;
+  else all.unshift(workspace);
+  return writeJsonArray(getVmbWorkspacesFile(), all);
+}
+
 async function persistWorkspace(workspace: VmbSalonWorkspace): Promise<string | null> {
-  const backend = await resolveVmbStorageBackend();
-  if (backend === "postgres") {
+  const writable = await assertVmbWritableBackend();
+  if (!writable.ok) return writable.error;
+
+  if (writable.backend === "postgres") {
     const err = await saveWorkspacePostgres(workspace);
-    if (!err) return null;
+    if (err) return err;
+    if (vmbJsonFallbackAllowed()) {
+      await persistWorkspaceJson(workspace);
+    }
+    return null;
   }
 
-  const all = await listWorkspaces();
-  const index = all.findIndex((w) => w.trialId === workspace.trialId);
-  if (index >= 0) {
-    all[index] = workspace;
-  } else {
-    all.unshift(workspace);
+  return persistWorkspaceJson(workspace);
+}
+
+export async function listWorkspaces(): Promise<VmbSalonWorkspace[]> {
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    const { listWorkspacesPostgres } = await import("@/lib/vmb/workspace-store-postgres");
+    return listWorkspacesPostgres();
   }
-  return writeJsonArray(getVmbWorkspacesFile(), all);
+  return listWorkspacesJson();
 }
 
 export async function getWorkspaceForTrial(
@@ -54,11 +71,10 @@ export async function getWorkspaceForTrial(
 
   const backend = await resolveVmbStorageBackend();
   if (backend === "postgres") {
-    const pg = await getWorkspaceForTrialPostgres(id);
-    if (pg) return pg;
+    return getWorkspaceForTrialPostgres(id);
   }
 
-  const all = await listWorkspaces();
+  const all = await listWorkspacesJson();
   return all.find((w) => w.trialId === id);
 }
 
@@ -69,12 +85,7 @@ export async function upsertWorkspaceForTrial(
   if (!trialId) return { error: "trialId is required" };
 
   const now = new Date().toISOString();
-  const existing =
-    (await getWorkspaceForTrial(trialId)) ??
-    (await (async () => {
-      const all = await listWorkspaces();
-      return all.find((w) => w.trialId === trialId);
-    })());
+  const existing = await getWorkspaceForTrial(trialId);
 
   const workspace: VmbSalonWorkspace = {
     trialId,

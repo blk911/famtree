@@ -1,24 +1,31 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getVmbAnalysisStorageBackend } from "@/lib/vmb/book-analysis/analysis-store";
-import { vmbDatabaseUrlPresent } from "@/lib/vmb/db";
 import { getVmbDataDir } from "@/lib/vmb/paths";
+import { getVmbStorageStats } from "@/lib/vmb/storage-stats";
 
-/** Lightweight prod-safe storage probe for VMB unlock debugging. */
+/** Production-safe VMB storage probe. */
 export async function GET() {
-  const backend = await getVmbAnalysisStorageBackend();
+  const stats = await getVmbStorageStats();
   return NextResponse.json({
     ok: true,
     data: {
-      backend,
-      databaseUrlPresent: vmbDatabaseUrlPresent(),
-      vercel: Boolean(process.env.VERCEL),
+      backend: stats.backend,
+      durable: stats.durable,
+      databaseUrlPresent: stats.databaseUrlPresent,
+      databaseConnected: stats.databaseConnected,
+      vercel: stats.vercel,
       dataDir: getVmbDataDir(),
-      durable: backend === "postgres",
+      analysisCount: stats.analysisCount,
+      workspaceCount: stats.workspaceCount,
+      latestAnalysisId: stats.latestAnalysisId,
+      latestWorkspaceId: stats.latestWorkspaceId,
+      activeBookCount: stats.activeBookCount,
+      trialCount: stats.trialCount,
+      inviteDraftCount: stats.inviteDraftCount,
       note:
-        backend === "json" && process.env.VERCEL
-          ? "VMB analysis is ephemeral on this deploy (/tmp). Today unlock requires postgres backend."
+        stats.vercel && !stats.durable
+          ? "VMB requires Postgres on Vercel — set DATABASE_URL and redeploy."
           : null,
     },
   });

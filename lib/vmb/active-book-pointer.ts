@@ -1,14 +1,15 @@
+import type { ActiveBookPointer, SetActiveBookPointerInput } from "@/lib/vmb/active-book-pointer-types";
+import {
+  getActiveBookPointerPostgres,
+  listActiveBookPointersPostgres,
+  saveActiveBookPointerPostgres,
+} from "@/lib/vmb/active-book-pointer-postgres";
+import { resolveVmbStorageBackend } from "@/lib/vmb/db";
+import { assertVmbWritableBackend, vmbJsonFallbackAllowed } from "@/lib/vmb/storage-policy";
 import { getVmbActiveBookFile } from "./paths";
 import { readJsonArray, writeJsonArray } from "./runtime-json-store";
 
-export type ActiveBookPointer = {
-  salonId: string;
-  analysisId: string;
-  clientCount: number;
-  recordCount: number;
-  sourceFileName?: string;
-  updatedAt: string;
-};
+export type { ActiveBookPointer, SetActiveBookPointerInput } from "@/lib/vmb/active-book-pointer-types";
 
 function isPointer(item: unknown): item is ActiveBookPointer {
   return (
@@ -19,8 +20,16 @@ function isPointer(item: unknown): item is ActiveBookPointer {
   );
 }
 
-export async function listActiveBookPointers(): Promise<ActiveBookPointer[]> {
+async function listActiveBookPointersJson(): Promise<ActiveBookPointer[]> {
   return readJsonArray(getVmbActiveBookFile(), isPointer);
+}
+
+export async function listActiveBookPointers(): Promise<ActiveBookPointer[]> {
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    return listActiveBookPointersPostgres();
+  }
+  return listActiveBookPointersJson();
 }
 
 export async function getActiveBookPointer(
@@ -28,17 +37,14 @@ export async function getActiveBookPointer(
 ): Promise<ActiveBookPointer | undefined> {
   const id = salonId.trim();
   if (!id) return undefined;
-  const all = await listActiveBookPointers();
+
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    return getActiveBookPointerPostgres(id);
+  }
+  const all = await listActiveBookPointersJson();
   return all.find((p) => p.salonId === id);
 }
-
-export type SetActiveBookPointerInput = {
-  salonId: string;
-  analysisId: string;
-  clientCount: number;
-  recordCount: number;
-  sourceFileName?: string;
-};
 
 export async function setActiveBookPointer(
   input: SetActiveBookPointerInput,
@@ -46,6 +52,9 @@ export async function setActiveBookPointer(
   const salonId = input.salonId.trim();
   const analysisId = input.analysisId.trim();
   if (!salonId || !analysisId) return { error: "salonId and analysisId are required" };
+
+  const writable = await assertVmbWritableBackend();
+  if (!writable.ok) return { error: writable.error };
 
   const now = new Date().toISOString();
   const pointer: ActiveBookPointer = {
@@ -57,13 +66,23 @@ export async function setActiveBookPointer(
     updatedAt: now,
   };
 
-  const all = await listActiveBookPointers();
-  const index = all.findIndex((p) => p.salonId === salonId);
-  if (index >= 0) {
-    all[index] = pointer;
-  } else {
-    all.unshift(pointer);
+  if (writable.backend === "postgres") {
+    const err = await saveActiveBookPointerPostgres(pointer);
+    if (err) return { error: err };
+    if (vmbJsonFallbackAllowed()) {
+      const all = await listActiveBookPointersJson();
+      const index = all.findIndex((p) => p.salonId === salonId);
+      if (index >= 0) all[index] = pointer;
+      else all.unshift(pointer);
+      await writeJsonArray(getVmbActiveBookFile(), all);
+    }
+    return { pointer };
   }
+
+  const all = await listActiveBookPointersJson();
+  const index = all.findIndex((p) => p.salonId === salonId);
+  if (index >= 0) all[index] = pointer;
+  else all.unshift(pointer);
 
   const err = await writeJsonArray(getVmbActiveBookFile(), all);
   if (err) return { error: err };

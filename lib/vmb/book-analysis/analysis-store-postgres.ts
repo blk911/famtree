@@ -30,18 +30,27 @@ export async function saveVmbBookAnalysisPostgres(
     const backend = await resolveVmbStorageBackend();
     if (backend !== "postgres") return { error: "Postgres backend unavailable" };
 
+    const salonId = result.trialId ?? null;
+    const recordCount = result.recordCount ?? 0;
+
     await prisma.$executeRaw`
-      INSERT INTO vmb_book_analysis (analysis_id, trial_id, record_count, payload, updated_at)
+      INSERT INTO vmb_book_analysis (
+        analysis_id, trial_id, salon_id, record_count, client_count, payload, updated_at
+      )
       VALUES (
         ${result.analysisId},
         ${result.trialId ?? null},
-        ${result.recordCount ?? 0},
+        ${salonId},
+        ${recordCount},
+        ${recordCount},
         ${JSON.stringify(result)}::jsonb,
         now()
       )
       ON CONFLICT (analysis_id) DO UPDATE SET
         trial_id = EXCLUDED.trial_id,
+        salon_id = EXCLUDED.salon_id,
         record_count = EXCLUDED.record_count,
+        client_count = EXCLUDED.client_count,
         payload = EXCLUDED.payload,
         updated_at = now()
     `;
