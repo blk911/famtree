@@ -263,7 +263,13 @@ export function VmbStartFlow({ refreshMode = false }: Props) {
       const result = analyzeJson.data.analysis;
       vmbDevLog("analyze ok", result.analysisId);
       writeActiveAnalysisId(result.analysisId);
-      router.push(`/vmb/today?analysis=${encodeURIComponent(result.analysisId)}`);
+      const todayHref = `/vmb/today?analysis=${encodeURIComponent(result.analysisId)}`;
+      console.error("[VMB-POST-PROCESS-REDIRECT]", {
+        target: todayHref,
+        analysisId: result.analysisId,
+        href: typeof window !== "undefined" ? window.location.href : null,
+      });
+      router.push(todayHref);
     } catch (e) {
       vmbDevLog("submit error", e);
       setError("Something went wrong. Please try again.");

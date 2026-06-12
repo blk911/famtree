@@ -100,6 +100,15 @@ export function VmbTodayClient({
   const [aiosOpen, setAiosOpen] = useState(false);
   const [flowDebug, setFlowDebug] = useState<VmbFullFlowDebug | null>(null);
 
+  useEffect(() => {
+    console.error("[TODAY-MOUNT]", {
+      hasCompletedFirstIngest,
+      analysisId: activeAnalysisId,
+      pathname: typeof window !== "undefined" ? window.location.pathname : null,
+      search: typeof window !== "undefined" ? window.location.search : null,
+    });
+  }, [hasCompletedFirstIngest, activeAnalysisId]);
+
   const loadContext = useCallback(async () => {
     if (!hasCompletedFirstIngest) return;
 
@@ -240,6 +249,24 @@ export function VmbTodayClient({
 
   return (
     <VmbPageFrame width="standard" headerless>
+      {process.env.NODE_ENV === "development" ? (
+        <p
+          style={{
+            margin: "0 0 12px",
+            padding: "6px 10px",
+            fontSize: 12,
+            fontWeight: 800,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            background: "#fef3c7",
+            color: "#92400e",
+            border: "1px solid #fcd34d",
+          }}
+        >
+          TODAY COMPONENT MOUNTED
+        </p>
+      ) : null}
+
       <header className="vmb-page-frame__header">
         <p className="vmb-page-frame__eyebrow">{salonName}</p>
         <div className="vmb-page-frame__title-row">
@@ -270,6 +297,21 @@ export function VmbTodayClient({
           />
         ) : null}
       </header>
+
+      {process.env.NODE_ENV === "development" ? (
+        <div
+          style={{
+            margin: "0 0 16px",
+            padding: "10px 12px",
+            border: "1px dashed #94a3b8",
+            borderRadius: 8,
+            fontSize: 14,
+            color: "#334155",
+          }}
+        >
+          Today scaffold rendered
+        </div>
+      ) : null}
 
       {!todayUnlocked ? (
         <div className="vmb-page-state">

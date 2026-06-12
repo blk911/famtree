@@ -2,6 +2,7 @@
 
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
+import { VmbDevRouteStrip } from "@/components/vmb/VmbDevRouteStrip";
 import { VmbSalonShell } from "@/components/vmb/VmbSalonShell";
 import { VMB_THEME } from "@/lib/vmb/theme";
 
@@ -13,17 +14,32 @@ function SalonShellFallback({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function VmbLayoutGate({ children }: { children: React.ReactNode }) {
+function VmbLayoutGateInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname === "/vmb") {
-    return <>{children}</>;
-  }
-  if (pathname === "/vmb/start" || pathname.startsWith("/vmb/start/")) {
-    return <>{children}</>;
-  }
+  const shell = (() => {
+    if (pathname === "/vmb") {
+      return children;
+    }
+    if (pathname === "/vmb/start" || pathname.startsWith("/vmb/start/")) {
+      return children;
+    }
+    return (
+      <Suspense fallback={<SalonShellFallback>{children}</SalonShellFallback>}>
+        <VmbSalonShell>{children}</VmbSalonShell>
+      </Suspense>
+    );
+  })();
+
   return (
-    <Suspense fallback={<SalonShellFallback>{children}</SalonShellFallback>}>
-      <VmbSalonShell>{children}</VmbSalonShell>
-    </Suspense>
+    <>
+      <Suspense fallback={null}>
+        <VmbDevRouteStrip />
+      </Suspense>
+      {shell}
+    </>
   );
+}
+
+export function VmbLayoutGate({ children }: { children: React.ReactNode }) {
+  return <VmbLayoutGateInner>{children}</VmbLayoutGateInner>;
 }
