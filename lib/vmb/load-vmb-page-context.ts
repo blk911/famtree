@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { getActiveBookPointer } from "@/lib/vmb/active-book-pointer";
 import { getActiveVmbAnalysis } from "@/lib/vmb/active-analysis-resolver";
+import { isVmbProcessComplete } from "@/lib/vmb/process-complete";
 import { getVmbBookAnalysis, getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
 import { isRefreshDue, workspaceLatestAnalysisId } from "@/lib/vmb/workspace-lifecycle";
@@ -71,7 +72,13 @@ export async function loadVmbPageContext(
     workspace: workspace ?? undefined,
     activeAnalysis,
     activeAnalysisId: activeAnalysis?.analysisId ?? activeAnalysisId,
-    hasCompletedFirstIngest: !!workspace?.firstIngestCompleted,
+    hasCompletedFirstIngest: isVmbProcessComplete({
+      workspace,
+      activeAnalysis,
+      activeAnalysisId: activeAnalysis?.analysisId ?? activeAnalysisId,
+      activeBookPointer,
+      trialId,
+    }),
     refreshDue: workspace ? isRefreshDue(workspace) : false,
     salonName,
     providerPlatform: workspace?.providerPlatform ?? activeAnalysis?.providerPlatform,

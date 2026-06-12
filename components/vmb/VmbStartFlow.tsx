@@ -257,7 +257,7 @@ export function VmbStartFlow({ refreshMode = false }: Props) {
       const result = analyzeJson.data.analysis;
       vmbDevLog("analyze ok", result.analysisId);
       writeActiveAnalysisId(result.analysisId);
-      router.push(`/vmb/dashboard?analysis=${encodeURIComponent(result.analysisId)}`);
+      router.push(`/vmb/today?analysis=${encodeURIComponent(result.analysisId)}`);
     } catch (e) {
       vmbDevLog("submit error", e);
       setError("Something went wrong. Please try again.");

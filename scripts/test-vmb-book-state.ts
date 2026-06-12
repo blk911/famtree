@@ -13,6 +13,8 @@ import { runVmbBookAnalysis } from "../lib/vmb/run-book-analysis";
 import { createVmbTrialLead } from "../lib/vmb/trial-store";
 import { upsertWorkspaceForTrial, setLatestAnalysis } from "../lib/vmb/workspace-store";
 import { getActiveVmbAnalysis } from "../lib/vmb/active-analysis-resolver";
+import { isVmbProcessComplete } from "../lib/vmb/process-complete";
+import { getWorkspaceForTrial } from "../lib/vmb/workspace-store";
 import type { VmbBookAnalysisResult } from "../types/vmb/book-analysis";
 
 function assert(condition: boolean, message: string): void {
@@ -39,8 +41,8 @@ function clientsPageWouldLoad(
   return built.rows.length > 0 ? "ready" : "imported_summary";
 }
 
-function todayPageWouldShowConnect(hasCompletedFirstIngest: boolean): boolean {
-  return !hasCompletedFirstIngest;
+function todayPageWouldShowConnect(processComplete: boolean): boolean {
+  return !processComplete;
 }
 
 async function run(): Promise<void> {
@@ -73,6 +75,17 @@ async function run(): Promise<void> {
   const analysis = analyzed.data.analysis;
   await setLatestAnalysis(trialId, analysis.analysisId);
 
+  const workspace = await getWorkspaceForTrial(trialId);
+  assert(
+    isVmbProcessComplete({
+      workspace,
+      activeAnalysis: analysis,
+      activeAnalysisId: analysis.analysisId,
+      trialId,
+    }),
+    "process complete after ingest",
+  );
+
   const pointer = await getActiveBookPointer(trialId);
   assert(!!pointer, "active-book pointer written");
   assert(pointer!.salonId === trialId, "pointer salonId matches ingest");
@@ -94,7 +107,17 @@ async function run(): Promise<void> {
     analysisId: ctxToday!.analysisId,
     recordCount: ctxToday!.recordCount,
   }), "today: resolveBookLoadedState");
-  assert(!todayPageWouldShowConnect(true), "today must not show Connect your book after ingest");
+  assert(
+    !todayPageWouldShowConnect(
+      isVmbProcessComplete({
+        workspace,
+        activeAnalysis: analysis,
+        activeAnalysisId: analysis.analysisId,
+        trialId,
+      }),
+    ),
+    "today must not show Connect your book after ingest",
+  );
   assert((ctxToday!.recordCount ?? 0) > 0, "today context recordCount > 0");
   assert(ctxToday!.clientSummary.totalClients > 0, "today context totalClients > 0");
   assert(ctxToday!.codaSummary.context.importedClientCount > 0, "today importedClientCount > 0");
