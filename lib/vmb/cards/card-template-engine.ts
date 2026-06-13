@@ -1,11 +1,10 @@
 import type { CardAccent, VmbCardType } from "@/lib/vmb/cards/card-types";
 import type { CardPreviewModel, CardTemplateInput } from "@/lib/vmb/cards/card-preview-model";
 import {
-  buildPcnInviteBody,
-  buildPcnInviteCta,
-  buildPcnInviteSalutation,
-  pcnSignalsFromText,
-} from "@/lib/vmb/cards/pcn-invite-copy";
+  buildPersonalInviteCopy,
+  inviteCopyToBody,
+} from "@/lib/vmb/cards/personal-invite-copy";
+import { buildPcnInviteCta, pcnSignalsFromText } from "@/lib/vmb/cards/pcn-invite-copy";
 
 type TemplateCopy = {
   title: string;
@@ -145,17 +144,33 @@ export function buildCardPreview(input: CardTemplateInput): CardPreviewModel {
 
   if (input.cardType === "pcn_invite") {
     const signals = pcnSignalsFromText(input);
+    const inviteCopy = buildPersonalInviteCopy({
+      recipientName,
+      cardType: input.cardType,
+      serviceName: input.serviceName ?? signals.serviceName,
+      visitCount: input.visitCount ?? signals.visitCount,
+      lastVisit: input.lastVisit,
+      salonName: input.salonName,
+      techName: input.techName,
+      subjectLabel: input.subjectLabel,
+      discoveryText: input.discoveryText,
+      recommendationText: input.recommendationText,
+      ticketValue: input.ticketValue,
+    });
     return {
       cardType: input.cardType,
-      salutation: buildPcnInviteSalutation(recipientName),
+      salutation: inviteCopy.greeting,
       title: "",
       subtitle: "",
-      body: buildPcnInviteBody(signals),
+      body: inviteCopyToBody(inviteCopy),
       imageLayout: "single",
       imageSlots: buildImageSlots("single"),
       accent: template.accent,
-      cta: buildPcnInviteCta(),
-      tags: ["PCN"],
+      cta: inviteCopy.primaryCta || buildPcnInviteCta(),
+      tags: [],
+      inviteCopy,
+      techName: input.techName ?? "Your stylist",
+      salonDisplayName: input.salonName ?? "Your Salon",
       metadata: {
         recipientName,
         serviceName: input.serviceName ?? signals.serviceName,

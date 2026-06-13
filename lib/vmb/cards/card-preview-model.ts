@@ -1,4 +1,5 @@
 import type { CardAccent, CardImageLayout, VmbCardType } from "@/lib/vmb/cards/card-types";
+import type { PersonalInviteCopy } from "@/lib/vmb/cards/personal-invite-copy";
 
 export type CardImageSlot = {
   id: string;
@@ -27,12 +28,17 @@ export type CardPreviewModel = {
   cta: string;
   tags: string[];
   metadata: CardPersonalizationMetadata;
+  /** Blue Mountain personal invite sections (PCN). */
+  inviteCopy?: PersonalInviteCopy;
+  techName?: string;
+  salonDisplayName?: string;
 };
 
 export type CardTemplateInput = {
   cardType: VmbCardType;
   recipientName?: string;
   salonName?: string;
+  techName?: string;
   serviceName?: string;
   lastVisit?: string;
   birthday?: string;

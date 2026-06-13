@@ -1,7 +1,7 @@
 import type { VmbCardType } from "@/lib/vmb/cards/card-types";
 
 const CARD_ACTION_LABELS: Record<VmbCardType, string> = {
-  pcn_invite: "PCN Invite",
+  pcn_invite: "Private Client Invite",
   birthday_card: "Birthday Card",
   refresh_card: "Refresh Invite",
   vip_thank_you: "Thank You Invite",
@@ -12,7 +12,7 @@ const CARD_ACTION_LABELS: Record<VmbCardType, string> = {
 };
 
 const CODA_ACTION_LABELS: Record<string, string> = {
-  "Send PCN Invite": "PCN Invite",
+  "Send PCN Invite": "Private Client Invite",
   "Send Refresh Invite": "Refresh Invite",
   "Create VIP Card": "Thank You Invite",
   "Generate Referral Opportunity": "Referral Invite",

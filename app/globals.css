@@ -3400,3 +3400,168 @@
   margin: 0 20px 16px;
 }
 
+/* Blue Mountain salon invite preview */
+.vmb-salon-invite {
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid #f5d0c8;
+  background: linear-gradient(180deg, #fffdfb 0%, #fff7f2 100%);
+  box-shadow:
+    0 4px 6px rgba(120, 72, 58, 0.04),
+    0 18px 40px rgba(120, 72, 58, 0.1);
+}
+
+.vmb-salon-invite__band {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  background: linear-gradient(90deg, #fdf2ee 0%, #fff9f6 100%);
+  border-bottom: 1px solid #f5e6df;
+}
+
+.vmb-salon-invite__avatar {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: linear-gradient(145deg, #f9d5c8, #e8b4a8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.65);
+}
+
+.vmb-salon-invite__avatar-inner {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.vmb-salon-invite__band-copy {
+  min-width: 0;
+}
+
+.vmb-salon-invite__tech {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #44403c;
+  line-height: 1.3;
+}
+
+.vmb-salon-invite__private-note {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #a8a29e;
+  line-height: 1.35;
+}
+
+.vmb-salon-invite__hero {
+  position: relative;
+  min-height: 132px;
+  overflow: hidden;
+}
+
+.vmb-salon-invite__hero-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #fce7e1 0%, #f5ddd4 45%, #efe0d8 100%);
+}
+
+.vmb-salon-invite__collage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr 0.9fr;
+  gap: 6px;
+  height: 100%;
+  min-height: 132px;
+  padding: 10px;
+}
+
+.vmb-salon-invite__collage-tile {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.vmb-salon-invite__collage-tile--1 {
+  grid-row: span 1;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.42), rgba(251, 207, 193, 0.35));
+}
+
+.vmb-salon-invite__collage-tile--2,
+.vmb-salon-invite__collage-tile--3 {
+  min-height: 54px;
+}
+
+.vmb-salon-invite__content {
+  padding: 20px 20px 22px;
+  display: grid;
+  gap: 12px;
+}
+
+.vmb-salon-invite__greeting {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #292524;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.vmb-salon-invite__paragraph {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.62;
+  color: #57534e;
+}
+
+.vmb-salon-invite__paragraph--offer {
+  color: #44403c;
+}
+
+.vmb-salon-invite__signature {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #292524;
+}
+
+.vmb-salon-invite__cta-row {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.vmb-salon-invite__cta {
+  display: block;
+  text-align: center;
+  padding: 12px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.vmb-salon-invite__cta--primary {
+  color: #fff;
+  background: linear-gradient(135deg, #c96b52 0%, #b85a44 100%);
+  box-shadow: 0 8px 20px rgba(184, 90, 68, 0.22);
+}
+
+.vmb-salon-invite__cta--secondary {
+  color: #7c4a3a;
+  background: #fff;
+  border: 1px solid #e7cfc4;
+}
+
+.vmb-card-preview-modal__visual .vmb-salon-invite {
+  max-width: 100%;
+}
+
+.vmb-card-preview-modal__panel {
+  width: min(1040px, 100%);
+}
+
