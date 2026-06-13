@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { actionTypeCreatesDraft } from "@/lib/taikos/drafts/draft-router";
 import type { TaikosActionPreviewResult } from "@/lib/taikos/actions/types";
 import type { TaikosActionType } from "@/lib/taikos/types";
+import type { QueuedInviteCardPayload } from "@/lib/vmb/cards/queued-invite-card-payload";
 
 export type WorkflowState =
   | "detected"
@@ -80,7 +81,7 @@ export function useInlineActionWorkflow({
     }
   }, [actionType, pathname, analysisId, sourceId]);
 
-  const runApprove = useCallback(async () => {
+  const runApprove = useCallback(async (inviteCard?: QueuedInviteCardPayload) => {
     if (!preview) return;
     setBusy(true);
     setError(null);
@@ -95,6 +96,7 @@ export function useInlineActionWorkflow({
           pathname,
           analysisId,
           sourceRecommendationId: sourceId,
+          inviteCard,
         }),
       });
       const json = (await res.json()) as {

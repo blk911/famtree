@@ -84,6 +84,7 @@ export async function createQueueItemPostgres(
       estimatedValue: input.estimatedValue ?? 0,
       createdAt: now,
       updatedAt: now,
+      inviteCard: input.inviteCard,
     };
 
     await prisma.$executeRaw`

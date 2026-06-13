@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { SortableListHeader } from "@/components/vmb/SortableListHeader";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import type { TaikosQueueItem, TaikosQueueSummary } from "@/lib/taikos/queue/types";
+import { queueItemGreetingPreview } from "@/lib/vmb/cards/queued-invite-card-payload";
 import { useSortableList } from "@/lib/vmb/useSortableList";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -150,6 +151,9 @@ function QueueSection({
               <h4>{item.draftTitle}</h4>
               <span className="taikos-queue-card__status">{STATUS_LABELS[item.status] ?? item.status}</span>
             </div>
+            {queueItemGreetingPreview(item.inviteCard) ? (
+              <p className="taikos-queue-card__meta">{queueItemGreetingPreview(item.inviteCard)}</p>
+            ) : null}
             {item.goalTitle ? <p className="taikos-queue-card__goal">Goal: {item.goalTitle}</p> : null}
             <p className="taikos-queue-card__value">
               Est. value: <strong>${item.estimatedValue.toLocaleString()}</strong>

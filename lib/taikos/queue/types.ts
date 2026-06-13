@@ -19,6 +19,8 @@ export type TaikosQueueItem = {
   estimatedValue: number;
   createdAt: string;
   updatedAt: string;
+  /** Snapshot of edited invite copy from draft at queue time. */
+  inviteCard?: import("@/lib/vmb/cards/queued-invite-card-payload").QueuedInviteCardPayload;
 };
 
 export type TaikosQueueSummary = {
@@ -40,4 +42,5 @@ export type CreateQueueItemInput = {
   goalId?: string;
   goalTitle?: string;
   estimatedValue?: number;
+  inviteCard?: import("@/lib/vmb/cards/queued-invite-card-payload").QueuedInviteCardPayload;
 };

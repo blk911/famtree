@@ -90,6 +90,7 @@ export async function createQueueItem(input: CreateQueueItemInput): Promise<Taik
     estimatedValue: input.estimatedValue ?? 0,
     createdAt: now,
     updatedAt: now,
+    inviteCard: input.inviteCard,
   };
   all.push(item);
   await writeAllJson(all);

@@ -5,6 +5,11 @@ import { AiosDraftBadge } from "@/components/taikos/drafts/AiosDraftBadge";
 import { countDraftFetch } from "@/lib/taikos/debug/draft-fetch-count";
 import { fetchTaikosJson } from "@/lib/taikos/fetch-taikos-json";
 import type { TaikosDraft, TaikosDraftStatus } from "@/lib/taikos/drafts/types";
+import {
+  inviteCardToMessage,
+  mergeInviteCardIntoDraftPayload,
+  parseQueuedInviteCardPayload,
+} from "@/lib/vmb/cards/queued-invite-card-payload";
 import { VMB_THEME } from "@/lib/vmb/theme";
 
 const STATUS_OPTIONS: TaikosDraftStatus[] = [
@@ -28,6 +33,13 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
 
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
+  const [greeting, setGreeting] = useState("");
+  const [personalConnection, setPersonalConnection] = useState("");
+  const [inviteMessage, setInviteMessage] = useState("");
+  const [offerMessage, setOfferMessage] = useState("");
+  const [signature, setSignature] = useState("");
+  const [primaryCta, setPrimaryCta] = useState("");
+  const [secondaryCta, setSecondaryCta] = useState("");
   const [serviceName, setServiceName] = useState("");
   const [description, setDescription] = useState("");
   const [callToAction, setCallToAction] = useState("");
@@ -55,7 +67,19 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
       setTitle(outcome.data.title);
       setStatus(outcome.data.status);
       const p = outcome.data.payload;
-      if (typeof p.message === "string") setMessage(p.message);
+      const inviteCard = parseQueuedInviteCardPayload(p);
+      if (inviteCard) {
+        setGreeting(inviteCard.greeting);
+        setPersonalConnection(inviteCard.personalConnection ?? "");
+        setInviteMessage(inviteCard.inviteMessage ?? "");
+        setOfferMessage(inviteCard.offerMessage ?? "");
+        setSignature(inviteCard.signature ?? "");
+        setPrimaryCta(inviteCard.primaryCta);
+        setSecondaryCta(inviteCard.secondaryCta ?? "");
+        setMessage(inviteCardToMessage(inviteCard));
+      } else if (typeof p.message === "string") {
+        setMessage(p.message);
+      }
       if (typeof p.serviceName === "string") setServiceName(p.serviceName);
       if (typeof p.description === "string") setDescription(p.description);
       if (typeof p.callToAction === "string") setCallToAction(p.callToAction);
@@ -81,6 +105,21 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
         payload.description = description;
         payload.callToAction = callToAction;
         payload.title = title;
+      } else if (draft.draftType === "pcn_invite" && greeting.trim() && primaryCta.trim()) {
+        const existing = parseQueuedInviteCardPayload(draft.payload);
+        const inviteCard = {
+          cardType: existing?.cardType ?? "pcn_invite",
+          recipientName: existing?.recipientName ?? title.split(" — ")[0]?.trim() ?? "Client",
+          actionLabel: existing?.actionLabel ?? "Private Client Invite",
+          greeting: greeting.trim(),
+          personalConnection: personalConnection.trim() || undefined,
+          inviteMessage: inviteMessage.trim() || undefined,
+          offerMessage: offerMessage.trim() || undefined,
+          signature: signature.trim() || undefined,
+          primaryCta: primaryCta.trim(),
+          secondaryCta: secondaryCta.trim() || undefined,
+        };
+        Object.assign(payload, mergeInviteCardIntoDraftPayload(payload, inviteCard));
       } else if (message) {
         payload.message = message;
       }
@@ -157,12 +196,14 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
   }
 
   const isServiceCard = draft.draftType === "service_card";
+  const isPcnInvite = draft.draftType === "pcn_invite";
+  const hasInviteCard = isPcnInvite && !!parseQueuedInviteCardPayload(draft.payload);
   const hasMessage =
-    draft.draftType === "pcn_invite" ||
-    draft.draftType === "campaign" ||
-    draft.draftType === "referral_ask" ||
-    draft.draftType === "reactivation" ||
-    draft.draftType === "calendar_gap";
+    !isPcnInvite &&
+    (draft.draftType === "campaign" ||
+      draft.draftType === "referral_ask" ||
+      draft.draftType === "reactivation" ||
+      draft.draftType === "calendar_gap");
 
   return (
     <div className="aios-draft-detail">
@@ -190,6 +231,46 @@ export function AiosDraftDetail({ draftId, onArchived }: Props) {
             <span>Call to action</span>
             <input value={callToAction} onChange={(e) => setCallToAction(e.target.value)} />
           </label>
+        </>
+      ) : null}
+
+      {isPcnInvite ? (
+        <>
+          <label className="aios-draft-detail__field">
+            <span>Greeting</span>
+            <input value={greeting} onChange={(e) => setGreeting(e.target.value)} />
+          </label>
+          <label className="aios-draft-detail__field">
+            <span>Personal connection</span>
+            <textarea
+              value={personalConnection}
+              onChange={(e) => setPersonalConnection(e.target.value)}
+              rows={3}
+            />
+          </label>
+          <label className="aios-draft-detail__field">
+            <span>Invite message</span>
+            <textarea value={inviteMessage} onChange={(e) => setInviteMessage(e.target.value)} rows={4} />
+          </label>
+          <label className="aios-draft-detail__field">
+            <span>Offer / appointment note</span>
+            <textarea value={offerMessage} onChange={(e) => setOfferMessage(e.target.value)} rows={3} />
+          </label>
+          <label className="aios-draft-detail__field">
+            <span>Signature</span>
+            <input value={signature} onChange={(e) => setSignature(e.target.value)} />
+          </label>
+          <label className="aios-draft-detail__field">
+            <span>Primary CTA</span>
+            <input value={primaryCta} onChange={(e) => setPrimaryCta(e.target.value)} />
+          </label>
+          <label className="aios-draft-detail__field">
+            <span>Secondary CTA</span>
+            <input value={secondaryCta} onChange={(e) => setSecondaryCta(e.target.value)} />
+          </label>
+          {hasInviteCard ? (
+            <p className="aios-draft-detail__saved">Edited invite copy saved with this draft.</p>
+          ) : null}
         </>
       ) : null}
 

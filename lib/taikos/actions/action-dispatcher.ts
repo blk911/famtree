@@ -10,6 +10,11 @@ import type { TaikosDeliverable } from "@/lib/taikos/deliverables/types";
 import type { AiosContextPacket } from "@/lib/taikos/types";
 import { ACTION_REGISTRY } from "./action-registry";
 import { afterConfirmMessage, isDestructive, requiresConfirmation } from "./confirm-gates";
+import type { QueuedInviteCardPayload } from "@/lib/vmb/cards/queued-invite-card-payload";
+import {
+  inviteCardToMessage,
+  mergeInviteCardIntoDraftPayload,
+} from "@/lib/vmb/cards/queued-invite-card-payload";
 import {
   actionTypeCreatesDraft,
   buildDraftFromDeliverable,
@@ -116,10 +121,14 @@ export async function confirmTaikosAction(
     sourcePage: string;
     sourceRecommendationId?: string;
     payload?: Record<string, string>;
+    inviteCard?: QueuedInviteCardPayload;
   },
 ): Promise<TaikosConfirmResult> {
   const reg = ACTION_REGISTRY[type];
   const deliverable = buildDeliverable(type, ctx, options.payload);
+  if (options.inviteCard && deliverable.type === "invite") {
+    deliverable.message = inviteCardToMessage(options.inviteCard);
+  }
 
   let savedDraftId: string | undefined;
   let savedDraftHref: string | undefined;
@@ -135,6 +144,10 @@ export async function confirmTaikosAction(
       actionType: type,
     });
     if (draftInput) {
+      if (options.inviteCard) {
+        draftInput.payload = mergeInviteCardIntoDraftPayload(draftInput.payload, options.inviteCard);
+        draftInput.title = `${options.inviteCard.recipientName} — ${options.inviteCard.actionLabel}`;
+      }
       const goalCategory = goalCategoryForDraftType(draftInput.draftType as TaikosDraftType);
       const linkedGoalId = findActiveGoalForCategory(ctx.goalSummary.goals, goalCategory);
       const saved = await createDraft({

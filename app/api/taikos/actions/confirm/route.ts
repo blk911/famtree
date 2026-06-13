@@ -29,6 +29,18 @@ export async function POST(req: NextRequest) {
     analysisId?: string;
     payload?: Record<string, string>;
     sourceRecommendationId?: string;
+    inviteCard?: {
+      cardType?: string;
+      recipientName?: string;
+      actionLabel?: string;
+      greeting?: string;
+      personalConnection?: string;
+      inviteMessage?: string;
+      offerMessage?: string;
+      signature?: string;
+      primaryCta?: string;
+      secondaryCta?: string;
+    };
   };
 
   if (!body.actionType || !VALID_TYPES.has(body.actionType) || !body.previewId) {
@@ -46,11 +58,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Workspace not found" }, { status: 404 });
     }
 
+    const inviteCard =
+      body.inviteCard?.greeting?.trim() && body.inviteCard.primaryCta?.trim()
+        ? {
+            cardType: body.inviteCard.cardType?.trim() || "pcn_invite",
+            recipientName: body.inviteCard.recipientName?.trim() || "Client",
+            actionLabel: body.inviteCard.actionLabel?.trim() || "Private Client Invite",
+            greeting: body.inviteCard.greeting.trim(),
+            personalConnection: body.inviteCard.personalConnection?.trim(),
+            inviteMessage: body.inviteCard.inviteMessage?.trim(),
+            offerMessage: body.inviteCard.offerMessage?.trim(),
+            signature: body.inviteCard.signature?.trim(),
+            primaryCta: body.inviteCard.primaryCta.trim(),
+            secondaryCta: body.inviteCard.secondaryCta?.trim(),
+          }
+        : undefined;
+
     const result = await confirmTaikosAction(body.actionType as TaikosActionType, ctx, {
       previewId: body.previewId,
       sourcePage: body.pathname?.trim() || "/vmb/dashboard",
       sourceRecommendationId: body.sourceRecommendationId,
       payload: body.payload,
+      inviteCard,
     });
 
     return NextResponse.json({ ok: true, data: result });
