@@ -1,12 +1,12 @@
 import { cookies } from "next/headers";
-import { getActiveBookPointer } from "@/lib/vmb/active-book-pointer";
-import { getActiveVmbAnalysis } from "@/lib/vmb/active-analysis-resolver";
+import { resolveActiveBook } from "@/lib/vmb/active-book-resolver";
 import { logVmbFlow } from "@/lib/vmb/flow-log";
 import { isVmbProcessComplete } from "@/lib/vmb/process-complete";
-import { getVmbBookAnalysis, getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
+import { getVmbBookAnalysis } from "@/lib/vmb/book-analysis/analysis-store";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
-import { isRefreshDue, workspaceLatestAnalysisId } from "@/lib/vmb/workspace-lifecycle";
+import { isRefreshDue } from "@/lib/vmb/workspace-lifecycle";
 import { getWorkspaceForTrial } from "@/lib/vmb/workspace-store";
+import { getActiveBookPointer } from "@/lib/vmb/active-book-pointer";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { VmbSalonWorkspace } from "@/types/vmb/workspace";
 import type { VmbProviderPlatform } from "@/types/vmb/trial";
@@ -68,19 +68,6 @@ function computeLockReason(input: {
     return "WORKSPACE_ANALYSIS_ID_MISMATCH";
   }
   return "PROCESS_NOT_COMPLETE";
-}
-
-async function resolveAnalysisForTrial(
-  analysisId: string,
-  trialId: string,
-): Promise<VmbBookAnalysisResult | undefined> {
-  const id = analysisId.trim();
-  if (!id) return undefined;
-  const scoped = await getVmbBookAnalysisForTrial(id, trialId);
-  if (scoped) return scoped;
-  const loose = await getVmbBookAnalysis(id);
-  if (loose && (!loose.trialId || loose.trialId === trialId)) return loose;
-  return undefined;
 }
 
 /**
@@ -147,21 +134,9 @@ export async function loadVmbPageContext(
 
   const workspace = await getWorkspaceForTrial(trialId);
   const activeBookPointer = await getActiveBookPointer(trialId);
-  const resolved = await getActiveVmbAnalysis(trialId, { queryId: queryAnalysisId });
-  let activeAnalysisId =
-    resolved.analysisId ??
-    queryAnalysisId ??
-    activeBookPointer?.analysisId ??
-    workspaceLatestAnalysisId(workspace);
-
-  let activeAnalysis = activeAnalysisId
-    ? await resolveAnalysisForTrial(activeAnalysisId, trialId)
-    : undefined;
-
-  if (!activeAnalysis && queryAnalysisId && queryAnalysisId !== activeAnalysisId) {
-    activeAnalysis = await resolveAnalysisForTrial(queryAnalysisId, trialId);
-    if (activeAnalysis) activeAnalysisId = activeAnalysis.analysisId;
-  }
+  const bookResolution = await resolveActiveBook(trialId, { queryId: queryAnalysisId });
+  const activeAnalysisId = bookResolution.analysisId;
+  const activeAnalysis = bookResolution.analysis;
 
   const salonName =
     workspace?.salonName?.trim() ||

@@ -3218,3 +3218,129 @@
   gap: 0;
 }
 
+/* Blue Mountain card preview modal */
+.vmb-card-preview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(28, 25, 23, 0.48);
+}
+
+.vmb-card-preview-modal__panel {
+  width: min(960px, 100%);
+  max-height: min(92vh, 900px);
+  overflow: auto;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #e7e5e4;
+  box-shadow: 0 24px 64px rgba(28, 25, 23, 0.18);
+}
+
+.vmb-card-preview-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 20px 0;
+}
+
+.vmb-card-preview-modal__eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-card-preview-modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #292524;
+}
+
+.vmb-card-preview-modal__close {
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  line-height: 1;
+  color: #78716c;
+  cursor: pointer;
+}
+
+.vmb-card-preview-modal__body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 16px 20px 0;
+}
+
+@media (min-width: 768px) {
+  .vmb-card-preview-modal__body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
+    align-items: start;
+  }
+}
+
+.vmb-card-preview-modal__visual .vmb-card-preview {
+  max-width: 100%;
+  margin: 0;
+}
+
+.vmb-card-preview-modal__editor {
+  display: grid;
+  gap: 10px;
+}
+
+.vmb-card-preview-modal__editor-label {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-card-preview-modal__field {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #57534e;
+}
+
+.vmb-card-preview-modal__field input,
+.vmb-card-preview-modal__field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e7e5e4;
+  background: #fafaf9;
+  font: inherit;
+  color: #292524;
+}
+
+.vmb-card-preview-modal__edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.vmb-card-preview-modal__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 16px 20px 20px;
+}
+
+.vmb-card-preview-modal__queued {
+  margin: 0 20px 16px;
+}
+

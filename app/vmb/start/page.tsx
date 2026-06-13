@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { VmbStartFlow } from "@/components/vmb/VmbStartFlow";
+import { resolveActiveBook } from "@/lib/vmb/active-book-resolver";
+import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
 
 export const metadata: Metadata = {
   title: "Find The Money",
@@ -9,7 +12,16 @@ type Props = {
   searchParams?: { mode?: string };
 };
 
-export default function VmbStartPage({ searchParams }: Props) {
+export default async function VmbStartPage({ searchParams }: Props) {
   const refreshMode = searchParams?.mode === "refresh";
-  return <VmbStartFlow refreshMode={refreshMode} />;
+  const cookieStore = await cookies();
+  const trialId = cookieStore.get(VMB_TRIAL_COOKIE)?.value?.trim();
+  const activeBook = trialId ? await resolveActiveBook(trialId) : { hasActiveBook: false, source: "none" as const };
+
+  return (
+    <VmbStartFlow
+      refreshMode={refreshMode}
+      activeBook={activeBook.hasActiveBook ? activeBook : null}
+    />
+  );
 }

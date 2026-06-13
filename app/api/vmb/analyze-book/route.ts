@@ -2,11 +2,11 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeSalonBackOfficeUpload } from "@/lib/intelligence/salon/backoffice/analyze-import";
+import { resolveActiveBook } from "@/lib/vmb/active-book-resolver";
 import { getVmbBookAnalysis, getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
 import { bridgeGgenImportToVmbAnalysis } from "@/lib/vmb/ggen-conversion-bridge";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 import { appendTrialImportRun } from "@/lib/vmb/trial-import-store";
-import { workspaceLatestAnalysisId } from "@/lib/vmb/workspace-lifecycle";
 import {
   getWorkspaceForTrial,
   setLatestAnalysis,
@@ -31,16 +31,8 @@ export async function GET(req: NextRequest) {
   }
 
   const id = req.nextUrl.searchParams.get("id")?.trim();
-  let analysis;
-  if (id) {
-    analysis = await getVmbBookAnalysisForTrial(id, trialId);
-  } else {
-    const workspace = await getWorkspaceForTrial(trialId);
-    const latestId = workspaceLatestAnalysisId(workspace);
-    analysis = latestId
-      ? await getVmbBookAnalysisForTrial(latestId, trialId)
-      : undefined;
-  }
+  const resolved = await resolveActiveBook(trialId, { queryId: id });
+  const analysis = resolved.analysis;
 
   if (id && !analysis) {
     return NextResponse.json(

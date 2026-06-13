@@ -1,11 +1,10 @@
 import { getActiveBookPointer } from "@/lib/vmb/active-book-pointer";
-import { getActiveVmbAnalysis } from "@/lib/vmb/active-analysis-resolver";
-import { getVmbBookAnalysis, getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
+import { resolveActiveBook } from "@/lib/vmb/active-book-resolver";
 import { resolveBookLoadedState } from "@/lib/vmb/book-status";
 import { buildVmbOperatingSnapshot } from "@/lib/vmb/operating-system";
 import { buildAppointmentOpeningsSummary } from "@/lib/vmb/operating-system/appointment-openings";
 import { listInviteDraftsForTrial } from "@/lib/vmb/invite-drafts/invite-draft-store";
-import { isRefreshDue, workspaceLatestAnalysisId } from "@/lib/vmb/workspace-lifecycle";
+import { isRefreshDue } from "@/lib/vmb/workspace-lifecycle";
 import { getWorkspaceForTrial } from "@/lib/vmb/workspace-store";
 import { buildClientSummaryFromAnalysis } from "@/lib/taikos/context/client-summary-builder";
 import { buildContactSignals } from "@/lib/taikos/context/contact-signals";
@@ -62,25 +61,12 @@ export async function buildAiosContextPacket(
   }
   await recordPageView(salonId, operatorId, input.pathname);
 
-  const activeBookPointer = await getActiveBookPointer(salonId);
-
-  const resolved = await getActiveVmbAnalysis(input.trialId, {
+  const bookResolution = await resolveActiveBook(input.trialId, {
     queryId: input.analysisId?.trim(),
   });
-  const analysisId =
-    resolved.analysisId ??
-    activeBookPointer?.analysisId ??
-    workspaceLatestAnalysisId(workspace);
-
-  let analysis = analysisId
-    ? await getVmbBookAnalysisForTrial(analysisId, input.trialId)
-    : undefined;
-  if (!analysis && analysisId && activeBookPointer?.salonId === salonId) {
-    const loose = await getVmbBookAnalysis(analysisId);
-    if (loose && (!loose.trialId || loose.trialId === salonId)) {
-      analysis = loose;
-    }
-  }
+  const analysisId = bookResolution.analysisId;
+  const analysis = bookResolution.analysis;
+  const activeBookPointer = await getActiveBookPointer(salonId);
 
   const drafts = analysisId
     ? await listInviteDraftsForTrial(input.trialId, analysisId)

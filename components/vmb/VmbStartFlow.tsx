@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
+import { VmbActiveBookResume } from "@/components/vmb/VmbActiveBookResume";
 import { VmbCard } from "@/components/vmb/VmbCard";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import {
@@ -13,6 +14,7 @@ import { writeActiveAnalysisId } from "@/lib/vmb/active-analysis";
 import { VMB_SAMPLE_BOOK_TEXT } from "@/lib/vmb/sample-book";
 import { validateVmbStartFlowSubmit } from "@/lib/vmb/start-flow-validation";
 import { VMB_THEME } from "@/lib/vmb/theme";
+import type { ActiveBookResolution } from "@/lib/vmb/active-book-resolver";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { VmbProviderPlatform } from "@/types/vmb/trial";
 
@@ -25,6 +27,7 @@ type ParseSummary = {
 
 type Props = {
   refreshMode?: boolean;
+  activeBook?: ActiveBookResolution | null;
 };
 
 function vmbDevLog(label: string, detail?: unknown): void {
@@ -36,7 +39,7 @@ function vmbDevLog(label: string, detail?: unknown): void {
   console.info(`[vmb:start] ${label}`, detail);
 }
 
-export function VmbStartFlow({ refreshMode = false }: Props) {
+export function VmbStartFlow({ refreshMode = false, activeBook = null }: Props) {
   const router = useRouter();
   const isRefreshMode = refreshMode;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,6 +59,9 @@ export function VmbStartFlow({ refreshMode = false }: Props) {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [replaceBook, setReplaceBook] = useState(isRefreshMode || !activeBook?.hasActiveBook);
+
+  const showResume = !!activeBook?.hasActiveBook && !replaceBook && !isRefreshMode;
 
   const identityComplete = !!provider && !!ownerName.trim() && !!email.trim();
   const hasBookData = usingSample || !!uploadFile || !!bookText.trim();
@@ -288,6 +294,13 @@ export function VmbStartFlow({ refreshMode = false }: Props) {
           : "Start with your booking provider, share where to send results, then upload your client book."
       }
     >
+      {showResume ? (
+        <div style={{ marginBottom: 28 }}>
+          <VmbActiveBookResume activeBook={activeBook!} onReplace={() => setReplaceBook(true)} />
+        </div>
+      ) : null}
+
+      {!showResume ? (
       <div style={{ display: "grid", gap: 28 }}>
         {/* 1. Provider */}
         <section>
@@ -518,6 +531,7 @@ export function VmbStartFlow({ refreshMode = false }: Props) {
               : "Find The Money"}
         </button>
       </div>
+      ) : null}
     </VmbPageFrame>
   );
 }
