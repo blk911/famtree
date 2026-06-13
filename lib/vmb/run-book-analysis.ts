@@ -1,4 +1,5 @@
 import { setActiveBookPointer } from "@/lib/vmb/active-book-pointer";
+import { setLatestAnalysis } from "@/lib/vmb/workspace-store";
 import { analyzeVmbBook } from "@/lib/vmb/book-analysis/analyze-book";
 import { saveVmbBookAnalysis } from "@/lib/vmb/book-analysis/analysis-store";
 import { saveVmbBookUpload } from "@/lib/vmb/book-upload-store";
@@ -126,22 +127,33 @@ async function finalizeBookAnalysisSave(input: {
       input.analysis.trustedProviderIntroOpportunities.length,
   });
 
-  if (input.trialId?.trim()) {
+  const trialId = input.trialId?.trim();
+  if (trialId) {
     await setActiveBookPointer({
-      salonId: input.trialId.trim(),
+      salonId: trialId,
       analysisId: input.analysis.analysisId,
       clientCount: input.analysis.recordCount,
       recordCount: input.analysis.recordCount,
       sourceFileName: input.fileName,
     });
     logVmbFlow("active pointer written", {
-      trialId: input.trialId,
-      salonId: input.trialId,
-      workspaceId: input.trialId,
+      trialId,
+      salonId: trialId,
+      workspaceId: trialId,
       analysisId: input.analysis.analysisId,
       recordCount: input.analysis.recordCount,
-      clientCount: input.analysis.recordCount,
+      clientCount: input.recordCount,
     });
+
+    const workspaceUpdate = await setLatestAnalysis(trialId, input.analysis.analysisId);
+    if ("error" in workspaceUpdate) {
+      logVmbFlow("workspace updated", {
+        trialId,
+        analysisId: input.analysis.analysisId,
+        error: workspaceUpdate.error,
+        failed: true,
+      });
+    }
   }
 }
 

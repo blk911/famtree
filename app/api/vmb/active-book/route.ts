@@ -1,29 +1,45 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { resolveActiveBook } from "@/lib/vmb/active-book-resolver";
+import { buildActiveBookDebugPayload } from "@/lib/vmb/active-book-debug";
+import { resolveTrialIdFromRequest } from "@/lib/vmb/resolve-trial-from-request";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
+import { applyVmbTrialCookie } from "@/lib/vmb/trial-cookie-options";
 
 export async function GET(req: NextRequest) {
-  const trialId = getVmbTrialIdFromRequest(req);
-  if (!trialId) {
-    return NextResponse.json({ ok: false, error: "No trial session", data: null }, { status: 401 });
-  }
-
+  const cookieTrialId = getVmbTrialIdFromRequest(req);
   const queryId = req.nextUrl.searchParams.get("analysis")?.trim();
   const sessionId = req.nextUrl.searchParams.get("session")?.trim();
-  const resolved = await resolveActiveBook(trialId, { queryId, sessionId });
+  const restoreCookie = req.nextUrl.searchParams.get("restore") === "1";
 
-  return NextResponse.json({
+  const trialResolution = await resolveTrialIdFromRequest(req);
+  const trialId = trialResolution.trialId;
+
+  const debug = await buildActiveBookDebugPayload({
+    trialId,
+    hasTrialCookie: !!cookieTrialId,
+    cookieTrialId,
+    queryId,
+    sessionId,
+  });
+  const { analysis, ...data } = debug;
+
+  const res = NextResponse.json({
     ok: true,
     data: {
-      hasActiveBook: resolved.hasActiveBook,
-      analysisId: resolved.analysisId,
-      clientCount: resolved.clientCount,
-      recordCount: resolved.recordCount,
-      updatedAt: resolved.updatedAt,
-      source: resolved.source,
-      analysis: resolved.analysis,
+      ...data,
+      ...(analysis ? { analysis } : {}),
     },
   });
+
+  if (
+    restoreCookie &&
+    trialId &&
+    !cookieTrialId &&
+    (trialResolution.source === "analysis_query" || trialResolution.source === "analysis_session")
+  ) {
+    applyVmbTrialCookie(res, trialId);
+  }
+
+  return res;
 }

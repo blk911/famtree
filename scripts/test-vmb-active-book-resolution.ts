@@ -8,6 +8,7 @@ import { VMB_SAMPLE_BOOK_TEXT } from "../lib/vmb/sample-book";
 import { runVmbBookAnalysis } from "../lib/vmb/run-book-analysis";
 import { createVmbTrialLead } from "../lib/vmb/trial-store";
 import { getWorkspaceForTrial, setLatestAnalysis, upsertWorkspaceForTrial } from "../lib/vmb/workspace-store";
+import { saveWorkspacePostgres } from "../lib/vmb/workspace-store-postgres";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -80,6 +81,14 @@ async function run(): Promise<void> {
   const pointer = await getActiveBookPointer(pointerTrialId);
   assert(!!pointer, "pointer written on ingest");
 
+  const pointerWorkspace = await getWorkspaceForTrial(pointerTrialId);
+  assert(!!pointerWorkspace, "pointer trial workspace exists");
+  await saveWorkspacePostgres({
+    ...pointerWorkspace!,
+    latestAnalysisId: undefined,
+    firstIngestCompleted: false,
+  });
+
   const fromPointer = await resolveActiveBook(pointerTrialId, {});
   assert(fromPointer.hasActiveBook, "activeBookPointer works without query");
   assert(fromPointer.source === "active_pointer", "pointer source when workspace latest missing");
@@ -108,6 +117,14 @@ async function run(): Promise<void> {
   });
   assert(latestAnalysis.ok, "latest trial ingest");
   if (!latestAnalysis.ok) process.exit(1);
+
+  const latestWorkspace = await getWorkspaceForTrial(latestTrialId);
+  assert(!!latestWorkspace, "latest trial workspace exists");
+  await saveWorkspacePostgres({
+    ...latestWorkspace!,
+    latestAnalysisId: undefined,
+    firstIngestCompleted: false,
+  });
 
   const fromLatest = await resolveActiveBook(latestTrialId, {});
   assert(fromLatest.hasActiveBook, "latest analysis fallback works");

@@ -5,7 +5,9 @@ import { analyzeSalonBackOfficeUpload } from "@/lib/intelligence/salon/backoffic
 import { resolveActiveBook } from "@/lib/vmb/active-book-resolver";
 import { getVmbBookAnalysis, getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
 import { bridgeGgenImportToVmbAnalysis } from "@/lib/vmb/ggen-conversion-bridge";
+import { resolveTrialIdFromRequest } from "@/lib/vmb/resolve-trial-from-request";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
+import { applyVmbTrialCookie } from "@/lib/vmb/trial-cookie-options";
 import { appendTrialImportRun } from "@/lib/vmb/trial-import-store";
 import {
   getWorkspaceForTrial,
@@ -25,7 +27,8 @@ function normalizePlatform(raw: unknown): VmbProviderPlatform | undefined {
 }
 
 export async function GET(req: NextRequest) {
-  const trialId = getVmbTrialIdFromRequest(req);
+  const trialResolution = await resolveTrialIdFromRequest(req);
+  const trialId = trialResolution.trialId;
   if (!trialId) {
     return NextResponse.json({ ok: false, error: "No trial session", data: null }, { status: 401 });
   }
@@ -45,7 +48,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, data: null });
   }
 
-  return NextResponse.json({ ok: true, data: analysis });
+  const res = NextResponse.json({ ok: true, data: analysis });
+  if (!getVmbTrialIdFromRequest(req) && trialId) {
+    applyVmbTrialCookie(res, trialId);
+  }
+  return res;
 }
 
 async function extractAnalyzeInput(req: NextRequest): Promise<
@@ -221,7 +228,11 @@ export async function POST(req: NextRequest) {
             salonName: extracted.salonName ?? ggen.analysis.salonName ?? "Your Salon",
             providerPlatform: extracted.providerPlatform ?? ggen.analysis.providerPlatform,
           });
-          return NextResponse.json({
+          const workspaceUpdate = await setLatestAnalysis(trialId, ggen.analysis.analysisId);
+          if ("error" in workspaceUpdate) {
+            return NextResponse.json({ ok: false, error: workspaceUpdate.error }, { status: 500 });
+          }
+          const res = NextResponse.json({
             ok: true,
             data: {
               analysis: ggen.analysis,
@@ -234,6 +245,8 @@ export async function POST(req: NextRequest) {
               },
             },
           });
+          applyVmbTrialCookie(res, trialId);
+          return res;
         }
       }
 
@@ -266,7 +279,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: workspaceUpdate.error }, { status: 500 });
     }
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       ok: true,
       data: {
         analysis,
@@ -279,6 +292,8 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+    applyVmbTrialCookie(res, trialId);
+    return res;
   } catch (e) {
     return NextResponse.json(
       { ok: false, error: e instanceof Error ? e.message : "Analysis failed" },

@@ -10,7 +10,7 @@ import {
   moreProviders,
   topProviders,
 } from "@/lib/vmb/provider-guide";
-import { writeActiveAnalysisId } from "@/lib/vmb/active-analysis";
+import { readLatestAnalysisId, writeActiveBookSession } from "@/lib/vmb/active-analysis";
 import { VMB_SAMPLE_BOOK_TEXT } from "@/lib/vmb/sample-book";
 import { validateVmbStartFlowSubmit } from "@/lib/vmb/start-flow-validation";
 import { VMB_THEME } from "@/lib/vmb/theme";
@@ -60,12 +60,58 @@ export function VmbStartFlow({ refreshMode = false, activeBook = null }: Props) 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [replaceBook, setReplaceBook] = useState(isRefreshMode || !activeBook?.hasActiveBook);
+  const [clientActiveBook, setClientActiveBook] = useState<ActiveBookResolution | null>(
+    activeBook?.hasActiveBook ? activeBook : null,
+  );
 
-  const showResume = !!activeBook?.hasActiveBook && !replaceBook && !isRefreshMode;
+  const resolvedActiveBook = clientActiveBook?.hasActiveBook ? clientActiveBook : null;
+  const showResume = !!resolvedActiveBook && !replaceBook && !isRefreshMode;
 
   const identityComplete = !!provider && !!ownerName.trim() && !!email.trim();
   const hasBookData = usingSample || !!uploadFile || !!bookText.trim();
   const canSubmit = identityComplete && hasBookData;
+
+  useEffect(() => {
+    if (activeBook?.hasActiveBook) {
+      setClientActiveBook(activeBook);
+      if (!isRefreshMode) setReplaceBook(false);
+      return;
+    }
+
+    let cancelled = false;
+    async function loadActiveBookFromFallback() {
+      const analysisId = readLatestAnalysisId();
+      if (!analysisId) return;
+      try {
+        const params = new URLSearchParams({ analysis: analysisId, restore: "1" });
+        const res = await fetch(`/api/vmb/active-book?${params.toString()}`, {
+          cache: "no-store",
+          credentials: "include",
+        });
+        if (!res.ok || cancelled) return;
+        const json = (await res.json()) as {
+          ok: boolean;
+          data?: ActiveBookResolution & {
+            cookies?: { trialId?: string };
+          };
+        };
+        if (!json.ok || !json.data?.hasActiveBook || cancelled) return;
+        setClientActiveBook(json.data);
+        writeActiveBookSession({
+          analysisId: json.data.analysisId ?? analysisId,
+          trialId: json.data.cookies?.trialId,
+        });
+        if (!isRefreshMode) setReplaceBook(false);
+      } catch {
+        // ignore
+      }
+    }
+
+    void loadActiveBookFromFallback();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBook, isRefreshMode]);
 
   useEffect(() => {
     if (!isRefreshMode) return;
@@ -268,7 +314,7 @@ export function VmbStartFlow({ refreshMode = false, activeBook = null }: Props) 
 
       const result = analyzeJson.data.analysis;
       vmbDevLog("analyze ok", result.analysisId);
-      writeActiveAnalysisId(result.analysisId);
+      writeActiveBookSession({ analysisId: result.analysisId, trialId });
       const todayHref = `/vmb/today?analysis=${encodeURIComponent(result.analysisId)}`;
       console.error("[VMB-POST-PROCESS-REDIRECT]", {
         target: todayHref,
@@ -296,7 +342,7 @@ export function VmbStartFlow({ refreshMode = false, activeBook = null }: Props) 
     >
       {showResume ? (
         <div style={{ marginBottom: 28 }}>
-          <VmbActiveBookResume activeBook={activeBook!} onReplace={() => setReplaceBook(true)} />
+          <VmbActiveBookResume activeBook={resolvedActiveBook!} onReplace={() => setReplaceBook(true)} />
         </div>
       ) : null}
 

@@ -12,6 +12,7 @@ export function isVmbProcessComplete(input: {
 }): boolean {
   if (input.workspace?.firstIngestCompleted) return true;
   if (input.workspace?.latestAnalysisId?.trim()) return true;
+  if (input.activeBookPointer?.analysisId?.trim()) return true;
   if (input.activeAnalysis?.analysisId && (input.activeAnalysis.recordCount ?? 0) > 0) {
     return true;
   }

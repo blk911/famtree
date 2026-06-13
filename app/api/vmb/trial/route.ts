@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createVmbTrialLead, getVmbTrialLead } from "@/lib/vmb/trial-store";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 import { upsertWorkspaceForTrial } from "@/lib/vmb/workspace-store";
-import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
+import { applyVmbTrialCookie } from "@/lib/vmb/trial-cookie-options";
 import { VMB_PROVIDER_PLATFORMS } from "@/lib/vmb/provider-guide";
 import type { VmbProviderPlatform } from "@/types/vmb/trial";
 
@@ -71,12 +71,7 @@ export async function POST(req: NextRequest) {
     }
 
     const res = NextResponse.json({ ok: true, data: result.lead });
-    res.cookies.set(VMB_TRIAL_COOKIE, result.lead.id, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 45,
-    });
+    applyVmbTrialCookie(res, result.lead.id);
     return res;
   } catch (e) {
     return NextResponse.json(

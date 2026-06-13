@@ -1,5 +1,9 @@
 import type { ActiveVmbAnalysisSource, ResolvedActiveVmbAnalysis } from "@/lib/vmb/active-analysis-resolver";
-import { writeActiveAnalysisId } from "@/lib/vmb/active-analysis";
+import {
+  readLatestAnalysisId,
+  readStoredTrialId,
+  writeActiveBookSession,
+} from "@/lib/vmb/active-analysis";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { ActiveBookResolutionSource } from "@/lib/vmb/active-book-resolver";
 
@@ -13,6 +17,10 @@ type ActiveBookApiResponse = {
     updatedAt?: string;
     source: ActiveBookResolutionSource;
     analysis?: VmbBookAnalysisResult;
+    cookies?: {
+      hasTrialCookie?: boolean;
+      trialId?: string;
+    };
   } | null;
   error?: string;
 };
@@ -25,19 +33,34 @@ function mapApiSourceToClient(source: ActiveBookResolutionSource): ActiveVmbAnal
   return "none";
 }
 
+function mergeCandidates(candidates: {
+  queryId?: string;
+  sessionId?: string;
+}): { queryId?: string; sessionId?: string; restoreCookie: boolean } {
+  const queryId = candidates.queryId?.trim();
+  const sessionId = candidates.sessionId?.trim() || readLatestAnalysisId();
+  return {
+    queryId: queryId || sessionId,
+    sessionId: sessionId && sessionId !== queryId ? sessionId : undefined,
+    restoreCookie: !queryId && !!sessionId,
+  };
+}
+
 async function fetchActiveBookResolution(candidates: {
   queryId?: string;
   sessionId?: string;
+  restoreCookie?: boolean;
 }): Promise<ActiveBookApiResponse["data"]> {
   const params = new URLSearchParams();
   if (candidates.queryId?.trim()) params.set("analysis", candidates.queryId.trim());
   if (candidates.sessionId?.trim()) params.set("session", candidates.sessionId.trim());
+  if (candidates.restoreCookie) params.set("restore", "1");
   const qs = params.toString();
   const res = await fetch(`/api/vmb/active-book${qs ? `?${qs}` : ""}`, {
     cache: "no-store",
     credentials: "include",
   });
-  if (res.status === 401) return null;
+  if (!res.ok) return null;
   const json = (await res.json()) as ActiveBookApiResponse;
   return json.ok ? (json.data ?? null) : null;
 }
@@ -47,7 +70,7 @@ async function fetchAnalysisById(id: string): Promise<VmbBookAnalysisResult | un
     cache: "no-store",
     credentials: "include",
   });
-  if (res.status === 401) return undefined;
+  if (!res.ok) return undefined;
   const json = (await res.json()) as { ok: boolean; data?: VmbBookAnalysisResult | null };
   return json.ok && json.data ? json.data : undefined;
 }
@@ -58,15 +81,29 @@ async function fetchAnalysisById(id: string): Promise<VmbBookAnalysisResult | un
 export async function resolveActiveVmbAnalysisClient(candidates: {
   queryId?: string;
   sessionId?: string;
+  fallbackAnalysisId?: string;
 }): Promise<ResolvedActiveVmbAnalysis> {
-  const resolution = await fetchActiveBookResolution(candidates);
+  const merged = mergeCandidates({
+    queryId: candidates.queryId ?? candidates.fallbackAnalysisId,
+    sessionId: candidates.sessionId ?? candidates.fallbackAnalysisId,
+  });
+
+  const resolution = await fetchActiveBookResolution(merged);
   if (resolution?.hasActiveBook && resolution.analysisId) {
-    writeActiveAnalysisId(resolution.analysisId);
+    writeActiveBookSession({
+      analysisId: resolution.analysisId,
+      trialId: resolution.cookies?.trialId ?? readStoredTrialId(),
+    });
     let source = mapApiSourceToClient(resolution.source);
     if (candidates.sessionId?.trim() && resolution.source === "query" && !candidates.queryId?.trim()) {
       source = "session";
     }
     return { analysisId: resolution.analysisId, source };
+  }
+
+  const fallbackId = candidates.fallbackAnalysisId?.trim() || readLatestAnalysisId();
+  if (fallbackId) {
+    return { analysisId: fallbackId, source: "session" };
   }
 
   return { source: "none" };
@@ -80,13 +117,18 @@ export type FetchVmbAnalysisResult =
 export async function fetchVmbAnalysisForSalon(
   resolved: ResolvedActiveVmbAnalysis,
 ): Promise<FetchVmbAnalysisResult> {
-  const resolution = await fetchActiveBookResolution({
-    queryId: resolved.analysisId,
-    sessionId: resolved.analysisId,
-  });
+  const resolution = await fetchActiveBookResolution(
+    mergeCandidates({
+      queryId: resolved.analysisId,
+      sessionId: resolved.analysisId,
+    }),
+  );
 
   if (resolution?.analysis) {
-    writeActiveAnalysisId(resolution.analysis.analysisId);
+    writeActiveBookSession({
+      analysisId: resolution.analysis.analysisId,
+      trialId: resolution.cookies?.trialId ?? readStoredTrialId(),
+    });
     return {
       ok: true,
       data: resolution.analysis,

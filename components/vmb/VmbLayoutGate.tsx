@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { VmbDevRouteStrip } from "@/components/vmb/VmbDevRouteStrip";
 import { VmbSalonShell } from "@/components/vmb/VmbSalonShell";
+import { VmbSessionRestore } from "@/components/vmb/VmbSessionRestore";
 import { VMB_THEME } from "@/lib/vmb/theme";
 
 function SalonShellFallback({ children }: { children: React.ReactNode }) {
@@ -32,6 +33,7 @@ function VmbLayoutGateInner({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <VmbSessionRestore />
       <Suspense fallback={null}>
         <VmbDevRouteStrip />
       </Suspense>
