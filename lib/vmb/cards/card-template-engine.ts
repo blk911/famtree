@@ -1,5 +1,11 @@
 import type { CardAccent, VmbCardType } from "@/lib/vmb/cards/card-types";
 import type { CardPreviewModel, CardTemplateInput } from "@/lib/vmb/cards/card-preview-model";
+import {
+  buildPcnInviteBody,
+  buildPcnInviteCta,
+  buildPcnInviteSalutation,
+  pcnSignalsFromText,
+} from "@/lib/vmb/cards/pcn-invite-copy";
 
 type TemplateCopy = {
   title: string;
@@ -136,6 +142,28 @@ function buildImageSlots(layout: "single" | "collage"): CardPreviewModel["imageS
 export function buildCardPreview(input: CardTemplateInput): CardPreviewModel {
   const template = COPY[input.cardType];
   const recipientName = input.recipientName?.trim() || undefined;
+
+  if (input.cardType === "pcn_invite") {
+    const signals = pcnSignalsFromText(input);
+    return {
+      cardType: input.cardType,
+      salutation: buildPcnInviteSalutation(recipientName),
+      title: "",
+      subtitle: "",
+      body: buildPcnInviteBody(signals),
+      imageLayout: "single",
+      imageSlots: buildImageSlots("single"),
+      accent: template.accent,
+      cta: buildPcnInviteCta(),
+      tags: ["PCN"],
+      metadata: {
+        recipientName,
+        serviceName: input.serviceName ?? signals.serviceName,
+        lastVisit: input.lastVisit,
+        ticketValue: input.ticketValue,
+      },
+    };
+  }
 
   return {
     cardType: input.cardType,

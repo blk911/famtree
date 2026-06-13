@@ -6,7 +6,7 @@ import { InlineDeliverablePreview } from "@/components/taikos/workflow/InlineDel
 import { OpportunityLifecycle } from "@/components/taikos/workflow/OpportunityLifecycle";
 import {
   TodayProspectCardLayout,
-  buildCompactLine,
+  buildProspectTeaser,
 } from "@/components/taikos/workflow/TodayProspectCardLayout";
 import { useInlineActionWorkflow } from "@/components/taikos/workflow/useInlineActionWorkflow";
 import {
@@ -16,6 +16,7 @@ import {
 import type { TaikosInsight } from "@/lib/taikos/coda/types";
 import type { TaikosOpportunity } from "@/lib/taikos/opportunities/types";
 import { buildOpportunityGuideCopy } from "@/lib/taikos/context/today-conversation";
+import { cardActionLabel } from "@/lib/vmb/cards/card-type-labels";
 import { buildCardPreview } from "@/lib/vmb/cards/card-template-engine";
 import {
   buildOpportunityIntelligence,
@@ -65,8 +66,18 @@ export function OpportunityWorkflowCard({
         recipientName: intelligence.subjectName ?? clientName,
         salonName: analysisContext?.salonName,
         ticketValue: opportunity.estimatedValue,
+        subjectLabel: insight?.subjectLabel ?? guide.roleLabel,
+        discoveryText: insight?.discovery ?? intelligence.whatTaikosSees,
+        recommendationText: opportunity.recommendation,
       }),
-    [intelligence, opportunity, clientName, analysisContext?.salonName],
+    [
+      intelligence,
+      opportunity,
+      clientName,
+      analysisContext?.salonName,
+      insight,
+      guide.roleLabel,
+    ],
   );
 
   const workflow = useInlineActionWorkflow({
@@ -76,18 +87,22 @@ export function OpportunityWorkflowCard({
   });
 
   if (layout === "today") {
+    const actionLabel = cardActionLabel(
+      intelligence.suggestedCardType,
+      insight?.suggestedAction ?? opportunity.category,
+    );
+
     return (
       <TodayProspectCardLayout
+        prospectId={opportunity.opportunityId}
         displayName={displayName}
-        roleLabel={guide.roleLabel}
+        actionLabel={actionLabel}
         confidence={opportunity.confidence}
-        compactLine={buildCompactLine(guide.roleLabel, guide.bodyLines, guide.suggestedNextStep)}
-        bodyLines={guide.bodyLines}
+        collapsedTeaser={buildProspectTeaser(guide.roleLabel, guide.bodyLines)}
+        reasonLine={guide.bodyLines[0] ?? intelligence.whatTaikosSees}
         suggestedNextStep={guide.suggestedNextStep}
-        evidence={intelligence.evidence}
         cardPreview={cardPreview}
         workflow={workflow}
-        showDeliverableDetail
       />
     );
   }

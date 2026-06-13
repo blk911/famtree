@@ -3100,6 +3100,70 @@
   gap: 8px;
 }
 
+.taikos-prospect-card__accordion {
+  display: grid;
+  gap: 10px;
+}
+
+.taikos-prospect-card__accordion-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.taikos-prospect-card__chevron {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #78716c;
+}
+
+.taikos-prospect-card__collapsed-line {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #292524;
+}
+
+.taikos-prospect-card__expanded-body {
+  display: grid;
+  gap: 6px;
+  padding-left: 22px;
+}
+
+.taikos-prospect-card__reason {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #44403c;
+}
+
+.vmb-card-preview--personal {
+  border-color: #e7e5e4;
+  box-shadow: 0 8px 28px rgba(41, 37, 36, 0.06);
+}
+
+.vmb-card-preview__body--personal {
+  padding-top: 18px;
+}
+
+.vmb-card-preview__body--personal .vmb-card-preview__copy {
+  white-space: pre-line;
+  line-height: 1.55;
+}
+
+.vmb-card-preview-modal__error {
+  margin: 0 20px;
+}
+
 .taikos-prospect-card__split {
   display: grid;
   grid-template-columns: 1fr;
@@ -3248,20 +3312,12 @@
   padding: 18px 20px 0;
 }
 
-.vmb-card-preview-modal__eyebrow {
-  margin: 0 0 4px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #78716c;
-}
-
 .vmb-card-preview-modal__title {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: #292524;
+  line-height: 1.25;
 }
 
 .vmb-card-preview-modal__close {

@@ -3,12 +3,13 @@
 import { useMemo } from "react";
 import {
   TodayProspectCardLayout,
-  buildCompactLine,
+  buildProspectTeaser,
 } from "@/components/taikos/workflow/TodayProspectCardLayout";
 import { useInlineActionWorkflow } from "@/components/taikos/workflow/useInlineActionWorkflow";
 import { cardTypeFromActionType } from "@/lib/taikos/context/insight-card-type";
 import { buildInsightGuideCopy } from "@/lib/taikos/context/today-conversation";
 import type { TaikosInsight } from "@/lib/taikos/coda/types";
+import { cardActionLabel } from "@/lib/vmb/cards/card-type-labels";
 import { buildCardPreview } from "@/lib/vmb/cards/card-template-engine";
 
 type Props = {
@@ -24,33 +25,31 @@ export function TaikosInsightCard({ insight, onRefresh }: Props) {
   });
 
   const guide = useMemo(() => buildInsightGuideCopy(insight), [insight]);
+  const cardType = cardTypeFromActionType(insight.actionType);
   const cardPreview = useMemo(
     () =>
       buildCardPreview({
-        cardType: cardTypeFromActionType(insight.actionType),
+        cardType,
         recipientName: insight.subjectName,
+        subjectLabel: insight.subjectLabel,
+        discoveryText: insight.discovery,
+        recommendationText: insight.objective,
       }),
-    [insight.actionType, insight.subjectName],
+    [cardType, insight],
   );
 
   const displayName = insight.subjectName.split(/\s+/)[0] || insight.subjectName;
-
-  const evidence = useMemo(() => {
-    const items: string[] = [];
-    if (insight.discovery.trim()) items.push(insight.discovery.trim());
-    if (insight.objective.trim()) items.push(insight.objective.trim());
-    return items.slice(0, 4);
-  }, [insight]);
+  const actionLabel = cardActionLabel(cardType, insight.suggestedAction);
 
   return (
     <TodayProspectCardLayout
+      prospectId={insight.id}
       displayName={displayName}
-      roleLabel={insight.subjectLabel}
+      actionLabel={actionLabel}
       confidence={insight.confidence}
-      compactLine={buildCompactLine(insight.subjectLabel, guide.bodyLines, guide.suggestedNextStep)}
-      bodyLines={guide.bodyLines}
+      collapsedTeaser={buildProspectTeaser(insight.subjectLabel, guide.bodyLines)}
+      reasonLine={guide.bodyLines[0] ?? insight.discovery}
       suggestedNextStep={guide.suggestedNextStep}
-      evidence={evidence}
       cardPreview={cardPreview}
       workflow={workflow}
     />

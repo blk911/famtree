@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
+import { isPersonalInviteCard } from "@/lib/vmb/cards/card-type-labels";
 
 type Props = {
   model: CardPreviewModel;
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export function CardBody({ model, editable, onChange }: Props) {
+  const personalInvite = isPersonalInviteCard(model.cardType);
   const [title, setTitle] = useState(model.title);
   const [subtitle, setSubtitle] = useState(model.subtitle);
   const [body, setBody] = useState(model.body);
@@ -43,9 +45,12 @@ export function CardBody({ model, editable, onChange }: Props) {
   const displayBody = editable ? body : model.body;
   const displayCta = editable ? cta : model.cta;
   const displaySalutation = editable ? salutation : model.salutation;
+  const showTitleBlock = !personalInvite && (displayTitle.trim() || displaySubtitle.trim());
 
   return (
-    <div className="vmb-card-preview__body">
+    <div
+      className={`vmb-card-preview__body${personalInvite ? " vmb-card-preview__body--personal" : ""}`}
+    >
       {editable ? (
         <input
           className="vmb-card-preview__edit vmb-card-preview__edit--salutation"
@@ -59,24 +64,28 @@ export function CardBody({ model, editable, onChange }: Props) {
 
       {editable ? (
         <>
-          <input
-            className="vmb-card-preview__edit vmb-card-preview__edit--title"
-            value={displayTitle}
-            onChange={(e) => emit("title", e.target.value)}
-            aria-label="Card title"
-          />
-          <input
-            className="vmb-card-preview__edit vmb-card-preview__edit--subtitle"
-            value={displaySubtitle}
-            onChange={(e) => emit("subtitle", e.target.value)}
-            aria-label="Card subtitle"
-          />
+          {!personalInvite ? (
+            <>
+              <input
+                className="vmb-card-preview__edit vmb-card-preview__edit--title"
+                value={displayTitle}
+                onChange={(e) => emit("title", e.target.value)}
+                aria-label="Card title"
+              />
+              <input
+                className="vmb-card-preview__edit vmb-card-preview__edit--subtitle"
+                value={displaySubtitle}
+                onChange={(e) => emit("subtitle", e.target.value)}
+                aria-label="Card subtitle"
+              />
+            </>
+          ) : null}
           <textarea
             className="vmb-card-preview__edit vmb-card-preview__edit--body"
             value={displayBody}
-            rows={4}
+            rows={personalInvite ? 8 : 4}
             onChange={(e) => emit("body", e.target.value)}
-            aria-label="Card body"
+            aria-label={personalInvite ? "Message" : "Card body"}
           />
           <input
             className="vmb-card-preview__edit vmb-card-preview__edit--cta"
@@ -87,14 +96,18 @@ export function CardBody({ model, editable, onChange }: Props) {
         </>
       ) : (
         <>
-          <h3 className="vmb-card-preview__title">{displayTitle}</h3>
-          <p className="vmb-card-preview__subtitle">{displaySubtitle}</p>
+          {showTitleBlock ? (
+            <>
+              <h3 className="vmb-card-preview__title">{displayTitle}</h3>
+              <p className="vmb-card-preview__subtitle">{displaySubtitle}</p>
+            </>
+          ) : null}
           <p className="vmb-card-preview__copy">{displayBody}</p>
           <p className="vmb-card-preview__cta">{displayCta}</p>
         </>
       )}
 
-      {model.tags.length > 1 ? (
+      {!personalInvite && model.tags.length > 1 ? (
         <div className="vmb-card-preview__tags" aria-label="Card tags">
           {model.tags.map((tag) => (
             <span key={tag} className="vmb-card-preview__tag">

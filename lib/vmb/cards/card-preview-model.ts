@@ -38,4 +38,8 @@ export type CardTemplateInput = {
   birthday?: string;
   referralCount?: number;
   ticketValue?: number;
+  subjectLabel?: string;
+  visitCount?: number;
+  discoveryText?: string;
+  recommendationText?: string;
 };

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { CardPreview } from "@/components/vmb/cards/CardPreview";
 import type { useInlineActionWorkflow } from "@/components/taikos/workflow/useInlineActionWorkflow";
+import { isPersonalInviteCard } from "@/lib/vmb/cards/card-type-labels";
 import { useEditableCardDraft } from "@/lib/vmb/cards/use-editable-card-draft";
 import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
 
@@ -11,7 +12,8 @@ type Workflow = ReturnType<typeof useInlineActionWorkflow>;
 type Props = {
   open: boolean;
   cardPreview: CardPreviewModel;
-  recipientLabel?: string;
+  displayName?: string;
+  actionLabel?: string;
   workflow: Workflow;
   onClose: () => void;
 };
@@ -19,11 +21,15 @@ type Props = {
 export function CardPreviewModal({
   open,
   cardPreview,
-  recipientLabel,
+  displayName,
+  actionLabel,
   workflow,
   onClose,
 }: Props) {
   const { draft, patchDraft, snapshotDraft, restoreDraft } = useEditableCardDraft(cardPreview);
+  const personalInvite = isPersonalInviteCard(draft.cardType);
+  const modalTitle =
+    displayName && actionLabel ? `${displayName} — ${actionLabel}` : displayName ?? "Relationship card";
 
   useEffect(() => {
     if (!open) return;
@@ -53,17 +59,12 @@ export function CardPreviewModal({
       className="vmb-card-preview-modal"
       role="dialog"
       aria-modal="true"
-      aria-label="Card preview"
+      aria-label={modalTitle}
       onClick={onClose}
     >
       <div className="vmb-card-preview-modal__panel" onClick={(e) => e.stopPropagation()}>
         <header className="vmb-card-preview-modal__header">
-          <div>
-            <p className="vmb-card-preview-modal__eyebrow">Blue Mountain preview</p>
-            <h2 className="vmb-card-preview-modal__title">
-              {recipientLabel ? `Card for ${recipientLabel}` : "Relationship card"}
-            </h2>
-          </div>
+          <h2 className="vmb-card-preview-modal__title">{modalTitle}</h2>
           <button
             type="button"
             className="vmb-card-preview-modal__close"
@@ -80,10 +81,12 @@ export function CardPreviewModal({
           </div>
 
           <div className="vmb-card-preview-modal__editor">
-            <p className="vmb-card-preview-modal__editor-label">Edit card copy</p>
+            <p className="vmb-card-preview-modal__editor-label">
+              {personalInvite ? "Edit invite copy" : "Edit card copy"}
+            </p>
 
             <label className="vmb-card-preview-modal__field">
-              <span>Greeting</span>
+              <span>{personalInvite ? "Greeting" : "Greeting"}</span>
               <input
                 value={draft.salutation}
                 onChange={(e) => patchDraft({ salutation: e.target.value })}
@@ -91,31 +94,35 @@ export function CardPreviewModal({
               />
             </label>
 
-            <label className="vmb-card-preview-modal__field">
-              <span>Title</span>
-              <input
-                value={draft.title}
-                onChange={(e) => patchDraft({ title: e.target.value })}
-                aria-label="Card title"
-              />
-            </label>
+            {!personalInvite ? (
+              <>
+                <label className="vmb-card-preview-modal__field">
+                  <span>Title</span>
+                  <input
+                    value={draft.title}
+                    onChange={(e) => patchDraft({ title: e.target.value })}
+                    aria-label="Card title"
+                  />
+                </label>
+
+                <label className="vmb-card-preview-modal__field">
+                  <span>Subtitle</span>
+                  <input
+                    value={draft.subtitle}
+                    onChange={(e) => patchDraft({ subtitle: e.target.value })}
+                    aria-label="Card subtitle"
+                  />
+                </label>
+              </>
+            ) : null}
 
             <label className="vmb-card-preview-modal__field">
-              <span>Subtitle</span>
-              <input
-                value={draft.subtitle}
-                onChange={(e) => patchDraft({ subtitle: e.target.value })}
-                aria-label="Card subtitle"
-              />
-            </label>
-
-            <label className="vmb-card-preview-modal__field">
-              <span>Body</span>
+              <span>{personalInvite ? "Message" : "Body"}</span>
               <textarea
                 value={draft.body}
-                rows={4}
+                rows={personalInvite ? 8 : 4}
                 onChange={(e) => patchDraft({ body: e.target.value })}
-                aria-label="Card body"
+                aria-label={personalInvite ? "Invite message" : "Card body"}
               />
             </label>
 
@@ -144,13 +151,9 @@ export function CardPreviewModal({
         </div>
 
         {workflow.error ? (
-          <p className="taikos-inline-workflow__error" role="alert">
+          <p className="vmb-card-preview-modal__error taikos-inline-workflow__error" role="alert">
             {workflow.error}
           </p>
-        ) : null}
-
-        {workflow.statusMessage && workflow.stage === "approved" ? (
-          <p className="taikos-inline-workflow__message">{workflow.statusMessage}</p>
         ) : null}
 
         <footer className="vmb-card-preview-modal__footer">
@@ -205,15 +208,6 @@ export function CardPreviewModal({
             </button>
           ) : null}
         </footer>
-
-        {workflow.stage === "queued" ? (
-          <p
-            className="vmb-card-preview-modal__queued taikos-inline-workflow__message taikos-inline-workflow__message--success"
-            role="status"
-          >
-            {workflow.statusMessage ?? "Added to queue. No message sent yet."}
-          </p>
-        ) : null}
       </div>
     </div>
   );

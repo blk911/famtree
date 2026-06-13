@@ -8,6 +8,7 @@ import { TaikosInsightList } from "@/components/taikos/coda/TaikosInsightList";
 import { TodayCodaBanner } from "@/components/taikos/coda/TodayCodaBanner";
 import { GoalSummary } from "@/components/taikos/goals/GoalSummary";
 import { OpportunityList } from "@/components/taikos/opportunities/OpportunityList";
+import { TodayProspectFeedProvider } from "@/components/taikos/workflow/TodayProspectFeedContext";
 import { TodayDraftPanel } from "@/components/taikos/workflow/TodayDraftPanel";
 import { TodayQueuePanel } from "@/components/taikos/workflow/TodayQueuePanel";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
@@ -364,22 +365,24 @@ export function VmbTodayClient({
             />
           </div>
 
-          <div className="today-prospect-feed">
-            <TaikosInsightList insights={insights} onRefresh={loadContext} />
+          <TodayProspectFeedProvider>
+            <div className="today-prospect-feed">
+              <TaikosInsightList insights={insights} onRefresh={loadContext} />
 
-            <OpportunityList
-              summary={data?.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY}
-              insights={insights}
-              goals={data?.goalSummary.goals ?? []}
-              analysisContext={{
-                analysisId: activeAnalysisId,
-                salonName,
-                hasRealBookData: hasCompletedFirstIngest,
-              }}
-              todayLayout
-              onRefresh={loadContext}
-            />
-          </div>
+              <OpportunityList
+                summary={data?.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY}
+                insights={insights}
+                goals={data?.goalSummary.goals ?? []}
+                analysisContext={{
+                  analysisId: activeAnalysisId,
+                  salonName,
+                  hasRealBookData: hasCompletedFirstIngest,
+                }}
+                todayLayout
+                onRefresh={loadContext}
+              />
+            </div>
+          </TodayProspectFeedProvider>
 
           <GoalSummary
             summary={data?.goalSummary ?? EMPTY_GOAL_SUMMARY}

@@ -2,45 +2,163 @@
 
 import { useState } from "react";
 import { CardPreviewModal } from "@/components/vmb/cards/CardPreviewModal";
-import { InlineDeliverablePreview } from "@/components/taikos/workflow/InlineDeliverablePreview";
 import { OpportunityLifecycle } from "@/components/taikos/workflow/OpportunityLifecycle";
+import { useTodayProspectFeed } from "@/components/taikos/workflow/TodayProspectFeedContext";
 import type { useInlineActionWorkflow } from "@/components/taikos/workflow/useInlineActionWorkflow";
 import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
 
 type Workflow = ReturnType<typeof useInlineActionWorkflow>;
 
 type Props = {
+  prospectId: string;
   displayName: string;
-  roleLabel: string;
+  actionLabel: string;
   confidence: number;
-  compactLine: string;
-  bodyLines: string[];
+  collapsedTeaser: string;
+  reasonLine: string;
   suggestedNextStep: string;
-  evidence?: string[];
   cardPreview: CardPreviewModel;
   workflow: Workflow;
-  showDeliverableDetail?: boolean;
 };
 
+function ProspectActionButtons({
+  workflow,
+  onPreview,
+  onOpenModal,
+}: {
+  workflow: Workflow;
+  onPreview: () => void;
+  onOpenModal: () => void;
+}) {
+  if (workflow.stage === "detected") {
+    return (
+      <>
+        <button
+          type="button"
+          className="taikos-opp-card__cta"
+          disabled={workflow.busy}
+          onClick={(e) => {
+            e.stopPropagation();
+            void onPreview();
+          }}
+        >
+          {workflow.busy ? "Loading…" : "Preview"}
+        </button>
+        <button
+          type="button"
+          className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
+          disabled={workflow.busy}
+          onClick={(e) => {
+            e.stopPropagation();
+            workflow.skipReject();
+          }}
+        >
+          Skip
+        </button>
+      </>
+    );
+  }
+
+  if (workflow.stage === "previewed") {
+    return (
+      <>
+        <button
+          type="button"
+          className="taikos-opp-card__cta"
+          disabled={workflow.busy}
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenModal();
+          }}
+        >
+          View Card
+        </button>
+        <button
+          type="button"
+          className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
+          disabled={workflow.busy}
+          onClick={(e) => {
+            e.stopPropagation();
+            workflow.skipReject();
+          }}
+        >
+          Skip
+        </button>
+      </>
+    );
+  }
+
+  if (workflow.stage === "approved") {
+    return (
+      <>
+        <button
+          type="button"
+          className="taikos-opp-card__cta"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenModal();
+          }}
+        >
+          View Card
+        </button>
+        {workflow.canQueue ? (
+          <button
+            type="button"
+            className="taikos-opp-card__cta"
+            disabled={workflow.busy}
+            onClick={(e) => {
+              e.stopPropagation();
+              void workflow.runQueue();
+            }}
+          >
+            {workflow.busy ? "Queuing…" : "Add To Queue"}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
+          onClick={(e) => {
+            e.stopPropagation();
+            workflow.skipQueue();
+          }}
+        >
+          Skip
+        </button>
+      </>
+    );
+  }
+
+  return null;
+}
+
 export function TodayProspectCardLayout({
+  prospectId,
   displayName,
-  roleLabel,
+  actionLabel,
   confidence,
-  compactLine,
-  bodyLines,
+  collapsedTeaser,
+  reasonLine,
   suggestedNextStep,
-  evidence = [],
   cardPreview,
   workflow,
-  showDeliverableDetail = false,
 }: Props) {
-  const [detailsExpanded, setDetailsExpanded] = useState(false);
+  const feed = useTodayProspectFeed();
+  const [localExpanded, setLocalExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
+  const expanded = feed ? feed.isExpanded(prospectId) : localExpanded;
   const terminal = workflow.stage === "queued" || workflow.stage === "skipped";
+  const collapsedLine = `${displayName} — ${actionLabel} — ${collapsedTeaser} — ${confidence}%`;
+
+  function toggleExpanded() {
+    if (feed) {
+      feed.toggleExpanded(prospectId);
+      return;
+    }
+    setLocalExpanded((open) => !open);
+  }
 
   async function handlePreview() {
-    setDetailsExpanded(true);
     setModalOpen(true);
     if (workflow.stage === "detected") {
       await workflow.runPreview();
@@ -55,227 +173,46 @@ export function TodayProspectCardLayout({
     setModalOpen(false);
   }
 
-  function expandDetails() {
-    setDetailsExpanded(true);
-  }
-
   return (
     <>
       <article
-        className={`taikos-prospect-card${detailsExpanded ? " taikos-prospect-card--expanded" : ""}${terminal ? " taikos-prospect-card--terminal" : ""}`}
+        className={`taikos-prospect-card${expanded ? " taikos-prospect-card--expanded" : ""}${terminal ? " taikos-prospect-card--terminal" : ""}`}
       >
         <OpportunityLifecycle stage={workflow.stage} compact />
 
-        {!detailsExpanded ? (
-          <div className="taikos-prospect-card__compact">
-            <button
-              type="button"
-              className="taikos-prospect-card__compact-main"
-              onClick={expandDetails}
-              aria-expanded={false}
-            >
-              <div className="taikos-prospect-card__compact-copy">
-                <h4 className="taikos-prospect-card__name">{displayName}</h4>
-                <p className="taikos-prospect-card__teaser">{compactLine}</p>
-              </div>
-              <span className="taikos-prospect-card__confidence">{confidence}%</span>
-            </button>
+        <div className="taikos-prospect-card__accordion">
+          <button
+            type="button"
+            className="taikos-prospect-card__accordion-toggle"
+            onClick={toggleExpanded}
+            aria-expanded={expanded}
+          >
+            <span className="taikos-prospect-card__chevron" aria-hidden>
+              {expanded ? "▾" : "▸"}
+            </span>
+            <span className="taikos-prospect-card__collapsed-line">{collapsedLine}</span>
+          </button>
 
-            <div className="taikos-prospect-card__compact-actions">
-              {workflow.stage === "detected" ? (
-                <>
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta"
-                    disabled={workflow.busy}
-                    onClick={() => void handlePreview()}
-                  >
-                    {workflow.busy ? "Loading…" : "Preview"}
-                  </button>
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
-                    disabled={workflow.busy}
-                    onClick={workflow.skipReject}
-                  >
-                    Skip
-                  </button>
-                </>
-              ) : null}
-
-              {workflow.stage === "previewed" ? (
-                <>
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta"
-                    disabled={workflow.busy}
-                    onClick={handleOpenModal}
-                  >
-                    View Card
-                  </button>
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
-                    disabled={workflow.busy}
-                    onClick={workflow.skipReject}
-                  >
-                    Skip
-                  </button>
-                </>
-              ) : null}
-
-              {workflow.stage === "approved" ? (
-                <>
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta"
-                    onClick={handleOpenModal}
-                  >
-                    View Card
-                  </button>
-                  {workflow.canQueue ? (
-                    <button
-                      type="button"
-                      className="taikos-opp-card__cta"
-                      disabled={workflow.busy}
-                      onClick={() => void workflow.runQueue()}
-                    >
-                      {workflow.busy ? "Queuing…" : "Add To Queue"}
-                    </button>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
-                    onClick={workflow.skipQueue}
-                  >
-                    Skip
-                  </button>
-                </>
-              ) : null}
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="taikos-prospect-card__guide">
-              <button
-                type="button"
-                className="taikos-prospect-card__guide-head"
-                onClick={() => setDetailsExpanded(true)}
-                aria-expanded
-              >
-                <div>
-                  <h4 className="taikos-prospect-card__name">{displayName}</h4>
-                  <p className="taikos-prospect-card__role">{roleLabel}</p>
-                </div>
-                <span className="taikos-prospect-card__confidence">{confidence}%</span>
-              </button>
-
-              {bodyLines.map((line) => (
-                <p key={line} className="taikos-prospect-card__line">
-                  {line}
-                </p>
-              ))}
-
-              <p className="taikos-prospect-card__step-label">Suggested next step:</p>
+          {expanded ? (
+            <div className="taikos-prospect-card__expanded-body">
+              <p className="taikos-prospect-card__reason">{reasonLine}</p>
+              <p className="taikos-prospect-card__step-label">Suggested move</p>
               <p className="taikos-prospect-card__step">{suggestedNextStep}</p>
-
-              {evidence.length > 0 ? (
-                <details className="taikos-prospect-card__why">
-                  <summary>Why this?</summary>
-                  <ul>
-                    {evidence.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </details>
-              ) : null}
             </div>
+          ) : null}
 
-            <div className="taikos-prospect-card__actions">
-              {workflow.stage === "detected" ? (
-                <>
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta"
-                    disabled={workflow.busy}
-                    onClick={() => void handlePreview()}
-                  >
-                    {workflow.busy ? "Loading…" : "Preview"}
-                  </button>
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
-                    disabled={workflow.busy}
-                    onClick={workflow.skipReject}
-                  >
-                    Skip
-                  </button>
-                </>
-              ) : null}
-
-              {workflow.stage === "previewed" ? (
-                <>
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta"
-                    disabled={workflow.busy}
-                    onClick={handleOpenModal}
-                  >
-                    View Card
-                  </button>
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
-                    disabled={workflow.busy}
-                    onClick={workflow.skipReject}
-                  >
-                    Skip
-                  </button>
-                </>
-              ) : null}
-
-              {workflow.stage === "approved" ? (
-                <>
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta"
-                    onClick={handleOpenModal}
-                  >
-                    View Card
-                  </button>
-                  {workflow.canQueue ? (
-                    <button
-                      type="button"
-                      className="taikos-opp-card__cta"
-                      disabled={workflow.busy}
-                      onClick={() => void workflow.runQueue()}
-                    >
-                      {workflow.busy ? "Queuing…" : "Add To Queue"}
-                    </button>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
-                    onClick={workflow.skipQueue}
-                  >
-                    Skip
-                  </button>
-                </>
-              ) : null}
-            </div>
-          </>
-        )}
-
-        {workflow.expanded && workflow.preview && showDeliverableDetail ? (
-          <details className="taikos-inline-workflow__deliverable-details">
-            <summary>Draft detail</summary>
-            <InlineDeliverablePreview deliverable={workflow.preview.deliverable} />
-          </details>
-        ) : null}
+          <div className="taikos-prospect-card__compact-actions">
+            <ProspectActionButtons
+              workflow={workflow}
+              onPreview={handlePreview}
+              onOpenModal={handleOpenModal}
+            />
+          </div>
+        </div>
 
         {workflow.stage === "queued" ? (
           <p className="taikos-inline-workflow__message taikos-inline-workflow__message--success" role="status">
-            {workflow.statusMessage ?? "Added to queue. No message sent yet."}
+            {workflow.statusMessage ?? "Added to queue."}
           </p>
         ) : null}
 
@@ -297,7 +234,8 @@ export function TodayProspectCardLayout({
       <CardPreviewModal
         open={modalOpen}
         cardPreview={cardPreview}
-        recipientLabel={displayName}
+        displayName={displayName}
+        actionLabel={actionLabel}
         workflow={workflow}
         onClose={handleCloseModal}
       />
@@ -305,9 +243,26 @@ export function TodayProspectCardLayout({
   );
 }
 
-function buildCompactLine(roleLabel: string, bodyLines: string[], suggestedNextStep: string): string {
-  const teaser = bodyLines[1] ?? bodyLines[0] ?? suggestedNextStep;
-  return `${roleLabel} — ${teaser}`;
+export function buildProspectTeaser(roleLabel: string, bodyLines: string[]): string {
+  const hay = `${roleLabel} ${bodyLines.join(" ")}`.toLowerCase();
+  if (hay.includes("ambassador") || hay.includes("bring other") || hay.includes("referral")) {
+    return "likely ambassador";
+  }
+  if (hay.includes("vip") || hay.includes("high-value") || hay.includes("high value")) {
+    return "VIP client";
+  }
+  if (hay.includes("refresh") || hay.includes("overdue")) return "due for refresh";
+  if (hay.includes("birthday")) return "birthday coming up";
+  if (hay.includes("reactivat") || hay.includes("lapsed") || hay.includes("has not returned")) {
+    return "past client";
+  }
+  if (hay.includes("open slot") || hay.includes("calendar gap")) return "open slot match";
+  return roleLabel.toLowerCase();
+}
+
+/** @deprecated Use buildProspectTeaser */
+function buildCompactLine(roleLabel: string, bodyLines: string[], _suggestedNextStep: string): string {
+  return `${roleLabel} — ${buildProspectTeaser(roleLabel, bodyLines)}`;
 }
 
 export { buildCompactLine };
