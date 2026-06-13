@@ -268,33 +268,16 @@ export function VmbTodayClient({
       ) : null}
 
       <header className="vmb-page-frame__header">
-        <p className="vmb-page-frame__eyebrow">{salonName}</p>
-        <div className="vmb-page-frame__title-row">
-          <h1 className="vmb-page-frame__title">Today</h1>
-          {todayUnlocked ? (
-            <button
-              type="button"
-              className="today-aios-sparkle"
-              aria-label="Open tAIkOS guidance"
-              aria-expanded={aiosOpen}
-              onClick={() => setAiosOpen((open) => !open)}
-            >
-              ✨
-            </button>
-          ) : null}
-        </div>
-        <p className="vmb-page-frame__subtitle">
-          tAIkOS guides your next relationship moves — preview a card, approve, and queue when ready.
-        </p>
-
-        {aiosOpen && todayUnlocked ? (
-          <InlineAiosPanel
-            context={data?.context}
-            operatorName={operatorName}
-            salonName={salonName}
-            analysisId={activeAnalysisId ?? data?.context?.analysisId}
-            onClose={() => setAiosOpen(false)}
-          />
+        {!todayUnlocked ? (
+          <>
+            <p className="vmb-page-frame__eyebrow">{salonName}</p>
+            <div className="vmb-page-frame__title-row">
+              <h1 className="vmb-page-frame__title">Today</h1>
+            </div>
+            <p className="vmb-page-frame__subtitle">
+              Relationship guidance — context, objective, discovery, and your next action.
+            </p>
+          </>
         ) : null}
       </header>
 
@@ -343,25 +326,60 @@ export function VmbTodayClient({
             <p className="vmb-page-state">Loading your operating brief…</p>
           ) : null}
 
-          <TodayCodaBanner
-            coda={codaSummary}
-            operatorName={operatorName}
-            salonName={salonName}
-          />
+          <div className="today-page-title">
+            <div className="today-page-title__salon">{salonName}</div>
+            <div className="today-page-title__heading">
+              <h1>
+                Today{" "}
+                <button
+                  type="button"
+                  className="today-aios-sparkle today-aios-sparkle--title"
+                  aria-label="Open tAIkOS guidance"
+                  aria-expanded={aiosOpen}
+                  onClick={() => setAiosOpen((open) => !open)}
+                >
+                  ✨
+                </button>
+              </h1>
+            </div>
+            <p className="today-page-title__subtitle">
+              Relationship guidance — context, objective, discovery, and your next action.
+            </p>
+            {aiosOpen ? (
+              <InlineAiosPanel
+                context={data?.context}
+                operatorName={operatorName}
+                salonName={salonName}
+                analysisId={activeAnalysisId ?? data?.context?.analysisId}
+                onClose={() => setAiosOpen(false)}
+              />
+            ) : null}
+          </div>
 
-          <TaikosInsightList insights={insights} onRefresh={loadContext} />
+          <div className="today-greeting-card">
+            <TodayCodaBanner
+              coda={codaSummary}
+              operatorName={operatorName}
+              salonName={salonName}
+            />
+          </div>
 
-          <OpportunityList
-            summary={data?.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY}
-            insights={insights}
-            goals={data?.goalSummary.goals ?? []}
-            analysisContext={{
-              analysisId: activeAnalysisId,
-              salonName,
-              hasRealBookData: hasCompletedFirstIngest,
-            }}
-            onRefresh={loadContext}
-          />
+          <div className="today-prospect-feed">
+            <TaikosInsightList insights={insights} onRefresh={loadContext} />
+
+            <OpportunityList
+              summary={data?.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY}
+              insights={insights}
+              goals={data?.goalSummary.goals ?? []}
+              analysisContext={{
+                analysisId: activeAnalysisId,
+                salonName,
+                hasRealBookData: hasCompletedFirstIngest,
+              }}
+              todayLayout
+              onRefresh={loadContext}
+            />
+          </div>
 
           <GoalSummary
             summary={data?.goalSummary ?? EMPTY_GOAL_SUMMARY}

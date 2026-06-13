@@ -19,16 +19,17 @@ function progressIndex(stage: WorkflowState): number {
 
 type Props = {
   stage: WorkflowState;
+  compact?: boolean;
 };
 
-export function OpportunityLifecycle({ stage }: Props) {
+export function OpportunityLifecycle({ stage, compact }: Props) {
   const activeIdx = progressIndex(stage);
   const skipped = stage === "skipped";
   const blocked = stage === "blocked";
 
   return (
     <ol
-      className={`taikos-opp-lifecycle${skipped ? " taikos-opp-lifecycle--skipped" : ""}${blocked ? " taikos-opp-lifecycle--blocked" : ""}`}
+      className={`taikos-opp-lifecycle${compact ? " taikos-opp-lifecycle--compact" : ""}${skipped ? " taikos-opp-lifecycle--skipped" : ""}${blocked ? " taikos-opp-lifecycle--blocked" : ""}`}
       aria-label="Opportunity progress"
     >
       {STEPS.map((step, idx) => {
@@ -42,7 +43,7 @@ export function OpportunityLifecycle({ stage }: Props) {
           >
             <span className="taikos-opp-lifecycle__dot" aria-hidden />
             <span className="taikos-opp-lifecycle__label">
-              {skipped && step.id === "detected" ? "Skipped" : step.label}
+              {compact ? null : skipped && step.id === "detected" ? "Skipped" : step.label}
             </span>
           </li>
         );

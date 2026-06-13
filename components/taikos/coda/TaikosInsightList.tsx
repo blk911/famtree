@@ -12,9 +12,8 @@ export function TaikosInsightList({ insights, onRefresh }: Props) {
   if (insights.length === 0) return null;
 
   return (
-    <section className="taikos-insight-list">
+    <section className="taikos-insight-list taikos-insight-list--today">
       <h3 className="taikos-section-title">Relationship Discoveries</h3>
-      <p className="taikos-opp-list__hint">Relationship signals from your book — preview and act inline.</p>
       <div className="taikos-insight-list__items">
         {insights.slice(0, 4).map((insight) => (
           <TaikosInsightCard key={insight.id} insight={insight} onRefresh={onRefresh} />

@@ -2357,6 +2357,12 @@
   font-weight: 700;
 }
 
+.vmb-card-preview__edit--salutation {
+  font-size: 13px;
+  font-weight: 600;
+  color: #78716c;
+}
+
 .taikos-opp-card__next-layer {
   display: grid;
   gap: 10px;
@@ -2963,5 +2969,252 @@
     background: rgba(28, 25, 23, 0.32);
     backdrop-filter: blur(4px);
   }
+}
+
+/* Today page — title, greeting, prospect feed */
+.today-page-title {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e7e5e4;
+}
+
+.today-page-title__salon {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.today-page-title__heading h1 {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 800;
+  color: #292524;
+  line-height: 1.15;
+}
+
+.today-aios-sparkle--title {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font-size: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  vertical-align: baseline;
+}
+
+.today-page-title__subtitle {
+  margin: 8px 0 0;
+  max-width: 42rem;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #57534e;
+}
+
+.today-greeting-card {
+  margin-bottom: 24px;
+}
+
+.today-prospect-feed {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.today-prospect-feed .taikos-insight-list,
+.today-prospect-feed .taikos-opp-list--today {
+  margin: 0;
+}
+
+/* Today prospect cards — compact row + preview-revealed split */
+.taikos-prospect-card {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+}
+
+.taikos-prospect-card + .taikos-prospect-card,
+.taikos-insight-list__items > * + *,
+.taikos-opp-list__items > * + * {
+  margin-top: 10px;
+}
+
+.taikos-prospect-card__compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.taikos-prospect-card__compact-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.taikos-prospect-card__compact-copy {
+  min-width: 0;
+}
+
+.taikos-prospect-card__name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #292524;
+}
+
+.taikos-prospect-card__teaser {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #57534e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.taikos-prospect-card__confidence {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #78716c;
+}
+
+.taikos-prospect-card__compact-actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.taikos-prospect-card__split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .taikos-prospect-card__split--with-card {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    align-items: start;
+  }
+}
+
+.taikos-prospect-card__guide {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.taikos-prospect-card__guide-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: default;
+}
+
+.taikos-prospect-card__role {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #78716c;
+}
+
+.taikos-prospect-card__line {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #44403c;
+}
+
+.taikos-prospect-card__step-label {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #78716c;
+}
+
+.taikos-prospect-card__step {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #292524;
+}
+
+.taikos-prospect-card__why {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #57534e;
+}
+
+.taikos-prospect-card__why summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #78716c;
+}
+
+.taikos-prospect-card__why ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.taikos-prospect-card__card-col {
+  min-width: 0;
+}
+
+.taikos-prospect-card__card-col .vmb-card-preview {
+  max-width: 100%;
+  margin: 0;
+}
+
+.taikos-prospect-card__edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.taikos-prospect-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  align-items: center;
+}
+
+.taikos-prospect-card__actions--approved {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.taikos-opp-lifecycle--compact {
+  margin-bottom: 10px;
+  gap: 4px;
+}
+
+.taikos-opp-lifecycle--compact .taikos-opp-lifecycle__label {
+  display: none;
+}
+
+.taikos-opp-lifecycle--compact .taikos-opp-lifecycle__step {
+  gap: 0;
 }
 

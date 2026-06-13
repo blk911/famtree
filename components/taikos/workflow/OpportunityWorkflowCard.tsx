@@ -4,6 +4,10 @@ import { useMemo } from "react";
 import { CardPreview } from "@/components/vmb/cards/CardPreview";
 import { InlineDeliverablePreview } from "@/components/taikos/workflow/InlineDeliverablePreview";
 import { OpportunityLifecycle } from "@/components/taikos/workflow/OpportunityLifecycle";
+import {
+  TodayProspectCardLayout,
+  buildCompactLine,
+} from "@/components/taikos/workflow/TodayProspectCardLayout";
 import { useInlineActionWorkflow } from "@/components/taikos/workflow/useInlineActionWorkflow";
 import {
   clientNameFromOpportunity,
@@ -26,6 +30,7 @@ type Props = {
   analysisContext?: OpportunityAnalysisContext;
   goalTitle?: string;
   embedded?: boolean;
+  layout?: "today" | "standard";
   onRefresh?: () => void;
 };
 
@@ -36,6 +41,7 @@ export function OpportunityWorkflowCard({
   analysisContext,
   goalTitle,
   embedded,
+  layout = "standard",
   onRefresh,
 }: Props) {
   const intelligence = useMemo(
@@ -68,6 +74,23 @@ export function OpportunityWorkflowCard({
     sourceId: opportunity.opportunityId,
     onRefresh,
   });
+
+  if (layout === "today") {
+    return (
+      <TodayProspectCardLayout
+        displayName={displayName}
+        roleLabel={guide.roleLabel}
+        confidence={opportunity.confidence}
+        compactLine={buildCompactLine(guide.roleLabel, guide.bodyLines, guide.suggestedNextStep)}
+        bodyLines={guide.bodyLines}
+        suggestedNextStep={guide.suggestedNextStep}
+        evidence={intelligence.evidence}
+        cardPreview={cardPreview}
+        workflow={workflow}
+        showDeliverableDetail
+      />
+    );
+  }
 
   const terminal = workflow.stage === "queued" || workflow.stage === "skipped";
 

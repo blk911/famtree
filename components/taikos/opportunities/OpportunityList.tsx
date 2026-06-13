@@ -12,6 +12,7 @@ type Props = {
   insights?: TaikosInsight[];
   goals?: TaikosGoalListItem[];
   analysisContext?: OpportunityAnalysisContext;
+  todayLayout?: boolean;
   onRefresh?: () => void;
 };
 
@@ -20,6 +21,7 @@ export function OpportunityList({
   insights = [],
   goals = [],
   analysisContext,
+  todayLayout = false,
   onRefresh,
 }: Props) {
   if (summary.opportunities.length === 0) return null;
@@ -30,9 +32,13 @@ export function OpportunityList({
   }
 
   return (
-    <section className="taikos-opp-list">
-      <h3 className="taikos-section-title">Top Opportunities</h3>
-      <p className="taikos-opp-list__hint">Preview a suggested card, approve, and queue — all from Today.</p>
+    <section className={`taikos-opp-list${todayLayout ? " taikos-opp-list--today" : ""}`}>
+      {!todayLayout ? (
+        <>
+          <h3 className="taikos-section-title">Top Opportunities</h3>
+          <p className="taikos-opp-list__hint">Preview a suggested card, approve, and queue — all from Today.</p>
+        </>
+      ) : null}
       <div className="taikos-opp-list__items">
         {summary.opportunities.slice(0, 6).map((opp) => (
           <OpportunityWorkflowCard
@@ -41,6 +47,7 @@ export function OpportunityList({
             insight={insightForOpportunity(opp, insights)}
             goalTitle={goalTitleFor(opp.linkedGoalId)}
             analysisContext={analysisContext}
+            layout={todayLayout ? "today" : "standard"}
             onRefresh={onRefresh}
           />
         ))}

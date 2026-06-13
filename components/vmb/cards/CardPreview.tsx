@@ -8,7 +8,7 @@ type Props = {
   model: CardPreviewModel;
   editable?: boolean;
   compact?: boolean;
-  onChange?: (patch: Partial<Pick<CardPreviewModel, "title" | "subtitle" | "body" | "cta">>) => void;
+  onChange?: (patch: Partial<Pick<CardPreviewModel, "salutation" | "title" | "subtitle" | "body" | "cta">>) => void;
 };
 
 export function CardPreview({ model, editable, compact, onChange }: Props) {
