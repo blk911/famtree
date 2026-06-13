@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AiosCard } from "@/components/taikos/AiosCard";
 import { AiosQuestionInput } from "@/components/taikos/AiosQuestionInput";
-import { buildInlineAssistantView } from "@/lib/taikos/context/inline-assistant";
+import { buildTodayConversationLines } from "@/lib/taikos/context/today-conversation";
 import type { CodaSearchResult } from "@/lib/taikos/coda/types";
 import type { AiosContextPacket, AiosResponse } from "@/lib/taikos/types";
 
@@ -34,18 +34,16 @@ export function InlineAiosPanel({
   const [error, setError] = useState<string | null>(null);
   const closedRef = useRef(false);
 
-  const assistant = useMemo(
-    () => (context ? buildInlineAssistantView(context) : null),
-    [context],
-  );
+  const conversationLines = useMemo(() => {
+    if (!context?.codaSummary) return [];
+    return buildTodayConversationLines(context.codaSummary);
+  }, [context?.codaSummary]);
 
-  const introLine = useMemo(() => {
-    const name = operatorName.trim() || "there";
-    if (assistant && assistant.recommendations.length > 0) {
-      return `Hi ${name} — I found a few things worth looking at. Want me to show your strongest client opportunities?`;
-    }
-    return `Hi ${name} — I'm ready when you are. Ask about ${salonName}'s book or tap Show me for a quick read.`;
-  }, [assistant, operatorName, salonName]);
+  const opportunityCount = useMemo(() => {
+    const coda = context?.codaSummary;
+    if (!coda) return 0;
+    return Math.max(coda.opportunityCount ?? 0, coda.insightCount ?? 0, coda.insights?.length ?? 0);
+  }, [context?.codaSummary]);
 
   useEffect(() => {
     if (!autoCloseMs) return;
@@ -159,27 +157,26 @@ export function InlineAiosPanel({
     <section className="inline-aios-panel" aria-label="tAIkOS">
       {panelState === "open_intro" ? (
         <div className="inline-aios-panel__body">
-          {assistant && assistant.recommendations.length > 0 ? (
-            <div className="inline-aios-panel__insight-first">
-              <p className="inline-aios-panel__intel-label">tAIkOS insight</p>
-              <ul className="inline-aios-panel__recs">
-                {assistant.recommendations.slice(0, 3).map((rec) => (
-                  <li key={rec}>{rec}</li>
-                ))}
-              </ul>
-              {assistant.potentialValue > 0 ? (
-                <p className="inline-aios-panel__value">
-                  Estimated opportunity:{" "}
-                  <strong>+${assistant.potentialValue.toLocaleString()}</strong>
-                </p>
-              ) : null}
-              <p className="inline-aios-panel__soft">
-                Suggested cards appear on each opportunity below — preview before you approve.
-              </p>
-            </div>
+          {opportunityCount > 0 ? (
+            <p className="inline-aios-panel__message">
+              I found {opportunityCount} relationship{" "}
+              {opportunityCount === 1 ? "opportunity" : "opportunities"} worth a look below.
+            </p>
           ) : (
-            <p className="inline-aios-panel__message">{introLine}</p>
+            <p className="inline-aios-panel__message">
+              I&apos;m ready when you are — ask about {salonName}&apos;s book or open an opportunity
+              card below.
+            </p>
           )}
+          {conversationLines.length > 0 ? (
+            <div className="inline-aios-panel__conversation">
+              {conversationLines.map((line) => (
+                <p key={line} className="inline-aios-panel__soft">
+                  {line}
+                </p>
+              ))}
+            </div>
+          ) : null}
           {!context ? (
             <p className="inline-aios-panel__soft">Guidance will sharpen once Today finishes loading your book summary.</p>
           ) : null}
@@ -221,29 +218,19 @@ export function InlineAiosPanel({
 
           {!loading && !error && !response && !searchResult ? (
             <>
-              {assistant?.objective ? (
-                <p className="inline-aios-panel__message">
-                  <strong>Objective:</strong> {assistant.objective}
-                </p>
-              ) : null}
-              {assistant && assistant.recommendations.length > 0 ? (
-                <>
-                  <p className="inline-aios-panel__intel-label">tAIkOS insight</p>
-                  <ul className="inline-aios-panel__recs">
-                    {assistant.recommendations.map((rec) => (
-                      <li key={rec}>{rec}</li>
-                    ))}
-                  </ul>
-                </>
+              {conversationLines.length > 0 ? (
+                <div className="inline-aios-panel__conversation">
+                  {conversationLines.map((line) => (
+                    <p key={line} className="inline-aios-panel__message">
+                      {line}
+                    </p>
+                  ))}
+                </div>
               ) : (
-                <p className="inline-aios-panel__soft">No ranked opportunities yet — check back after your book refresh.</p>
-              )}
-              {assistant && assistant.potentialValue > 0 ? (
-                <p className="inline-aios-panel__value">
-                  Estimated opportunity value:{" "}
-                  <strong>+${assistant.potentialValue.toLocaleString()}</strong>
+                <p className="inline-aios-panel__soft">
+                  No ranked opportunities yet — check back after your book refresh.
                 </p>
-              ) : null}
+              )}
               <p className="inline-aios-panel__soft">
                 Open an opportunity below to preview its suggested card before you approve.
               </p>

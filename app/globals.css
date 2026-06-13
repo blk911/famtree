@@ -1378,11 +1378,21 @@
 }
 
 .vmb-today-coda-banner {
-  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 18px 18px 16px;
   border-radius: 16px;
   border: 1px solid #fbcfe8;
   background: linear-gradient(145deg, #fff 0%, #fdf2f8 100%);
   margin-bottom: 8px;
+  min-height: 220px;
+}
+
+.vmb-today-coda-banner__content {
+  flex: 1 1 auto;
+  display: grid;
+  gap: 8px;
 }
 
 .vmb-today-coda-banner__hello {
@@ -1402,6 +1412,37 @@
   margin: 8px 0 0;
   font-size: 13px;
   color: #78716c;
+}
+
+.vmb-today-coda-banner__focus {
+  margin-top: 4px;
+}
+
+.vmb-today-coda-banner__focus-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #78716c;
+}
+
+.vmb-today-coda-banner__focus-value {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #44403c;
+}
+
+.vmb-today-coda-banner__conversation {
+  display: grid;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.vmb-today-coda-banner__conversation-line {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #57534e;
 }
 
 .vmb-today-flow-debug {
@@ -1535,6 +1576,11 @@
   border-top: 1px dashed #e7e5e4;
 }
 
+.inline-aios-panel__conversation {
+  display: grid;
+  gap: 6px;
+}
+
 .today-inline-aios {
   margin: 12px 0 20px;
   padding: 16px 18px;
@@ -1600,7 +1646,9 @@
 }
 
 .vmb-today-coda-banner__search {
-  margin-top: 14px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px dashed #f9a8d4;
   display: grid;
   gap: 8px;
 }
@@ -1997,6 +2045,72 @@
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px solid #e7e5e4;
+}
+
+.taikos-opp-card__split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+@media (min-width: 768px) {
+  .taikos-opp-card__split {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    align-items: start;
+  }
+}
+
+.taikos-opp-card__guide {
+  display: grid;
+  gap: 8px;
+}
+
+.taikos-opp-card__guide-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.taikos-opp-card__guide-line {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #44403c;
+}
+
+.taikos-opp-card__guide-step-label {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #78716c;
+}
+
+.taikos-opp-card__guide-step {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #292524;
+}
+
+.taikos-opp-card__card-col {
+  min-width: 0;
+}
+
+.taikos-opp-card__card-col .vmb-card-preview {
+  max-width: 100%;
+}
+
+.taikos-opp-card__meta {
+  margin-bottom: 4px;
+}
+
+.taikos-opp-card__reason--compact {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #78716c;
 }
 
 .taikos-opp-card__suggested-card-head {

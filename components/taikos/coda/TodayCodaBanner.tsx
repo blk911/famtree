@@ -1,22 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { CodaSearchResult, CodaSummary } from "@/lib/taikos/coda/types";
-import { phaseLabel } from "@/lib/taikos/coda/context-engine";
+import {
+  buildTodayConversationLines,
+  buildTodayGreeting,
+  relationshipOpportunityCount,
+} from "@/lib/taikos/context/today-conversation";
 
 type Props = {
-  greeting: string;
   coda: CodaSummary;
+  operatorName?: string;
+  salonName?: string;
 };
 
-export function TodayCodaBanner({ greeting, coda }: Props) {
+export function TodayCodaBanner({ coda, operatorName, salonName }: Props) {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<CodaSearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const ownerFirst = coda?.context?.ownerName?.split(/\s+/)[0] || coda?.context?.ownerName || "there";
-  const count = Math.max(coda?.insightCount ?? 0, coda?.opportunityCount ?? 0);
+  const headline = useMemo(
+    () => buildTodayGreeting(operatorName ?? coda.context?.ownerName, salonName),
+    [operatorName, salonName, coda.context?.ownerName],
+  );
+  const count = relationshipOpportunityCount(coda);
+  const focusLabel = coda?.objective?.label ?? "Make today's relationship moves";
+  const conversationLines = useMemo(() => buildTodayConversationLines(coda), [coda]);
 
   async function runSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -48,15 +58,45 @@ export function TodayCodaBanner({ greeting, coda }: Props) {
 
   return (
     <section className="vmb-today-coda-banner">
-      <div className="vmb-today-coda-banner__greeting">
-        <p className="vmb-today-coda-banner__hello">✨ Hi {ownerFirst}</p>
+      <div className="vmb-today-coda-banner__content">
+        <p className="vmb-today-coda-banner__hello">{headline}</p>
         <p className="vmb-today-coda-banner__summary">
-          We found {count} {count === 1 ? "opportunity" : "opportunities"} today.
+          I found {count} relationship {count === 1 ? "opportunity" : "opportunities"} worth your
+          attention.
         </p>
-        <p className="vmb-today-coda-banner__phase">
-          {phaseLabel(coda?.context?.currentPhase ?? "onboarding")} ·{" "}
-          <strong>{coda?.objective?.label ?? "Make Today's Relationship Moves"}</strong>
-        </p>
+        <div className="vmb-today-coda-banner__focus">
+          <p className="vmb-today-coda-banner__focus-label">Today&apos;s focus:</p>
+          <p className="vmb-today-coda-banner__focus-value">{focusLabel}</p>
+        </div>
+        <div className="vmb-today-coda-banner__conversation">
+          {conversationLines.map((line) => (
+            <p key={line} className="vmb-today-coda-banner__conversation-line">
+              {line}
+            </p>
+          ))}
+        </div>
+
+        {error ? <p className="taikos-inline-workflow__error">{error}</p> : null}
+
+        {results && results.matches.length > 0 ? (
+          <div className="vmb-today-coda-banner__results">
+            <p className="vmb-today-coda-banner__results-label">From your book</p>
+            <ul className="vmb-today-coda-banner__results-list">
+              {results.matches.map((match) => (
+                <li key={match.clientName}>
+                  <strong>{match.clientName}</strong>
+                  <span> · {match.matchReason}</span>
+                  {match.lastService ? <span> · {match.lastService}</span> : null}
+                  {match.lastVisit ? <span> · {match.lastVisit}</span> : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {results && results.matches.length === 0 ? (
+          <p className="vmb-today-coda-banner__no-results">No matches in your book for that question.</p>
+        ) : null}
       </div>
 
       <form className="vmb-today-coda-banner__search" onSubmit={(e) => void runSearch(e)}>
@@ -77,30 +117,6 @@ export function TodayCodaBanner({ greeting, coda }: Props) {
           </button>
         </div>
       </form>
-
-      {error ? <p className="taikos-inline-workflow__error">{error}</p> : null}
-
-      {results && results.matches.length > 0 ? (
-        <div className="vmb-today-coda-banner__results">
-          <p className="vmb-today-coda-banner__results-label">From your book</p>
-          <ul className="vmb-today-coda-banner__results-list">
-            {results.matches.map((match) => (
-              <li key={match.clientName}>
-                <strong>{match.clientName}</strong>
-                <span> · {match.matchReason}</span>
-                {match.lastService ? <span> · {match.lastService}</span> : null}
-                {match.lastVisit ? <span> · {match.lastVisit}</span> : null}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      {results && results.matches.length === 0 ? (
-        <p className="vmb-today-coda-banner__no-results">No matches in your book for that question.</p>
-      ) : null}
-
-      <p className="vmb-today__greeting vmb-today__greeting--sub">{greeting}</p>
     </section>
   );
 }

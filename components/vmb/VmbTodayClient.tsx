@@ -18,7 +18,7 @@ import type { TaikosDraftSummary } from "@/lib/taikos/drafts/types";
 import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
 import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
 import type { TaikosQueueSummary } from "@/lib/taikos/queue/types";
-import { greetingForOperator } from "@/lib/taikos/context/greeting";
+import { buildTodayGreeting } from "@/lib/taikos/context/today-conversation";
 import type { AiosContextPacket } from "@/lib/taikos/types";
 import type { VmbFullFlowDebug } from "@/lib/vmb/debug-full-flow";
 import { logTodayLockBranch, logTodayLockRendered } from "@/lib/vmb/today-lock-debug";
@@ -129,7 +129,7 @@ export function VmbTodayClient({
       if (ctxRes.ok && ctxJson.ok && ctxJson.data) {
         const slice = ctxJson.data;
         setData({
-          greeting: greetingForOperator(slice.salonName ?? salonName, slice.operatorName ?? owner),
+          greeting: buildTodayGreeting(slice.operatorName ?? owner, slice.salonName ?? salonName),
           context: slice,
           codaSummary: slice.codaSummary ?? codaSummary,
           goalSummary: slice.goalSummary ?? EMPTY_GOAL_SUMMARY,
@@ -140,7 +140,7 @@ export function VmbTodayClient({
         });
       } else {
         setData({
-          greeting: greetingForOperator(salonName, owner),
+          greeting: buildTodayGreeting(owner, salonName),
           context: null,
           codaSummary,
           goalSummary: EMPTY_GOAL_SUMMARY,
@@ -152,7 +152,7 @@ export function VmbTodayClient({
       }
     } catch {
       setData({
-        greeting: greetingForOperator(salonName, operatorName),
+        greeting: buildTodayGreeting(operatorName, salonName),
         context: null,
         codaSummary: emptyCodaSummary(operatorName),
         goalSummary: EMPTY_GOAL_SUMMARY,
@@ -245,7 +245,7 @@ export function VmbTodayClient({
 
   const codaSummary = data?.codaSummary ?? emptyCodaSummary(operatorName);
   const insights = codaSummary.insights ?? [];
-  const greeting = data?.greeting ?? greetingForOperator(salonName, operatorName);
+  const greeting = data?.greeting ?? buildTodayGreeting(operatorName, salonName);
 
   return (
     <VmbPageFrame width="standard" headerless>
@@ -284,7 +284,7 @@ export function VmbTodayClient({
           ) : null}
         </div>
         <p className="vmb-page-frame__subtitle">
-          Relationship guidance — context, objective, discovery, and your next action.
+          tAIkOS guides your next relationship moves — preview a card, approve, and queue when ready.
         </p>
 
         {aiosOpen && todayUnlocked ? (
@@ -343,7 +343,11 @@ export function VmbTodayClient({
             <p className="vmb-page-state">Loading your operating brief…</p>
           ) : null}
 
-          <TodayCodaBanner greeting={greeting} coda={codaSummary} />
+          <TodayCodaBanner
+            coda={codaSummary}
+            operatorName={operatorName}
+            salonName={salonName}
+          />
 
           <TaikosInsightList insights={insights} onRefresh={loadContext} />
 

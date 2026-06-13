@@ -1,22 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { CardPreview } from "@/components/vmb/cards/CardPreview";
 import { InlineDeliverablePreview } from "@/components/taikos/workflow/InlineDeliverablePreview";
 import { OpportunityLifecycle } from "@/components/taikos/workflow/OpportunityLifecycle";
 import { useInlineActionWorkflow } from "@/components/taikos/workflow/useInlineActionWorkflow";
-import { TaikosInsightBlock } from "@/components/taikos/coda/TaikosInsightBlock";
 import {
   clientNameFromOpportunity,
   reasonFromOpportunity,
-  suggestedActionLabel,
 } from "@/lib/taikos/workflow/opportunity-display";
 import type { TaikosInsight } from "@/lib/taikos/coda/types";
 import type { TaikosOpportunity } from "@/lib/taikos/opportunities/types";
+import { buildOpportunityGuideCopy } from "@/lib/taikos/context/today-conversation";
 import { buildCardPreview } from "@/lib/vmb/cards/card-template-engine";
 import {
   buildOpportunityIntelligence,
-  suggestedCardTypeLabel,
   type OpportunityAnalysisContext,
   type OpportunityIntelligence,
 } from "@/lib/vmb/opportunities/opportunity-intelligence";
@@ -40,22 +38,29 @@ export function OpportunityWorkflowCard({
   embedded,
   onRefresh,
 }: Props) {
-  const [cardExpanded, setCardExpanded] = useState(true);
-
   const intelligence = useMemo(
     () => intelligenceProp ?? buildOpportunityIntelligence(opportunity, analysisContext),
     [intelligenceProp, opportunity, analysisContext],
+  );
+
+  const clientName = clientNameFromOpportunity(opportunity);
+  const displayName = clientName.split(/\s+/)[0] || clientName;
+  const reason = reasonFromOpportunity(opportunity);
+
+  const guide = useMemo(
+    () => buildOpportunityGuideCopy(intelligence, clientName, insight?.subjectLabel),
+    [intelligence, clientName, insight?.subjectLabel],
   );
 
   const cardPreview = useMemo(
     () =>
       buildCardPreview({
         cardType: intelligence.suggestedCardType,
-        recipientName: intelligence.subjectName ?? clientNameFromOpportunity(opportunity),
+        recipientName: intelligence.subjectName ?? clientName,
         salonName: analysisContext?.salonName,
         ticketValue: opportunity.estimatedValue,
       }),
-    [intelligence, opportunity, analysisContext?.salonName],
+    [intelligence, opportunity, clientName, analysisContext?.salonName],
   );
 
   const workflow = useInlineActionWorkflow({
@@ -64,9 +69,6 @@ export function OpportunityWorkflowCard({
     onRefresh,
   });
 
-  const clientName = clientNameFromOpportunity(opportunity);
-  const reason = reasonFromOpportunity(opportunity);
-  const actionLabel = suggestedActionLabel(opportunity);
   const terminal = workflow.stage === "queued" || workflow.stage === "skipped";
 
   return (
@@ -76,7 +78,7 @@ export function OpportunityWorkflowCard({
       <OpportunityLifecycle stage={workflow.stage} />
 
       {!embedded ? (
-        <>
+        <div className="taikos-opp-card__meta">
           <div className="taikos-opp-card__head">
             <h4 className="taikos-opp-card__title">{opportunity.title}</h4>
             <span
@@ -85,76 +87,45 @@ export function OpportunityWorkflowCard({
               {opportunity.priority}
             </span>
           </div>
-          <p className="taikos-opp-card__client">
-            Client: <strong>{clientName}</strong>
-          </p>
-          <p className="taikos-opp-card__reason">
-            Reason: <span>{reason}</span>
-          </p>
           <p className="taikos-opp-card__value">
             Value: <strong>${opportunity.estimatedValue.toLocaleString()}</strong>
             <span className="taikos-opp-card__conf"> · {opportunity.confidence}% confidence</span>
           </p>
           {goalTitle ? <p className="taikos-opp-card__goal">Goal: {goalTitle}</p> : null}
-          {insight ? <TaikosInsightBlock insight={insight} /> : null}
-        </>
+          <p className="taikos-opp-card__reason taikos-opp-card__reason--compact">
+            {reason}
+          </p>
+        </div>
       ) : null}
 
-      <div className="taikos-opp-card__intel">
-        <div className="taikos-opp-card__intel-section">
-          <p className="taikos-opp-card__intel-label">tAIkOS insight</p>
-          <p className="taikos-opp-card__intel-title">{intelligence.insightTitle}</p>
-          <p className="taikos-opp-card__intel-copy">{intelligence.whatTaikosSees}</p>
-        </div>
-        <div className="taikos-opp-card__intel-section">
-          <p className="taikos-opp-card__intel-label">Why this matters</p>
-          <p className="taikos-opp-card__intel-copy">{intelligence.whyThisMatters}</p>
-        </div>
-        <div className="taikos-opp-card__intel-section">
-          <p className="taikos-opp-card__intel-label">Suggested move</p>
-          <p className="taikos-opp-card__intel-copy">{intelligence.suggestedRelationshipMove}</p>
-          <p className="taikos-opp-card__intel-card-type">
-            {!embedded ? (
-              <>
-                Action: <strong>{actionLabel}</strong>
-                {" · "}
-              </>
-            ) : null}
-            Card: <strong>{suggestedCardTypeLabel(intelligence.suggestedCardType)}</strong>
-          </p>
-        </div>
-        {intelligence.evidence.length > 0 ? (
-          <details className="taikos-opp-card__intel-evidence">
-            <summary>Evidence</summary>
-            <ul>
-              {intelligence.evidence.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </details>
-        ) : null}
-      </div>
+      <div className="taikos-opp-card__split">
+        <div className="taikos-opp-card__guide">
+          <div className="taikos-opp-card__guide-head">
+            <div>
+              <h4 className="taikos-insight-card__name">{displayName}</h4>
+              <p className="taikos-insight-card__label">{guide.roleLabel}</p>
+            </div>
+            <span className="taikos-insight-card__confidence">{opportunity.confidence}%</span>
+          </div>
 
-      <section className="taikos-opp-card__suggested-card">
-        <div className="taikos-opp-card__suggested-card-head">
-          <p className="taikos-opp-card__intel-label">Suggested card</p>
-          <button
-            type="button"
-            className="taikos-opp-card__card-toggle"
-            onClick={() => setCardExpanded((open) => !open)}
-            aria-expanded={cardExpanded}
-          >
-            {cardExpanded ? "Collapse" : "Expand"}
-          </button>
+          {guide.bodyLines.map((line) => (
+            <p key={line} className="taikos-opp-card__guide-line">
+              {line}
+            </p>
+          ))}
+
+          <p className="taikos-opp-card__guide-step-label">Suggested next step:</p>
+          <p className="taikos-opp-card__guide-step">{guide.suggestedNextStep}</p>
         </div>
-        {cardExpanded ? (
-          <CardPreview model={cardPreview} editable={workflow.stage === "previewed"} compact={embedded} />
-        ) : (
-          <p className="taikos-opp-card__card-collapsed">
-            {cardPreview.title} — tap Expand to preview the card.
-          </p>
-        )}
-      </section>
+
+        <div className="taikos-opp-card__card-col">
+          <CardPreview
+            model={cardPreview}
+            editable={workflow.stage === "previewed"}
+            compact={embedded}
+          />
+        </div>
+      </div>
 
       {workflow.stage === "detected" ? (
         <div className="taikos-opp-card__actions">
@@ -162,10 +133,7 @@ export function OpportunityWorkflowCard({
             type="button"
             className="taikos-opp-card__cta"
             disabled={workflow.busy}
-            onClick={() => {
-              setCardExpanded(true);
-              void workflow.runPreview();
-            }}
+            onClick={() => void workflow.runPreview()}
           >
             {workflow.busy ? "Loading…" : "Preview"}
           </button>

@@ -32,7 +32,7 @@ export function OpportunityList({
   return (
     <section className="taikos-opp-list">
       <h3 className="taikos-section-title">Top Opportunities</h3>
-      <p className="taikos-opp-list__hint">Preview → Approve → Queue without leaving Today.</p>
+      <p className="taikos-opp-list__hint">Preview a suggested card, approve, and queue — all from Today.</p>
       <div className="taikos-opp-list__items">
         {summary.opportunities.slice(0, 6).map((opp) => (
           <OpportunityWorkflowCard

@@ -14,7 +14,7 @@ export function TaikosInsightList({ insights, onRefresh }: Props) {
   return (
     <section className="taikos-insight-list">
       <h3 className="taikos-section-title">Relationship Discoveries</h3>
-      <p className="taikos-opp-list__hint">Context → Objective → Discovery → Action. Preview inline without leaving Today.</p>
+      <p className="taikos-opp-list__hint">Relationship signals from your book — preview and act inline.</p>
       <div className="taikos-insight-list__items">
         {insights.slice(0, 4).map((insight) => (
           <TaikosInsightCard key={insight.id} insight={insight} onRefresh={onRefresh} />
