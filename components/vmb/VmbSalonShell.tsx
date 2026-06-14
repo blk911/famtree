@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import { VmbHelpMenu } from "@/components/vmb/onboarding/VmbHelpMenu";
 import { VmbSummaryRail } from "@/components/vmb/VmbSummaryRail";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import { VMB_SALON_MOBILE_NAV_IDS, VMB_SALON_NAV, type VmbSalonNavItem } from "@/lib/vmb/salon-nav";
@@ -155,6 +156,7 @@ export function VmbSalonShell({ children }: Props) {
                 {salonName}
               </span>
             </div>
+            <VmbHelpMenu />
           </div>
         </header>
 

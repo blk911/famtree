@@ -49,6 +49,7 @@
     "test:vmb:workspace": "tsx scripts/test-vmb-workspace.ts",
     "test:vmb:flow": "tsx scripts/test-vmb-flow.ts",
     "test:vmb:book-state": "tsx scripts/test-vmb-book-state.ts",
+    "test:vmb:launch-guide": "tsx scripts/test-vmb-launch-guide.ts",
     "test:vmb:active-book-resolution": "tsx scripts/test-vmb-active-book-resolution.ts",
     "test:vmb:active-book-stickiness": "tsx scripts/test-vmb-active-book-stickiness.ts",
     "test:vmb:invite-card-queue-persistence": "tsx scripts/test-vmb-invite-card-queue-persistence.ts",

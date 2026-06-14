@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CodaSearchResult, CodaSummary } from "@/lib/taikos/coda/types";
 import { SALON_QA_SUGGESTED_CHIPS, salonQaModeBadge } from "@/lib/taikos/salon-qa/salon-query-catalog";
 import {
@@ -19,6 +19,8 @@ import {
   relationshipOpportunityCount,
 } from "@/lib/taikos/context/today-conversation";
 
+export const TODAY_CODA_SEARCH_INPUT_ID = "today-coda-search";
+
 type Props = {
   coda: CodaSummary;
   operatorName?: string;
@@ -28,6 +30,7 @@ type Props = {
   onPreviewFirstCard?: () => void;
   onPreviewSuggestedCard?: (action: SalonQaPreviewCardAction) => void;
   onSubmitFollowUp?: (question: string) => void;
+  onAnswerActiveChange?: (active: boolean) => void;
 };
 
 export function TodayCodaBanner({
@@ -39,6 +42,7 @@ export function TodayCodaBanner({
   onPreviewFirstCard,
   onPreviewSuggestedCard,
   onSubmitFollowUp,
+  onAnswerActiveChange,
 }: Props) {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -58,6 +62,10 @@ export function TodayCodaBanner({
     () => normalizeSalonQaSuggestedAction(qaAnswer?.suggestedAction),
     [qaAnswer?.suggestedAction],
   );
+
+  useEffect(() => {
+    onAnswerActiveChange?.(!!qaAnswer);
+  }, [qaAnswer, onAnswerActiveChange]);
 
   async function runSalonQa(questionText: string) {
     const trimmed = questionText.trim();
@@ -293,7 +301,7 @@ export function TodayCodaBanner({
         </div>
         <div className="vmb-today-coda-banner__search-row">
           <input
-            id="today-coda-search"
+            id={TODAY_CODA_SEARCH_INPUT_ID}
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ActivityTimeline } from "@/components/taikos/activity/ActivityTimeline";
 import { InlineAiosPanel } from "@/components/taikos/InlineAiosPanel";
 import { TaikosInsightList } from "@/components/taikos/coda/TaikosInsightList";
-import { TodayCodaBanner } from "@/components/taikos/coda/TodayCodaBanner";
+import { TodayCodaBanner, TODAY_CODA_SEARCH_INPUT_ID } from "@/components/taikos/coda/TodayCodaBanner";
 import { SalonQaPreviewModal } from "@/components/taikos/coda/SalonQaPreviewModal";
 import { GoalSummary } from "@/components/taikos/goals/GoalSummary";
 import { OpportunityList } from "@/components/taikos/opportunities/OpportunityList";
@@ -13,6 +13,10 @@ import { TodayProspectFeedProvider } from "@/components/taikos/workflow/TodayPro
 import { TodayDraftPanel } from "@/components/taikos/workflow/TodayDraftPanel";
 import { TodayQueuePanel } from "@/components/taikos/workflow/TodayQueuePanel";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
+import { LaunchGuideBubble } from "@/components/vmb/onboarding/LaunchGuideBubble";
+import { LaunchGuideOverlay } from "@/components/vmb/onboarding/LaunchGuideOverlay";
+import { LaunchGuideSummaryModal } from "@/components/vmb/onboarding/LaunchGuideSummaryModal";
+import { TaikosAskReminder } from "@/components/vmb/onboarding/TaikosAskReminder";
 import { emptyCodaSummary } from "@/lib/taikos/coda/defaults";
 import type { TaikosActivitySummary } from "@/lib/taikos/activity/activity-types";
 import type { CodaSummary } from "@/lib/taikos/coda/types";
@@ -24,6 +28,12 @@ import type { TaikosQueueSummary } from "@/lib/taikos/queue/types";
 import { buildTodayGreeting } from "@/lib/taikos/context/today-conversation";
 import type { AiosContextPacket } from "@/lib/taikos/types";
 import type { VmbFullFlowDebug } from "@/lib/vmb/debug-full-flow";
+import { useVmbLaunchGuide } from "@/lib/vmb/onboarding/use-vmb-launch-guide";
+import {
+  LAUNCH_GUIDE_STEPS,
+  LAUNCH_GUIDE_TOTAL_STEPS,
+  shouldShowTaikosReminder,
+} from "@/lib/vmb/onboarding/vmb-launch-guide";
 import { logTodayLockBranch, logTodayLockRendered } from "@/lib/vmb/today-lock-debug";
 
 type TodayData = {
@@ -107,6 +117,7 @@ export function VmbTodayClient({
   );
   const [previewFirstCardSignal, setPreviewFirstCardSignal] = useState(0);
   const [qaPreviewAction, setQaPreviewAction] = useState<SalonQaPreviewCardAction | null>(null);
+  const [hasActiveTaikosAnswer, setHasActiveTaikosAnswer] = useState(false);
 
   useEffect(() => {
     console.error("[TODAY-MOUNT]", {
@@ -207,6 +218,12 @@ export function VmbTodayClient({
   }, [hasCompletedFirstIngest, activeAnalysisId]);
 
   const todayUnlocked = hasCompletedFirstIngest;
+  const launchGuide = useVmbLaunchGuide(todayUnlocked);
+  const showTaikosReminder = shouldShowTaikosReminder({
+    hasActiveBook: todayUnlocked,
+    hasActiveAnswer: hasActiveTaikosAnswer,
+    guideVisible: launchGuide.visible,
+  });
   const debugWouldUnlock = flowDebug?.todayLoader.wouldUnlockToday ?? wouldUnlockToday;
   const debugLockReason = flowDebug?.todayLoader.lockReason ?? lockReason;
   const debugAnalysisId =
@@ -336,6 +353,12 @@ export function VmbTodayClient({
 
           <div className="today-page-title">
             <div className="today-page-title__salon">{salonName}</div>
+            <TaikosAskReminder
+              visible={showTaikosReminder}
+              onFocusInput={() => {
+                document.getElementById(TODAY_CODA_SEARCH_INPUT_ID)?.focus();
+              }}
+            />
             <div className="today-page-title__heading">
               <h1>
                 Today{" "}
@@ -373,8 +396,30 @@ export function VmbTodayClient({
               onQuestionAnswer={setActiveQuestionResult}
               onPreviewFirstCard={() => setPreviewFirstCardSignal((n) => n + 1)}
               onPreviewSuggestedCard={setQaPreviewAction}
+              onAnswerActiveChange={setHasActiveTaikosAnswer}
             />
           </div>
+
+          {launchGuide.showBubble ? (
+            <LaunchGuideOverlay>
+              <LaunchGuideBubble
+                step={LAUNCH_GUIDE_STEPS[launchGuide.currentStep - 1]!}
+                stepNumber={launchGuide.currentStep}
+                totalSteps={LAUNCH_GUIDE_TOTAL_STEPS}
+                onNext={launchGuide.nextStep}
+                onBack={launchGuide.currentStep > 1 ? launchGuide.backStep : undefined}
+                onSkip={launchGuide.skipGuide}
+              />
+            </LaunchGuideOverlay>
+          ) : null}
+
+          <LaunchGuideSummaryModal
+            open={launchGuide.showSummary}
+            onGotIt={launchGuide.finishGuide}
+            onShowAgain={() => {
+              launchGuide.restartGuide();
+            }}
+          />
 
           <SalonQaPreviewModal
             open={!!qaPreviewAction}

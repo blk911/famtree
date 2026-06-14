@@ -3742,3 +3742,238 @@
   width: min(1040px, 100%);
 }
 
+.vmb-launch-guide-overlay {
+  position: fixed;
+  top: 88px;
+  right: 20px;
+  z-index: 40;
+  pointer-events: none;
+  max-width: min(360px, calc(100vw - 32px));
+}
+
+.vmb-launch-guide-overlay__panel {
+  pointer-events: auto;
+}
+
+.vmb-launch-guide-bubble {
+  border: 1px solid #e7e5e4;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(28, 25, 23, 0.08);
+  padding: 16px;
+}
+
+.vmb-launch-guide-bubble__step {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-launch-guide-bubble__title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  line-height: 1.25;
+  color: #1c1917;
+}
+
+.vmb-launch-guide-bubble__body,
+.vmb-launch-guide-bubble__hint {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #44403c;
+}
+
+.vmb-launch-guide-bubble__hint {
+  color: #9d174d;
+  font-weight: 600;
+}
+
+.vmb-launch-guide-bubble__examples {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #57534e;
+}
+
+.vmb-launch-guide-bubble__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.vmb-launch-guide-bubble__btn {
+  border: 1px solid #9d174d;
+  background: #9d174d;
+  color: #fff;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vmb-launch-guide-bubble__btn--ghost {
+  background: #fff;
+  color: #78716c;
+  border-color: #e7e5e4;
+}
+
+.vmb-launch-guide-summary {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(250, 248, 245, 0.35);
+}
+
+.vmb-launch-guide-summary__card {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border: 1px solid #e7e5e4;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(28, 25, 23, 0.12);
+  padding: 20px;
+}
+
+.vmb-launch-guide-summary__title {
+  margin: 0 0 12px;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.vmb-launch-guide-summary__body {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #44403c;
+}
+
+.vmb-launch-guide-summary__examples {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #57534e;
+}
+
+.vmb-launch-guide-summary__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #78716c;
+}
+
+.vmb-launch-guide-summary__footer a,
+.vmb-launch-guide-summary__link {
+  color: #9d174d;
+  font-weight: 600;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.vmb-launch-guide-summary__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: #44403c;
+}
+
+.vmb-launch-guide-summary__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.vmb-launch-guide-summary__btn {
+  border: 1px solid #9d174d;
+  background: #9d174d;
+  color: #fff;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vmb-launch-guide-summary__btn--ghost {
+  background: #fff;
+  color: #78716c;
+  border-color: #e7e5e4;
+}
+
+.vmb-taikos-ask-reminder {
+  display: inline-flex;
+  margin: 0 0 8px;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9d174d;
+  cursor: pointer;
+}
+
+.vmb-help-menu {
+  position: relative;
+}
+
+.vmb-help-menu__trigger {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  color: #78716c;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vmb-help-menu__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 160px;
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(28, 25, 23, 0.08);
+  padding: 6px;
+  z-index: 35;
+}
+
+.vmb-help-menu__item {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #44403c;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.vmb-help-menu__item:hover {
+  background: #fafaf9;
+  color: #9d174d;
+}
+
