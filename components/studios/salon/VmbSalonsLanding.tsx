@@ -68,10 +68,6 @@ const HERO_VIDEO = {
     "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=75",
 };
 
-function scrollToId(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
 const PROVIDER_OPTIONS = [
   { value: "", label: "Select your booking platform" },
   { value: "glossgenius", label: "GlossGenius" },
@@ -197,10 +193,10 @@ export function VmbSalonsLanding() {
               <li>Start with a 30-day free trial.</li>
             </ul>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-              <button
-                type="button"
-                onClick={() => scrollToId("vmb-trial")}
+              <Link
+                href="/vmb/login"
                 style={{
+                  display: "inline-block",
                   padding: "14px 24px",
                   borderRadius: 12,
                   border: "none",
@@ -208,11 +204,11 @@ export function VmbSalonsLanding() {
                   color: "#fff",
                   fontSize: 15,
                   fontWeight: 800,
-                  cursor: "pointer",
+                  textDecoration: "none",
                 }}
               >
                 Start Free Trial
-              </button>
+              </Link>
               <Link
                 href="/vmb/demo"
                 style={{
@@ -227,7 +223,7 @@ export function VmbSalonsLanding() {
                   textDecoration: "none",
                 }}
               >
-                See How VMB Works
+                View Demo
               </Link>
             </div>
           </div>
@@ -567,7 +563,7 @@ export function VmbSalonsLanding() {
               Explore AIH Studios
             </Link>
             {" · "}
-            <Link href="/login" style={{ color: ACCENT, fontWeight: 700 }}>
+            <Link href="/vmb/login" style={{ color: ACCENT, fontWeight: 700 }}>
               Sign in
             </Link>
           </p>

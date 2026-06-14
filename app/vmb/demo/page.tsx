@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { VmbDemoBootstrapClient } from "@/components/vmb/VmbDemoBootstrapClient";
 
-export default function VmbDemoRedirect() {
-  redirect("/vmb/dashboard");
+export default function VmbDemoPage() {
+  return <VmbDemoBootstrapClient />;
 }

@@ -152,7 +152,7 @@ export function VmbLanding() {
             </ul>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
               <Link
-                href="/vmb/start"
+                href="/vmb/login"
                 style={{
                   display: "inline-block",
                   padding: "14px 24px",
@@ -181,7 +181,7 @@ export function VmbLanding() {
                   textDecoration: "none",
                 }}
               >
-                See How VMB Works
+                View Demo
               </Link>
             </div>
           </div>
@@ -503,7 +503,7 @@ export function VmbLanding() {
               Explore AIH Studios
             </Link>
             {" · "}
-            <Link href="/login" style={{ color: ACCENT, fontWeight: 700 }}>
+            <Link href="/vmb/login" style={{ color: ACCENT, fontWeight: 700 }}>
               Sign in
             </Link>
           </p>
