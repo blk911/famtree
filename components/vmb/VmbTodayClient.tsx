@@ -29,6 +29,7 @@ import { buildTodayGreeting } from "@/lib/taikos/context/today-conversation";
 import type { AiosContextPacket } from "@/lib/taikos/types";
 import type { VmbFullFlowDebug } from "@/lib/vmb/debug-full-flow";
 import { useVmbLaunchGuide } from "@/lib/vmb/onboarding/use-vmb-launch-guide";
+import { performLaunchGuideCta } from "@/lib/vmb/onboarding/launch-guide-targets";
 import {
   LAUNCH_GUIDE_STEPS,
   LAUNCH_GUIDE_TOTAL_STEPS,
@@ -401,12 +402,18 @@ export function VmbTodayClient({
           </div>
 
           {launchGuide.showBubble ? (
-            <LaunchGuideOverlay>
+            <LaunchGuideOverlay target={LAUNCH_GUIDE_STEPS[launchGuide.currentStep - 1]?.target ?? null}>
               <LaunchGuideBubble
                 step={LAUNCH_GUIDE_STEPS[launchGuide.currentStep - 1]!}
                 stepNumber={launchGuide.currentStep}
                 totalSteps={LAUNCH_GUIDE_TOTAL_STEPS}
-                onNext={launchGuide.nextStep}
+                onCta={() => {
+                  const step = LAUNCH_GUIDE_STEPS[launchGuide.currentStep - 1];
+                  if (step) {
+                    performLaunchGuideCta(step.target);
+                  }
+                  launchGuide.nextStep();
+                }}
                 onBack={launchGuide.currentStep > 1 ? launchGuide.backStep : undefined}
                 onSkip={launchGuide.skipGuide}
               />

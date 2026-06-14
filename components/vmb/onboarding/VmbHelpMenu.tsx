@@ -34,6 +34,7 @@ export function VmbHelpMenu() {
       <button
         type="button"
         className="vmb-help-menu__trigger"
+        data-launch-target="help-menu"
         aria-label="Help menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}

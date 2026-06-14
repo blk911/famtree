@@ -21,16 +21,19 @@ type Props = {
   workflow: Workflow;
   autoOpenPreview?: boolean;
   onAutoPreviewConsumed?: () => void;
+  launchGuidePreviewTarget?: boolean;
 };
 
 function ProspectActionButtons({
   workflow,
   onPreview,
   onOpenModal,
+  launchGuidePreviewTarget = false,
 }: {
   workflow: Workflow;
   onPreview: () => void;
   onOpenModal: () => void;
+  launchGuidePreviewTarget?: boolean;
 }) {
   if (workflow.stage === "detected") {
     return (
@@ -39,6 +42,7 @@ function ProspectActionButtons({
           type="button"
           className="taikos-opp-card__cta"
           disabled={workflow.busy}
+          {...(launchGuidePreviewTarget ? { "data-launch-target": "preview-button" } : {})}
           onClick={(e) => {
             e.stopPropagation();
             void onPreview();
@@ -145,6 +149,7 @@ export function TodayProspectCardLayout({
   workflow,
   autoOpenPreview = false,
   onAutoPreviewConsumed,
+  launchGuidePreviewTarget = false,
 }: Props) {
   const feed = useTodayProspectFeed();
   const [localExpanded, setLocalExpanded] = useState(false);
@@ -216,6 +221,7 @@ export function TodayProspectCardLayout({
               workflow={workflow}
               onPreview={handlePreview}
               onOpenModal={handleOpenModal}
+              launchGuidePreviewTarget={launchGuidePreviewTarget}
             />
           </div>
         </div>

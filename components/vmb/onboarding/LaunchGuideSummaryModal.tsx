@@ -46,7 +46,7 @@ export function LaunchGuideSummaryModal({ open, onGotIt, onShowAgain }: Props) {
           Nothing is ever sent automatically. You review. You approve. You stay in control.
         </p>
         <footer className="vmb-launch-guide-summary__footer">
-          <span>Need help later?</span>
+          <span>Need help later? Use the ? icon anytime to restart the Launch Guide.</span>
           <button type="button" className="vmb-launch-guide-summary__link" onClick={onShowAgain}>
             Launch Guide
           </button>

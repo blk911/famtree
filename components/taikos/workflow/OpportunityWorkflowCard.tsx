@@ -34,6 +34,7 @@ type Props = {
   layout?: "today" | "standard";
   autoOpenPreview?: boolean;
   onAutoPreviewConsumed?: () => void;
+  launchGuidePreviewTarget?: boolean;
   onRefresh?: () => void;
 };
 
@@ -47,6 +48,7 @@ export function OpportunityWorkflowCard({
   layout = "standard",
   autoOpenPreview = false,
   onAutoPreviewConsumed,
+  launchGuidePreviewTarget = false,
   onRefresh,
 }: Props) {
   const intelligence = useMemo(
@@ -109,6 +111,7 @@ export function OpportunityWorkflowCard({
         workflow={workflow}
         autoOpenPreview={autoOpenPreview}
         onAutoPreviewConsumed={onAutoPreviewConsumed}
+        launchGuidePreviewTarget={launchGuidePreviewTarget}
       />
     );
   }

@@ -16,6 +16,12 @@ import {
   shouldShowLaunchGuide,
   shouldShowTaikosReminder,
 } from "../lib/vmb/onboarding/vmb-launch-guide";
+import {
+  computeLaunchGuideBubblePlacement,
+  launchGuideTargetForNavId,
+  launchGuideTargetSelector,
+  rectFromBounds,
+} from "../lib/vmb/onboarding/launch-guide-targets";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -30,6 +36,45 @@ function run(): void {
   assert(shouldShowLaunchGuide(true, readLaunchGuideState(storage)), "guide appears first time");
   assert(LAUNCH_GUIDE_STEPS.length === 5, "five coach steps before summary");
   assert(LAUNCH_GUIDE_TOTAL_STEPS === 6, "six total steps including summary");
+
+  LAUNCH_GUIDE_STEPS.forEach((step) => {
+    assert(!!step.target, `step "${step.title}" has target`);
+    assert(!!step.ctaLabel.trim(), `step "${step.title}" has cta label`);
+  });
+
+  assert(LAUNCH_GUIDE_STEPS[0]?.ctaLabel === "Select Today", "step 1 cta is Select Today");
+  assert(LAUNCH_GUIDE_STEPS[0]?.target === "nav-today", "step 1 targets nav-today");
+  assert(LAUNCH_GUIDE_STEPS[1]?.target === "taikos-input", "step 2 targets taikos input");
+  assert(LAUNCH_GUIDE_STEPS[3]?.target === "preview-button", "step 4 targets preview button");
+  assert(LAUNCH_GUIDE_STEPS[3]?.ctaLabel === "Find Preview", "step 4 cta is Find Preview");
+
+  assert(
+    launchGuideTargetSelector("taikos-input") === '[data-launch-target="taikos-input"]',
+    "target selector format",
+  );
+  assert(launchGuideTargetForNavId("home") === "nav-today", "home nav maps to nav-today");
+  assert(launchGuideTargetForNavId("queue") === "queue-nav", "queue nav maps to queue-nav");
+
+  const targetRect = rectFromBounds({ top: 200, left: 100, width: 120, height: 40 });
+  const placement = computeLaunchGuideBubblePlacement({
+    targetRect,
+    bubbleWidth: 320,
+    bubbleHeight: 200,
+    viewport: { width: 1200, height: 800 },
+  });
+  assert(placement.placement === "left", "bubble prefers right-of-target (arrow on left)");
+  assert(placement.left > targetRect.right, "bubble sits to the right of target");
+
+  const fallbackPlacement = computeLaunchGuideBubblePlacement({
+    targetRect: rectFromBounds({ top: 200, left: 20, width: 80, height: 40 }),
+    bubbleWidth: 320,
+    bubbleHeight: 200,
+    viewport: { width: 360, height: 800 },
+  });
+  assert(
+    ["right", "top", "bottom"].includes(fallbackPlacement.placement),
+    "fallback placement when right side lacks room",
+  );
 
   let step = 1;
   step = advanceLaunchGuideStep(step);

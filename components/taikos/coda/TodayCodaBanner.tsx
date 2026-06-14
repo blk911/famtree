@@ -303,6 +303,7 @@ export function TodayCodaBanner({
           <input
             id={TODAY_CODA_SEARCH_INPUT_ID}
             type="search"
+            data-launch-target="taikos-input"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Who should join my PCN? Who gets Gel-X? Who is overdue?"

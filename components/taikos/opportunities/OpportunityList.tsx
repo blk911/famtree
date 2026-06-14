@@ -50,7 +50,10 @@ export function OpportunityList({
     const candidateLabel = `${cards.length} ${cards.length === 1 ? "candidate" : "candidates"}`;
 
     return (
-      <section className={`taikos-opp-list${todayLayout ? " taikos-opp-list--today" : ""}`}>
+      <section
+        className={`taikos-opp-list${todayLayout ? " taikos-opp-list--today" : ""}`}
+        data-launch-target="opportunity-feed"
+      >
         <div className="vmb-today-question-feed-head">
           <div>
             <h3 className="taikos-section-title">Relationship Discoveries</h3>
@@ -82,6 +85,7 @@ export function OpportunityList({
                 goalTitle={goalTitleFor(opportunity.linkedGoalId)}
                 analysisContext={analysisContext}
                 layout={todayLayout ? "today" : "standard"}
+                launchGuidePreviewTarget={todayLayout && index === 0}
                 autoOpenPreview={index === 0 && previewFirstCardSignal > 0}
                 onAutoPreviewConsumed={index === 0 ? onPreviewFirstCardConsumed : undefined}
                 onRefresh={onRefresh}
@@ -96,7 +100,10 @@ export function OpportunityList({
   if (summary.opportunities.length === 0) return null;
 
   return (
-    <section className={`taikos-opp-list${todayLayout ? " taikos-opp-list--today" : ""}`}>
+    <section
+      className={`taikos-opp-list${todayLayout ? " taikos-opp-list--today" : ""}`}
+      data-launch-target={todayLayout ? "opportunity-feed" : undefined}
+    >
       {!todayLayout ? (
         <>
           <h3 className="taikos-section-title">Top Opportunities</h3>
@@ -104,7 +111,7 @@ export function OpportunityList({
         </>
       ) : null}
       <div className="taikos-opp-list__items">
-        {summary.opportunities.slice(0, 6).map((opp) => (
+        {summary.opportunities.slice(0, 6).map((opp, index) => (
           <OpportunityWorkflowCard
             key={opp.opportunityId}
             opportunity={opp}
@@ -112,6 +119,7 @@ export function OpportunityList({
             goalTitle={goalTitleFor(opp.linkedGoalId)}
             analysisContext={analysisContext}
             layout={todayLayout ? "today" : "standard"}
+            launchGuidePreviewTarget={todayLayout && index === 0}
             onRefresh={onRefresh}
           />
         ))}

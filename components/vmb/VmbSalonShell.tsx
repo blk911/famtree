@@ -8,6 +8,7 @@ import { VmbSummaryRail } from "@/components/vmb/VmbSummaryRail";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
 import { VMB_SALON_MOBILE_NAV_IDS, VMB_SALON_NAV, type VmbSalonNavItem } from "@/lib/vmb/salon-nav";
 import { buildVmbSalonNavHref } from "@/lib/vmb/salon-nav-href";
+import { launchGuideTargetForNavId } from "@/lib/vmb/onboarding/launch-guide-targets";
 import { isRefreshDue } from "@/lib/vmb/workspace-lifecycle";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbSalonWorkspace } from "@/types/vmb/workspace";
@@ -103,11 +104,13 @@ export function VmbSalonShell({ children }: Props) {
           <nav className="vmb-salon-nav" aria-label="Salon pages">
             {VMB_SALON_NAV.map((item) => {
               const active = isNavActive(item);
+              const launchTarget = launchGuideTargetForNavId(item.id);
               return (
                 <Link
                   key={item.id}
                   href={buildVmbSalonNavHref(item, activeAnalysisId)}
                   className={`vmb-salon-nav-link${active ? " vmb-salon-nav-link--active" : ""}`}
+                  {...(launchTarget ? { "data-launch-target": launchTarget } : {})}
                 >
                   {item.label}
                   {item.id === "refresh" && refreshDue ? (
@@ -170,10 +173,12 @@ export function VmbSalonShell({ children }: Props) {
         <nav className="vmb-salon-mobile-nav" aria-label="Quick salon navigation">
           {mobileNav.map((item) => {
             const active = isNavActive(item);
+            const launchTarget = launchGuideTargetForNavId(item.id);
             return (
               <Link
                 key={item.id}
                 href={buildVmbSalonNavHref(item, activeAnalysisId)}
+                {...(launchTarget ? { "data-launch-target": launchTarget } : {})}
                 style={{
                   textDecoration: "none",
                   fontSize: 12,

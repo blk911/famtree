@@ -6,7 +6,7 @@ type Props = {
   step: LaunchGuideStepContent;
   stepNumber: number;
   totalSteps: number;
-  onNext: () => void;
+  onCta: () => void;
   onBack?: () => void;
   onSkip: () => void;
 };
@@ -15,7 +15,7 @@ export function LaunchGuideBubble({
   step,
   stepNumber,
   totalSteps,
-  onNext,
+  onCta,
   onBack,
   onSkip,
 }: Props) {
@@ -44,8 +44,8 @@ export function LaunchGuideBubble({
             Skip Guide
           </button>
         )}
-        <button type="button" className="vmb-launch-guide-bubble__btn" onClick={onNext}>
-          Next
+        <button type="button" className="vmb-launch-guide-bubble__btn" onClick={onCta}>
+          {step.ctaLabel}
         </button>
       </div>
     </article>

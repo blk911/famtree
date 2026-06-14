@@ -5,9 +5,19 @@ export type LaunchGuideState = {
   completedAt?: string;
 };
 
+export type LaunchGuideTarget =
+  | "nav-today"
+  | "taikos-input"
+  | "opportunity-feed"
+  | "preview-button"
+  | "queue-nav"
+  | "help-menu";
+
 export type LaunchGuideStepContent = {
   title: string;
   body: string;
+  target: LaunchGuideTarget;
+  ctaLabel: string;
   hint?: string;
   examples?: string[];
 };
@@ -20,29 +30,33 @@ export const LAUNCH_GUIDE_TOTAL_STEPS = 6;
 export const LAUNCH_GUIDE_STEPS: LaunchGuideStepContent[] = [
   {
     title: "Welcome to VMB",
-    body: "Your client book has already been analyzed. TAIKOS can help identify opportunities hidden in your client relationships.",
-    hint: "Try asking: Who should join my PCN?",
+    body: "Your client book is ready. Start on Today to see the opportunities TAIKOS found.",
+    target: "nav-today",
+    ctaLabel: "Select Today",
   },
   {
     title: "Ask TAIKOS",
-    body: "Ask questions about your clients, services, appointments, opportunities, and relationships.",
-    examples: [
-      "Who should join my PCN?",
-      "Who is overdue?",
-      "Who were my January clients?",
-    ],
+    body: "Ask about your clients, services, appointments, and relationships.",
+    target: "taikos-input",
+    ctaLabel: "Ask TAIKOS",
   },
   {
     title: "Review Opportunities",
-    body: "TAIKOS can identify clients who may benefit from a personal follow-up. The opportunity feed updates as new opportunities are discovered.",
+    body: "These are the clients TAIKOS thinks deserve your attention first.",
+    target: "opportunity-feed",
+    ctaLabel: "Review Opportunities",
   },
   {
-    title: "Preview Invitations",
-    body: "Preview a card before taking action. Every invitation can be reviewed and edited.",
+    title: "Preview An Invite",
+    body: "Preview opens the personal invite before anything is approved or queued.",
+    target: "preview-button",
+    ctaLabel: "Find Preview",
   },
   {
     title: "Approve And Queue",
-    body: "Approved items move into your queue. Nothing is sent automatically. You remain in control.",
+    body: "Approved items move to Queue. Nothing is sent automatically.",
+    target: "queue-nav",
+    ctaLabel: "Open Queue",
   },
 ];
 
