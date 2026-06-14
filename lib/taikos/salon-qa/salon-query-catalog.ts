@@ -1,4 +1,4 @@
-import type { SalonQueryTemplate } from "./types";
+import type { SalonQueryMode, SalonQueryTemplate } from "./types";
 
 function q(
   id: string,
@@ -291,15 +291,64 @@ export const SALON_QUERY_CATALOG: SalonQueryTemplate[] = [
 ];
 
 export const SALON_QA_SUGGESTED_CHIPS: SalonQueryTemplate[] = [
+  // Opportunity
   SALON_QUERY_CATALOG.find((t) => t.id === "pcn-join")!,
   SALON_QUERY_CATALOG.find((t) => t.id === "clients-overdue")!,
-  SALON_QUERY_CATALOG.find((t) => t.id === "clients-spend")!,
-  SALON_QUERY_CATALOG.find((t) => t.id === "slot-chair")!,
-  SALON_QUERY_CATALOG.find((t) => t.id === "clients-lapsed")!,
   SALON_QUERY_CATALOG.find((t) => t.id === "rev-thank")!,
-  SALON_QUERY_CATALOG.find((t) => t.id === "pcn-first-20")!,
-  SALON_QUERY_CATALOG.find((t) => t.id === "bday-soon")!,
+  // Intelligence
+  {
+    id: "intel-january-clients",
+    category: "intelligence",
+    label: "January clients",
+    example: "Who were my January clients?",
+    intent: "monthly_clients",
+    aliases: ["who were my january clients"],
+  },
+  {
+    id: "intel-popular-services",
+    category: "intelligence",
+    label: "Popular services",
+    example: "What are my most popular services?",
+    intent: "service_popularity",
+    aliases: ["most popular services"],
+  },
+  {
+    id: "intel-top-spenders",
+    category: "intelligence",
+    label: "Top spenders",
+    example: "Who spent the most?",
+    intent: "revenue_period",
+    aliases: ["who spent the most"],
+  },
+  // Client
+  {
+    id: "client-grace",
+    category: "clients",
+    label: "Client dossier",
+    example: "Tell me about Grace",
+    intent: "client_lookup",
+    aliases: ["tell me about grace"],
+  },
+  {
+    id: "client-maya-history",
+    category: "clients",
+    label: "Client history",
+    example: "Show Maya's history",
+    intent: "client_lookup",
+    aliases: ["show maya's history"],
+  },
 ];
+
+export function salonQaModeBadge(mode: SalonQueryMode): string {
+  switch (mode) {
+    case "opportunity":
+      return "🎯 Opportunity";
+    case "intelligence":
+      return "📊 Intelligence";
+    case "client":
+      return "👤 Client";
+  }
+}
 
 export function getSalonQueryTemplateById(id: string): SalonQueryTemplate | undefined {
   return SALON_QUERY_CATALOG.find((t) => t.id === id);

@@ -37,7 +37,8 @@ export function OpportunityList({
   onClearQuestionFilter,
   onRefresh,
 }: Props) {
-  const questionDriven = (questionResult?.suggestedCards.length ?? 0) > 0;
+  const questionDriven =
+    questionResult?.queryMode === "opportunity" && (questionResult?.suggestedCards.length ?? 0) > 0;
 
   function goalTitleFor(linkedGoalId?: string): string | undefined {
     if (!linkedGoalId) return undefined;

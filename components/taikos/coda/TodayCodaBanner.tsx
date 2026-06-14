@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { CodaSearchResult, CodaSummary } from "@/lib/taikos/coda/types";
-import { SALON_QA_SUGGESTED_CHIPS } from "@/lib/taikos/salon-qa/salon-query-catalog";
+import { SALON_QA_SUGGESTED_CHIPS, salonQaModeBadge } from "@/lib/taikos/salon-qa/salon-query-catalog";
 import type { SalonQaAnswer, TodayActiveQuestionResult } from "@/lib/taikos/salon-qa/types";
 import {
   buildTodayConversationLines,
@@ -135,16 +135,65 @@ export function TodayCodaBanner({
 
         {qaAnswer ? (
           <div className="vmb-salon-qa-answer">
+            <p className="vmb-salon-qa-answer__mode">{salonQaModeBadge(qaAnswer.queryMode)}</p>
             <p className="vmb-salon-qa-answer__headline">{qaAnswer.headline}</p>
             <p className="vmb-salon-qa-answer__text">{qaAnswer.answerText}</p>
-            {qaAnswer.results.length > 0 ? (
-              <ol className="vmb-salon-qa-answer__results">
-                {qaAnswer.results.map((result, index) => (
-                  <li key={`${result.clientName}-${index}`}>
-                    <strong>{result.clientName}</strong>
-                    <span> — {result.reason}</span>
-                  </li>
+            {qaAnswer.intelligence?.metrics?.length ? (
+              <dl className="vmb-salon-qa-answer__metrics">
+                {qaAnswer.intelligence.metrics.map((metric) => (
+                  <div key={metric.label} className="vmb-salon-qa-answer__metric">
+                    <dt>{metric.label}</dt>
+                    <dd>{metric.value}</dd>
+                  </div>
                 ))}
+              </dl>
+            ) : null}
+            {qaAnswer.clientDossier ? (
+              <dl className="vmb-salon-qa-answer__dossier">
+                <div>
+                  <dt>Visits</dt>
+                  <dd>{qaAnswer.clientDossier.visits}</dd>
+                </div>
+                {qaAnswer.clientDossier.lastVisit ? (
+                  <div>
+                    <dt>Last visit</dt>
+                    <dd>{qaAnswer.clientDossier.lastVisit}</dd>
+                  </div>
+                ) : null}
+                {qaAnswer.clientDossier.services.length > 0 ? (
+                  <div>
+                    <dt>Services</dt>
+                    <dd>{qaAnswer.clientDossier.services.join(", ")}</dd>
+                  </div>
+                ) : null}
+                {qaAnswer.clientDossier.revenue > 0 ? (
+                  <div>
+                    <dt>Revenue</dt>
+                    <dd>${Math.round(qaAnswer.clientDossier.revenue).toLocaleString("en-US")}</dd>
+                  </div>
+                ) : null}
+                {qaAnswer.clientDossier.opportunitySignals.length > 0 ? (
+                  <div className="vmb-salon-qa-answer__dossier-signals">
+                    <dt>Signals</dt>
+                    <dd>{qaAnswer.clientDossier.opportunitySignals.join(" · ")}</dd>
+                  </div>
+                ) : null}
+                <div className="vmb-salon-qa-answer__dossier-move">
+                  <dt>Next move</dt>
+                  <dd>{qaAnswer.clientDossier.suggestedNextMove}</dd>
+                </div>
+              </dl>
+            ) : null}
+            {(qaAnswer.intelligence?.rows?.length ?? qaAnswer.results.length) > 0 ? (
+              <ol className="vmb-salon-qa-answer__results">
+                {(qaAnswer.intelligence?.rows ?? qaAnswer.results.map((r) => ({ name: r.clientName, detail: r.reason }))).map(
+                  (result, index) => (
+                    <li key={`${result.name}-${index}`}>
+                      <strong>{result.name}</strong>
+                      {result.detail ? <span> — {result.detail}</span> : null}
+                    </li>
+                  ),
+                )}
               </ol>
             ) : null}
             {canPreviewCard ? (
@@ -155,8 +204,18 @@ export function TodayCodaBanner({
               >
                 Preview Card
               </button>
+            ) : qaAnswer.suggestedAction ? (
+              <button
+                type="button"
+                className="vmb-salon-qa-answer__action vmb-salon-qa-answer__action--live"
+                onClick={() => onPreviewFirstCard?.()}
+              >
+                {qaAnswer.suggestedAction.label}
+              </button>
             ) : null}
-            <p className="vmb-salon-qa-answer__followup">{qaAnswer.followUpPrompt}</p>
+            <p className="vmb-salon-qa-answer__followup">
+              {qaAnswer.intelligence?.followUpPrompt ?? qaAnswer.followUpPrompt}
+            </p>
           </div>
         ) : null}
 
@@ -185,7 +244,7 @@ export function TodayCodaBanner({
         <label className="vmb-today-coda-banner__search-label" htmlFor="today-coda-search">
           What else are you thinking about?
         </label>
-        <div className="vmb-today-coda-banner__chips">
+        <div className="vmb-today-coda-banner__chips vmb-today-coda-banner__chips--scroll">
           {SALON_QA_SUGGESTED_CHIPS.map((chip) => (
             <button
               key={chip.id}

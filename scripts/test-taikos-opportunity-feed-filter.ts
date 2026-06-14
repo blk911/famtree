@@ -33,6 +33,7 @@ async function run(): Promise<void> {
   const analysis = await loadAnalysis();
 
   const birthday = answerSalonQuery({ question: "Who has a birthday soon?", analysis });
+  assert(birthday.queryMode === "opportunity", "birthday question stays opportunity mode");
   assert(birthday.suggestedCards.length > 0, "birthday question returns birthday cards");
   assert(
     birthday.suggestedCards.every((c) => c.cardType === "birthday_card"),

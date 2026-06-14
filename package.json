@@ -66,6 +66,8 @@
     "test:taikos:phase9": "tsx scripts/test-taikos-phase9.ts",
     "test:taikos:phase10": "tsx scripts/test-taikos-phase10.ts",
     "test:taikos:salon-qa": "tsx scripts/test-taikos-salon-qa.ts",
+    "test:taikos:intelligence-mode": "tsx scripts/test-taikos-intelligence-mode.ts",
+    "test:taikos:client-mode": "tsx scripts/test-taikos-client-mode.ts",
     "test:taikos:opportunity-feed-filter": "tsx scripts/test-taikos-opportunity-feed-filter.ts",
     "test:taikos:storage": "tsx scripts/test-taikos-storage.ts",
     "harvest:sola": "tsx scripts/run-sola-harvest.ts",

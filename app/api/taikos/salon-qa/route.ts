@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { answerSalonQuery } from "@/lib/taikos/salon-qa/answer-salon-query";
+import { resolveBookRecordsForSalonQa } from "@/lib/taikos/salon-qa/resolve-book-records";
 import { getActiveVmbAnalysis } from "@/lib/vmb/active-analysis-resolver";
 import { getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
 import { resolveTrialIdFromRequest } from "@/lib/vmb/resolve-trial-from-request";
@@ -54,7 +55,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const answer = answerSalonQuery({ question, analysis });
+    const records = await resolveBookRecordsForSalonQa(analysis);
+    const answer = answerSalonQuery({ question, analysis, records });
     return NextResponse.json({ ok: true, data: answer });
   } catch (err) {
     console.error("[taikos:salon-qa]", err);

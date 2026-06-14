@@ -48,7 +48,9 @@ async function run(): Promise<void> {
 
   const pcnMatch = matchSalonQuery("Who should join my PCN?");
   assert(pcnMatch.intent === "pcn_candidates", "pcn intent matched");
+  assert(pcnMatch.queryMode === "opportunity", "pcn mode matched");
   const pcnAnswer = answerSalonQuery({ question: "Who should join my PCN?", analysis });
+  assert(pcnAnswer.queryMode === "opportunity", "pcn answer mode");
   assert(pcnAnswer.results.length > 0, "pcn question returns results");
   assert(pcnAnswer.results[0].clientName.length > 0, "pcn results include client names");
   assert(pcnAnswer.suggestedCards.length > 0, "pcn answer includes suggested cards");

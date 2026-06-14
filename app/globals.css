@@ -1712,6 +1712,54 @@
   margin-bottom: 10px;
 }
 
+.vmb-today-coda-banner__chips--scroll {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.vmb-salon-qa-answer__mode {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #78716c;
+}
+
+.vmb-salon-qa-answer__metrics,
+.vmb-salon-qa-answer__dossier {
+  display: grid;
+  gap: 6px 12px;
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.vmb-salon-qa-answer__metric,
+.vmb-salon-qa-answer__dossier > div {
+  display: grid;
+  grid-template-columns: minmax(72px, auto) 1fr;
+  gap: 8px;
+}
+
+.vmb-salon-qa-answer__metric dt,
+.vmb-salon-qa-answer__dossier dt {
+  margin: 0;
+  color: #78716c;
+  font-weight: 600;
+}
+
+.vmb-salon-qa-answer__metric dd,
+.vmb-salon-qa-answer__dossier dd {
+  margin: 0;
+  color: #44403c;
+}
+
+.vmb-salon-qa-answer__dossier-signals,
+.vmb-salon-qa-answer__dossier-move {
+  grid-column: 1 / -1;
+}
+
 .vmb-salon-qa-chip {
   border: 1px solid #e7e5e4;
   background: #fff;

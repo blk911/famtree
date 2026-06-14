@@ -1,3 +1,15 @@
+export type SalonQueryMode = "opportunity" | "intelligence" | "client";
+
+export type SalonIntelligenceIntent =
+  | "monthly_clients"
+  | "monthly_revenue"
+  | "service_popularity"
+  | "repeat_clients"
+  | "client_count"
+  | "service_search_period"
+  | "revenue_period"
+  | "inactive_period";
+
 export type SalonQueryIntent =
   | "best_clients"
   | "top_spenders"
@@ -14,6 +26,8 @@ export type SalonQueryIntent =
   | "upgrade_candidates"
   | "service_search"
   | "client_search"
+  | "client_lookup"
+  | SalonIntelligenceIntent
   | "unknown";
 
 export type SalonQueryTemplate = {
@@ -26,6 +40,7 @@ export type SalonQueryTemplate = {
 };
 
 export type SalonQueryMatch = {
+  queryMode: SalonQueryMode;
   intent: SalonQueryIntent;
   confidence: number;
   templateId?: string;
@@ -33,7 +48,27 @@ export type SalonQueryMatch = {
   limit?: number;
   serviceKeyword?: string;
   clientNameHint?: string;
+  revenueThreshold?: number;
+  repeatVisitThreshold?: number;
   original: string;
+};
+
+export type SalonIntelligenceAnswer = {
+  headline: string;
+  summary: string;
+  metrics?: { label: string; value: string }[];
+  rows?: { name: string; detail?: string }[];
+  followUpPrompt?: string;
+};
+
+export type SalonClientDossier = {
+  clientName: string;
+  visits: number;
+  lastVisit?: string;
+  services: string[];
+  revenue: number;
+  opportunitySignals: string[];
+  suggestedNextMove: string;
 };
 
 export type SalonQaResult = {
@@ -73,6 +108,7 @@ export type SalonQaSuggestedCard = {
 
 export type SalonQaAnswer = {
   question: string;
+  queryMode: SalonQueryMode;
   intent: string;
   confidence: number;
   headline: string;
@@ -82,13 +118,15 @@ export type SalonQaAnswer = {
   suggestedCards: SalonQaSuggestedCard[];
   filterLabel?: string;
   followUpPrompt: string;
+  intelligence?: SalonIntelligenceAnswer;
+  clientDossier?: SalonClientDossier;
 };
 
 /** Active TAIKOS question filter driving Today relationship discoveries. */
 export type TodayActiveQuestionResult = SalonQaAnswer;
 
 /** Answer body before suggested card enrichment. */
-export type SalonQaAnswerBody = Omit<SalonQaAnswer, "suggestedCards" | "filterLabel">;
+export type SalonQaAnswerBody = Omit<SalonQaAnswer, "suggestedCards" | "filterLabel" | "queryMode">;
 
 /** Words TAIKOS must never use in salon-facing answers. */
 export const SALON_QA_FORBIDDEN_WORDS = [

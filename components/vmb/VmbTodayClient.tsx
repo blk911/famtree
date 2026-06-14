@@ -375,9 +375,10 @@ export function VmbTodayClient({
 
           <TodayProspectFeedProvider>
             <div className="today-prospect-feed">
-              {(activeQuestionResult?.suggestedCards.length ?? 0) === 0 ? (
+              {(activeQuestionResult?.queryMode === "opportunity" &&
+                (activeQuestionResult?.suggestedCards.length ?? 0) > 0) ? null : (
                 <TaikosInsightList insights={insights} onRefresh={loadContext} />
-              ) : null}
+              )}
 
               <OpportunityList
                 summary={data?.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY}
