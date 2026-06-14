@@ -362,6 +362,7 @@ export function VmbTodayClient({
               coda={codaSummary}
               operatorName={operatorName}
               salonName={salonName}
+              analysisId={activeAnalysisId}
             />
           </div>
 
