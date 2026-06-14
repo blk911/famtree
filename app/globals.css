@@ -1707,14 +1707,11 @@
 
 .vmb-today-coda-banner__chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
   margin-bottom: 10px;
-}
-
-.vmb-today-coda-banner__chips--scroll {
-  flex-wrap: nowrap;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   padding-bottom: 4px;
   scrollbar-width: thin;
 }
@@ -1761,15 +1758,22 @@
 }
 
 .vmb-salon-qa-chip {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  width: auto;
+  height: auto;
+  min-height: 36px;
+  padding: 8px 14px;
   border: 1px solid #e7e5e4;
   background: #fff;
   color: #44403c;
   border-radius: 999px;
-  padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
   cursor: pointer;
-  line-height: 1.3;
 }
 
 .vmb-salon-qa-chip:hover:not(:disabled) {
