@@ -80,17 +80,31 @@ export type SalonQaResult = {
   suggestedCardType?: string;
 };
 
-export type SalonQaSuggestedAction = {
+export type SalonQaPreviewCardAction = {
+  kind: "preview_card";
   label: string;
-  actionType:
-    | "preview_pcn_invite"
-    | "preview_refresh_card"
-    | "preview_reactivation_card"
-    | "preview_birthday_card"
-    | "preview_referral_invite"
-    | "show_clients";
-  clientName?: string;
+  cardType: SalonQaSuggestedCard["cardType"];
+  clientName: string;
+  clientId?: string;
+  reason?: string;
 };
+
+export type SalonQaFollowUpQueryAction = {
+  kind: "follow_up_query";
+  label: string;
+  question: string;
+};
+
+export type SalonQaFilterOpportunitiesAction = {
+  kind: "filter_opportunities";
+  label: string;
+  filterIntent: string;
+};
+
+export type SalonQaSuggestedAction =
+  | SalonQaPreviewCardAction
+  | SalonQaFollowUpQueryAction
+  | SalonQaFilterOpportunitiesAction;
 
 export type SalonQaSuggestedCard = {
   clientId?: string;

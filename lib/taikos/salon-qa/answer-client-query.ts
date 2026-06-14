@@ -1,7 +1,7 @@
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { VmbBookRecord } from "@/types/vmb/provider-ingest";
 import { buildSalonClientIndex, firstName, type EnrichedSalonClient } from "./salon-client-index";
-import type { SalonClientDossier, SalonQaAnswer, SalonQueryMatch } from "./types";
+import type { SalonClientDossier, SalonQaAnswer, SalonQaSuggestedAction, SalonQueryMatch } from "./types";
 
 type Params = {
   question: string;
@@ -70,6 +70,50 @@ function suggestedNextMove(client?: EnrichedSalonClient): string {
   return `Keep ${firstName(client.clientName)} close with a thank-you or early-access note.`;
 }
 
+function buildClientSuggestedAction(
+  clientName: string,
+  enriched?: EnrichedSalonClient,
+): SalonQaSuggestedAction {
+  if (
+    enriched &&
+    (enriched.pcnScore >= 40 ||
+      enriched.isVip ||
+      enriched.referralScore >= 20 ||
+      (enriched.daysInactive !== null && enriched.daysInactive <= 60))
+  ) {
+    return {
+      kind: "preview_card",
+      label: "Preview Private Client Invite",
+      cardType: "pcn_invite",
+      clientName,
+      reason: "Strong relationship fit for a private invite",
+    };
+  }
+  if (enriched && (enriched.isOverdue || enriched.isLapsed)) {
+    return {
+      kind: "preview_card",
+      label: "Preview Reconnect Invite",
+      cardType: "reactivation_card",
+      clientName,
+      reason: "Worth a personal follow-up",
+    };
+  }
+  if (enriched && (enriched.isVip || enriched.spend >= 150)) {
+    return {
+      kind: "preview_card",
+      label: "Preview Thank-You Card",
+      cardType: "thank_you_card",
+      clientName,
+      reason: "High relationship value",
+    };
+  }
+  return {
+    kind: "follow_up_query",
+    label: "Find similar clients",
+    question: `Who is similar to ${clientName}?`,
+  };
+}
+
 export function answerClientQuery(params: Params): SalonQaAnswer {
   const hint = params.match.clientNameHint ?? params.question;
   const matchedRecords = findClientRecords(params.records, hint);
@@ -122,6 +166,8 @@ export function answerClientQuery(params: Params): SalonQaAnswer {
   const lastLine = lastVisit ? ` with the last visit on ${formatDate(lastVisit)}.` : ".";
   const revenueLine = revenue > 0 ? ` Visit value around ${formatCurrency(revenue)}.` : "";
 
+  const suggestedAction = buildClientSuggestedAction(clientName, enriched);
+
   return {
     question: params.question,
     queryMode: "client",
@@ -136,14 +182,7 @@ export function answerClientQuery(params: Params): SalonQaAnswer {
         evidence: dossier.opportunitySignals,
       },
     ],
-    suggestedAction:
-      enriched && (enriched.isOverdue || enriched.pcnScore >= 40)
-        ? {
-            label: `Preview invite for ${firstName(clientName)}`,
-            actionType: enriched.pcnScore >= 40 ? "preview_pcn_invite" : "preview_refresh_card",
-            clientName,
-          }
-        : undefined,
+    suggestedAction,
     suggestedCards: [],
     followUpPrompt: "Would you like me to find similar clients in your book?",
     clientDossier: dossier,

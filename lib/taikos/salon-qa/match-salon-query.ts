@@ -34,6 +34,10 @@ const CATEGORY_INTENT_HINTS: Array<{ pattern: RegExp; intent: SalonQueryIntent; 
   { pattern: /best client|top client|favorite/, intent: "best_clients", boost: 0.2 },
   { pattern: /\bvip\b/, intent: "vip_candidates", boost: 0.25 },
   { pattern: /thank.?you|thank you note/, intent: "pcn_candidates", boost: 0.2 },
+  { pattern: /vip thank|receive a vip/, intent: "vip_candidates", boost: 0.35 },
+  { pattern: /reconnect with|should i reconnect/, intent: "overdue_clients", boost: 0.35 },
+  { pattern: /due for my top services|due for those services/, intent: "open_slot_candidates", boost: 0.35 },
+  { pattern: /repeat clients should join|repeat clients.*pcn/, intent: "pcn_candidates", boost: 0.35 },
 ];
 
 function normalize(input: string): string {

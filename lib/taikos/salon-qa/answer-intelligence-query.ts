@@ -3,6 +3,7 @@ import { dateInRange, parseSalonDateRange } from "./date-parser";
 import type {
   SalonIntelligenceAnswer,
   SalonQaAnswer,
+  SalonQaSuggestedAction,
   SalonQueryMatch,
 } from "./types";
 
@@ -61,6 +62,54 @@ function recordsMatchingService(records: VmbBookRecord[], keyword?: string): Vmb
   if (!keyword?.trim()) return records;
   const needle = keyword.trim().toLowerCase();
   return records.filter((r) => (r.serviceName ?? "").toLowerCase().includes(needle));
+}
+
+function periodLabel(question: string): string {
+  const range = parseSalonDateRange(question);
+  if (!range) return "that period";
+  return range.label.split(" ")[0] ?? range.label;
+}
+
+function buildIntelligenceSuggestedAction(
+  intent: SalonQueryMatch["intent"],
+  question: string,
+): SalonQaSuggestedAction | undefined {
+  const month = periodLabel(question);
+
+  switch (intent) {
+    case "monthly_clients":
+      return {
+        kind: "follow_up_query",
+        label: `Find who never returned after ${month}`,
+        question: `Who disappeared after ${month}?`,
+      };
+    case "service_popularity":
+      return {
+        kind: "follow_up_query",
+        label: "Find clients due for those services",
+        question: "Who is due for my top services?",
+      };
+    case "repeat_clients":
+      return {
+        kind: "follow_up_query",
+        label: "Find which repeat clients should join PCN",
+        question: "Which repeat clients should join my PCN?",
+      };
+    case "revenue_period":
+      return {
+        kind: "follow_up_query",
+        label: "Find VIP invite candidates",
+        question: "Who should receive a VIP thank-you?",
+      };
+    case "inactive_period":
+      return {
+        kind: "follow_up_query",
+        label: "Preview reactivation candidates",
+        question: "Who should I reconnect with?",
+      };
+    default:
+      return undefined;
+  }
 }
 
 function buildIntelligencePayload(
@@ -217,6 +266,7 @@ function buildIntelligencePayload(
 
 export function answerIntelligenceQuery(params: Params): SalonQaAnswer {
   const intelligence = buildIntelligencePayload(params.question, params.match, params.records);
+  const suggestedAction = buildIntelligenceSuggestedAction(params.match.intent, params.question);
   return {
     question: params.question,
     queryMode: "intelligence",
@@ -229,6 +279,7 @@ export function answerIntelligenceQuery(params: Params): SalonQaAnswer {
       reason: row.detail ?? "In your book",
       evidence: [],
     })),
+    suggestedAction,
     suggestedCards: [],
     followUpPrompt: intelligence.followUpPrompt ?? "What else would you like to know about your book?",
     intelligence,

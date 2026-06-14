@@ -6,6 +6,7 @@ import { ActivityTimeline } from "@/components/taikos/activity/ActivityTimeline"
 import { InlineAiosPanel } from "@/components/taikos/InlineAiosPanel";
 import { TaikosInsightList } from "@/components/taikos/coda/TaikosInsightList";
 import { TodayCodaBanner } from "@/components/taikos/coda/TodayCodaBanner";
+import { SalonQaPreviewModal } from "@/components/taikos/coda/SalonQaPreviewModal";
 import { GoalSummary } from "@/components/taikos/goals/GoalSummary";
 import { OpportunityList } from "@/components/taikos/opportunities/OpportunityList";
 import { TodayProspectFeedProvider } from "@/components/taikos/workflow/TodayProspectFeedContext";
@@ -15,7 +16,7 @@ import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { emptyCodaSummary } from "@/lib/taikos/coda/defaults";
 import type { TaikosActivitySummary } from "@/lib/taikos/activity/activity-types";
 import type { CodaSummary } from "@/lib/taikos/coda/types";
-import type { TodayActiveQuestionResult } from "@/lib/taikos/salon-qa/types";
+import type { SalonQaPreviewCardAction, TodayActiveQuestionResult } from "@/lib/taikos/salon-qa/types";
 import type { TaikosDraftSummary } from "@/lib/taikos/drafts/types";
 import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
 import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
@@ -105,6 +106,7 @@ export function VmbTodayClient({
     null,
   );
   const [previewFirstCardSignal, setPreviewFirstCardSignal] = useState(0);
+  const [qaPreviewAction, setQaPreviewAction] = useState<SalonQaPreviewCardAction | null>(null);
 
   useEffect(() => {
     console.error("[TODAY-MOUNT]", {
@@ -370,8 +372,21 @@ export function VmbTodayClient({
               analysisId={activeAnalysisId}
               onQuestionAnswer={setActiveQuestionResult}
               onPreviewFirstCard={() => setPreviewFirstCardSignal((n) => n + 1)}
+              onPreviewSuggestedCard={setQaPreviewAction}
             />
           </div>
+
+          <SalonQaPreviewModal
+            open={!!qaPreviewAction}
+            action={qaPreviewAction}
+            context={{
+              salonName,
+              operatorName,
+              analysisId: activeAnalysisId,
+            }}
+            onClose={() => setQaPreviewAction(null)}
+            onRefresh={loadContext}
+          />
 
           <TodayProspectFeedProvider>
             <div className="today-prospect-feed">

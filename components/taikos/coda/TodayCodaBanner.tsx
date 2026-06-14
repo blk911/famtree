@@ -3,7 +3,16 @@
 import { useMemo, useState } from "react";
 import type { CodaSearchResult, CodaSummary } from "@/lib/taikos/coda/types";
 import { SALON_QA_SUGGESTED_CHIPS, salonQaModeBadge } from "@/lib/taikos/salon-qa/salon-query-catalog";
-import type { SalonQaAnswer, TodayActiveQuestionResult } from "@/lib/taikos/salon-qa/types";
+import {
+  followUpQueryFromAction,
+  normalizeSalonQaSuggestedAction,
+} from "@/lib/taikos/salon-qa/salon-qa-action-utils";
+import type {
+  SalonQaAnswer,
+  SalonQaPreviewCardAction,
+  SalonQaSuggestedAction,
+  TodayActiveQuestionResult,
+} from "@/lib/taikos/salon-qa/types";
 import {
   buildTodayConversationLines,
   buildTodayGreeting,
@@ -17,6 +26,8 @@ type Props = {
   analysisId?: string;
   onQuestionAnswer?: (answer: TodayActiveQuestionResult) => void;
   onPreviewFirstCard?: () => void;
+  onPreviewSuggestedCard?: (action: SalonQaPreviewCardAction) => void;
+  onSubmitFollowUp?: (question: string) => void;
 };
 
 export function TodayCodaBanner({
@@ -26,6 +37,8 @@ export function TodayCodaBanner({
   analysisId,
   onQuestionAnswer,
   onPreviewFirstCard,
+  onPreviewSuggestedCard,
+  onSubmitFollowUp,
 }: Props) {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -40,6 +53,11 @@ export function TodayCodaBanner({
   const count = relationshipOpportunityCount(coda);
   const focusLabel = coda?.objective?.label ?? "Make today's relationship moves";
   const conversationLines = useMemo(() => buildTodayConversationLines(coda), [coda]);
+
+  const resolvedAction = useMemo(
+    () => normalizeSalonQaSuggestedAction(qaAnswer?.suggestedAction),
+    [qaAnswer?.suggestedAction],
+  );
 
   async function runSalonQa(questionText: string) {
     const trimmed = questionText.trim();
@@ -70,6 +88,7 @@ export function TodayCodaBanner({
         return;
       }
       setQaAnswer(json.data);
+      setQuery(trimmed);
       onQuestionAnswer?.(json.data);
     } catch {
       setError("Could not answer that question.");
@@ -109,7 +128,21 @@ export function TodayCodaBanner({
     void runSalonQa(example);
   }
 
-  const canPreviewCard = (qaAnswer?.suggestedCards.length ?? 0) > 0;
+  function handleSuggestedAction(action: SalonQaSuggestedAction) {
+    if (action.kind === "preview_card") {
+      onPreviewSuggestedCard?.(action);
+      return;
+    }
+    const followUp = followUpQueryFromAction(action);
+    if (followUp) {
+      setQuery(followUp);
+      onSubmitFollowUp?.(followUp);
+      void runSalonQa(followUp);
+    }
+  }
+
+  const canPreviewOpportunityCard =
+    qaAnswer?.queryMode === "opportunity" && (qaAnswer?.suggestedCards.length ?? 0) > 0;
 
   return (
     <section className="vmb-today-coda-banner">
@@ -196,7 +229,7 @@ export function TodayCodaBanner({
                 )}
               </ol>
             ) : null}
-            {canPreviewCard ? (
+            {canPreviewOpportunityCard ? (
               <button
                 type="button"
                 className="vmb-salon-qa-answer__action vmb-salon-qa-answer__action--live"
@@ -204,13 +237,14 @@ export function TodayCodaBanner({
               >
                 Preview Card
               </button>
-            ) : qaAnswer.suggestedAction ? (
+            ) : resolvedAction ? (
               <button
                 type="button"
                 className="vmb-salon-qa-answer__action vmb-salon-qa-answer__action--live"
-                onClick={() => onPreviewFirstCard?.()}
+                disabled={searching}
+                onClick={() => handleSuggestedAction(resolvedAction)}
               >
-                {qaAnswer.suggestedAction.label}
+                {resolvedAction.label}
               </button>
             ) : null}
             <p className="vmb-salon-qa-answer__followup">
@@ -219,7 +253,7 @@ export function TodayCodaBanner({
           </div>
         ) : null}
 
-        {legacyResults && legacyResults.matches.length > 0 && !canPreviewCard ? (
+        {legacyResults && legacyResults.matches.length > 0 && !canPreviewOpportunityCard ? (
           <div className="vmb-today-coda-banner__results">
             <p className="vmb-today-coda-banner__results-label">From your book</p>
             <ul className="vmb-today-coda-banner__results-list">

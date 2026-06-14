@@ -60,40 +60,55 @@ function suggestedActionForIntent(
     case "pcn_candidates":
     case "first_20_pcn":
     case "first_50_pcn":
-      return {
-        label: name ? `Preview ${firstName(name)}'s Private Client Invite` : "Preview Private Client Invite",
-        actionType: "preview_pcn_invite",
-        clientName: name,
-      };
+      return name
+        ? {
+            kind: "preview_card",
+            label: `Preview ${firstName(name)}'s Private Client Invite`,
+            cardType: "pcn_invite",
+            clientName: name,
+          }
+        : undefined;
     case "lapsed_clients":
     case "overdue_clients":
     case "open_slot_candidates":
-      return {
-        label: name ? `Preview a refresh invite for ${firstName(name)}` : "Preview refresh invite",
-        actionType: "preview_refresh_card",
-        clientName: name,
-      };
+      return name
+        ? {
+            kind: "preview_card",
+            label: `Preview a refresh invite for ${firstName(name)}`,
+            cardType: "reactivation_card",
+            clientName: name,
+          }
+        : undefined;
     case "birthday_candidates":
-      return {
-        label: name ? `Preview a birthday card for ${firstName(name)}` : "Preview birthday card",
-        actionType: "preview_birthday_card",
-        clientName: name,
-      };
+      return name
+        ? {
+            kind: "preview_card",
+            label: `Preview a birthday card for ${firstName(name)}`,
+            cardType: "birthday_card",
+            clientName: name,
+          }
+        : undefined;
     case "referral_candidates":
-      return {
-        label: name ? `Preview a referral ask for ${firstName(name)}` : "Preview referral ask",
-        actionType: "preview_referral_invite",
-        clientName: name,
-      };
+      return name
+        ? {
+            kind: "preview_card",
+            label: `Preview a referral ask for ${firstName(name)}`,
+            cardType: "referral_card",
+            clientName: name,
+          }
+        : undefined;
     case "service_search":
     case "best_clients":
     case "top_spenders":
     case "upgrade_candidates":
-      return {
-        label: name ? `Preview a refresh invite for ${firstName(name)}` : "Preview refresh invite",
-        actionType: "preview_refresh_card",
-        clientName: name,
-      };
+      return name
+        ? {
+            kind: "preview_card",
+            label: `Preview a refresh invite for ${firstName(name)}`,
+            cardType: "reactivation_card",
+            clientName: name,
+          }
+        : undefined;
     default:
       return undefined;
   }
