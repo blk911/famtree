@@ -1,5 +1,5 @@
 {
-  "buildCommand": "prisma db push --skip-generate --accept-data-loss && prisma generate && next build",
+  "buildCommand": "bash scripts/vercel-build.sh",
   "framework": "nextjs",
   "functions": {
     "app/api/profile/posts/route.ts": {
