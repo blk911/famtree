@@ -1,4 +1,5 @@
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
+import { enrichSalonQaAnswer } from "./build-suggested-cards";
 import { matchSalonQuery } from "./match-salon-query";
 import {
   buildSalonClientIndex,
@@ -8,8 +9,10 @@ import {
 } from "./salon-client-index";
 import type {
   SalonQaAnswer,
+  SalonQaAnswerBody,
   SalonQaResult,
   SalonQaSuggestedAction,
+  SalonQueryIntent,
   SalonQueryMatch,
 } from "./types";
 
@@ -129,6 +132,7 @@ function buildUnknownAnswer(question: string, match: SalonQueryMatch): SalonQaAn
     answerText:
       "I can help with PCN invites, overdue clients, referrals, birthdays, open slots, and service searches.",
     results: [],
+    suggestedCards: [],
     followUpPrompt: followUpForIntent("unknown"),
   };
 }
@@ -138,7 +142,7 @@ function buildPcnAnswer(
   match: SalonQueryMatch,
   clients: EnrichedSalonClient[],
   limit?: number,
-): SalonQaAnswer {
+): SalonQaAnswerBody {
   const ranked = rankByScore(clients, (c) => c.pcnScore);
   const top = limitResults(ranked, limit, limit ?? 8);
   const results: SalonQaResult[] = top.map((c, i) =>
@@ -169,7 +173,7 @@ function buildPcnAnswer(
   };
 }
 
-function buildBestClientsAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswer {
+function buildBestClientsAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswerBody {
   const ranked = rankByScore(clients, (c) => c.pcnScore * 0.5 + c.spend * 0.3 + c.visitCount * 5);
   const top = limitResults(ranked);
   const results = top.map((c) =>
@@ -190,7 +194,7 @@ function buildBestClientsAnswer(question: string, match: SalonQueryMatch, client
   };
 }
 
-function buildTopSpendersAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswer {
+function buildTopSpendersAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswerBody {
   const ranked = rankByScore(clients, (c) => c.spend);
   const top = limitResults(ranked);
   const results = top.map((c) =>
@@ -215,7 +219,7 @@ function buildFrequentClientsAnswer(
   question: string,
   match: SalonQueryMatch,
   clients: EnrichedSalonClient[],
-): SalonQaAnswer {
+): SalonQaAnswerBody {
   const ranked = rankByScore(clients, (c) => c.visitCount);
   const top = limitResults(ranked.filter((c) => c.visitCount > 0 || c.isFrequent));
   const results = top.map((c) =>
@@ -241,7 +245,7 @@ function buildLapsedOrOverdueAnswer(
   match: SalonQueryMatch,
   clients: EnrichedSalonClient[],
   mode: "lapsed" | "overdue",
-): SalonQaAnswer {
+): SalonQaAnswerBody {
   const filtered = clients.filter((c) => (mode === "lapsed" ? c.isLapsed : c.isOverdue || c.isLapsed));
   const ranked = rankByScore(filtered, (c) => (c.daysInactive ?? 0) * 2 + c.spend * 0.2);
   const top = limitResults(ranked.length > 0 ? ranked : clients.filter((c) => c.daysInactive !== null));
@@ -270,7 +274,7 @@ function buildLapsedOrOverdueAnswer(
   };
 }
 
-function buildReferralAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswer {
+function buildReferralAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswerBody {
   const ranked = rankByScore(clients, (c) => c.referralScore);
   const top = limitResults(ranked.filter((c) => c.referralScore > 0 || c.isVip || c.isFrequent));
   const results = top.map((c) =>
@@ -291,7 +295,7 @@ function buildReferralAnswer(question: string, match: SalonQueryMatch, clients: 
   };
 }
 
-function buildBirthdayAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswer {
+function buildBirthdayAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswerBody {
   const birthdayClients = clients.filter((c) => c.birthdaySignal);
   const top = limitResults(birthdayClients);
   if (top.length === 0) {
@@ -322,7 +326,7 @@ function buildBirthdayAnswer(question: string, match: SalonQueryMatch, clients: 
   };
 }
 
-function buildOpenSlotAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswer {
+function buildOpenSlotAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswerBody {
   const ranked = rankByScore(
     clients.filter((c) => c.isOverdue || c.isLapsed || c.daysInactive !== null),
     (c) => (c.daysInactive ?? 0) + c.spend * 0.15,
@@ -346,7 +350,7 @@ function buildOpenSlotAnswer(question: string, match: SalonQueryMatch, clients: 
   };
 }
 
-function buildUpgradeAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswer {
+function buildUpgradeAnswer(question: string, match: SalonQueryMatch, clients: EnrichedSalonClient[]): SalonQaAnswerBody {
   const ranked = rankByScore(
     clients.filter((c) => c.isVip || c.spend >= 120 || c.triggerTypes.includes("High Spend")),
     (c) => c.spend + c.visitCount * 5,
@@ -374,7 +378,7 @@ function buildServiceSearchAnswer(
   question: string,
   match: SalonQueryMatch,
   clients: EnrichedSalonClient[],
-): SalonQaAnswer {
+): SalonQaAnswerBody {
   const keyword = (match.serviceKeyword ?? "").toLowerCase();
   const matched = clients.filter((c) => c.searchText.includes(keyword));
   const ranked = rankByScore(matched, (c) => c.visitCount * 5 + c.spend);
@@ -417,7 +421,7 @@ function buildClientSearchAnswer(
   question: string,
   match: SalonQueryMatch,
   clients: EnrichedSalonClient[],
-): SalonQaAnswer {
+): SalonQaAnswerBody {
   const hint = (match.clientNameHint ?? question).toLowerCase();
   const tokens = hint.split(/\s+/).filter(Boolean);
   const matched = clients.filter((c) => {
@@ -449,46 +453,64 @@ export function answerSalonQuery(params: AnswerParams): SalonQaAnswer {
     return buildUnknownAnswer(params.question, match);
   }
 
-  switch (match.intent) {
+  let answer: SalonQaAnswerBody;
+  switch (match.intent as SalonQueryIntent) {
     case "pcn_candidates":
-      return buildPcnAnswer(params.question, match, clients);
+      answer = buildPcnAnswer(params.question, match, clients);
+      break;
     case "first_20_pcn":
-      return buildPcnAnswer(params.question, match, clients, 20);
+      answer = buildPcnAnswer(params.question, match, clients, 20);
+      break;
     case "first_50_pcn":
-      return buildPcnAnswer(params.question, match, clients, 50);
+      answer = buildPcnAnswer(params.question, match, clients, 50);
+      break;
     case "best_clients":
-      return buildBestClientsAnswer(params.question, match, clients);
+      answer = buildBestClientsAnswer(params.question, match, clients);
+      break;
     case "top_spenders":
-      return buildTopSpendersAnswer(params.question, match, clients);
+      answer = buildTopSpendersAnswer(params.question, match, clients);
+      break;
     case "frequent_clients":
-      return buildFrequentClientsAnswer(params.question, match, clients);
+      answer = buildFrequentClientsAnswer(params.question, match, clients);
+      break;
     case "lapsed_clients":
-      return buildLapsedOrOverdueAnswer(params.question, match, clients, "lapsed");
+      answer = buildLapsedOrOverdueAnswer(params.question, match, clients, "lapsed");
+      break;
     case "overdue_clients":
-      return buildLapsedOrOverdueAnswer(params.question, match, clients, "overdue");
+      answer = buildLapsedOrOverdueAnswer(params.question, match, clients, "overdue");
+      break;
     case "referral_candidates":
-      return buildReferralAnswer(params.question, match, clients);
+      answer = buildReferralAnswer(params.question, match, clients);
+      break;
     case "vip_candidates": {
       const vipClients = clients.filter((c) => c.isVip);
-      return buildBestClientsAnswer(
+      answer = buildBestClientsAnswer(
         params.question,
         match,
         vipClients.length > 0 ? vipClients : clients,
       );
+      break;
     }
     case "birthday_candidates":
-      return buildBirthdayAnswer(params.question, match, clients);
+      answer = buildBirthdayAnswer(params.question, match, clients);
+      break;
     case "open_slot_candidates":
-      return buildOpenSlotAnswer(params.question, match, clients);
+      answer = buildOpenSlotAnswer(params.question, match, clients);
+      break;
     case "upgrade_candidates":
-      return buildUpgradeAnswer(params.question, match, clients);
+      answer = buildUpgradeAnswer(params.question, match, clients);
+      break;
     case "service_search":
-      return buildServiceSearchAnswer(params.question, match, clients);
+      answer = buildServiceSearchAnswer(params.question, match, clients);
+      break;
     case "client_search":
-      return buildClientSearchAnswer(params.question, match, clients);
+      answer = buildClientSearchAnswer(params.question, match, clients);
+      break;
     default:
       return buildUnknownAnswer(params.question, match);
   }
+
+  return enrichSalonQaAnswer(answer, match.intent as SalonQueryIntent, match.limit) as SalonQaAnswer;
 }
 
 export function salonQaAnswerContainsForbiddenLanguage(answer: SalonQaAnswer): boolean {

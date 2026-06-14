@@ -15,6 +15,7 @@ import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { emptyCodaSummary } from "@/lib/taikos/coda/defaults";
 import type { TaikosActivitySummary } from "@/lib/taikos/activity/activity-types";
 import type { CodaSummary } from "@/lib/taikos/coda/types";
+import type { TodayActiveQuestionResult } from "@/lib/taikos/salon-qa/types";
 import type { TaikosDraftSummary } from "@/lib/taikos/drafts/types";
 import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
 import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
@@ -100,6 +101,10 @@ export function VmbTodayClient({
   const [contextLoading, setContextLoading] = useState(false);
   const [aiosOpen, setAiosOpen] = useState(false);
   const [flowDebug, setFlowDebug] = useState<VmbFullFlowDebug | null>(null);
+  const [activeQuestionResult, setActiveQuestionResult] = useState<TodayActiveQuestionResult | null>(
+    null,
+  );
+  const [previewFirstCardSignal, setPreviewFirstCardSignal] = useState(0);
 
   useEffect(() => {
     console.error("[TODAY-MOUNT]", {
@@ -363,12 +368,16 @@ export function VmbTodayClient({
               operatorName={operatorName}
               salonName={salonName}
               analysisId={activeAnalysisId}
+              onQuestionAnswer={setActiveQuestionResult}
+              onPreviewFirstCard={() => setPreviewFirstCardSignal((n) => n + 1)}
             />
           </div>
 
           <TodayProspectFeedProvider>
             <div className="today-prospect-feed">
-              <TaikosInsightList insights={insights} onRefresh={loadContext} />
+              {(activeQuestionResult?.suggestedCards.length ?? 0) === 0 ? (
+                <TaikosInsightList insights={insights} onRefresh={loadContext} />
+              ) : null}
 
               <OpportunityList
                 summary={data?.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY}
@@ -380,6 +389,10 @@ export function VmbTodayClient({
                   hasRealBookData: hasCompletedFirstIngest,
                 }}
                 todayLayout
+                questionResult={activeQuestionResult}
+                previewFirstCardSignal={previewFirstCardSignal}
+                onPreviewFirstCardConsumed={() => setPreviewFirstCardSignal(0)}
+                onClearQuestionFilter={() => setActiveQuestionResult(null)}
                 onRefresh={loadContext}
               />
             </div>

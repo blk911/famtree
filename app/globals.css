@@ -1780,6 +1780,53 @@
   opacity: 0.85;
 }
 
+.vmb-salon-qa-answer__action--live {
+  cursor: pointer;
+  opacity: 1;
+  background: #9d174d;
+  color: #fff;
+}
+
+.vmb-salon-qa-answer__action--live:hover {
+  background: #831843;
+}
+
+.vmb-today-question-feed-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.vmb-today-question-feed-head__filter {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #78716c;
+}
+
+.vmb-today-question-feed-head__count {
+  color: #9d174d;
+  font-weight: 700;
+}
+
+.vmb-today-question-feed-head__clear {
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  color: #44403c;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.vmb-today-question-feed-head__clear:hover {
+  border-color: #9d174d;
+  color: #9d174d;
+}
+
 .vmb-salon-qa-answer__followup {
   margin: 0;
   font-size: 13px;

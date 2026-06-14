@@ -51,6 +51,7 @@ async function run(): Promise<void> {
   const pcnAnswer = answerSalonQuery({ question: "Who should join my PCN?", analysis });
   assert(pcnAnswer.results.length > 0, "pcn question returns results");
   assert(pcnAnswer.results[0].clientName.length > 0, "pcn results include client names");
+  assert(pcnAnswer.suggestedCards.length > 0, "pcn answer includes suggested cards");
   assert(!salonQaAnswerContainsForbiddenLanguage(pcnAnswer), "pcn answer avoids forbidden language");
 
   const first20Match = matchSalonQuery("Who belongs in my first 20 invites?");

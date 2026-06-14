@@ -32,6 +32,8 @@ type Props = {
   goalTitle?: string;
   embedded?: boolean;
   layout?: "today" | "standard";
+  autoOpenPreview?: boolean;
+  onAutoPreviewConsumed?: () => void;
   onRefresh?: () => void;
 };
 
@@ -43,6 +45,8 @@ export function OpportunityWorkflowCard({
   goalTitle,
   embedded,
   layout = "standard",
+  autoOpenPreview = false,
+  onAutoPreviewConsumed,
   onRefresh,
 }: Props) {
   const intelligence = useMemo(
@@ -103,6 +107,8 @@ export function OpportunityWorkflowCard({
         suggestedNextStep={guide.suggestedNextStep}
         cardPreview={cardPreview}
         workflow={workflow}
+        autoOpenPreview={autoOpenPreview}
+        onAutoPreviewConsumed={onAutoPreviewConsumed}
       />
     );
   }

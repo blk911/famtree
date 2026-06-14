@@ -57,6 +57,20 @@ export type SalonQaSuggestedAction = {
   clientName?: string;
 };
 
+export type SalonQaSuggestedCard = {
+  clientId?: string;
+  clientName: string;
+  cardType:
+    | "pcn_invite"
+    | "birthday_card"
+    | "reactivation_card"
+    | "service_card"
+    | "thank_you_card"
+    | "referral_card";
+  reason: string;
+  confidence?: number;
+};
+
 export type SalonQaAnswer = {
   question: string;
   intent: string;
@@ -65,8 +79,16 @@ export type SalonQaAnswer = {
   answerText: string;
   results: SalonQaResult[];
   suggestedAction?: SalonQaSuggestedAction;
+  suggestedCards: SalonQaSuggestedCard[];
+  filterLabel?: string;
   followUpPrompt: string;
 };
+
+/** Active TAIKOS question filter driving Today relationship discoveries. */
+export type TodayActiveQuestionResult = SalonQaAnswer;
+
+/** Answer body before suggested card enrichment. */
+export type SalonQaAnswerBody = Omit<SalonQaAnswer, "suggestedCards" | "filterLabel">;
 
 /** Words TAIKOS must never use in salon-facing answers. */
 export const SALON_QA_FORBIDDEN_WORDS = [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CardPreviewModal } from "@/components/vmb/cards/CardPreviewModal";
 import { OpportunityLifecycle } from "@/components/taikos/workflow/OpportunityLifecycle";
 import { useTodayProspectFeed } from "@/components/taikos/workflow/TodayProspectFeedContext";
@@ -19,6 +19,8 @@ type Props = {
   suggestedNextStep: string;
   cardPreview: CardPreviewModel;
   workflow: Workflow;
+  autoOpenPreview?: boolean;
+  onAutoPreviewConsumed?: () => void;
 };
 
 function ProspectActionButtons({
@@ -141,6 +143,8 @@ export function TodayProspectCardLayout({
   suggestedNextStep,
   cardPreview,
   workflow,
+  autoOpenPreview = false,
+  onAutoPreviewConsumed,
 }: Props) {
   const feed = useTodayProspectFeed();
   const [localExpanded, setLocalExpanded] = useState(false);
@@ -164,6 +168,12 @@ export function TodayProspectCardLayout({
       await workflow.runPreview();
     }
   }
+
+  useEffect(() => {
+    if (!autoOpenPreview) return;
+    void handlePreview();
+    onAutoPreviewConsumed?.();
+  }, [autoOpenPreview]);
 
   function handleOpenModal() {
     setModalOpen(true);

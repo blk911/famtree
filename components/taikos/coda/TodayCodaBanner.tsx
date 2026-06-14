@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import type { CodaSearchResult, CodaSummary } from "@/lib/taikos/coda/types";
 import { SALON_QA_SUGGESTED_CHIPS } from "@/lib/taikos/salon-qa/salon-query-catalog";
-import type { SalonQaAnswer } from "@/lib/taikos/salon-qa/types";
+import type { SalonQaAnswer, TodayActiveQuestionResult } from "@/lib/taikos/salon-qa/types";
 import {
   buildTodayConversationLines,
   buildTodayGreeting,
@@ -15,9 +15,18 @@ type Props = {
   operatorName?: string;
   salonName?: string;
   analysisId?: string;
+  onQuestionAnswer?: (answer: TodayActiveQuestionResult) => void;
+  onPreviewFirstCard?: () => void;
 };
 
-export function TodayCodaBanner({ coda, operatorName, salonName, analysisId }: Props) {
+export function TodayCodaBanner({
+  coda,
+  operatorName,
+  salonName,
+  analysisId,
+  onQuestionAnswer,
+  onPreviewFirstCard,
+}: Props) {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [legacyResults, setLegacyResults] = useState<CodaSearchResult | null>(null);
@@ -61,6 +70,7 @@ export function TodayCodaBanner({ coda, operatorName, salonName, analysisId }: P
         return;
       }
       setQaAnswer(json.data);
+      onQuestionAnswer?.(json.data);
     } catch {
       setError("Could not answer that question.");
       setQaAnswer(null);
@@ -99,6 +109,8 @@ export function TodayCodaBanner({ coda, operatorName, salonName, analysisId }: P
     void runSalonQa(example);
   }
 
+  const canPreviewCard = (qaAnswer?.suggestedCards.length ?? 0) > 0;
+
   return (
     <section className="vmb-today-coda-banner">
       <div className="vmb-today-coda-banner__content">
@@ -135,18 +147,20 @@ export function TodayCodaBanner({ coda, operatorName, salonName, analysisId }: P
                 ))}
               </ol>
             ) : null}
-            {qaAnswer.suggestedAction ? (
-              <button type="button" className="vmb-salon-qa-answer__action" disabled title="Preview coming next">
-                {qaAnswer.suggestedAction.actionType.startsWith("preview_")
-                  ? "Preview coming next"
-                  : qaAnswer.suggestedAction.label}
+            {canPreviewCard ? (
+              <button
+                type="button"
+                className="vmb-salon-qa-answer__action vmb-salon-qa-answer__action--live"
+                onClick={() => onPreviewFirstCard?.()}
+              >
+                Preview Card
               </button>
             ) : null}
             <p className="vmb-salon-qa-answer__followup">{qaAnswer.followUpPrompt}</p>
           </div>
         ) : null}
 
-        {legacyResults && legacyResults.matches.length > 0 ? (
+        {legacyResults && legacyResults.matches.length > 0 && !canPreviewCard ? (
           <div className="vmb-today-coda-banner__results">
             <p className="vmb-today-coda-banner__results-label">From your book</p>
             <ul className="vmb-today-coda-banner__results-list">
