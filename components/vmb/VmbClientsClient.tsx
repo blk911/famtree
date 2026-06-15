@@ -13,6 +13,7 @@ import {
   buildThisWeekSelection,
   isThisWeekRow,
 } from "@/lib/vmb/this-week-selection";
+import { VMB_BOOK_LOAD_LABEL, VMB_BOOK_LOAD_ROUTE } from "@/lib/vmb/book-load-cta";
 import { buildVmbSalonHref } from "@/lib/vmb/salon-href";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
 import { logTodayLockBranch } from "@/lib/vmb/today-lock-debug";
@@ -184,9 +185,9 @@ export function VmbClientsClient({ initialAnalysisId, initialView }: Props) {
   if (loadState === "not_loaded") {
     return (
       <EmptyState
-        message="Start by finding the money in your book."
-        ctaLabel="Find The Money"
-        ctaHref="/vmb/start"
+        message="Load your client book to unlock client insights."
+        ctaLabel={VMB_BOOK_LOAD_LABEL}
+        ctaHref={VMB_BOOK_LOAD_ROUTE}
       />
     );
   }

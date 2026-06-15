@@ -4,7 +4,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { TaikosDraft } from "../lib/taikos/drafts/types";
-import { getTaikosDraftsFile } from "../lib/taikos/paths";
+import { createDraft } from "../lib/taikos/drafts/draft-store";
+import { getVmbInviteEventsFile } from "../lib/vmb/paths";
 import { appendInviteEvent } from "../lib/vmb/invites/append-invite-event";
 import {
   INVITE_EVENT_DUPLICATE_ID,
@@ -25,8 +26,7 @@ import {
   submitInviteClaim,
   toRecipientInviteClaimView,
 } from "../lib/vmb/invites/submit-invite-claim";
-import { getVmbInviteEventsFile, getVmbTrialsFile } from "../lib/vmb/paths";
-import type { VmbTrialLead } from "../types/vmb/trial";
+import { createVmbTrialLead } from "../lib/vmb/trial-store";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -55,12 +55,11 @@ async function withIsolatedEventsFile<T>(run: () => Promise<T>): Promise<T> {
   return withIsolatedJsonFile(getVmbInviteEventsFile(), run);
 }
 
-function buildTestTaikosDraft(overrides: Partial<TaikosDraft> & Pick<TaikosDraft, "draftId" | "salonId">): TaikosDraft {
-  const now = new Date().toISOString();
+function buildTestTaikosDraftInput(
+  overrides: Partial<TaikosDraft> & Pick<TaikosDraft, "draftId" | "salonId">,
+): Omit<TaikosDraft, "createdAt" | "updatedAt"> {
   return {
     operatorId: "operator-test",
-    createdAt: now,
-    updatedAt: now,
     sourcePage: "/vmb/today",
     draftType: "pcn_invite",
     title: "Grace — Private Client Invite",
@@ -84,45 +83,51 @@ function buildTestTaikosDraft(overrides: Partial<TaikosDraft> & Pick<TaikosDraft
   };
 }
 
+async function seedApprovedInviteDraft(options: {
+  salonName: string;
+  draftId: string;
+}): Promise<{ salonId: string; draftId: string; salonName: string }> {
+  const trial = await createVmbTrialLead({
+    salonName: options.salonName,
+    ownerName: "Jenny",
+    email: `invite-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@salon.test`,
+  });
+  if ("error" in trial) {
+    throw new Error(trial.error);
+  }
+  const salonId = trial.lead.id;
+  await createDraft(buildTestTaikosDraftInput({ draftId: options.draftId, salonId, status: "approved" }));
+  return { salonId, draftId: options.draftId, salonName: options.salonName };
+}
+
 async function testRecipientInviteLanding(): Promise<void> {
   assert(
     fs.existsSync(path.join(process.cwd(), "app/vmb/invite/[inviteId]/page.tsx")),
     "recipient landing route page exists",
   );
 
-  const salonId = `recipient-salon-${Date.now()}`;
   const draftId = `td-recipient-${Date.now()}`;
-  const trialLead: VmbTrialLead = {
-    id: salonId,
+  const { salonId, salonName } = await seedApprovedInviteDraft({
+    draftId,
     salonName: "Blue Mountain Salon",
-    ownerName: "Jenny",
-    email: "jenny@salon.test",
-    createdAt: new Date().toISOString(),
-  };
-
-  await withIsolatedJsonFile(getVmbTrialsFile(), async () => {
-    fs.writeFileSync(getVmbTrialsFile(), JSON.stringify([trialLead], null, 2), "utf8");
-
-    await withIsolatedJsonFile(getTaikosDraftsFile(), async () => {
-      const draft = buildTestTaikosDraft({ draftId, salonId, status: "approved" });
-      fs.writeFileSync(getTaikosDraftsFile(), JSON.stringify([draft], null, 2), "utf8");
-
-      const resolved = await resolveRecipientInvite(draftId);
-      assert(resolved.status === "available", "valid invite resolves to available");
-      if (resolved.status !== "available") return;
-      assert(resolved.view.previewModel.metadata.recipientName === "Grace", "renders recipient card");
-      assert(resolved.view.salonDisplayName === "Blue Mountain Salon", "shows salon display name only");
-      assertNoAdminFieldsInRecipientPayload(resolved.view);
-
-      const expiredDraft = buildTestTaikosDraft({ draftId: `${draftId}-expired`, salonId, status: "archived" });
-      fs.writeFileSync(getTaikosDraftsFile(), JSON.stringify([draft, expiredDraft], null, 2), "utf8");
-      const expired = await resolveRecipientInvite(`${draftId}-expired`);
-      assert(expired.status === "expired", "archived invite returns expired state");
-
-      const missing = await resolveRecipientInvite("missing-invite-id");
-      assert(missing.status === "not_found", "unknown invite returns not_found");
-    });
   });
+
+  const resolved = await resolveRecipientInvite(draftId);
+  assert(resolved.status === "available", "valid invite resolves to available");
+  if (resolved.status !== "available") return;
+  assert(resolved.view.previewModel.metadata.recipientName === "Grace", "renders recipient card");
+  assert(resolved.view.salonDisplayName === salonName, "shows salon display name only");
+  assertNoAdminFieldsInRecipientPayload(resolved.view);
+
+  const expiredDraftId = `${draftId}-expired`;
+  await createDraft(
+    buildTestTaikosDraftInput({ draftId: expiredDraftId, salonId, status: "archived" }),
+  );
+  const expired = await resolveRecipientInvite(expiredDraftId);
+  assert(expired.status === "expired", "archived invite returns expired state");
+
+  const missing = await resolveRecipientInvite("missing-invite-id");
+  assert(missing.status === "not_found", "unknown invite returns not_found");
 
   await withIsolatedEventsFile(async () => {
     await recordInviteOpened({
@@ -149,47 +154,38 @@ async function testInviteClaimFlow(): Promise<void> {
     "claims admin panel exists",
   );
 
-  const salonId = `claim-salon-${Date.now()}`;
   const draftId = `td-claim-${Date.now()}`;
-  const trialLead: VmbTrialLead = {
-    id: salonId,
+  const { salonId, salonName } = await seedApprovedInviteDraft({
+    draftId,
     salonName: "Claim Test Salon",
-    ownerName: "Jenny",
-    email: "jenny@salon.test",
-    createdAt: new Date().toISOString(),
-  };
+  });
 
-  await withIsolatedJsonFile(getVmbTrialsFile(), async () => {
-    fs.writeFileSync(getVmbTrialsFile(), JSON.stringify([trialLead], null, 2), "utf8");
+  const resolved = await resolveRecipientInvite(draftId);
+  assert(resolved.status === "available", "claim page source invite resolves");
+  if (resolved.status !== "available") return;
 
-    await withIsolatedJsonFile(getTaikosDraftsFile(), async () => {
-      const draft = buildTestTaikosDraft({ draftId, salonId, status: "approved" });
-      fs.writeFileSync(getTaikosDraftsFile(), JSON.stringify([draft], null, 2), "utf8");
+  const claimView = toRecipientInviteClaimView(resolved.view);
+  assert(claimView.salonDisplayName === salonName, "claim view shows salon display name");
+  assertNoAdminFieldsInRecipientPayload(claimView);
 
-      const resolved = await resolveRecipientInvite(draftId);
-      assert(resolved.status === "available", "claim page source invite resolves");
-      if (resolved.status !== "available") return;
+  const expiredDraftId = `${draftId}-expired`;
+  await createDraft(
+    buildTestTaikosDraftInput({ draftId: expiredDraftId, salonId, status: "archived" }),
+  );
 
-      const claimView = toRecipientInviteClaimView(resolved.view);
-      assert(claimView.salonDisplayName === "Claim Test Salon", "claim view shows salon display name");
-      assertNoAdminFieldsInRecipientPayload(claimView);
+  const expiredClaim = await submitInviteClaim({
+    inviteId: expiredDraftId,
+    contact: "grace@example.com",
+  });
+  assert(!expiredClaim.ok && expiredClaim.status === 410, "expired invite cannot claim");
 
-      const expiredDraft = buildTestTaikosDraft({ draftId: `${draftId}-expired`, salonId, status: "archived" });
-      fs.writeFileSync(getTaikosDraftsFile(), JSON.stringify([draft, expiredDraft], null, 2), "utf8");
+  const missingClaim = await submitInviteClaim({
+    inviteId: "missing-claim-id",
+    contact: "grace@example.com",
+  });
+  assert(!missingClaim.ok && missingClaim.status === 404, "invalid invite cannot claim");
 
-      const expiredClaim = await submitInviteClaim({
-        inviteId: `${draftId}-expired`,
-        contact: "grace@example.com",
-      });
-      assert(!expiredClaim.ok && expiredClaim.status === 410, "expired invite cannot claim");
-
-      const missingClaim = await submitInviteClaim({
-        inviteId: "missing-claim-id",
-        contact: "grace@example.com",
-      });
-      assert(!missingClaim.ok && missingClaim.status === 404, "invalid invite cannot claim");
-
-      await withIsolatedEventsFile(async () => {
+  await withIsolatedEventsFile(async () => {
         const first = await submitInviteClaim({
           inviteId: draftId,
           contact: "grace@example.com",
@@ -199,7 +195,7 @@ async function testInviteClaimFlow(): Promise<void> {
         const claims = await listInviteEventsForSalon(salonId, { types: ["invite_claimed"] });
         assert(claims.length === 1, "invite_claimed event stored");
         assert(claims[0]?.payload.inviteId === draftId, "claim event includes inviteId");
-        assert(claims[0]?.payload.salonDisplayName === "Claim Test Salon", "claim event includes salon display");
+        assert(claims[0]?.payload.salonDisplayName === salonName, "claim event includes salon display");
         assert(claims[0]?.payload.recipientContactSummary === "g***@example.com", "claim event masks contact");
         assert(Boolean(claims[0]?.payload.recipientContactHash), "claim event stores contact hash");
 
@@ -212,8 +208,6 @@ async function testInviteClaimFlow(): Promise<void> {
         const claimsAfterDuplicate = await listInviteEventsForSalon(salonId, { types: ["invite_claimed"] });
         assert(claimsAfterDuplicate.length === 1, "duplicate claim does not spam events");
       });
-    });
-  });
 }
 
 async function run(): Promise<void> {

@@ -13,6 +13,7 @@ import {
 import { readLatestAnalysisId, writeActiveBookSession } from "@/lib/vmb/active-analysis";
 import { VMB_SAMPLE_BOOK_TEXT } from "@/lib/vmb/sample-book";
 import { validateVmbStartFlowSubmit } from "@/lib/vmb/start-flow-validation";
+import { VMB_BOOK_LOAD_LABEL } from "@/lib/vmb/book-load-cta";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { ActiveBookResolution } from "@/lib/vmb/active-book-resolver";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
@@ -233,8 +234,8 @@ export function VmbStartFlow({ refreshMode = false, activeBook = null }: Props) 
           vmbDevLog("trial refresh failed", existingTrialJson);
           setError(
             existingTrialRes.status === 401
-              ? "No salon session cookie — start from Find The Money or refresh after analyzing a book."
-              : "Sign in to your salon session first, or start from Find The Money.",
+              ? "No salon session cookie — load your book or refresh after analyzing a book."
+              : "Sign in to your salon session first, or load your book from the start page.",
           );
           return;
         }
@@ -333,7 +334,7 @@ export function VmbStartFlow({ refreshMode = false, activeBook = null }: Props) 
   return (
     <VmbPageFrame
       width="standard"
-      title={isRefreshMode ? "Book Refresh" : "Find The Money"}
+      title={isRefreshMode ? "Book Refresh" : VMB_BOOK_LOAD_LABEL}
       subtitle={
         isRefreshMode
           ? "Upload a fresh client export to update this week's moves."
@@ -574,7 +575,7 @@ export function VmbStartFlow({ refreshMode = false, activeBook = null }: Props) 
               : "Finding the money…"
             : isRefreshMode
               ? "Refresh My Book"
-              : "Find The Money"}
+              : VMB_BOOK_LOAD_LABEL}
         </button>
       </div>
       ) : null}

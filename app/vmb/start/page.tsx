@@ -5,7 +5,7 @@ import { resolveActiveBook } from "@/lib/vmb/active-book-resolver";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
 
 export const metadata: Metadata = {
-  title: "Find The Money",
+  title: "Load your book",
 };
 
 type Props = {

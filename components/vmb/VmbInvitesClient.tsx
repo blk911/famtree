@@ -6,6 +6,7 @@ import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftP
 import { SortableListHeader } from "@/components/vmb/SortableListHeader";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
+import { VMB_BOOK_LOAD_LABEL } from "@/lib/vmb/book-load-cta";
 import {
   INVITE_SECTION_LABELS,
   INVITE_SECTION_ORDER,
@@ -61,7 +62,7 @@ export function VmbInvitesClient({
       if (!analysisOutcome.ok) {
         setAnalysis(null);
         setDrafts([]);
-        setError("No active book analysis — start from Find The Money.");
+        setError(`No active book analysis — ${VMB_BOOK_LOAD_LABEL.toLowerCase()} first.`);
         return;
       }
       setAnalysis(analysisOutcome.data);

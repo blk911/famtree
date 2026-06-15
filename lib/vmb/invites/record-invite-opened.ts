@@ -10,7 +10,7 @@ export type RecordInviteOpenedInput = {
 };
 
 export async function recordInviteOpened(input: RecordInviteOpenedInput): Promise<void> {
-  void appendInviteEvent({
+  await appendInviteEvent({
     eventType: "invite_opened",
     salonId: input.salonId,
     payload: {

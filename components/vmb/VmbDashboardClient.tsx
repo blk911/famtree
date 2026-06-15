@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
 import { VmbOperatingDashboard } from "@/components/vmb/dashboard/VmbOperatingDashboard";
 import { VmbPageEmpty, VmbPageFrame, VmbPageLoading } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
@@ -20,8 +21,8 @@ type Props = {
 
 function EmptyHome({ noSession }: { noSession?: boolean }) {
   const message = noSession
-    ? "Your salon session expired. Run Find The Money again to restore your workspace."
-    : "Start by finding the money in your book.";
+    ? "Your salon session expired. Load your book again to restore your workspace."
+    : "Start by loading your client book.";
 
   useEffect(() => {
     logTodayLockBranch({
@@ -36,23 +37,7 @@ function EmptyHome({ noSession }: { noSession?: boolean }) {
   return (
     <VmbPageEmpty
       message={message}
-      action={
-        <Link
-          href="/vmb/start"
-          style={{
-            display: "inline-block",
-            padding: "12px 20px",
-            borderRadius: 12,
-            background: VMB_THEME.accent,
-            color: "#fff",
-            fontSize: 14,
-            fontWeight: 700,
-            textDecoration: "none",
-          }}
-        >
-          Find The Money
-        </Link>
-      }
+      action={<LoadYourBookCta />}
     />
   );
 }

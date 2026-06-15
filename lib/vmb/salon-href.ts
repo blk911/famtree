@@ -3,12 +3,18 @@ import { appendVmbAnalysisQuery } from "@/lib/vmb/trial-scope";
 /** Routes that carry ?analysis= when an active analysis exists. */
 export const VMB_ANALYSIS_ROUTES = new Set([
   "/vmb/dashboard",
+  "/vmb/today",
   "/vmb/clients",
   "/vmb/network",
   "/vmb/invites",
   "/vmb/appointments",
   "/vmb/offers",
   "/vmb/history",
+  "/vmb/opportunities",
+  "/vmb/campaigns",
+  "/vmb/queue",
+  "/vmb/activity",
+  "/vmb/goals",
 ]);
 
 /**

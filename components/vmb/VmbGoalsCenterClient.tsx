@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { GoalCard } from "@/components/taikos/goals/GoalCard";
 import { GoalEditor } from "@/components/taikos/goals/GoalEditor";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
+import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
+import { VMB_BOOK_LOCKED_MESSAGE } from "@/lib/vmb/book-load-cta";
 import { logTodayLockBranch } from "@/lib/vmb/today-lock-debug";
 import type { TaikosGoalListItem, TaikosGoalSummary } from "@/lib/taikos/goals/types";
 
@@ -130,5 +132,12 @@ function GoalsLockedState() {
     });
   }, []);
 
-  return <p className="vmb-page-state">Connect your book to unlock goals.</p>;
+  return (
+    <div className="vmb-page-state">
+      <p>{VMB_BOOK_LOCKED_MESSAGE}</p>
+      <p style={{ marginTop: 16 }}>
+        <LoadYourBookCta />
+      </p>
+    </div>
+  );
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
 import { VmbHelpMenu } from "@/components/vmb/onboarding/VmbHelpMenu";
 import { VmbSummaryRail } from "@/components/vmb/VmbSummaryRail";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
@@ -20,7 +21,8 @@ type Props = {
 export function VmbSalonShell({ children }: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { analysisId: activeAnalysisId } = useVmbActiveAnalysisState();
+  const { analysisId: activeAnalysisId, resolving: analysisResolving } = useVmbActiveAnalysisState();
+  const showLoadBookCta = !analysisResolving && !activeAnalysisId;
   const [railOpen, setRailOpen] = useState(false);
   const [salonName, setSalonName] = useState("Your Salon");
   const [refreshDue, setRefreshDue] = useState(false);
@@ -160,6 +162,7 @@ export function VmbSalonShell({ children }: Props) {
               </span>
             </div>
             <VmbHelpMenu />
+            {showLoadBookCta ? <LoadYourBookCta variant="compact" /> : null}
           </div>
         </header>
 

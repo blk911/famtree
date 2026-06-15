@@ -62,6 +62,7 @@
     "test:vmb:offers": "tsx scripts/test-vmb-offers.ts",
     "test:vmb:services": "tsx scripts/test-vmb-services.ts",
     "test:vmb:invite-events": "tsx scripts/test-vmb-invite-events.ts",
+    "test:vmb:operator-flow": "tsx scripts/test-vmb-operator-flow-wiring.ts",
     "test:admin:workspaces": "tsx scripts/test-admin-workspace-routes.ts",
     "test:taikos:phase1": "tsx scripts/test-taikos-phase1.ts",
     "test:taikos:phase2": "tsx scripts/test-taikos-phase2.ts",

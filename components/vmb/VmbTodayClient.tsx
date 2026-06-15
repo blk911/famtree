@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
 import { ActivityTimeline } from "@/components/taikos/activity/ActivityTimeline";
 import { InlineAiosPanel } from "@/components/taikos/InlineAiosPanel";
 import { TaikosInsightList } from "@/components/taikos/coda/TaikosInsightList";
@@ -36,6 +37,7 @@ import {
   shouldShowTaikosReminder,
 } from "@/lib/vmb/onboarding/vmb-launch-guide";
 import { logTodayLockBranch, logTodayLockRendered } from "@/lib/vmb/today-lock-debug";
+import { VMB_BOOK_LOAD_HELPER, VMB_BOOK_LOCKED_MESSAGE } from "@/lib/vmb/book-load-cta";
 
 type TodayData = {
   greeting: string;
@@ -254,7 +256,7 @@ export function VmbTodayClient({
       recordCount: debugRecordCount,
       clientCount: debugClientCount,
       dataLoaded: !!data,
-      message: "Connect your book to unlock Today.",
+      message: VMB_BOOK_LOCKED_MESSAGE,
       pageContext,
     });
   }, [
@@ -341,9 +343,10 @@ export function VmbTodayClient({
               ].join("\n")}
             </pre>
           ) : null}
-          <p>Connect your book to unlock Today.</p>
-          <p style={{ marginTop: 12 }}>
-            <Link href="/vmb/start">Find The Money</Link>
+          <p>{VMB_BOOK_LOCKED_MESSAGE}</p>
+          <p style={{ marginTop: 8, fontSize: 14, color: "#78716c" }}>{VMB_BOOK_LOAD_HELPER}</p>
+          <p style={{ marginTop: 16 }}>
+            <LoadYourBookCta />
           </p>
         </div>
       ) : (

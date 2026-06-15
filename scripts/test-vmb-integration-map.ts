@@ -13,6 +13,7 @@ import {
 } from "../lib/vmb/salon-href";
 import { VMB_SALON_NAV } from "../lib/vmb/salon-nav";
 import { buildVmbSalonNavHref } from "../lib/vmb/salon-nav-href";
+import { VMB_BOOK_LOAD_LABEL, VMB_BOOK_LOAD_ROUTE } from "../lib/vmb/book-load-cta";
 import { workspaceLatestAnalysisId } from "../lib/vmb/workspace-lifecycle";
 import { getWorkspaceForTrial, setLatestAnalysis, upsertWorkspaceForTrial } from "../lib/vmb/workspace-store";
 import { VMB_SAMPLE_BOOK_TEXT } from "../lib/vmb/sample-book";
@@ -101,6 +102,8 @@ async function run(): Promise<void> {
 
   assert(VMB_SALON_NAV.some((n) => n.href === "/vmb/invites"), "invites in salon nav");
   assert(!VMB_SALON_NAV.some((n) => n.href.includes("/admin")), "no admin in salon nav");
+  assert(VMB_BOOK_LOAD_ROUTE === "/vmb/start", "book load route wired to start flow");
+  assert(VMB_BOOK_LOAD_LABEL.length > 0, "book load label defined");
 
   assert(typeof loadVmbPageContext === "function", "loadVmbPageContext available");
 

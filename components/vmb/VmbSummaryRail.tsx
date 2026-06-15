@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
 import { isRefreshDue } from "@/lib/vmb/workspace-lifecycle";
+import { VMB_BOOK_LOAD_HELPER } from "@/lib/vmb/book-load-cta";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { VmbSalonWorkspace } from "@/types/vmb/workspace";
@@ -89,7 +91,28 @@ export function VmbSummaryRail() {
     });
   }
 
-  if (rows.length === 0) return null;
+  if (rows.length === 0) {
+    return (
+      <aside className="vmb-salon-summary" aria-label="Book setup">
+        <p
+          style={{
+            margin: "0 0 10px",
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: VMB_THEME.muted,
+          }}
+        >
+          Get started
+        </p>
+        <p style={{ margin: "0 0 12px", fontSize: 13, lineHeight: 1.45, color: VMB_THEME.muted }}>
+          {VMB_BOOK_LOAD_HELPER}
+        </p>
+        <LoadYourBookCta variant="compact" />
+      </aside>
+    );
+  }
 
   return (
     <aside className="vmb-salon-summary" aria-label="This month summary">

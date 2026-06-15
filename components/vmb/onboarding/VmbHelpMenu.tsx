@@ -43,6 +43,9 @@ export function VmbHelpMenu() {
       </button>
       {open ? (
         <div className="vmb-help-menu__panel" role="menu">
+          <Link href="/vmb/start" className="vmb-help-menu__item" role="menuitem" onClick={() => setOpen(false)}>
+            Load your book
+          </Link>
           <button type="button" className="vmb-help-menu__item" role="menuitem" onClick={handleLaunchGuide}>
             Launch Guide
           </button>
