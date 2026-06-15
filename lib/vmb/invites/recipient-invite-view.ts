@@ -31,6 +31,7 @@ const ADMIN_LEAK_KEYS = [
   "lockedFooter",
   "candidateScore",
   "potentialValue",
+  "recipientContactHash",
 ] as const;
 
 export function assertNoAdminFieldsInRecipientPayload(value: unknown, path = "root"): void {

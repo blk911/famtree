@@ -108,7 +108,7 @@ function run(): void {
     "discovery hub links to hashtag harvest tool",
   );
 
-  for (const route of ["/admin/invites/claims", "/admin/invites/opens", "/admin/invites/conversions"]) {
+  for (const route of ["/admin/invites/opens", "/admin/invites/conversions"]) {
     const pagePath = path.join(
       process.cwd(),
       "app",
@@ -123,6 +123,20 @@ function run(): void {
     assert(source.includes("InvitesEventsAdminPanel"), `${route} reads invite events`);
     assert(source.includes("emptyMessage"), `${route} renders empty state copy`);
   }
+
+  const claimsPagePath = path.join(
+    process.cwd(),
+    "app",
+    "(app)",
+    "admin",
+    "(platform)",
+    "invites",
+    "claims",
+    "page.tsx",
+  );
+  assert(fs.existsSync(claimsPagePath), "invites claims page exists");
+  const claimsSource = fs.readFileSync(claimsPagePath, "utf8");
+  assert(claimsSource.includes("InvitesClaimsAdminPanel"), "claims page uses claims admin panel");
 
   console.log("OK: admin workspace route tests passed");
   console.log(`  workspaces: ${ADMIN_WORKSPACE_NAV.map((w) => w.href).join(", ")}`);

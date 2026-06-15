@@ -23,6 +23,9 @@ export type InviteEventPayload = {
   templateType?: string;
   analysisId?: string;
   sourcePage?: string;
+  salonDisplayName?: string;
+  recipientContactSummary?: string;
+  recipientContactHash?: string;
 };
 
 export type VmbInviteEvent = {
@@ -53,6 +56,9 @@ export function isInviteEventPayload(value: unknown): value is InviteEventPayloa
     "templateType",
     "analysisId",
     "sourcePage",
+    "salonDisplayName",
+    "recipientContactSummary",
+    "recipientContactHash",
   ];
   return stringFields.every((field) => payload[field] === undefined || typeof payload[field] === "string");
 }

@@ -24,6 +24,19 @@ export async function listInviteEventsForSalon(
     .slice(0, limit);
 }
 
+export async function hasInviteClaimForContact(
+  salonId: string,
+  inviteId: string,
+  recipientContactHash: string,
+): Promise<boolean> {
+  const claims = await listInviteEventsForSalon(salonId, { types: ["invite_claimed"], limit: 500 });
+  return claims.some(
+    (event) =>
+      event.payload.inviteId === inviteId &&
+      event.payload.recipientContactHash === recipientContactHash,
+  );
+}
+
 export async function getInviteEventById(eventId: string): Promise<VmbInviteEvent | undefined> {
   const all = await readAllEvents();
   return all.find((event) => event.eventId === eventId);

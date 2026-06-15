@@ -21,6 +21,10 @@ import { assertNoAdminFieldsInRecipientPayload } from "../lib/vmb/invites/recipi
 import { recordInviteOpened } from "../lib/vmb/invites/record-invite-opened";
 import { buildRecipientInvitePath } from "../lib/vmb/invites/recipient-invite-url";
 import { resolveRecipientInvite } from "../lib/vmb/invites/resolve-recipient-invite";
+import {
+  submitInviteClaim,
+  toRecipientInviteClaimView,
+} from "../lib/vmb/invites/submit-invite-claim";
 import { getVmbInviteEventsFile, getVmbTrialsFile } from "../lib/vmb/paths";
 import type { VmbTrialLead } from "../types/vmb/trial";
 
@@ -135,6 +139,83 @@ async function testRecipientInviteLanding(): Promise<void> {
   });
 }
 
+async function testInviteClaimFlow(): Promise<void> {
+  assert(
+    fs.existsSync(path.join(process.cwd(), "app/vmb/invite/[inviteId]/claim/page.tsx")),
+    "claim route page exists",
+  );
+  assert(
+    fs.existsSync(path.join(process.cwd(), "components/admin/workspaces/InvitesClaimsAdminPanel.tsx")),
+    "claims admin panel exists",
+  );
+
+  const salonId = `claim-salon-${Date.now()}`;
+  const draftId = `td-claim-${Date.now()}`;
+  const trialLead: VmbTrialLead = {
+    id: salonId,
+    salonName: "Claim Test Salon",
+    ownerName: "Jenny",
+    email: "jenny@salon.test",
+    createdAt: new Date().toISOString(),
+  };
+
+  await withIsolatedJsonFile(getVmbTrialsFile(), async () => {
+    fs.writeFileSync(getVmbTrialsFile(), JSON.stringify([trialLead], null, 2), "utf8");
+
+    await withIsolatedJsonFile(getTaikosDraftsFile(), async () => {
+      const draft = buildTestTaikosDraft({ draftId, salonId, status: "approved" });
+      fs.writeFileSync(getTaikosDraftsFile(), JSON.stringify([draft], null, 2), "utf8");
+
+      const resolved = await resolveRecipientInvite(draftId);
+      assert(resolved.status === "available", "claim page source invite resolves");
+      if (resolved.status !== "available") return;
+
+      const claimView = toRecipientInviteClaimView(resolved.view);
+      assert(claimView.salonDisplayName === "Claim Test Salon", "claim view shows salon display name");
+      assertNoAdminFieldsInRecipientPayload(claimView);
+
+      const expiredDraft = buildTestTaikosDraft({ draftId: `${draftId}-expired`, salonId, status: "archived" });
+      fs.writeFileSync(getTaikosDraftsFile(), JSON.stringify([draft, expiredDraft], null, 2), "utf8");
+
+      const expiredClaim = await submitInviteClaim({
+        inviteId: `${draftId}-expired`,
+        contact: "grace@example.com",
+      });
+      assert(!expiredClaim.ok && expiredClaim.status === 410, "expired invite cannot claim");
+
+      const missingClaim = await submitInviteClaim({
+        inviteId: "missing-claim-id",
+        contact: "grace@example.com",
+      });
+      assert(!missingClaim.ok && missingClaim.status === 404, "invalid invite cannot claim");
+
+      await withIsolatedEventsFile(async () => {
+        const first = await submitInviteClaim({
+          inviteId: draftId,
+          contact: "grace@example.com",
+        });
+        assert(first.ok && !first.alreadyClaimed, "valid submit writes invite_claimed");
+
+        const claims = await listInviteEventsForSalon(salonId, { types: ["invite_claimed"] });
+        assert(claims.length === 1, "invite_claimed event stored");
+        assert(claims[0]?.payload.inviteId === draftId, "claim event includes inviteId");
+        assert(claims[0]?.payload.salonDisplayName === "Claim Test Salon", "claim event includes salon display");
+        assert(claims[0]?.payload.recipientContactSummary === "g***@example.com", "claim event masks contact");
+        assert(Boolean(claims[0]?.payload.recipientContactHash), "claim event stores contact hash");
+
+        const duplicate = await submitInviteClaim({
+          inviteId: draftId,
+          contact: "grace@example.com",
+        });
+        assert(duplicate.ok && duplicate.alreadyClaimed, "duplicate claim handled idempotently");
+
+        const claimsAfterDuplicate = await listInviteEventsForSalon(salonId, { types: ["invite_claimed"] });
+        assert(claimsAfterDuplicate.length === 1, "duplicate claim does not spam events");
+      });
+    });
+  });
+}
+
 async function run(): Promise<void> {
   assert(INVITE_EVENT_TYPES.length === 8, "eight invite event types defined");
   for (const eventType of INVITE_EVENT_TYPES) {
@@ -157,6 +238,7 @@ async function run(): Promise<void> {
 
   const adminPanelPaths = [
     "components/admin/workspaces/InvitesEventsAdminPanel.tsx",
+    "components/admin/workspaces/InvitesClaimsAdminPanel.tsx",
     "app/(app)/admin/(platform)/invites/claims/page.tsx",
     "app/(app)/admin/(platform)/invites/opens/page.tsx",
     "app/(app)/admin/(platform)/invites/conversions/page.tsx",
@@ -165,11 +247,17 @@ async function run(): Promise<void> {
     assert(fs.existsSync(path.join(process.cwd(), relativePath)), `admin panel file exists: ${relativePath}`);
   }
 
-  for (const relativePath of adminPanelPaths.slice(1)) {
-    const source = fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
-    assert(source.includes("InvitesEventsAdminPanel"), `${relativePath} uses event admin panel`);
-    assert(source.includes("emptyMessage"), `${relativePath} defines empty state copy`);
-  }
+  const opensPage = fs.readFileSync(
+    path.join(process.cwd(), "app/(app)/admin/(platform)/invites/opens/page.tsx"),
+    "utf8",
+  );
+  assert(opensPage.includes("InvitesEventsAdminPanel"), "opens page uses event admin panel");
+
+  const claimsPage = fs.readFileSync(
+    path.join(process.cwd(), "app/(app)/admin/(platform)/invites/claims/page.tsx"),
+    "utf8",
+  );
+  assert(claimsPage.includes("InvitesClaimsAdminPanel"), "claims page uses claims admin panel");
 
   await withIsolatedEventsFile(async () => {
     const salonId = `evt-test-${Date.now()}`;
@@ -223,6 +311,7 @@ async function run(): Promise<void> {
   });
 
   await testRecipientInviteLanding();
+  await testInviteClaimFlow();
 
   console.log("OK: vmb invite event tests passed");
 }

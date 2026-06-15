@@ -61,7 +61,7 @@ export function VmbRecipientInviteLanding({ state }: Props) {
           Claim this invite
         </Link>
         <p className="m-0 text-center text-xs text-stone-500">
-          Claiming is coming soon — your salon will confirm next steps.
+          Tap below to claim this invite and share follow-up contact info.
         </p>
       </div>
     </main>
