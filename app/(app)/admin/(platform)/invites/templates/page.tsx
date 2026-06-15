@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { InvitesWorkspaceBreadcrumb } from "@/components/admin/workspaces/InvitesWorkspaceBreadcrumb";
 import { CardTemplateAdminClient } from "@/components/vmb/admin/CardTemplateAdminClient";
 import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
 
@@ -11,10 +12,15 @@ export const metadata: Metadata = {
 export default async function AdminInvitesTemplatesPage() {
   const ctx = await loadVmbPageContext({});
   return (
-    <CardTemplateAdminClient
-      salonId={ctx.trialId}
-      salonName={ctx.salonName}
-      ownerName={ctx.workspace?.ownerName}
-    />
+    <>
+      <div className="mx-auto max-w-[1500px] px-4 pt-2 sm:px-6 lg:px-8">
+        <InvitesWorkspaceBreadcrumb current="Templates" />
+      </div>
+      <CardTemplateAdminClient
+        salonId={ctx.trialId}
+        salonName={ctx.salonName}
+        ownerName={ctx.workspace?.ownerName}
+      />
+    </>
   );
 }

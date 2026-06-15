@@ -270,52 +270,57 @@ export const MEMBERS_WORKSPACE_SECTIONS: WorkspaceSection[] = [
   },
 ];
 
+/** @deprecated Use lib/admin/invites-workspace.ts — retained for workspace hub compatibility. */
 export const INVITES_WORKSPACE_SECTIONS: WorkspaceSection[] = [
   {
-    title: "Card & offer configuration",
+    title: "Configuration (canonical)",
     links: [
       {
-        label: "Card templates",
-        description: "Relationship copy templates for outreach cards.",
+        label: "Templates",
+        description: "Card relationship copy templates.",
         href: "/admin/invites/templates",
       },
       {
-        label: "Offer catalog",
-        description: "Salon offer definitions linked to services.",
+        label: "Offers",
+        description: "Salon offer catalog.",
         href: "/admin/invites/offers",
       },
       {
-        label: "Service catalog",
-        description: "Services and options referenced by offers.",
+        label: "Services",
+        description: "Service and option catalog.",
         href: "/admin/invites/services",
       },
     ],
   },
   {
-    title: "Queues & outcomes",
+    title: "Operations",
     links: [
       {
         label: "Invite queue",
-        description: "Approved invites awaiting send (salon operator view).",
-        href: "/vmb/queue",
-        external: true,
+        description: "Read-only admin queue view.",
+        href: "/admin/invites/queue",
       },
       {
-        label: "Invites activity",
-        description: "Sent invites, opens, and relationship activity.",
-        href: "/vmb/invites",
-        external: true,
+        label: "Sent invites",
+        description: "Draft and sent activity.",
+        href: "/admin/invites/sent",
       },
       {
-        label: "Card preview / testing",
-        description: "Live outreach preview from Today and opportunities.",
-        href: "/vmb/today",
-        external: true,
+        label: "Claims",
+        description: "CTA claim tracking (placeholder).",
+        href: "/admin/invites/claims",
+        comingSoon: true,
       },
       {
-        label: "Claims & conversions (placeholder)",
-        description: "CTA claims and conversion funnel — analytics surface.",
-        href: "/admin/invites#conversions",
+        label: "Opens",
+        description: "Open/read tracking (placeholder).",
+        href: "/admin/invites/opens",
+        comingSoon: true,
+      },
+      {
+        label: "Conversions",
+        description: "Booking attribution (placeholder).",
+        href: "/admin/invites/conversions",
         comingSoon: true,
       },
     ],
@@ -325,19 +330,19 @@ export const INVITES_WORKSPACE_SECTIONS: WorkspaceSection[] = [
     links: [
       {
         label: "Legacy VMB admin templates",
-        description: "Deprecated — use /admin/invites/templates.",
+        description: "Deprecated — redirects to /admin/invites/templates.",
         href: "/vmb/admin/templates",
         legacy: true,
       },
       {
         label: "Legacy VMB admin offers",
-        description: "Deprecated — use /admin/invites/offers.",
+        description: "Deprecated — redirects to /admin/invites/offers.",
         href: "/vmb/admin/offers",
         legacy: true,
       },
       {
         label: "Legacy VMB admin services",
-        description: "Deprecated — use /admin/invites/services.",
+        description: "Deprecated — redirects to /admin/invites/services.",
         href: "/vmb/admin/services",
         legacy: true,
       },
@@ -346,6 +351,32 @@ export const INVITES_WORKSPACE_SECTIONS: WorkspaceSection[] = [
 ];
 
 export const VMB_SALONS_PRODUCT_SECTIONS: WorkspaceSection[] = [
+  {
+    title: "Invite operating center",
+    description: "Configure templates, offers, services, and monitor invite outcomes.",
+    links: [
+      {
+        label: "VMB Invites operating center",
+        description: "Primary admin workspace for card templates, catalogs, queue, and analytics.",
+        href: ADMIN_WORKSPACE_ROUTES.invites,
+      },
+      {
+        label: "Card templates",
+        description: "Relationship copy for outreach cards.",
+        href: "/admin/invites/templates",
+      },
+      {
+        label: "Offer catalog",
+        description: "Salon offers linked to services.",
+        href: "/admin/invites/offers",
+      },
+      {
+        label: "Service catalog",
+        description: "Services and options for offers.",
+        href: "/admin/invites/services",
+      },
+    ],
+  },
   {
     title: "Product operations",
     description: "VMB Salons product views only — discovery/resolver engines live under Platform workspaces.",
@@ -429,4 +460,9 @@ export const ADMIN_PLATFORM_HUB_PATHS = [
   "/admin/invites/templates",
   "/admin/invites/offers",
   "/admin/invites/services",
+  "/admin/invites/queue",
+  "/admin/invites/sent",
+  "/admin/invites/claims",
+  "/admin/invites/opens",
+  "/admin/invites/conversions",
 ] as const;

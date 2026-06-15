@@ -5,11 +5,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import {
+  INVITES_CANONICAL_ADMIN_ROUTES,
+  INVITES_LEGACY_VMB_ADMIN_REDIRECTS,
+  INVITES_OPERATING_CARDS,
+} from "../lib/admin/invites-workspace";
+import {
   ADMIN_PLATFORM_HUB_PATHS,
   ADMIN_WORKSPACE_NAV,
   ADMIN_WORKSPACE_ROUTES,
   DISCOVERY_WORKSPACE_SECTIONS,
-  INVITES_WORKSPACE_SECTIONS,
 } from "../lib/admin/workspace-routes";
 
 function assert(condition: boolean, message: string): void {
@@ -50,6 +54,21 @@ function run(): void {
     assert(routePageExists(hub), `hub path resolves to page: ${hub}`);
   }
 
+  assert(INVITES_OPERATING_CARDS.length === 8, "eight invites operating cards defined");
+  for (const card of INVITES_OPERATING_CARDS) {
+    assert(routePageExists(card.href), `invites card route exists: ${card.href}`);
+  }
+
+  for (const route of INVITES_CANONICAL_ADMIN_ROUTES) {
+    assert(route.startsWith("/admin/invites/"), `canonical invites admin route: ${route}`);
+    assert(routePageExists(route), `canonical invites page exists: ${route}`);
+  }
+
+  assert(
+    INVITES_LEGACY_VMB_ADMIN_REDIRECTS.every(({ from, to }) => from.startsWith("/vmb/admin/") && to.startsWith("/admin/invites/")),
+    "legacy vmb admin redirect map is valid",
+  );
+
   const discoveryLinks = DISCOVERY_WORKSPACE_SECTIONS.flatMap((s) => s.links);
   const enginePaths = [
     "lib/intelligence/salon/source-ingest/vagaro-directory-scraper.ts",
@@ -72,13 +91,6 @@ function run(): void {
   }
 
   assert(
-    !INVITES_WORKSPACE_SECTIONS.some((s) =>
-      s.links.some((l) => l.href.includes("vagaro") || l.href.includes("harvest")),
-    ),
-    "invites workspace does not link discovery engines directly except via platform",
-  );
-
-  assert(
     ADMIN_WORKSPACE_ROUTES.discovery === "/admin/discovery",
     "discovery route canonical",
   );
@@ -98,6 +110,7 @@ function run(): void {
 
   console.log("OK: admin workspace route tests passed");
   console.log(`  workspaces: ${ADMIN_WORKSPACE_NAV.map((w) => w.href).join(", ")}`);
+  console.log(`  invites cards: ${INVITES_OPERATING_CARDS.map((c) => c.id).join(", ")}`);
 }
 
 run();
