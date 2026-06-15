@@ -12,6 +12,7 @@ export const INVITE_EVENT_TYPES = [
 export type InviteEventType = (typeof INVITE_EVENT_TYPES)[number];
 
 export type InviteEventPayload = {
+  inviteId?: string;
   draftId?: string;
   queueId?: string;
   clientName?: string;
@@ -41,6 +42,7 @@ export function isInviteEventPayload(value: unknown): value is InviteEventPayloa
   if (!value || typeof value !== "object") return false;
   const payload = value as InviteEventPayload;
   const stringFields: (keyof InviteEventPayload)[] = [
+    "inviteId",
     "draftId",
     "queueId",
     "clientName",

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 import { INVITES_ADMIN_ROUTES } from "@/lib/admin/invites-workspace";
 import { InvitesWorkspaceBreadcrumb } from "@/components/admin/workspaces/InvitesWorkspaceBreadcrumb";
+import { RecipientInviteUrlCopy } from "@/components/admin/workspaces/RecipientInviteUrlCopy";
 
 export function InvitesSentAdminPanel() {
   const [drafts, setDrafts] = useState<VmbInviteDraft[]>([]);
@@ -67,19 +68,22 @@ export function InvitesSentAdminPanel() {
         </div>
       ) : null}
 
-      {!loading && !error && sent.length > 0 ? (
+      {!loading && !error && (sent.length > 0 || approved.length > 0) ? (
         <ul className="m-0 list-none space-y-2 p-0">
-          {sent.slice(0, 12).map((draft) => (
+          {[...sent, ...approved].slice(0, 12).map((draft) => (
             <li key={draft.draftId} className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs">
               <span className="font-bold text-stone-900">{draft.clientName ?? "Client"}</span>
               <span className="mx-2 text-stone-300">·</span>
               <span className="text-stone-600">{draft.inviteCategory}</span>
+              <span className="mx-2 text-stone-300">·</span>
+              <span className="text-stone-500">{draft.status}</span>
+              <RecipientInviteUrlCopy inviteId={draft.draftId} />
             </li>
           ))}
         </ul>
       ) : null}
 
-      {!loading && !error && sent.length === 0 ? (
+      {!loading && !error && sent.length === 0 && approved.length === 0 ? (
         <p className="text-sm text-stone-500">No sent invites yet for this trial.</p>
       ) : null}
 

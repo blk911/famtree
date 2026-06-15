@@ -94,6 +94,20 @@ export async function getDraftByIdPostgres(
   }
 }
 
+export async function findDraftByIdGlobalPostgres(draftId: string): Promise<TaikosDraft | null> {
+  if ((await resolveTaikosStorageBackend()) !== "postgres") return null;
+  try {
+    const rows = await prisma.$queryRaw<Array<{ payload: unknown }>>`
+      SELECT payload FROM taikos_draft
+      WHERE id = ${draftId}
+      LIMIT 1
+    `;
+    return rowToDraft(rows[0] ?? { payload: null }) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function createDraftPostgres(
   input: CreateTaikosDraftInput,
 ): Promise<TaikosDraft | { error: string }> {

@@ -109,6 +109,20 @@ export async function getInviteDraftForTrial(
   return draft;
 }
 
+/** Recipient landing lookup — draft id is unique within invite draft storage. */
+export async function findInviteDraftByIdGlobal(draftId: string): Promise<VmbInviteDraft | undefined> {
+  const trimmed = draftId.trim();
+  if (!trimmed) return undefined;
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") {
+    const { findInviteDraftByIdGlobalPostgres } = await import("./invite-draft-store-postgres");
+    const row = await findInviteDraftByIdGlobalPostgres(trimmed);
+    if (row || !vmbJsonFallbackAllowed()) return row;
+  }
+  const all = await listInviteDraftsJson();
+  return all.find((d) => d.draftId === trimmed);
+}
+
 function mergePreservingEdits(
   built: VmbInviteDraft[],
   existing: VmbInviteDraft[],

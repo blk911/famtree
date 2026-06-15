@@ -53,6 +53,23 @@ export async function getQueueItemByIdPostgres(
   }
 }
 
+export async function findQueueItemByDraftIdGlobalPostgres(
+  draftId: string,
+): Promise<TaikosQueueItem | null> {
+  if ((await resolveTaikosStorageBackend()) !== "postgres") return null;
+  try {
+    const rows = await prisma.$queryRaw<Array<{ payload: unknown }>>`
+      SELECT payload FROM taikos_queue_item
+      WHERE payload->>'draftId' = ${draftId} AND status <> 'cancelled'
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `;
+    return rowToItem(rows[0] ?? { payload: null }) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function createQueueItemPostgres(
   input: CreateQueueItemInput,
 ): Promise<TaikosQueueItem | { error: string }> {

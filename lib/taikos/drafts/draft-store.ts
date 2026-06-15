@@ -72,6 +72,20 @@ export async function getDraftById(
   return all.find((d) => d.salonId === salonId && d.draftId === draftId) ?? null;
 }
 
+/** Recipient landing lookup — draft id is globally unique within tAIkOS storage. */
+export async function findDraftByIdGlobal(draftId: string): Promise<TaikosDraft | null> {
+  const trimmed = draftId.trim();
+  if (!trimmed) return null;
+  const backend = await resolveTaikosStorageBackend();
+  if (backend === "postgres") {
+    const { findDraftByIdGlobalPostgres } = await import("./draft-store-postgres");
+    const row = await findDraftByIdGlobalPostgres(trimmed);
+    if (row || !taikosJsonFallbackAllowed()) return row;
+  }
+  const all = await readAllJson();
+  return all.find((d) => d.draftId === trimmed) ?? null;
+}
+
 export async function createDraft(input: CreateTaikosDraftInput): Promise<TaikosDraft> {
   const writable = await assertTaikosWritableBackend();
   if (!writable.ok) throw new Error(writable.error);

@@ -87,6 +87,24 @@ export async function getInviteDraftForTrialPostgres(
   }
 }
 
+export async function findInviteDraftByIdGlobalPostgres(
+  draftId: string,
+): Promise<VmbInviteDraft | undefined> {
+  if ((await resolveVmbStorageBackend()) !== "postgres") return undefined;
+
+  try {
+    const rows = await prisma.$queryRaw<DraftRow[]>`
+      SELECT payload FROM vmb_invite_draft
+      WHERE draft_id = ${draftId.trim()}
+      LIMIT 1
+    `;
+    const draft = parsePayload(rows[0]?.payload);
+    return draft ? normalizeInviteDraft(draft) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function replaceInviteDraftsForTrialAnalysisPostgres(
   trialId: string,
   analysisId: string,

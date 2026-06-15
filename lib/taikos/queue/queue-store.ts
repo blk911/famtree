@@ -60,6 +60,24 @@ export async function getQueueItemById(
   return all.find((q) => q.salonId === salonId && q.queueId === queueId) ?? null;
 }
 
+/** Latest queue row for a draft — used to recover invite card snapshots for recipient view. */
+export async function findQueueItemByDraftIdGlobal(draftId: string): Promise<TaikosQueueItem | null> {
+  const trimmed = draftId.trim();
+  if (!trimmed) return null;
+  const backend = await resolveTaikosStorageBackend();
+  if (backend === "postgres") {
+    const { findQueueItemByDraftIdGlobalPostgres } = await import("./queue-store-postgres");
+    const row = await findQueueItemByDraftIdGlobalPostgres(trimmed);
+    if (row || !taikosJsonFallbackAllowed()) return row;
+  }
+  const all = await readAllJson();
+  return (
+    all
+      .filter((item) => item.draftId === trimmed && item.status !== "cancelled")
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0] ?? null
+  );
+}
+
 export async function createQueueItem(input: CreateQueueItemInput): Promise<TaikosQueueItem> {
   const writable = await assertTaikosWritableBackend();
   if (!writable.ok) throw new Error(writable.error);
