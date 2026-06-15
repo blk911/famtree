@@ -1724,6 +1724,36 @@
   color: #78716c;
 }
 
+.vmb-salon-qa-answer__boundary {
+  margin: 0 0 6px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid #e7e5e4;
+  background: #fafaf9;
+  color: #57534e;
+}
+
+.vmb-salon-qa-answer__boundary--unsafe_action {
+  border-color: #fbbf24;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.vmb-salon-qa-answer__suggestions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin: 0 0 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+
 .vmb-salon-qa-answer__metrics,
 .vmb-salon-qa-answer__dossier {
   display: grid;

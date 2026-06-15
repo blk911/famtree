@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CodaSearchResult, CodaSummary } from "@/lib/taikos/coda/types";
 import { SALON_QA_SUGGESTED_CHIPS, salonQaModeBadge } from "@/lib/taikos/salon-qa/salon-query-catalog";
+import { salonQaBoundaryBadge } from "@/lib/taikos/salon-qa/boundary-policy";
 import {
   followUpQueryFromAction,
   normalizeSalonQaSuggestedAction,
@@ -176,9 +177,30 @@ export function TodayCodaBanner({
 
         {qaAnswer ? (
           <div className="vmb-salon-qa-answer">
-            <p className="vmb-salon-qa-answer__mode">{salonQaModeBadge(qaAnswer.queryMode)}</p>
+            {qaAnswer.boundary ? (
+              <p className={`vmb-salon-qa-answer__boundary vmb-salon-qa-answer__boundary--${qaAnswer.boundary}`}>
+                {salonQaBoundaryBadge(qaAnswer.boundary)}
+              </p>
+            ) : (
+              <p className="vmb-salon-qa-answer__mode">{salonQaModeBadge(qaAnswer.queryMode)}</p>
+            )}
             <p className="vmb-salon-qa-answer__headline">{qaAnswer.headline}</p>
             <p className="vmb-salon-qa-answer__text">{qaAnswer.answerText}</p>
+            {qaAnswer.suggestedQuestions?.length ? (
+              <div className="vmb-salon-qa-answer__suggestions">
+                {qaAnswer.suggestedQuestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    className="vmb-salon-qa-chip"
+                    disabled={searching}
+                    onClick={() => handleChipClick(suggestion)}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            ) : null}
             {qaAnswer.intelligence?.metrics?.length ? (
               <dl className="vmb-salon-qa-answer__metrics">
                 {qaAnswer.intelligence.metrics.map((metric) => (

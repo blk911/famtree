@@ -77,11 +77,12 @@ async function run(): Promise<void> {
   assert(lapsedAnswer.results.length > 0, "lapsed returns ranked results");
 
   const unknownAnswer = answerSalonQuery({ question: "What is the weather?", analysis });
-  assert(unknownAnswer.intent === "unknown", "unknown question returns unknown intent");
+  assert(unknownAnswer.boundary === "out_of_bounds", "weather question returns out_of_bounds boundary");
+  assert(unknownAnswer.suggestedCards.length === 0, "boundary weather answer does not drive feed");
   assert(
-    unknownAnswer.answerText.toLowerCase().includes("pcn") ||
-      unknownAnswer.answerText.toLowerCase().includes("overdue"),
-    "unknown question returns helpful options",
+    unknownAnswer.answerText.toLowerCase().includes("salon business") ||
+      unknownAnswer.answerText.toLowerCase().includes("client book"),
+    "out of bounds question returns helpful salon scope reply",
   );
 
   const noBookPayload = {

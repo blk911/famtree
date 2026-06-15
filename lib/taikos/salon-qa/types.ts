@@ -120,6 +120,10 @@ export type SalonQaSuggestedCard = {
   confidence?: number;
 };
 
+import type { SalonQaBoundary } from "./boundary-policy";
+
+export type { SalonQaBoundary };
+
 export type SalonQaAnswer = {
   question: string;
   queryMode: SalonQueryMode;
@@ -134,6 +138,8 @@ export type SalonQaAnswer = {
   followUpPrompt: string;
   intelligence?: SalonIntelligenceAnswer;
   clientDossier?: SalonClientDossier;
+  boundary?: SalonQaBoundary;
+  suggestedQuestions?: string[];
 };
 
 /** Active TAIKOS question filter driving Today relationship discoveries. */
