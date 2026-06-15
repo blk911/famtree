@@ -19,8 +19,7 @@ function isVmbCardTemplate(item: unknown): item is VmbCardTemplate {
     typeof t.id === "string" &&
     typeof t.type === "string" &&
     typeof t.name === "string" &&
-    typeof t.messageTemplate === "string" &&
-    typeof t.primaryCta === "string"
+    typeof t.messageTemplate === "string"
   );
 }
 

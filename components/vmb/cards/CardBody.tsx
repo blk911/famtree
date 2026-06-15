@@ -104,7 +104,16 @@ export function CardBody({ model, editable, onChange }: Props) {
             </>
           ) : null}
           <p className="vmb-card-preview__copy">{displayBody}</p>
+          {model.relationshipBenefit?.trim() ? (
+            <p className="vmb-card-preview__copy">{model.relationshipBenefit}</p>
+          ) : null}
           <CardPreviewOfferBlock model={model} />
+          {!model.offer && model.templateOfferLine?.trim() ? (
+            <p className="vmb-card-preview__copy vmb-card-preview__copy--offer">{model.templateOfferLine}</p>
+          ) : null}
+          {model.signatureLine?.trim() ? (
+            <p className="vmb-card-preview__signature">{model.signatureLine}</p>
+          ) : null}
           <p className="vmb-card-preview__cta">{displayCta}</p>
         </>
       )}

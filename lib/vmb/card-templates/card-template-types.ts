@@ -40,11 +40,12 @@ export type VmbCardTemplate = {
   titleTemplate?: string;
   subtitleTemplate?: string;
   messageTemplate: string;
+  relationshipBenefitTemplate?: string;
   offerTemplate?: string;
   offerCategory?: VmbOfferCategory;
   offerRequired?: boolean;
   offerMode?: VmbCardTemplateOfferMode;
-  primaryCta: string;
+  primaryCta?: string;
   secondaryCta?: string;
   signatureTemplate: string;
   tokens: string[];

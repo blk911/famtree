@@ -1,7 +1,6 @@
 import type { CardAccent, CardImageLayout } from "@/lib/vmb/cards/card-types";
 import type { CardPreviewModel, CardTemplateInput } from "@/lib/vmb/cards/card-preview-model";
 import {
-  buildPersonalInviteCopy,
   inviteCopyToBody,
   type PersonalInviteCopy,
 } from "@/lib/vmb/cards/personal-invite-copy";
@@ -14,6 +13,13 @@ import {
 } from "@/lib/vmb/offers/offer-resolver";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 import { applyTemplateTokens, buildTemplateTokenContext, withOfferTokens } from "./template-tokens";
+import {
+  resolveGreetingTemplate,
+  resolveOfferTemplateText,
+  resolvePersonalConnectionTemplate,
+  resolveRelationshipBenefitTemplate,
+  resolveTemplateCta,
+} from "./template-copy-fields";
 
 function accentFromTemplate(accent?: string): CardAccent {
   if (accent === "rose" || accent === "gold" || accent === "sage" || accent === "slate" || accent === "plum") {
@@ -57,32 +63,31 @@ function buildInviteCopyFromTemplate(
   tokenContext: ReturnType<typeof buildTemplateTokenContext>,
   catalogOffer?: VmbOffer,
 ): PersonalInviteCopy {
-  const personalized = buildPersonalInviteCopy({
-    recipientName: input.recipientName,
-    cardType: input.cardType,
-    serviceName: input.serviceName,
-    visitCount: input.visitCount,
-    lastVisit: input.lastVisit,
-    salonName: input.salonName,
-    techName: input.techName ?? tokenContext.ownerName,
-    subjectLabel: input.subjectLabel,
-    discoveryText: input.discoveryText,
-    recommendationText: input.recommendationText,
-    ticketValue: input.ticketValue,
-  });
-
-  const offerMessage = catalogOffer
+  const personalConnection = applyTemplateTokens(
+    resolvePersonalConnectionTemplate(template, input),
+    tokenContext,
+  );
+  const inviteMessage = applyTemplateTokens(
+    resolveRelationshipBenefitTemplate(template),
+    tokenContext,
+  );
+  const catalogOfferText = catalogOffer
     ? applyTemplateTokens(catalogOffer.offerText, tokenContext)
-    : applyTemplateTokens(template.offerTemplate ?? personalized.offerMessage, tokenContext);
+    : undefined;
+  const offerMessage = applyTemplateTokens(
+    resolveOfferTemplateText(template, input, catalogOfferText),
+    tokenContext,
+  );
+  const autoCta = resolveTemplateCta(template);
 
   return {
-    greeting: applyTemplateTokens(template.greetingTemplate, tokenContext),
-    personalConnection: personalized.personalConnection,
-    inviteMessage: applyTemplateTokens(template.messageTemplate, tokenContext),
+    greeting: applyTemplateTokens(resolveGreetingTemplate(template), tokenContext),
+    personalConnection,
+    inviteMessage,
     offerMessage,
     signature: applyTemplateTokens(template.signatureTemplate, tokenContext),
-    primaryCta: template.primaryCta,
-    secondaryCta: template.secondaryCta ?? personalized.secondaryCta,
+    primaryCta: autoCta,
+    secondaryCta: "",
   };
 }
 
@@ -117,6 +122,7 @@ export function buildPreviewFromTemplate(
           options: input.serviceOptions,
         })
       : undefined;
+  const autoCta = resolveTemplateCta(template);
 
   if (input.cardType === "pcn_invite") {
     const inviteCopy = buildInviteCopyFromTemplate(template, input, tokenContext, catalogOffer);
@@ -129,7 +135,7 @@ export function buildPreviewFromTemplate(
       imageLayout,
       imageSlots: buildImageSlots(imageLayout),
       accent,
-      cta: inviteCopy.primaryCta,
+      cta: autoCta,
       tags: [],
       inviteCopy,
       techName: input.techName ?? tokenContext.ownerName,
@@ -148,35 +154,41 @@ export function buildPreviewFromTemplate(
     };
   }
 
-  const salutation = applyTemplateTokens(template.greetingTemplate, tokenContext);
+  const salutation = applyTemplateTokens(resolveGreetingTemplate(template), tokenContext);
   const title = applyTemplateTokens(template.titleTemplate ?? "", tokenContext);
   const subtitle = applyTemplateTokens(template.subtitleTemplate ?? "", tokenContext);
-  const body = applyTemplateTokens(template.messageTemplate, tokenContext);
+  const personalConnection = applyTemplateTokens(
+    resolvePersonalConnectionTemplate(template, input),
+    tokenContext,
+  );
+  const relationshipBenefit = applyTemplateTokens(
+    resolveRelationshipBenefitTemplate(template),
+    tokenContext,
+  );
+  const signatureLine = applyTemplateTokens(template.signatureTemplate, tokenContext);
   const templateOfferLine = template.offerTemplate
     ? applyTemplateTokens(template.offerTemplate, tokenContext)
     : "";
-
-  let mergedBody = body;
-  if (!previewOffer && templateOfferLine) {
-    mergedBody = `${body}\n\n${templateOfferLine}`;
-  }
 
   return {
     cardType: input.cardType,
     salutation,
     title,
     subtitle,
-    body: mergedBody,
+    body: personalConnection,
+    relationshipBenefit,
+    signatureLine,
     imageLayout,
     imageSlots: buildImageSlots(imageLayout),
     accent,
-    cta: template.primaryCta,
+    cta: autoCta,
     tags: [template.name],
     templateId: template.id,
     templateName: template.name,
     offer: previewOffer,
     includeOffer,
     offerProminent: offerIsProminent(input.cardType),
+    templateOfferLine: !previewOffer && templateOfferLine ? templateOfferLine : undefined,
     metadata: {
       recipientName,
       serviceName: input.serviceName,
@@ -200,11 +212,10 @@ export function cardPreviewToTemplateOverride(
       isDefault: false,
       salonId: base.salonId,
       greetingTemplate: draft.inviteCopy.greeting,
-      messageTemplate: draft.inviteCopy.inviteMessage,
+      messageTemplate: draft.inviteCopy.personalConnection,
+      relationshipBenefitTemplate: draft.inviteCopy.inviteMessage,
       offerTemplate: draft.inviteCopy.offerMessage,
       signatureTemplate: draft.inviteCopy.signature,
-      primaryCta: draft.inviteCopy.primaryCta,
-      secondaryCta: draft.inviteCopy.secondaryCta,
       titleTemplate: undefined,
       subtitleTemplate: undefined,
       updatedAt: now,
@@ -220,7 +231,9 @@ export function cardPreviewToTemplateOverride(
     titleTemplate: draft.title,
     subtitleTemplate: draft.subtitle,
     messageTemplate: draft.body,
-    primaryCta: draft.cta,
+    relationshipBenefitTemplate: draft.relationshipBenefit,
+    offerTemplate: draft.templateOfferLine ?? base.offerTemplate,
+    signatureTemplate: draft.signatureLine ?? base.signatureTemplate,
     updatedAt: now,
   };
 }

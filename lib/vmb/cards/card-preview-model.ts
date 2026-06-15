@@ -35,6 +35,12 @@ export type CardPreviewModel = {
   metadata: CardPersonalizationMetadata;
   /** Blue Mountain personal invite sections (PCN). */
   inviteCopy?: PersonalInviteCopy;
+  /** Relationship benefit paragraph (non-PCN and derived PCN preview). */
+  relationshipBenefit?: string;
+  /** Signature line before CTA. */
+  signatureLine?: string;
+  /** Template offer line when catalog offer is not attached. */
+  templateOfferLine?: string;
   techName?: string;
   salonDisplayName?: string;
   templateId?: string;

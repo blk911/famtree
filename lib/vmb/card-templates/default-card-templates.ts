@@ -29,11 +29,11 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
     tone: "premium",
     greetingTemplate: "Dear {clientName},",
     messageTemplate:
+      "I always remember your {serviceName} appointments — you know how to make a visit feel calm.",
+    relationshipBenefitTemplate:
       "I wanted to personally invite you into my Private Client Network at {salonName}. This is where I share first access to openings, client-only offers, and little surprises before they go anywhere else.",
     offerTemplate: "If you want, I can send a few private openings that fit your usual rhythm.",
-    primaryCta: "Join Private Client Network",
-    secondaryCta: "Book My Next Appointment",
-    signatureTemplate: "{ownerName} ❤️",
+    signatureTemplate: "{ownerName} 💗",
     offerCategory: "pcn",
     offerMode: "optional",
   }),
@@ -47,9 +47,10 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
     titleTemplate: "Happy Birthday",
     subtitleTemplate: "Wishing you a wonderful year",
     messageTemplate:
-      "I hope your birthday feels special. We would love to celebrate you at {salonName} when the moment is right.",
-    primaryCta: "Claim Birthday Treat",
-    signatureTemplate: "{ownerName}",
+      "I hope your birthday feels special — we'd love to celebrate you at {salonName}.",
+    relationshipBenefitTemplate:
+      "You make this salon brighter, and I wanted to reach out with something just for you.",
+    signatureTemplate: "{ownerName} 💗",
     offerCategory: "birthday",
     offerMode: "recommended",
   }),
@@ -63,9 +64,10 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
     titleTemplate: "We Should Catch Up",
     subtitleTemplate: "It's been too long",
     messageTemplate:
-      "It's been a while since we last saw you, and I wanted to reach out personally from {salonName}.",
-    primaryCta: "Let's Reconnect",
-    signatureTemplate: "{ownerName}",
+      "It's been a while since we last saw you, and I've been thinking about you.",
+    relationshipBenefitTemplate:
+      "I wanted to reach out personally from {salonName} — your chair is still here whenever you're ready.",
+    signatureTemplate: "{ownerName} 💗",
     offerCategory: "reactivation",
     offerMode: "recommended",
   }),
@@ -79,9 +81,10 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
     titleTemplate: "Time For A Refresh?",
     subtitleTemplate: "We'd love to see you again",
     messageTemplate:
-      "It has been a little while since your last visit, and I was thinking about you today at {salonName}.",
-    primaryCta: "Book Refresh",
-    signatureTemplate: "{ownerName}",
+      "It has been a little while since your last visit, and I was thinking about you today.",
+    relationshipBenefitTemplate:
+      "When you're ready, {salonName} has a few times that could work before they go public.",
+    signatureTemplate: "{ownerName} 💗",
     offerCategory: "refresh",
     offerMode: "recommended",
   }),
@@ -95,9 +98,10 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
     titleTemplate: "Just Wanted To Say Thanks",
     subtitleTemplate: "You make this place special",
     messageTemplate:
-      "Clients like you help make {salonName} feel personal — not just busy. Thank you for trusting us.",
-    primaryCta: "See Private Invite",
-    signatureTemplate: "{ownerName}",
+      "Clients like you help make {salonName} feel personal — not just busy.",
+    relationshipBenefitTemplate:
+      "Thank you for trusting us. You're exactly the kind of client this salon was built for.",
+    signatureTemplate: "{ownerName} 💗",
     offerCategory: "vip",
     offerMode: "optional",
   }),
@@ -111,9 +115,10 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
     titleTemplate: "Bring Someone You Love",
     subtitleTemplate: "Referral invitation",
     messageTemplate:
-      "You know the kind of people who belong at {salonName}. I would be grateful if you introduced someone you trust.",
-    primaryCta: "Invite A Friend",
-    signatureTemplate: "{ownerName}",
+      "You know the kind of people who belong at {salonName}.",
+    relationshipBenefitTemplate:
+      "I would be grateful if you introduced someone you trust — it means a lot when great clients send great people.",
+    signatureTemplate: "{ownerName} 💗",
     offerCategory: "referral",
     offerMode: "recommended",
   }),
@@ -127,10 +132,11 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
     titleTemplate: "A Spot Opened Up",
     subtitleTemplate: "Limited opening",
     messageTemplate:
-      "A spot just opened at {salonName}, and I thought of you first before it goes anywhere else.",
+      "A spot just opened at {salonName}, and I thought of you first.",
+    relationshipBenefitTemplate:
+      "Before it goes anywhere else, I wanted to give you first access.",
     offerTemplate: "If you want it, I can hold {nextOpening} for you.",
-    primaryCta: "Claim Opening",
-    signatureTemplate: "{ownerName}",
+    signatureTemplate: "{ownerName} 💗",
     offerCategory: "open_slot",
     offerMode: "required",
     offerRequired: true,
@@ -145,9 +151,10 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
     titleTemplate: "Something New For You",
     subtitleTemplate: "Service spotlight",
     messageTemplate:
-      "We thought of you for {serviceName} — something that fits where you are right now at {salonName}.",
-    primaryCta: "View Service",
-    signatureTemplate: "{ownerName}",
+      "We thought of you for {serviceName} — something that fits where you are right now.",
+    relationshipBenefitTemplate:
+      "It could be a nice next step at {salonName} whenever you're curious.",
+    signatureTemplate: "{ownerName} 💗",
     offerCategory: "service",
     offerMode: "recommended",
   }),

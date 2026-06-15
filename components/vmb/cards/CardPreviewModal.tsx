@@ -358,25 +358,7 @@ export function CardPreviewModal({
 
                 <label className="vmb-card-preview-modal__field">
 
-                  <span>Greeting</span>
-
-                  <input
-
-                    value={inviteCopy.greeting}
-
-                    onChange={(e) => patchDraft({ inviteCopy: { greeting: e.target.value } })}
-
-                    aria-label="Greeting"
-
-                  />
-
-                </label>
-
-
-
-                <label className="vmb-card-preview-modal__field">
-
-                  <span>Personal connection</span>
+                  <span>Personal Connection</span>
 
                   <textarea
 
@@ -400,7 +382,7 @@ export function CardPreviewModal({
 
                 <label className="vmb-card-preview-modal__field">
 
-                  <span>Invite message</span>
+                  <span>Relationship Benefit</span>
 
                   <textarea
 
@@ -410,7 +392,7 @@ export function CardPreviewModal({
 
                     onChange={(e) => patchDraft({ inviteCopy: { inviteMessage: e.target.value } })}
 
-                    aria-label="Invite message"
+                    aria-label="Relationship benefit"
 
                   />
 
@@ -420,7 +402,7 @@ export function CardPreviewModal({
 
                 <label className="vmb-card-preview-modal__field">
 
-                  <span>Offer / appointment note</span>
+                  <span>Offer</span>
 
                   <textarea
 
@@ -430,7 +412,7 @@ export function CardPreviewModal({
 
                     onChange={(e) => patchDraft({ inviteCopy: { offerMessage: e.target.value } })}
 
-                    aria-label="Offer or appointment note"
+                    aria-label="Offer"
 
                   />
 
@@ -454,42 +436,6 @@ export function CardPreviewModal({
 
                 </label>
 
-
-
-                <label className="vmb-card-preview-modal__field">
-
-                  <span>Primary CTA</span>
-
-                  <input
-
-                    value={inviteCopy.primaryCta}
-
-                    onChange={(e) => patchDraft({ inviteCopy: { primaryCta: e.target.value } })}
-
-                    aria-label="Primary call to action"
-
-                  />
-
-                </label>
-
-
-
-                <label className="vmb-card-preview-modal__field">
-
-                  <span>Secondary CTA</span>
-
-                  <input
-
-                    value={inviteCopy.secondaryCta}
-
-                    onChange={(e) => patchDraft({ inviteCopy: { secondaryCta: e.target.value } })}
-
-                    aria-label="Secondary call to action"
-
-                  />
-
-                </label>
-
               </>
 
             ) : (
@@ -498,71 +444,17 @@ export function CardPreviewModal({
 
                 <label className="vmb-card-preview-modal__field">
 
-                  <span>Greeting</span>
-
-                  <input
-
-                    value={draft.salutation}
-
-                    onChange={(e) => patchDraft({ salutation: e.target.value })}
-
-                    aria-label="Card greeting"
-
-                  />
-
-                </label>
-
-
-
-                <label className="vmb-card-preview-modal__field">
-
-                  <span>Title</span>
-
-                  <input
-
-                    value={draft.title}
-
-                    onChange={(e) => patchDraft({ title: e.target.value })}
-
-                    aria-label="Card title"
-
-                  />
-
-                </label>
-
-
-
-                <label className="vmb-card-preview-modal__field">
-
-                  <span>Subtitle</span>
-
-                  <input
-
-                    value={draft.subtitle}
-
-                    onChange={(e) => patchDraft({ subtitle: e.target.value })}
-
-                    aria-label="Card subtitle"
-
-                  />
-
-                </label>
-
-
-
-                <label className="vmb-card-preview-modal__field">
-
-                  <span>Body</span>
+                  <span>Personal Connection</span>
 
                   <textarea
 
                     value={draft.body}
 
-                    rows={4}
+                    rows={3}
 
                     onChange={(e) => patchDraft({ body: e.target.value })}
 
-                    aria-label="Card body"
+                    aria-label="Personal connection"
 
                   />
 
@@ -572,15 +464,55 @@ export function CardPreviewModal({
 
                 <label className="vmb-card-preview-modal__field">
 
-                  <span>Call to action</span>
+                  <span>Relationship Benefit</span>
+
+                  <textarea
+
+                    value={draft.relationshipBenefit ?? ""}
+
+                    rows={3}
+
+                    onChange={(e) => patchDraft({ relationshipBenefit: e.target.value })}
+
+                    aria-label="Relationship benefit"
+
+                  />
+
+                </label>
+
+
+
+                <label className="vmb-card-preview-modal__field">
+
+                  <span>Offer</span>
+
+                  <textarea
+
+                    value={draft.templateOfferLine ?? draft.offer?.offerText ?? ""}
+
+                    rows={2}
+
+                    onChange={(e) => patchDraft({ templateOfferLine: e.target.value })}
+
+                    aria-label="Offer"
+
+                  />
+
+                </label>
+
+
+
+                <label className="vmb-card-preview-modal__field">
+
+                  <span>Signature</span>
 
                   <input
 
-                    value={draft.cta}
+                    value={draft.signatureLine ?? ""}
 
-                    onChange={(e) => patchDraft({ cta: e.target.value })}
+                    onChange={(e) => patchDraft({ signatureLine: e.target.value })}
 
-                    aria-label="Call to action"
+                    aria-label="Signature"
 
                   />
 

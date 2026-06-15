@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { CardPreview } from "@/components/vmb/cards/CardPreview";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { buildPreviewFromTemplate } from "@/lib/vmb/card-templates/apply-card-template";
+import { normalizeTemplateForEditor } from "@/lib/vmb/card-templates/template-copy-fields";
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
 import { CARD_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/card-templates/default-card-templates";
 import { getAllDefaultOffers } from "@/lib/vmb/offers/default-offers";
@@ -70,7 +71,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
 
   useEffect(() => {
     if (selectedTemplate) {
-      setDraft({ ...selectedTemplate });
+      setDraft(normalizeTemplateForEditor({ ...selectedTemplate }));
     }
   }, [selectedTemplate]);
 
@@ -215,13 +216,6 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                 <input value={draft.name} onChange={(e) => patchDraft({ name: e.target.value })} />
               </label>
               <label className="vmb-template-admin__field">
-                <span>Description</span>
-                <input
-                  value={draft.description}
-                  onChange={(e) => patchDraft({ description: e.target.value })}
-                />
-              </label>
-              <label className="vmb-template-admin__field">
                 <span>Image mode</span>
                 <select
                   value={draft.imageMode}
@@ -247,58 +241,27 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                 </select>
               </label>
               <label className="vmb-template-admin__field">
-                <span>Greeting</span>
-                <input
-                  value={draft.greetingTemplate}
-                  onChange={(e) => patchDraft({ greetingTemplate: e.target.value })}
-                />
-              </label>
-              {draft.type !== "pcn_invite" ? (
-                <>
-                  <label className="vmb-template-admin__field">
-                    <span>Title</span>
-                    <input
-                      value={draft.titleTemplate ?? ""}
-                      onChange={(e) => patchDraft({ titleTemplate: e.target.value })}
-                    />
-                  </label>
-                  <label className="vmb-template-admin__field">
-                    <span>Subtitle</span>
-                    <input
-                      value={draft.subtitleTemplate ?? ""}
-                      onChange={(e) => patchDraft({ subtitleTemplate: e.target.value })}
-                    />
-                  </label>
-                </>
-              ) : null}
-              <label className="vmb-template-admin__field">
-                <span>Message</span>
+                <span>Personal Connection</span>
                 <textarea
-                  rows={4}
+                  rows={3}
                   value={draft.messageTemplate}
                   onChange={(e) => patchDraft({ messageTemplate: e.target.value })}
                 />
               </label>
               <label className="vmb-template-admin__field">
-                <span>Offer (optional)</span>
+                <span>Relationship Benefit</span>
+                <textarea
+                  rows={4}
+                  value={draft.relationshipBenefitTemplate ?? ""}
+                  onChange={(e) => patchDraft({ relationshipBenefitTemplate: e.target.value })}
+                />
+              </label>
+              <label className="vmb-template-admin__field">
+                <span>Offer</span>
                 <textarea
                   rows={2}
                   value={draft.offerTemplate ?? ""}
                   onChange={(e) => patchDraft({ offerTemplate: e.target.value })}
-                />
-              </label>
-              <label className="vmb-template-admin__field">
-                <span>Primary CTA</span>
-                <input
-                  value={draft.primaryCta}
-                  onChange={(e) => patchDraft({ primaryCta: e.target.value })}
-                />
-              </label>
-              <label className="vmb-template-admin__field">
-                <span>Secondary CTA</span>
-                <input
-                  value={draft.secondaryCta ?? ""}
-                  onChange={(e) => patchDraft({ secondaryCta: e.target.value })}
                 />
               </label>
               <label className="vmb-template-admin__field">

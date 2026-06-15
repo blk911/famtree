@@ -43,8 +43,8 @@ export function cardPreviewToQueuedInvitePayload(
     inviteMessage: copy.inviteMessage,
     offerMessage: copy.offerMessage,
     signature: copy.signature,
-    primaryCta: copy.primaryCta,
-    secondaryCta: copy.secondaryCta,
+    primaryCta: model.cta || copy.primaryCta,
+    secondaryCta: model.cardType === "pcn_invite" ? undefined : copy.secondaryCta || undefined,
   };
 }
 
