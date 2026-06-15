@@ -19,6 +19,7 @@ import {
   SidebarVaultBadge,
 } from "@/components/ui/app-chrome";
 import { isMarketIntelPath, MARKET_INTEL_ROUTES } from "@/lib/markets/market-intel-routes";
+import { ADMIN_WORKSPACE_NAV, isAdminPlatformWorkspacePath } from "@/lib/admin/workspace-routes";
 
 interface Props { user: PrismaUser; open?: boolean; vaultNotificationCount?: number; }
 
@@ -31,6 +32,8 @@ const MARKET_INTEL_ITEMS = [
   { href: MARKET_INTEL_ROUTES.markets, label: "Markets" },
   { href: MARKET_INTEL_ROUTES.actionItems, label: "Action Items" },
 ];
+
+const PLATFORM_ADMIN_ITEMS = ADMIN_WORKSPACE_NAV.map(({ label, href }) => ({ href, label }));
 
 const FAMILY_ITEMS = [
   { href: "/tree", label: "My People" },
@@ -55,7 +58,9 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
     pathname.startsWith("/tree/") ||
     pathname === "/family-vault/family-units";
 
-  const marketIntelActive = isMarketIntelPath(pathname);
+  const marketIntelActive = isMarketIntelPath(pathname) && !isAdminPlatformWorkspacePath(pathname);
+
+  const platformAdminActive = isAdminPlatformWorkspacePath(pathname);
 
   const adminZone =
     pathname === "/admin" ||
@@ -68,6 +73,7 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
 
   const [settingsOpen, setSettingsOpen] = useState(settingsActive);
   const [marketIntelOpen, setMarketIntelOpen] = useState(marketIntelActive);
+  const [platformAdminOpen, setPlatformAdminOpen] = useState(platformAdminActive);
 
   /** Expand Settings submenu whenever we're on Settings or any /admin route (client navigations skip useState init). */
   useEffect(() => {
@@ -77,6 +83,10 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
   useEffect(() => {
     if (marketIntelActive) setMarketIntelOpen(true);
   }, [marketIntelActive]);
+
+  useEffect(() => {
+    if (platformAdminActive) setPlatformAdminOpen(true);
+  }, [platformAdminActive]);
 
   const handleLogout = async () => {
     try {
@@ -238,6 +248,65 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
           Discovery Channel
         </Link>
 
+        {/* Platform Admin — discovery, social, operators, members, invites, VMB product */}
+        {isAdmin ? (
+          <>
+            <button
+              onClick={() => {
+                if (!platformAdminActive) {
+                  router.push(ADMIN_WORKSPACE_NAV[0].href);
+                  setPlatformAdminOpen(true);
+                  return;
+                }
+                setPlatformAdminOpen((v) => !v);
+              }}
+              style={{
+                ...linkStyle(platformAdminActive),
+                width: "100%",
+                background: platformAdminActive
+                  ? "linear-gradient(135deg,rgba(233,108,80,0.75),rgba(244,162,97,0.55))"
+                  : "transparent",
+                border: platformAdminActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
+                cursor: "pointer",
+              }}
+            >
+              <Building2 style={{ width: "18px", height: "18px", flexShrink: 0 }} />
+              <span style={{ flex: 1, textAlign: "left" }}>Platform Admin</span>
+              <ChevronDown
+                style={{
+                  width: "15px",
+                  height: "15px",
+                  flexShrink: 0,
+                  transform: platformAdminOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s",
+                }}
+              />
+            </button>
+
+            {platformAdminOpen ? (
+              <div style={{ marginBottom: "3px" }}>
+                {PLATFORM_ADMIN_ITEMS.map(({ href, label }) => {
+                  const active = pathname === href || pathname.startsWith(`${href}/`);
+                  return (
+                    <Link key={href} href={href} style={subLinkStyle(active)}>
+                      <span
+                        style={{
+                          width: "5px",
+                          height: "5px",
+                          borderRadius: "50%",
+                          flexShrink: 0,
+                          background: active ? "white" : "rgba(255,255,255,0.3)",
+                        }}
+                      />
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+          </>
+        ) : null}
+
         {/* Market Intel — discovery, markets, action items (admin only) */}
         {isAdmin ? (
           <>
@@ -281,7 +350,8 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
                     (href !== MARKET_INTEL_ROUTES.creatorDiscovery && pathname.startsWith(`${href}/`)) ||
                     (href === MARKET_INTEL_ROUTES.creatorDiscovery &&
                       (pathname.startsWith("/admin/studios/") ||
-                        pathname.startsWith("/admin/intelligence/salon")));
+                        pathname.startsWith("/admin/intelligence/salon") ||
+                        pathname.startsWith("/admin/discovery")));
                   return (
                     <Link key={href} href={href} style={subLinkStyle(active)}>
                       <span

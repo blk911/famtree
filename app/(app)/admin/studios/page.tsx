@@ -15,6 +15,8 @@ import {
 } from "@/types/studios";
 import Link from "next/link";
 import { Building2, Plus, Sprout, Inbox } from "lucide-react";
+import { LegacyAdminPathNotice } from "@/components/admin/workspaces/LegacyAdminPathNotice";
+import { ADMIN_WORKSPACE_ROUTES } from "@/lib/admin/workspace-routes";
 import { StudiosGatewayAccessRequestsSection } from "./StudiosGatewayAccessRequestsSection";
 import { DiscoveryInputsSection } from "@/components/admin/intelligence/salon/DiscoveryInputsSection";
 import { SalonPipelineOverview } from "./SalonPipelineOverview";
@@ -42,6 +44,11 @@ export default async function AdminStudiosPage() {
 
   return (
     <div className="flex flex-col gap-5">
+      <LegacyAdminPathNotice
+        legacyPath="/admin/studios"
+        canonicalPath={ADMIN_WORKSPACE_ROUTES.discovery}
+        label="Discovery workspace"
+      />
       <div className="flex flex-wrap items-center justify-end">
         <SalonClearRuntimeAction />
       </div>

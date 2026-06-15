@@ -5,7 +5,12 @@ const nextConfig = {
     NEXT_PUBLIC_ADMIN_TOOLS_FEATURES: "member-video-preview-v1",
   },
   async redirects() {
-    return [{ source: "/admin/studio", destination: "/admin/studios", permanent: false }];
+    return [
+      { source: "/admin/studio", destination: "/admin/studios", permanent: false },
+      { source: "/vmb/admin/templates", destination: "/admin/invites/templates", permanent: false },
+      { source: "/vmb/admin/offers", destination: "/admin/invites/offers", permanent: false },
+      { source: "/vmb/admin/services", destination: "/admin/invites/services", permanent: false },
+    ];
   },
   experimental: {
     instrumentationHook: false,

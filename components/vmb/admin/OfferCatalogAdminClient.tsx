@@ -185,8 +185,8 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
             ))}
           </ul>
           <div className="vmb-offer-admin__links">
-            <Link href="/vmb/admin/services">Services</Link>
-            <Link href="/vmb/admin/templates">Templates</Link>
+            <Link href="/admin/invites/services">Services</Link>
+            <Link href="/admin/invites/templates">Templates</Link>
           </div>
         </aside>
 

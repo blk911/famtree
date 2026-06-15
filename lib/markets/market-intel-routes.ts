@@ -1,7 +1,9 @@
 // lib/markets/market-intel-routes.ts
 
+import { ADMIN_WORKSPACE_ROUTES, isAdminPlatformWorkspacePath } from "@/lib/admin/workspace-routes";
+
 export const MARKET_INTEL_ROUTES = {
-  creatorDiscovery: "/admin/studios",
+  creatorDiscovery: ADMIN_WORKSPACE_ROUTES.discovery,
   markets: "/admin/markets",
   actionItems: "/admin/action-items",
 } as const;
@@ -23,6 +25,7 @@ export function resolveMarketIntelSection(pathname: string): MarketIntelSection 
   }
   if (
     pathname === MARKET_INTEL_ROUTES.creatorDiscovery ||
+    pathname.startsWith(`${MARKET_INTEL_ROUTES.creatorDiscovery}/`) ||
     pathname.startsWith("/admin/studios/") ||
     pathname.startsWith("/admin/intelligence/")
   ) {
@@ -35,7 +38,8 @@ export function isMarketIntelPath(pathname: string): boolean {
   return resolveMarketIntelSection(pathname) !== "";
 }
 
-/** Market Intel + intelligence vertical pages share the unified chrome. */
+/** Market Intel + intelligence vertical pages share the unified chrome. Excludes platform workspace hubs. */
 export function isMarketIntelZone(pathname: string): boolean {
+  if (isAdminPlatformWorkspacePath(pathname)) return false;
   return isMarketIntelPath(pathname) || pathname.startsWith("/admin/intelligence");
 }
