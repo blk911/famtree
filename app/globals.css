@@ -3748,14 +3748,17 @@
 
 .vmb-launch-guide-overlay {
   position: fixed;
-  z-index: 40;
+  z-index: 60;
   pointer-events: none;
-  max-width: min(360px, calc(100vw - 32px));
+  max-width: 360px;
+  width: min(360px, calc(100vw - 48px));
+  margin: 0;
+  padding: 0;
 }
 
 .vmb-launch-guide-overlay--fallback {
-  top: 88px;
-  right: 20px;
+  top: 96px;
+  right: 24px;
   left: auto;
 }
 
@@ -3784,28 +3787,28 @@
 
 .vmb-launch-guide-overlay__panel--arrow-left::before {
   left: -17px;
-  top: 50%;
+  top: var(--launch-guide-arrow-offset, 50%);
   transform: translateY(-50%);
   border-right-color: #fff;
 }
 
 .vmb-launch-guide-overlay__panel--arrow-right::before {
   right: -17px;
-  top: 50%;
+  top: var(--launch-guide-arrow-offset, 50%);
   transform: translateY(-50%);
   border-left-color: #fff;
 }
 
 .vmb-launch-guide-overlay__panel--arrow-top::before {
   top: -17px;
-  left: 50%;
+  left: var(--launch-guide-arrow-offset, 50%);
   transform: translateX(-50%);
   border-bottom-color: #fff;
 }
 
 .vmb-launch-guide-overlay__panel--arrow-bottom::before {
   bottom: -17px;
-  left: 50%;
+  left: var(--launch-guide-arrow-offset, 50%);
   transform: translateX(-50%);
   border-top-color: #fff;
 }

@@ -20,7 +20,9 @@ import {
   computeLaunchGuideBubblePlacement,
   launchGuideTargetForNavId,
   launchGuideTargetSelector,
+  LAUNCH_GUIDE_MIN_TOP,
   rectFromBounds,
+  resolveLaunchGuideViewportBounds,
 } from "../lib/vmb/onboarding/launch-guide-targets";
 
 function assert(condition: boolean, message: string): void {
@@ -55,26 +57,48 @@ function run(): void {
   assert(launchGuideTargetForNavId("home") === "nav-today", "home nav maps to nav-today");
   assert(launchGuideTargetForNavId("queue") === "queue-nav", "queue nav maps to queue-nav");
 
+  const bounds = resolveLaunchGuideViewportBounds({ windowWidth: 1200, windowHeight: 800, sidebarWidth: 220 });
+
   const targetRect = rectFromBounds({ top: 200, left: 100, width: 120, height: 40 });
   const placement = computeLaunchGuideBubblePlacement({
+    target: "taikos-input",
     targetRect,
     bubbleWidth: 320,
     bubbleHeight: 200,
-    viewport: { width: 1200, height: 800 },
+    bounds,
   });
   assert(placement.placement === "left", "bubble prefers right-of-target (arrow on left)");
   assert(placement.left > targetRect.right, "bubble sits to the right of target");
+  assert(placement.top >= bounds.minTop, "bubble stays below header");
+  assert(placement.left >= bounds.minLeft, "bubble stays inside content area");
+  assert(placement.left + 320 <= bounds.maxRight, "bubble stays inside right edge");
+  assert(placement.top + 200 <= bounds.maxBottom, "bubble stays inside bottom edge");
+
+  const navPlacement = computeLaunchGuideBubblePlacement({
+    target: "nav-today",
+    targetRect: rectFromBounds({ top: 120, left: 14, width: 192, height: 40 }),
+    bubbleWidth: 320,
+    bubbleHeight: 200,
+    bounds,
+  });
+  assert(navPlacement.placement === "left", "nav target keeps bubble to the right");
+  assert(navPlacement.top >= LAUNCH_GUIDE_MIN_TOP, "nav bubble stays below header");
+  assert(navPlacement.left >= bounds.minLeft, "nav bubble clears sidebar");
+  assert(navPlacement.left >= 236, "nav bubble sits right of sidebar rail");
 
   const fallbackPlacement = computeLaunchGuideBubblePlacement({
+    target: "taikos-input",
     targetRect: rectFromBounds({ top: 200, left: 20, width: 80, height: 40 }),
     bubbleWidth: 320,
     bubbleHeight: 200,
-    viewport: { width: 360, height: 800 },
+    bounds: resolveLaunchGuideViewportBounds({ windowWidth: 360, windowHeight: 800, sidebarWidth: 0 }),
   });
   assert(
     ["right", "top", "bottom"].includes(fallbackPlacement.placement),
     "fallback placement when right side lacks room",
   );
+  assert(fallbackPlacement.top >= LAUNCH_GUIDE_MIN_TOP, "fallback bubble respects header clamp");
+  assert(fallbackPlacement.left + 320 <= 360 - 24, "fallback bubble shifts inside narrow viewport");
 
   let step = 1;
   step = advanceLaunchGuideStep(step);
