@@ -83,6 +83,19 @@ function run(): void {
     "discovery route canonical",
   );
 
+  assert(
+    DISCOVERY_WORKSPACE_SECTIONS.some((section) =>
+      section.links.some((link) => link.href === "/admin/studios/source-ingest"),
+    ),
+    "discovery hub links to source ingest tool",
+  );
+  assert(
+    DISCOVERY_WORKSPACE_SECTIONS.some((section) =>
+      section.links.some((link) => link.href === "/admin/studios/creator-lab/hashtag-harvest"),
+    ),
+    "discovery hub links to hashtag harvest tool",
+  );
+
   console.log("OK: admin workspace route tests passed");
   console.log(`  workspaces: ${ADMIN_WORKSPACE_NAV.map((w) => w.href).join(", ")}`);
 }

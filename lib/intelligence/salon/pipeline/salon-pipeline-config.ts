@@ -84,7 +84,12 @@ export function pipelineStageForPathname(pathname: string): SalonPipelineStageId
     const stage = pipelineStageForNavItem(match.id);
     if (stage) return stage;
   }
-  if (pathname === "/admin/studios" || pathname.startsWith("/admin/studios?")) {
+  if (
+    pathname === "/admin/discovery" ||
+    pathname.startsWith("/admin/discovery?") ||
+    pathname === "/admin/studios" ||
+    pathname.startsWith("/admin/studios?")
+  ) {
     return "discover";
   }
   return "discover";

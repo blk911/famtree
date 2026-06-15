@@ -349,9 +349,9 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
                     pathname === href ||
                     (href !== MARKET_INTEL_ROUTES.creatorDiscovery && pathname.startsWith(`${href}/`)) ||
                     (href === MARKET_INTEL_ROUTES.creatorDiscovery &&
-                      (pathname.startsWith("/admin/studios/") ||
-                        pathname.startsWith("/admin/intelligence/salon") ||
-                        pathname.startsWith("/admin/discovery")));
+                      (pathname.startsWith("/admin/discovery") ||
+                        pathname.startsWith("/admin/studios/") ||
+                        pathname.startsWith("/admin/intelligence/salon")));
                   return (
                     <Link key={href} href={href} style={subLinkStyle(active)}>
                       <span

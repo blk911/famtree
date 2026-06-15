@@ -375,8 +375,8 @@ export default async function CreatorStudioDetailPage({ params }: Props) {
 
       {/* Breadcrumb */}
       <div style={{ fontSize: 13, color: "#78716c", marginBottom: 20 }}>
-        <Link href="/admin/studios" style={{ fontWeight: 700, color: "#1c1917", textDecoration: "none" }}>
-          ← Studio Management
+        <Link href="/admin/discovery" style={{ fontWeight: 700, color: "#1c1917", textDecoration: "none" }}>
+          ← Discovery
         </Link>
         <span style={{ margin: "0 8px", color: "#d6d3d1" }}>|</span>
         <Link href="/admin/studios/creator-lab" style={{ color: "#1c1917", textDecoration: "none" }}>

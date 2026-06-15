@@ -134,8 +134,8 @@ export const DISCOVERY_WORKSPACE_SECTIONS: WorkspaceSection[] = [
         href: "/admin/studios/harvest-analytics",
       },
       {
-        label: "Legacy discovery hub",
-        description: "Original /admin/studios overview (compatibility).",
+        label: "Legacy studio hub",
+        description: "Original /admin/studios overview — tooling routes remain here.",
         href: "/admin/studios",
         legacy: true,
       },

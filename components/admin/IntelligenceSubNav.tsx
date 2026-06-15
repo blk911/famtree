@@ -4,6 +4,7 @@
 // Accepts a VerticalConfig and renders active-state pill links.
 
 import Link from "next/link";
+import { ADMIN_WORKSPACE_ROUTES } from "@/lib/admin/workspace-routes";
 import { usePathname } from "next/navigation";
 import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import type { VerticalConfig } from "@/lib/intelligence/core/vertical-config";
@@ -46,8 +47,8 @@ export function IntelligenceSubNav({
         gap: 5,
         letterSpacing: "0.01em",
       }}>
-        <Link href="/admin/studios" style={{ color: "#78716c", textDecoration: "none", fontWeight: 600 }}>
-          AIH Studios
+        <Link href={ADMIN_WORKSPACE_ROUTES.discovery} style={{ color: "#78716c", textDecoration: "none", fontWeight: 600 }}>
+          Discovery
         </Link>
         <span style={{ color: "#d6d3d1", fontSize: 10 }}>›</span>
         <span style={{ color: "#44403c", fontWeight: 700 }}>{config.label}</span>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { SalonPipelineSummary, SalonPipelineStageId } from "@/lib/intelligence/salon/pipeline/pipeline-types";
 import { SALON_PIPELINE_STAGES } from "@/lib/intelligence/salon/pipeline/salon-pipeline-config";
+import { ADMIN_WORKSPACE_ROUTES } from "@/lib/admin/workspace-routes";
 
 type SalonPipelineHeaderProps = {
   currentStage: SalonPipelineStageId;
@@ -60,7 +61,7 @@ export function SalonPipelineHeader({
           return (
             <Link
               key={stage.id}
-              href={`/admin/studios#${stage.id}`}
+              href={`${ADMIN_WORKSPACE_ROUTES.discovery}#${stage.id}`}
               className={`${stagePillClass(active)} no-underline`}
               role="tab"
               aria-selected={active}

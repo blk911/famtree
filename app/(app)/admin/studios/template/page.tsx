@@ -29,8 +29,8 @@ export default async function AdminStudioTemplatePage() {
           lineHeight: 1.55,
         }}
       >
-        <Link href="/admin/studios" prefetch={false} style={{ fontWeight: 700, color: "#0f172a" }}>
-          ← Studio management
+        <Link href="/admin/discovery" prefetch={false} style={{ fontWeight: 700, color: "#0f172a" }}>
+          ← Discovery workspace
         </Link>
         <span style={{ margin: "0 10px", color: "#d6d3d1" }}>|</span>
         <span>

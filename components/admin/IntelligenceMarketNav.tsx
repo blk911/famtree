@@ -17,6 +17,7 @@ function resolveActiveVertical(pathname: string): string {
   if (pathname.startsWith("/admin/intelligence/hcare")) return "hcare";
   if (pathname.startsWith("/admin/intelligence/labs")) return "labs";
   if (
+    pathname.startsWith("/admin/discovery") ||
     pathname.startsWith("/admin/studios") ||
     pathname.startsWith("/admin/intelligence/salon")
   ) {

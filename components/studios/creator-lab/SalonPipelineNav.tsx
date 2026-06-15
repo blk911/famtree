@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ADMIN_WORKSPACE_ROUTES } from "@/lib/admin/workspace-routes";
 import { MarketIntelChrome } from "@/components/admin/MarketIntelChrome";
 import { IntelligenceContextBadge } from "@/components/admin/IntelligenceContextBadge";
 import { SalonNetworkVizLauncher } from "@/components/admin/intelligence/salon/SalonNetworkVizLauncher";
@@ -38,7 +39,7 @@ export function SalonPipelineNav({ currentTool, trailing }: SalonPipelineNavProp
         <div className="min-w-0 space-y-2.5">
           <div className="flex flex-wrap items-center gap-1 text-[11px] text-stone-500">
             <Link
-              href="/admin/studios"
+              href={ADMIN_WORKSPACE_ROUTES.discovery}
               className="font-semibold text-stone-600 no-underline hover:text-stone-900"
             >
               Discovery

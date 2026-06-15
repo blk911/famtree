@@ -1,6 +1,9 @@
 // lib/intelligence/salon/discovery-flow-config.ts
 //
-// Market Intel Discovery operating flow (UI navigation only — routes unchanged):
+// Market Intel Discovery operating flow (UI navigation only — tool routes unchanged):
+//
+//   Primary hub: /admin/discovery
+//   Legacy hub:  /admin/studios (compatibility — same pipeline tools)
 //
 //   Inputs → Resolve → Qualify → Operate → Runs
 //
@@ -139,7 +142,12 @@ for (const stage of DISCOVERY_FLOW_STAGES) {
 
 /** Longest-prefix match for discovery routes */
 export function discoveryFlowStageForPathname(pathname: string): DiscoveryFlowStageId {
-  if (pathname === "/admin/studios" || pathname.startsWith("/admin/studios?")) {
+  if (
+    pathname === "/admin/discovery" ||
+    pathname.startsWith("/admin/discovery?") ||
+    pathname === "/admin/studios" ||
+    pathname.startsWith("/admin/studios?")
+  ) {
     return "inputs";
   }
 
