@@ -1,6 +1,8 @@
 import type { CardAccent, CardImageLayout, VmbCardType } from "@/lib/vmb/cards/card-types";
 import type { PersonalInviteCopy } from "@/lib/vmb/cards/personal-invite-copy";
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
+import type { CardPreviewOffer } from "@/lib/vmb/offers/offer-types";
+import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 
 export type CardImageSlot = {
   id: string;
@@ -35,6 +37,9 @@ export type CardPreviewModel = {
   salonDisplayName?: string;
   templateId?: string;
   templateName?: string;
+  offer?: CardPreviewOffer;
+  includeOffer?: boolean;
+  offerProminent?: boolean;
 };
 
 export type CardTemplateInput = {
@@ -55,4 +60,10 @@ export type CardTemplateInput = {
   salonId?: string;
   /** Pre-resolved salon template — skips default seed when provided. */
   template?: VmbCardTemplate;
+  /** Salon offer catalog entries for template offer slots. */
+  offers?: VmbOffer[];
+  /** Explicit offer override for this card build. */
+  offer?: VmbOffer;
+  selectedOfferId?: string;
+  includeOffer?: boolean;
 };

@@ -1,5 +1,6 @@
 "use client";
 
+import { CardPreviewOfferBlock } from "@/components/vmb/cards/CardPreviewOfferBlock";
 import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
 import {
   buildPersonalInviteCopy,
@@ -54,9 +55,13 @@ export function PersonalInvitePreview({ model }: Props) {
         <p className="vmb-salon-invite__greeting">{copy.greeting}</p>
         <p className="vmb-salon-invite__paragraph">{copy.personalConnection}</p>
         <p className="vmb-salon-invite__paragraph">{copy.inviteMessage}</p>
-        <p className="vmb-salon-invite__paragraph vmb-salon-invite__paragraph--offer">
-          {copy.offerMessage}
-        </p>
+        {model.includeOffer !== false && model.offer ? (
+          <CardPreviewOfferBlock model={model} />
+        ) : (
+          <p className="vmb-salon-invite__paragraph vmb-salon-invite__paragraph--offer">
+            {copy.offerMessage}
+          </p>
+        )}
         <p className="vmb-salon-invite__signature">{copy.signature}</p>
         <div className="vmb-salon-invite__cta-row">
           <span className="vmb-salon-invite__cta vmb-salon-invite__cta--primary">

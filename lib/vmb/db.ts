@@ -73,6 +73,20 @@ const DDL_STATEMENTS: string[] = [
   )`,
   `CREATE INDEX IF NOT EXISTS vmb_card_template_salon_type
     ON vmb_card_template (salon_id, type)`,
+  `CREATE TABLE IF NOT EXISTS vmb_offer (
+    id text PRIMARY KEY,
+    salon_id text,
+    category text NOT NULL,
+    name text NOT NULL,
+    active boolean NOT NULL DEFAULT true,
+    source text,
+    confidence numeric,
+    payload jsonb NOT NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS vmb_offer_salon_category
+    ON vmb_offer (salon_id, category)`,
 ];
 
 const MIGRATION_STATEMENTS: string[] = [

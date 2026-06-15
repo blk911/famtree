@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CardPreview } from "@/components/vmb/cards/CardPreview";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { buildPreviewFromTemplate } from "@/lib/vmb/card-templates/apply-card-template";
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
 import { CARD_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/card-templates/default-card-templates";
+import { getAllDefaultOffers } from "@/lib/vmb/offers/default-offers";
 import { VMB_CARD_TYPES, type VmbCardType } from "@/lib/vmb/cards/card-types";
 import { cardActionLabel } from "@/lib/vmb/cards/card-type-labels";
 
@@ -71,6 +73,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
         visitCount: CARD_TEMPLATE_PREVIEW_CONTEXT.visitCount,
         referralCount: CARD_TEMPLATE_PREVIEW_CONTEXT.referralCount,
         recommendationText: CARD_TEMPLATE_PREVIEW_CONTEXT.offer,
+        offers: getAllDefaultOffers(),
       },
       ownerName || CARD_TEMPLATE_PREVIEW_CONTEXT.ownerName,
     );
@@ -147,6 +150,9 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
               </li>
             ))}
           </ul>
+          <div className="vmb-offer-admin__links">
+            <Link href="/vmb/admin/offers">Offer Catalog</Link>
+          </div>
         </aside>
 
         <section className="vmb-template-admin__editor">

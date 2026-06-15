@@ -34,6 +34,8 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
     primaryCta: "Join Private Client Network",
     secondaryCta: "Book My Next Appointment",
     signatureTemplate: "{ownerName} ❤️",
+    offerCategory: "pcn",
+    offerMode: "optional",
   }),
   seedTemplate("birthday_card", {
     name: "Birthday Card",
@@ -48,6 +50,8 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
       "I hope your birthday feels special. We would love to celebrate you at {salonName} when the moment is right.",
     primaryCta: "Claim Birthday Treat",
     signatureTemplate: "{ownerName}",
+    offerCategory: "birthday",
+    offerMode: "recommended",
   }),
   seedTemplate("reactivation_card", {
     name: "Reactivation Invite",
@@ -62,6 +66,8 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
       "It's been a while since we last saw you, and I wanted to reach out personally from {salonName}.",
     primaryCta: "Let's Reconnect",
     signatureTemplate: "{ownerName}",
+    offerCategory: "reactivation",
+    offerMode: "recommended",
   }),
   seedTemplate("refresh_card", {
     name: "Refresh Reminder",
@@ -76,6 +82,8 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
       "It has been a little while since your last visit, and I was thinking about you today at {salonName}.",
     primaryCta: "Book Refresh",
     signatureTemplate: "{ownerName}",
+    offerCategory: "refresh",
+    offerMode: "recommended",
   }),
   seedTemplate("vip_thank_you", {
     name: "VIP Thank You",
@@ -90,6 +98,8 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
       "Clients like you help make {salonName} feel personal — not just busy. Thank you for trusting us.",
     primaryCta: "See Private Invite",
     signatureTemplate: "{ownerName}",
+    offerCategory: "vip",
+    offerMode: "optional",
   }),
   seedTemplate("referral_invite", {
     name: "Referral Invite",
@@ -104,6 +114,8 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
       "You know the kind of people who belong at {salonName}. I would be grateful if you introduced someone you trust.",
     primaryCta: "Invite A Friend",
     signatureTemplate: "{ownerName}",
+    offerCategory: "referral",
+    offerMode: "recommended",
   }),
   seedTemplate("open_slot_fill", {
     name: "Open Slot Fill",
@@ -119,6 +131,9 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
     offerTemplate: "If you want it, I can hold {nextOpening} for you.",
     primaryCta: "Claim Opening",
     signatureTemplate: "{ownerName}",
+    offerCategory: "open_slot",
+    offerMode: "required",
+    offerRequired: true,
   }),
   seedTemplate("service_card", {
     name: "Service Spotlight",
@@ -133,6 +148,8 @@ export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
       "We thought of you for {serviceName} — something that fits where you are right now at {salonName}.",
     primaryCta: "View Service",
     signatureTemplate: "{ownerName}",
+    offerCategory: "service",
+    offerMode: "recommended",
   }),
 ];
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CardPreviewOfferBlock } from "@/components/vmb/cards/CardPreviewOfferBlock";
 import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
 import { isPersonalInviteCard } from "@/lib/vmb/cards/card-type-labels";
 
@@ -103,6 +104,7 @@ export function CardBody({ model, editable, onChange }: Props) {
             </>
           ) : null}
           <p className="vmb-card-preview__copy">{displayBody}</p>
+          <CardPreviewOfferBlock model={model} />
           <p className="vmb-card-preview__cta">{displayCta}</p>
         </>
       )}

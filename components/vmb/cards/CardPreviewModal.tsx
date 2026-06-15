@@ -3,6 +3,7 @@
 
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 import { CardPreview } from "@/components/vmb/cards/CardPreview";
 
@@ -18,6 +19,9 @@ import { useEditableCardDraft } from "@/lib/vmb/cards/use-editable-card-draft";
 import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
 import { buildPreviewFromTemplate, cardPreviewToTemplateOverride } from "@/lib/vmb/card-templates/apply-card-template";
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
+import { getDefaultTemplate } from "@/lib/vmb/card-templates/default-card-templates";
+import { toCardPreviewOffer } from "@/lib/vmb/offers/offer-resolver";
+import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 
 
 
@@ -44,6 +48,8 @@ type Props = {
   templateInput?: import("@/lib/vmb/cards/card-preview-model").CardTemplateInput;
 
   templateBaseline?: CardPreviewModel;
+
+  salonOffers?: VmbOffer[];
 
 };
 
@@ -97,6 +103,8 @@ export function CardPreviewModal({
 
   templateBaseline,
 
+  salonOffers = [],
+
 }: Props) {
 
   const { draft, patchDraft, snapshotDraft, restoreDraft, replaceDraft } = useEditableCardDraft(cardPreview);
@@ -108,6 +116,17 @@ export function CardPreviewModal({
   const [templateBusy, setTemplateBusy] = useState(false);
 
   const [templateMessage, setTemplateMessage] = useState<string | null>(null);
+
+  const templateMeta = useMemo(
+    () => getDefaultTemplate(draft.cardType),
+    [draft.cardType],
+  );
+
+  const categoryOffers = useMemo(() => {
+    const category = templateMeta.offerCategory;
+    if (!category) return salonOffers;
+    return salonOffers.filter((offer) => offer.category === category && offer.active);
+  }, [salonOffers, templateMeta.offerCategory]);
 
   const modalTitle =
 
@@ -570,6 +589,69 @@ export function CardPreviewModal({
               </>
 
             )}
+
+
+
+            {templateMeta.offerMode && templateMeta.offerMode !== "none" ? (
+              <div className="vmb-card-preview-modal__offer-section">
+                <p className="vmb-card-preview-modal__editor-label">Offer</p>
+
+                <label className="vmb-card-preview-modal__field vmb-offer-admin__checkbox">
+                  <input
+                    type="checkbox"
+                    checked={draft.includeOffer !== false && Boolean(draft.offer)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        const fallback = categoryOffers[0];
+                        if (fallback) {
+                          patchDraft({ includeOffer: true, offer: toCardPreviewOffer(fallback) });
+                        }
+                      } else {
+                        patchDraft({ includeOffer: false });
+                      }
+                    }}
+                  />
+                  <span>Include offer</span>
+                </label>
+
+                {categoryOffers.length > 0 ? (
+                  <label className="vmb-card-preview-modal__field">
+                    <span>Select offer</span>
+                    <select
+                      value={draft.offer?.id ?? ""}
+                      onChange={(e) => {
+                        const selected = categoryOffers.find((offer) => offer.id === e.target.value);
+                        if (selected) {
+                          patchDraft({ includeOffer: true, offer: toCardPreviewOffer(selected) });
+                        }
+                      }}
+                    >
+                      {categoryOffers.map((offer) => (
+                        <option key={offer.id} value={offer.id}>
+                          {offer.name}
+                          {offer.valueLabel ? ` — ${offer.valueLabel}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : null}
+
+                {draft.offer ? (
+                  <label className="vmb-card-preview-modal__field">
+                    <span>Offer text (this card only)</span>
+                    <textarea
+                      rows={3}
+                      value={draft.offer.offerText}
+                      onChange={(e) => patchDraft({ offer: { offerText: e.target.value } })}
+                    />
+                  </label>
+                ) : null}
+
+                <Link href="/vmb/admin/offers" className="vmb-card-preview-modal__manage-offers">
+                  Manage Offers
+                </Link>
+              </div>
+            ) : null}
 
 
 

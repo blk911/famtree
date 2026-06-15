@@ -1,10 +1,13 @@
 import type { VmbCardType } from "@/lib/vmb/cards/card-types";
+import type { VmbOfferCategory } from "@/lib/vmb/offers/offer-types";
 
 export type VmbOutreachTemplateType = VmbCardType;
 
 export type VmbCardTemplateTone = "warm" | "direct" | "playful" | "premium";
 
 export type VmbCardTemplateImageMode = "single" | "collage" | "none";
+
+export type VmbCardTemplateOfferMode = "none" | "optional" | "recommended" | "required";
 
 export const VMB_CARD_TEMPLATE_TOKENS = [
   "{clientName}",
@@ -15,6 +18,8 @@ export const VMB_CARD_TEMPLATE_TOKENS = [
   "{visitCount}",
   "{referralCount}",
   "{offer}",
+  "{offerValue}",
+  "{offerTerms}",
   "{nextOpening}",
 ] as const;
 
@@ -36,6 +41,9 @@ export type VmbCardTemplate = {
   subtitleTemplate?: string;
   messageTemplate: string;
   offerTemplate?: string;
+  offerCategory?: VmbOfferCategory;
+  offerRequired?: boolean;
+  offerMode?: VmbCardTemplateOfferMode;
   primaryCta: string;
   secondaryCta?: string;
   signatureTemplate: string;

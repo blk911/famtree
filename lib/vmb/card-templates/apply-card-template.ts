@@ -6,7 +6,14 @@ import {
   type PersonalInviteCopy,
 } from "@/lib/vmb/cards/personal-invite-copy";
 import type { VmbCardTemplate } from "./card-template-types";
-import { applyTemplateTokens, buildTemplateTokenContext } from "./template-tokens";
+import {
+  resolveOfferForCategory,
+  resolveOfferForTemplate,
+  shouldIncludeOffer,
+  toCardPreviewOffer,
+} from "@/lib/vmb/offers/offer-resolver";
+import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
+import { applyTemplateTokens, buildTemplateTokenContext, withOfferTokens } from "./template-tokens";
 
 function accentFromTemplate(accent?: string): CardAccent {
   if (accent === "rose" || accent === "gold" || accent === "sage" || accent === "slate" || accent === "plum") {
@@ -31,10 +38,24 @@ function buildImageSlots(layout: CardImageLayout): CardPreviewModel["imageSlots"
   ];
 }
 
+function pickOffer(
+  template: VmbCardTemplate,
+  input: CardTemplateInput,
+): VmbOffer | undefined {
+  const offers = input.offers ?? [];
+  if (input.selectedOfferId) {
+    const selected = offers.find((offer) => offer.id === input.selectedOfferId && offer.active);
+    if (selected) return selected;
+  }
+  if (input.offer) return input.offer;
+  return resolveOfferForTemplate(template, offers);
+}
+
 function buildInviteCopyFromTemplate(
   template: VmbCardTemplate,
   input: CardTemplateInput,
   tokenContext: ReturnType<typeof buildTemplateTokenContext>,
+  catalogOffer?: VmbOffer,
 ): PersonalInviteCopy {
   const personalized = buildPersonalInviteCopy({
     recipientName: input.recipientName,
@@ -50,15 +71,28 @@ function buildInviteCopyFromTemplate(
     ticketValue: input.ticketValue,
   });
 
+  const offerMessage = catalogOffer
+    ? applyTemplateTokens(catalogOffer.offerText, tokenContext)
+    : applyTemplateTokens(template.offerTemplate ?? personalized.offerMessage, tokenContext);
+
   return {
     greeting: applyTemplateTokens(template.greetingTemplate, tokenContext),
     personalConnection: personalized.personalConnection,
     inviteMessage: applyTemplateTokens(template.messageTemplate, tokenContext),
-    offerMessage: applyTemplateTokens(template.offerTemplate ?? personalized.offerMessage, tokenContext),
+    offerMessage,
     signature: applyTemplateTokens(template.signatureTemplate, tokenContext),
     primaryCta: template.primaryCta,
     secondaryCta: template.secondaryCta ?? personalized.secondaryCta,
   };
+}
+
+function offerIsProminent(cardType: CardPreviewModel["cardType"]): boolean {
+  return (
+    cardType === "birthday_card" ||
+    cardType === "reactivation_card" ||
+    cardType === "refresh_card" ||
+    cardType === "open_slot_fill"
+  );
 }
 
 export function buildPreviewFromTemplate(
@@ -66,13 +100,21 @@ export function buildPreviewFromTemplate(
   input: CardTemplateInput,
   ownerName?: string,
 ): CardPreviewModel {
-  const tokenContext = buildTemplateTokenContext(input, ownerName);
+  const baseContext = buildTemplateTokenContext(input, ownerName);
+  const catalogOffer = pickOffer(template, input);
+  const includeOffer = shouldIncludeOffer(template, catalogOffer, input.includeOffer !== false);
+  const tokenContext = includeOffer && catalogOffer
+    ? withOfferTokens(baseContext, catalogOffer.offerText, catalogOffer.valueLabel, catalogOffer.terms)
+    : baseContext;
+
   const recipientName = input.recipientName?.trim() || undefined;
   const imageLayout = layoutFromImageMode(template.imageMode === "none" ? "single" : template.imageMode);
   const accent = accentFromTemplate(template.accent);
+  const previewOffer =
+    includeOffer && catalogOffer ? toCardPreviewOffer(catalogOffer) : undefined;
 
   if (input.cardType === "pcn_invite") {
-    const inviteCopy = buildInviteCopyFromTemplate(template, input, tokenContext);
+    const inviteCopy = buildInviteCopyFromTemplate(template, input, tokenContext, catalogOffer);
     return {
       cardType: input.cardType,
       salutation: inviteCopy.greeting,
@@ -89,6 +131,9 @@ export function buildPreviewFromTemplate(
       salonDisplayName: input.salonName ?? tokenContext.salonName,
       templateId: template.id,
       templateName: template.name,
+      offer: previewOffer,
+      includeOffer,
+      offerProminent: false,
       metadata: {
         recipientName,
         serviceName: input.serviceName,
@@ -102,10 +147,14 @@ export function buildPreviewFromTemplate(
   const title = applyTemplateTokens(template.titleTemplate ?? "", tokenContext);
   const subtitle = applyTemplateTokens(template.subtitleTemplate ?? "", tokenContext);
   const body = applyTemplateTokens(template.messageTemplate, tokenContext);
-  const offerLine = template.offerTemplate
+  const templateOfferLine = template.offerTemplate
     ? applyTemplateTokens(template.offerTemplate, tokenContext)
     : "";
-  const mergedBody = offerLine ? `${body}\n\n${offerLine}` : body;
+
+  let mergedBody = body;
+  if (!previewOffer && templateOfferLine) {
+    mergedBody = `${body}\n\n${templateOfferLine}`;
+  }
 
   return {
     cardType: input.cardType,
@@ -120,6 +169,9 @@ export function buildPreviewFromTemplate(
     tags: [template.name],
     templateId: template.id,
     templateName: template.name,
+    offer: previewOffer,
+    includeOffer,
+    offerProminent: offerIsProminent(input.cardType),
     metadata: {
       recipientName,
       serviceName: input.serviceName,
@@ -167,3 +219,5 @@ export function cardPreviewToTemplateOverride(
     updatedAt: now,
   };
 }
+
+export { resolveOfferForCategory, resolveOfferForTemplate };

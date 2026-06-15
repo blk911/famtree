@@ -7,6 +7,7 @@ import { useTodayProspectFeed } from "@/components/taikos/workflow/TodayProspect
 import type { useInlineActionWorkflow } from "@/components/taikos/workflow/useInlineActionWorkflow";
 import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
 import type { CardTemplateInput } from "@/lib/vmb/cards/card-preview-model";
+import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 
 type Workflow = ReturnType<typeof useInlineActionWorkflow>;
 
@@ -22,6 +23,7 @@ type Props = {
   templateBaseline?: CardPreviewModel;
   templateInput?: CardTemplateInput;
   salonId?: string;
+  salonOffers?: VmbOffer[];
   workflow: Workflow;
   autoOpenPreview?: boolean;
   onAutoPreviewConsumed?: () => void;
@@ -153,6 +155,7 @@ export function TodayProspectCardLayout({
   templateBaseline,
   templateInput,
   salonId,
+  salonOffers = [],
   workflow,
   autoOpenPreview = false,
   onAutoPreviewConsumed,
@@ -265,6 +268,7 @@ export function TodayProspectCardLayout({
         workflow={workflow}
         onClose={handleCloseModal}
         salonId={salonId}
+        salonOffers={salonOffers}
         templateInput={templateInput}
         templateBaseline={templateBaseline}
       />

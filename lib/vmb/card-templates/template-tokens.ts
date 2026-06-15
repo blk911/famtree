@@ -9,6 +9,8 @@ export type TemplateTokenContext = {
   visitCount?: number;
   referralCount?: number;
   offer?: string;
+  offerValue?: string;
+  offerTerms?: string;
   nextOpening?: string;
 };
 
@@ -31,6 +33,8 @@ export function buildTemplateTokenContext(
     visitCount: input.visitCount,
     referralCount: input.referralCount,
     offer: input.recommendationText?.trim(),
+    offerValue: undefined,
+    offerTerms: undefined,
     nextOpening: undefined,
   };
 }
@@ -46,6 +50,8 @@ export function applyTemplateTokens(template: string, context: TemplateTokenCont
     "{visitCount}": context.visitCount != null ? String(context.visitCount) : undefined,
     "{referralCount}": context.referralCount != null ? String(context.referralCount) : undefined,
     "{offer}": context.offer,
+    "{offerValue}": context.offerValue,
+    "{offerTerms}": context.offerTerms,
     "{nextOpening}": context.nextOpening,
   };
 
@@ -54,4 +60,18 @@ export function applyTemplateTokens(template: string, context: TemplateTokenCont
   }
 
   return result.replace(/\s{2,}/g, " ").trim();
+}
+
+export function withOfferTokens(
+  context: TemplateTokenContext,
+  offerText?: string,
+  valueLabel?: string,
+  terms?: string,
+): TemplateTokenContext {
+  return {
+    ...context,
+    offer: offerText ?? context.offer,
+    offerValue: valueLabel,
+    offerTerms: terms,
+  };
 }

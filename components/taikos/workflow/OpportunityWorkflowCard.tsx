@@ -20,6 +20,7 @@ import { cardActionLabel } from "@/lib/vmb/cards/card-type-labels";
 import { buildCardPreview } from "@/lib/vmb/cards/card-template-engine";
 import type { CardTemplateInput } from "@/lib/vmb/cards/card-preview-model";
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
+import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 import {
   buildOpportunityIntelligence,
   type OpportunityAnalysisContext,
@@ -56,6 +57,7 @@ export function OpportunityWorkflowCard({
   salonId,
 }: Props) {
   const [salonTemplates, setSalonTemplates] = useState<VmbCardTemplate[] | null>(null);
+  const [salonOffers, setSalonOffers] = useState<VmbOffer[] | null>(null);
 
   useEffect(() => {
     if (!salonId) return;
@@ -64,6 +66,13 @@ export function OpportunityWorkflowCard({
       .then((data: { ok?: boolean; templates?: VmbCardTemplate[] }) => {
         if (data.ok && data.templates) {
           setSalonTemplates(data.templates);
+        }
+      });
+    void fetch("/api/vmb/offers")
+      .then((res) => res.json())
+      .then((data: { ok?: boolean; offers?: VmbOffer[] }) => {
+        if (data.ok && data.offers) {
+          setSalonOffers(data.offers);
         }
       });
   }, [salonId]);
@@ -91,6 +100,7 @@ export function OpportunityWorkflowCard({
       discoveryText: insight?.discovery ?? intelligence.whatTaikosSees,
       recommendationText: opportunity.recommendation,
       salonId,
+      offers: salonOffers ?? [],
     }),
     [
       intelligence,
@@ -100,6 +110,7 @@ export function OpportunityWorkflowCard({
       insight,
       guide.roleLabel,
       salonId,
+      salonOffers,
     ],
   );
 
@@ -138,6 +149,7 @@ export function OpportunityWorkflowCard({
         templateBaseline={cardPreview}
         templateInput={templateInput}
         salonId={salonId}
+        salonOffers={salonOffers ?? []}
         workflow={workflow}
         autoOpenPreview={autoOpenPreview}
         onAutoPreviewConsumed={onAutoPreviewConsumed}
