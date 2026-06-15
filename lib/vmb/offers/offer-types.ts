@@ -42,6 +42,8 @@ export type VmbOffer = {
   offerText: string;
   terms?: string;
   serviceTags?: string[];
+  serviceIds?: string[];
+  serviceOptionIds?: string[];
   active: boolean;
   isDefault: boolean;
   source?: VmbOfferSource;
@@ -59,4 +61,8 @@ export type CardPreviewOffer = {
   offerText: string;
   terms?: string;
   category: string;
+  serviceIds?: string[];
+  serviceOptionIds?: string[];
+  serviceName?: string;
+  upgradeName?: string;
 };

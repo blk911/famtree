@@ -4306,3 +4306,69 @@
   background: #fafaf9;
 }
 
+.vmb-template-admin__linked-meta {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fafaf9;
+  border: 1px solid #e7e5e4;
+  font-size: 13px;
+  color: #57534e;
+}
+
+.vmb-template-admin__linked-meta p {
+  margin: 0 0 4px;
+}
+
+.vmb-service-admin__category,
+.vmb-service-admin__value-label {
+  font-size: 11px;
+  color: #78716c;
+}
+
+.vmb-service-admin__options-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.vmb-service-admin__option-list {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vmb-service-admin__option-editor {
+  border-top: 1px solid #e7e5e4;
+  padding-top: 12px;
+}
+
+.vmb-card-preview__offer-heading {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: #78716c;
+}
+
+.vmb-card-preview__offer-service-refs {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #57534e;
+}
+
+.vmb-card-preview__offer-service-refs p {
+  margin: 0 0 4px;
+}
+
+.vmb-card-preview__offer-ref-label {
+  font-weight: 600;
+}
+
+.vmb-template-admin__field select[multiple] {
+  min-height: 88px;
+}
+

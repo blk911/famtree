@@ -8,6 +8,13 @@ import { buildPreviewFromTemplate } from "@/lib/vmb/card-templates/apply-card-te
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
 import { CARD_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/card-templates/default-card-templates";
 import { getAllDefaultOffers } from "@/lib/vmb/offers/default-offers";
+import { resolveOfferForTemplate } from "@/lib/vmb/offers/offer-resolver";
+import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
+import {
+  getAllDefaultServiceOptions,
+  getAllDefaultServices,
+} from "@/lib/vmb/services/default-service-catalog";
+import { resolveOptionNames, resolveServiceNames } from "@/lib/vmb/services/resolve-offer-references";
 import { VMB_CARD_TYPES, type VmbCardType } from "@/lib/vmb/cards/card-types";
 import { cardActionLabel } from "@/lib/vmb/cards/card-type-labels";
 
@@ -30,6 +37,7 @@ const TYPE_LABELS: Record<VmbCardType, string> = {
 
 export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props) {
   const [templates, setTemplates] = useState<VmbCardTemplate[]>([]);
+  const [offers, setOffers] = useState<VmbOffer[]>(getAllDefaultOffers());
   const [selectedType, setSelectedType] = useState<VmbCardType>("pcn_invite");
   const [draft, setDraft] = useState<VmbCardTemplate | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -37,10 +45,17 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
 
   const loadTemplates = useCallback(async () => {
     if (!salonId) return;
-    const res = await fetch("/api/vmb/card-templates");
-    const data = (await res.json()) as { ok?: boolean; templates?: VmbCardTemplate[] };
+    const [templateRes, offerRes] = await Promise.all([
+      fetch("/api/vmb/card-templates"),
+      fetch("/api/vmb/offers"),
+    ]);
+    const data = (await templateRes.json()) as { ok?: boolean; templates?: VmbCardTemplate[] };
+    const offerData = (await offerRes.json()) as { ok?: boolean; offers?: VmbOffer[] };
     if (data.ok && data.templates) {
       setTemplates(data.templates);
+    }
+    if (offerData.ok && offerData.offers) {
+      setOffers(offerData.offers);
     }
   }, [salonId]);
 
@@ -59,6 +74,22 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
     }
   }, [selectedTemplate]);
 
+  const services = useMemo(() => getAllDefaultServices(), []);
+  const serviceOptions = useMemo(() => getAllDefaultServiceOptions(), []);
+
+  const linkedOffer = useMemo(() => {
+    if (!draft) return undefined;
+    return resolveOfferForTemplate(draft, offers);
+  }, [draft, offers]);
+
+  const linkedOfferRefs = useMemo(() => {
+    if (!linkedOffer) return [] as string[];
+    return [
+      ...resolveServiceNames(linkedOffer.serviceIds, services),
+      ...resolveOptionNames(linkedOffer.serviceOptionIds, serviceOptions),
+    ];
+  }, [linkedOffer, services, serviceOptions]);
+
   const preview = useMemo(() => {
     if (!draft) return null;
     return buildPreviewFromTemplate(
@@ -73,11 +104,13 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
         visitCount: CARD_TEMPLATE_PREVIEW_CONTEXT.visitCount,
         referralCount: CARD_TEMPLATE_PREVIEW_CONTEXT.referralCount,
         recommendationText: CARD_TEMPLATE_PREVIEW_CONTEXT.offer,
-        offers: getAllDefaultOffers(),
+        offers,
+        services,
+        serviceOptions,
       },
       ownerName || CARD_TEMPLATE_PREVIEW_CONTEXT.ownerName,
     );
-  }, [draft, salonName, ownerName]);
+  }, [draft, salonName, ownerName, offers, services, serviceOptions]);
 
   async function handleSave() {
     if (!draft || !salonId) return;
@@ -151,7 +184,8 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
             ))}
           </ul>
           <div className="vmb-offer-admin__links">
-            <Link href="/vmb/admin/offers">Offer Catalog</Link>
+            <Link href="/vmb/admin/services">Services</Link>
+            <Link href="/vmb/admin/offers">Offers</Link>
           </div>
         </aside>
 
@@ -162,6 +196,19 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                 <h2>{TYPE_LABELS[draft.type]}</h2>
                 <p>{cardActionLabel(draft.type)} · {draft.isDefault ? "Default" : "Salon override"}</p>
               </div>
+
+              {linkedOffer ? (
+                <div className="vmb-template-admin__linked-meta">
+                  <p>
+                    <strong>Uses Offer:</strong> {linkedOffer.name}
+                  </p>
+                  {linkedOfferRefs.length ? (
+                    <p>
+                      <strong>Offer references:</strong> {linkedOfferRefs.join(" · ")}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
 
               <label className="vmb-template-admin__field">
                 <span>Name</span>

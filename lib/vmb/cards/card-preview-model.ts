@@ -3,6 +3,8 @@ import type { PersonalInviteCopy } from "@/lib/vmb/cards/personal-invite-copy";
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
 import type { CardPreviewOffer } from "@/lib/vmb/offers/offer-types";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
+import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
+import type { VmbService } from "@/lib/vmb/services/service-types";
 
 export type CardImageSlot = {
   id: string;
@@ -66,4 +68,7 @@ export type CardTemplateInput = {
   offer?: VmbOffer;
   selectedOfferId?: string;
   includeOffer?: boolean;
+  /** Salon service catalog for offer reference resolution. */
+  services?: VmbService[];
+  serviceOptions?: VmbServiceOption[];
 };

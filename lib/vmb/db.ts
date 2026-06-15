@@ -87,6 +87,32 @@ const DDL_STATEMENTS: string[] = [
   )`,
   `CREATE INDEX IF NOT EXISTS vmb_offer_salon_category
     ON vmb_offer (salon_id, category)`,
+  `CREATE TABLE IF NOT EXISTS vmb_service (
+    id text PRIMARY KEY,
+    salon_id text,
+    category text NOT NULL,
+    name text NOT NULL,
+    active boolean NOT NULL DEFAULT true,
+    display_order integer NOT NULL DEFAULT 0,
+    payload jsonb NOT NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS vmb_service_salon_id
+    ON vmb_service (salon_id)`,
+  `CREATE TABLE IF NOT EXISTS vmb_service_option (
+    id text PRIMARY KEY,
+    salon_id text,
+    service_id text NOT NULL,
+    name text NOT NULL,
+    active boolean NOT NULL DEFAULT true,
+    display_order integer NOT NULL DEFAULT 0,
+    payload jsonb NOT NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS vmb_service_option_salon_service
+    ON vmb_service_option (salon_id, service_id)`,
 ];
 
 const MIGRATION_STATEMENTS: string[] = [

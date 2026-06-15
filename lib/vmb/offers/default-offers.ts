@@ -1,6 +1,9 @@
 import type { VmbOffer, VmbOfferCategory } from "./offer-types";
 import { VMB_OFFER_CATEGORIES } from "./offer-types";
-
+import {
+  DEMO_BIRTHDAY_OFFER_OPTION_IDS,
+  DEMO_BIRTHDAY_OFFER_SERVICE_IDS,
+} from "@/lib/vmb/services/default-service-catalog";
 const NOW = "2026-06-12T00:00:00.000Z";
 
 function seedOffer(
@@ -29,8 +32,10 @@ export const DEFAULT_OFFERS: VmbOffer[] = [
   seedOffer("birthday", {
     name: "Birthday Treat",
     description: "Birthday celebration offer.",
-    valueLabel: "Birthday treat",
-    offerText: "Enjoy a little birthday treat when you book this month.",
+    valueLabel: "Complimentary Chrome Upgrade",
+    offerText: "Book this month to enjoy a complimentary chrome upgrade on your visit.",
+    serviceIds: [...DEMO_BIRTHDAY_OFFER_SERVICE_IDS],
+    serviceOptionIds: [...DEMO_BIRTHDAY_OFFER_OPTION_IDS],
   }),
   seedOffer("pcn", {
     name: "PCN Early Access",

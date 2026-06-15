@@ -21,6 +21,8 @@ import { buildCardPreview } from "@/lib/vmb/cards/card-template-engine";
 import type { CardTemplateInput } from "@/lib/vmb/cards/card-preview-model";
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
+import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
+import type { VmbService } from "@/lib/vmb/services/service-types";
 import {
   buildOpportunityIntelligence,
   type OpportunityAnalysisContext,
@@ -58,6 +60,8 @@ export function OpportunityWorkflowCard({
 }: Props) {
   const [salonTemplates, setSalonTemplates] = useState<VmbCardTemplate[] | null>(null);
   const [salonOffers, setSalonOffers] = useState<VmbOffer[] | null>(null);
+  const [salonServices, setSalonServices] = useState<VmbService[] | null>(null);
+  const [salonServiceOptions, setSalonServiceOptions] = useState<VmbServiceOption[] | null>(null);
 
   useEffect(() => {
     if (!salonId) return;
@@ -73,6 +77,20 @@ export function OpportunityWorkflowCard({
       .then((data: { ok?: boolean; offers?: VmbOffer[] }) => {
         if (data.ok && data.offers) {
           setSalonOffers(data.offers);
+        }
+      });
+    void fetch("/api/vmb/services")
+      .then((res) => res.json())
+      .then((data: {
+        ok?: boolean;
+        services?: VmbService[];
+        options?: VmbServiceOption[];
+      }) => {
+        if (data.ok && data.services) {
+          setSalonServices(data.services);
+        }
+        if (data.ok && data.options) {
+          setSalonServiceOptions(data.options);
         }
       });
   }, [salonId]);
@@ -101,6 +119,8 @@ export function OpportunityWorkflowCard({
       recommendationText: opportunity.recommendation,
       salonId,
       offers: salonOffers ?? [],
+      services: salonServices ?? [],
+      serviceOptions: salonServiceOptions ?? [],
     }),
     [
       intelligence,
@@ -111,6 +131,8 @@ export function OpportunityWorkflowCard({
       guide.roleLabel,
       salonId,
       salonOffers,
+      salonServices,
+      salonServiceOptions,
     ],
   );
 

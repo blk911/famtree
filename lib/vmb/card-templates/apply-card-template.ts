@@ -111,7 +111,12 @@ export function buildPreviewFromTemplate(
   const imageLayout = layoutFromImageMode(template.imageMode === "none" ? "single" : template.imageMode);
   const accent = accentFromTemplate(template.accent);
   const previewOffer =
-    includeOffer && catalogOffer ? toCardPreviewOffer(catalogOffer) : undefined;
+    includeOffer && catalogOffer
+      ? toCardPreviewOffer(catalogOffer, {
+          services: input.services,
+          options: input.serviceOptions,
+        })
+      : undefined;
 
   if (input.cardType === "pcn_invite") {
     const inviteCopy = buildInviteCopyFromTemplate(template, input, tokenContext, catalogOffer);

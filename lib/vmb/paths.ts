@@ -47,6 +47,14 @@ export function getVmbOffersFile(): string {
   return path.join(getVmbDataDir(), "offers.json");
 }
 
+export function getVmbServicesFile(): string {
+  return path.join(getVmbDataDir(), "services.json");
+}
+
+export function getVmbServiceOptionsFile(): string {
+  return path.join(getVmbDataDir(), "service-options.json");
+}
+
 /** Legacy file-upload imports (admin engine path) — kept separate from book paste flow. */
 export function getVmbTrialImportsDir(): string {
   return path.join(getVmbDataDir(), "trial-imports");

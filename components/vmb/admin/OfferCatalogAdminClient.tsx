@@ -5,8 +5,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { CardPreviewOfferBlock } from "@/components/vmb/cards/CardPreviewOfferBlock";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
-import type { VmbOffer, VmbOfferCategory } from "@/lib/vmb/offers/offer-types";
-import { VMB_OFFER_CATEGORIES } from "@/lib/vmb/offers/offer-types";
+import { VMB_OFFER_CATEGORIES, type VmbOffer, type VmbOfferCategory } from "@/lib/vmb/offers/offer-types";
+import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
+import type { VmbService } from "@/lib/vmb/services/service-types";
 
 type Props = {
   salonId?: string;
@@ -27,6 +28,8 @@ const CATEGORY_LABELS: Record<VmbOfferCategory, string> = {
 
 export function OfferCatalogAdminClient({ salonId }: Props) {
   const [offers, setOffers] = useState<VmbOffer[]>([]);
+  const [services, setServices] = useState<VmbService[]>([]);
+  const [serviceOptions, setServiceOptions] = useState<VmbServiceOption[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<VmbOfferCategory>("birthday");
   const [draft, setDraft] = useState<VmbOffer | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -34,10 +37,24 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
 
   const loadOffers = useCallback(async () => {
     if (!salonId) return;
-    const res = await fetch("/api/vmb/offers");
-    const data = (await res.json()) as { ok?: boolean; offers?: VmbOffer[] };
+    const [offerRes, serviceRes] = await Promise.all([
+      fetch("/api/vmb/offers"),
+      fetch("/api/vmb/services"),
+    ]);
+    const data = (await offerRes.json()) as { ok?: boolean; offers?: VmbOffer[] };
+    const serviceData = (await serviceRes.json()) as {
+      ok?: boolean;
+      services?: VmbService[];
+      options?: VmbServiceOption[];
+    };
     if (data.ok && data.offers) {
       setOffers(data.offers);
+    }
+    if (serviceData.ok && serviceData.services) {
+      setServices(serviceData.services);
+    }
+    if (serviceData.ok && serviceData.options) {
+      setServiceOptions(serviceData.options);
     }
   }, [salonId]);
 
@@ -168,7 +185,8 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
             ))}
           </ul>
           <div className="vmb-offer-admin__links">
-            <Link href="/vmb/admin/templates">Card Templates</Link>
+            <Link href="/vmb/admin/services">Services</Link>
+            <Link href="/vmb/admin/templates">Templates</Link>
           </div>
         </aside>
 
@@ -217,6 +235,44 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                   value={draft.terms ?? ""}
                   onChange={(e) => patchDraft({ terms: e.target.value })}
                 />
+              </label>
+              <label className="vmb-template-admin__field">
+                <span>Linked services</span>
+                <select
+                  multiple
+                  value={draft.serviceIds ?? []}
+                  onChange={(e) =>
+                    patchDraft({
+                      serviceIds: Array.from(e.target.selectedOptions).map((option) => option.value),
+                    })
+                  }
+                >
+                  {services.map((service) => (
+                    <option key={service.id} value={service.id}>
+                      {service.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="vmb-template-admin__field">
+                <span>Linked service options</span>
+                <select
+                  multiple
+                  value={draft.serviceOptionIds ?? []}
+                  onChange={(e) =>
+                    patchDraft({
+                      serviceOptionIds: Array.from(e.target.selectedOptions).map((option) => option.value),
+                    })
+                  }
+                >
+                  {serviceOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {services.find((service) => service.id === option.serviceId)?.name ?? "Service"} ·{" "}
+                      {option.groupName ? `${option.groupName}: ` : ""}
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className="vmb-template-admin__field">
                 <span>Service tags (comma-separated)</span>

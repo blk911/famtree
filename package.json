@@ -60,6 +60,7 @@
     "test:vmb:invite-drafts-storage": "tsx scripts/test-vmb-invite-drafts-storage.ts",
     "test:vmb:card-templates": "tsx scripts/test-vmb-card-templates.ts",
     "test:vmb:offers": "tsx scripts/test-vmb-offers.ts",
+    "test:vmb:services": "tsx scripts/test-vmb-services.ts",
     "test:taikos:phase1": "tsx scripts/test-taikos-phase1.ts",
     "test:taikos:phase2": "tsx scripts/test-taikos-phase2.ts",
     "test:taikos:phase3": "tsx scripts/test-taikos-phase3.ts",

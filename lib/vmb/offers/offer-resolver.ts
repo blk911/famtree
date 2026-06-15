@@ -1,6 +1,9 @@
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
 import type { VmbOffer, VmbOfferCategory } from "@/lib/vmb/offers/offer-types";
 import { getDefaultOfferForCategory } from "@/lib/vmb/offers/default-offers";
+import { resolvePrimaryServiceAndUpgrade } from "@/lib/vmb/services/resolve-offer-references";
+import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
+import type { VmbService } from "@/lib/vmb/services/service-types";
 
 export function resolveOfferForCategory(
   offers: VmbOffer[],
@@ -42,7 +45,17 @@ export function shouldIncludeOffer(
   return Boolean(offer);
 }
 
-export function toCardPreviewOffer(offer: VmbOffer) {
+export function toCardPreviewOffer(
+  offer: VmbOffer,
+  context?: { services?: VmbService[]; options?: VmbServiceOption[] },
+) {
+  const refs = resolvePrimaryServiceAndUpgrade({
+    serviceIds: offer.serviceIds,
+    serviceOptionIds: offer.serviceOptionIds,
+    services: context?.services ?? [],
+    options: context?.options ?? [],
+  });
+
   return {
     id: offer.id,
     name: offer.name,
@@ -50,5 +63,9 @@ export function toCardPreviewOffer(offer: VmbOffer) {
     offerText: offer.offerText,
     terms: offer.terms,
     category: offer.category,
+    serviceIds: offer.serviceIds,
+    serviceOptionIds: offer.serviceOptionIds,
+    serviceName: refs.serviceName,
+    upgradeName: refs.upgradeName,
   };
 }

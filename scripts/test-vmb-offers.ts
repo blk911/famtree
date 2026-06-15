@@ -77,7 +77,7 @@ async function run(): Promise<void> {
   assert(Boolean(birthdayPreview.offer), "birthday card engine includes offer block");
   assert(birthdayPreview.offerProminent === true, "birthday offer is prominent");
   assert(
-    (birthdayPreview.offer?.offerText.includes("birthday treat") ?? false),
+    (birthdayPreview.offer?.offerText.toLowerCase().includes("complimentary chrome") ?? false),
     "birthday offer text from catalog",
   );
 
