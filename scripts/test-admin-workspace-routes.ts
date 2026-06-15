@@ -108,6 +108,22 @@ function run(): void {
     "discovery hub links to hashtag harvest tool",
   );
 
+  for (const route of ["/admin/invites/claims", "/admin/invites/opens", "/admin/invites/conversions"]) {
+    const pagePath = path.join(
+      process.cwd(),
+      "app",
+      "(app)",
+      "admin",
+      "(platform)",
+      route.replace(/^\/admin\//, ""),
+      "page.tsx",
+    );
+    assert(fs.existsSync(pagePath), `invites analytics page exists: ${route}`);
+    const source = fs.readFileSync(pagePath, "utf8");
+    assert(source.includes("InvitesEventsAdminPanel"), `${route} reads invite events`);
+    assert(source.includes("emptyMessage"), `${route} renders empty state copy`);
+  }
+
   console.log("OK: admin workspace route tests passed");
   console.log(`  workspaces: ${ADMIN_WORKSPACE_NAV.map((w) => w.href).join(", ")}`);
   console.log(`  invites cards: ${INVITES_OPERATING_CARDS.map((c) => c.id).join(", ")}`);

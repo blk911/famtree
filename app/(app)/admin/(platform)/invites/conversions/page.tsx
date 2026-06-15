@@ -1,21 +1,16 @@
-import { InvitesPlaceholderPanel } from "@/components/admin/workspaces/InvitesPlaceholderPanel";
-import { InvitesWorkspaceBreadcrumb } from "@/components/admin/workspaces/InvitesWorkspaceBreadcrumb";
-
-export const dynamic = "force-dynamic";
-
-export default function AdminInvitesConversionsPage() {
-  return (
-    <div>
-      <InvitesWorkspaceBreadcrumb current="Conversions" />
-      <InvitesPlaceholderPanel
-        title="Conversion funnel"
-        description="Attribute bookings and revenue back to invite campaigns, templates, and offers."
-        plannedSignals={[
-          "Invite → claim → booking progression",
-          "Service and offer attached to converted visit",
-          "Campaign and template performance rollups",
-        ]}
-      />
-    </div>
-  );
-}
+import { InvitesEventsAdminPanel } from "@/components/admin/workspaces/InvitesEventsAdminPanel";
+import { inviteEventTypesForAdminPanel } from "@/lib/vmb/invites/invite-event-types";
+
+export const dynamic = "force-dynamic";
+
+export default function AdminInvitesConversionsPage() {
+  return (
+    <InvitesEventsAdminPanel
+      breadcrumb="Conversions"
+      title="Conversion funnel"
+      description="Attribute bookings and revenue back to invite campaigns, templates, and offers."
+      eventTypes={inviteEventTypesForAdminPanel("conversions")}
+      emptyMessage="No conversion or booking events recorded yet for this trial."
+    />
+  );
+}

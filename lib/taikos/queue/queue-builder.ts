@@ -3,6 +3,7 @@ import { getDraftById, updateDraft } from "@/lib/taikos/drafts/draft-store";
 import { findActiveGoalForCategory, goalCategoryForDraftType } from "@/lib/taikos/goals/goal-router";
 import { getGoalById, linkDraftToGoal } from "@/lib/taikos/goals/goal-store";
 import type { TaikosGoalListItem } from "@/lib/taikos/goals/types";
+import { appendInviteEvent } from "@/lib/vmb/invites/append-invite-event";
 import {
   parseQueuedInviteCardPayload,
   queueItemPreviewLine,
@@ -57,6 +58,19 @@ export async function enqueueDraft(
     goalTitle,
     estimatedValue: draft.estimatedValue,
     inviteCard,
+  });
+
+  void appendInviteEvent({
+    eventType: "invite_queued",
+    salonId,
+    operatorId,
+    payload: {
+      draftId,
+      queueId: item.queueId,
+      draftType: draft.draftType,
+      clientName: inviteCard?.recipientName,
+      ctaLabel: inviteCard?.primaryCta,
+    },
   });
 
   await recordActivity({

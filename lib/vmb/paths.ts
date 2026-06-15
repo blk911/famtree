@@ -30,6 +30,10 @@ export function getVmbInviteDraftsFile(): string {
   return path.join(getVmbDataDir(), "invite-drafts.json");
 }
 
+export function getVmbInviteEventsFile(): string {
+  return path.join(getVmbDataDir(), "invite-events.json");
+}
+
 export function getVmbWorkspacesFile(): string {
   return path.join(getVmbDataDir(), "workspaces.json");
 }

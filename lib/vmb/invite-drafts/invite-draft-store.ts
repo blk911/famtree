@@ -1,4 +1,5 @@
 import type { InviteDraftStatus, PatchInviteDraftInput, VmbInviteDraft } from "@/types/vmb/invite-draft";
+import { appendInviteEvent } from "@/lib/vmb/invites/append-invite-event";
 import { buildInviteDraftsForAnalysis } from "@/lib/vmb/invites/build-invite-drafts-for-analysis";
 import { resolveVmbStorageBackend } from "@/lib/vmb/db";
 import { getVmbBookAnalysisForTrial } from "../book-analysis/analysis-store";
@@ -16,6 +17,24 @@ import {
 import { INVITE_DRAFT_POSTGRES_REQUIRED } from "./invite-draft-storage-errors";
 
 export { INVITE_DRAFT_POSTGRES_REQUIRED } from "./invite-draft-storage-errors";
+
+function recordInviteSentIfNeeded(
+  trialId: string,
+  previous: VmbInviteDraft,
+  next: VmbInviteDraft,
+): void {
+  if (next.status !== "sent" || previous.status === "sent") return;
+  void appendInviteEvent({
+    eventType: "invite_sent",
+    salonId: trialId,
+    payload: {
+      draftId: next.draftId,
+      clientName: next.clientName,
+      inviteCategory: next.inviteCategory,
+      analysisId: next.analysisId,
+    },
+  });
+}
 
 function isInviteDraft(item: unknown): item is VmbInviteDraft {
   if (!item || typeof item !== "object") return false;
@@ -179,6 +198,21 @@ export async function buildInviteDraftsForTrial(
   const persisted = await persistInviteDraftsForTrialAnalysis(trialId, analysis.analysisId, merged);
   if ("error" in persisted) return persisted;
 
+  const existingIds = new Set(existing.map((draft) => draft.draftId));
+  for (const draft of merged) {
+    if (existingIds.has(draft.draftId)) continue;
+    void appendInviteEvent({
+      eventType: "invite_created",
+      salonId: trialId,
+      payload: {
+        draftId: draft.draftId,
+        clientName: draft.clientName,
+        inviteCategory: draft.inviteCategory,
+        analysisId: draft.analysisId,
+      },
+    });
+  }
+
   const stored = await listInviteDraftsForTrialAnalysis(trialId, analysis.analysisId);
   return { drafts: stored };
 }
@@ -256,6 +290,7 @@ export async function patchInviteDraftForTrial(
         await writeJsonArray(getVmbInviteDraftsFile(), all);
       }
     }
+    recordInviteSentIfNeeded(trialId, current, updated.draft);
     return updated;
   }
 
@@ -267,5 +302,6 @@ export async function patchInviteDraftForTrial(
   if (err) {
     return vmbProductionRequiresPostgres() ? { error: INVITE_DRAFT_POSTGRES_REQUIRED } : { error: err };
   }
+  recordInviteSentIfNeeded(trialId, current, next);
   return { draft: next };
 }

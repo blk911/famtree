@@ -25,6 +25,8 @@ import { createDraft, updateDraft } from "@/lib/taikos/drafts/draft-store";
 import type { TaikosDraftType } from "@/lib/taikos/drafts/types";
 import { findActiveGoalForCategory, goalCategoryForDraftType } from "@/lib/taikos/goals/goal-router";
 import { linkDraftToGoal } from "@/lib/taikos/goals/goal-store";
+import { appendInviteEvent } from "@/lib/vmb/invites/append-invite-event";
+import { isInviteTrackableDraftType } from "@/lib/vmb/invites/invite-trackable-draft-types";
 import { appendActionLogEntry } from "./action-log-store";
 import type {
   TaikosActionContract,
@@ -161,6 +163,23 @@ export async function confirmTaikosAction(
       savedDraftId = saved.draftId;
       savedDraftHref = draftDetailHref(saved.draftType, saved.draftId);
       savedDraftReviewHint = draftReviewHint(saved);
+      if (deliverable.type === "invite" || isInviteTrackableDraftType(saved.draftType)) {
+        const clientName =
+          options.inviteCard?.recipientName ??
+          (deliverable.type === "invite" ? deliverable.suggestedClients[0] : undefined);
+        void appendInviteEvent({
+          eventType: "invite_created",
+          salonId: ctx.salonId,
+          operatorId: ctx.operatorId,
+          payload: {
+            draftId: saved.draftId,
+            draftType: saved.draftType,
+            clientName,
+            sourcePage: options.sourcePage,
+            ctaLabel: options.inviteCard?.primaryCta,
+          },
+        });
+      }
     }
   }
 
