@@ -193,38 +193,41 @@ export function TodayProspectCardLayout({
       <article
         className={`taikos-prospect-card${expanded ? " taikos-prospect-card--expanded" : ""}${terminal ? " taikos-prospect-card--terminal" : ""}`}
       >
-        <OpportunityLifecycle stage={workflow.stage} compact />
+        <div className="taikos-prospect-card__row">
+          <div className="taikos-prospect-card__row-left">
+            <OpportunityLifecycle stage={workflow.stage} compact />
+            <button
+              type="button"
+              className="taikos-prospect-card__toggle"
+              onClick={toggleExpanded}
+              aria-expanded={expanded}
+            >
+              <span className="taikos-prospect-card__chevron" aria-hidden>
+                {expanded ? "▾" : "▸"}
+              </span>
+              <span className="taikos-prospect-card__collapsed-line">{collapsedLine}</span>
+            </button>
+          </div>
 
-        <div className="taikos-prospect-card__accordion">
-          <button
-            type="button"
-            className="taikos-prospect-card__accordion-toggle"
-            onClick={toggleExpanded}
-            aria-expanded={expanded}
-          >
-            <span className="taikos-prospect-card__chevron" aria-hidden>
-              {expanded ? "▾" : "▸"}
-            </span>
-            <span className="taikos-prospect-card__collapsed-line">{collapsedLine}</span>
-          </button>
-
-          {expanded ? (
-            <div className="taikos-prospect-card__expanded-body">
-              <p className="taikos-prospect-card__reason">{reasonLine}</p>
-              <p className="taikos-prospect-card__step-label">Suggested move</p>
-              <p className="taikos-prospect-card__step">{suggestedNextStep}</p>
+          {!terminal ? (
+            <div className="taikos-prospect-card__row-actions">
+              <ProspectActionButtons
+                workflow={workflow}
+                onPreview={handlePreview}
+                onOpenModal={handleOpenModal}
+                launchGuidePreviewTarget={launchGuidePreviewTarget}
+              />
             </div>
           ) : null}
-
-          <div className="taikos-prospect-card__compact-actions">
-            <ProspectActionButtons
-              workflow={workflow}
-              onPreview={handlePreview}
-              onOpenModal={handleOpenModal}
-              launchGuidePreviewTarget={launchGuidePreviewTarget}
-            />
-          </div>
         </div>
+
+        {expanded ? (
+          <div className="taikos-prospect-card__expanded-body">
+            <p className="taikos-prospect-card__reason">{reasonLine}</p>
+            <p className="taikos-prospect-card__step-label">Suggested move</p>
+            <p className="taikos-prospect-card__step">{suggestedNextStep}</p>
+          </div>
+        ) : null}
 
         {workflow.stage === "queued" ? (
           <p className="taikos-inline-workflow__message taikos-inline-workflow__message--success" role="status">
