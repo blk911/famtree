@@ -1,5 +1,6 @@
 import type { CardAccent, CardImageLayout, VmbCardType } from "@/lib/vmb/cards/card-types";
 import type { PersonalInviteCopy } from "@/lib/vmb/cards/personal-invite-copy";
+import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
 
 export type CardImageSlot = {
   id: string;
@@ -32,6 +33,8 @@ export type CardPreviewModel = {
   inviteCopy?: PersonalInviteCopy;
   techName?: string;
   salonDisplayName?: string;
+  templateId?: string;
+  templateName?: string;
 };
 
 export type CardTemplateInput = {
@@ -48,4 +51,8 @@ export type CardTemplateInput = {
   visitCount?: number;
   discoveryText?: string;
   recommendationText?: string;
+  /** Salon/trial id for template override lookup (async paths). */
+  salonId?: string;
+  /** Pre-resolved salon template — skips default seed when provided. */
+  template?: VmbCardTemplate;
 };

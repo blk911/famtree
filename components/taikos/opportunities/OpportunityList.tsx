@@ -23,6 +23,7 @@ type Props = {
   onPreviewFirstCardConsumed?: () => void;
   onClearQuestionFilter?: () => void;
   onRefresh?: () => void;
+  salonId?: string;
 };
 
 export function OpportunityList({
@@ -36,6 +37,7 @@ export function OpportunityList({
   onPreviewFirstCardConsumed,
   onClearQuestionFilter,
   onRefresh,
+  salonId,
 }: Props) {
   const questionDriven =
     questionResult?.queryMode === "opportunity" && (questionResult?.suggestedCards.length ?? 0) > 0;
@@ -89,6 +91,7 @@ export function OpportunityList({
                 autoOpenPreview={index === 0 && previewFirstCardSignal > 0}
                 onAutoPreviewConsumed={index === 0 ? onPreviewFirstCardConsumed : undefined}
                 onRefresh={onRefresh}
+                salonId={salonId}
               />
             );
           })}
@@ -121,6 +124,7 @@ export function OpportunityList({
             layout={todayLayout ? "today" : "standard"}
             launchGuidePreviewTarget={todayLayout && index === 0}
             onRefresh={onRefresh}
+            salonId={salonId}
           />
         ))}
       </div>

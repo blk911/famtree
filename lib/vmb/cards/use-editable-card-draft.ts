@@ -63,5 +63,10 @@ export function useEditableCardDraft(initial: CardPreviewModel) {
     setDraft(snapshotRef.current);
   }, []);
 
-  return { draft, patchDraft, snapshotDraft, restoreDraft };
+  const replaceDraft = useCallback((next: CardPreviewModel) => {
+    setDraft(next);
+    snapshotRef.current = next;
+  }, []);
+
+  return { draft, patchDraft, snapshotDraft, restoreDraft, replaceDraft };
 }

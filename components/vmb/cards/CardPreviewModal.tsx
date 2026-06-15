@@ -2,7 +2,7 @@
 
 
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { CardPreview } from "@/components/vmb/cards/CardPreview";
 
@@ -16,6 +16,8 @@ import { cardPreviewToQueuedInvitePayload } from "@/lib/vmb/cards/queued-invite-
 import { useEditableCardDraft } from "@/lib/vmb/cards/use-editable-card-draft";
 
 import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
+import { buildPreviewFromTemplate, cardPreviewToTemplateOverride } from "@/lib/vmb/card-templates/apply-card-template";
+import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
 
 
 
@@ -36,6 +38,12 @@ type Props = {
   workflow: Workflow;
 
   onClose: () => void;
+
+  salonId?: string;
+
+  templateInput?: import("@/lib/vmb/cards/card-preview-model").CardTemplateInput;
+
+  templateBaseline?: CardPreviewModel;
 
 };
 
@@ -83,13 +91,23 @@ export function CardPreviewModal({
 
   onClose,
 
+  salonId,
+
+  templateInput,
+
+  templateBaseline,
+
 }: Props) {
 
-  const { draft, patchDraft, snapshotDraft, restoreDraft } = useEditableCardDraft(cardPreview);
+  const { draft, patchDraft, snapshotDraft, restoreDraft, replaceDraft } = useEditableCardDraft(cardPreview);
 
   const personalInvite = isPersonalInviteCard(draft.cardType);
 
   const inviteCopy = useMemo(() => resolveInviteCopy(draft), [draft]);
+
+  const [templateBusy, setTemplateBusy] = useState(false);
+
+  const [templateMessage, setTemplateMessage] = useState<string | null>(null);
 
   const modalTitle =
 
@@ -135,9 +153,103 @@ export function CardPreviewModal({
 
 
 
-  function handleCancelEdits() {
+  function handleResetToTemplate() {
 
-    restoreDraft();
+    if (templateBaseline) {
+
+      replaceDraft(templateBaseline);
+
+      setTemplateMessage("Restored from template.");
+
+      return;
+
+    }
+
+    if (!salonId || !templateInput) {
+
+      restoreDraft();
+
+      return;
+
+    }
+
+    setTemplateBusy(true);
+
+    setTemplateMessage(null);
+
+    void fetch(`/api/vmb/card-templates?type=${draft.cardType}`)
+
+      .then((res) => res.json())
+
+      .then((data: { ok?: boolean; template?: VmbCardTemplate; error?: string }) => {
+
+        if (!data.ok || !data.template) {
+
+          setTemplateMessage(data.error ?? "Could not load template.");
+
+          return;
+
+        }
+
+        replaceDraft(buildPreviewFromTemplate(data.template, templateInput, templateInput.techName));
+
+        setTemplateMessage("Restored from template.");
+
+      })
+
+      .finally(() => setTemplateBusy(false));
+
+  }
+
+
+
+  function handleSaveAsTemplateDefault() {
+
+    if (!salonId) {
+
+      setTemplateMessage("Sign in to save salon template defaults.");
+
+      return;
+
+    }
+
+    setTemplateBusy(true);
+
+    setTemplateMessage(null);
+
+    void fetch(`/api/vmb/card-templates?type=${draft.cardType}`)
+
+      .then((res) => res.json())
+
+      .then(async (data: { ok?: boolean; template?: VmbCardTemplate; error?: string }) => {
+
+        if (!data.ok || !data.template) {
+
+          setTemplateMessage(data.error ?? "Could not load base template.");
+
+          return;
+
+        }
+
+        const override = cardPreviewToTemplateOverride(draft, data.template);
+
+        const saveRes = await fetch("/api/vmb/card-templates", {
+
+          method: "PUT",
+
+          headers: { "Content-Type": "application/json" },
+
+          body: JSON.stringify({ template: override }),
+
+        });
+
+        const saved = (await saveRes.json()) as { ok?: boolean; error?: string };
+
+        setTemplateMessage(saved.ok ? "Saved as template default." : saved.error ?? "Save failed.");
+
+      })
+
+      .finally(() => setTemplateBusy(false));
 
   }
 
@@ -206,6 +318,12 @@ export function CardPreviewModal({
 
 
           <div className="vmb-card-preview-modal__editor">
+
+            {draft.templateName ? (
+              <p className="vmb-card-preview-modal__template-indicator">
+                Template: {draft.templateName}
+              </p>
+            ) : null}
 
             <p className="vmb-card-preview-modal__editor-label">
 
@@ -469,15 +587,46 @@ export function CardPreviewModal({
 
                 className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
 
-                onClick={handleCancelEdits}
+                onClick={handleResetToTemplate}
+
+                disabled={templateBusy}
 
               >
 
-                Reset
+                Reset to Template
+
+              </button>
+
+              {salonId ? (
+                <button
+                  type="button"
+                  className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
+                  onClick={handleSaveAsTemplateDefault}
+                  disabled={templateBusy}
+                >
+                  Save as Template Default
+                </button>
+              ) : null}
+
+              <button
+
+                type="button"
+
+                className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
+
+                onClick={restoreDraft}
+
+              >
+
+                Undo Edits
 
               </button>
 
             </div>
+
+            {templateMessage ? (
+              <p className="vmb-card-preview-modal__template-status">{templateMessage}</p>
+            ) : null}
 
           </div>
 

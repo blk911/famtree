@@ -6,6 +6,7 @@ import { OpportunityLifecycle } from "@/components/taikos/workflow/OpportunityLi
 import { useTodayProspectFeed } from "@/components/taikos/workflow/TodayProspectFeedContext";
 import type { useInlineActionWorkflow } from "@/components/taikos/workflow/useInlineActionWorkflow";
 import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
+import type { CardTemplateInput } from "@/lib/vmb/cards/card-preview-model";
 
 type Workflow = ReturnType<typeof useInlineActionWorkflow>;
 
@@ -18,6 +19,9 @@ type Props = {
   reasonLine: string;
   suggestedNextStep: string;
   cardPreview: CardPreviewModel;
+  templateBaseline?: CardPreviewModel;
+  templateInput?: CardTemplateInput;
+  salonId?: string;
   workflow: Workflow;
   autoOpenPreview?: boolean;
   onAutoPreviewConsumed?: () => void;
@@ -146,6 +150,9 @@ export function TodayProspectCardLayout({
   reasonLine,
   suggestedNextStep,
   cardPreview,
+  templateBaseline,
+  templateInput,
+  salonId,
   workflow,
   autoOpenPreview = false,
   onAutoPreviewConsumed,
@@ -257,6 +264,9 @@ export function TodayProspectCardLayout({
         actionLabel={actionLabel}
         workflow={workflow}
         onClose={handleCloseModal}
+        salonId={salonId}
+        templateInput={templateInput}
+        templateBaseline={templateBaseline}
       />
     </>
   );

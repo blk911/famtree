@@ -462,6 +462,7 @@ export function VmbTodayClient({
                 onPreviewFirstCardConsumed={() => setPreviewFirstCardSignal(0)}
                 onClearQuestionFilter={() => setActiveQuestionResult(null)}
                 onRefresh={loadContext}
+                salonId={typeof pageContext?.trialId === "string" ? pageContext.trialId : undefined}
               />
             </div>
           </TodayProspectFeedProvider>

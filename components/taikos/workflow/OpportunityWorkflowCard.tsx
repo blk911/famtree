@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CardPreview } from "@/components/vmb/cards/CardPreview";
 import { InlineDeliverablePreview } from "@/components/taikos/workflow/InlineDeliverablePreview";
 import { OpportunityLifecycle } from "@/components/taikos/workflow/OpportunityLifecycle";
@@ -18,6 +18,8 @@ import type { TaikosOpportunity } from "@/lib/taikos/opportunities/types";
 import { buildOpportunityGuideCopy } from "@/lib/taikos/context/today-conversation";
 import { cardActionLabel } from "@/lib/vmb/cards/card-type-labels";
 import { buildCardPreview } from "@/lib/vmb/cards/card-template-engine";
+import type { CardTemplateInput } from "@/lib/vmb/cards/card-preview-model";
+import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
 import {
   buildOpportunityIntelligence,
   type OpportunityAnalysisContext,
@@ -36,6 +38,7 @@ type Props = {
   onAutoPreviewConsumed?: () => void;
   launchGuidePreviewTarget?: boolean;
   onRefresh?: () => void;
+  salonId?: string;
 };
 
 export function OpportunityWorkflowCard({
@@ -50,7 +53,20 @@ export function OpportunityWorkflowCard({
   onAutoPreviewConsumed,
   launchGuidePreviewTarget = false,
   onRefresh,
+  salonId,
 }: Props) {
+  const [salonTemplates, setSalonTemplates] = useState<VmbCardTemplate[] | null>(null);
+
+  useEffect(() => {
+    if (!salonId) return;
+    void fetch("/api/vmb/card-templates")
+      .then((res) => res.json())
+      .then((data: { ok?: boolean; templates?: VmbCardTemplate[] }) => {
+        if (data.ok && data.templates) {
+          setSalonTemplates(data.templates);
+        }
+      });
+  }, [salonId]);
   const intelligence = useMemo(
     () => intelligenceProp ?? buildOpportunityIntelligence(opportunity, analysisContext),
     [intelligenceProp, opportunity, analysisContext],
@@ -65,17 +81,17 @@ export function OpportunityWorkflowCard({
     [intelligence, clientName, insight?.subjectLabel],
   );
 
-  const cardPreview = useMemo(
-    () =>
-      buildCardPreview({
-        cardType: intelligence.suggestedCardType,
-        recipientName: intelligence.subjectName ?? clientName,
-        salonName: analysisContext?.salonName,
-        ticketValue: opportunity.estimatedValue,
-        subjectLabel: insight?.subjectLabel ?? guide.roleLabel,
-        discoveryText: insight?.discovery ?? intelligence.whatTaikosSees,
-        recommendationText: opportunity.recommendation,
-      }),
+  const templateInput = useMemo(
+    (): CardTemplateInput => ({
+      cardType: intelligence.suggestedCardType,
+      recipientName: intelligence.subjectName ?? clientName,
+      salonName: analysisContext?.salonName,
+      ticketValue: opportunity.estimatedValue,
+      subjectLabel: insight?.subjectLabel ?? guide.roleLabel,
+      discoveryText: insight?.discovery ?? intelligence.whatTaikosSees,
+      recommendationText: opportunity.recommendation,
+      salonId,
+    }),
     [
       intelligence,
       opportunity,
@@ -83,7 +99,18 @@ export function OpportunityWorkflowCard({
       analysisContext?.salonName,
       insight,
       guide.roleLabel,
+      salonId,
     ],
+  );
+
+  const salonTemplate = useMemo(
+    () => salonTemplates?.find((template) => template.type === intelligence.suggestedCardType),
+    [salonTemplates, intelligence.suggestedCardType],
+  );
+
+  const cardPreview = useMemo(
+    () => buildCardPreview(templateInput, salonTemplate),
+    [templateInput, salonTemplate],
   );
 
   const workflow = useInlineActionWorkflow({
@@ -108,6 +135,9 @@ export function OpportunityWorkflowCard({
         reasonLine={guide.bodyLines[0] ?? intelligence.whatTaikosSees}
         suggestedNextStep={guide.suggestedNextStep}
         cardPreview={cardPreview}
+        templateBaseline={cardPreview}
+        templateInput={templateInput}
+        salonId={salonId}
         workflow={workflow}
         autoOpenPreview={autoOpenPreview}
         onAutoPreviewConsumed={onAutoPreviewConsumed}

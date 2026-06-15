@@ -39,6 +39,10 @@ export function getVmbActiveBookFile(): string {
   return path.join(getVmbDataDir(), "active-book.json");
 }
 
+export function getVmbCardTemplatesFile(): string {
+  return path.join(getVmbDataDir(), "card-templates.json");
+}
+
 /** Legacy file-upload imports (admin engine path) — kept separate from book paste flow. */
 export function getVmbTrialImportsDir(): string {
   return path.join(getVmbDataDir(), "trial-imports");

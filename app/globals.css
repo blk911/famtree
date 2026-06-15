@@ -4113,3 +4113,124 @@
   color: #9d174d;
 }
 
+/* VMB card template admin */
+.vmb-template-admin {
+  display: grid;
+  grid-template-columns: 220px minmax(280px, 1fr) minmax(280px, 360px);
+  gap: 20px;
+  align-items: start;
+}
+
+.vmb-template-admin__list-label,
+.vmb-template-admin__preview-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+  margin: 0 0 10px;
+}
+
+.vmb-template-admin__list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vmb-template-admin__type {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  background: #fff;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #44403c;
+  cursor: pointer;
+  text-align: left;
+}
+
+.vmb-template-admin__type--active {
+  border-color: #9d174d;
+  background: #fdf2f8;
+  color: #831843;
+}
+
+.vmb-template-admin__override-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #9d174d;
+  flex-shrink: 0;
+}
+
+.vmb-template-admin__editor,
+.vmb-template-admin__preview {
+  border: 1px solid #e7e5e4;
+  border-radius: 14px;
+  background: #fff;
+  padding: 16px;
+}
+
+.vmb-template-admin__editor-head h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.vmb-template-admin__editor-head p {
+  margin: 0 0 14px;
+  color: #78716c;
+  font-size: 13px;
+}
+
+.vmb-template-admin__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #44403c;
+}
+
+.vmb-template-admin__field input,
+.vmb-template-admin__field textarea,
+.vmb-template-admin__field select {
+  border: 1px solid #d6d3d1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.vmb-template-admin__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.vmb-template-admin__status,
+.vmb-template-admin__preview-meta {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #78716c;
+}
+
+.vmb-card-preview-modal__template-indicator,
+.vmb-card-preview-modal__template-status {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #78716c;
+}
+
+@media (max-width: 960px) {
+  .vmb-template-admin {
+    grid-template-columns: 1fr;
+  }
+}
+
