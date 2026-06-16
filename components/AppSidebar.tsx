@@ -61,7 +61,7 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
   const [marketIntelOpen, setMarketIntelOpen] = useState(marketIntelActive);
   const [platformAdminOpen, setPlatformAdminOpen] = useState(platformAdminActive);
 
-  /** Expand Settings submenu whenever we're on Settings or any /admin route (client navigations skip useState init). */
+  /** Expand Settings submenu when navigating to a settings route. */
   useEffect(() => {
     if (settingsActive) setSettingsOpen(true);
   }, [settingsActive]);

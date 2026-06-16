@@ -75,15 +75,18 @@ export function isMarketIntelSidebarActive(pathname: string): boolean {
   return isMarketIntelPath(pathname);
 }
 
+export function isSettingsSidebarRoute(pathname: string): boolean {
+  return SETTINGS_ADMIN_SIDEBAR_ITEMS.some((item) => {
+    if (item.href === "/settings") {
+      return pathname === "/settings" || pathname.startsWith("/settings/");
+    }
+    return pathname === item.href || pathname.startsWith(`${item.href}/`);
+  });
+}
+
+/** Settings accordion highlight — only settings/tools/activity, not platform or market intel admin. */
 export function isSettingsSidebarActive(pathname: string): boolean {
-  const marketIntelActive = isMarketIntelSidebarActive(pathname);
-  const adminZone =
-    pathname === "/admin" || (pathname.startsWith("/admin/") && !marketIntelActive);
-  return (
-    pathname === "/settings" ||
-    pathname.startsWith("/settings/") ||
-    adminZone
-  );
+  return isSettingsSidebarRoute(pathname);
 }
 
 export function isPlatformAdminNavItemActive(pathname: string, href: string): boolean {

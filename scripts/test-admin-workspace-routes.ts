@@ -24,6 +24,8 @@ import {
   isMarketIntelSidebarActive,
   isPlatformAdminNavItemActive,
   isPlatformAdminSidebarActive,
+  isSettingsSidebarActive,
+  isSettingsSidebarRoute,
 } from "../lib/admin/sidebar-nav";
 import { MARKET_INTEL_ROUTES } from "../lib/markets/market-intel-routes";
 
@@ -179,6 +181,17 @@ function run(): void {
     isPlatformAdminSidebarActive("/admin/discovery") && !isMarketIntelSidebarActive("/admin/discovery"),
     "/admin/discovery highlights platform admin only",
   );
+  assert(
+    isPlatformAdminSidebarActive("/admin/discovery") && !isSettingsSidebarActive("/admin/discovery"),
+    "/admin/discovery does not highlight settings",
+  );
+  assert(
+    !isSettingsSidebarActive("/admin/markets") && isMarketIntelSidebarActive("/admin/markets"),
+    "/admin/markets highlights market intel only",
+  );
+  assert(isSettingsSidebarRoute("/admin/tools"), "settings routes include admin tools");
+  assert(isSettingsSidebarRoute("/admin/activity"), "settings routes include activity log");
+  assert(!isSettingsSidebarRoute("/admin/invites/templates"), "invites admin is not a settings route");
   assert(
     isMarketIntelSidebarActive("/admin/markets") && !isPlatformAdminSidebarActive("/admin/markets"),
     "/admin/markets highlights market intel only",
