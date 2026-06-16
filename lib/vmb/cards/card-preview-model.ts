@@ -11,6 +11,8 @@ export type CardImageSlot = {
   label: string;
   /** Local admin preview only — not persisted on templates yet. */
   previewUrl?: string;
+  /** Service/work imagery vs salon owner profile photo (slot 3). */
+  role?: "service" | "owner";
 };
 
 /** Reserved for future personalization — render gracefully when missing. */

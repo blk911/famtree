@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LegacyAdminPathNotice } from "@/components/admin/workspaces/LegacyAdminPathNotice";
 import { CardTemplateAdminClient } from "@/components/vmb/admin/CardTemplateAdminClient";
+import { getCurrentUser } from "@/lib/auth";
 import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,8 @@ export const metadata: Metadata = {
 
 /** @deprecated Use /admin/invites/templates — VMB product shell compatibility route. */
 export default async function VmbAdminTemplatesPage() {
-  const ctx = await loadVmbPageContext({});
+  const [ctx, user] = await Promise.all([loadVmbPageContext({}), getCurrentUser()]);
+  const ownerPhotoUrl = user?.photoUrl?.trim() || undefined;
   return (
     <>
       <div className="mx-auto max-w-[1500px] px-4 pt-5 sm:px-6 lg:px-8">
@@ -25,6 +27,7 @@ export default async function VmbAdminTemplatesPage() {
         salonId={ctx.trialId}
         salonName={ctx.salonName}
         ownerName={ctx.workspace?.ownerName}
+        ownerPhotoUrl={ownerPhotoUrl}
       />
     </>
   );

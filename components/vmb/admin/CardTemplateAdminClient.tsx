@@ -6,7 +6,7 @@ import { CardBuilderImageSlots } from "@/components/vmb/admin/CardBuilderImageSl
 import { CardPreview } from "@/components/vmb/cards/CardPreview";
 import {
   applyCardBuilderImagesToPreview,
-  createEmptyCardBuilderImageSlots,
+  createInitialCardBuilderImageSlots,
   type CardBuilderDraftImageSlot,
 } from "@/lib/vmb/card-templates/card-builder-preview-images";
 import { buildPreviewFromTemplate } from "@/lib/vmb/card-templates/apply-card-template";
@@ -31,6 +31,7 @@ type Props = {
   salonId?: string;
   salonName: string;
   ownerName?: string;
+  ownerPhotoUrl?: string;
 };
 
 const TYPE_LABELS: Record<VmbCardType, string> = {
@@ -52,13 +53,15 @@ function revokeDraftImageUrls(slots: CardBuilderDraftImageSlot[]) {
   }
 }
 
-export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props) {
+export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPhotoUrl }: Props) {
   const [templates, setTemplates] = useState<VmbCardTemplate[]>([]);
   const [offers, setOffers] = useState<VmbOffer[]>(getAllDefaultOffers());
   const [selectedType, setSelectedType] = useState<VmbCardType>("pcn_invite");
   const [draft, setDraft] = useState<VmbCardTemplate | null>(null);
   const [selectedOfferId, setSelectedOfferId] = useState("");
-  const [imageSlots, setImageSlots] = useState<CardBuilderDraftImageSlot[]>(createEmptyCardBuilderImageSlots);
+  const [imageSlots, setImageSlots] = useState<CardBuilderDraftImageSlot[]>(() =>
+    createInitialCardBuilderImageSlots(ownerPhotoUrl),
+  );
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -98,9 +101,9 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
   useEffect(() => {
     setImageSlots((current) => {
       revokeDraftImageUrls(current);
-      return createEmptyCardBuilderImageSlots();
+      return createInitialCardBuilderImageSlots(ownerPhotoUrl);
     });
-  }, [selectedType]);
+  }, [selectedType, ownerPhotoUrl]);
 
   const services = useMemo(() => getAllDefaultServices(), []);
   const serviceOptions = useMemo(() => getAllDefaultServiceOptions(), []);
@@ -173,7 +176,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
       setSelectedOfferId(resolved?.id ?? "");
       setImageSlots((current) => {
         revokeDraftImageUrls(current);
-        return createEmptyCardBuilderImageSlots();
+        return createInitialCardBuilderImageSlots(ownerPhotoUrl);
       });
       setStatus("Reset to default template.");
       await loadTemplates();

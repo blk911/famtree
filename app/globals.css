@@ -2478,6 +2478,50 @@
   display: block;
 }
 
+.vmb-card-preview__hero-image--owner {
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.vmb-card-preview__owner-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 4px;
+}
+
+.vmb-card-preview__owner-caption {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgba(68, 64, 60, 0.65);
+}
+
+.vmb-card-preview__collage-cell--owner,
+.vmb-card-preview__dual-cell--owner {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.vmb-card-preview__collage-cell--owner .vmb-card-preview__hero-image--owner {
+  width: 72px;
+  height: 72px;
+}
+
+.vmb-card-preview__hero-single--owner .vmb-card-preview__hero-image--owner {
+  width: 120px;
+  height: 120px;
+}
+
+.vmb-card-preview__dual-cell--owner .vmb-card-preview__hero-image--owner {
+  width: 88px;
+  height: 88px;
+}
+
 .vmb-card-preview__collage-cell .vmb-card-preview__hero-image,
 .vmb-card-preview__hero-single .vmb-card-preview__hero-image {
   width: 100%;
@@ -3919,10 +3963,22 @@
   line-height: 1.35;
 }
 
+.vmb-salon-invite__avatar-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 999px;
+}
+
 .vmb-salon-invite__hero {
   position: relative;
-  min-height: 132px;
   overflow: hidden;
+}
+
+.vmb-salon-invite__hero .vmb-card-preview__hero {
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;
 }
 
 .vmb-salon-invite__hero-gradient {
@@ -4666,6 +4722,30 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #78716c;
+}
+
+.vmb-card-builder__image-slot--owner .vmb-card-builder__image-slot-label {
+  color: #9d174d;
+}
+
+.vmb-card-builder__image-slot-hint {
+  margin: -2px 0 6px;
+  font-size: 10px;
+  color: #a8a29e;
+  line-height: 1.35;
+}
+
+.vmb-card-builder__image-drop--owner {
+  border-color: #f5d0c8;
+  background: #fff9f6;
+}
+
+.vmb-card-builder__image-preview--owner {
+  width: 72px;
+  height: 72px;
+  margin: 8px auto;
+  border-radius: 999px;
+  object-fit: cover;
 }
 
 .vmb-card-builder__image-drop {

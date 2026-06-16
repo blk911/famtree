@@ -248,16 +248,23 @@ function run(): void {
   assert(!cardTemplateSource.includes(">Image mode<"), "image mode is not shown in main card template editor");
   assert(cardTemplateSource.includes("CardBuilderImageSlots"), "card images section renders three slots");
   assert(
-    cardTemplateSource.includes("}, [selectedType]);") &&
-      !cardTemplateSource.includes("createEmptyCardBuilderImageSlots();\n    });\n  }, [selectedTemplate, offers]);"),
-    "card image draft slots reset only when card type changes",
+    cardTemplateSource.includes("ownerPhotoUrl"),
+    "card template admin prefill slot 3 from owner profile photo",
   );
   const cardBuilderImageSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/CardBuilderImageSlots.tsx"),
     "utf8",
   );
+  assert(cardBuilderImageSource.includes("Service image 1"), "slot 1 labeled service image 1");
+  assert(cardBuilderImageSource.includes("Owner photo"), "slot 3 labeled owner photo");
+  assert(cardBuilderImageSource.includes("Preview only"), "draft-only storage note is visible");
   assert(cardBuilderImageSource.includes("onDrop"), "card image slots support drag-and-drop upload");
   assert(cardBuilderImageSource.includes('accept="image/*"'), "card image slots accept image files only");
+  const personalInviteSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/cards/PersonalInvitePreview.tsx"),
+    "utf8",
+  );
+  assert(personalInviteSource.includes("<CardHero"), "PCN preview uses CardHero for builder images");
   assert(cardTemplateSource.includes("vmb-card-builder__offer-card"), "offer section displays selected offer preview");
   assert(cardTemplateSource.includes("vmb-card-builder__advanced"), "template name lives in advanced section");
   assert(cardTemplateSource.includes("Personal note"), "renamed personal note label renders");

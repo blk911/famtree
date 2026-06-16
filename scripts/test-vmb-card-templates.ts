@@ -9,7 +9,7 @@ import { ensureVmbStorageTables, resetVmbStorageBackendCache, resolveVmbStorageB
 import { buildPreviewFromTemplate } from "../lib/vmb/card-templates/apply-card-template";
 import {
   applyCardBuilderImagesToPreview,
-  createEmptyCardBuilderImageSlots,
+  createInitialCardBuilderImageSlots,
 } from "../lib/vmb/card-templates/card-builder-preview-images";
 
 import { applyTemplateTokens, buildTemplateTokenContext } from "../lib/vmb/card-templates/template-tokens";
@@ -396,7 +396,7 @@ async function run(): Promise<void> {
 
   assert(tokenFromInput.clientName === "Grace", "buildTemplateTokenContext first name");
 
-  const builderSlots = createEmptyCardBuilderImageSlots();
+  const builderSlots = createInitialCardBuilderImageSlots();
   builderSlots[0] = { previewUrl: "blob:preview-1", fileName: "chair.jpg" };
   builderSlots[1] = { previewUrl: "blob:preview-2", fileName: "detail.jpg" };
   const withBuilderImages = applyCardBuilderImagesToPreview(pcnPreview, builderSlots);

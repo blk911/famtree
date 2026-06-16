@@ -28,7 +28,13 @@ export function CardPreview({ model, editable, compact, variant = "default", onC
       data-card-type={model.cardType}
     >
       {personalInvite ? null : (
-        <CardHero layout={model.imageLayout} slots={model.imageSlots} accent={model.accent} tags={model.tags} />
+        <CardHero
+          layout={model.imageLayout}
+          slots={model.imageSlots}
+          accent={model.accent}
+          tags={model.tags}
+          ownerName={model.techName}
+        />
       )}
       <CardBody model={model} editable={editable} onChange={onChange} />
     </article>
