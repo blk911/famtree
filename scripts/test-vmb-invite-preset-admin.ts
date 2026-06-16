@@ -25,6 +25,10 @@ import {
   upsertOutreachPresetOverride,
 } from "../lib/vmb/invites/outreach-preset-store";
 import { buildInviteDraftsForAnalysis } from "../lib/vmb/invites/build-invite-drafts-for-analysis";
+import {
+  OFFER_SELECTOR_DISPLAY_NAMES,
+  sortOffersForSelectorDisplay,
+} from "../lib/vmb/offers/offer-display-order";
 import { getAllDefaultOffers } from "../lib/vmb/offers/default-offers";
 import { getAllDefaultServices } from "../lib/vmb/services/default-service-catalog";
 import { mockAiosAdapter } from "../lib/taikos/adapters/mock";
@@ -191,6 +195,9 @@ async function run(): Promise<void> {
   );
 
   void mockAiosAdapter;
+
+  const sortedOffers = sortOffersForSelectorDisplay(getAllDefaultOffers());
+  assert(sortedOffers[0]?.name === OFFER_SELECTOR_DISPLAY_NAMES[0], "offer selector orders PCN first");
 
   console.log("OK: VMB invite preset admin tests passed");
 }

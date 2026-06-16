@@ -188,7 +188,7 @@ export function buildPreviewFromTemplate(
     offer: previewOffer,
     includeOffer,
     offerProminent: offerIsProminent(input.cardType),
-    templateOfferLine: !previewOffer && templateOfferLine ? templateOfferLine : undefined,
+    templateOfferLine: templateOfferLine.trim() ? templateOfferLine : undefined,
     metadata: {
       recipientName,
       serviceName: input.serviceName,

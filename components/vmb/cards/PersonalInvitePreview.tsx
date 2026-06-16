@@ -55,12 +55,13 @@ export function PersonalInvitePreview({ model }: Props) {
         <p className="vmb-salon-invite__greeting">{copy.greeting}</p>
         <p className="vmb-salon-invite__paragraph">{copy.personalConnection}</p>
         <p className="vmb-salon-invite__paragraph">{copy.inviteMessage}</p>
-        {model.includeOffer !== false && model.offer ? (
-          <CardPreviewOfferBlock model={model} />
-        ) : copy.offerMessage.trim() ? (
+        {copy.offerMessage.trim() ? (
           <p className="vmb-salon-invite__paragraph vmb-salon-invite__paragraph--offer">
             {copy.offerMessage}
           </p>
+        ) : null}
+        {model.includeOffer !== false && model.offer ? (
+          <CardPreviewOfferBlock model={model} />
         ) : null}
         <p className="vmb-salon-invite__signature">{copy.signature}</p>
         <div className="vmb-salon-invite__cta-row">

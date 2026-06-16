@@ -46,7 +46,6 @@ export function CardBody({ model, editable, onChange }: Props) {
   const displayBody = editable ? body : model.body;
   const displayCta = editable ? cta : model.cta;
   const displaySalutation = editable ? salutation : model.salutation;
-  const showTitleBlock = !personalInvite && (displayTitle.trim() || displaySubtitle.trim());
 
   return (
     <div
@@ -97,20 +96,14 @@ export function CardBody({ model, editable, onChange }: Props) {
         </>
       ) : (
         <>
-          {showTitleBlock ? (
-            <>
-              <h3 className="vmb-card-preview__title">{displayTitle}</h3>
-              <p className="vmb-card-preview__subtitle">{displaySubtitle}</p>
-            </>
-          ) : null}
-          <p className="vmb-card-preview__copy">{displayBody}</p>
+          <p className="vmb-card-preview__copy vmb-card-preview__copy--lead">{displayBody}</p>
           {model.relationshipBenefit?.trim() ? (
             <p className="vmb-card-preview__copy">{model.relationshipBenefit}</p>
           ) : null}
-          <CardPreviewOfferBlock model={model} />
-          {!model.offer && model.templateOfferLine?.trim() ? (
+          {model.templateOfferLine?.trim() ? (
             <p className="vmb-card-preview__copy vmb-card-preview__copy--offer">{model.templateOfferLine}</p>
           ) : null}
+          <CardPreviewOfferBlock model={model} />
           {model.signatureLine?.trim() ? (
             <p className="vmb-card-preview__signature">{model.signatureLine}</p>
           ) : null}

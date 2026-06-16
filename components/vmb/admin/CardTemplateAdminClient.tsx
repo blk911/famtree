@@ -18,6 +18,7 @@ import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-typ
 import { CARD_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/card-templates/default-card-templates";
 import { getAllDefaultOffers } from "@/lib/vmb/offers/default-offers";
 import { resolveOfferForTemplate } from "@/lib/vmb/offers/offer-resolver";
+import { sortOffersForSelectorDisplay } from "@/lib/vmb/offers/offer-display-order";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 import {
   getAllDefaultServiceOptions,
@@ -102,7 +103,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
   const serviceOptions = useMemo(() => getAllDefaultServiceOptions(), []);
 
   const activeOffers = useMemo(
-    () => offers.filter((offer) => offer.active).sort((a, b) => a.name.localeCompare(b.name)),
+    () => sortOffersForSelectorDisplay(offers.filter((offer) => offer.active)),
     [offers],
   );
 

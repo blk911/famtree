@@ -171,11 +171,12 @@ async function run(): Promise<void> {
   assert(birthdayPreview.subtitle.length > 0, "non-PCN card preview keeps subtitle");
 
   assert(Boolean(birthdayPreview.relationshipBenefit), "non-PCN card preview renders relationship benefit");
-
-
+  assert(
+    Boolean(birthdayPreview.templateOfferLine) || Boolean(birthdayPreview.offer),
+    "non-PCN preview keeps offer note and/or offer card data",
+  );
 
   const pcnPreview = buildCardPreview({
-
     cardType: "pcn_invite",
 
     recipientName: "Grace",

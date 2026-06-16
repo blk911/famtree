@@ -2533,6 +2533,12 @@
   color: #44403c;
 }
 
+.vmb-card-preview__copy--lead {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #292524;
+}
+
 .vmb-card-preview__cta {
   margin: 0;
   display: inline-block;

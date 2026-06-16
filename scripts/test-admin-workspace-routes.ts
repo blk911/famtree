@@ -254,6 +254,21 @@ function run(): void {
   assert(cardTemplateSource.includes("Offer note"), "renamed offer note label renders");
   assert(cardTemplateSource.includes("Save template"), "card template save action remains available");
   assert(cardTemplateSource.includes("Reset to default"), "card template reset action remains available");
+
+  const cardBodySource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/cards/CardBody.tsx"),
+    "utf8",
+  );
+  assert(!cardBodySource.includes("vmb-card-preview__title"), "invite preview hides large title block");
+  assert(cardBodySource.includes("vmb-card-preview__copy--lead"), "personal note leads invite preview body");
+
+  const offerOrderSource = fs.readFileSync(
+    path.join(process.cwd(), "lib/vmb/offers/offer-display-order.ts"),
+    "utf8",
+  );
+  assert(offerOrderSource.includes("PCN Early Access"), "offer selector priority list includes PCN");
+  assert(offerOrderSource.includes("sortOffersForSelectorDisplay"), "offer selector sort helper exists");
+
   const cardTemplateStyles = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
   assert(
     cardTemplateStyles.includes("grid-template-columns: minmax(0, 1fr) minmax(0, 2fr)"),
