@@ -1,5 +1,6 @@
 import type { CardTemplateInput } from "@/lib/vmb/cards/card-preview-model";
 import { buildPersonalInviteCopy } from "@/lib/vmb/cards/personal-invite-copy";
+import { getRelationshipFirstCardForTemplateType } from "@/lib/vmb/cards/relationship-first-invite-copy";
 import type { VmbCardTemplate } from "./card-template-types";
 import { getDefaultCtaForTemplateType } from "./template-cta-labels";
 
@@ -71,11 +72,11 @@ export function normalizeTemplateForEditor(template: VmbCardTemplate): VmbCardTe
   }
 
   if (template.type === "pcn_invite") {
+    const pcn = getRelationshipFirstCardForTemplateType("pcn_invite");
     return {
       ...template,
-      relationshipBenefitTemplate: template.messageTemplate,
-      messageTemplate:
-        "I always remember your {serviceName} appointments — you know how to make a visit feel calm.",
+      relationshipBenefitTemplate: template.relationshipBenefitTemplate?.trim() || pcn.relationshipBenefitTemplate,
+      messageTemplate: template.messageTemplate?.trim() || pcn.messageTemplate,
     };
   }
 

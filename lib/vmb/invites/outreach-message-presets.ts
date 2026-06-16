@@ -1,4 +1,11 @@
 import type { InviteDraftCategory } from "@/types/vmb/invite-draft";
+import {
+  buildRelationshipFirstOutreachMessage,
+  buildRelationshipFirstOutreachSubject,
+  getRelationshipFirstCardForOutreachCategory,
+  RELATIONSHIP_FIRST_INVITE_CARDS,
+  VMB_INVITE_PRESET_SOURCE_MODULES,
+} from "@/lib/vmb/cards/relationship-first-invite-copy";
 
 export type OutreachMessagePresetId = InviteDraftCategory;
 
@@ -16,75 +23,38 @@ export type OutreachMessagePreset = {
   updatedAt?: string;
 };
 
+export { VMB_INVITE_PRESET_SOURCE_MODULES, RELATIONSHIP_FIRST_INVITE_CARDS };
+
 export const OUTREACH_LOCKED_FOOTER_TEMPLATE =
   "\n\nSent from VMB on behalf of {salonName}\nPrivate client network · Reply links coming soon.";
 
 export const OUTREACH_LOCKED_FOOTER_OPT_OUT_TEMPLATE =
   "\n\n— {salonName}\nPrivate client network · Reply STOP to opt out.";
 
+function outreachPresetFromCard(category: InviteDraftCategory): OutreachMessagePreset {
+  const card = getRelationshipFirstCardForOutreachCategory(category);
+  if (!card) {
+    throw new Error(`Missing relationship-first outreach card for ${category}`);
+  }
+
+  return {
+    id: category,
+    label: card.label,
+    description: `${card.label} — relationship-first salon owner voice.`,
+    subjectTemplate: `{subjectLine}`,
+    messageTemplate: `{editableBody}`,
+    lockedFooterTemplate: OUTREACH_LOCKED_FOOTER_TEMPLATE,
+    primaryCtaLabel: card.primaryCta,
+    channelHintSms: "Personal note with reply prompt",
+    channelHintEmail: "Relationship-first invite with salon signature block",
+  };
+}
+
 export const OUTREACH_MESSAGE_PRESETS: OutreachMessagePreset[] = [
-  {
-    id: "private_client_network",
-    label: "Private Client Network",
-    description: "Default subject, body, and footer for PCN invite send/preview modals.",
-    subjectTemplate: "You're invited to {salonName}'s private client network",
-    messageTemplate: `Hi {firstName},
-
-We've been building something special for our favorite clients — a private network where you get first access to openings, member-only offers, and a direct line to us (no algorithms, no noise).
-
-We'd love to invite you in this week. Reply YES and we'll send your personal link.
-
-Thank you for being part of {salonName}.`,
-    lockedFooterTemplate: OUTREACH_LOCKED_FOOTER_TEMPLATE,
-    primaryCtaLabel: "Join My Private Client Network",
-    channelHintSms: "Short invite with reply YES prompt",
-    channelHintEmail: "Full PCN invite with salon signature block",
-  },
-  {
-    id: "new_client_welcome",
-    label: "New Client Welcome",
-    description: "Welcome outreach for newly imported clients.",
-    subjectTemplate: "Welcome to {salonName}",
-    messageTemplate: `{welcomeMessage}
-
-We'd love to stay connected — reply if you'd like your private client link.`,
-    lockedFooterTemplate: OUTREACH_LOCKED_FOOTER_TEMPLATE,
-    primaryCtaLabel: "Welcome to the salon",
-    channelHintSms: "Brief welcome note",
-    channelHintEmail: "Welcome message with private link offer",
-  },
-  {
-    id: "revenue_touch",
-    label: "Revenue Touch",
-    description: "Reactivation and revenue opportunity outreach.",
-    subjectTemplate: "{suggestedAction} — {salonName}",
-    messageTemplate: `Hi {firstName},
-
-We noticed {reason} and wanted to reach out with a personal invite.
-
-{suggestedAction} — reply if you'd like us to hold a spot for you.
-
-— {salonName}`,
-    lockedFooterTemplate: OUTREACH_LOCKED_FOOTER_TEMPLATE,
-    primaryCtaLabel: "Book my next visit",
-    channelHintSms: "Personal revenue touch with reply prompt",
-    channelHintEmail: "Revenue opportunity with hold-a-spot CTA",
-  },
-  {
-    id: "trusted_intro_request",
-    label: "Trusted Intro Request",
-    description: "Warm introduction ask for referral-ready clients.",
-    subjectTemplate: "Quick intro request — {salonName}",
-    messageTemplate: `Hi {firstName},
-
-{promptText}
-
-Reply if you're open to a warm introduction this week.`,
-    lockedFooterTemplate: OUTREACH_LOCKED_FOOTER_TEMPLATE,
-    primaryCtaLabel: "Make an introduction",
-    channelHintSms: "Short intro request",
-    channelHintEmail: "Trusted intro ask with reply prompt",
-  },
+  outreachPresetFromCard("private_client_network"),
+  outreachPresetFromCard("new_client_welcome"),
+  outreachPresetFromCard("revenue_touch"),
+  outreachPresetFromCard("trusted_intro_request"),
 ];
 
 const PRESET_BY_ID = new Map(OUTREACH_MESSAGE_PRESETS.map((preset) => [preset.id, preset]));
@@ -132,6 +102,8 @@ export function renderOutreachTemplate(template: string, vars: OutreachTemplateV
     reason: vars.reason?.trim() || "it's been a while",
     suggestedAction: vars.suggestedAction?.trim() || "We have a spot that might work",
     promptText: vars.promptText?.trim() || "",
+    subjectLine: "",
+    editableBody: "",
   };
 
   return template.replace(/\{(\w+)\}/g, (_, key: string) => replacements[key] ?? "");
@@ -158,10 +130,23 @@ export function buildOutreachDraftCopyFromPreset(
     salonName,
     firstName: vars.firstName ?? firstNameFromClientName(vars.clientName),
   };
+  const card = getRelationshipFirstCardForOutreachCategory(preset.id);
+  if (!card) {
+    throw new Error(`Missing relationship-first card for outreach preset ${preset.id}`);
+  }
+
+  const subject =
+    preset.subjectTemplate && preset.subjectTemplate !== "{subjectLine}"
+      ? renderOutreachTemplate(preset.subjectTemplate, mergedVars)
+      : buildRelationshipFirstOutreachSubject(card, mergedVars);
+  const editableMessage =
+    preset.messageTemplate && preset.messageTemplate !== "{editableBody}"
+      ? renderOutreachTemplate(preset.messageTemplate, mergedVars)
+      : buildRelationshipFirstOutreachMessage(card, mergedVars);
 
   return {
-    subject: renderOutreachTemplate(preset.subjectTemplate, mergedVars),
-    editableMessage: renderOutreachTemplate(preset.messageTemplate, mergedVars).trim(),
+    subject,
+    editableMessage,
     lockedFooter: renderOutreachTemplate(preset.lockedFooterTemplate, mergedVars),
     primaryCtaLabel: preset.primaryCtaLabel,
   };
@@ -173,14 +158,3 @@ export function buildOutreachDraftCopy(
 ): { subject: string; editableMessage: string; lockedFooter: string; primaryCtaLabel: string } {
   return buildOutreachDraftCopyFromPreset(getDefaultOutreachPreset(category), vars);
 }
-
-/** Canonical preset source paths for admin/product wiring tests. */
-export const VMB_INVITE_PRESET_SOURCE_MODULES = {
-  outreachMessages: "lib/vmb/invites/outreach-message-presets.ts",
-  outreachPresetStore: "lib/vmb/invites/outreach-preset-store.ts",
-  cardTemplates: "lib/vmb/card-templates/default-card-templates.ts",
-  ctaLabels: "lib/vmb/card-templates/template-cta-labels.ts",
-  personalInviteCopy: "lib/vmb/cards/personal-invite-copy.ts",
-  defaultOffers: "lib/vmb/offers/default-offers.ts",
-  defaultServices: "lib/vmb/services/default-service-catalog.ts",
-} as const;

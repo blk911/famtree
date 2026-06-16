@@ -1,187 +1,94 @@
-import { VMB_CARD_TYPES, type VmbCardType } from "@/lib/vmb/cards/card-types";
-import type { VmbCardTemplate } from "./card-template-types";
-import { VMB_CARD_TEMPLATE_TOKENS } from "./card-template-types";
-
-const BASE_TOKENS = [...VMB_CARD_TEMPLATE_TOKENS];
-const NOW = "2026-06-12T00:00:00.000Z";
-
-function seedTemplate(
-  type: VmbCardType,
-  partial: Omit<VmbCardTemplate, "id" | "type" | "isDefault" | "tokens" | "createdAt" | "updatedAt">,
-): VmbCardTemplate {
-  return {
-    id: `default-${type}`,
-    type,
-    isDefault: true,
-    tokens: BASE_TOKENS,
-    createdAt: NOW,
-    updatedAt: NOW,
-    ...partial,
-  };
-}
-
-export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = [
-  seedTemplate("pcn_invite", {
-    name: "Private Client Network Invite",
-    description: "Personal invite into your Private Client Network.",
-    imageMode: "single",
-    accent: "plum",
-    tone: "premium",
-    greetingTemplate: "Dear {clientName},",
-    messageTemplate:
-      "I always remember your {serviceName} appointments — you know how to make a visit feel calm.",
-    relationshipBenefitTemplate:
-      "I wanted to personally invite you into my Private Client Network at {salonName}. This is where I share first access to openings, client-only offers, and little surprises before they go anywhere else.",
-    offerTemplate: "If you want, I can send a few private openings that fit your usual rhythm.",
-    signatureTemplate: "{ownerName} 💗",
-    offerCategory: "pcn",
-    offerMode: "optional",
-  }),
-  seedTemplate("birthday_card", {
-    name: "Birthday Card",
-    description: "Warm birthday note for celebration clients.",
-    imageMode: "single",
-    accent: "rose",
-    tone: "playful",
-    greetingTemplate: "Dear {clientName},",
-    titleTemplate: "Happy Birthday",
-    subtitleTemplate: "Wishing you a wonderful year",
-    messageTemplate:
-      "I hope your birthday feels special — we'd love to celebrate you at {salonName}.",
-    relationshipBenefitTemplate:
-      "You make this salon brighter, and I wanted to reach out with something just for you.",
-    signatureTemplate: "{ownerName} 💗",
-    offerCategory: "birthday",
-    offerMode: "recommended",
-  }),
-  seedTemplate("reactivation_card", {
-    name: "Reactivation Invite",
-    description: "Warm reconnect for lapsed or overdue clients.",
-    imageMode: "single",
-    accent: "plum",
-    tone: "warm",
-    greetingTemplate: "Dear {clientName},",
-    titleTemplate: "We Should Catch Up",
-    subtitleTemplate: "It's been too long",
-    messageTemplate:
-      "It's been a while since we last saw you, and I've been thinking about you.",
-    relationshipBenefitTemplate:
-      "I wanted to reach out personally from {salonName} — your chair is still here whenever you're ready.",
-    signatureTemplate: "{ownerName} 💗",
-    offerCategory: "reactivation",
-    offerMode: "recommended",
-  }),
-  seedTemplate("refresh_card", {
-    name: "Refresh Reminder",
-    description: "Service refresh reminder for due clients.",
-    imageMode: "single",
-    accent: "sage",
-    tone: "direct",
-    greetingTemplate: "Dear {clientName},",
-    titleTemplate: "Time For A Refresh?",
-    subtitleTemplate: "We'd love to see you again",
-    messageTemplate:
-      "It has been a little while since your last visit, and I was thinking about you today.",
-    relationshipBenefitTemplate:
-      "When you're ready, {salonName} has a few times that could work before they go public.",
-    signatureTemplate: "{ownerName} 💗",
-    offerCategory: "refresh",
-    offerMode: "recommended",
-  }),
-  seedTemplate("vip_thank_you", {
-    name: "VIP Thank You",
-    description: "Appreciation note for high-value clients.",
-    imageMode: "collage",
-    accent: "gold",
-    tone: "premium",
-    greetingTemplate: "Dear {clientName},",
-    titleTemplate: "Just Wanted To Say Thanks",
-    subtitleTemplate: "You make this place special",
-    messageTemplate:
-      "Clients like you help make {salonName} feel personal — not just busy.",
-    relationshipBenefitTemplate:
-      "Thank you for trusting us. You're exactly the kind of client this salon was built for.",
-    signatureTemplate: "{ownerName} 💗",
-    offerCategory: "vip",
-    offerMode: "optional",
-  }),
-  seedTemplate("referral_invite", {
-    name: "Referral Invite",
-    description: "Invite trusted clients to refer someone they love.",
-    imageMode: "single",
-    accent: "sage",
-    tone: "warm",
-    greetingTemplate: "Dear {clientName},",
-    titleTemplate: "Bring Someone You Love",
-    subtitleTemplate: "Referral invitation",
-    messageTemplate:
-      "You know the kind of people who belong at {salonName}.",
-    relationshipBenefitTemplate:
-      "I would be grateful if you introduced someone you trust — it means a lot when great clients send great people.",
-    signatureTemplate: "{ownerName} 💗",
-    offerCategory: "referral",
-    offerMode: "recommended",
-  }),
-  seedTemplate("open_slot_fill", {
-    name: "Open Slot Fill",
-    description: "Priority invite for a limited opening.",
-    imageMode: "single",
-    accent: "rose",
-    tone: "direct",
-    greetingTemplate: "Dear {clientName},",
-    titleTemplate: "A Spot Opened Up",
-    subtitleTemplate: "Limited opening",
-    messageTemplate:
-      "A spot just opened at {salonName}, and I thought of you first.",
-    relationshipBenefitTemplate:
-      "Before it goes anywhere else, I wanted to give you first access.",
-    offerTemplate: "If you want it, I can hold {nextOpening} for you.",
-    signatureTemplate: "{ownerName} 💗",
-    offerCategory: "open_slot",
-    offerMode: "required",
-    offerRequired: true,
-  }),
-  seedTemplate("service_card", {
-    name: "Service Spotlight",
-    description: "Spotlight a service that fits the client.",
-    imageMode: "collage",
-    accent: "slate",
-    tone: "warm",
-    greetingTemplate: "Dear {clientName},",
-    titleTemplate: "Something New For You",
-    subtitleTemplate: "Service spotlight",
-    messageTemplate:
-      "We thought of you for {serviceName} — something that fits where you are right now.",
-    relationshipBenefitTemplate:
-      "It could be a nice next step at {salonName} whenever you're curious.",
-    signatureTemplate: "{ownerName} 💗",
-    offerCategory: "service",
-    offerMode: "recommended",
-  }),
-];
-
-const DEFAULT_BY_TYPE = new Map(DEFAULT_CARD_TEMPLATES.map((template) => [template.type, template]));
-
-export function getDefaultTemplate(type: VmbCardType): VmbCardTemplate {
-  const template = DEFAULT_BY_TYPE.get(type);
-  if (!template) {
-    throw new Error(`Missing default card template for ${type}`);
-  }
-  return { ...template };
-}
-
-export function getAllDefaultTemplates(): VmbCardTemplate[] {
-  return VMB_CARD_TYPES.map((type) => getDefaultTemplate(type));
-}
-
-export const CARD_TEMPLATE_PREVIEW_CONTEXT = {
-  clientName: "Grace",
-  ownerName: "Jenny",
-  salonName: "Blue Mountain Salon",
-  serviceName: "Gel-X",
-  lastVisit: "May 12",
-  visitCount: 3,
-  referralCount: 1,
-  offer: "Early access to private openings",
-  nextOpening: "Thursday at 2:00 PM",
-};
+import { VMB_CARD_TYPES, type VmbCardType } from "@/lib/vmb/cards/card-types";
+import { getRelationshipFirstCardForTemplateType } from "@/lib/vmb/cards/relationship-first-invite-copy";
+import type { VmbCardTemplate } from "./card-template-types";
+import { VMB_CARD_TEMPLATE_TOKENS } from "./card-template-types";
+
+const BASE_TOKENS = [...VMB_CARD_TEMPLATE_TOKENS];
+const NOW = "2026-06-12T00:00:00.000Z";
+
+function seedTemplate(type: VmbCardType): VmbCardTemplate {
+  const copy = getRelationshipFirstCardForTemplateType(type);
+  return {
+    id: `default-${type}`,
+    type,
+    isDefault: true,
+    tokens: BASE_TOKENS,
+    createdAt: NOW,
+    updatedAt: NOW,
+    name: copy.label,
+    description: `${copy.label} — relationship-first default.`,
+    imageMode: type === "vip_thank_you" || type === "service_card" ? "collage" : "single",
+    accent:
+      type === "birthday_card"
+        ? "rose"
+        : type === "vip_thank_you"
+          ? "gold"
+          : type === "refresh_card" || type === "referral_invite"
+            ? "sage"
+            : type === "open_slot_fill"
+              ? "rose"
+              : type === "service_card"
+                ? "slate"
+                : "plum",
+    tone: type === "vip_thank_you" || type === "pcn_invite" ? "premium" : type === "birthday_card" ? "playful" : "warm",
+    greetingTemplate: copy.greetingTemplate,
+    messageTemplate: copy.messageTemplate,
+    relationshipBenefitTemplate: copy.relationshipBenefitTemplate,
+    offerTemplate: copy.offerTemplate,
+    signatureTemplate: copy.signatureTemplate,
+    titleTemplate: copy.titleTemplate,
+    subtitleTemplate: copy.subtitleTemplate,
+    offerCategory:
+      type === "pcn_invite"
+        ? "pcn"
+        : type === "birthday_card"
+          ? "birthday"
+          : type === "reactivation_card"
+            ? "reactivation"
+            : type === "refresh_card"
+              ? "refresh"
+              : type === "vip_thank_you"
+                ? "vip"
+                : type === "referral_invite"
+                  ? "referral"
+                  : type === "open_slot_fill"
+                    ? "open_slot"
+                    : "service",
+    offerMode:
+      type === "open_slot_fill"
+        ? "required"
+        : type === "pcn_invite" || type === "vip_thank_you"
+          ? "optional"
+          : "recommended",
+    offerRequired: type === "open_slot_fill",
+  };
+}
+
+export const DEFAULT_CARD_TEMPLATES: VmbCardTemplate[] = VMB_CARD_TYPES.map((type) => seedTemplate(type));
+
+const DEFAULT_BY_TYPE = new Map(DEFAULT_CARD_TEMPLATES.map((template) => [template.type, template]));
+
+export function getDefaultTemplate(type: VmbCardType): VmbCardTemplate {
+  const template = DEFAULT_BY_TYPE.get(type);
+  if (!template) {
+    throw new Error(`Missing default card template for ${type}`);
+  }
+  return { ...template };
+}
+
+export function getAllDefaultTemplates(): VmbCardTemplate[] {
+  return VMB_CARD_TYPES.map((type) => getDefaultTemplate(type));
+}
+
+export const CARD_TEMPLATE_PREVIEW_CONTEXT = {
+  clientName: "Grace",
+  ownerName: "Jenny",
+  salonName: "Blue Mountain Salon",
+  serviceName: "Gel-X",
+  lastVisit: "May 12",
+  visitCount: 3,
+  referralCount: 1,
+  offer: "Early access to private openings",
+  nextOpening: "Thursday at 2:00 PM",
+};
+

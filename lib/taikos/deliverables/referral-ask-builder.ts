@@ -1,4 +1,5 @@
 import type { AiosContextPacket } from "@/lib/taikos/types";
+import { getRelationshipFirstCard } from "@/lib/vmb/cards/relationship-first-invite-copy";
 import type { ReferralAskDeliverable } from "./types";
 
 function firstName(name: string): string {
@@ -12,15 +13,16 @@ export function buildReferralAskDeliverable(ctx: AiosContextPacket): ReferralAsk
     : undefined;
 
   const referrer = candidate?.clientName ?? "A loyal client";
+  const referralCard = getRelationshipFirstCard("referral_invite");
   const fn = firstName(referrer);
 
   return {
     draftId: `referral-${ctx.salonId}-${Date.now()}`,
     type: "referral_ask",
-    title: "Referral Ask",
+    title: referralCard.label,
     referrer,
-    message: `Hi ${fn} — you've always sent the best friends my way. I'm opening a few referral spots this month. If someone comes to mind, I'd love an intro.`,
-    rewardSuggestion: referralOpp?.description ?? "Bring-a-friend touch on next visit",
+    message: `Hi ${fn} — ${referralCard.messageTemplate.split("\n\n")[0]}`,
+    rewardSuggestion: referralOpp?.description ?? referralCard.offerTemplate ?? "Referral thank-you",
     status: "preview",
   };
 }

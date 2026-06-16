@@ -205,7 +205,7 @@ async function run(): Promise<void> {
 
   assert(Boolean(pcnPreview.inviteCopy?.inviteMessage), "PCN card uses relationship benefit");
 
-  assert(pcnPreview.cta === "Join Private Client Network", "PCN card uses auto-generated CTA");
+  assert(pcnPreview.cta === "Join My Private Client Network", "PCN card uses auto-generated CTA");
 
   assert(pcnPreview.inviteCopy?.secondaryCta === "", "PCN card has no secondary CTA");
 
@@ -328,7 +328,7 @@ async function run(): Promise<void> {
 
     assert(enginePreview.body.includes("Custom PCN message"), "card engine uses relationship benefit");
 
-    assert(enginePreview.cta === "Join Private Client Network", "auto CTA overrides stored primaryCta");
+    assert(enginePreview.cta === "Join My Private Client Network", "auto CTA overrides stored primaryCta");
 
     assert(enginePreview.inviteCopy?.secondaryCta === "", "secondary CTA ignored for PCN");
 
@@ -370,7 +370,7 @@ async function run(): Promise<void> {
 
   );
 
-  assert(engineFromDefault.title.includes("Something New"), "service card title from template");
+  assert(engineFromDefault.title.includes("Thought of you"), "service card title from template");
 
 
 
