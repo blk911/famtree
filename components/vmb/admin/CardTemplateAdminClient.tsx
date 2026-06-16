@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import { CardPreview } from "@/components/vmb/cards/CardPreview";
-import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { buildPreviewFromTemplate } from "@/lib/vmb/card-templates/apply-card-template";
 import { normalizeTemplateForEditor } from "@/lib/vmb/card-templates/template-copy-fields";
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
@@ -152,50 +151,86 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
     setDraft((current) => (current ? { ...current, ...patch } : current));
   }
 
+  function handleTypeKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+    event.preventDefault();
+    const offset = event.key === "ArrowRight" ? 1 : -1;
+    const nextIndex = (index + offset + VMB_CARD_TYPES.length) % VMB_CARD_TYPES.length;
+    setSelectedType(VMB_CARD_TYPES[nextIndex]!);
+  }
+
   if (!salonId) {
     return (
-      <VmbPageFrame title="Card Templates" subtitle="Admin template manager">
-        <p>Sign in to a VMB salon trial to manage outreach card templates.</p>
-      </VmbPageFrame>
+      <div className="vmb-card-template-workspace">
+        <header className="vmb-card-template-workspace__header">
+          <h1 className="vmb-card-template-workspace__title">Card Templates</h1>
+          <p className="vmb-card-template-workspace__subtitle">Admin template manager</p>
+        </header>
+        <p className="vmb-template-admin__status">Sign in to a VMB salon trial to manage outreach card templates.</p>
+      </div>
     );
   }
 
   return (
-    <VmbPageFrame
-      title="Card Templates"
-      subtitle="Default outreach copy for invites and relationship cards"
-    >
-      <div className="vmb-template-admin">
-        <aside className="vmb-template-admin__list">
-          <p className="vmb-template-admin__list-label">Outreach types</p>
-          <ul>
-            {VMB_CARD_TYPES.map((type) => (
-              <li key={type}>
-                <button
-                  type="button"
-                  className={`vmb-template-admin__type${selectedType === type ? " vmb-template-admin__type--active" : ""}`}
-                  onClick={() => setSelectedType(type)}
-                >
-                  {TYPE_LABELS[type]}
-                  {templates.find((t) => t.type === type && !t.isDefault) ? (
-                    <span className="vmb-template-admin__override-dot" aria-label="Customized" />
-                  ) : null}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className="vmb-offer-admin__links">
+    <div className="vmb-card-template-workspace">
+      <header className="vmb-card-template-workspace__header">
+        <div className="vmb-card-template-workspace__header-row">
+          <div>
+            <h1 className="vmb-card-template-workspace__title">Card Templates</h1>
+            <p className="vmb-card-template-workspace__subtitle">
+              Default outreach copy for invites and relationship cards
+            </p>
+          </div>
+          <div className="vmb-card-template-workspace__catalog-links">
             <Link href="/admin/invites/services">Services</Link>
             <Link href="/admin/invites/offers">Offers</Link>
           </div>
-        </aside>
+        </div>
 
-        <section className="vmb-template-admin__editor">
+        <div
+          className="vmb-card-template-workspace__types"
+          role="tablist"
+          aria-label="Outreach card template types"
+        >
+          {VMB_CARD_TYPES.map((type, index) => {
+            const isActive = selectedType === type;
+            const isCustomized = templates.some((template) => template.type === type && !template.isDefault);
+            return (
+              <button
+                key={type}
+                type="button"
+                role="tab"
+                id={`card-template-tab-${type}`}
+                aria-selected={isActive}
+                aria-controls="card-template-editor-panel"
+                tabIndex={isActive ? 0 : -1}
+                className={`vmb-card-template-workspace__type${isActive ? " vmb-card-template-workspace__type--active" : ""}`}
+                onClick={() => setSelectedType(type)}
+                onKeyDown={(event) => handleTypeKeyDown(event, index)}
+              >
+                {TYPE_LABELS[type]}
+                {isCustomized ? (
+                  <span className="vmb-template-admin__override-dot" aria-label="Customized" />
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </header>
+
+      <div className="vmb-card-template-workspace__body">
+        <section
+          id="card-template-editor-panel"
+          role="tabpanel"
+          aria-labelledby={`card-template-tab-${selectedType}`}
+          className="vmb-card-template-workspace__editor"
+        >
           {draft ? (
             <>
-              <div className="vmb-template-admin__editor-head">
-                <h2>{TYPE_LABELS[draft.type]}</h2>
-                <p>{cardActionLabel(draft.type)} · {draft.isDefault ? "Default" : "Salon override"}</p>
+              <div className="vmb-card-template-workspace__editor-meta">
+                <span>{cardActionLabel(draft.type)}</span>
+                <span aria-hidden="true">·</span>
+                <span>{draft.isDefault ? "Default template" : "Salon override"}</span>
               </div>
 
               {linkedOffer ? (
@@ -211,66 +246,73 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                 </div>
               ) : null}
 
-              <label className="vmb-template-admin__field">
-                <span>Name</span>
-                <input value={draft.name} onChange={(e) => patchDraft({ name: e.target.value })} />
-              </label>
-              <label className="vmb-template-admin__field">
-                <span>Image mode</span>
-                <select
-                  value={draft.imageMode}
-                  onChange={(e) =>
-                    patchDraft({ imageMode: e.target.value as VmbCardTemplate["imageMode"] })
-                  }
-                >
-                  <option value="single">Single</option>
-                  <option value="collage">Collage</option>
-                  <option value="none">None</option>
-                </select>
-              </label>
-              <label className="vmb-template-admin__field">
-                <span>Tone</span>
-                <select
-                  value={draft.tone}
-                  onChange={(e) => patchDraft({ tone: e.target.value as VmbCardTemplate["tone"] })}
-                >
-                  <option value="warm">Warm</option>
-                  <option value="direct">Direct</option>
-                  <option value="playful">Playful</option>
-                  <option value="premium">Premium</option>
-                </select>
-              </label>
-              <label className="vmb-template-admin__field">
-                <span>Personal Connection</span>
-                <textarea
-                  rows={3}
-                  value={draft.messageTemplate}
-                  onChange={(e) => patchDraft({ messageTemplate: e.target.value })}
-                />
-              </label>
-              <label className="vmb-template-admin__field">
-                <span>Relationship Benefit</span>
-                <textarea
-                  rows={4}
-                  value={draft.relationshipBenefitTemplate ?? ""}
-                  onChange={(e) => patchDraft({ relationshipBenefitTemplate: e.target.value })}
-                />
-              </label>
-              <label className="vmb-template-admin__field">
-                <span>Offer</span>
-                <textarea
-                  rows={2}
-                  value={draft.offerTemplate ?? ""}
-                  onChange={(e) => patchDraft({ offerTemplate: e.target.value })}
-                />
-              </label>
-              <label className="vmb-template-admin__field">
-                <span>Signature</span>
-                <input
-                  value={draft.signatureTemplate}
-                  onChange={(e) => patchDraft({ signatureTemplate: e.target.value })}
-                />
-              </label>
+              <div className="vmb-card-template-workspace__fields">
+                <label className="vmb-template-admin__field">
+                  <span>Name</span>
+                  <input value={draft.name} onChange={(e) => patchDraft({ name: e.target.value })} />
+                </label>
+                <div className="vmb-card-template-workspace__field-row">
+                  <label className="vmb-template-admin__field">
+                    <span>Image mode</span>
+                    <select
+                      value={draft.imageMode}
+                      onChange={(e) =>
+                        patchDraft({ imageMode: e.target.value as VmbCardTemplate["imageMode"] })
+                      }
+                    >
+                      <option value="single">Single</option>
+                      <option value="collage">Collage</option>
+                      <option value="none">None</option>
+                    </select>
+                  </label>
+                  <label className="vmb-template-admin__field">
+                    <span>Tone</span>
+                    <select
+                      value={draft.tone}
+                      onChange={(e) => patchDraft({ tone: e.target.value as VmbCardTemplate["tone"] })}
+                    >
+                      <option value="warm">Warm</option>
+                      <option value="direct">Direct</option>
+                      <option value="playful">Playful</option>
+                      <option value="premium">Premium</option>
+                    </select>
+                  </label>
+                </div>
+                <label className="vmb-template-admin__field">
+                  <span>Personal Connection</span>
+                  <textarea
+                    rows={5}
+                    className="vmb-card-template-workspace__textarea"
+                    value={draft.messageTemplate}
+                    onChange={(e) => patchDraft({ messageTemplate: e.target.value })}
+                  />
+                </label>
+                <label className="vmb-template-admin__field">
+                  <span>Relationship Benefit</span>
+                  <textarea
+                    rows={6}
+                    className="vmb-card-template-workspace__textarea"
+                    value={draft.relationshipBenefitTemplate ?? ""}
+                    onChange={(e) => patchDraft({ relationshipBenefitTemplate: e.target.value })}
+                  />
+                </label>
+                <label className="vmb-template-admin__field">
+                  <span>Offer</span>
+                  <textarea
+                    rows={3}
+                    className="vmb-card-template-workspace__textarea"
+                    value={draft.offerTemplate ?? ""}
+                    onChange={(e) => patchDraft({ offerTemplate: e.target.value })}
+                  />
+                </label>
+                <label className="vmb-template-admin__field">
+                  <span>Signature</span>
+                  <input
+                    value={draft.signatureTemplate}
+                    onChange={(e) => patchDraft({ signatureTemplate: e.target.value })}
+                  />
+                </label>
+              </div>
 
               <div className="vmb-template-admin__actions">
                 <button type="button" className="taikos-opp-card__cta" disabled={busy} onClick={() => void handleSave()}>
@@ -290,7 +332,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
           ) : null}
         </section>
 
-        <aside className="vmb-template-admin__preview">
+        <aside className="vmb-card-template-workspace__preview">
           <p className="vmb-template-admin__preview-label">Live preview</p>
           <p className="vmb-template-admin__preview-meta">
             {CARD_TEMPLATE_PREVIEW_CONTEXT.clientName} · {CARD_TEMPLATE_PREVIEW_CONTEXT.serviceName} ·{" "}
@@ -305,6 +347,6 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
           ) : null}
         </aside>
       </div>
-    </VmbPageFrame>
+    </div>
   );
 }

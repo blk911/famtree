@@ -228,6 +228,21 @@ function run(): void {
   );
   assert(!shellSource.includes("mx-auto"), "market intel page shell is left-aligned, not centered");
 
+  const cardTemplateSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/CardTemplateAdminClient.tsx"),
+    "utf8",
+  );
+  assert(cardTemplateSource.includes("vmb-card-template-workspace__types"), "card templates use horizontal type pills");
+  assert(cardTemplateSource.includes("vmb-card-template-workspace__body"), "card templates use editor/preview split");
+  assert(cardTemplateSource.includes('role="tablist"'), "card template type selector is keyboard accessible");
+  assert(
+    !fs.readFileSync(
+      path.join(process.cwd(), "app/(app)/admin/(platform)/invites/templates/page.tsx"),
+      "utf8",
+    ).includes("InvitesWorkspaceBreadcrumb"),
+    "card templates page omits breadcrumb for compact header",
+  );
+
   console.log("OK: admin workspace route tests passed");
   console.log(`  workspaces: ${ADMIN_WORKSPACE_NAV.map((w) => w.href).join(", ")}`);
   console.log(`  invites cards: ${INVITES_OPERATING_CARDS.map((c) => c.id).join(", ")}`);

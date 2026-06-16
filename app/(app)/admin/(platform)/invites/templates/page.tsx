@@ -1,26 +1,20 @@
-import type { Metadata } from "next";
-import { InvitesWorkspaceBreadcrumb } from "@/components/admin/workspaces/InvitesWorkspaceBreadcrumb";
-import { CardTemplateAdminClient } from "@/components/vmb/admin/CardTemplateAdminClient";
-import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
-
-export const dynamic = "force-dynamic";
-
-export const metadata: Metadata = {
-  title: "Card Templates · Invites",
-};
-
-export default async function AdminInvitesTemplatesPage() {
-  const ctx = await loadVmbPageContext({});
-  return (
-    <>
-      <div className="mx-auto max-w-[1500px] px-4 pt-2 sm:px-6 lg:px-8">
-        <InvitesWorkspaceBreadcrumb current="Card Templates" />
-      </div>
-      <CardTemplateAdminClient
-        salonId={ctx.trialId}
-        salonName={ctx.salonName}
-        ownerName={ctx.workspace?.ownerName}
-      />
-    </>
-  );
-}
+import type { Metadata } from "next";
+import { CardTemplateAdminClient } from "@/components/vmb/admin/CardTemplateAdminClient";
+import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Card Templates · Invites",
+};
+
+export default async function AdminInvitesTemplatesPage() {
+  const ctx = await loadVmbPageContext({});
+  return (
+    <CardTemplateAdminClient
+      salonId={ctx.trialId}
+      salonName={ctx.salonName}
+      ownerName={ctx.workspace?.ownerName}
+    />
+  );
+}
