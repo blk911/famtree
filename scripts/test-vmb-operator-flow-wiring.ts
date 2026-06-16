@@ -63,6 +63,11 @@ function run(): void {
   assert(todaySource.includes("LoadYourBookCta"), "Today locked state exposes Load your book CTA");
   assert(todaySource.includes("TodayCommandCenter"), "Today loaded state renders command center");
   assert(todaySource.includes("buildTodayCommandCenterSnapshot"), "Today builds command center snapshot");
+  assert(
+    todaySource.includes("unified-invite-draft-summary") ||
+      todaySource.includes("/api/vmb/invite-drafts"),
+    "Today uses unified invite draft inputs",
+  );
 
   const summaryRail = read("components/vmb/VmbSummaryRail.tsx");
   assert(summaryRail.includes("LoadYourBookCta"), "summary rail shows load book CTA when empty");

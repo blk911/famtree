@@ -78,10 +78,28 @@ export function TodayCommandCenter({ snapshot }: Props) {
               <span className="vmb-today-command__count-label">In queue</span>
             </div>
             <div>
-              <span className="vmb-today-command__count-value">{snapshot.pendingDraftCount}</span>
-              <span className="vmb-today-command__count-label">Open drafts</span>
+              <span className="vmb-today-command__count-value">{snapshot.inviteDraftSummary.totalOpenDrafts}</span>
+              <span className="vmb-today-command__count-label">Open invite drafts</span>
             </div>
           </div>
+          {(snapshot.inviteDraftSummary.vmbDraftCount > 0 ||
+            snapshot.inviteDraftSummary.taikosDraftCount > 0) && (
+            <p className="vmb-today-command__meta">
+              {snapshot.inviteDraftSummary.vmbDraftCount > 0
+                ? `${snapshot.inviteDraftSummary.vmbDraftCount} VMB`
+                : null}
+              {snapshot.inviteDraftSummary.vmbDraftCount > 0 &&
+              snapshot.inviteDraftSummary.taikosDraftCount > 0
+                ? " · "
+                : null}
+              {snapshot.inviteDraftSummary.taikosDraftCount > 0
+                ? `${snapshot.inviteDraftSummary.taikosDraftCount} tAIkOS`
+                : null}
+              {snapshot.inviteDraftSummary.sentCount > 0
+                ? ` · ${snapshot.inviteDraftSummary.sentCount} sent`
+                : null}
+            </p>
+          )}
           <div className="vmb-today-command__links">
             <Link href={snapshot.queueCtaHref} className="vmb-today-command__link">
               Open queue

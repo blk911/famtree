@@ -40,6 +40,7 @@ import {
 import { logTodayLockBranch, logTodayLockRendered } from "@/lib/vmb/today-lock-debug";
 import { VMB_BOOK_LOAD_HELPER, VMB_BOOK_LOCKED_MESSAGE } from "@/lib/vmb/book-load-cta";
 import { buildTodayCommandCenterSnapshot } from "@/lib/vmb/today-command-center";
+import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 
 type TodayData = {
   greeting: string;
@@ -123,6 +124,7 @@ export function VmbTodayClient({
   const [previewFirstCardSignal, setPreviewFirstCardSignal] = useState(0);
   const [qaPreviewAction, setQaPreviewAction] = useState<SalonQaPreviewCardAction | null>(null);
   const [hasActiveTaikosAnswer, setHasActiveTaikosAnswer] = useState(false);
+  const [vmbInviteDrafts, setVmbInviteDrafts] = useState<VmbInviteDraft[]>([]);
 
   useEffect(() => {
     console.error("[TODAY-MOUNT]", {
@@ -193,6 +195,37 @@ export function VmbTodayClient({
   useEffect(() => {
     void loadContext();
   }, [loadContext]);
+
+  const resolvedAnalysisId = activeAnalysisId ?? data?.context?.analysisId;
+
+  useEffect(() => {
+    if (!hasCompletedFirstIngest || !resolvedAnalysisId?.trim()) {
+      setVmbInviteDrafts([]);
+      return;
+    }
+
+    let cancelled = false;
+    async function loadVmbInviteDrafts() {
+      try {
+        const params = new URLSearchParams({ analysisId: resolvedAnalysisId!.trim() });
+        const res = await fetch(`/api/vmb/invite-drafts?${params.toString()}`, {
+          cache: "no-store",
+          credentials: "include",
+        });
+        const json = (await res.json()) as { ok: boolean; data?: VmbInviteDraft[] };
+        if (!cancelled) {
+          setVmbInviteDrafts(res.ok && json.ok && json.data ? json.data : []);
+        }
+      } catch {
+        if (!cancelled) setVmbInviteDrafts([]);
+      }
+    }
+
+    void loadVmbInviteDrafts();
+    return () => {
+      cancelled = true;
+    };
+  }, [hasCompletedFirstIngest, resolvedAnalysisId]);
 
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
@@ -289,20 +322,21 @@ export function VmbTodayClient({
     if (!todayUnlocked) return null;
     return buildTodayCommandCenterSnapshot({
       hasBook: todayUnlocked,
-      analysisId: activeAnalysisId ?? data?.context?.analysisId,
+      analysisId: resolvedAnalysisId,
       analyzedClientCount,
       opportunitySummary: data?.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY,
       queueSummary: data?.queueSummary ?? EMPTY_QUEUE_SUMMARY,
-      draftSummary: data?.draftSummary ?? EMPTY_DRAFT_SUMMARY,
+      taikosDraftSummary: data?.draftSummary ?? EMPTY_DRAFT_SUMMARY,
+      vmbInviteDrafts,
     });
   }, [
     todayUnlocked,
-    activeAnalysisId,
+    resolvedAnalysisId,
     analyzedClientCount,
-    data?.context?.analysisId,
     data?.opportunitySummary,
     data?.queueSummary,
     data?.draftSummary,
+    vmbInviteDrafts,
   ]);
 
   return (

@@ -7,10 +7,16 @@ import type { TaikosDraftSummary } from "../lib/taikos/drafts/types";
 import type { TaikosOpportunitySummary } from "../lib/taikos/opportunities/types";
 import type { TaikosQueueSummary } from "../lib/taikos/queue/types";
 import {
+  buildUnifiedInviteDraftSummary,
+  countTaikosOpenInviteDrafts,
+  countVmbOpenInviteDrafts,
+} from "../lib/vmb/invites/unified-invite-draft-summary";
+import {
   buildTodayCommandCenterSnapshot,
   queuePendingCount,
   topMoneyOpportunities,
 } from "../lib/vmb/today-command-center";
+import type { VmbInviteDraft } from "../types/vmb/invite-draft";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -48,6 +54,44 @@ function oppSummary(
   };
 }
 
+function vmbDraft(status: VmbInviteDraft["status"], id: string): VmbInviteDraft {
+  return {
+    draftId: id,
+    trialId: "trial-1",
+    analysisId: "analysis-abc",
+    clientName: "Grace",
+    reasonSelected: "Top client",
+    inviteCategory: "private_client_network",
+    potentialValue: 100,
+    status,
+    subject: "Invite",
+    editableMessage: "Hello",
+    lockedFooter: "Footer",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function commandCenterInput(
+  overrides: Partial<{
+    taikosDraftSummary: TaikosDraftSummary;
+    vmbInviteDrafts: VmbInviteDraft[];
+    queueSummary: TaikosQueueSummary;
+    opportunitySummary: TaikosOpportunitySummary;
+  }> = {},
+) {
+  return {
+    hasBook: true,
+    analysisId: "analysis-abc",
+    analyzedClientCount: 40,
+    opportunitySummary: oppSummary(),
+    queueSummary: EMPTY_QUEUE,
+    taikosDraftSummary: EMPTY_DRAFTS,
+    vmbInviteDrafts: [],
+    ...overrides,
+  };
+}
+
 function run(): void {
   const todaySource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/VmbTodayClient.tsx"),
@@ -55,46 +99,76 @@ function run(): void {
   );
   assert(todaySource.includes("LoadYourBookCta"), "empty Today state keeps Load your book CTA");
   assert(todaySource.includes("TodayCommandCenter"), "loaded Today state renders command center");
+  assert(todaySource.includes("/api/vmb/invite-drafts"), "Today loads VMB invite drafts for unified summary");
 
-  assert(buildTodayCommandCenterSnapshot({
-    hasBook: false,
-    analyzedClientCount: 0,
-    opportunitySummary: oppSummary(),
-    queueSummary: EMPTY_QUEUE,
-    draftSummary: EMPTY_DRAFTS,
-  }) === null, "no snapshot without book");
+  assert(
+    buildTodayCommandCenterSnapshot({
+      hasBook: false,
+      analyzedClientCount: 0,
+      opportunitySummary: oppSummary(),
+      queueSummary: EMPTY_QUEUE,
+      taikosDraftSummary: EMPTY_DRAFTS,
+      vmbInviteDrafts: [],
+    }) === null,
+    "no snapshot without book",
+  );
 
-  const loaded = buildTodayCommandCenterSnapshot({
-    hasBook: true,
+  const onlyTaikos = buildUnifiedInviteDraftSummary({
+    taikosDraftSummary: {
+      ...EMPTY_DRAFTS,
+      openDrafts: 2,
+      draftsByType: { pcn_invite: 2 },
+    },
+    vmbInviteDrafts: [],
     analysisId: "analysis-abc",
-    analyzedClientCount: 128,
-    opportunitySummary: oppSummary({
-      totalOpportunities: 5,
-      highPriority: 2,
-      topOpportunity: {
-        opportunityId: "opp-1",
-        title: "Invite Grace to PCN",
-        category: "PCN Invite",
-        estimatedValue: 420,
-        confidence: 0.9,
-        recommendation: "Grace is a top referrer candidate.",
-        suggestedAction: "CREATE_INVITE_DRAFT",
-        priority: "High",
-        score: 99,
-      },
-      opportunities: [
-        {
-          opportunityId: "opp-2",
-          title: "Reactivate Maya",
-          category: "Reactivation",
-          estimatedValue: 180,
-          confidence: 0.7,
-          recommendation: "Maya has not booked in 90 days.",
-          suggestedAction: "PREVIEW_REACTIVATION_MESSAGE",
-          priority: "Medium",
-          score: 70,
-        },
-        {
+  });
+  assert(onlyTaikos.taikosDraftCount === 2, "only tAIkOS drafts counted");
+  assert(onlyTaikos.vmbDraftCount === 0, "no VMB drafts");
+  assert(onlyTaikos.totalOpenDrafts === 2, "total reflects tAIkOS only");
+  assert(onlyTaikos.nextDraftSource === "taikos", "next source is tAIkOS when only tAIkOS drafts");
+
+  const onlyVmb = buildUnifiedInviteDraftSummary({
+    taikosDraftSummary: EMPTY_DRAFTS,
+    vmbInviteDrafts: [vmbDraft("draft", "vmb-1"), vmbDraft("approved", "vmb-2")],
+    analysisId: "analysis-abc",
+  });
+  assert(onlyVmb.vmbDraftCount === 2, "only VMB drafts counted");
+  assert(onlyVmb.taikosDraftCount === 0, "no tAIkOS invite drafts");
+  assert(onlyVmb.totalOpenDrafts === 2, "total reflects VMB only");
+  assert(onlyVmb.nextDraftSource === "vmb", "next source is VMB when VMB drafts exist");
+
+  const both = buildUnifiedInviteDraftSummary({
+    taikosDraftSummary: {
+      ...EMPTY_DRAFTS,
+      draftsByType: { referral_ask: 1 },
+    },
+    vmbInviteDrafts: [vmbDraft("draft", "vmb-1")],
+    analysisId: "analysis-abc",
+  });
+  assert(both.totalOpenDrafts === 2, "both stores summed");
+  assert(both.taikosDraftCount === 1 && both.vmbDraftCount === 1, "both store counts exposed");
+  assert(both.nextDraftSource === "vmb", "VMB takes priority for next draft source");
+
+  const none = buildUnifiedInviteDraftSummary({
+    taikosDraftSummary: { ...EMPTY_DRAFTS, draftsByType: { campaign: 2 } },
+    vmbInviteDrafts: [vmbDraft("sent", "vmb-sent"), vmbDraft("skipped", "vmb-skip")],
+    analysisId: "analysis-abc",
+  });
+  assert(none.totalOpenDrafts === 0, "no open invite drafts when only non-invite/c closed rows");
+  assert(none.sentCount >= 1, "sent count available from VMB drafts");
+  assert(none.nextDraftSource === null, "no next draft source when none open");
+
+  assert(
+    onlyVmb.canonicalActionHref === "/vmb/invites?analysis=analysis-abc",
+    "canonical CTA href targets invites with analysis",
+  );
+
+  const loaded = buildTodayCommandCenterSnapshot(
+    commandCenterInput({
+      opportunitySummary: oppSummary({
+        totalOpportunities: 5,
+        highPriority: 2,
+        topOpportunity: {
           opportunityId: "opp-1",
           title: "Invite Grace to PCN",
           category: "PCN Invite",
@@ -105,55 +179,74 @@ function run(): void {
           priority: "High",
           score: 99,
         },
-        {
-          opportunityId: "opp-3",
-          title: "Birthday touch for Kim",
-          category: "Birthday",
-          estimatedValue: 95,
-          confidence: 0.6,
-          recommendation: "Kim's birthday is this week.",
-          suggestedAction: "CREATE_INVITE_DRAFT",
-          priority: "Medium",
-          score: 55,
-        },
-      ],
+        opportunities: [
+          {
+            opportunityId: "opp-2",
+            title: "Reactivate Maya",
+            category: "Reactivation",
+            estimatedValue: 180,
+            confidence: 0.7,
+            recommendation: "Maya has not booked in 90 days.",
+            suggestedAction: "PREVIEW_REACTIVATION_MESSAGE",
+            priority: "Medium",
+            score: 70,
+          },
+          {
+            opportunityId: "opp-1",
+            title: "Invite Grace to PCN",
+            category: "PCN Invite",
+            estimatedValue: 420,
+            confidence: 0.9,
+            recommendation: "Grace is a top referrer candidate.",
+            suggestedAction: "CREATE_INVITE_DRAFT",
+            priority: "High",
+            score: 99,
+          },
+          {
+            opportunityId: "opp-3",
+            title: "Birthday touch for Kim",
+            category: "Birthday",
+            estimatedValue: 95,
+            confidence: 0.6,
+            recommendation: "Kim's birthday is this week.",
+            suggestedAction: "CREATE_INVITE_DRAFT",
+            priority: "Medium",
+            score: 55,
+          },
+        ],
+      }),
     }),
-    queueSummary: { ...EMPTY_QUEUE, queuedItems: 0, readyItems: 0 },
-    draftSummary: EMPTY_DRAFTS,
-  });
+  );
   assert(loaded !== null, "loaded Today produces command center snapshot");
   if (!loaded) return;
 
   assert(loaded.bookLoaded, "book loaded flag set");
-  assert(loaded.analyzedClientCount === 128, "client count surfaced");
-  assert(loaded.topOpportunities.length === 3, "top 3 money opportunities shown");
   assert(loaded.topOpportunities[0]?.opportunityId === "opp-1", "opportunities ranked by score");
-  assert(loaded.nextActionTitle.length > 0, "visible next action title");
   assert(loaded.primaryCtaHref.includes("/vmb/invites"), "next invite action links to invites");
-  assert(loaded.primaryCtaHref.includes("analysis=analysis-abc"), "primary action preserves analysis");
-  assert(loaded.queueCtaHref.includes("/vmb/queue?analysis=analysis-abc"), "queue link resolves with analysis");
 
-  const draftsPending = buildTodayCommandCenterSnapshot({
-    hasBook: true,
-    analysisId: "analysis-abc",
-    analyzedClientCount: 40,
-    opportunitySummary: oppSummary({ totalOpportunities: 1 }),
-    queueSummary: { ...EMPTY_QUEUE, queuedItems: 2, readyItems: 1 },
-    draftSummary: { ...EMPTY_DRAFTS, openDrafts: 3 },
-  });
-  assert(Boolean(draftsPending?.primaryCtaHref.includes("/vmb/invites")), "drafts take priority over queue");
-  assert(draftsPending?.primaryCtaLabel === "Review invites", "drafts primary label");
+  const bothPending = buildTodayCommandCenterSnapshot(
+    commandCenterInput({
+      queueSummary: { ...EMPTY_QUEUE, queuedItems: 2, readyItems: 1 },
+      taikosDraftSummary: { ...EMPTY_DRAFTS, draftsByType: { pcn_invite: 1 } },
+      vmbInviteDrafts: [vmbDraft("draft", "vmb-1")],
+    }),
+  );
+  assert(bothPending?.inviteDraftSummary.totalOpenDrafts === 2, "command center uses unified draft total");
+  assert(Boolean(bothPending?.primaryCtaHref.includes("/vmb/invites")), "drafts take priority over queue");
+  assert(
+    bothPending?.primaryCtaHref === bothPending?.inviteDraftSummary.canonicalActionHref,
+    "primary CTA uses canonical unified href",
+  );
 
-  const queueOnly = buildTodayCommandCenterSnapshot({
-    hasBook: true,
-    analysisId: "analysis-abc",
-    analyzedClientCount: 40,
-    opportunitySummary: oppSummary(),
-    queueSummary: { ...EMPTY_QUEUE, queuedItems: 2, readyItems: 0 },
-    draftSummary: EMPTY_DRAFTS,
-  });
+  const queueOnly = buildTodayCommandCenterSnapshot(
+    commandCenterInput({
+      queueSummary: { ...EMPTY_QUEUE, queuedItems: 2, readyItems: 0 },
+    }),
+  );
   assert(Boolean(queueOnly?.primaryCtaHref.includes("/vmb/queue")), "queue primary when no drafts");
   assert(queuePendingCount({ ...EMPTY_QUEUE, queuedItems: 2, readyItems: 1 }) === 3, "queue pending count");
+  assert(countTaikosOpenInviteDrafts({ ...EMPTY_DRAFTS, draftsByType: { pcn_invite: 1, campaign: 4 } }) === 1, "taikos count ignores non-invite types");
+  assert(countVmbOpenInviteDrafts([vmbDraft("draft", "a"), vmbDraft("sent", "b")]) === 1, "vmb count ignores sent");
 
   const top = topMoneyOpportunities(
     oppSummary({

@@ -5,8 +5,14 @@ import type {
   TaikosOpportunitySummary,
 } from "@/lib/taikos/opportunities/types";
 import type { TaikosQueueSummary } from "@/lib/taikos/queue/types";
+import {
+  buildUnifiedInviteDraftSummary,
+  formatUnifiedInviteDraftDetail,
+  type UnifiedInviteDraftSummary,
+} from "@/lib/vmb/invites/unified-invite-draft-summary";
 import type { InviteSectionId } from "@/lib/vmb/invites/sections";
 import { buildVmbInviteSectionHref, buildVmbSalonHref } from "@/lib/vmb/salon-href";
+import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 
 export type TodayCommandCenterInput = {
   hasBook: boolean;
@@ -15,7 +21,8 @@ export type TodayCommandCenterInput = {
   analyzedClientCount: number;
   opportunitySummary: TaikosOpportunitySummary;
   queueSummary: TaikosQueueSummary;
-  draftSummary: TaikosDraftSummary;
+  taikosDraftSummary: TaikosDraftSummary;
+  vmbInviteDrafts: VmbInviteDraft[];
 };
 
 export type TodayMoneyOpportunity = {
@@ -33,6 +40,7 @@ export type TodayCommandCenterSnapshot = {
   totalOpportunities: number;
   highPriorityCount: number;
   topOpportunities: TodayMoneyOpportunity[];
+  inviteDraftSummary: UnifiedInviteDraftSummary;
   pendingDraftCount: number;
   queuePendingCount: number;
   nextActionTitle: string;
@@ -85,9 +93,14 @@ export function buildTodayCommandCenterSnapshot(
 
   const analysisId = input.analysisId?.trim();
   const topOpportunities = topMoneyOpportunities(input.opportunitySummary);
-  const pendingDraftCount = input.draftSummary.openDrafts;
+  const inviteDraftSummary = buildUnifiedInviteDraftSummary({
+    taikosDraftSummary: input.taikosDraftSummary,
+    vmbInviteDrafts: input.vmbInviteDrafts,
+    analysisId,
+  });
+  const pendingDraftCount = inviteDraftSummary.totalOpenDrafts;
   const queueCount = queuePendingCount(input.queueSummary);
-  const invitesHref = buildVmbSalonHref("/vmb/invites", analysisId);
+  const invitesHref = inviteDraftSummary.canonicalActionHref;
   const queueHref = buildVmbSalonHref("/vmb/queue", analysisId);
   const opportunitiesHref = buildVmbSalonHref("/vmb/opportunities", analysisId);
 
@@ -105,12 +118,9 @@ export function buildTodayCommandCenterSnapshot(
 
   if (pendingDraftCount > 0) {
     nextActionTitle = "Review invite drafts";
-    nextActionDetail =
-      pendingDraftCount === 1
-        ? "1 invite draft is ready for your approval."
-        : `${pendingDraftCount} invite drafts are ready for your approval.`;
+    nextActionDetail = formatUnifiedInviteDraftDetail(inviteDraftSummary);
     primaryCtaLabel = "Review invites";
-    primaryCtaHref = invitesHref;
+    primaryCtaHref = inviteDraftSummary.canonicalActionHref;
   } else if (queueCount > 0) {
     nextActionTitle = "Work your queue";
     nextActionDetail =
@@ -139,6 +149,7 @@ export function buildTodayCommandCenterSnapshot(
     totalOpportunities: input.opportunitySummary.totalOpportunities,
     highPriorityCount: input.opportunitySummary.highPriority,
     topOpportunities,
+    inviteDraftSummary,
     pendingDraftCount,
     queuePendingCount: queueCount,
     nextActionTitle,
