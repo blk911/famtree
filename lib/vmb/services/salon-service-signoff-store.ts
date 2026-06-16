@@ -20,11 +20,15 @@ export async function getSalonServiceMenuSignoff(
 ): Promise<SalonServiceMenuSignoff> {
   const backend = await resolveVmbStorageBackend();
   if (backend === "postgres") {
-    const rows = await prisma.$queryRaw<{ payload: unknown }[]>`
-      SELECT payload FROM vmb_salon_service_signoff WHERE salon_id = ${salonId.trim()}
-    `;
-    const parsed = rows[0]?.payload as SalonServiceMenuSignoff | undefined;
-    if (parsed?.status) return parsed;
+    try {
+      const rows = await prisma.$queryRaw<{ payload: unknown }[]>`
+        SELECT payload FROM vmb_salon_service_signoff WHERE salon_id = ${salonId.trim()}
+      `;
+      const parsed = rows[0]?.payload as SalonServiceMenuSignoff | undefined;
+      if (parsed?.status) return parsed;
+    } catch {
+      // Table may not exist yet — fall through to default pending.
+    }
   } else {
     const stored = (await listSignoffsJson()).find((row) => row.salonId === salonId);
     if (stored) return stored;

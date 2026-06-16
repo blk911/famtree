@@ -51,3 +51,26 @@ CREATE TABLE IF NOT EXISTS vmb_invite_draft (
   payload jsonb NOT NULL,
   updated_at timestamptz DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS vmb_salon_service_config (
+  salon_id text NOT NULL,
+  catalog_service_id text NOT NULL,
+  payload jsonb NOT NULL,
+  updated_at timestamptz DEFAULT now(),
+  PRIMARY KEY (salon_id, catalog_service_id)
+);
+
+CREATE INDEX IF NOT EXISTS vmb_salon_service_config_salon_id
+  ON vmb_salon_service_config (salon_id);
+
+CREATE TABLE IF NOT EXISTS vmb_service_preset (
+  id text PRIMARY KEY,
+  payload jsonb NOT NULL,
+  updated_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS vmb_salon_service_signoff (
+  salon_id text PRIMARY KEY,
+  payload jsonb NOT NULL,
+  updated_at timestamptz DEFAULT now()
+);

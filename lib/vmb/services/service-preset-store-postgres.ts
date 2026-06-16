@@ -14,10 +14,14 @@ function parsePreset(raw: unknown): ServicePresetCard | null {
 
 export async function listServicePresetOverridesPostgres(): Promise<ServicePresetCard[]> {
   if ((await resolveVmbStorageBackend()) !== "postgres") return [];
-  const rows = await prisma.$queryRaw<PresetRow[]>`
-    SELECT payload FROM vmb_service_preset
-  `;
-  return rows.map((row) => parsePreset(row.payload)).filter((preset): preset is ServicePresetCard => Boolean(preset));
+  try {
+    const rows = await prisma.$queryRaw<PresetRow[]>`
+      SELECT payload FROM vmb_service_preset
+    `;
+    return rows.map((row) => parsePreset(row.payload)).filter((preset): preset is ServicePresetCard => Boolean(preset));
+  } catch {
+    return [];
+  }
 }
 
 export async function upsertServicePresetPostgres(

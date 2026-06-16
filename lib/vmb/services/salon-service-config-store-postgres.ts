@@ -14,10 +14,14 @@ function parseConfig(raw: unknown): SalonServiceConfig | null {
 
 export async function listSalonServiceConfigsPostgres(salonId: string): Promise<SalonServiceConfig[]> {
   if ((await resolveVmbStorageBackend()) !== "postgres") return [];
-  const rows = await prisma.$queryRaw<ConfigRow[]>`
-    SELECT payload FROM vmb_salon_service_config WHERE salon_id = ${salonId.trim()}
-  `;
-  return rows.map((row) => parseConfig(row.payload)).filter((config): config is SalonServiceConfig => Boolean(config));
+  try {
+    const rows = await prisma.$queryRaw<ConfigRow[]>`
+      SELECT payload FROM vmb_salon_service_config WHERE salon_id = ${salonId.trim()}
+    `;
+    return rows.map((row) => parseConfig(row.payload)).filter((config): config is SalonServiceConfig => Boolean(config));
+  } catch {
+    return [];
+  }
 }
 
 export async function upsertSalonServiceConfigPostgres(
