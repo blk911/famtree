@@ -4,9 +4,9 @@ export type InviteSectionId = InviteDraftCategory;
 
 export const INVITE_SECTION_LABELS: Record<InviteDraftCategory, string> = {
   private_client_network: "Private Client Network",
-  new_client_welcome: "New Clients",
-  revenue_touch: "Revenue Touches",
-  trusted_intro_request: "Trusted Intros",
+  new_client_welcome: "New Client Welcome",
+  revenue_touch: "First Visit Thank You",
+  trusted_intro_request: "Referral Invite",
 };
 
 export const INVITE_SECTION_ORDER: InviteDraftCategory[] = [

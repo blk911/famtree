@@ -5,12 +5,12 @@ const CTA_BY_TYPE = Object.fromEntries(
   (
     [
       "pcn_invite",
-      "birthday_card",
-      "reactivation_card",
       "refresh_card",
-      "vip_thank_you",
-      "referral_invite",
+      "reactivation_card",
       "open_slot_fill",
+      "referral_invite",
+      "vip_thank_you",
+      "birthday_card",
       "service_card",
     ] as VmbCardType[]
   ).map((type) => [type, getRelationshipFirstCardForTemplateType(type).primaryCta]),

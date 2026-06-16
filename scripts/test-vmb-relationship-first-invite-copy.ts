@@ -10,13 +10,14 @@ import { getDefaultCtaForTemplateType } from "../lib/vmb/card-templates/template
 import { applyTemplateTokens, buildTemplateTokenContext } from "../lib/vmb/card-templates/template-tokens";
 import { buildPersonalInviteCopy } from "../lib/vmb/cards/personal-invite-copy";
 import {
+  assembleRelationshipFirstInviteMessage,
   getRelationshipFirstCard,
   listRelationshipFirstInviteCards,
   RELATIONSHIP_FIRST_CARD_IDS,
   STALE_REFERRAL_COPY_MARKERS,
 } from "../lib/vmb/cards/relationship-first-invite-copy";
-import { buildOutreachDraftCopy } from "../lib/vmb/invites/outreach-message-presets";
 import { VMB_CARD_TYPES } from "../lib/vmb/cards/card-types";
+import { buildOutreachDraftCopy } from "../lib/vmb/invites/outreach-message-presets";
 import { queuedInviteCardToPreviewModel } from "../lib/vmb/invites/queued-invite-card-to-preview-model";
 
 function assert(condition: unknown, message: string): void {
@@ -25,23 +26,91 @@ function assert(condition: unknown, message: string): void {
   }
 }
 
+const CARD_EXPECTATIONS: Record<
+  (typeof RELATIONSHIP_FIRST_CARD_IDS)[number],
+  { opener: string; cta: string }
+> = {
+  private_client_network: {
+    opener: "I want to invite you into my Private Client Network.",
+    cta: "Join My Private Client Network",
+  },
+  refresh_reminder: {
+    opener: "I was looking at my calendar and realized it's been since {lastAppointmentDate} since I've seen you.",
+    cta: "Book My Usual Appointment",
+  },
+  we_miss_you: {
+    opener: "It's been a while since our last visit and I wanted to check in.",
+    cta: "Let's Catch Up",
+  },
+  open_chair: {
+    opener: "A cancellation just opened a spot on my calendar and I immediately thought of you.",
+    cta: "Claim This Opening",
+  },
+  referral_invite: {
+    opener: "We've built a great relationship over the years",
+    cta: "Invite Someone You Love",
+  },
+  vip_thank_you: {
+    opener: "I wanted to personally thank you.",
+    cta: "Enjoy Your VIP Gift",
+  },
+  birthday_celebration: {
+    opener: "Happy Birthday!",
+    cta: "Enjoy Your Birthday Gift",
+  },
+  new_client_welcome: {
+    opener: "Thank you for booking with me.",
+    cta: "See Appointment Details",
+  },
+  first_visit_thank_you: {
+    opener: "Thank you for spending part of your day with me.",
+    cta: "Stay Connected",
+  },
+  favorite_providers: {
+    opener: "One of my favorite things about this business is connecting great people with great professionals.",
+    cta: "Share Your Favorites",
+  },
+};
+
 function run(): void {
   assert(RELATIONSHIP_FIRST_CARD_IDS.length === 10, "ten relationship-first cards defined");
   assert(listRelationshipFirstInviteCards().length === 10, "listRelationshipFirstInviteCards returns ten");
 
-  const referral = getRelationshipFirstCard("referral_invite");
-  assert(
-    referral.messageTemplate.includes("We've built a great relationship over the years"),
-    "referral invite uses revised relationship-first opener",
-  );
-  assert(referral.primaryCta === "Invite Someone You Love", "referral CTA updated");
+  for (let index = 0; index < RELATIONSHIP_FIRST_CARD_IDS.length; index += 1) {
+    const id = RELATIONSHIP_FIRST_CARD_IDS[index]!;
+    const expected = CARD_EXPECTATIONS[id];
+    const card = getRelationshipFirstCard(id);
+    assert(card.messageTemplate.includes(expected.opener), `${index + 1}. ${id} uses canonical opener`);
+    assert(card.primaryCta === expected.cta, `${index + 1}. ${id} uses canonical CTA`);
+    assert(card.greetingTemplate === "Dear {clientName},", `${index + 1}. ${id} uses Dear greeting`);
+    assert(card.signatureTemplate === "{ownerName} 💕", `${index + 1}. ${id} uses owner signature`);
+  }
+
+  const assembledPcn = assembleRelationshipFirstInviteMessage(getRelationshipFirstCard("private_client_network"), {
+    clientName: "Grace",
+    ownerName: "Jenny",
+  });
+  assert(assembledPcn.startsWith("Dear Grace,"), "assembled PCN starts with Dear Grace");
+  assert(assembledPcn.includes("Private Client Network"), "assembled PCN includes network invite");
+  assert(assembledPcn.includes("Jenny 💕"), "assembled PCN includes signature");
 
   const newClientOutreach = buildOutreachDraftCopy("new_client_welcome", {
     salonName: "Test Salon",
     clientName: "Grace",
-  }).editableMessage.toLowerCase();
-  assert(!newClientOutreach.includes("last visit"), "new client welcome avoids previous visit language");
-  assert(newClientOutreach.includes("thank you for booking"), "new client welcome uses revised booking copy");
+    ownerName: "Jenny",
+  }).editableMessage;
+  assert(newClientOutreach.includes("Dear Grace,"), "new client welcome uses Dear greeting");
+  assert(newClientOutreach.includes("Thank you for booking with me."), "new client welcome uses revised booking copy");
+  assert(newClientOutreach.includes("See Appointment Details") === false, "CTA stays out of editable outreach body");
+  assert(!newClientOutreach.toLowerCase().includes("last visit"), "new client welcome avoids previous visit language");
+
+  const firstVisitOutreach = buildOutreachDraftCopy("revenue_touch", {
+    salonName: "Test Salon",
+    clientName: "Grace",
+    ownerName: "Jenny",
+  }).editableMessage;
+  assert(firstVisitOutreach.includes("Stay Connected") === false, "first visit CTA stays out of editable body");
+  assert(firstVisitOutreach.includes("Thank you for spending part of your day with me."), "first visit uses canonical copy");
 
   const refresh = getDefaultTemplate("refresh_card");
   const refreshRendered = applyTemplateTokens(refresh.messageTemplate, {
@@ -56,11 +125,17 @@ function run(): void {
     ),
   });
   assert(refreshRendered.includes("May 12"), "refresh reminder resolves lastAppointmentDate alias");
+  assert(refreshRendered.includes("\n\n"), "refresh reminder preserves paragraph breaks");
 
+  const referral = getRelationshipFirstCard("referral_invite");
   for (const marker of STALE_REFERRAL_COPY_MARKERS) {
     if (marker === "Invite Someone You Care About") continue;
     assert(!referral.messageTemplate.includes(marker), `referral message lacks stale marker: ${marker}`);
   }
+
+  assert(VMB_CARD_TYPES[0] === "pcn_invite", "card type 1 is Private Client Network");
+  assert(VMB_CARD_TYPES[3] === "open_slot_fill", "card type 4 is Opening Just Became Available");
+  assert(VMB_CARD_TYPES[7] === "service_card", "card type 8 is Favorite Providers");
 
   const defaultTemplatesSource = fs.readFileSync(
     path.join(process.cwd(), "lib/vmb/card-templates/default-card-templates.ts"),

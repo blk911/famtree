@@ -1,10 +1,8 @@
 import type { VmbCardType } from "@/lib/vmb/cards/card-types";
 import type { InviteDraftCategory } from "@/types/vmb/invite-draft";
 
-/** Canonical relationship-first invite card ids — 10 salon-owner voice presets. */
+/** Canonical relationship-first invite card ids — numbered 1–10 salon-owner voice presets. */
 export const RELATIONSHIP_FIRST_CARD_IDS = [
-  "new_client_welcome",
-  "first_visit_thank_you",
   "private_client_network",
   "refresh_reminder",
   "we_miss_you",
@@ -12,6 +10,8 @@ export const RELATIONSHIP_FIRST_CARD_IDS = [
   "referral_invite",
   "vip_thank_you",
   "birthday_celebration",
+  "new_client_welcome",
+  "first_visit_thank_you",
   "favorite_providers",
 ] as const;
 
@@ -33,28 +33,6 @@ export type RelationshipFirstCardCopy = {
 const SIGNATURE = "{ownerName} 💕";
 
 export const RELATIONSHIP_FIRST_INVITE_CARDS: RelationshipFirstCardCopy[] = [
-  {
-    id: "new_client_welcome",
-    label: "New Client Welcome",
-    greetingTemplate: "Dear {clientName},",
-    messageTemplate:
-      "Thank you for booking with me.\n\nI know there are a lot of choices, and I'm honored you've trusted me with your upcoming appointment.",
-    relationshipBenefitTemplate:
-      "My goal is simple: I want you to leave feeling beautiful, confident, and excited to come back.\n\nI can't wait to meet you.",
-    signatureTemplate: SIGNATURE,
-    primaryCta: "See Appointment Details",
-  },
-  {
-    id: "first_visit_thank_you",
-    label: "First Visit Thank You",
-    greetingTemplate: "Dear {clientName},",
-    messageTemplate:
-      "Thank you for spending part of your day with me.\n\nI loved meeting you and having the opportunity to work with you.",
-    relationshipBenefitTemplate:
-      "I'd love to stay connected, share future openings, special offers, and a few surprises along the way.",
-    signatureTemplate: SIGNATURE,
-    primaryCta: "Stay Connected",
-  },
   {
     id: "private_client_network",
     label: "Private Client Network",
@@ -130,7 +108,7 @@ export const RELATIONSHIP_FIRST_INVITE_CARDS: RelationshipFirstCardCopy[] = [
   },
   {
     id: "birthday_celebration",
-    label: "Birthday Celebration",
+    label: "Birthday",
     greetingTemplate: "Dear {clientName},",
     messageTemplate:
       "Happy Birthday!\n\nI hope your day is filled with people you love, great memories, and a little time to spoil yourself.",
@@ -140,6 +118,28 @@ export const RELATIONSHIP_FIRST_INVITE_CARDS: RelationshipFirstCardCopy[] = [
     primaryCta: "Enjoy Your Birthday Gift",
     titleTemplate: "Happy Birthday",
     subtitleTemplate: "Celebrating you",
+  },
+  {
+    id: "new_client_welcome",
+    label: "New Client Welcome",
+    greetingTemplate: "Dear {clientName},",
+    messageTemplate:
+      "Thank you for booking with me.\n\nI know there are a lot of choices, and I'm honored you've trusted me with your upcoming appointment.",
+    relationshipBenefitTemplate:
+      "My goal is simple: I want you to leave feeling beautiful, confident, and excited to come back.\n\nI can't wait to meet you.",
+    signatureTemplate: SIGNATURE,
+    primaryCta: "See Appointment Details",
+  },
+  {
+    id: "first_visit_thank_you",
+    label: "First Visit Thank You",
+    greetingTemplate: "Dear {clientName},",
+    messageTemplate:
+      "Thank you for spending part of your day with me.\n\nI loved meeting you and having the opportunity to work with you.",
+    relationshipBenefitTemplate:
+      "I'd love to stay connected, share future openings, special offers, and a few surprises along the way.",
+    signatureTemplate: SIGNATURE,
+    primaryCta: "Stay Connected",
   },
   {
     id: "favorite_providers",
@@ -176,6 +176,62 @@ const OUTREACH_CATEGORY_TO_CARD_ID: Partial<Record<InviteDraftCategory, Relation
   trusted_intro_request: "referral_invite",
 };
 
+export function firstNameFromRecipient(name?: string): string {
+  const trimmed = name?.trim();
+  if (!trimmed) return "friend";
+  return trimmed.split(/\s+/)[0] || trimmed;
+}
+
+export type RelationshipFirstInviteVars = {
+  clientName?: string;
+  ownerName?: string;
+  salonName?: string;
+  serviceName?: string;
+  lastVisit?: string;
+  lastAppointmentDate?: string;
+  styleName?: string;
+  preferredDay?: string;
+  preferredTime?: string;
+  nextOpening?: string;
+};
+
+function applyRelationshipFirstTokens(text: string, vars: RelationshipFirstInviteVars): string {
+  const clientName = firstNameFromRecipient(vars.clientName);
+  const lastAppointmentDate = vars.lastAppointmentDate?.trim() || vars.lastVisit?.trim() || "";
+  const serviceName = vars.serviceName?.trim() || "";
+  const replacements: Record<string, string> = {
+    "{clientName}": clientName,
+    "{ownerName}": vars.ownerName?.trim() || "Your stylist",
+    "{salonName}": vars.salonName?.trim() || "Your Salon",
+    "{serviceName}": serviceName,
+    "{lastVisit}": lastAppointmentDate,
+    "{lastAppointmentDate}": lastAppointmentDate,
+    "{styleName}": vars.styleName?.trim() || serviceName,
+    "{preferredDay}": vars.preferredDay?.trim() || "",
+    "{preferredTime}": vars.preferredTime?.trim() || "",
+    "{nextOpening}": vars.nextOpening?.trim() || "",
+  };
+
+  let result = text;
+  for (const [token, value] of Object.entries(replacements)) {
+    result = result.split(token).join(value);
+  }
+  return result;
+}
+
+/** Full invite body — greeting, message, relationship benefit, signature. */
+export function assembleRelationshipFirstInviteMessage(
+  card: RelationshipFirstCardCopy,
+  vars: RelationshipFirstInviteVars = {},
+): string {
+  const greeting = applyRelationshipFirstTokens(card.greetingTemplate, vars);
+  const message = applyRelationshipFirstTokens(card.messageTemplate, vars);
+  const benefit = applyRelationshipFirstTokens(card.relationshipBenefitTemplate, vars);
+  const signature = applyRelationshipFirstTokens(card.signatureTemplate, vars);
+
+  return [greeting, message, benefit, signature].filter(Boolean).join("\n\n").trim();
+}
+
 export function getRelationshipFirstCard(id: RelationshipFirstCardId): RelationshipFirstCardCopy {
   const card = CARD_BY_ID.get(id);
   if (!card) {
@@ -202,55 +258,28 @@ export function getRelationshipFirstCardForOutreachCategory(
 /** Outreach body — relationship-first, no SaaS footer in editable region. */
 export function buildRelationshipFirstOutreachMessage(
   card: RelationshipFirstCardCopy,
-  vars: { firstName?: string; salonName?: string; welcomeMessage?: string; reason?: string; suggestedAction?: string; promptText?: string },
+  vars: {
+    firstName?: string;
+    salonName?: string;
+    clientName?: string;
+    ownerName?: string;
+    welcomeMessage?: string;
+    serviceName?: string;
+    lastVisit?: string;
+  },
 ): string {
-  const firstName = vars.firstName?.trim() || "there";
-  const salonName = vars.salonName?.trim() || "Your Salon";
-
   if (card.id === "new_client_welcome" && vars.welcomeMessage?.trim()) {
     return vars.welcomeMessage.trim();
   }
 
-  if (card.id === "first_visit_thank_you" && vars.reason?.trim()) {
-    return [
-      `Hi ${firstName},`,
-      "",
-      card.messageTemplate.replace("{clientName}", firstName),
-      "",
-      vars.reason.trim(),
-      vars.suggestedAction?.trim() ? `\n${vars.suggestedAction.trim()}` : "",
-      "",
-      `— ${salonName}`,
-    ]
-      .filter(Boolean)
-      .join("\n")
-      .trim();
-  }
-
-  if (card.id === "referral_invite" && vars.promptText?.trim()) {
-    return [
-      `Hi ${firstName},`,
-      "",
-      vars.promptText.trim(),
-      "",
-      card.offerTemplate ?? "",
-    ]
-      .filter(Boolean)
-      .join("\n")
-      .trim();
-  }
-
-  return [
-    card.greetingTemplate.replace("{clientName}", firstName),
-    "",
-    card.messageTemplate.replace("{clientName}", firstName).replace("{salonName}", salonName),
-    "",
-    card.relationshipBenefitTemplate.replace("{clientName}", firstName).replace("{salonName}", salonName),
-    card.offerTemplate ? `\n${card.offerTemplate.replace("{clientName}", firstName).replace("{salonName}", salonName)}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n")
-    .trim();
+  return assembleRelationshipFirstInviteMessage(card, {
+    clientName: vars.clientName ?? vars.firstName,
+    ownerName: vars.ownerName,
+    salonName: vars.salonName,
+    serviceName: vars.serviceName,
+    lastVisit: vars.lastVisit,
+    lastAppointmentDate: vars.lastVisit,
+  });
 }
 
 export function buildRelationshipFirstOutreachSubject(
@@ -286,7 +315,7 @@ export function buildRelationshipFirstPersonalInviteFallback(input: {
   secondaryCta: string;
 } {
   const card = getRelationshipFirstCard("private_client_network");
-  const firstName = input.recipientName?.trim().split(/\s+/)[0] || "friend";
+  const firstName = firstNameFromRecipient(input.recipientName);
   const greeting = firstName === "friend" ? "Dear friend," : `Dear ${firstName},`;
   const owner = input.techName?.trim() || "{ownerName}";
 

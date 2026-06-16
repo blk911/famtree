@@ -79,6 +79,9 @@ export type OutreachTemplateVars = {
   salonName?: string;
   clientName?: string;
   firstName?: string;
+  ownerName?: string;
+  serviceName?: string;
+  lastVisit?: string;
   welcomeMessage?: string;
   reason?: string;
   suggestedAction?: string;
@@ -142,7 +145,12 @@ export function buildOutreachDraftCopyFromPreset(
   const editableMessage =
     preset.messageTemplate && preset.messageTemplate !== "{editableBody}"
       ? renderOutreachTemplate(preset.messageTemplate, mergedVars)
-      : buildRelationshipFirstOutreachMessage(card, mergedVars);
+      : buildRelationshipFirstOutreachMessage(card, {
+          ...mergedVars,
+          ownerName: mergedVars.ownerName,
+          serviceName: mergedVars.serviceName,
+          lastVisit: mergedVars.lastVisit,
+        });
 
   return {
     subject,

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
-import { renderOutreachTemplate } from "@/lib/vmb/invites/outreach-message-presets";
+import { renderOutreachTemplate, buildOutreachDraftCopy } from "@/lib/vmb/invites/outreach-message-presets";
 import type { SalonOutreachPreset } from "@/lib/vmb/invites/outreach-preset-types";
 import { INVITE_SECTION_LABELS } from "@/lib/vmb/invites/sections";
 import { VMB_THEME } from "@/lib/vmb/theme";
@@ -116,8 +116,9 @@ export function OutreachMessagesAdminClient({ salonId, salonName = "Your Salon" 
     );
   }
 
-  const subjectPreview = renderOutreachTemplate(draft.subjectTemplate, previewVars);
-  const messagePreview = renderOutreachTemplate(draft.messageTemplate, previewVars);
+  const draftCopy = buildOutreachDraftCopy(draft.id, previewVars);
+  const subjectPreview = draftCopy.subject;
+  const messagePreview = draftCopy.editableMessage;
   const footerPreview = renderOutreachTemplate(draft.lockedFooterTemplate, previewVars);
 
   return (

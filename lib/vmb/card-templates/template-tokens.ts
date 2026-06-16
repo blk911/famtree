@@ -87,7 +87,7 @@ export function applyTemplateTokens(template: string, context: TemplateTokenCont
     result = result.split(token).join(value ?? "");
   }
 
-  return result.replace(/\s{2,}/g, " ").trim();
+  return result.replace(/[^\S\n]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
 }
 
 export function withOfferTokens(

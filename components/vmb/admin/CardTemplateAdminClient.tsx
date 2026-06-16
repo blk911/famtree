@@ -35,14 +35,14 @@ type Props = {
 };
 
 const TYPE_LABELS: Record<VmbCardType, string> = {
-  pcn_invite: "PCN Invite",
-  birthday_card: "Birthday Card",
-  reactivation_card: "Reactivation",
+  pcn_invite: "Private Client Network",
   refresh_card: "Refresh Reminder",
-  vip_thank_you: "VIP Thank You",
+  reactivation_card: "We Miss You",
+  open_slot_fill: "Opening Just Became Available",
   referral_invite: "Referral Invite",
-  open_slot_fill: "Open Slot Fill",
-  service_card: "Service Spotlight",
+  vip_thank_you: "VIP Thank You",
+  birthday_card: "Birthday",
+  service_card: "Favorite Providers",
 };
 
 function revokeDraftImageUrls(slots: CardBuilderDraftImageSlot[]) {

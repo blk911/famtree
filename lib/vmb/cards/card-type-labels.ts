@@ -1,14 +1,14 @@
 import type { VmbCardType } from "@/lib/vmb/cards/card-types";
 
 const CARD_ACTION_LABELS: Record<VmbCardType, string> = {
-  pcn_invite: "Private Client Invite",
-  birthday_card: "Birthday Card",
-  refresh_card: "Refresh Invite",
-  vip_thank_you: "Thank You Invite",
+  pcn_invite: "Private Client Network",
+  birthday_card: "Birthday",
+  refresh_card: "Refresh Reminder",
+  vip_thank_you: "VIP Thank You",
   referral_invite: "Referral Invite",
-  reactivation_card: "Reactivation Invite",
-  open_slot_fill: "Open Slot Invite",
-  service_card: "Service Card",
+  reactivation_card: "We Miss You",
+  open_slot_fill: "Opening Just Became Available",
+  service_card: "Favorite Providers",
 };
 
 const CODA_ACTION_LABELS: Record<string, string> = {

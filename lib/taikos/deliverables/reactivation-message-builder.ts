@@ -1,9 +1,9 @@
 import type { AiosContextPacket } from "@/lib/taikos/types";
+import {
+  assembleRelationshipFirstInviteMessage,
+  getRelationshipFirstCard,
+} from "@/lib/vmb/cards/relationship-first-invite-copy";
 import type { ReactivationDeliverable } from "./types";
-
-function firstName(name: string): string {
-  return name.trim().split(/\s+/)[0] || name;
-}
 
 export function buildReactivationDeliverable(ctx: AiosContextPacket): ReactivationDeliverable {
   const top = ctx.hasRealBookData
@@ -11,15 +11,19 @@ export function buildReactivationDeliverable(ctx: AiosContextPacket): Reactivati
     : undefined;
 
   const client = top?.clientName ?? "Amanda";
-  const fn = firstName(client);
   const reason = top?.reason ?? "Overdue for visit";
+  const weMissYouCard = getRelationshipFirstCard("we_miss_you");
 
   return {
     draftId: `reactivation-${ctx.salonId}-${Date.now()}`,
     type: "reactivation",
-    title: "Reactivation Touch",
+    title: weMissYouCard.label,
     client,
-    message: `Hi ${fn} — I was thinking about your last set and wanted to check in. I have a few openings this week if you want to refresh before the weekend.`,
+    message: assembleRelationshipFirstInviteMessage(weMissYouCard, {
+      clientName: client,
+      ownerName: ctx.operatorName,
+      salonName: ctx.salonName,
+    }),
     reason,
     estimatedValue: top?.estimatedValue ?? 0,
     status: "preview",
