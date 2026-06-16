@@ -51,6 +51,10 @@ export function getVmbOffersFile(): string {
   return path.join(getVmbDataDir(), "offers.json");
 }
 
+export function getVmbOutreachPresetsFile(): string {
+  return path.join(getVmbDataDir(), "outreach-presets.json");
+}
+
 export function getVmbServicesFile(): string {
   return path.join(getVmbDataDir(), "services.json");
 }

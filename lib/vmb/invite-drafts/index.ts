@@ -1,8 +1,8 @@
 export {
-  buildInviteDraftRecords,
   getTopNetworkCandidates,
   type NetworkCandidateWithMeta,
-} from "./build-invite-drafts";
+} from "./network-candidates";
+export { buildDemoInviteDraftRecords } from "./build-demo-invite-drafts";
 export {
   buildInviteDraftsForTrial,
   getInviteDraftForTrial,

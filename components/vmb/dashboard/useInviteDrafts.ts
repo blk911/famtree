@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { buildInviteDraftRecords } from "@/lib/vmb/invite-drafts/build-invite-drafts";
+import { buildDemoInviteDraftRecords } from "@/lib/vmb/invite-drafts/build-demo-invite-drafts";
 import { friendlyInviteDraftError } from "@/lib/vmb/invite-drafts/invite-draft-storage-errors";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { InviteDraftStatus, VmbInviteDraft } from "@/types/vmb/invite-draft";
@@ -22,7 +22,7 @@ export function useInviteDrafts({ analysis, isDemo = false }: Options) {
     setError(null);
     try {
       if (isDemo) {
-        setDrafts(buildInviteDraftRecords(analysis, "demo-trial"));
+        setDrafts(buildDemoInviteDraftRecords(analysis, "demo-trial"));
         return;
       }
 

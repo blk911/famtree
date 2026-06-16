@@ -78,7 +78,7 @@ async function run(): Promise<void> {
   const active = await getActiveVmbAnalysis(trialIdA, {});
   assert(active.analysisId === analysisIdA, "getActiveVmbAnalysis resolves latest");
 
-  const built = buildInviteDraftsForAnalysis(analyzeA.data.analysis, trialIdA);
+  const built = await buildInviteDraftsForAnalysis(analyzeA.data.analysis, trialIdA);
   assert(built.length > 0, "builder creates drafts");
   const categories = new Set(built.map((d) => d.inviteCategory));
   assert(categories.has("private_client_network"), "network drafts");

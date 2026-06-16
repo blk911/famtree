@@ -13,6 +13,7 @@ export type OutreachMessagePreset = {
   primaryCtaLabel: string;
   channelHintSms: string;
   channelHintEmail: string;
+  updatedAt?: string;
 };
 
 export const OUTREACH_LOCKED_FOOTER_TEMPLATE =
@@ -89,11 +90,15 @@ Reply if you're open to a warm introduction this week.`,
 const PRESET_BY_ID = new Map(OUTREACH_MESSAGE_PRESETS.map((preset) => [preset.id, preset]));
 
 export function getOutreachMessagePreset(id: OutreachMessagePresetId): OutreachMessagePreset {
+  return getDefaultOutreachPreset(id);
+}
+
+export function getDefaultOutreachPreset(id: OutreachMessagePresetId): OutreachMessagePreset {
   const preset = PRESET_BY_ID.get(id);
   if (!preset) {
     throw new Error(`Missing outreach message preset for ${id}`);
   }
-  return preset;
+  return { ...preset };
 }
 
 export function listOutreachMessagePresets(): OutreachMessagePreset[] {
@@ -143,11 +148,10 @@ export function buildOutreachLockedFooter(
   return renderOutreachTemplate(template, { salonName });
 }
 
-export function buildOutreachDraftCopy(
-  category: InviteDraftCategory,
+export function buildOutreachDraftCopyFromPreset(
+  preset: OutreachMessagePreset,
   vars: OutreachTemplateVars,
 ): { subject: string; editableMessage: string; lockedFooter: string; primaryCtaLabel: string } {
-  const preset = getOutreachMessagePreset(category);
   const salonName = vars.salonName?.trim() || "Your Salon";
   const mergedVars = {
     ...vars,
@@ -163,9 +167,17 @@ export function buildOutreachDraftCopy(
   };
 }
 
+export function buildOutreachDraftCopy(
+  category: InviteDraftCategory,
+  vars: OutreachTemplateVars,
+): { subject: string; editableMessage: string; lockedFooter: string; primaryCtaLabel: string } {
+  return buildOutreachDraftCopyFromPreset(getDefaultOutreachPreset(category), vars);
+}
+
 /** Canonical preset source paths for admin/product wiring tests. */
 export const VMB_INVITE_PRESET_SOURCE_MODULES = {
   outreachMessages: "lib/vmb/invites/outreach-message-presets.ts",
+  outreachPresetStore: "lib/vmb/invites/outreach-preset-store.ts",
   cardTemplates: "lib/vmb/card-templates/default-card-templates.ts",
   ctaLabels: "lib/vmb/card-templates/template-cta-labels.ts",
   personalInviteCopy: "lib/vmb/cards/personal-invite-copy.ts",

@@ -205,7 +205,7 @@ export async function buildInviteDraftsForTrial(
     return { error: "Analysis not available for this trial" };
   }
 
-  const built = buildInviteDraftsForAnalysis(analysis, trialId);
+  const built = await buildInviteDraftsForAnalysis(analysis, trialId);
   const existing = await listInviteDraftsForTrialAnalysis(trialId, analysis.analysisId);
   const merged = dedupeInviteDraftsById(mergePreservingEdits(built, existing));
 
@@ -242,7 +242,7 @@ export async function ensureInviteDraftsForAnalysis(
     return { error: "Analysis not available for this trial" };
   }
 
-  const built = dedupeInviteDraftsById(buildInviteDraftsForAnalysis(analysis, trialId));
+  const built = dedupeInviteDraftsById(await buildInviteDraftsForAnalysis(analysis, trialId));
   const hasAllCategories =
     existing.length >= built.length &&
     built.every((b) => existing.some((e) => e.draftId === b.draftId));

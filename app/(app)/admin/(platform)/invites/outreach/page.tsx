@@ -16,7 +16,7 @@ export default async function AdminInvitesOutreachPage() {
       <div className="mx-auto max-w-[1500px] px-4 pt-2 sm:px-6 lg:px-8">
         <InvitesWorkspaceBreadcrumb current="Outreach Messages" />
       </div>
-      <OutreachMessagesAdminClient salonName={ctx.salonName} />
+      <OutreachMessagesAdminClient salonId={ctx.trialId} salonName={ctx.salonName} />
     </>
   );
 }

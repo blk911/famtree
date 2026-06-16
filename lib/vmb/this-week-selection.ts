@@ -1,5 +1,5 @@
 import type { ClientOpportunityRow } from "@/lib/vmb/client-opportunities";
-import { getTopNetworkCandidates } from "@/lib/vmb/invite-drafts/build-invite-drafts";
+import { getTopNetworkCandidates } from "@/lib/vmb/invite-drafts/network-candidates";
 import { buildWeeklyRevenueSummary } from "@/lib/vmb/operating-system/weekly-revenue";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 
