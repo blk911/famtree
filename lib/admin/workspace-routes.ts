@@ -387,7 +387,7 @@ export const VMB_SALONS_PRODUCT_SECTIONS: WorkspaceSection[] = [
       {
         label: "Salon services",
         description: "Salon owners turn on services, prices, and add-ons.",
-        href: "/vmb/services",
+        href: "/vmb/service-presets",
         external: true,
       },
       {

@@ -5216,98 +5216,109 @@
 }
 
 /* Salon owner services — list-first configuration */
-.vmb-salon-services__category-picker {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
+.vmb-salon-services__context {
+  margin: 0 0 16px;
   font-size: 14px;
-  color: #44403c;
+  color: #78716c;
 }
 
-.vmb-salon-services__category-picker select {
-  min-width: 160px;
+.vmb-salon-services__state,
+.vmb-salon-services__empty {
+  margin: 0;
+  padding: 24px 0;
+  font-size: 14px;
+  color: #57534e;
+  line-height: 1.5;
+}
+
+.vmb-salon-services__state--error {
+  color: #b91c1c;
+}
+
+.vmb-salon-services__category {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #78716c;
 }
 
 .vmb-salon-services__list {
   list-style: none;
-  margin: 0 0 24px;
+  margin: 0;
   padding: 0;
   border-top: 1px solid #e7e5e4;
 }
 
+.vmb-salon-services__item {
+  border-bottom: 1px solid #e7e5e4;
+}
+
 .vmb-salon-services__row {
   display: grid;
-  grid-template-columns: 24px 1fr auto;
+  grid-template-columns: 28px 1fr 72px 80px auto;
   gap: 12px;
   align-items: center;
-  width: 100%;
   padding: 12px 4px;
-  border: none;
-  border-bottom: 1px solid #e7e5e4;
-  background: transparent;
-  text-align: left;
   font-size: 14px;
   color: #292524;
+}
+
+.vmb-salon-services__enabled {
+  display: flex;
+  align-items: center;
+}
+
+.vmb-salon-services__name {
+  font-weight: 500;
+}
+
+.vmb-salon-services__price,
+.vmb-salon-services__duration {
+  color: #57534e;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+
+.vmb-salon-services__configure {
+  padding: 6px 12px;
+  border: 1px solid #d6d3d1;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  color: #44403c;
   cursor: pointer;
 }
 
-.vmb-salon-services__row--active {
+.vmb-salon-services__configure:hover {
   background: #fafaf9;
 }
 
-.vmb-salon-services__check {
-  font-family: ui-monospace, monospace;
-  color: #78716c;
-}
-
-.vmb-salon-services__price {
-  color: #57534e;
-  font-variant-numeric: tabular-nums;
-}
-
 .vmb-salon-services__panel {
-  padding-top: 8px;
-  border-top: 1px solid #e7e5e4;
+  padding: 0 4px 16px 40px;
 }
 
-.vmb-salon-services__panel-title {
-  margin: 0 0 16px;
-  font-size: 1.1rem;
-  font-weight: 700;
+.vmb-salon-services__fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-bottom: 16px;
 }
 
 .vmb-salon-services__field {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 14px;
   font-size: 14px;
-}
-
-.vmb-salon-services__field--checkbox {
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
 }
 
 .vmb-salon-services__field input[type="number"] {
   max-width: 120px;
 }
 
-.vmb-salon-services__hint {
-  font-size: 12px;
-  color: #78716c;
-}
-
-.vmb-salon-services__addons {
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-
-.vmb-salon-services__addons legend {
-  margin-bottom: 8px;
+.vmb-salon-services__addons-label {
+  margin: 0 0 8px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -5315,26 +5326,21 @@
   color: #78716c;
 }
 
-.vmb-salon-services__addons ul {
+.vmb-salon-services__addon-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.vmb-salon-services__addons li {
-  padding: 6px 0;
+.vmb-salon-services__addon-list li {
+  padding: 4px 0;
 }
 
-.vmb-salon-services__addons label {
+.vmb-salon-services__addon {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 14px;
-}
-
-.vmb-salon-services__status {
-  margin-top: 12px;
-  font-size: 13px;
-  color: #57534e;
+  cursor: pointer;
 }
 

@@ -1,212 +1,269 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
+import { getServiceCategoryLabel } from "@/lib/vmb/services/canonical-service-catalog";
 import type { ResolvedSalonService, ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
-import { formatCatalogDuration, formatCatalogPrice } from "@/lib/vmb/services/canonical-service-catalog";
 
-type Props = {
-  salonId?: string;
-  salonName?: string;
+type SalonServicesPayload = {
+  categoryId: string;
+  services: ResolvedSalonService[];
 };
 
-export function SalonServicesClient({ salonId, salonName = "Your Salon" }: Props) {
-  const [categoryId, setCategoryId] = useState<ServiceCategoryId>("nails");
-  const [services, setServices] = useState<ResolvedSalonService[]>([]);
-  const [selectedServiceId, setSelectedServiceId] = useState<string>("");
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
+type ServiceDraft = {
+  priceCents: number;
+  durationMinutes: number;
+  addonIds: string[];
+};
 
-  const loadServices = useCallback(async () => {
-    if (!salonId) return;
-    const res = await fetch(`/api/vmb/salon-services?category=${categoryId}`, { cache: "no-store" });
-    const data = (await res.json()) as { ok?: boolean; services?: ResolvedSalonService[] };
-    if (data.ok && data.services) {
-      setServices(data.services);
-      setSelectedServiceId((current) => current || data.services?.[0]?.id || "");
+function formatPrice(cents: number): string {
+  return `$${(cents / 100).toFixed(0)}`;
+}
+
+function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+export function SalonServicesClient({
+  salonId,
+  salonName,
+}: {
+  salonId: string;
+  salonName: string;
+}) {
+  const [data, setData] = useState<SalonServicesPayload | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<Record<string, ServiceDraft>>({});
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/vmb/salon-services?salonId=${encodeURIComponent(salonId)}`,
+      );
+      if (!res.ok) throw new Error("Could not load services");
+      const json = (await res.json()) as SalonServicesPayload & { ok?: boolean };
+      setData({ categoryId: json.categoryId, services: json.services });
+      const nextDrafts: Record<string, ServiceDraft> = {};
+      for (const svc of json.services) {
+        nextDrafts[svc.id] = {
+          priceCents: svc.priceCents,
+          durationMinutes: svc.durationMinutes,
+          addonIds: svc.addons.filter((addon) => addon.enabled).map((addon) => addon.id),
+        };
+      }
+      setDrafts(nextDrafts);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Load failed");
+    } finally {
+      setLoading(false);
     }
-  }, [salonId, categoryId]);
+  }, [salonId]);
 
   useEffect(() => {
-    void loadServices();
-  }, [loadServices]);
+    void load();
+  }, [load]);
 
-  useEffect(() => {
-    setSelectedServiceId("");
-  }, [categoryId]);
-
-  const selectedService = useMemo(
-    () => services.find((service) => service.id === selectedServiceId) ?? services[0],
-    [services, selectedServiceId],
-  );
-
-  async function saveService(patch: Partial<ResolvedSalonService>) {
-    if (!salonId || !selectedService) return;
-    setBusy(true);
-    setStatus(null);
+  async function persist(
+    catalogServiceId: string,
+    patch: Partial<{
+      enabled: boolean;
+      priceCents: number;
+      durationMinutes: number;
+      enabledAddonIds: string[];
+    }>,
+  ) {
     const res = await fetch("/api/vmb/salon-services", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        catalogServiceId: selectedService.id,
-        enabled: patch.enabled ?? selectedService.enabled,
-        priceCents: patch.priceCents ?? selectedService.priceCents,
-        durationMinutes: patch.durationMinutes ?? selectedService.durationMinutes,
-        enabledAddonIds:
-          patch.addons?.filter((addon) => addon.enabled).map((addon) => addon.id) ??
-          selectedService.addons.filter((addon) => addon.enabled).map((addon) => addon.id),
-      }),
+      body: JSON.stringify({ catalogServiceId, ...patch }),
     });
-    const data = (await res.json()) as { ok?: boolean; error?: string };
-    setBusy(false);
-    if (data.ok) {
-      setStatus("Saved.");
-      await loadServices();
-    } else {
-      setStatus(data.error ?? "Save failed.");
+    if (!res.ok) throw new Error("Save failed");
+    await load();
+  }
+
+  async function toggleEnabled(svc: ResolvedSalonService) {
+    try {
+      await persist(svc.id, { enabled: !svc.enabled });
+    } catch {
+      setError("Could not update service");
     }
   }
 
-  if (!salonId) {
-    return (
-      <VmbPageFrame title="Services" subtitle={salonName}>
-        <p className="vmb-page-state">Sign in to your salon trial to configure services.</p>
-      </VmbPageFrame>
-    );
+  async function saveDraft(catalogServiceId: string) {
+    const draft = drafts[catalogServiceId];
+    if (!draft) return;
+    try {
+      await persist(catalogServiceId, {
+        priceCents: draft.priceCents,
+        durationMinutes: draft.durationMinutes,
+        enabledAddonIds: draft.addonIds,
+      });
+    } catch {
+      setError("Could not save changes");
+    }
   }
+
+  function toggleConfigure(catalogServiceId: string) {
+    if (expandedId === catalogServiceId) {
+      void saveDraft(catalogServiceId);
+      setExpandedId(null);
+    } else {
+      setExpandedId(catalogServiceId);
+    }
+  }
+
+  function updateDraft(catalogServiceId: string, patch: Partial<ServiceDraft>) {
+    setDrafts((prev) => ({
+      ...prev,
+      [catalogServiceId]: { ...prev[catalogServiceId], ...patch },
+    }));
+  }
+
+  function toggleAddon(catalogServiceId: string, addonId: string) {
+    const current = drafts[catalogServiceId]?.addonIds ?? [];
+    const next = current.includes(addonId)
+      ? current.filter((id) => id !== addonId)
+      : [...current, addonId];
+    updateDraft(catalogServiceId, { addonIds: next });
+  }
+
+  const services = data?.services ?? [];
+  const categoryLabel = data?.categoryId
+    ? getServiceCategoryLabel(data.categoryId as ServiceCategoryId)
+    : null;
 
   return (
     <VmbPageFrame
       title="Services"
-      subtitle="Turn on the services you offer and set your prices."
+      subtitle="Choose what you offer, set your price, and select the add-ons clients can buy."
+      width="wide"
     >
       <div className="vmb-salon-services">
-        <label className="vmb-salon-services__category-picker">
-          <span>Category</span>
-          <select
-            value={categoryId}
-            onChange={(event) => setCategoryId(event.target.value as ServiceCategoryId)}
-          >
-            <option value="nails">Nails</option>
-            <option value="hair">Hair</option>
-            <option value="lashes">Lashes</option>
-            <option value="brows">Brows</option>
-            <option value="waxing">Waxing</option>
-            <option value="skin">Skin</option>
-            <option value="massage">Massage</option>
-            <option value="barber">Barber</option>
-          </select>
-        </label>
-
-        <ul className="vmb-salon-services__list">
-          {services.map((service) => (
-            <li key={service.id}>
-              <button
-                type="button"
-                className={`vmb-salon-services__row${selectedService?.id === service.id ? " vmb-salon-services__row--active" : ""}`}
-                onClick={() => setSelectedServiceId(service.id)}
-              >
-                <span className="vmb-salon-services__check" aria-hidden>
-                  {service.enabled ? "✓" : "□"}
-                </span>
-                <span className="vmb-salon-services__name">{service.name}</span>
-                <span className="vmb-salon-services__price">
-                  {service.enabled ? formatCatalogPrice(service.priceCents) : "—"}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-
-        {selectedService ? (
-          <section className="vmb-salon-services__panel" aria-label="Service configuration">
-            <h2 className="vmb-salon-services__panel-title">{selectedService.name}</h2>
-
-            <label className="vmb-salon-services__field vmb-salon-services__field--checkbox">
-              <input
-                type="checkbox"
-                checked={selectedService.enabled}
-                onChange={(event) => void saveService({ enabled: event.target.checked })}
-                disabled={busy}
-              />
-              <span>Offer this service</span>
-            </label>
-
-            <label className="vmb-salon-services__field">
-              <span>Price</span>
-              <input
-                type="number"
-                min={0}
-                step={1}
-                value={Math.round(selectedService.priceCents / 100)}
-                onChange={(event) => {
-                  const dollars = Number.parseInt(event.target.value, 10);
-                  if (Number.isNaN(dollars)) return;
-                  setServices((current) =>
-                    current.map((service) =>
-                      service.id === selectedService.id
-                        ? { ...service, priceCents: dollars * 100 }
-                        : service,
-                    ),
-                  );
-                }}
-                onBlur={() => void saveService({ priceCents: selectedService.priceCents })}
-                disabled={busy || !selectedService.enabled}
-              />
-            </label>
-
-            <label className="vmb-salon-services__field">
-              <span>Duration (minutes)</span>
-              <input
-                type="number"
-                min={15}
-                step={5}
-                value={selectedService.durationMinutes}
-                onChange={(event) => {
-                  const minutes = Number.parseInt(event.target.value, 10);
-                  if (Number.isNaN(minutes)) return;
-                  setServices((current) =>
-                    current.map((service) =>
-                      service.id === selectedService.id ? { ...service, durationMinutes: minutes } : service,
-                    ),
-                  );
-                }}
-                onBlur={() => void saveService({ durationMinutes: selectedService.durationMinutes })}
-                disabled={busy || !selectedService.enabled}
-              />
-              <span className="vmb-salon-services__hint">
-                {formatCatalogDuration(selectedService.durationMinutes)}
-              </span>
-            </label>
-
-            {selectedService.addons.length > 0 ? (
-              <fieldset className="vmb-salon-services__addons" disabled={busy || !selectedService.enabled}>
-                <legend>Available Add-ons</legend>
-                <ul>
-                  {selectedService.addons.map((addon) => (
-                    <li key={addon.id}>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={addon.enabled}
-                          onChange={(event) => {
-                            const nextAddons = selectedService.addons.map((entry) =>
-                              entry.id === addon.id ? { ...entry, enabled: event.target.checked } : entry,
-                            );
-                            void saveService({ addons: nextAddons });
-                          }}
-                        />
-                        <span>{addon.name}</span>
-                      </label>
-                    </li>
-                  ))}
-                </ul>
-              </fieldset>
-            ) : null}
-          </section>
+        {salonName ? (
+          <p className="vmb-salon-services__context">{salonName}</p>
         ) : null}
 
-        {status ? <p className="vmb-salon-services__status">{status}</p> : null}
+        {loading ? (
+          <p className="vmb-salon-services__state">Loading services…</p>
+        ) : error ? (
+          <p className="vmb-salon-services__state vmb-salon-services__state--error">
+            {error}
+          </p>
+        ) : services.length === 0 ? (
+          <p className="vmb-salon-services__empty">
+            No services loaded yet. Choose a category in your salon profile or ask
+            VMB to load your starter menu.
+          </p>
+        ) : (
+          <>
+            {categoryLabel ? (
+              <p className="vmb-salon-services__category">{categoryLabel}</p>
+            ) : null}
+            <ul className="vmb-salon-services__list">
+              {services.map((svc) => {
+                const draft = drafts[svc.id];
+                const isExpanded = expandedId === svc.id;
+                return (
+                  <li key={svc.id} className="vmb-salon-services__item">
+                    <div className="vmb-salon-services__row">
+                      <label className="vmb-salon-services__enabled">
+                        <input
+                          type="checkbox"
+                          checked={svc.enabled}
+                          onChange={() => void toggleEnabled(svc)}
+                          aria-label={`Offer ${svc.name}`}
+                        />
+                      </label>
+                      <span className="vmb-salon-services__name">{svc.name}</span>
+                      <span className="vmb-salon-services__price">
+                        {formatPrice(svc.priceCents)}
+                      </span>
+                      <span className="vmb-salon-services__duration">
+                        {formatDuration(svc.durationMinutes)}
+                      </span>
+                      <button
+                        type="button"
+                        className="vmb-salon-services__configure"
+                        aria-expanded={isExpanded}
+                        onClick={() => toggleConfigure(svc.id)}
+                      >
+                        {isExpanded ? "Done" : "Configure"}
+                      </button>
+                    </div>
+                    {isExpanded && draft ? (
+                      <div className="vmb-salon-services__panel">
+                        <div className="vmb-salon-services__fields">
+                          <label className="vmb-salon-services__field">
+                            <span>Base price ($)</span>
+                            <input
+                              type="number"
+                              min={0}
+                              step={1}
+                              value={Math.round(draft.priceCents / 100)}
+                              onChange={(e) =>
+                                updateDraft(svc.id, {
+                                  priceCents: Math.max(
+                                    0,
+                                    Math.round(Number(e.target.value) * 100),
+                                  ),
+                                })
+                              }
+                            />
+                          </label>
+                          <label className="vmb-salon-services__field">
+                            <span>Duration (min)</span>
+                            <input
+                              type="number"
+                              min={15}
+                              step={15}
+                              value={draft.durationMinutes}
+                              onChange={(e) =>
+                                updateDraft(svc.id, {
+                                  durationMinutes: Math.max(
+                                    15,
+                                    Number(e.target.value) || 15,
+                                  ),
+                                })
+                              }
+                            />
+                          </label>
+                        </div>
+                        {svc.addons.length > 0 ? (
+                          <div className="vmb-salon-services__addons">
+                            <p className="vmb-salon-services__addons-label">
+                              Add-ons clients can buy
+                            </p>
+                            <ul className="vmb-salon-services__addon-list">
+                              {svc.addons.map((addon) => (
+                                <li key={addon.id}>
+                                  <label className="vmb-salon-services__addon">
+                                    <input
+                                      type="checkbox"
+                                      checked={draft.addonIds.includes(addon.id)}
+                                      onChange={() => toggleAddon(svc.id, addon.id)}
+                                    />
+                                    <span>{addon.name}</span>
+                                  </label>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
       </div>
     </VmbPageFrame>
   );

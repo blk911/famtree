@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
 import {
   getSalonPrimaryCategory,
+  getSalonServiceConfig,
   getSalonServicesForCategory,
   upsertSalonServiceConfig,
 } from "@/lib/vmb/services/salon-service-config-store";
@@ -56,12 +57,23 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "catalogServiceId required" }, { status: 400 });
   }
 
+  const catalogServiceId = body.catalogServiceId.trim();
+  const existing = await getSalonServiceConfig(salonId, catalogServiceId);
+
   const saved = await upsertSalonServiceConfig(salonId, {
-    catalogServiceId: body.catalogServiceId.trim(),
-    enabled: Boolean(body.enabled),
-    priceCents: typeof body.priceCents === "number" ? body.priceCents : 0,
-    durationMinutes: typeof body.durationMinutes === "number" ? body.durationMinutes : 60,
-    enabledAddonIds: Array.isArray(body.enabledAddonIds) ? body.enabledAddonIds : [],
+    catalogServiceId,
+    enabled: typeof body.enabled === "boolean" ? body.enabled : (existing?.enabled ?? false),
+    priceCents:
+      typeof body.priceCents === "number"
+        ? body.priceCents
+        : (existing?.priceCents ?? 0),
+    durationMinutes:
+      typeof body.durationMinutes === "number"
+        ? body.durationMinutes
+        : (existing?.durationMinutes ?? 60),
+    enabledAddonIds: Array.isArray(body.enabledAddonIds)
+      ? body.enabledAddonIds
+      : (existing?.enabledAddonIds ?? []),
   });
 
   if ("error" in saved) {

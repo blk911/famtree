@@ -311,6 +311,10 @@ export function getServiceCategory(id: ServiceCategoryId): ServiceCategory | und
   return category ? { ...category } : undefined;
 }
 
+export function getServiceCategoryLabel(id: ServiceCategoryId): string {
+  return getServiceCategory(id)?.name ?? id;
+}
+
 export function listCatalogServiceOffers(categoryId?: ServiceCategoryId): CatalogServiceOffer[] {
   const offers = categoryId
     ? SERVICE_OFFERS.filter((offer) => offer.categoryId === categoryId && offer.active)
