@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
+import { TodayCommandCenter } from "@/components/vmb/today/TodayCommandCenter";
 import { ActivityTimeline } from "@/components/taikos/activity/ActivityTimeline";
 import { InlineAiosPanel } from "@/components/taikos/InlineAiosPanel";
 import { TaikosInsightList } from "@/components/taikos/coda/TaikosInsightList";
@@ -38,6 +39,7 @@ import {
 } from "@/lib/vmb/onboarding/vmb-launch-guide";
 import { logTodayLockBranch, logTodayLockRendered } from "@/lib/vmb/today-lock-debug";
 import { VMB_BOOK_LOAD_HELPER, VMB_BOOK_LOCKED_MESSAGE } from "@/lib/vmb/book-load-cta";
+import { buildTodayCommandCenterSnapshot } from "@/lib/vmb/today-command-center";
 
 type TodayData = {
   greeting: string;
@@ -275,6 +277,34 @@ export function VmbTodayClient({
   const insights = codaSummary.insights ?? [];
   const greeting = data?.greeting ?? buildTodayGreeting(operatorName, salonName);
 
+  const analyzedClientCount = Math.max(
+    debugClientCount,
+    debugRecordCount,
+    data?.context?.clientSummary?.totalClients ?? 0,
+    data?.context?.recordCount ?? 0,
+    data?.context?.codaSummary?.context?.importedClientCount ?? 0,
+  );
+
+  const commandCenter = useMemo(() => {
+    if (!todayUnlocked) return null;
+    return buildTodayCommandCenterSnapshot({
+      hasBook: todayUnlocked,
+      analysisId: activeAnalysisId ?? data?.context?.analysisId,
+      analyzedClientCount,
+      opportunitySummary: data?.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY,
+      queueSummary: data?.queueSummary ?? EMPTY_QUEUE_SUMMARY,
+      draftSummary: data?.draftSummary ?? EMPTY_DRAFT_SUMMARY,
+    });
+  }, [
+    todayUnlocked,
+    activeAnalysisId,
+    analyzedClientCount,
+    data?.context?.analysisId,
+    data?.opportunitySummary,
+    data?.queueSummary,
+    data?.draftSummary,
+  ]);
+
   return (
     <VmbPageFrame width="standard" headerless>
       {process.env.NODE_ENV === "development" ? (
@@ -378,7 +408,7 @@ export function VmbTodayClient({
               </h1>
             </div>
             <p className="today-page-title__subtitle">
-              Relationship guidance — context, objective, discovery, and your next action.
+              Your book, the money VMB found, and what to do next.
             </p>
             {aiosOpen ? (
               <InlineAiosPanel
@@ -390,6 +420,8 @@ export function VmbTodayClient({
               />
             ) : null}
           </div>
+
+          {commandCenter ? <TodayCommandCenter snapshot={commandCenter} /> : null}
 
           <div className="today-greeting-card">
             <TodayCodaBanner

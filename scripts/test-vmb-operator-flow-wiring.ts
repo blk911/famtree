@@ -61,7 +61,8 @@ function run(): void {
 
   const todaySource = read("components/vmb/VmbTodayClient.tsx");
   assert(todaySource.includes("LoadYourBookCta"), "Today locked state exposes Load your book CTA");
-  assert(todaySource.includes("VMB_BOOK_LOCKED_MESSAGE"), "Today locked state uses book lock copy");
+  assert(todaySource.includes("TodayCommandCenter"), "Today loaded state renders command center");
+  assert(todaySource.includes("buildTodayCommandCenterSnapshot"), "Today builds command center snapshot");
 
   const summaryRail = read("components/vmb/VmbSummaryRail.tsx");
   assert(summaryRail.includes("LoadYourBookCta"), "summary rail shows load book CTA when empty");
