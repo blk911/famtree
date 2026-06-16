@@ -1,6 +1,7 @@
 import { formatOfferPrice } from "@/lib/vmb/salon-offers/salon-offer-pricing";
 import type { ResolvedSalonOfferDisplay } from "@/lib/vmb/salon-offers/salon-offer-catalog-types";
 
+// TODO: Share visual primitives (includes list, price pill, upgrade chips) with ServicePresetCard.
 type Props = {
   offer: ResolvedSalonOfferDisplay;
   variant?: "salon" | "client";

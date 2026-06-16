@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
+import { ServicePresetCard } from "@/components/vmb/services/ServicePresetCard";
 import { getServiceCategoryLabel } from "@/lib/vmb/services/canonical-service-catalog";
 import type { SalonServiceConfig, ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
 import { mergePresetsWithSalonConfigs } from "@/lib/vmb/services/merge-salon-service-offers";
-import type { SalonFacingServiceOffer, ServicePresetCard } from "@/lib/vmb/services/service-preset-types";
+import type { SalonFacingServiceOffer, ServicePresetCard as ServicePresetCardModel } from "@/lib/vmb/services/service-preset-types";
 
 type ServiceDraft = {
   priceCents: number;
@@ -13,18 +14,6 @@ type ServiceDraft = {
   addonIds: string[];
   enabled: boolean;
 };
-
-function formatPrice(cents: number): string {
-  return `$${(cents / 100).toFixed(0)}`;
-}
-
-function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (m === 0) return `${h} hr`;
-  return `${h} hr ${m} min`;
-}
 
 export function SalonServicesClient({
   salonId,
@@ -39,6 +28,7 @@ export function SalonServicesClient({
   const [error, setError] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, ServiceDraft>>({});
+  const [configureOpenId, setConfigureOpenId] = useState<string | null>(null);
 
   const syncDrafts = useCallback((items: SalonFacingServiceOffer[]) => {
     const next: Record<string, ServiceDraft> = {};
@@ -64,7 +54,7 @@ export function SalonServicesClient({
       if (!presetsRes.ok || !configsRes.ok) throw new Error("Could not load services");
       const presetsJson = (await presetsRes.json()) as {
         categoryId: string;
-        presets: ServicePresetCard[];
+        presets: ServicePresetCardModel[];
       };
       const configsJson = (await configsRes.json()) as {
         categoryId: string;
@@ -167,100 +157,43 @@ export function SalonServicesClient({
                 const draft = drafts[svc.serviceOfferId];
                 if (!draft) return null;
                 const saving = savingId === svc.serviceOfferId;
+                const configureOpen = configureOpenId === svc.serviceOfferId;
                 return (
-                  <li key={svc.serviceOfferId} className="vmb-salon-services__card">
-                    <div className="vmb-salon-services__card-head">
-                      <h2 className="vmb-salon-services__card-title">{svc.displayName}</h2>
-                      <p className="vmb-salon-services__card-desc">{svc.shortDescription}</p>
-                      <p className="vmb-salon-services__card-meta">
-                        Starts at {formatPrice(draft.priceCents)} ·{" "}
-                        {formatDuration(draft.durationMinutes)}
-                      </p>
-                    </div>
-
-                    {svc.includedText ? (
-                      <div className="vmb-salon-services__included">
-                        <p className="vmb-salon-services__included-label">Includes:</p>
-                        <p>{svc.includedText}</p>
-                      </div>
-                    ) : null}
-
-                    <div className="vmb-salon-services__card-fields">
-                      <label className="vmb-salon-services__field">
-                        <span>Your price ($)</span>
-                        <input
-                          type="number"
-                          min={0}
-                          step={1}
-                          value={Math.round(draft.priceCents / 100)}
-                          onChange={(e) =>
-                            updateDraft(svc.serviceOfferId, {
-                              priceCents: Math.max(0, Math.round(Number(e.target.value) * 100)),
-                            })
-                          }
-                        />
-                      </label>
-                      <label className="vmb-salon-services__field">
-                        <span>Duration (min)</span>
-                        <input
-                          type="number"
-                          min={15}
-                          step={15}
-                          value={draft.durationMinutes}
-                          onChange={(e) =>
-                            updateDraft(svc.serviceOfferId, {
-                              durationMinutes: Math.max(15, Number(e.target.value) || 15),
-                            })
-                          }
-                        />
-                      </label>
-                    </div>
-
-                    {svc.addons.length > 0 ? (
-                      <div className="vmb-salon-services__addons">
-                        <p className="vmb-salon-services__addons-label">Add-ons:</p>
-                        <ul className="vmb-salon-services__addon-list">
-                          {svc.addons.map((addon) => (
-                            <li key={addon.addonId}>
-                              <label className="vmb-salon-services__addon">
-                                <input
-                                  type="checkbox"
-                                  checked={draft.addonIds.includes(addon.addonId)}
-                                  onChange={() => toggleAddon(svc.serviceOfferId, addon.addonId)}
-                                />
-                                <span>
-                                  {addon.label}
-                                  {addon.priceCents > 0
-                                    ? ` +${formatPrice(addon.priceCents)}`
-                                    : ""}
-                                </span>
-                              </label>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
-
-                    <div className="vmb-salon-services__card-actions">
-                      <label className="vmb-salon-services__enable-toggle">
-                        <input
-                          type="checkbox"
-                          checked={draft.enabled}
-                          onChange={(e) =>
-                            updateDraft(svc.serviceOfferId, { enabled: e.target.checked })
-                          }
-                        />
-                        Offer this service
-                      </label>
-                      <button
-                        type="button"
-                        className="vmb-salon-services__save"
-                        disabled={saving}
-                        onClick={() => void persist(svc.serviceOfferId, {})}
-                      >
-                        {saving ? "Saving…" : "Save"}
-                      </button>
-                    </div>
+                  <li key={svc.serviceOfferId}>
+                    <ServicePresetCard
+                      mode="salon"
+                      title={svc.displayName}
+                      description={svc.shortDescription}
+                      price={draft.priceCents}
+                      durationMinutes={draft.durationMinutes}
+                      includedText={svc.includedText}
+                      enabled={draft.enabled}
+                      saving={saving}
+                      configureOpen={configureOpen}
+                      addons={svc.addons.map((addon) => ({
+                        id: addon.addonId,
+                        label: addon.label,
+                        price: addon.priceCents,
+                        selected: draft.addonIds.includes(addon.addonId),
+                        active: true,
+                        onToggle: () => toggleAddon(svc.serviceOfferId, addon.addonId),
+                      }))}
+                      onConfigure={() =>
+                        setConfigureOpenId((current) =>
+                          current === svc.serviceOfferId ? null : svc.serviceOfferId,
+                        )
+                      }
+                      onPriceChange={(cents) =>
+                        updateDraft(svc.serviceOfferId, { priceCents: cents })
+                      }
+                      onDurationChange={(minutes) =>
+                        updateDraft(svc.serviceOfferId, { durationMinutes: minutes })
+                      }
+                      onToggleEnabled={() =>
+                        updateDraft(svc.serviceOfferId, { enabled: !draft.enabled })
+                      }
+                      onSave={() => void persist(svc.serviceOfferId, {})}
+                    />
                   </li>
                 );
               })}

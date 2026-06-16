@@ -1,21 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ServicePresetCard } from "@/components/vmb/services/ServicePresetCard";
 import type { ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
 import { listServiceCategories } from "@/lib/vmb/services/canonical-service-catalog";
-import type { ServiceAddonPreset, ServicePresetCard } from "@/lib/vmb/services/service-preset-types";
+import type {
+  ServiceAddonPreset,
+  ServicePresetCard as ServicePresetCardModel,
+} from "@/lib/vmb/services/service-preset-types";
 
 export function ServicePresetAdminClient() {
   const categories = listServiceCategories();
   const [categoryId, setCategoryId] = useState<ServiceCategoryId>("nails");
-  const [presets, setPresets] = useState<ServicePresetCard[]>([]);
-  const [drafts, setDrafts] = useState<Record<string, ServicePresetCard>>({});
+  const [presets, setPresets] = useState<ServicePresetCardModel[]>([]);
+  const [drafts, setDrafts] = useState<Record<string, ServicePresetCardModel>>({});
   const [selectedId, setSelectedId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -25,9 +30,9 @@ export function ServicePresetAdminClient() {
         `/api/vmb/service-presets?categoryId=${encodeURIComponent(categoryId)}&includeInactive=1`,
       );
       if (!res.ok) throw new Error("Could not load preset cards");
-      const json = (await res.json()) as { presets: ServicePresetCard[] };
+      const json = (await res.json()) as { presets: ServicePresetCardModel[] };
       setPresets(json.presets);
-      const nextDrafts: Record<string, ServicePresetCard> = {};
+      const nextDrafts: Record<string, ServicePresetCardModel> = {};
       for (const preset of json.presets) {
         nextDrafts[preset.id] = preset;
       }
@@ -46,7 +51,7 @@ export function ServicePresetAdminClient() {
 
   const selected = selectedId ? drafts[selectedId] : undefined;
 
-  function updateDraft(id: string, patch: Partial<ServicePresetCard>) {
+  function updateDraft(id: string, patch: Partial<ServicePresetCardModel>) {
     setDrafts((prev) => ({
       ...prev,
       [id]: { ...prev[id], ...patch },
@@ -159,7 +164,31 @@ export function ServicePresetAdminClient() {
               </ul>
 
               {selected ? (
-                <div className="vmb-service-preset-admin__editor">
+                <div className="vmb-service-preset-admin__editor-wrap">
+                  <aside className="vmb-service-preset-admin__preview" aria-label="Card preview">
+                    <p className="vmb-service-catalog__section-label">Card preview</p>
+                    <ServicePresetCard
+                      mode="admin"
+                      title={selected.displayName}
+                      description={selected.shortDescription}
+                      price={selected.basePriceCents}
+                      durationMinutes={selected.durationMinutes}
+                      includedText={selected.includedText}
+                      active={selected.active}
+                      enabled={selected.defaultEnabled}
+                      addons={selected.addonPresets.map((addon) => ({
+                        id: addon.addonId,
+                        label: addon.label,
+                        price: addon.priceCents,
+                        selected: addon.defaultSelected,
+                        active: addon.active,
+                      }))}
+                      onEditPreset={() => editorRef.current?.scrollIntoView({ behavior: "smooth" })}
+                      onToggleActive={() => updateDraft(selected.id, { active: !selected.active })}
+                    />
+                  </aside>
+
+                  <div ref={editorRef} className="vmb-service-preset-admin__editor">
                   <p className="vmb-service-catalog__section-label">Preset fields</p>
                   <p className="vmb-service-preset-admin__linked">
                     Linked offer: <code>{selected.serviceOfferId}</code>
@@ -321,6 +350,7 @@ export function ServicePresetAdminClient() {
                     {saving ? "Saving…" : "Save preset card"}
                   </button>
                   {status ? <p className="vmb-service-preset-admin__status">{status}</p> : null}
+                  </div>
                 </div>
               ) : null}
             </>
