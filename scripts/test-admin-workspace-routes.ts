@@ -209,6 +209,12 @@ function run(): void {
     "platform admin accordion navigates to its own default route",
   );
 
+  const shellSource = fs.readFileSync(
+    path.join(process.cwd(), "components/admin/MarketIntelPageShell.tsx"),
+    "utf8",
+  );
+  assert(!shellSource.includes("mx-auto"), "market intel page shell is left-aligned, not centered");
+
   console.log("OK: admin workspace route tests passed");
   console.log(`  workspaces: ${ADMIN_WORKSPACE_NAV.map((w) => w.href).join(", ")}`);
   console.log(`  invites cards: ${INVITES_OPERATING_CARDS.map((c) => c.id).join(", ")}`);

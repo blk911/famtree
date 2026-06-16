@@ -303,7 +303,7 @@ export default function CreatorLabPage() {
   };
 
   return (
-    <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 20px 60px" }}>
+    <div style={{ maxWidth: 860, padding: "24px 20px 60px" }}>
 
       <CreatorIntelligenceNav current="assembler" />
 

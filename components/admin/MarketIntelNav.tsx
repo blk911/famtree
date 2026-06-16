@@ -23,7 +23,7 @@ export function MarketIntelWorkflowNav() {
   return (
     <nav
       aria-label="Market Intel workflow"
-      className="inline-flex w-full max-w-lg rounded-lg border border-stone-200 bg-stone-100 p-1 sm:w-auto"
+      className="flex w-full max-w-lg rounded-lg border border-stone-200 bg-stone-100 p-1"
     >
       {SECTIONS.map(({ key, label, href }) => {
         const isActive = key === active;
