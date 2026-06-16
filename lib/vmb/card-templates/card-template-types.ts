@@ -15,12 +15,16 @@ export const VMB_CARD_TEMPLATE_TOKENS = [
   "{salonName}",
   "{serviceName}",
   "{lastVisit}",
+  "{lastAppointmentDate}",
   "{visitCount}",
   "{referralCount}",
   "{offer}",
   "{offerValue}",
   "{offerTerms}",
   "{nextOpening}",
+  "{styleName}",
+  "{preferredDay}",
+  "{preferredTime}",
 ] as const;
 
 export type VmbCardTemplateToken = (typeof VMB_CARD_TEMPLATE_TOKENS)[number];

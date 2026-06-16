@@ -370,7 +370,7 @@ async function run(): Promise<void> {
 
   );
 
-  assert(engineFromDefault.title.includes("Thought of you"), "service card title from template");
+  assert(engineFromDefault.title.includes("Your favorites"), "service card title from template");
 
 
 

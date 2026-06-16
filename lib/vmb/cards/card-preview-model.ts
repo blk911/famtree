@@ -68,7 +68,8 @@ export type CardTemplateInput = {
   visitCount?: number;
   discoveryText?: string;
   recommendationText?: string;
-  /** Salon/trial id for template override lookup (async paths). */
+  /** Formatted opening e.g. "Thursday at 2:00 PM" — preview/admin only. */
+  nextOpening?: string;
   salonId?: string;
   /** Pre-resolved salon template — skips default seed when provided. */
   template?: VmbCardTemplate;

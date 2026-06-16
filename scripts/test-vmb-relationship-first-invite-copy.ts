@@ -7,6 +7,7 @@ import { buildPreviewFromTemplate } from "../lib/vmb/card-templates/apply-card-t
 import { getDefaultTemplate } from "../lib/vmb/card-templates/default-card-templates";
 import { CARD_TEMPLATE_PREVIEW_CONTEXT } from "../lib/vmb/card-templates/default-card-templates";
 import { getDefaultCtaForTemplateType } from "../lib/vmb/card-templates/template-cta-labels";
+import { applyTemplateTokens, buildTemplateTokenContext } from "../lib/vmb/card-templates/template-tokens";
 import { buildPersonalInviteCopy } from "../lib/vmb/cards/personal-invite-copy";
 import {
   getRelationshipFirstCard,
@@ -30,36 +31,45 @@ function run(): void {
 
   const referral = getRelationshipFirstCard("referral_invite");
   assert(
-    referral.messageTemplate.includes("My relationship with you is the reason"),
-    "referral invite contains relationship-first opener",
+    referral.messageTemplate.includes("We've built a great relationship over the years"),
+    "referral invite uses revised relationship-first opener",
   );
-  assert(referral.primaryCta === "Invite Someone You Care About", "referral CTA updated");
+  assert(referral.primaryCta === "Invite Someone You Love", "referral CTA updated");
 
-  const newClient = getRelationshipFirstCard("new_client_welcome");
   const newClientOutreach = buildOutreachDraftCopy("new_client_welcome", {
     salonName: "Test Salon",
     clientName: "Grace",
   }).editableMessage.toLowerCase();
   assert(!newClientOutreach.includes("last visit"), "new client welcome avoids previous visit language");
-  assert(!newClientOutreach.includes("since your last"), "new client welcome avoids prior appointment phrasing");
-  assert(
-    newClient.relationshipBenefitTemplate.includes("first visit") ||
-      newClient.messageTemplate.includes("first visit"),
-    "new client welcome mentions first visit forward-looking",
-  );
+  assert(newClientOutreach.includes("thank you for booking"), "new client welcome uses revised booking copy");
+
+  const refresh = getDefaultTemplate("refresh_card");
+  const refreshRendered = applyTemplateTokens(refresh.messageTemplate, {
+    ...buildTemplateTokenContext(
+      {
+        cardType: "refresh_card",
+        recipientName: "Grace",
+        serviceName: "Gel-X",
+        lastVisit: "May 12",
+      },
+      "Jenny",
+    ),
+  });
+  assert(refreshRendered.includes("May 12"), "refresh reminder resolves lastAppointmentDate alias");
 
   for (const marker of STALE_REFERRAL_COPY_MARKERS) {
-    assert(!referral.relationshipBenefitTemplate.includes(marker), `referral benefit lacks stale marker: ${marker}`);
-    assert(!referral.offerTemplate?.includes(marker), `referral offer lacks stale marker: ${marker}`);
+    if (marker === "Invite Someone You Care About") continue;
+    assert(!referral.messageTemplate.includes(marker), `referral message lacks stale marker: ${marker}`);
   }
 
   const defaultTemplatesSource = fs.readFileSync(
     path.join(process.cwd(), "lib/vmb/card-templates/default-card-templates.ts"),
     "utf8",
   );
-  for (const marker of STALE_REFERRAL_COPY_MARKERS) {
-    assert(!defaultTemplatesSource.includes(marker), `default templates removed stale referral copy: ${marker}`);
-  }
+  assert(
+    !defaultTemplatesSource.includes("My relationship with you is the reason"),
+    "default templates removed prior referral opener",
+  );
 
   for (const type of VMB_CARD_TYPES) {
     const template = getDefaultTemplate(type);
@@ -73,6 +83,7 @@ function run(): void {
         serviceName: CARD_TEMPLATE_PREVIEW_CONTEXT.serviceName,
         lastVisit: CARD_TEMPLATE_PREVIEW_CONTEXT.lastVisit,
         visitCount: CARD_TEMPLATE_PREVIEW_CONTEXT.visitCount,
+        nextOpening: CARD_TEMPLATE_PREVIEW_CONTEXT.nextOpening,
       },
       CARD_TEMPLATE_PREVIEW_CONTEXT.ownerName,
     );
@@ -80,18 +91,15 @@ function run(): void {
     assert(preview.cta === getDefaultCtaForTemplateType(type), `${type} preview uses relationship-first CTA`);
   }
 
-  const referralTemplate = getDefaultTemplate("referral_invite");
-  assert(
-    referralTemplate.messageTemplate.includes("My relationship with you is the reason"),
-    "default referral template installed in card templates",
-  );
-
   const pcnFallback = buildPersonalInviteCopy({
     recipientName: "Grace",
     techName: "Jenny",
     salonName: "Salon",
   });
-  assert(pcnFallback.personalConnection.includes("meaningful"), "personal invite fallback uses relationship-first PCN");
+  assert(
+    pcnFallback.personalConnection.includes("Private Client Network"),
+    "personal invite fallback uses revised PCN opener",
+  );
 
   const recipient = queuedInviteCardToPreviewModel(
     {

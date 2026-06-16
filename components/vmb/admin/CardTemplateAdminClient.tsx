@@ -134,6 +134,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
         visitCount: CARD_TEMPLATE_PREVIEW_CONTEXT.visitCount,
         referralCount: CARD_TEMPLATE_PREVIEW_CONTEXT.referralCount,
         recommendationText: CARD_TEMPLATE_PREVIEW_CONTEXT.offer,
+        nextOpening: CARD_TEMPLATE_PREVIEW_CONTEXT.nextOpening,
         offers,
         selectedOfferId: selectedOfferId || undefined,
         services,

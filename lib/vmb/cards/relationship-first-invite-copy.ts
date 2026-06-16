@@ -38,35 +38,30 @@ export const RELATIONSHIP_FIRST_INVITE_CARDS: RelationshipFirstCardCopy[] = [
     label: "New Client Welcome",
     greetingTemplate: "Dear {clientName},",
     messageTemplate:
-      "I'm so glad you're here. Starting with a new salon should feel personal — like a real conversation, not a form on a screen.",
+      "Thank you for booking with me.\n\nI know there are a lot of choices, and I'm honored you've trusted me with your upcoming appointment.",
     relationshipBenefitTemplate:
-      "I'd love to learn what you're hoping for, answer your questions, and help you feel at home from your very first visit.",
-    offerTemplate: "Whenever you're ready, reply and we'll find a time that works for you.",
+      "My goal is simple: I want you to leave feeling beautiful, confident, and excited to come back.\n\nI can't wait to meet you.",
     signatureTemplate: SIGNATURE,
-    primaryCta: "Welcome to the salon",
+    primaryCta: "See Appointment Details",
   },
   {
     id: "first_visit_thank_you",
     label: "First Visit Thank You",
     greetingTemplate: "Dear {clientName},",
     messageTemplate:
-      "Thank you for trusting me with your first visit. That first appointment matters — and I don't take it lightly.",
+      "Thank you for spending part of your day with me.\n\nI loved meeting you and having the opportunity to work with you.",
     relationshipBenefitTemplate:
-      "I hope you felt seen, comfortable, and cared for. That's the experience I want every time you sit in my chair.",
-    offerTemplate: "If anything felt unclear or you'd like to book again, just reply — I'm here.",
+      "I'd love to stay connected, share future openings, special offers, and a few surprises along the way.",
     signatureTemplate: SIGNATURE,
-    primaryCta: "Book my next visit",
+    primaryCta: "Stay Connected",
   },
   {
     id: "private_client_network",
     label: "Private Client Network",
     greetingTemplate: "Dear {clientName},",
-    messageTemplate:
-      "I think about the clients who make this work meaningful — and you're one of them. Your {serviceName} visits always feel easy, unhurried, and real.",
+    messageTemplate: "I want to invite you into my Private Client Network.",
     relationshipBenefitTemplate:
-      "I'm building a Private Client Network for people I genuinely want to keep close — first access to openings, quiet offers, and care that never gets posted publicly.",
-    offerTemplate:
-      "If you'd like in, I can send a few private openings that fit your rhythm before anyone else sees them.",
+      "It's the easiest way to stay connected with me, get first access to your favorite appointment times, receive special client-only offers, surprise gifts, and invitations to events before they're announced publicly.\n\nIt's also where I share referral rewards and little thank-you surprises for the people who support my business.\n\nI'd love to have you there.",
     signatureTemplate: SIGNATURE,
     primaryCta: "Join My Private Client Network",
   },
@@ -75,54 +70,49 @@ export const RELATIONSHIP_FIRST_INVITE_CARDS: RelationshipFirstCardCopy[] = [
     label: "Refresh Reminder",
     greetingTemplate: "Dear {clientName},",
     messageTemplate:
-      "I've been thinking about you and your last {serviceName} visit — it feels like the right time for a refresh.",
-    relationshipBenefitTemplate:
-      "Staying on your rhythm keeps your look feeling like you, not like you're catching up after the fact.",
-    offerTemplate: "If you want, I can hold a couple of times before they go on the books publicly.",
+      "I was looking at my calendar and realized it's been since {lastAppointmentDate} since I've seen you.\n\nI have a few openings coming up that would be perfect for your usual {serviceName} appointment before they get booked.",
+    relationshipBenefitTemplate: "If one works for you, I'd love to see you back in my chair.",
     signatureTemplate: SIGNATURE,
-    primaryCta: "Book My Refresh",
-    titleTemplate: "Time for a refresh?",
-    subtitleTemplate: "Your usual rhythm",
+    primaryCta: "Book My Usual Appointment",
+    titleTemplate: "Time for your usual visit",
+    subtitleTemplate: "Openings before they fill",
   },
   {
     id: "we_miss_you",
     label: "We Miss You",
     greetingTemplate: "Dear {clientName},",
     messageTemplate:
-      "It's been a while since I've seen you — and I mean that honestly, not as a reminder from a computer.",
+      "It's been a while since our last visit and I wanted to check in.\n\nLife gets busy, schedules get packed, and before you know it months have passed.",
     relationshipBenefitTemplate:
-      "Your chair still matters here. When you're ready, I would love to pick back up right where we left off.",
-    offerTemplate: "If {lastVisit} feels like a distant memory, reply and we'll find something that works.",
+      "I miss seeing you and would love the chance to catch up. I have a few openings available if you're ready for some time for yourself.",
     signatureTemplate: SIGNATURE,
     primaryCta: "Let's Catch Up",
-    titleTemplate: "We should catch up",
-    subtitleTemplate: "It's been too long",
+    titleTemplate: "Checking in",
+    subtitleTemplate: "When you're ready",
   },
   {
     id: "open_chair",
     label: "Opening Just Became Available",
     greetingTemplate: "Dear {clientName},",
-    messageTemplate: "Something just opened up — and you were the first person I thought of.",
+    messageTemplate:
+      "A cancellation just opened a spot on my calendar and I immediately thought of you.\n\nBefore I release it publicly, I wanted to offer it to a few favorite clients first.",
     relationshipBenefitTemplate:
-      "Before I offer it anywhere else, I wanted to give you first right of refusal.",
-    offerTemplate: "If you'd like it, I can hold {nextOpening} for you.",
+      "If you'd like it, I can reserve it for your usual {serviceName} appointment.",
     signatureTemplate: SIGNATURE,
-    primaryCta: "Hold This Opening For Me",
-    titleTemplate: "A spot opened up",
-    subtitleTemplate: "First access for you",
+    primaryCta: "Claim This Opening",
+    titleTemplate: "An opening for you",
+    subtitleTemplate: "Before it goes public",
   },
   {
     id: "referral_invite",
     label: "Referral Invite",
     greetingTemplate: "Dear {clientName},",
     messageTemplate:
-      "My relationship with you is the reason I get to do what I love every day.\n\nOver the years we've shared conversations, stories, life updates, laughs, and a lot of appointments. Clients like you aren't appointments on a calendar — you're part of the reason this salon exists.\n\nIf there's someone in your life you'd love to share that experience with, I'd be honored to take care of them too.\n\nA friend. A sister. A daughter. A coworker. Someone special.\n\nAnd as a thank you, I have something waiting for both of you.",
-    relationshipBenefitTemplate:
-      "The people we trust often introduce us to the people we'll trust next.",
-    offerTemplate: "Share someone important to you and I'll make sure they feel right at home.",
+      "We've built a great relationship over the years, and clients like you are the reason I get to do what I love.\n\nIf you have a friend, sister, daughter, coworker, or someone special who would enjoy the same experience you've had here, I'd love the opportunity to take care of them too.",
+    relationshipBenefitTemplate: "As a thank you, I have something special waiting for both of you.",
     signatureTemplate: SIGNATURE,
-    primaryCta: "Invite Someone You Care About",
-    titleTemplate: "Someone you love",
+    primaryCta: "Invite Someone You Love",
+    titleTemplate: "Someone special",
     subtitleTemplate: "A personal invitation",
   },
   {
@@ -130,13 +120,12 @@ export const RELATIONSHIP_FIRST_INVITE_CARDS: RelationshipFirstCardCopy[] = [
     label: "VIP Thank You",
     greetingTemplate: "Dear {clientName},",
     messageTemplate:
-      "I wanted to say thank you — not as a campaign, just as me.",
+      "I wanted to personally thank you.\n\nYour trust, loyalty, referrals, and support have helped me build the business I dreamed about.\n\nEvery appointment, every recommendation, and every friend you've sent my way has mattered.",
     relationshipBenefitTemplate:
-      "You are part of why {salonName} feels like a home and not a hustle.",
-    offerTemplate: "When you're ready, I have a small thank-you waiting for you.",
+      "I put together a little VIP surprise just for you because clients like you are the foundation of my success.",
     signatureTemplate: SIGNATURE,
-    primaryCta: "See Your Thank You",
-    titleTemplate: "Just wanted to say thanks",
+    primaryCta: "Enjoy Your VIP Gift",
+    titleTemplate: "Thank you",
     subtitleTemplate: "From my chair to you",
   },
   {
@@ -144,28 +133,26 @@ export const RELATIONSHIP_FIRST_INVITE_CARDS: RelationshipFirstCardCopy[] = [
     label: "Birthday Celebration",
     greetingTemplate: "Dear {clientName},",
     messageTemplate:
-      "Your birthday is coming up, and I wanted to reach out the way I would to someone I actually know.",
+      "Happy Birthday!\n\nI hope your day is filled with people you love, great memories, and a little time to spoil yourself.",
     relationshipBenefitTemplate:
-      "You deserve a moment that feels celebrated — not mass-marketed.",
-    offerTemplate: "I'd love to help you celebrate with something special this month.",
+      "I wanted to celebrate with you and send a small birthday surprise your way.",
     signatureTemplate: SIGNATURE,
-    primaryCta: "Claim Birthday Treat",
-    titleTemplate: "Happy birthday",
+    primaryCta: "Enjoy Your Birthday Gift",
+    titleTemplate: "Happy Birthday",
     subtitleTemplate: "Celebrating you",
   },
   {
     id: "favorite_providers",
-    label: "Favorite Providers / Salon Referral",
+    label: "Favorite Providers",
     greetingTemplate: "Dear {clientName},",
     messageTemplate:
-      "There's a {serviceName} I think you'd genuinely love — not because it's trendy, but because it fits you.",
+      "One of my favorite things about this business is connecting great people with great professionals.",
     relationshipBenefitTemplate:
-      "When the timing is right, I'd love to walk you through it personally at {salonName}.",
-    offerTemplate: "Reply if you're curious — happy to answer questions before you book.",
+      "Whether it's nails, hair, lashes, skin care, massage, or something else, I'd love to know who your favorite providers are.\n\nI'm always looking for amazing people to introduce my clients to.",
     signatureTemplate: SIGNATURE,
-    primaryCta: "Tell Me More",
-    titleTemplate: "Thought of you",
-    subtitleTemplate: "A service that fits",
+    primaryCta: "Share Your Favorites",
+    titleTemplate: "Your favorites",
+    subtitleTemplate: "Great people to know",
   },
 ];
 
@@ -305,7 +292,7 @@ export function buildRelationshipFirstPersonalInviteFallback(input: {
 
   return {
     greeting,
-    personalConnection: card.messageTemplate.replace("{serviceName}", "favorite"),
+    personalConnection: card.messageTemplate,
     inviteMessage: card.relationshipBenefitTemplate,
     offerMessage: card.offerTemplate ?? "",
     signature: card.signatureTemplate.replace("{ownerName}", owner),
@@ -314,11 +301,12 @@ export function buildRelationshipFirstPersonalInviteFallback(input: {
   };
 }
 
-/** Stale referral phrases that must not appear outside the new referral personal note. */
+/** Stale referral phrases from prior template generations. */
 export const STALE_REFERRAL_COPY_MARKERS = [
   "You know the kind of people who belong at",
   "I would be grateful if you introduced someone you trust",
-  "Bring Someone You Love",
+  "My relationship with you is the reason I get to do what I love",
+  "Invite Someone You Care About",
 ] as const;
 
 /** Canonical preset source paths for admin/product wiring tests. */
