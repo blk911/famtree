@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { SalonServicesClient } from "@/components/vmb/salon/SalonServicesClient";
 import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
 

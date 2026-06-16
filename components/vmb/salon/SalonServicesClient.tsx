@@ -31,7 +31,7 @@ export function SalonServicesClient({
   salonId,
   salonName,
 }: {
-  salonId: string;
+  salonId?: string;
   salonName: string;
 }) {
   const [data, setData] = useState<SalonServicesPayload | null>(null);
@@ -44,9 +44,7 @@ export function SalonServicesClient({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(
-        `/api/vmb/salon-services?salonId=${encodeURIComponent(salonId)}`,
-      );
+      const res = await fetch("/api/vmb/salon-services");
       if (!res.ok) throw new Error("Could not load services");
       const json = (await res.json()) as SalonServicesPayload & { ok?: boolean };
       setData({ categoryId: json.categoryId, services: json.services });
@@ -64,11 +62,15 @@ export function SalonServicesClient({
     } finally {
       setLoading(false);
     }
-  }, [salonId]);
+  }, []);
 
   useEffect(() => {
+    if (!salonId) {
+      setLoading(false);
+      return;
+    }
     void load();
-  }, [load]);
+  }, [load, salonId]);
 
   async function persist(
     catalogServiceId: string,
@@ -152,6 +154,10 @@ export function SalonServicesClient({
 
         {loading ? (
           <p className="vmb-salon-services__state">Loading services…</p>
+        ) : !salonId ? (
+          <p className="vmb-salon-services__empty">
+            Sign in to your salon workspace to configure services.
+          </p>
         ) : error ? (
           <p className="vmb-salon-services__state vmb-salon-services__state--error">
             {error}
