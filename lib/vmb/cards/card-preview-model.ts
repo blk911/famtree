@@ -9,6 +9,8 @@ import type { VmbService } from "@/lib/vmb/services/service-types";
 export type CardImageSlot = {
   id: string;
   label: string;
+  /** Local admin preview only — not persisted on templates yet. */
+  previewUrl?: string;
 };
 
 /** Reserved for future personalization — render gracefully when missing. */

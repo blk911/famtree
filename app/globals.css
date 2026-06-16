@@ -2456,6 +2456,35 @@
   grid-row: 1 / span 2;
 }
 
+.vmb-card-preview__hero--dual .vmb-card-preview__dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  min-height: 180px;
+}
+
+.vmb-card-preview__dual-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.vmb-card-preview__hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vmb-card-preview__collage-cell .vmb-card-preview__hero-image,
+.vmb-card-preview__hero-single .vmb-card-preview__hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .vmb-card-preview__hero-tag {
   position: absolute;
   top: 10px;
@@ -4556,6 +4585,170 @@
   .vmb-card-template-workspace__type {
     white-space: normal;
     text-align: left;
+  }
+}
+
+.vmb-card-builder__section {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #ece9e3;
+}
+
+.vmb-card-builder__section:last-of-type {
+  border-bottom: none;
+}
+
+.vmb-card-builder__section-head {
+  margin-bottom: 10px;
+}
+
+.vmb-card-builder__section-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.vmb-card-builder__section-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #78716c;
+}
+
+.vmb-card-builder__offer-card {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #fbcfe8;
+  background: #fdf2f8;
+}
+
+.vmb-card-builder__offer-card-title {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #831843;
+}
+
+.vmb-card-builder__offer-card-body {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #44403c;
+}
+
+.vmb-card-builder__offer-card-cta {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #9d174d;
+}
+
+.vmb-card-builder__image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.vmb-card-builder__image-slot-label {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-card-builder__image-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88px;
+  border: 1px dashed #d6d3d1;
+  border-radius: 10px;
+  background: #fafaf9;
+  overflow: hidden;
+}
+
+.vmb-card-builder__image-drop--filled {
+  border-style: solid;
+  border-color: #e7e5e4;
+  background: #fff;
+}
+
+.vmb-card-builder__image-placeholder {
+  margin: 0;
+  padding: 8px;
+  font-size: 11px;
+  text-align: center;
+  color: #a8a29e;
+}
+
+.vmb-card-builder__image-preview {
+  width: 100%;
+  height: 88px;
+  object-fit: cover;
+  display: block;
+}
+
+.vmb-card-builder__file-input {
+  display: none;
+}
+
+.vmb-card-builder__image-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.vmb-card-builder__image-btn {
+  border: 1px solid #d6d3d1;
+  border-radius: 8px;
+  background: #fff;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #44403c;
+  cursor: pointer;
+}
+
+.vmb-card-builder__image-btn--ghost {
+  background: transparent;
+  color: #78716c;
+}
+
+.vmb-card-builder__advanced {
+  margin: 4px 0 16px;
+  font-size: 13px;
+  color: #57534e;
+}
+
+.vmb-card-builder__advanced summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #44403c;
+  margin-bottom: 10px;
+}
+
+.vmb-card-builder__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 900px) {
+  .vmb-card-builder__image-grid {
+    grid-template-columns: 1fr;
   }
 }
 

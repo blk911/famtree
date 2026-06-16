@@ -2,9 +2,18 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent } from "react";
+import { CardBuilderImageSlots } from "@/components/vmb/admin/CardBuilderImageSlots";
 import { CardPreview } from "@/components/vmb/cards/CardPreview";
+import {
+  applyCardBuilderImagesToPreview,
+  createEmptyCardBuilderImageSlots,
+  type CardBuilderDraftImageSlot,
+} from "@/lib/vmb/card-templates/card-builder-preview-images";
 import { buildPreviewFromTemplate } from "@/lib/vmb/card-templates/apply-card-template";
-import { normalizeTemplateForEditor } from "@/lib/vmb/card-templates/template-copy-fields";
+import {
+  normalizeTemplateForEditor,
+  resolveTemplateCta,
+} from "@/lib/vmb/card-templates/template-copy-fields";
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
 import { CARD_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/card-templates/default-card-templates";
 import { getAllDefaultOffers } from "@/lib/vmb/offers/default-offers";
@@ -14,7 +23,6 @@ import {
   getAllDefaultServiceOptions,
   getAllDefaultServices,
 } from "@/lib/vmb/services/default-service-catalog";
-import { resolveOptionNames, resolveServiceNames } from "@/lib/vmb/services/resolve-offer-references";
 import { VMB_CARD_TYPES, type VmbCardType } from "@/lib/vmb/cards/card-types";
 import { cardActionLabel } from "@/lib/vmb/cards/card-type-labels";
 
@@ -35,11 +43,21 @@ const TYPE_LABELS: Record<VmbCardType, string> = {
   service_card: "Service Spotlight",
 };
 
+function revokeDraftImageUrls(slots: CardBuilderDraftImageSlot[]) {
+  for (const slot of slots) {
+    if (slot.previewUrl?.startsWith("blob:")) {
+      URL.revokeObjectURL(slot.previewUrl);
+    }
+  }
+}
+
 export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props) {
   const [templates, setTemplates] = useState<VmbCardTemplate[]>([]);
   const [offers, setOffers] = useState<VmbOffer[]>(getAllDefaultOffers());
   const [selectedType, setSelectedType] = useState<VmbCardType>("pcn_invite");
   const [draft, setDraft] = useState<VmbCardTemplate | null>(null);
+  const [selectedOfferId, setSelectedOfferId] = useState("");
+  const [imageSlots, setImageSlots] = useState<CardBuilderDraftImageSlot[]>(createEmptyCardBuilderImageSlots);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -69,30 +87,35 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
   );
 
   useEffect(() => {
-    if (selectedTemplate) {
-      setDraft(normalizeTemplateForEditor({ ...selectedTemplate }));
-    }
-  }, [selectedTemplate]);
+    if (!selectedTemplate) return;
+    const normalized = normalizeTemplateForEditor({ ...selectedTemplate });
+    setDraft(normalized);
+    const resolved = resolveOfferForTemplate(normalized, offers);
+    setSelectedOfferId(resolved?.id ?? "");
+    setImageSlots((current) => {
+      revokeDraftImageUrls(current);
+      return createEmptyCardBuilderImageSlots();
+    });
+  }, [selectedTemplate, offers]);
 
   const services = useMemo(() => getAllDefaultServices(), []);
   const serviceOptions = useMemo(() => getAllDefaultServiceOptions(), []);
 
-  const linkedOffer = useMemo(() => {
-    if (!draft) return undefined;
-    return resolveOfferForTemplate(draft, offers);
-  }, [draft, offers]);
+  const activeOffers = useMemo(
+    () => offers.filter((offer) => offer.active).sort((a, b) => a.name.localeCompare(b.name)),
+    [offers],
+  );
 
-  const linkedOfferRefs = useMemo(() => {
-    if (!linkedOffer) return [] as string[];
-    return [
-      ...resolveServiceNames(linkedOffer.serviceIds, services),
-      ...resolveOptionNames(linkedOffer.serviceOptionIds, serviceOptions),
-    ];
-  }, [linkedOffer, services, serviceOptions]);
+  const selectedOffer = useMemo(
+    () => activeOffers.find((offer) => offer.id === selectedOfferId),
+    [activeOffers, selectedOfferId],
+  );
+
+  const offerSelectionEnabled = Boolean(draft && draft.offerMode !== "none");
 
   const preview = useMemo(() => {
     if (!draft) return null;
-    return buildPreviewFromTemplate(
+    const base = buildPreviewFromTemplate(
       draft,
       {
         cardType: draft.type,
@@ -105,12 +128,14 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
         referralCount: CARD_TEMPLATE_PREVIEW_CONTEXT.referralCount,
         recommendationText: CARD_TEMPLATE_PREVIEW_CONTEXT.offer,
         offers,
+        selectedOfferId: selectedOfferId || undefined,
         services,
         serviceOptions,
       },
       ownerName || CARD_TEMPLATE_PREVIEW_CONTEXT.ownerName,
     );
-  }, [draft, salonName, ownerName, offers, services, serviceOptions]);
+    return applyCardBuilderImagesToPreview(base, imageSlots);
+  }, [draft, salonName, ownerName, offers, selectedOfferId, services, serviceOptions, imageSlots]);
 
   async function handleSave() {
     if (!draft || !salonId) return;
@@ -139,7 +164,13 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
     const data = (await res.json()) as { ok?: boolean; template?: VmbCardTemplate; error?: string };
     setBusy(false);
     if (data.ok && data.template) {
-      setDraft({ ...data.template });
+      setDraft(normalizeTemplateForEditor({ ...data.template }));
+      const resolved = resolveOfferForTemplate(data.template, offers);
+      setSelectedOfferId(resolved?.id ?? "");
+      setImageSlots((current) => {
+        revokeDraftImageUrls(current);
+        return createEmptyCardBuilderImageSlots();
+      });
       setStatus("Reset to default template.");
       await loadTemplates();
     } else {
@@ -149,6 +180,14 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
 
   function patchDraft(patch: Partial<VmbCardTemplate>) {
     setDraft((current) => (current ? { ...current, ...patch } : current));
+  }
+
+  function handleOfferChange(offerId: string) {
+    setSelectedOfferId(offerId);
+    const offer = activeOffers.find((entry) => entry.id === offerId);
+    if (offer) {
+      patchDraft({ offerCategory: offer.category });
+    }
   }
 
   function handleTypeKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
@@ -178,7 +217,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
           <div>
             <h1 className="vmb-card-template-workspace__title">Card Templates</h1>
             <p className="vmb-card-template-workspace__subtitle">
-              Default outreach copy for invites and relationship cards
+              Choose the offer, edit the message, add card images, and watch the preview update
             </p>
           </div>
           <div className="vmb-card-template-workspace__catalog-links">
@@ -233,22 +272,93 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                 <span>{draft.isDefault ? "Default template" : "Salon override"}</span>
               </div>
 
-              {linkedOffer ? (
-                <div className="vmb-template-admin__linked-meta">
-                  <p>
-                    <strong>Uses Offer:</strong> {linkedOffer.name}
-                  </p>
-                  {linkedOfferRefs.length ? (
-                    <p>
-                      <strong>Offer references:</strong> {linkedOfferRefs.join(" · ")}
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
+              <section className="vmb-card-builder__section" aria-labelledby="card-builder-offer-heading">
+                <h3 id="card-builder-offer-heading" className="vmb-card-builder__section-title">
+                  Offer
+                </h3>
+                {offerSelectionEnabled ? (
+                  <>
+                    <label className="vmb-template-admin__field">
+                      <span className="vmb-card-builder__sr-only">Choose offer</span>
+                      <select
+                        value={selectedOfferId}
+                        onChange={(event) => handleOfferChange(event.target.value)}
+                      >
+                        <option value="">Select an offer</option>
+                        {activeOffers.map((offer) => (
+                          <option key={offer.id} value={offer.id}>
+                            {offer.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {selectedOffer ? (
+                      <div className="vmb-card-builder__offer-card">
+                        <p className="vmb-card-builder__offer-card-title">{selectedOffer.name}</p>
+                        <p className="vmb-card-builder__offer-card-body">
+                          {selectedOffer.description || selectedOffer.offerText}
+                        </p>
+                        <p className="vmb-card-builder__offer-card-cta">{resolveTemplateCta(draft)}</p>
+                      </div>
+                    ) : (
+                      <p className="vmb-card-builder__section-note">Select an offer to preview on the card.</p>
+                    )}
+                  </>
+                ) : (
+                  <p className="vmb-card-builder__section-note">This card type does not attach a catalog offer.</p>
+                )}
+              </section>
 
-              <div className="vmb-card-template-workspace__fields">
+              <section className="vmb-card-builder__section" aria-labelledby="card-builder-message-heading">
+                <h3 id="card-builder-message-heading" className="vmb-card-builder__section-title">
+                  Message
+                </h3>
+                <div className="vmb-card-template-workspace__fields">
+                  <label className="vmb-template-admin__field">
+                    <span>Personal note</span>
+                    <textarea
+                      rows={2}
+                      className="vmb-card-template-workspace__copy-input"
+                      value={draft.messageTemplate}
+                      onChange={(e) => patchDraft({ messageTemplate: e.target.value })}
+                    />
+                  </label>
+                  <label className="vmb-template-admin__field">
+                    <span>Why this matters</span>
+                    <textarea
+                      rows={2}
+                      className="vmb-card-template-workspace__copy-input"
+                      value={draft.relationshipBenefitTemplate ?? ""}
+                      onChange={(e) => patchDraft({ relationshipBenefitTemplate: e.target.value })}
+                    />
+                  </label>
+                  <label className="vmb-template-admin__field">
+                    <span>Offer note</span>
+                    <textarea
+                      rows={2}
+                      className="vmb-card-template-workspace__copy-input"
+                      value={draft.offerTemplate ?? ""}
+                      onChange={(e) => patchDraft({ offerTemplate: e.target.value })}
+                    />
+                  </label>
+                  <label className="vmb-template-admin__field">
+                    <span>Signature</span>
+                    <textarea
+                      rows={2}
+                      className="vmb-card-template-workspace__copy-input"
+                      value={draft.signatureTemplate}
+                      onChange={(e) => patchDraft({ signatureTemplate: e.target.value })}
+                    />
+                  </label>
+                </div>
+              </section>
+
+              <CardBuilderImageSlots slots={imageSlots} onChange={setImageSlots} />
+
+              <details className="vmb-card-builder__advanced">
+                <summary>Advanced</summary>
                 <label className="vmb-template-admin__field">
-                  <span>Name</span>
+                  <span>Template name (internal)</span>
                   <textarea
                     rows={2}
                     className="vmb-card-template-workspace__copy-input"
@@ -256,70 +366,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                     onChange={(e) => patchDraft({ name: e.target.value })}
                   />
                 </label>
-                <div className="vmb-card-template-workspace__field-row">
-                  <label className="vmb-template-admin__field">
-                    <span>Image mode</span>
-                    <select
-                      value={draft.imageMode}
-                      onChange={(e) =>
-                        patchDraft({ imageMode: e.target.value as VmbCardTemplate["imageMode"] })
-                      }
-                    >
-                      <option value="single">Single</option>
-                      <option value="collage">Collage</option>
-                      <option value="none">None</option>
-                    </select>
-                  </label>
-                  <label className="vmb-template-admin__field">
-                    <span>Tone</span>
-                    <select
-                      value={draft.tone}
-                      onChange={(e) => patchDraft({ tone: e.target.value as VmbCardTemplate["tone"] })}
-                    >
-                      <option value="warm">Warm</option>
-                      <option value="direct">Direct</option>
-                      <option value="playful">Playful</option>
-                      <option value="premium">Premium</option>
-                    </select>
-                  </label>
-                </div>
-                <label className="vmb-template-admin__field">
-                  <span>Personal Connection</span>
-                  <textarea
-                    rows={2}
-                    className="vmb-card-template-workspace__copy-input"
-                    value={draft.messageTemplate}
-                    onChange={(e) => patchDraft({ messageTemplate: e.target.value })}
-                  />
-                </label>
-                <label className="vmb-template-admin__field">
-                  <span>Relationship Benefit</span>
-                  <textarea
-                    rows={2}
-                    className="vmb-card-template-workspace__copy-input"
-                    value={draft.relationshipBenefitTemplate ?? ""}
-                    onChange={(e) => patchDraft({ relationshipBenefitTemplate: e.target.value })}
-                  />
-                </label>
-                <label className="vmb-template-admin__field">
-                  <span>Offer</span>
-                  <textarea
-                    rows={2}
-                    className="vmb-card-template-workspace__copy-input"
-                    value={draft.offerTemplate ?? ""}
-                    onChange={(e) => patchDraft({ offerTemplate: e.target.value })}
-                  />
-                </label>
-                <label className="vmb-template-admin__field">
-                  <span>Signature</span>
-                  <textarea
-                    rows={2}
-                    className="vmb-card-template-workspace__copy-input"
-                    value={draft.signatureTemplate}
-                    onChange={(e) => patchDraft({ signatureTemplate: e.target.value })}
-                  />
-                </label>
-              </div>
+              </details>
 
               <div className="vmb-template-admin__actions">
                 <button type="button" className="taikos-opp-card__cta" disabled={busy} onClick={() => void handleSave()}>

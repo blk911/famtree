@@ -244,6 +244,16 @@ function run(): void {
     "all five template copy fields render as textareas",
   );
   assert(cardTemplateSource.includes("<CardPreview"), "card template editor still renders live preview");
+  assert(!cardTemplateSource.includes(">Tone<"), "tone is not shown in main card template editor");
+  assert(!cardTemplateSource.includes(">Image mode<"), "image mode is not shown in main card template editor");
+  assert(cardTemplateSource.includes("CardBuilderImageSlots"), "card images section renders three slots");
+  assert(cardTemplateSource.includes("vmb-card-builder__offer-card"), "offer section displays selected offer preview");
+  assert(cardTemplateSource.includes("vmb-card-builder__advanced"), "template name lives in advanced section");
+  assert(cardTemplateSource.includes("Personal note"), "renamed personal note label renders");
+  assert(cardTemplateSource.includes("Why this matters"), "renamed relationship label renders");
+  assert(cardTemplateSource.includes("Offer note"), "renamed offer note label renders");
+  assert(cardTemplateSource.includes("Save template"), "card template save action remains available");
+  assert(cardTemplateSource.includes("Reset to default"), "card template reset action remains available");
   const cardTemplateStyles = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
   assert(
     cardTemplateStyles.includes("grid-template-columns: minmax(0, 1fr) minmax(0, 2fr)"),

@@ -19,6 +19,6 @@ export const VMB_CARD_TYPES: readonly VmbCardType[] = [
   "service_card",
 ] as const;
 
-export type CardImageLayout = "single" | "collage";
+export type CardImageLayout = "single" | "dual" | "collage";
 
 export type CardAccent = "rose" | "gold" | "sage" | "slate" | "plum";
