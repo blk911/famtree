@@ -54,7 +54,7 @@ function run(): void {
     assert(routePageExists(hub), `hub path resolves to page: ${hub}`);
   }
 
-  assert(INVITES_OPERATING_CARDS.length === 8, "eight invites operating cards defined");
+  assert(INVITES_OPERATING_CARDS.length === 9, "nine invites operating cards defined");
   for (const card of INVITES_OPERATING_CARDS) {
     assert(routePageExists(card.href), `invites card route exists: ${card.href}`);
   }

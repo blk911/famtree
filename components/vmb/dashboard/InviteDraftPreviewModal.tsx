@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { INVITE_SECTION_LABELS } from "@/lib/vmb/invites/sections";
+import { buildOutreachLockedFooter } from "@/lib/vmb/invites/outreach-message-presets";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 
@@ -32,8 +33,7 @@ export function InviteDraftPreviewModal({
   }, [draft.draftId, draft.editableMessage]);
 
   const footer =
-    draft.lockedFooter ||
-    `\n\nSent from VMB on behalf of ${salonName}\nPrivate client network · Reply links coming soon.`;
+    draft.lockedFooter || buildOutreachLockedFooter(salonName);
 
   return (
     <div

@@ -8,6 +8,7 @@ export const INVITES_ADMIN_ROUTES = {
   templates: "/admin/invites/templates",
   offers: "/admin/invites/offers",
   services: "/admin/invites/services",
+  outreach: "/admin/invites/outreach",
   queue: "/admin/invites/queue",
   sent: "/admin/invites/sent",
   claims: "/admin/invites/claims",
@@ -29,7 +30,7 @@ export type InvitesOperatingCard = {
 export const INVITES_OPERATING_CARDS: InvitesOperatingCard[] = [
   {
     id: "templates",
-    label: "Templates",
+    label: "Card Templates",
     description: "Relationship copy templates for PCN, birthday, reactivation, and outreach cards.",
     href: INVITES_ADMIN_ROUTES.templates,
     status: "live",
@@ -46,6 +47,13 @@ export const INVITES_OPERATING_CARDS: InvitesOperatingCard[] = [
     label: "Services",
     description: "Service and option catalog referenced by offers and cards.",
     href: INVITES_ADMIN_ROUTES.services,
+    status: "live",
+  },
+  {
+    id: "outreach",
+    label: "Outreach Messages",
+    description: "Send/preview modal subject, body, footer, and channel copy presets.",
+    href: INVITES_ADMIN_ROUTES.outreach,
     status: "live",
   },
   {
@@ -89,6 +97,7 @@ export const INVITES_CANONICAL_ADMIN_ROUTES = [
   INVITES_ADMIN_ROUTES.templates,
   INVITES_ADMIN_ROUTES.offers,
   INVITES_ADMIN_ROUTES.services,
+  INVITES_ADMIN_ROUTES.outreach,
 ] as const;
 
 export const INVITES_LEGACY_VMB_ADMIN_REDIRECTS = [

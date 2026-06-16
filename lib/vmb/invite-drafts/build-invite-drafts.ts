@@ -4,6 +4,7 @@ import {
   recencyScore,
   spendScoreFromValue,
 } from "@/lib/vmb/operating-system/client-pool";
+import { buildOutreachDraftCopy } from "@/lib/vmb/invites/outreach-message-presets";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 
@@ -18,10 +19,6 @@ export type NetworkCandidateWithMeta = {
   email?: string;
   phone?: string;
 };
-
-function firstName(name: string): string {
-  return name.trim().split(/\s+/)[0] || name;
-}
 
 function bestOpportunityValue(analysis: VmbBookAnalysisResult, clientName: string): number {
   const key = clientName.trim().toLowerCase();
@@ -71,25 +68,6 @@ export function getTopNetworkCandidates(
   return scored.slice(0, limit);
 }
 
-function buildSubject(salonName: string): string {
-  return `You're invited to ${salonName}'s private client network`;
-}
-
-function buildEditableMessage(salonName: string, clientName: string): string {
-  const first = firstName(clientName);
-  return `Hi ${first},
-
-We've been building something special for our favorite clients — a private network where you get first access to openings, member-only offers, and a direct line to us (no algorithms, no noise).
-
-We'd love to invite you in this week. Reply YES and we'll send your personal link.
-
-Thank you for being part of ${salonName}.`;
-}
-
-function buildLockedFooter(salonName: string): string {
-  return `\n\n— ${salonName}\nPrivate client network · Reply STOP to opt out.`;
-}
-
 export function buildInviteDraftRecords(
   analysis: VmbBookAnalysisResult,
   trialId: string,
@@ -98,23 +76,30 @@ export function buildInviteDraftRecords(
   const now = new Date().toISOString();
   const candidates = getTopNetworkCandidates(analysis, 10);
 
-  return candidates.map((candidate, index) => ({
-    draftId: `invite-${analysis.analysisId}-${index}-${crypto.randomBytes(3).toString("hex")}`,
-    trialId,
-    analysisId: analysis.analysisId,
-    clientName: candidate.clientName,
-    email: candidate.email,
-    phone: candidate.phone,
-    reasonSelected: candidate.reasonSelected,
-    inviteCategory: "private_client_network" as const,
-    inviteType: "private_client_network" as const,
-    potentialValue: candidate.potentialValue,
-    status: "draft" as const,
-    subject: buildSubject(salonName),
-    editableMessage: buildEditableMessage(salonName, candidate.clientName),
-    lockedFooter: buildLockedFooter(salonName),
-    candidateScore: candidate.candidateScore,
-    createdAt: now,
-    updatedAt: now,
-  }));
+  return candidates.map((candidate, index) => {
+    const copy = buildOutreachDraftCopy("private_client_network", {
+      salonName,
+      clientName: candidate.clientName,
+    });
+
+    return {
+      draftId: `invite-${analysis.analysisId}-${index}-${crypto.randomBytes(3).toString("hex")}`,
+      trialId,
+      analysisId: analysis.analysisId,
+      clientName: candidate.clientName,
+      email: candidate.email,
+      phone: candidate.phone,
+      reasonSelected: candidate.reasonSelected,
+      inviteCategory: "private_client_network" as const,
+      inviteType: "private_client_network" as const,
+      potentialValue: candidate.potentialValue,
+      status: "draft" as const,
+      subject: copy.subject,
+      editableMessage: copy.editableMessage,
+      lockedFooter: copy.lockedFooter,
+      candidateScore: candidate.candidateScore,
+      createdAt: now,
+      updatedAt: now,
+    };
+  });
 }
