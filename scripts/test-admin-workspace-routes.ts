@@ -15,6 +15,17 @@ import {
   ADMIN_WORKSPACE_ROUTES,
   DISCOVERY_WORKSPACE_SECTIONS,
 } from "../lib/admin/workspace-routes";
+import {
+  MARKET_INTEL_SIDEBAR_ITEMS,
+  PLATFORM_ADMIN_SIDEBAR_ITEMS,
+  SIDEBAR_ACCORDION_GROUPS,
+  isMarketIntelNestedUnderPlatformAdmin,
+  isMarketIntelNavItemActive,
+  isMarketIntelSidebarActive,
+  isPlatformAdminNavItemActive,
+  isPlatformAdminSidebarActive,
+} from "../lib/admin/sidebar-nav";
+import { MARKET_INTEL_ROUTES } from "../lib/markets/market-intel-routes";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -138,9 +149,72 @@ function run(): void {
   const claimsSource = fs.readFileSync(claimsPagePath, "utf8");
   assert(claimsSource.includes("InvitesClaimsAdminPanel"), "claims page uses claims admin panel");
 
+  const sidebarGroupIds = new Set([
+    SIDEBAR_ACCORDION_GROUPS.platformAdmin.id,
+    SIDEBAR_ACCORDION_GROUPS.marketIntel.id,
+    SIDEBAR_ACCORDION_GROUPS.settings.id,
+  ]);
+  assert(sidebarGroupIds.size === 3, "sidebar accordion groups have distinct ids");
+  assert(!isMarketIntelNestedUnderPlatformAdmin(), "market intel is not nested under platform admin");
+  assert(
+    !PLATFORM_ADMIN_SIDEBAR_ITEMS.some((item) => item.href === MARKET_INTEL_ROUTES.creatorDiscovery),
+    "creator discovery route is separate from platform admin discovery hub",
+  );
+  assert(
+    PLATFORM_ADMIN_SIDEBAR_ITEMS.some((item) => item.href === ADMIN_WORKSPACE_ROUTES.discovery),
+    "platform admin includes discovery hub",
+  );
+  assert(
+    MARKET_INTEL_SIDEBAR_ITEMS.every(
+      (item) => !PLATFORM_ADMIN_SIDEBAR_ITEMS.some((platform) => platform.href === item.href),
+    ),
+    "market intel child links do not overlap platform admin hubs",
+  );
+
+  for (const item of MARKET_INTEL_SIDEBAR_ITEMS) {
+    assert(routePageExists(item.href), `market intel sidebar link resolves: ${item.href}`);
+  }
+
+  assert(
+    isPlatformAdminSidebarActive("/admin/discovery") && !isMarketIntelSidebarActive("/admin/discovery"),
+    "/admin/discovery highlights platform admin only",
+  );
+  assert(
+    isMarketIntelSidebarActive("/admin/markets") && !isPlatformAdminSidebarActive("/admin/markets"),
+    "/admin/markets highlights market intel only",
+  );
+  assert(
+    isPlatformAdminNavItemActive("/admin/discovery", ADMIN_WORKSPACE_ROUTES.discovery),
+    "platform admin discovery nav item active on hub",
+  );
+  assert(
+    isMarketIntelNavItemActive("/admin/markets", MARKET_INTEL_ROUTES.markets),
+    "market intel markets nav item active on hub",
+  );
+  assert(
+    isMarketIntelNavItemActive("/admin/studios/source-ingest", MARKET_INTEL_ROUTES.creatorDiscovery),
+    "creator discovery tools active under market intel",
+  );
+
+  const sidebarSource = fs.readFileSync(path.join(process.cwd(), "components/AppSidebar.tsx"), "utf8");
+  assert(sidebarSource.includes("platformAdminOpen"), "sidebar keeps independent platform admin state");
+  assert(sidebarSource.includes("marketIntelOpen"), "sidebar keeps independent market intel state");
+  assert(sidebarSource.includes("settingsOpen"), "sidebar keeps independent settings state");
+  assert(
+    sidebarSource.includes("SIDEBAR_ACCORDION_GROUPS.marketIntel.defaultHref"),
+    "market intel accordion navigates to its own default route",
+  );
+  assert(
+    sidebarSource.includes("SIDEBAR_ACCORDION_GROUPS.platformAdmin.defaultHref"),
+    "platform admin accordion navigates to its own default route",
+  );
+
   console.log("OK: admin workspace route tests passed");
   console.log(`  workspaces: ${ADMIN_WORKSPACE_NAV.map((w) => w.href).join(", ")}`);
   console.log(`  invites cards: ${INVITES_OPERATING_CARDS.map((c) => c.id).join(", ")}`);
+  console.log(
+    `  sidebar groups: ${SIDEBAR_ACCORDION_GROUPS.platformAdmin.id}, ${SIDEBAR_ACCORDION_GROUPS.marketIntel.id}, ${SIDEBAR_ACCORDION_GROUPS.settings.id}`,
+  );
 }
 
 run();

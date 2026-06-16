@@ -1,9 +1,10 @@
 // lib/markets/market-intel-routes.ts
 
-import { ADMIN_WORKSPACE_ROUTES, isAdminPlatformWorkspacePath } from "@/lib/admin/workspace-routes";
+import { isAdminPlatformWorkspacePath } from "@/lib/admin/workspace-routes";
 
 export const MARKET_INTEL_ROUTES = {
-  creatorDiscovery: ADMIN_WORKSPACE_ROUTES.discovery,
+  /** Studio Assembler + salon intelligence tools — not the Platform Admin discovery hub. */
+  creatorDiscovery: "/admin/studios/creator-lab",
   markets: "/admin/markets",
   actionItems: "/admin/action-items",
 } as const;

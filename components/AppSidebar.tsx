@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, Mail,
-  LogOut, Settings, ChevronDown, ShieldCheck, ScrollText, Building2, Terminal, Tv2, LineChart,
+  LogOut, Settings, ChevronDown, ShieldCheck, Building2, Tv2, LineChart,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { User as PrismaUser } from "@prisma/client";
@@ -18,8 +18,17 @@ import {
   SidebarShell,
   SidebarVaultBadge,
 } from "@/components/ui/app-chrome";
-import { isMarketIntelPath, MARKET_INTEL_ROUTES } from "@/lib/markets/market-intel-routes";
-import { ADMIN_WORKSPACE_NAV, isAdminPlatformWorkspacePath } from "@/lib/admin/workspace-routes";
+import {
+  isMarketIntelNavItemActive,
+  isMarketIntelSidebarActive,
+  isPlatformAdminNavItemActive,
+  isPlatformAdminSidebarActive,
+  isSettingsSidebarActive,
+  MARKET_INTEL_SIDEBAR_ITEMS,
+  PLATFORM_ADMIN_SIDEBAR_ITEMS,
+  SETTINGS_ADMIN_SIDEBAR_ITEMS,
+  SIDEBAR_ACCORDION_GROUPS,
+} from "@/lib/admin/sidebar-nav";
 
 interface Props { user: PrismaUser; open?: boolean; vaultNotificationCount?: number; }
 
@@ -27,24 +36,10 @@ const INVITE = { href: "/invite", label: "Invite", icon: Mail };
 
 const MSG_VAULT_HREF = "/msg-vault";
 const FAMILY_SAFE_HREF = "/aihsafe";
-const MARKET_INTEL_ITEMS = [
-  { href: MARKET_INTEL_ROUTES.creatorDiscovery, label: "Creator Discovery" },
-  { href: MARKET_INTEL_ROUTES.markets, label: "Markets" },
-  { href: MARKET_INTEL_ROUTES.actionItems, label: "Action Items" },
-];
-
-const PLATFORM_ADMIN_ITEMS = ADMIN_WORKSPACE_NAV.map(({ label, href }) => ({ href, label }));
 
 const FAMILY_ITEMS = [
   { href: "/tree", label: "My People" },
   { href: "/family-vault/family-units", label: "Units" },
-];
-
-// Settings sub-items (admin only — shown beneath the Settings accordion)
-const SETTINGS_ADMIN_ITEMS = [
-  { href: "/settings",       label: "Settings",           icon: null },
-  { href: "/admin/tools",    label: "Tools & foundation", icon: Terminal },
-  { href: "/admin/activity", label: "Activity Log",       icon: ScrollText },
 ];
 
 export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: Props) {
@@ -58,18 +53,9 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
     pathname.startsWith("/tree/") ||
     pathname === "/family-vault/family-units";
 
-  const marketIntelActive = isMarketIntelPath(pathname) && !isAdminPlatformWorkspacePath(pathname);
-
-  const platformAdminActive = isAdminPlatformWorkspacePath(pathname);
-
-  const adminZone =
-    pathname === "/admin" ||
-    (pathname.startsWith("/admin/") && !marketIntelActive);
-
-  const settingsActive =
-    pathname === "/settings" ||
-    pathname.startsWith("/settings/") ||
-    adminZone;
+  const marketIntelActive = isMarketIntelSidebarActive(pathname);
+  const platformAdminActive = isPlatformAdminSidebarActive(pathname);
+  const settingsActive = isSettingsSidebarActive(pathname);
 
   const [settingsOpen, setSettingsOpen] = useState(settingsActive);
   const [marketIntelOpen, setMarketIntelOpen] = useState(marketIntelActive);
@@ -254,7 +240,7 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
             <button
               onClick={() => {
                 if (!platformAdminActive) {
-                  router.push(ADMIN_WORKSPACE_NAV[0].href);
+                  router.push(SIDEBAR_ACCORDION_GROUPS.platformAdmin.defaultHref);
                   setPlatformAdminOpen(true);
                   return;
                 }
@@ -285,8 +271,8 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
 
             {platformAdminOpen ? (
               <div style={{ marginBottom: "3px" }}>
-                {PLATFORM_ADMIN_ITEMS.map(({ href, label }) => {
-                  const active = pathname === href || pathname.startsWith(`${href}/`);
+                {PLATFORM_ADMIN_SIDEBAR_ITEMS.map(({ href, label }) => {
+                  const active = isPlatformAdminNavItemActive(pathname, href);
                   return (
                     <Link key={href} href={href} style={subLinkStyle(active)}>
                       <span
@@ -313,7 +299,7 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
             <button
               onClick={() => {
                 if (!marketIntelActive) {
-                  router.push(MARKET_INTEL_ROUTES.creatorDiscovery);
+                  router.push(SIDEBAR_ACCORDION_GROUPS.marketIntel.defaultHref);
                   setMarketIntelOpen(true);
                   return;
                 }
@@ -342,16 +328,10 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
               />
             </button>
 
-            {marketIntelOpen && (
+            {marketIntelOpen ? (
               <div style={{ marginBottom: "3px" }}>
-                {MARKET_INTEL_ITEMS.map(({ href, label }) => {
-                  const active =
-                    pathname === href ||
-                    (href !== MARKET_INTEL_ROUTES.creatorDiscovery && pathname.startsWith(`${href}/`)) ||
-                    (href === MARKET_INTEL_ROUTES.creatorDiscovery &&
-                      (pathname.startsWith("/admin/discovery") ||
-                        pathname.startsWith("/admin/studios/") ||
-                        pathname.startsWith("/admin/intelligence/salon")));
+                {MARKET_INTEL_SIDEBAR_ITEMS.map(({ href, label }) => {
+                  const active = isMarketIntelNavItemActive(pathname, href);
                   return (
                     <Link key={href} href={href} style={subLinkStyle(active)}>
                       <span
@@ -368,7 +348,7 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
                   );
                 })}
               </div>
-            )}
+            ) : null}
           </>
         ) : null}
 
@@ -403,9 +383,9 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
               }} />
             </button>
 
-            {settingsOpen && (
-              <div style={{marginBottom:"3px"}}>
-                {SETTINGS_ADMIN_ITEMS.map(({ href, label, icon: Icon }) => {
+            {settingsOpen ? (
+              <div style={{ marginBottom: "3px" }}>
+                {SETTINGS_ADMIN_SIDEBAR_ITEMS.map(({ href, label, icon: Icon }) => {
                   const active = pathname === href || (href !== "/settings" && pathname.startsWith(`${href}/`));
                   return (
                     <Link key={href} href={href} style={subLinkStyle(active)}>
@@ -419,7 +399,7 @@ export function AppSidebar({ user, open = false, vaultNotificationCount = 0 }: P
                   );
                 })}
               </div>
-            )}
+            ) : null}
           </>
         ) : (
           <Link href="/settings" style={linkStyle(pathname === "/settings" || pathname.startsWith("/settings/"))}>
