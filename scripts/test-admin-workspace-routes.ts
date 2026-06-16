@@ -236,6 +236,25 @@ function run(): void {
   assert(cardTemplateSource.includes("vmb-card-template-workspace__body"), "card templates use editor/preview split");
   assert(cardTemplateSource.includes('role="tablist"'), "card template type selector is keyboard accessible");
   assert(
+    cardTemplateSource.includes("vmb-card-template-workspace__copy-input"),
+    "card template copy fields use two-line textarea inputs",
+  );
+  assert(
+    (cardTemplateSource.match(/vmb-card-template-workspace__copy-input/g) ?? []).length >= 5,
+    "all five template copy fields render as textareas",
+  );
+  assert(cardTemplateSource.includes("<CardPreview"), "card template editor still renders live preview");
+  const cardTemplateStyles = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
+  assert(
+    cardTemplateStyles.includes("grid-template-columns: minmax(0, 1fr) minmax(0, 2fr)"),
+    "card template layout gives preview the wider column",
+  );
+  assert(
+    cardTemplateStyles.includes(".vmb-card-template-workspace__preview") &&
+      cardTemplateStyles.includes("position: sticky"),
+    "card template preview remains sticky",
+  );
+  assert(
     !fs.readFileSync(
       path.join(process.cwd(), "app/(app)/admin/(platform)/invites/templates/page.tsx"),
       "utf8",

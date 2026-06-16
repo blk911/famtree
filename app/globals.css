@@ -4399,6 +4399,7 @@
 .vmb-card-template-workspace {
   width: 100%;
   max-width: none;
+  overflow-x: hidden;
 }
 
 .vmb-card-template-workspace__header {
@@ -4484,7 +4485,7 @@
 
 .vmb-card-template-workspace__body {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   gap: 20px;
   align-items: start;
 }
@@ -4518,15 +4519,19 @@
   gap: 12px;
 }
 
-.vmb-card-template-workspace__textarea {
-  min-height: 120px;
+.vmb-card-template-workspace__copy-input {
+  width: 100%;
+  min-height: 3.25rem;
   resize: vertical;
+  box-sizing: border-box;
+  line-height: 1.45;
 }
 
 .vmb-card-template-workspace__preview {
   position: sticky;
   top: 72px;
   min-width: 0;
+  overflow-x: auto;
   border: 1px solid #e7e5e4;
   border-radius: 14px;
   background: #fff;

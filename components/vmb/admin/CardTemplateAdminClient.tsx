@@ -249,7 +249,12 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
               <div className="vmb-card-template-workspace__fields">
                 <label className="vmb-template-admin__field">
                   <span>Name</span>
-                  <input value={draft.name} onChange={(e) => patchDraft({ name: e.target.value })} />
+                  <textarea
+                    rows={2}
+                    className="vmb-card-template-workspace__copy-input"
+                    value={draft.name}
+                    onChange={(e) => patchDraft({ name: e.target.value })}
+                  />
                 </label>
                 <div className="vmb-card-template-workspace__field-row">
                   <label className="vmb-template-admin__field">
@@ -281,8 +286,8 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                 <label className="vmb-template-admin__field">
                   <span>Personal Connection</span>
                   <textarea
-                    rows={5}
-                    className="vmb-card-template-workspace__textarea"
+                    rows={2}
+                    className="vmb-card-template-workspace__copy-input"
                     value={draft.messageTemplate}
                     onChange={(e) => patchDraft({ messageTemplate: e.target.value })}
                   />
@@ -290,8 +295,8 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                 <label className="vmb-template-admin__field">
                   <span>Relationship Benefit</span>
                   <textarea
-                    rows={6}
-                    className="vmb-card-template-workspace__textarea"
+                    rows={2}
+                    className="vmb-card-template-workspace__copy-input"
                     value={draft.relationshipBenefitTemplate ?? ""}
                     onChange={(e) => patchDraft({ relationshipBenefitTemplate: e.target.value })}
                   />
@@ -299,15 +304,17 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                 <label className="vmb-template-admin__field">
                   <span>Offer</span>
                   <textarea
-                    rows={3}
-                    className="vmb-card-template-workspace__textarea"
+                    rows={2}
+                    className="vmb-card-template-workspace__copy-input"
                     value={draft.offerTemplate ?? ""}
                     onChange={(e) => patchDraft({ offerTemplate: e.target.value })}
                   />
                 </label>
                 <label className="vmb-template-admin__field">
                   <span>Signature</span>
-                  <input
+                  <textarea
+                    rows={2}
+                    className="vmb-card-template-workspace__copy-input"
                     value={draft.signatureTemplate}
                     onChange={(e) => patchDraft({ signatureTemplate: e.target.value })}
                   />
