@@ -247,6 +247,17 @@ function run(): void {
   assert(!cardTemplateSource.includes(">Tone<"), "tone is not shown in main card template editor");
   assert(!cardTemplateSource.includes(">Image mode<"), "image mode is not shown in main card template editor");
   assert(cardTemplateSource.includes("CardBuilderImageSlots"), "card images section renders three slots");
+  assert(
+    cardTemplateSource.includes("}, [selectedType]);") &&
+      !cardTemplateSource.includes("createEmptyCardBuilderImageSlots();\n    });\n  }, [selectedTemplate, offers]);"),
+    "card image draft slots reset only when card type changes",
+  );
+  const cardBuilderImageSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/CardBuilderImageSlots.tsx"),
+    "utf8",
+  );
+  assert(cardBuilderImageSource.includes("onDrop"), "card image slots support drag-and-drop upload");
+  assert(cardBuilderImageSource.includes('accept="image/*"'), "card image slots accept image files only");
   assert(cardTemplateSource.includes("vmb-card-builder__offer-card"), "offer section displays selected offer preview");
   assert(cardTemplateSource.includes("vmb-card-builder__advanced"), "template name lives in advanced section");
   assert(cardTemplateSource.includes("Personal note"), "renamed personal note label renders");

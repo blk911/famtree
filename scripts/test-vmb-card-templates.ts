@@ -7,6 +7,10 @@
 import { ensureVmbStorageTables, resetVmbStorageBackendCache, resolveVmbStorageBackend } from "../lib/vmb/db";
 
 import { buildPreviewFromTemplate } from "../lib/vmb/card-templates/apply-card-template";
+import {
+  applyCardBuilderImagesToPreview,
+  createEmptyCardBuilderImageSlots,
+} from "../lib/vmb/card-templates/card-builder-preview-images";
 
 import { applyTemplateTokens, buildTemplateTokenContext } from "../lib/vmb/card-templates/template-tokens";
 
@@ -391,6 +395,14 @@ async function run(): Promise<void> {
   );
 
   assert(tokenFromInput.clientName === "Grace", "buildTemplateTokenContext first name");
+
+  const builderSlots = createEmptyCardBuilderImageSlots();
+  builderSlots[0] = { previewUrl: "blob:preview-1", fileName: "chair.jpg" };
+  builderSlots[1] = { previewUrl: "blob:preview-2", fileName: "detail.jpg" };
+  const withBuilderImages = applyCardBuilderImagesToPreview(pcnPreview, builderSlots);
+  assert(withBuilderImages.imageLayout === "dual", "two builder images use dual preview layout");
+  assert(withBuilderImages.imageSlots.length === 2, "builder images replace template placeholders");
+  assert(withBuilderImages.imageSlots[0]?.previewUrl === "blob:preview-1", "builder image slot keeps blob preview url");
 
 
 

@@ -93,11 +93,14 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
     setDraft(normalized);
     const resolved = resolveOfferForTemplate(normalized, offers);
     setSelectedOfferId(resolved?.id ?? "");
+  }, [selectedTemplate, offers]);
+
+  useEffect(() => {
     setImageSlots((current) => {
       revokeDraftImageUrls(current);
       return createEmptyCardBuilderImageSlots();
     });
-  }, [selectedTemplate, offers]);
+  }, [selectedType]);
 
   const services = useMemo(() => getAllDefaultServices(), []);
   const serviceOptions = useMemo(() => getAllDefaultServiceOptions(), []);

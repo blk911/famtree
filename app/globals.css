@@ -4677,6 +4677,7 @@
   border-radius: 10px;
   background: #fafaf9;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .vmb-card-builder__image-drop--filled {
