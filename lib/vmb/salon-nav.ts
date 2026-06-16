@@ -12,6 +12,7 @@ export const VMB_SALON_NAV: VmbSalonNavItem[] = [
   { id: "appointments", label: "Calendar", href: "/vmb/appointments", preserveAnalysis: true },
   { id: "network", label: "Network", href: "/vmb/network", preserveAnalysis: true },
   { id: "opportunities", label: "Opportunities", href: "/vmb/opportunities", preserveAnalysis: true },
+  { id: "services", label: "Services", href: "/vmb/services", preserveAnalysis: false },
   { id: "campaigns", label: "Campaigns", href: "/vmb/campaigns", preserveAnalysis: true },
   { id: "invites", label: "Invites", href: "/vmb/invites", preserveAnalysis: true },
   { id: "queue", label: "Queue", href: "/vmb/queue", preserveAnalysis: true },

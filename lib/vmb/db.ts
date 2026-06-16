@@ -113,6 +113,15 @@ const DDL_STATEMENTS: string[] = [
   )`,
   `CREATE INDEX IF NOT EXISTS vmb_service_option_salon_service
     ON vmb_service_option (salon_id, service_id)`,
+  `CREATE TABLE IF NOT EXISTS vmb_salon_service_config (
+    salon_id text NOT NULL,
+    catalog_service_id text NOT NULL,
+    payload jsonb NOT NULL,
+    updated_at timestamptz DEFAULT now(),
+    PRIMARY KEY (salon_id, catalog_service_id)
+  )`,
+  `CREATE INDEX IF NOT EXISTS vmb_salon_service_config_salon_id
+    ON vmb_salon_service_config (salon_id)`,
 ];
 
 const MIGRATION_STATEMENTS: string[] = [

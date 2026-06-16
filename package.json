@@ -61,6 +61,7 @@
     "test:vmb:card-templates": "tsx scripts/test-vmb-card-templates.ts",
     "test:vmb:offers": "tsx scripts/test-vmb-offers.ts",
     "test:vmb:services": "tsx scripts/test-vmb-services.ts",
+    "test:vmb:service-catalog": "tsx scripts/test-vmb-service-catalog.ts",
     "test:vmb:invite-events": "tsx scripts/test-vmb-invite-events.ts",
     "test:vmb:operator-flow": "tsx scripts/test-vmb-operator-flow-wiring.ts",
     "test:vmb:today-command-center": "tsx scripts/test-vmb-today-command-center.ts",

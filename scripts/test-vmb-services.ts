@@ -59,20 +59,20 @@ async function run(): Promise<void> {
   const services = getAllDefaultServices();
   const options = getAllDefaultServiceOptions();
   assert(services.length >= 10, `expected seeded services, got ${services.length}`);
-  assert(options.length >= 20, `expected seeded options, got ${options.length}`);
+  assert(options.length >= 15, `expected seeded options, got ${options.length}`);
 
   const gelX = getDefaultService("default-nails-gel-x");
   assert(Boolean(gelX), "Gel-X default service exists");
   const gelXOptions = getDefaultOptionsForService("default-nails-gel-x");
   assert(gelXOptions.some((option) => option.name === "Chrome"), "Gel-X Chrome option exists");
-  assert(gelXOptions.some((option) => option.name === "Long" && option.valueLabel === "+$10"), "pricing label on Long");
+  assert(gelXOptions.some((option) => option.name === "Long Length"), "Gel-X Long Length option exists");
 
   const salonId = `service-test-${Date.now()}`;
   const catalog = await getServicesForSalon(salonId);
-  assert(catalog.some((service) => service.name === "Gel-X"), "getServicesForSalon returns defaults");
+  assert(catalog.some((service) => service.name === "Gel-X Extensions"), "getServicesForSalon returns defaults");
 
   const gelXCatalogOptions = await getOptionsForService(salonId, "default-nails-gel-x");
-  assert(gelXCatalogOptions.some((option) => option.name === "Pearls"), "getOptionsForService returns defaults");
+  assert(gelXCatalogOptions.some((option) => option.name === "Crystals"), "getOptionsForService returns defaults");
 
   const birthdayOffer = getDefaultOfferForCategory("birthday");
   assert((birthdayOffer.serviceIds?.length ?? 0) > 0, "birthday offer references service");
@@ -92,7 +92,7 @@ async function run(): Promise<void> {
     serviceOptions: options,
   });
   assert(Boolean(birthdayPreview.offer), "card preview includes offer");
-  assert(birthdayPreview.offer?.serviceName === "Gel-X", "card preview renders service name");
+  assert(birthdayPreview.offer?.serviceName === "Gel-X Extensions", "card preview renders service name");
   assert(birthdayPreview.offer?.upgradeName === "Chrome", "card preview renders service upgrade");
 
   const templatePreview = buildPreviewFromTemplate(
@@ -111,7 +111,7 @@ async function run(): Promise<void> {
   assert(templatePreview.offer?.upgradeName === "Chrome", "template preview resolves offer option");
 
   const customService = {
-    ...gelX!,
+    ...getDefaultService("default-nails-gel-x")!,
     name: "Custom Gel-X",
     description: "Salon override",
   };

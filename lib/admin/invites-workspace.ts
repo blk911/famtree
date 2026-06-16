@@ -7,7 +7,7 @@ export const INVITES_ADMIN_ROUTES = {
   hub: ADMIN_WORKSPACE_ROUTES.invites,
   templates: "/admin/invites/templates",
   offers: "/admin/invites/offers",
-  services: "/admin/invites/services",
+  services: ADMIN_WORKSPACE_ROUTES.serviceCatalog,
   outreach: "/admin/invites/outreach",
   queue: "/admin/invites/queue",
   sent: "/admin/invites/sent",
@@ -40,13 +40,6 @@ export const INVITES_OPERATING_CARDS: InvitesOperatingCard[] = [
     label: "Offers",
     description: "Salon offer catalog linked to services and card preview slots.",
     href: INVITES_ADMIN_ROUTES.offers,
-    status: "live",
-  },
-  {
-    id: "services",
-    label: "Services",
-    description: "Service and option catalog referenced by offers and cards.",
-    href: INVITES_ADMIN_ROUTES.services,
     status: "live",
   },
   {
@@ -96,7 +89,6 @@ export const INVITES_OPERATING_CARDS: InvitesOperatingCard[] = [
 export const INVITES_CANONICAL_ADMIN_ROUTES = [
   INVITES_ADMIN_ROUTES.templates,
   INVITES_ADMIN_ROUTES.offers,
-  INVITES_ADMIN_ROUTES.services,
   INVITES_ADMIN_ROUTES.outreach,
 ] as const;
 

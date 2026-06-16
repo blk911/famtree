@@ -8,7 +8,7 @@ import {
   getDefaultOptionsForService,
 } from "./default-service-catalog";
 import type { VmbServiceOption } from "./service-option-types";
-import type { VmbService } from "./service-types";
+import { normalizeServiceCategory, type VmbService } from "./service-types";
 import {
   archiveSalonOptionPostgres,
   archiveSalonServicePostgres,
@@ -81,7 +81,12 @@ function mergeServices(salonId: string, customs: VmbService[]): VmbService[] {
   const merged = getAllDefaultServices().map((defaults) => {
     const override = overrideByBaseId.get(defaults.id);
     if (!override) return { ...defaults };
-    return { ...defaults, ...override, id: override.id };
+    return {
+      ...defaults,
+      ...override,
+      id: override.id,
+      category: normalizeServiceCategory(override.category),
+    };
   });
 
   for (const extra of extras) {

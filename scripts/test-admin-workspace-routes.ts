@@ -56,7 +56,7 @@ function routePageExists(routePath: string): boolean {
 }
 
 function run(): void {
-  assert(ADMIN_WORKSPACE_NAV.length === 6, "six platform workspaces defined");
+  assert(ADMIN_WORKSPACE_NAV.length === 7, "seven platform workspaces defined");
 
   for (const { href, label } of ADMIN_WORKSPACE_NAV) {
     assert(href.startsWith("/admin/"), `${label} href is under /admin`);
@@ -67,7 +67,7 @@ function run(): void {
     assert(routePageExists(hub), `hub path resolves to page: ${hub}`);
   }
 
-  assert(INVITES_OPERATING_CARDS.length === 9, "nine invites operating cards defined");
+  assert(INVITES_OPERATING_CARDS.length === 8, "eight invites operating cards defined");
   for (const card of INVITES_OPERATING_CARDS) {
     assert(routePageExists(card.href), `invites card route exists: ${card.href}`);
   }
@@ -78,7 +78,9 @@ function run(): void {
   }
 
   assert(
-    INVITES_LEGACY_VMB_ADMIN_REDIRECTS.every(({ from, to }) => from.startsWith("/vmb/admin/") && to.startsWith("/admin/invites/")),
+    INVITES_LEGACY_VMB_ADMIN_REDIRECTS.every(
+      ({ from, to }) => from.startsWith("/vmb/admin/") && to.startsWith("/admin/"),
+    ),
     "legacy vmb admin redirect map is valid",
   );
 

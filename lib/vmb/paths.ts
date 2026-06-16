@@ -63,6 +63,10 @@ export function getVmbServiceOptionsFile(): string {
   return path.join(getVmbDataDir(), "service-options.json");
 }
 
+export function getVmbSalonServiceConfigsFile(): string {
+  return path.join(getVmbDataDir(), "salon-service-configs.json");
+}
+
 /** Legacy file-upload imports (admin engine path) — kept separate from book paste flow. */
 export function getVmbTrialImportsDir(): string {
   return path.join(getVmbDataDir(), "trial-imports");

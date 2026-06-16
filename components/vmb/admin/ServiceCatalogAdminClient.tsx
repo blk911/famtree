@@ -17,9 +17,9 @@ const CATEGORY_LABELS: Record<VmbServiceCategory, string> = {
   brows: "Brows",
   lashes: "Lashes",
   waxing: "Waxing",
-  facial: "Facial",
+  skin: "Skin",
   massage: "Massage",
-  other: "Other",
+  barber: "Barber",
 };
 
 export function ServiceCatalogAdminClient({ salonId }: Props) {

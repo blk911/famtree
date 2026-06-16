@@ -7,6 +7,7 @@ export type AdminWorkspaceId =
   | "operators"
   | "members"
   | "invites"
+  | "service-catalog"
   | "vmb-salons";
 
 export type WorkspaceLink = {
@@ -30,6 +31,7 @@ export const ADMIN_WORKSPACE_ROUTES = {
   operators: "/admin/operators",
   members: "/admin/members",
   invites: "/admin/invites",
+  serviceCatalog: "/admin/service-catalog",
   vmbSalons: "/admin/products/vmb-salons",
 } as const;
 
@@ -44,6 +46,7 @@ export const ADMIN_WORKSPACE_NAV: Array<{
   { id: "operators", label: "Operators", href: ADMIN_WORKSPACE_ROUTES.operators },
   { id: "members", label: "Members", href: ADMIN_WORKSPACE_ROUTES.members },
   { id: "invites", label: "Invites", href: ADMIN_WORKSPACE_ROUTES.invites },
+  { id: "service-catalog", label: "Service Catalog", href: ADMIN_WORKSPACE_ROUTES.serviceCatalog },
   { id: "vmb-salons", label: "VMB Salons", href: ADMIN_WORKSPACE_ROUTES.vmbSalons, product: true },
 ];
 
@@ -372,8 +375,8 @@ export const VMB_SALONS_PRODUCT_SECTIONS: WorkspaceSection[] = [
       },
       {
         label: "Service catalog",
-        description: "Services and options for offers.",
-        href: "/admin/invites/services",
+        description: "Canonical VMB service menu — categories, services, and add-ons.",
+        href: ADMIN_WORKSPACE_ROUTES.serviceCatalog,
       },
     ],
   },
@@ -381,6 +384,12 @@ export const VMB_SALONS_PRODUCT_SECTIONS: WorkspaceSection[] = [
     title: "Product operations",
     description: "VMB Salons product views only — discovery/resolver engines live under Platform workspaces.",
     links: [
+      {
+        label: "Salon services",
+        description: "Salon owners turn on services, prices, and add-ons.",
+        href: "/vmb/services",
+        external: true,
+      },
       {
         label: "Salon dashboard",
         description: "Operator Today view, opportunities, and readiness.",
@@ -437,6 +446,12 @@ export function resolveAdminWorkspaceId(pathname: string): AdminWorkspaceId | ""
     return "invites";
   }
   if (
+    pathname === ADMIN_WORKSPACE_ROUTES.serviceCatalog ||
+    pathname.startsWith(`${ADMIN_WORKSPACE_ROUTES.serviceCatalog}/`)
+  ) {
+    return "service-catalog";
+  }
+  if (
     pathname === ADMIN_WORKSPACE_ROUTES.vmbSalons ||
     pathname.startsWith(`${ADMIN_WORKSPACE_ROUTES.vmbSalons}/`)
   ) {
@@ -456,6 +471,7 @@ export const ADMIN_PLATFORM_HUB_PATHS = [
   ADMIN_WORKSPACE_ROUTES.operators,
   ADMIN_WORKSPACE_ROUTES.members,
   ADMIN_WORKSPACE_ROUTES.invites,
+  ADMIN_WORKSPACE_ROUTES.serviceCatalog,
   ADMIN_WORKSPACE_ROUTES.vmbSalons,
   "/admin/invites/templates",
   "/admin/invites/offers",
