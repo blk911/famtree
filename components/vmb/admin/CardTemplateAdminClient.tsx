@@ -21,6 +21,7 @@ import { resolveOfferForTemplate } from "@/lib/vmb/offers/offer-resolver";
 import { sortOffersForSelectorDisplay } from "@/lib/vmb/offers/offer-display-order";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 import type { SalonOfferCatalogEntry } from "@/lib/vmb/salon-offers/salon-offer-catalog-types";
+import { formatOfferPrice } from "@/lib/vmb/salon-offers/salon-offer-pricing";
 import {
   getAllDefaultServiceOptions,
   getAllDefaultServices,
@@ -130,6 +131,11 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
 
   const offerSelectionEnabled = Boolean(draft && draft.offerMode !== "none");
 
+  const selectedSalonCatalogOffer = useMemo(
+    () => salonCatalogOffers.find((offer) => offer.id === draft?.salonOfferCatalogId),
+    [draft?.salonOfferCatalogId, salonCatalogOffers],
+  );
+
   const preview = useMemo(() => {
     if (!draft) return null;
     const base = buildPreviewFromTemplate(
@@ -152,8 +158,39 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
       },
       ownerName || CARD_TEMPLATE_PREVIEW_CONTEXT.ownerName,
     );
-    return applyCardBuilderImagesToPreview(base, imageSlots);
-  }, [draft, salonName, ownerName, offers, selectedOfferId, services, serviceOptions, imageSlots]);
+    let model = applyCardBuilderImagesToPreview(base, imageSlots);
+
+    if (selectedSalonCatalogOffer) {
+      const offerText =
+        selectedSalonCatalogOffer.description.trim() || selectedSalonCatalogOffer.name;
+      model = {
+        ...model,
+        includeOffer: true,
+        offer: {
+          id: selectedSalonCatalogOffer.id,
+          name: selectedSalonCatalogOffer.name,
+          valueLabel: formatOfferPrice(selectedSalonCatalogOffer.priceCents),
+          offerText,
+          category: "salon",
+        },
+        inviteCopy: model.inviteCopy
+          ? { ...model.inviteCopy, offerMessage: offerText }
+          : model.inviteCopy,
+      };
+    }
+
+    return model;
+  }, [
+    draft,
+    salonName,
+    ownerName,
+    offers,
+    selectedOfferId,
+    services,
+    serviceOptions,
+    imageSlots,
+    selectedSalonCatalogOffer,
+  ]);
 
   async function handleSave() {
     if (!draft || !salonId) return;
@@ -203,11 +240,6 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
   function handleSalonOfferChange(offerId: string) {
     patchDraft({ salonOfferCatalogId: offerId || undefined });
   }
-
-  const selectedSalonCatalogOffer = useMemo(
-    () => salonCatalogOffers.find((offer) => offer.id === draft?.salonOfferCatalogId),
-    [draft?.salonOfferCatalogId, salonCatalogOffers],
-  );
 
   function handleOfferChange(offerId: string) {
     setSelectedOfferId(offerId);

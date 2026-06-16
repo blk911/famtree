@@ -11,6 +11,10 @@ import {
 } from "@/lib/vmb/salon-offers/salon-offer-pricing";
 import type { SalonOfferCatalogEntry } from "@/lib/vmb/salon-offers/salon-offer-catalog-types";
 import type { ResolvedSalonOfferDisplay } from "@/lib/vmb/salon-offers/salon-offer-catalog-types";
+import {
+  getCatalogServiceOffer,
+  getServiceAddon,
+} from "@/lib/vmb/services/canonical-service-catalog";
 import type { SalonFacingServiceOffer } from "@/lib/vmb/services/service-preset-types";
 
 type OfferDraft = {
@@ -32,6 +36,51 @@ const EMPTY_DRAFT: OfferDraft = {
   imageUrl: "",
   active: true,
 };
+
+function entryToDisplay(
+  entry: SalonOfferCatalogEntry,
+  enabledServices: SalonFacingServiceOffer[],
+): ResolvedSalonOfferDisplay {
+  const service = enabledServices.find((row) => row.serviceOfferId === entry.serviceId);
+  const selected = new Set(entry.addonIds);
+
+  if (service) {
+    const addonLabels = service.addons
+      .filter((addon) => addon.enabled && selected.has(addon.addonId))
+      .map((addon) => addon.label);
+    return {
+      id: entry.id,
+      name: entry.name,
+      description: entry.description,
+      priceCents: entry.priceCents,
+      calculatedPriceCents: entry.calculatedPriceCents,
+      imageUrl: entry.imageUrl,
+      serviceName: service.displayName,
+      includedLines: [service.displayName, ...addonLabels],
+      addonLabels,
+    };
+  }
+
+  const serviceName = getCatalogServiceOffer(entry.serviceId)?.name ?? "Included service";
+  const addonLabels = entry.addonIds
+    .map((addonId) => getServiceAddon(addonId)?.name)
+    .filter((label): label is string => Boolean(label));
+
+  return {
+    id: entry.id,
+    name: entry.name,
+    description: entry.description,
+    priceCents: entry.priceCents,
+    calculatedPriceCents: entry.calculatedPriceCents,
+    imageUrl: entry.imageUrl,
+    serviceName,
+    includedLines: [serviceName, ...addonLabels],
+    addonLabels,
+    serviceUnavailable: true,
+    serviceWarning:
+      "This offer's service is no longer available. Update or disable this offer.",
+  };
+}
 
 function entryToDraft(entry: SalonOfferCatalogEntry): OfferDraft {
   return {
@@ -102,14 +151,6 @@ export function SalonOffersClient({
 
   const finalPrice = resolveOfferPriceCents(calculatedPrice, draft.priceOverrideCents);
 
-  const serviceNameById = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const service of enabledServices) {
-      map.set(service.serviceOfferId, service.displayName);
-    }
-    return map;
-  }, [enabledServices]);
-
   function openCreate() {
     setEditingId(null);
     setDraft({
@@ -176,7 +217,7 @@ export function SalonOffersClient({
   return (
     <VmbPageFrame
       title="Offers"
-      subtitle="Build client-facing offers from the services you offer. Use them in invitations."
+      subtitle="Build client-facing offers from the services you offer."
       width="wide"
     >
       <div className="vmb-salon-offers">
@@ -206,33 +247,25 @@ export function SalonOffersClient({
             Enable services on your Services page before creating offers.
           </p>
         ) : offers.length === 0 ? (
-          <p className="vmb-salon-offers__empty">
-            No offers yet. Create your first client-facing offer.
-          </p>
+          <div className="vmb-salon-offers__empty">
+            <p>No offers yet.</p>
+            <p>Create your first client-facing offer from the services you provide.</p>
+            <button type="button" className="vmb-salon-offers__create" onClick={openCreate}>
+              Create Offer
+            </button>
+          </div>
         ) : (
           <ul className="vmb-salon-offers__list">
             {offers.map((offer) => {
-              const addonLabels = offer.addonIds
-                .map((id) => {
-                  const service = enabledServices.find((s) => s.serviceOfferId === offer.serviceId);
-                  return service?.addons.find((a) => a.addonId === id)?.label;
-                })
-                .filter(Boolean);
+              const display = entryToDisplay(offer, enabledServices);
               return (
                 <li key={offer.id} className="vmb-salon-offers__card">
-                  <div className="vmb-salon-offers__card-head">
-                    <h2 className="vmb-salon-offers__card-title">{offer.name}</h2>
-                    <p className="vmb-salon-offers__card-service">
-                      {serviceNameById.get(offer.serviceId) ?? offer.serviceId}
+                  {display.serviceUnavailable && display.serviceWarning ? (
+                    <p className="vmb-salon-offers__warning" role="status">
+                      {display.serviceWarning}
                     </p>
-                    {addonLabels.length > 0 ? (
-                      <p className="vmb-salon-offers__card-addons">{addonLabels.join(" · ")}</p>
-                    ) : null}
-                    <p className="vmb-salon-offers__card-price">{formatOfferPrice(offer.priceCents)}</p>
-                    <p className="vmb-salon-offers__card-status">
-                      {offer.active ? "Active" : "Inactive"}
-                    </p>
-                  </div>
+                  ) : null}
+                  <SalonOfferClientPreview offer={display} variant="salon" />
                   <div className="vmb-salon-offers__card-actions">
                     <button type="button" onClick={() => openEdit(offer)}>
                       Edit
@@ -310,7 +343,9 @@ export function SalonOffersClient({
                   <p className="vmb-salon-offers__hint">No add-ons for this service.</p>
                 ) : (
                   <ul className="vmb-salon-offers__addon-pick">
-                    {selectedService.addons.map((addon) => (
+                    {selectedService.addons
+                      .filter((addon) => addon.enabled)
+                      .map((addon) => (
                       <li key={addon.addonId}>
                         <label>
                           <input

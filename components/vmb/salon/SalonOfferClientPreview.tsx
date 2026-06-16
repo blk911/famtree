@@ -25,6 +25,11 @@ export function SalonOfferClientPreview({ offer, variant = "client", onClaim }: 
         {isClient ? (
           <p className="vmb-salon-offer-preview__eyebrow">Reserved for you.</p>
         ) : null}
+        {offer.serviceUnavailable && offer.serviceWarning ? (
+          <p className="vmb-salon-offer-preview__warning" role="status">
+            {offer.serviceWarning}
+          </p>
+        ) : null}
         {offer.description ? (
           <p className="vmb-salon-offer-preview__desc">{offer.description}</p>
         ) : null}
@@ -47,7 +52,7 @@ export function SalonOfferClientPreview({ offer, variant = "client", onClaim }: 
         </div>
         {isClient && onClaim ? (
           <button type="button" className="vmb-salon-offer-preview__claim" onClick={onClaim}>
-            Claim This Offer
+            Claim this offer.
           </button>
         ) : null}
       </div>

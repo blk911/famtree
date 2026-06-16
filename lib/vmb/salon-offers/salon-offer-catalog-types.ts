@@ -34,6 +34,9 @@ export type ResolvedSalonOfferDisplay = {
   serviceName: string;
   includedLines: string[];
   addonLabels: string[];
+  /** Set when the linked salon service is disabled or no longer on the menu. */
+  serviceUnavailable?: boolean;
+  serviceWarning?: string;
 };
 
 export type CreateSalonOfferInput = {

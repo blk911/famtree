@@ -1,3 +1,7 @@
+import {
+  getCatalogServiceOffer,
+  getServiceAddon,
+} from "@/lib/vmb/services/canonical-service-catalog";
 import { getSalonFacingServicesForCategory, getSalonPrimaryCategory } from "@/lib/vmb/services/salon-service-config-store";
 import type { SalonFacingServiceOffer } from "@/lib/vmb/services/service-preset-types";
 import { resolveVmbStorageBackend } from "@/lib/vmb/db";
@@ -94,10 +98,12 @@ async function validateOfferService(
   if (!service) {
     return { error: "Service must be enabled in your salon menu before building an offer" };
   }
-  const allowed = new Set(service.addons.map((addon) => addon.addonId));
+  const allowed = new Set(
+    service.addons.filter((addon) => addon.enabled).map((addon) => addon.addonId),
+  );
   for (const addonId of addonIds) {
     if (!allowed.has(addonId)) {
-      return { error: `Add-on ${addonId} is not available for the selected service` };
+      return { error: "One or more add-ons are not enabled for the selected service" };
     }
   }
   return { service };
@@ -171,10 +177,23 @@ export async function updateSalonOfferCatalogEntry(
 
   const serviceId = input.serviceId ?? existing.serviceId;
   const addonIds = input.addonIds ?? existing.addonIds;
-  const validated = await validateOfferService(salonId, serviceId, addonIds);
-  if ("error" in validated) return validated;
+  const serviceOrAddonChanged =
+    (input.serviceId !== undefined && input.serviceId !== existing.serviceId) ||
+    (input.addonIds !== undefined &&
+      input.addonIds.join("\0") !== existing.addonIds.join("\0"));
 
-  const calculatedPriceCents = calculateSalonOfferPriceCents(validated.service, addonIds);
+  let calculatedPriceCents = existing.calculatedPriceCents;
+  if (serviceOrAddonChanged) {
+    const validated = await validateOfferService(salonId, serviceId, addonIds);
+    if ("error" in validated) return validated;
+    calculatedPriceCents = calculateSalonOfferPriceCents(validated.service, addonIds);
+  } else {
+    const enabled = await getEnabledSalonServicesForOffers(salonId);
+    const service = enabled.find((row) => row.serviceOfferId === serviceId);
+    if (service) {
+      calculatedPriceCents = calculateSalonOfferPriceCents(service, addonIds);
+    }
+  }
   const priceOverrideCents =
     input.priceOverrideCents !== undefined ? input.priceOverrideCents : existing.priceOverrideCents;
 
@@ -223,6 +242,19 @@ export async function deleteSalonOfferCatalogEntry(
   return { ok: true };
 }
 
+const SERVICE_UNAVAILABLE_WARNING =
+  "This offer's service is no longer available. Update or disable this offer.";
+
+function fallbackAddonLabels(addonIds: string[]): string[] {
+  return addonIds
+    .map((addonId) => getServiceAddon(addonId)?.name)
+    .filter((label): label is string => Boolean(label));
+}
+
+function fallbackServiceName(serviceId: string): string {
+  return getCatalogServiceOffer(serviceId)?.name ?? "Included service";
+}
+
 export async function resolveSalonOfferDisplay(
   salonId: string,
   offerId: string,
@@ -232,12 +264,28 @@ export async function resolveSalonOfferDisplay(
 
   const services = await getEnabledSalonServicesForOffers(salonId);
   const service = services.find((row) => row.serviceOfferId === entry.serviceId);
-  if (!service) return undefined;
-
   const selected = new Set(entry.addonIds);
-  const addonLabels = service.addons
-    .filter((addon) => selected.has(addon.addonId))
-    .map((addon) => addon.label);
+
+  if (service) {
+    const addonLabels = service.addons
+      .filter((addon) => addon.enabled && selected.has(addon.addonId))
+      .map((addon) => addon.label);
+
+    return {
+      id: entry.id,
+      name: entry.name,
+      description: entry.description,
+      priceCents: entry.priceCents,
+      calculatedPriceCents: entry.calculatedPriceCents,
+      imageUrl: entry.imageUrl,
+      serviceName: service.displayName,
+      includedLines: [service.displayName, ...addonLabels],
+      addonLabels,
+    };
+  }
+
+  const serviceName = fallbackServiceName(entry.serviceId);
+  const addonLabels = fallbackAddonLabels(entry.addonIds);
 
   return {
     id: entry.id,
@@ -246,8 +294,10 @@ export async function resolveSalonOfferDisplay(
     priceCents: entry.priceCents,
     calculatedPriceCents: entry.calculatedPriceCents,
     imageUrl: entry.imageUrl,
-    serviceName: service.displayName,
-    includedLines: [service.displayName, ...addonLabels],
+    serviceName,
+    includedLines: [serviceName, ...addonLabels],
     addonLabels,
+    serviceUnavailable: true,
+    serviceWarning: SERVICE_UNAVAILABLE_WARNING,
   };
 }

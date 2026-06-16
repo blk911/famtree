@@ -3,6 +3,7 @@
  */
 import {
   calculateSalonOfferPriceCents,
+  formatOfferPrice,
   resolveOfferPriceCents,
 } from "../lib/vmb/salon-offers/salon-offer-pricing";
 import {
@@ -10,6 +11,7 @@ import {
   getEnabledSalonServicesForOffers,
   listSalonOfferCatalog,
   resolveSalonOfferDisplay,
+  updateSalonOfferCatalogEntry,
 } from "../lib/vmb/salon-offers/salon-offer-catalog-store";
 import { getSalonFacingServicesForCategory, upsertSalonServiceConfig } from "../lib/vmb/services/salon-service-config-store";
 
@@ -35,11 +37,27 @@ async function run(): Promise<void> {
   assert(enabled.some((service) => service.serviceOfferId === "default-nails-gel-x"), "enabled services include Gel-X");
 
   const gelX = enabled.find((service) => service.serviceOfferId === "default-nails-gel-x")!;
+  const disabledAddonId = gelX.addons.find((addon) => !addon.enabled)?.addonId;
+  assert(Boolean(disabledAddonId), "salon service exposes at least one disabled add-on for validation");
   const calculated = calculateSalonOfferPriceCents(gelX, ["addon-chrome", "addon-crystals"]);
   assert(calculated === 8000 + 1500 + 1000, "offer price calculates service plus add-ons");
 
   const override = resolveOfferPriceCents(calculated, 11500);
   assert(override === 11500, "price override applies");
+
+  assert(formatOfferPrice(Number.NaN) === "$0", "formatOfferPrice never returns NaN");
+  assert(
+    calculateSalonOfferPriceCents({ priceCents: Number.NaN, addons: [] }, []) === 0,
+    "calculateSalonOfferPriceCents guards NaN",
+  );
+
+  const disabledAddonBlocked = await createSalonOfferCatalogEntry(salonId, {
+    name: "Bad Add-on",
+    description: "Should fail",
+    serviceId: "default-nails-gel-x",
+    addonIds: [disabledAddonId!],
+  });
+  assert("error" in disabledAddonBlocked, "disabled add-ons cannot be used in offers");
 
   const created = await createSalonOfferCatalogEntry(salonId, {
     name: "Birthday Babe",
@@ -67,6 +85,21 @@ async function run(): Promise<void> {
 
   const display = await resolveSalonOfferDisplay(salonId, created.entry.id);
   assert(Boolean(display?.includedLines.some((line) => line.includes("Chrome"))), "display includes addon labels");
+
+  await upsertSalonServiceConfig(salonId, {
+    catalogServiceId: "default-nails-gel-x",
+    enabled: false,
+  });
+
+  const displayAfterDisable = await resolveSalonOfferDisplay(salonId, created.entry.id);
+  assert(Boolean(displayAfterDisable?.serviceUnavailable), "display warns when service unavailable");
+  assert(Boolean(displayAfterDisable?.serviceWarning), "display includes service warning");
+  assert(!displayAfterDisable?.includedLines.some((line) => line.includes("default-nails")), "display never exposes service ids");
+
+  const renamed = await updateSalonOfferCatalogEntry(salonId, created.entry.id, {
+    name: "Birthday Babe (updated)",
+  });
+  assert(!("error" in renamed), "offer metadata can update when service is unavailable");
 
   const facing = await getSalonFacingServicesForCategory(salonId, "nails");
   assert(facing.length === 7, "services layer still loads full nails menu");

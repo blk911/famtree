@@ -21,7 +21,7 @@ export function SalonOfferClaimClient({
   useEffect(() => {
     if (!salonId) {
       setLoading(false);
-      setError("Offer session unavailable.");
+      setError("This offer isn't available right now.");
       return;
     }
     void (async () => {
@@ -29,7 +29,7 @@ export function SalonOfferClaimClient({
         const res = await fetch(`/api/vmb/salon-offers/${encodeURIComponent(offerId)}`);
         if (!res.ok) throw new Error("Offer not found");
         const json = (await res.json()) as { display?: ResolvedSalonOfferDisplay };
-        if (!json.display) throw new Error("Offer not available");
+        if (!json.display) throw new Error("This offer isn't available right now.");
         setDisplay(json.display);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Load failed");
@@ -46,7 +46,7 @@ export function SalonOfferClaimClient({
         <p className="vmb-offer-claim__state">Loading offer…</p>
       ) : error || !display ? (
         <p className="vmb-offer-claim__state vmb-offer-claim__state--error">
-          {error ?? "Offer unavailable"}
+          {error ?? "This offer isn't available right now."}
         </p>
       ) : claimed ? (
         <div className="vmb-offer-claim__confirmed">
