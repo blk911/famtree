@@ -12,6 +12,9 @@ import {
   listCatalogServiceOffers,
   listServiceCategories,
 } from "./canonical-service-catalog";
+import { getDefaultPresetForOffer } from "./default-service-presets";
+import { buildDefaultSalonConfigFromPreset, mergePresetsWithSalonConfigs } from "./merge-salon-service-offers";
+import { listServicePresetCards } from "./service-preset-store";
 import { resolveVmbStorageBackend } from "@/lib/vmb/db";
 import { getVmbSalonServiceConfigsFile } from "@/lib/vmb/paths";
 import { readJsonArray, writeJsonArray } from "@/lib/vmb/runtime-json-store";
@@ -57,6 +60,8 @@ async function loadSalonConfigs(salonId: string): Promise<SalonServiceConfig[]> 
 }
 
 function defaultConfigForOffer(salonId: string, offer: CatalogServiceOffer): SalonServiceConfig {
+  const preset = getDefaultPresetForOffer(offer.id);
+  if (preset) return buildDefaultSalonConfigFromPreset(salonId, preset);
   const addonIds = listAddonsForServiceOffer(offer.id).map((addon) => addon.id);
   return {
     salonId,
@@ -82,7 +87,7 @@ function mergeConfig(
     ...stored,
     salonId,
     catalogServiceId: offer.id,
-    enabledAddonIds: stored.enabledAddonIds.filter((id) => validAddonIds.has(id)),
+    enabledAddonIds: (stored.enabledAddonIds ?? []).filter((id) => validAddonIds.has(id)),
   };
 }
 
@@ -121,6 +126,26 @@ export async function getSalonServicesForCategory(
   const byServiceId = new Map(stored.map((config) => [config.catalogServiceId, config]));
   return listCatalogServiceOffers(categoryId).map((offer) =>
     resolveSalonService(offer, mergeConfig(salonId, offer, byServiceId.get(offer.id))),
+  );
+}
+
+export async function getSalonFacingServicesForCategory(
+  salonId: string,
+  categoryId: ServiceCategoryId,
+) {
+  const presets = await listServicePresetCards(categoryId);
+  const stored = await loadSalonConfigs(salonId);
+  return mergePresetsWithSalonConfigs(presets, stored);
+}
+
+export async function getSalonServiceConfigsForCategory(
+  salonId: string,
+  categoryId: ServiceCategoryId,
+): Promise<SalonServiceConfig[]> {
+  const stored = await loadSalonConfigs(salonId);
+  const byServiceId = new Map(stored.map((config) => [config.catalogServiceId, config]));
+  return listCatalogServiceOffers(categoryId).map((offer) =>
+    mergeConfig(salonId, offer, byServiceId.get(offer.id)),
   );
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { CatalogServiceOffer, ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
 import {
@@ -36,10 +37,17 @@ export function PlatformServiceCatalogClient() {
   return (
     <div className="vmb-service-catalog">
       <header className="vmb-service-catalog__header">
-        <h1 className="vmb-service-catalog__title">Service Catalog</h1>
-        <p className="vmb-service-catalog__subtitle">
-          Canonical VMB services and add-ons — salons configure from this menu.
-        </p>
+        <div className="vmb-service-preset-admin__header-row">
+          <div>
+            <h1 className="vmb-service-catalog__title">Service Catalog</h1>
+            <p className="vmb-service-catalog__subtitle">
+              Canonical VMB services and add-ons — salons configure from this menu.
+            </p>
+          </div>
+          <Link href="/admin/service-catalog/presets" className="vmb-service-preset-admin__manage-link">
+            Manage Preset Cards
+          </Link>
+        </div>
       </header>
 
       <div className="vmb-service-catalog__layout">

@@ -3,7 +3,8 @@ import type { ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-typ
 import {
   getSalonPrimaryCategory,
   getSalonServiceConfig,
-  getSalonServicesForCategory,
+  getSalonServiceConfigsForCategory,
+  getSalonFacingServicesForCategory,
   upsertSalonServiceConfig,
 } from "@/lib/vmb/services/salon-service-config-store";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
@@ -34,7 +35,14 @@ export async function GET(request: NextRequest) {
 
   const categoryParam = request.nextUrl.searchParams.get("category");
   const categoryId = categoryParam ? parseCategory(categoryParam) : await getSalonPrimaryCategory(salonId);
-  const services = await getSalonServicesForCategory(salonId, categoryId);
+  const configsOnly = request.nextUrl.searchParams.get("configs") === "1";
+
+  if (configsOnly) {
+    const configs = await getSalonServiceConfigsForCategory(salonId, categoryId);
+    return NextResponse.json({ ok: true, categoryId, configs });
+  }
+
+  const services = await getSalonFacingServicesForCategory(salonId, categoryId);
 
   return NextResponse.json({ ok: true, categoryId, services });
 }

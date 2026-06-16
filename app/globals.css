@@ -5344,3 +5344,220 @@
   cursor: pointer;
 }
 
+.vmb-salon-services__cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vmb-salon-services__card {
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  padding: 16px 18px;
+  background: #fff;
+}
+
+.vmb-salon-services__card-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #292524;
+}
+
+.vmb-salon-services__card-desc {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #57534e;
+  line-height: 1.45;
+}
+
+.vmb-salon-services__card-meta {
+  margin: 0;
+  font-size: 13px;
+  color: #78716c;
+}
+
+.vmb-salon-services__included {
+  margin: 14px 0;
+  font-size: 14px;
+  color: #44403c;
+  line-height: 1.45;
+}
+
+.vmb-salon-services__included-label {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-salon-services__card-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin: 12px 0;
+}
+
+.vmb-salon-services__card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f5f5f4;
+}
+
+.vmb-salon-services__enable-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.vmb-salon-services__save {
+  padding: 8px 16px;
+  border: 1px solid #292524;
+  border-radius: 6px;
+  background: #292524;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.vmb-salon-services__save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.vmb-service-preset-admin__header-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.vmb-service-preset-admin__manage-link,
+.vmb-service-preset-admin__back {
+  font-size: 14px;
+  color: #44403c;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.vmb-service-preset-admin__list {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  border-top: 1px solid #e7e5e4;
+}
+
+.vmb-service-preset-admin__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 4px;
+  border: none;
+  border-bottom: 1px solid #e7e5e4;
+  background: transparent;
+  text-align: left;
+  font-size: 14px;
+  color: #292524;
+  cursor: pointer;
+}
+
+.vmb-service-preset-admin__row--active {
+  background: #fafaf9;
+}
+
+.vmb-service-preset-admin__row-meta {
+  color: #78716c;
+  font-size: 13px;
+}
+
+.vmb-service-preset-admin__editor {
+  padding-top: 8px;
+}
+
+.vmb-service-preset-admin__linked {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #78716c;
+}
+
+.vmb-service-preset-admin__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.vmb-service-preset-admin__fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.vmb-service-preset-admin__fields input,
+.vmb-service-preset-admin__fields textarea {
+  font-size: 14px;
+}
+
+.vmb-service-preset-admin__checkbox {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.vmb-service-preset-admin__addon-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.vmb-service-preset-admin__addon-row {
+  display: grid;
+  grid-template-columns: 1fr repeat(4, minmax(100px, auto));
+  gap: 10px;
+  align-items: end;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f4;
+  font-size: 13px;
+}
+
+.vmb-service-preset-admin__addon-id {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: #78716c;
+  align-self: center;
+}
+
+.vmb-service-preset-admin__save {
+  padding: 8px 16px;
+  border: 1px solid #292524;
+  border-radius: 6px;
+  background: #292524;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.vmb-service-preset-admin__state,
+.vmb-service-preset-admin__status {
+  font-size: 14px;
+  color: #57534e;
+}
+
+.vmb-service-preset-admin__state--error {
+  color: #b91c1c;
+}
+
