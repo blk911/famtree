@@ -8,6 +8,7 @@ import {
   isCardBuilderImageFile,
   resolveOwnerPhotoFromPreviewSlots,
 } from "../lib/vmb/card-templates/card-builder-preview-images";
+import { buildOwnerPreviewCaption } from "../lib/vmb/cards/card-owner-preview-copy";
 import { getDefaultTemplate } from "../lib/vmb/card-templates/default-card-templates";
 import { CARD_TEMPLATE_PREVIEW_CONTEXT } from "../lib/vmb/card-templates/default-card-templates";
 import { queuedInviteCardToPreviewModel } from "../lib/vmb/invites/queued-invite-card-to-preview-model";
@@ -108,11 +109,25 @@ function run(): void {
     "recipient preview payload does not leak admin blob URLs",
   );
 
+  const cardHeroSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/cards/CardHero.tsx"),
+    "utf8",
+  );
+  assert(cardHeroSource.includes("OwnerIdentityPanel"), "CardHero renders dedicated owner identity panel");
+  assert(cardHeroSource.includes("ServiceImageTile"), "CardHero keeps service images rectangular");
+  assert(cardHeroSource.includes("owner-identity--empty"), "missing owner photo uses neutral placeholder");
+  assert(
+    buildOwnerPreviewCaption("Jenny") === "A note from Jenny",
+    "owner preview caption personalizes sender",
+  );
+  assert(!cardHeroSource.includes("avatar-inner"), "CardHero does not render fake person tile");
+
   const personalInviteSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/cards/PersonalInvitePreview.tsx"),
     "utf8",
   );
   assert(personalInviteSource.includes("<CardHero"), "salon invite preview renders CardHero from model slots");
+  assert(!personalInviteSource.includes("avatar-inner"), "salon invite band avoids fake person placeholder");
 
   const adminClientSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/CardTemplateAdminClient.tsx"),
