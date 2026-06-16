@@ -1,23 +1,14 @@
 import type { Metadata } from "next";
-import { VmbPlaceholderPage } from "@/components/vmb/VmbPlaceholderPage";
+import { SalonOffersClient } from "@/components/vmb/salon/SalonOffersClient";
 import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
-  title: "Service Offers",
+  title: "Offers",
 };
 
-type Props = {
-  searchParams: Promise<{ analysis?: string }>;
-};
-
-export default async function VmbOffersPage({ searchParams }: Props) {
-  const params = await searchParams;
-  const ctx = await loadVmbPageContext({ analysisId: params.analysis?.trim() });
-  return (
-    <VmbPlaceholderPage
-      title="Offers"
-      purpose="Standard offers and salon promotions tied to your active book."
-      context={ctx}
-    />
-  );
+export default async function VmbOffersPage() {
+  const ctx = await loadVmbPageContext({});
+  return <SalonOffersClient salonId={ctx.trialId} salonName={ctx.salonName} />;
 }

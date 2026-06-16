@@ -286,6 +286,10 @@ export async function patchInviteDraftForTrial(
     status: patch.status ?? current.status,
     editableMessage:
       patch.editableMessage !== undefined ? patch.editableMessage : current.editableMessage,
+    salonOfferCatalogId:
+      patch.salonOfferCatalogId !== undefined
+        ? patch.salonOfferCatalogId ?? undefined
+        : current.salonOfferCatalogId,
     updatedAt: new Date().toISOString(),
   };
 

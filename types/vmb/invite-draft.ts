@@ -29,6 +29,8 @@ export type VmbInviteDraft = {
   candidateScore?: number;
   createdAt: string;
   updatedAt: string;
+  /** Linked salon offer from Offers page — included when invite is sent. */
+  salonOfferCatalogId?: string;
 };
 
 export type BuildInviteDraftsInput = {
@@ -40,4 +42,5 @@ export type BuildInviteDraftsInput = {
 export type PatchInviteDraftInput = {
   status?: InviteDraftStatus;
   editableMessage?: string;
+  salonOfferCatalogId?: string | null;
 };

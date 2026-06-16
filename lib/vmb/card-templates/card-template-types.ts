@@ -55,6 +55,8 @@ export type VmbCardTemplate = {
   tokens: string[];
   createdAt: string;
   updatedAt: string;
+  /** Salon-built offer from /vmb/offers — used in invite cards instead of category defaults. */
+  salonOfferCatalogId?: string;
 };
 
 export type VmbCardTemplateOverrideRow = {

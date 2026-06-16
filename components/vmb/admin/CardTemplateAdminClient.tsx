@@ -20,6 +20,7 @@ import { getAllDefaultOffers } from "@/lib/vmb/offers/default-offers";
 import { resolveOfferForTemplate } from "@/lib/vmb/offers/offer-resolver";
 import { sortOffersForSelectorDisplay } from "@/lib/vmb/offers/offer-display-order";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
+import type { SalonOfferCatalogEntry } from "@/lib/vmb/salon-offers/salon-offer-catalog-types";
 import {
   getAllDefaultServiceOptions,
   getAllDefaultServices,
@@ -56,6 +57,7 @@ function revokeDraftImageUrls(slots: CardBuilderDraftImageSlot[]) {
 export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPhotoUrl }: Props) {
   const [templates, setTemplates] = useState<VmbCardTemplate[]>([]);
   const [offers, setOffers] = useState<VmbOffer[]>(getAllDefaultOffers());
+  const [salonCatalogOffers, setSalonCatalogOffers] = useState<SalonOfferCatalogEntry[]>([]);
   const [selectedType, setSelectedType] = useState<VmbCardType>("pcn_invite");
   const [draft, setDraft] = useState<VmbCardTemplate | null>(null);
   const [selectedOfferId, setSelectedOfferId] = useState("");
@@ -67,17 +69,25 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
 
   const loadTemplates = useCallback(async () => {
     if (!salonId) return;
-    const [templateRes, offerRes] = await Promise.all([
+    const [templateRes, offerRes, salonOfferRes] = await Promise.all([
       fetch("/api/vmb/card-templates"),
       fetch("/api/vmb/offers"),
+      fetch("/api/vmb/salon-offers?activeOnly=1"),
     ]);
     const data = (await templateRes.json()) as { ok?: boolean; templates?: VmbCardTemplate[] };
     const offerData = (await offerRes.json()) as { ok?: boolean; offers?: VmbOffer[] };
+    const salonOfferData = (await salonOfferRes.json()) as {
+      ok?: boolean;
+      offers?: SalonOfferCatalogEntry[];
+    };
     if (data.ok && data.templates) {
       setTemplates(data.templates);
     }
     if (offerData.ok && offerData.offers) {
       setOffers(offerData.offers);
+    }
+    if (salonOfferData.ok && salonOfferData.offers) {
+      setSalonCatalogOffers(salonOfferData.offers);
     }
   }, [salonId]);
 
@@ -190,6 +200,15 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
     setDraft((current) => (current ? { ...current, ...patch } : current));
   }
 
+  function handleSalonOfferChange(offerId: string) {
+    patchDraft({ salonOfferCatalogId: offerId || undefined });
+  }
+
+  const selectedSalonCatalogOffer = useMemo(
+    () => salonCatalogOffers.find((offer) => offer.id === draft?.salonOfferCatalogId),
+    [draft?.salonOfferCatalogId, salonCatalogOffers],
+  );
+
   function handleOfferChange(offerId: string) {
     setSelectedOfferId(offerId);
     const offer = activeOffers.find((entry) => entry.id === offerId);
@@ -287,7 +306,31 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
                 {offerSelectionEnabled ? (
                   <>
                     <label className="vmb-template-admin__field">
-                      <span className="vmb-card-builder__sr-only">Choose offer</span>
+                      <span>Choose offer (salon)</span>
+                      <select
+                        value={draft.salonOfferCatalogId ?? ""}
+                        onChange={(event) => handleSalonOfferChange(event.target.value)}
+                      >
+                        <option value="">Select a salon offer</option>
+                        {salonCatalogOffers.map((offer) => (
+                          <option key={offer.id} value={offer.id}>
+                            {offer.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {selectedSalonCatalogOffer ? (
+                      <div className="vmb-card-builder__offer-card">
+                        <p className="vmb-card-builder__offer-card-title">
+                          {selectedSalonCatalogOffer.name}
+                        </p>
+                        <p className="vmb-card-builder__offer-card-body">
+                          {selectedSalonCatalogOffer.description}
+                        </p>
+                      </div>
+                    ) : null}
+                    <label className="vmb-template-admin__field">
+                      <span className="vmb-card-builder__sr-only">Choose catalog offer fallback</span>
                       <select
                         value={selectedOfferId}
                         onChange={(event) => handleOfferChange(event.target.value)}

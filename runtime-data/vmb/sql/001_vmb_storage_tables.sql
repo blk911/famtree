@@ -74,3 +74,14 @@ CREATE TABLE IF NOT EXISTS vmb_salon_service_signoff (
   payload jsonb NOT NULL,
   updated_at timestamptz DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS vmb_salon_offer_catalog (
+  salon_id text NOT NULL,
+  offer_id text NOT NULL,
+  payload jsonb NOT NULL,
+  updated_at timestamptz DEFAULT now(),
+  PRIMARY KEY (salon_id, offer_id)
+);
+
+CREATE INDEX IF NOT EXISTS vmb_salon_offer_catalog_salon_id
+  ON vmb_salon_offer_catalog (salon_id);

@@ -63,10 +63,10 @@ const PAGE_META: Record<
       "You are viewing your Private Client Network. I can help explain new joins, referrals, and next invitations.",
   },
   offers: {
-    title: "Service Offers",
+    title: "Offers",
     headerTitle: "Offers",
-    description: "Standard offers and service presets.",
-    assistantIntro: "You are viewing Offers. I can help explain presets and which offers fit this week's moves.",
+    description: "Client-facing offers built from your enabled services.",
+    assistantIntro: "You are viewing Offers. I can help explain active offers and which to use in invitations.",
   },
   campaigns: {
     title: "Campaigns",
