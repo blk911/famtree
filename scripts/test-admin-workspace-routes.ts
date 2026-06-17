@@ -5,7 +5,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import {
+  INVITES_BUILDER_HUB,
   INVITES_CANONICAL_ADMIN_ROUTES,
+  INVITES_HUB_COMING_LATER,
+  INVITES_HUB_SECONDARY_LINKS,
   INVITES_LEGACY_VMB_ADMIN_REDIRECTS,
   INVITES_OPERATING_CARDS,
 } from "../lib/admin/invites-workspace";
@@ -67,10 +70,21 @@ function run(): void {
     assert(routePageExists(hub), `hub path resolves to page: ${hub}`);
   }
 
-  assert(INVITES_OPERATING_CARDS.length === 8, "eight invites operating cards defined");
+  assert(INVITES_BUILDER_HUB.href === "/admin/invites/templates", "invite builder routes to templates");
+  assert(INVITES_HUB_SECONDARY_LINKS.length === 5, "five secondary invites hub links");
+  assert(INVITES_HUB_COMING_LATER.length === 3, "three coming-later invites hub links");
   for (const card of INVITES_OPERATING_CARDS) {
-    assert(routePageExists(card.href), `invites card route exists: ${card.href}`);
+    assert(routePageExists(card.href), `invites area route exists: ${card.href}`);
   }
+
+  const invitesHubSource = fs.readFileSync(
+    path.join(process.cwd(), "components/admin/workspaces/InvitesOperatingCenter.tsx"),
+    "utf8",
+  );
+  assert(invitesHubSource.includes("Open Invite Builder"), "invites hub has primary builder CTA");
+  assert(invitesHubSource.includes("INVITES_HUB_SECONDARY_LINKS"), "invites hub uses secondary text links");
+  assert(!invitesHubSource.includes("INVITES_OPERATING_CARDS.map"), "invites hub does not render card grid");
+  assert(!invitesHubSource.includes("Operating areas"), "invites hub removes operating areas grid heading");
 
   for (const route of INVITES_CANONICAL_ADMIN_ROUTES) {
     assert(route.startsWith("/admin/invites/"), `canonical invites admin route: ${route}`);
@@ -270,7 +284,7 @@ function run(): void {
   );
   assert(cardTemplateSource.includes("AdminFinalCardCheckModal"), "admin final card check modal is available");
   assert(cardTemplateSource.includes("AdminNailBuilderShell"), "admin templates use shared nail builder shell");
-  assert(cardTemplateSource.includes("Attached offer"), "admin templates include attached offer block");
+  assert(cardTemplateSource.includes("InviteBuilderInsertElements"), "admin builder includes insert elements for offer attachment");
   assert(cardTemplateSource.includes("Save template"), "invite template save action remains available");
   assert(cardTemplateSource.includes("Reset to default"), "invite template reset action remains available");
 

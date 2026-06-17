@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminNailBuilderShell } from "@/components/vmb/admin/AdminNailBuilderShell";
+import { InviteBuilderInsertElements } from "@/components/vmb/admin/InviteBuilderInsertElements";
 import { AdminFinalCardCheckModal } from "@/components/vmb/invites/AdminFinalCardCheckModal";
 import { AdminNailInviteCard } from "@/components/vmb/invites/AdminNailInviteCard";
 import {
@@ -244,16 +245,46 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
     </div>
   );
 
+  const builderHeader = (
+    <>
+      <p className="vmb-invite-builder__flow-guide" aria-label="Builder flow">
+        <span>Invite Type</span>
+        <span className="vmb-invite-builder__flow-sep" aria-hidden="true">
+          →
+        </span>
+        <span>Message</span>
+        <span className="vmb-invite-builder__flow-sep" aria-hidden="true">
+          →
+        </span>
+        <span>Inserts</span>
+        <span className="vmb-invite-builder__flow-sep" aria-hidden="true">
+          →
+        </span>
+        <span>Final Preview</span>
+      </p>
+      {templatePills}
+    </>
+  );
+
   if (!salonId) {
     return (
-      <AdminNailBuilderShell title="Invite Templates" activeStep="templates">
+      <AdminNailBuilderShell
+        title="Invite Builder"
+        subtitle="Choose an invite, edit the message, attach inserts, and preview the final card."
+        activeStep="templates"
+      >
         <p className="vmb-template-admin__status">Sign in to a VMB salon trial to manage nail invite templates.</p>
       </AdminNailBuilderShell>
     );
   }
 
   return (
-    <AdminNailBuilderShell title="Invite Templates" activeStep="templates" headerExtra={templatePills}>
+    <AdminNailBuilderShell
+      title="Invite Builder"
+      subtitle="Choose an invite, edit the message, attach inserts, and preview the final card."
+      activeStep="templates"
+      headerExtra={builderHeader}
+    >
       <div className="vmb-card-template-workspace__body">
         <section
           id="card-template-editor-panel"
@@ -291,27 +322,13 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                     onChange={(e) => patchSelectedDraft({ ctaLabel: e.target.value })}
                   />
                 </label>
-
-                <div className="vmb-admin-nail-builder__attached-offer">
-                  <label className="vmb-template-admin__field">
-                    <span>Attached offer</span>
-                    <select
-                      value={attachedOfferId}
-                      onChange={(event) => setAttachedOfferId(event.target.value)}
-                    >
-                      <option value="">No offer attached</option>
-                      {activeOffers.map((offer) => (
-                        <option key={offer.id} value={offer.id}>
-                          {offer.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <p className="vmb-admin-nail-builder__attached-offer-hint">
-                    Promo block only — does not change invite copy above.
-                  </p>
-                </div>
               </div>
+
+              <InviteBuilderInsertElements
+                attachedOfferId={attachedOfferId}
+                activeOffers={activeOffers}
+                onAttachedOfferChange={setAttachedOfferId}
+              />
 
               <div className="vmb-template-admin__actions">
                 <button type="button" className="taikos-opp-card__cta" disabled={busy} onClick={() => void handleSave()}>

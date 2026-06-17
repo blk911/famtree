@@ -27,71 +27,66 @@ export type InvitesOperatingCard = {
   status: InvitesOperatingCardStatus;
 };
 
-/** Primary operating cards on /admin/invites */
+/** Primary workbench on /admin/invites */
+export const INVITES_BUILDER_HUB = {
+  id: "invite-builder",
+  title: "Invite Builder",
+  description: "Build, preview, and approve nail invite cards.",
+  href: INVITES_ADMIN_ROUTES.templates,
+} as const;
+
+export type InvitesHubLink = {
+  id: string;
+  label: string;
+  href: string;
+};
+
+/** Subordinate text links below the primary workbench card */
+export const INVITES_HUB_SECONDARY_LINKS: InvitesHubLink[] = [
+  { id: "services", label: "Services", href: INVITES_ADMIN_ROUTES.services },
+  { id: "offers", label: "Offers", href: INVITES_ADMIN_ROUTES.offers },
+  { id: "outreach", label: "Outreach Messages", href: INVITES_ADMIN_ROUTES.outreach },
+  { id: "queue", label: "Invite Queue", href: INVITES_ADMIN_ROUTES.queue },
+  { id: "sent", label: "Sent Invites", href: INVITES_ADMIN_ROUTES.sent },
+];
+
+/** Muted analytics links — routes remain, not promoted on the hub */
+export const INVITES_HUB_COMING_LATER: InvitesHubLink[] = [
+  { id: "claims", label: "Claims", href: INVITES_ADMIN_ROUTES.claims },
+  { id: "opens", label: "Opens", href: INVITES_ADMIN_ROUTES.opens },
+  { id: "conversions", label: "Conversions", href: INVITES_ADMIN_ROUTES.conversions },
+];
+
+/** All admin area routes — used for route existence checks */
 export const INVITES_OPERATING_CARDS: InvitesOperatingCard[] = [
   {
-    id: "templates",
-    label: "Card Templates",
-    description: "Relationship copy templates for PCN, birthday, reactivation, and outreach cards.",
-    href: INVITES_ADMIN_ROUTES.templates,
+    id: "invite-builder",
+    label: INVITES_BUILDER_HUB.title,
+    description: INVITES_BUILDER_HUB.description,
+    href: INVITES_BUILDER_HUB.href,
     status: "live",
   },
   {
     id: "nail-catalog",
     label: "Nail Invite Catalog",
-    description: "Category-aware invite templates with final salon dashboard render preview.",
+    description: "Legacy catalog view — use Invite Builder for day-to-day editing.",
     href: INVITES_ADMIN_ROUTES.nailCatalog,
     status: "live",
   },
-  {
-    id: "offers",
-    label: "Offers",
-    description: "Salon offer catalog linked to services and card preview slots.",
-    href: INVITES_ADMIN_ROUTES.offers,
-    status: "live",
-  },
-  {
-    id: "outreach",
-    label: "Outreach Messages",
-    description: "Send/preview modal subject, body, footer, and channel copy presets.",
-    href: INVITES_ADMIN_ROUTES.outreach,
-    status: "live",
-  },
-  {
-    id: "queue",
-    label: "Invite Queue",
-    description: "Approved invites awaiting send — read-only admin view of the tAIkOS queue.",
-    href: INVITES_ADMIN_ROUTES.queue,
-    status: "partial",
-  },
-  {
-    id: "sent",
-    label: "Sent Invites",
-    description: "Draft and sent invite activity for the active salon trial.",
-    href: INVITES_ADMIN_ROUTES.sent,
-    status: "partial",
-  },
-  {
-    id: "claims",
-    label: "Claims",
-    description: "CTA claim events when clients tap card actions.",
-    href: INVITES_ADMIN_ROUTES.claims,
-    status: "placeholder",
-  },
-  {
-    id: "opens",
-    label: "Opens",
-    description: "Invite open and read tracking across channels.",
-    href: INVITES_ADMIN_ROUTES.opens,
-    status: "placeholder",
-  },
-  {
-    id: "conversions",
-    label: "Conversions",
-    description: "Bookings and revenue attributed to invite outreach.",
-    href: INVITES_ADMIN_ROUTES.conversions,
-    status: "placeholder",
-  },
+  ...INVITES_HUB_SECONDARY_LINKS.map((link) => ({
+    id: link.id,
+    label: link.label,
+    description: "",
+    href: link.href,
+    status: (link.id === "queue" || link.id === "sent" ? "partial" : "live") as InvitesOperatingCardStatus,
+  })),
+  ...INVITES_HUB_COMING_LATER.map((link) => ({
+    id: link.id,
+    label: link.label,
+    description: "",
+    href: link.href,
+    status: "placeholder" as InvitesOperatingCardStatus,
+  })),
 ];
 
 export const INVITES_CANONICAL_ADMIN_ROUTES = [

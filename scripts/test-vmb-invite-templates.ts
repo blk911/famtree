@@ -365,8 +365,9 @@ async function run(): Promise<void> {
   assert(!adminClientSource.includes("AdminNailInvitePreviewDebugPanel"), "admin page has no debug panel");
   assert(!adminClientSource.includes("PAGE RENDER DEBUG"), "admin page has no page debug box");
   assert(!adminClientSource.includes("Catalog offer"), "admin page has no catalog offer dropdown");
-  assert(adminClientSource.includes("AdminNailBuilderShell"), "admin templates use shared nail builder shell");
-  assert(adminClientSource.includes("Attached offer"), "admin templates include attached offer block");
+  assert(adminClientSource.includes("Invite Builder"), "admin builder page uses Invite Builder title");
+  assert(adminClientSource.includes("InviteBuilderInsertElements"), "admin builder includes insert elements section");
+  assert(adminClientSource.includes("vmb-invite-builder__flow-guide"), "builder shows quiet flow guide");
   assert(adminClientSource.includes("attachedOfferId"), "attached offer selection is separate from invite copy");
   assert(adminClientSource.includes("offer={attachedOfferCard}"), "preview and modal receive attached offer");
   assert(adminClientSource.includes("selectTemplate"), "pills use selectTemplate");

@@ -4581,6 +4581,14 @@
   color: #1c1917;
 }
 
+.vmb-admin-nail-builder__subtitle {
+  margin: 0 0 10px;
+  max-width: 42rem;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #78716c;
+}
+
 .vmb-admin-nail-builder__header {
   margin-bottom: 0.75rem;
 }
@@ -4786,6 +4794,205 @@
   .vmb-service-catalog-admin .vmb-service-catalog__meta {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 1024px) {
+  .vmb-admin-nail-builder__workspace--two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Admin invites hub — single primary builder path */
+.vmb-invites-hub {
+  max-width: 720px;
+}
+
+.vmb-invites-hub__header {
+  margin-bottom: 1.25rem;
+}
+
+.vmb-invites-hub__title {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.vmb-invites-hub__lead {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #78716c;
+}
+
+.vmb-invites-hub__primary {
+  margin-bottom: 1rem;
+}
+
+.vmb-invites-hub__workbench {
+  border: 1px solid #e7e5e4;
+  border-radius: 14px;
+  background: #fff;
+  padding: 18px 20px;
+}
+
+.vmb-invites-hub__workbench-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.vmb-invites-hub__workbench-desc {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #57534e;
+}
+
+.vmb-invites-hub__cta {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.vmb-invites-hub__secondary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 2px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.vmb-invites-hub__secondary-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vmb-invites-hub__secondary-sep {
+  color: #d6d3d1;
+}
+
+.vmb-invites-hub__secondary-link {
+  color: #9d174d;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.vmb-invites-hub__secondary-link:hover {
+  text-decoration: underline;
+}
+
+.vmb-invites-hub__coming-later {
+  margin: 0;
+  font-size: 12px;
+  color: #a8a29e;
+}
+
+.vmb-invites-hub__coming-later-label {
+  font-weight: 600;
+}
+
+.vmb-invites-hub__coming-later-link {
+  color: #a8a29e;
+  text-decoration: none;
+}
+
+.vmb-invites-hub__coming-later-link:hover {
+  color: #78716c;
+  text-decoration: underline;
+}
+
+/* Invite builder — flow guide and insert elements */
+.vmb-invite-builder__flow-guide {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #78716c;
+}
+
+.vmb-invite-builder__flow-guide span:not(.vmb-invite-builder__flow-sep) {
+  font-weight: 600;
+  color: #57534e;
+}
+
+.vmb-invite-builder__flow-sep {
+  color: #d6d3d1;
+  font-weight: 400;
+}
+
+.vmb-invite-builder__inserts {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e7e5e4;
+}
+
+.vmb-invite-builder__inserts-title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-invite-builder__insert-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 8px 12px;
+  align-items: start;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.vmb-invite-builder__insert-row--muted {
+  color: #a8a29e;
+}
+
+.vmb-invite-builder__insert-label {
+  font-weight: 600;
+  color: #57534e;
+}
+
+.vmb-invite-builder__insert-row--muted .vmb-invite-builder__insert-label {
+  color: #a8a29e;
+}
+
+.vmb-invite-builder__insert-control select {
+  width: 100%;
+  border: 1px solid #d6d3d1;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.vmb-invite-builder__insert-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #78716c;
+}
+
+.vmb-invite-builder__insert-status {
+  font-size: 13px;
+}
+
+.vmb-invite-builder__token-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.vmb-invite-builder__token-list code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #f5f5f4;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: #44403c;
 }
 
 .vmb-admin-offer-preview__label {

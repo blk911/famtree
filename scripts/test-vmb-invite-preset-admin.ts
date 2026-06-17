@@ -5,7 +5,8 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   INVITES_ADMIN_ROUTES,
-  INVITES_OPERATING_CARDS,
+  INVITES_BUILDER_HUB,
+  INVITES_HUB_SECONDARY_LINKS,
 } from "../lib/admin/invites-workspace";
 import { DEFAULT_CARD_TEMPLATES } from "../lib/vmb/card-templates/default-card-templates";
 import { getDefaultCtaForTemplateType } from "../lib/vmb/card-templates/template-cta-labels";
@@ -170,8 +171,9 @@ async function run(): Promise<void> {
   assert(routePageExists(INVITES_ADMIN_ROUTES.outreach), "/admin/invites/outreach page exists");
   assert(fs.existsSync(path.join(process.cwd(), "app/api/vmb/outreach-presets/route.ts")), "outreach presets API exists");
 
-  const hubCard = INVITES_OPERATING_CARDS.find((card) => card.id === "outreach");
-  assert(Boolean(hubCard), "invites hub includes outreach card");
+  const outreachLink = INVITES_HUB_SECONDARY_LINKS.find((link) => link.id === "outreach");
+  assert(Boolean(outreachLink), "invites hub includes outreach secondary link");
+  assert(INVITES_BUILDER_HUB.href === INVITES_ADMIN_ROUTES.templates, "invite builder is templates route");
 
   const adminClient = read("components/vmb/admin/OutreachMessagesAdminClient.tsx");
   assert(adminClient.includes("/api/vmb/outreach-presets"), "admin client loads outreach presets API");

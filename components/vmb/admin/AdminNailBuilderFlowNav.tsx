@@ -5,7 +5,7 @@ export type AdminNailBuilderStep = "services" | "offers" | "templates";
 const STEPS: { id: AdminNailBuilderStep; label: string; href: string }[] = [
   { id: "services", label: "Services", href: "/admin/service-catalog" },
   { id: "offers", label: "Offers", href: "/admin/invites/offers" },
-  { id: "templates", label: "Templates", href: "/admin/invites/templates" },
+  { id: "templates", label: "Invite Builder", href: "/admin/invites/templates" },
 ];
 
 type Props = {

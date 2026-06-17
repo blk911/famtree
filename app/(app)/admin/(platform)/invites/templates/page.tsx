@@ -8,7 +8,7 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 export const metadata: Metadata = {
-  title: "Nail Invite Templates · Invites",
+  title: "Invite Builder · Invites",
 };
 
 export default async function AdminInvitesTemplatesPage() {
