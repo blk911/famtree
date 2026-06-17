@@ -4,6 +4,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { resolveAdminNailInviteCardContent } from "../lib/vmb/invite-templates/admin-nail-invite-card-content";
+import {
+  getSelectedInviteDraft,
+  inviteSelectionStateIsSynced,
+  patchInviteDraftRecord,
+  selectInviteTemplateId,
+} from "../lib/vmb/invite-templates/admin-invite-template-selection";
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "../lib/vmb/invite-templates/default-nail-invite-templates";
 import {
   inviteTemplateHasLegacyBleed,
@@ -236,6 +242,58 @@ async function run(): Promise<void> {
   );
   assert(Object.keys(CARD_TYPE_TO_INVITE_TEMPLATE_ID).length === 8, "eight legacy card types mapped");
 
+  const templateIds = DEFAULT_NAIL_INVITE_TEMPLATES.map((row) => row.id);
+  const draftMap = Object.fromEntries(
+    DEFAULT_NAIL_INVITE_TEMPLATES.map((row) => [row.id, { ...row }]),
+  ) as Record<string, (typeof DEFAULT_NAIL_INVITE_TEMPLATES)[number]>;
+
+  assert(
+    selectInviteTemplateId(templateIds, "nails-birthday-celebration", templateIds[0]!) ===
+      "nails-birthday-celebration",
+    "dropdown select changes selectedTemplateId",
+  );
+  assert(
+    selectInviteTemplateId(templateIds, "nails-referral-invite", templateIds[0]!) ===
+      "nails-referral-invite",
+    "pill select changes same selectedTemplateId",
+  );
+  assert(
+    selectInviteTemplateId(templateIds, "unknown-template", templateIds[0]!) === templateIds[0],
+    "invalid template id preserves current selection",
+  );
+
+  const birthdayId = "nails-birthday-celebration";
+  const birthdayDraft = getSelectedInviteDraft(draftMap, birthdayId)!;
+  const birthdayCard = resolveAdminNailInviteCardContent(birthdayDraft, TOKEN_CONTEXT);
+  assert(birthdayCard.ctaLabel === "View My Birthday Offer", "birthday draft preview uses birthday CTA");
+
+  const referralId = "nails-referral-invite";
+  const referralDraft = getSelectedInviteDraft(draftMap, referralId)!;
+  const referralCard = resolveAdminNailInviteCardContent(referralDraft, TOKEN_CONTEXT);
+  assert(
+    referralCard.ctaLabel === "Invite Someone You Care About",
+    "referral draft preview uses referral CTA",
+  );
+  assert(
+    inviteSelectionStateIsSynced({
+      selectedTemplateId: referralId,
+      dropdownValue: referralId,
+      pillSelectedId: referralId,
+      draftTemplateId: referralDraft.id,
+    }),
+    "editor draft and preview payload use same template id",
+  );
+
+  const patchedDrafts = patchInviteDraftRecord(draftMap, birthdayId, { body: "Edited birthday body" });
+  assert(
+    getSelectedInviteDraft(patchedDrafts, birthdayId)?.body === "Edited birthday body",
+    "editor patch updates inviteDrafts[selectedTemplateId]",
+  );
+  assert(
+    selectInviteTemplateId(templateIds, birthdayId, referralId) === birthdayId,
+    "offer selection does not alter selectedTemplateId",
+  );
+
   const adminClientSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/CardTemplateAdminClient.tsx"),
     "utf8",
@@ -249,6 +307,10 @@ async function run(): Promise<void> {
     adminClientSource.includes("AdminNailInviteCard"),
     "admin templates page renders AdminNailInviteCard directly",
   );
+  assert(adminClientSource.includes("Select invite"), "admin editor includes invite dropdown");
+  assert(adminClientSource.includes("selectTemplate"), "pills and dropdown share selectTemplate");
+  assert(adminClientSource.includes("selectedDraft"), "editor and preview use selectedDraft");
+  assert(!adminClientSource.includes("activeCardType"), "legacy card type does not drive preview");
 
   if (process.env.DATABASE_URL?.trim()) {
     const sample = { ...DEFAULT_NAIL_INVITE_TEMPLATES[0]! };

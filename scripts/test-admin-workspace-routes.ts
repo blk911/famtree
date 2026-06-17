@@ -261,6 +261,8 @@ function run(): void {
     cardTemplateSource.includes("selectedTemplateId"),
     "admin templates page keys selection by template id",
   );
+  assert(cardTemplateSource.includes("Select invite"), "admin templates page has invite dropdown");
+  assert(cardTemplateSource.includes("selectTemplate"), "admin templates page uses shared selectTemplate");
   assert(
     cardTemplateSource.includes("DEFAULT_NAIL_INVITE_TEMPLATES"),
     "admin templates page seeds tabs from nail catalog ids",
