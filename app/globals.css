@@ -5117,6 +5117,25 @@
   color: #44403c;
 }
 
+.vmb-admin-template-preview__label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+  margin: 0 0 10px;
+}
+
+.vmb-admin-template-preview__empty {
+  margin: 0;
+  font-size: 13px;
+  color: #a8a29e;
+}
+
+.vmb-admin-template-preview__card {
+  margin: 0;
+}
+
 .vmb-admin-offer-preview__label {
   font-size: 12px;
   font-weight: 600;

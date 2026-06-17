@@ -279,13 +279,8 @@ export const INVITES_WORKSPACE_SECTIONS: WorkspaceSection[] = [
     title: "Configuration (canonical)",
     links: [
       {
-        label: "Templates",
-        description: "Card relationship copy templates.",
-        href: "/admin/invites/templates",
-      },
-      {
-        label: "Offers",
-        description: "Salon offer catalog.",
+        label: "Template Library",
+        description: "Nail invite templates with message, services, and rewards.",
         href: "/admin/invites/offers",
       },
       {
@@ -333,7 +328,7 @@ export const INVITES_WORKSPACE_SECTIONS: WorkspaceSection[] = [
     links: [
       {
         label: "Legacy VMB admin templates",
-        description: "Deprecated — redirects to /admin/invites/templates.",
+        description: "Deprecated — redirects to Template Library.",
         href: "/vmb/admin/templates",
         legacy: true,
       },
@@ -356,7 +351,7 @@ export const INVITES_WORKSPACE_SECTIONS: WorkspaceSection[] = [
 export const VMB_SALONS_PRODUCT_SECTIONS: WorkspaceSection[] = [
   {
     title: "Invite operating center",
-    description: "Configure templates, offers, services, and monitor invite outcomes.",
+    description: "Configure templates, services, and monitor invite outcomes.",
     links: [
       {
         label: "VMB Invites operating center",
@@ -364,13 +359,8 @@ export const VMB_SALONS_PRODUCT_SECTIONS: WorkspaceSection[] = [
         href: ADMIN_WORKSPACE_ROUTES.invites,
       },
       {
-        label: "Card templates",
-        description: "Relationship copy for outreach cards.",
-        href: "/admin/invites/templates",
-      },
-      {
-        label: "Offer catalog",
-        description: "Salon offers linked to services.",
+        label: "Template Library",
+        description: "Nail invite templates with message, services, rewards, and preview.",
         href: "/admin/invites/offers",
       },
       {

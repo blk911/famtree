@@ -16,7 +16,7 @@ type Props = {
   children: ReactNode;
 };
 
-/** Page header + flow row for admin builder pages (Services, Offers, Invite Builder). */
+/** Page header + flow row for admin builder pages (Services, Template Library). */
 export function AdminBuilderShell({
   title,
   subtitle,

@@ -44,6 +44,11 @@ export type VmbOffer = {
   serviceTags?: string[];
   serviceIds?: string[];
   serviceOptionIds?: string[];
+  /** Unified template library fields */
+  templateId?: string;
+  headline?: string;
+  body?: string;
+  ctaLabel?: string;
   active: boolean;
   isDefault: boolean;
   source?: VmbOfferSource;

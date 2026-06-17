@@ -1,23 +1,26 @@
 "use client";
 
-import { AdminOfferPreviewCard } from "@/components/vmb/admin/AdminOfferPreviewCard";
-import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
+import { AdminTemplatePreviewCard } from "@/components/vmb/admin/AdminTemplatePreviewCard";
+import type { NailTemplateDraft } from "@/lib/vmb/admin/nail-template-library";
+import type { InviteTemplateTokenContext } from "@/lib/vmb/invite-templates/invite-template-types";
 
 type Props = {
   open: boolean;
-  offer: VmbOffer;
+  draft: NailTemplateDraft;
   serviceNames: string[];
   rewardLabels: string[];
+  tokenContext?: InviteTemplateTokenContext;
   busy?: boolean;
   onClose: () => void;
   onSave: () => void;
 };
 
-export function AdminOfferReviewModal({
+export function AdminTemplateReviewModal({
   open,
-  offer,
+  draft,
   serviceNames,
   rewardLabels,
+  tokenContext,
   busy = false,
   onClose,
   onSave,
@@ -30,11 +33,11 @@ export function AdminOfferReviewModal({
         className="vmb-admin-review-modal__dialog"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="admin-offer-review-title"
+        aria-labelledby="admin-template-review-title"
         onClick={(event) => event.stopPropagation()}
       >
         <header className="vmb-admin-review-modal__header">
-          <h2 id="admin-offer-review-title">Review Offer</h2>
+          <h2 id="admin-template-review-title">Template Review</h2>
           <button type="button" className="vmb-admin-review-modal__close" onClick={onClose}>
             Close
           </button>
@@ -43,23 +46,31 @@ export function AdminOfferReviewModal({
         <div className="vmb-admin-review-modal__body">
           <dl className="vmb-admin-offer-review__summary">
             <div>
-              <dt>Offer name</dt>
-              <dd>{offer.name}</dd>
+              <dt>Template type</dt>
+              <dd>{draft.displayName}</dd>
             </div>
             <div>
-              <dt>Value label</dt>
-              <dd>{offer.valueLabel?.trim() || "—"}</dd>
+              <dt>Available to clients</dt>
+              <dd>{draft.active ? "Yes" : "No"}</dd>
             </div>
             <div className="vmb-admin-offer-review__summary-wide">
-              <dt>Offer text</dt>
-              <dd>{offer.offerText}</dd>
+              <dt>Headline</dt>
+              <dd>{draft.headline}</dd>
+            </div>
+            <div className="vmb-admin-offer-review__summary-wide">
+              <dt>Body</dt>
+              <dd>{draft.body}</dd>
             </div>
             <div>
-              <dt>Nail services</dt>
+              <dt>CTA</dt>
+              <dd>{draft.ctaLabel}</dd>
+            </div>
+            <div>
+              <dt>Selected services</dt>
               <dd>{serviceNames.length > 0 ? serviceNames.join(", ") : "None selected"}</dd>
             </div>
-            <div>
-              <dt>Rewards included</dt>
+            <div className="vmb-admin-offer-review__summary-wide">
+              <dt>Selected rewards</dt>
               <dd>
                 {rewardLabels.length > 0 ? (
                   <ul className="vmb-admin-offer-preview__chips">
@@ -74,16 +85,12 @@ export function AdminOfferReviewModal({
                 )}
               </dd>
             </div>
-            <div>
-              <dt>Available to clients</dt>
-              <dd>{offer.active ? "Yes" : "No"}</dd>
-            </div>
           </dl>
 
-          <AdminOfferPreviewCard
-            offer={offer}
-            serviceNames={serviceNames}
-            addonLabels={rewardLabels}
+          <AdminTemplatePreviewCard
+            draft={draft}
+            rewardLabels={rewardLabels}
+            tokenContext={tokenContext}
           />
         </div>
 
@@ -94,16 +101,13 @@ export function AdminOfferReviewModal({
             disabled={busy}
             onClick={onClose}
           >
-            Back to Edit
+            Back To Edit
           </button>
           <button type="button" className="taikos-opp-card__cta" disabled={busy} onClick={onSave}>
-            {busy ? "Saving…" : "Save to Offer Catalog"}
+            {busy ? "Saving…" : "Save To Library"}
           </button>
         </footer>
       </div>
     </div>
   );
 }
-
-export const OFFER_CATALOG_SAVED_MESSAGE =
-  "Saved to Offer Catalog. This offer can now be used in Invite Builder.";

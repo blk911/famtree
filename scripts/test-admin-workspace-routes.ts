@@ -70,8 +70,8 @@ function run(): void {
     assert(routePageExists(hub), `hub path resolves to page: ${hub}`);
   }
 
-  assert(INVITES_BUILDER_HUB.href === "/admin/invites/templates", "invite builder routes to templates");
-  assert(INVITES_HUB_SECONDARY_LINKS.length === 5, "five secondary invites hub links");
+  assert(INVITES_BUILDER_HUB.href === "/admin/invites/offers", "template library routes to offers page");
+  assert(INVITES_HUB_SECONDARY_LINKS.length === 4, "four secondary invites hub links");
   assert(INVITES_HUB_COMING_LATER.length === 3, "three coming-later invites hub links");
   for (const card of INVITES_OPERATING_CARDS) {
     assert(routePageExists(card.href), `invites area route exists: ${card.href}`);
@@ -81,7 +81,7 @@ function run(): void {
     path.join(process.cwd(), "components/admin/workspaces/InvitesOperatingCenter.tsx"),
     "utf8",
   );
-  assert(invitesHubSource.includes("Open Invite Builder"), "invites hub has primary builder CTA");
+  assert(invitesHubSource.includes("Open Template Library"), "invites hub has primary template library CTA");
   assert(invitesHubSource.includes("INVITES_HUB_SECONDARY_LINKS"), "invites hub uses secondary text links");
   assert(!invitesHubSource.includes("INVITES_OPERATING_CARDS.map"), "invites hub does not render card grid");
   assert(!invitesHubSource.includes("Operating areas"), "invites hub removes operating areas grid heading");
@@ -245,70 +245,41 @@ function run(): void {
   assert(workspaceShellSource.includes("vmb-admin-workspace"), "admin workspace shell uses canonical container");
   assert(!workspaceShellSource.includes("MarketIntelPageShell"), "admin workspace shell does not nest market intel shell");
 
-  const cardTemplateSource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/CardTemplateAdminClient.tsx"),
+  const templateLibrarySource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/TemplateLibraryAdminClient.tsx"),
     "utf8",
   );
-  assert(cardTemplateSource.includes("vmb-admin-builder-grid"), "invite builder uses standard three-column grid");
-  assert(cardTemplateSource.includes('role="tablist"'), "invite type selector is keyboard accessible");
-  assert(cardTemplateSource.includes("vmb-admin-builder__copy-input"), "invite copy fields use standard inputs");
-  assert(
-    (cardTemplateSource.match(/vmb-admin-builder__copy-input/g) ?? []).length >= 3,
-    "headline, body, and CTA fields are editable",
-  );
-  assert(
-    cardTemplateSource.includes("<AdminNailInviteCard"),
-    "admin templates page renders AdminNailInviteCard directly",
-  );
-  assert(!cardTemplateSource.includes("<CardPreview"), "admin templates page does not use CardPreview");
-  assert(
-    !cardTemplateSource.includes("PersonalInvitePreview"),
-    "admin templates page does not use PersonalInvitePreview",
-  );
-  assert(!cardTemplateSource.includes(">Tone<"), "tone is not shown in nail invite template editor");
-  assert(!cardTemplateSource.includes(">Image mode<"), "image mode is not shown in nail invite template editor");
-  assert(!cardTemplateSource.includes("CardBuilderImageSlots"), "card images disconnected from admin templates page");
-  assert(
-    cardTemplateSource.includes("selectedTemplateId"),
-    "admin templates page keys selection by template id",
-  );
-  assert(cardTemplateSource.includes("selectTemplate"), "admin templates page uses shared selectTemplate");
-  assert(cardTemplateSource.includes("Final invite preview"), "admin preview header is final invite preview");
-  assert(!cardTemplateSource.includes("Select invite"), "admin templates page has no invite dropdown");
-  assert(
-    cardTemplateSource.includes("DEFAULT_NAIL_INVITE_TEMPLATES"),
-    "admin templates page seeds tabs from nail catalog ids",
-  );
-  assert(cardTemplateSource.includes("AdminFinalCardCheckModal"), "admin final card check modal is available");
-  assert(cardTemplateSource.includes("AdminBuilderShell"), "admin templates use shared builder shell");
-  assert(cardTemplateSource.includes("InviteBuilderAttachOffer"), "admin builder includes attach offer section");
-  assert(cardTemplateSource.includes("Save template"), "invite template save action remains available");
-  assert(cardTemplateSource.includes("Reset to default"), "invite template reset action remains available");
+  assert(templateLibrarySource.includes("vmb-admin-builder-grid"), "template library uses standard three-column grid");
+  assert(templateLibrarySource.includes("Headline"), "template library edits headline");
+  assert(templateLibrarySource.includes("CTA Label"), "template library edits CTA label");
+  assert(templateLibrarySource.includes("OfferNailSelectionFields"), "template library includes nail services and rewards");
+  assert(templateLibrarySource.includes("AdminTemplatePreviewCard"), "template library uses client preview panel");
+  assert(templateLibrarySource.includes("AdminTemplateReviewModal"), "template library includes review modal");
+  assert(templateLibrarySource.includes("Review Template"), "template library uses review template action");
+  assert(templateLibrarySource.includes("Available To Clients"), "template library uses client-facing active label");
+  assert(templateLibrarySource.includes("TEMPLATE_LIBRARY_SAVED_MESSAGE"), "template library shows post-save confirmation");
+  assert(!templateLibrarySource.includes("Invite Builder"), "template library removes invite builder language");
+  assert(!templateLibrarySource.includes("Offer Catalog"), "template library removes offer catalog language");
+  assert(!templateLibrarySource.includes("Attached Offer"), "template library removes attached offer language");
+  assert(templateLibrarySource.includes("AdminBuilderShell"), "template library uses shared builder shell");
+  assert(templateLibrarySource.includes('title="Template Library"'), "template library page title is Template Library");
 
-  const offerCatalogSource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/OfferCatalogAdminClient.tsx"),
+  const flowNavSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/AdminBuilderFlowNav.tsx"),
     "utf8",
   );
-  assert(offerCatalogSource.includes("AdminBuilderShell"), "offer catalog uses shared builder shell");
-  assert(offerCatalogSource.includes("vmb-admin-builder-grid"), "offer catalog uses standard three-column grid");
-  assert(offerCatalogSource.includes("AdminOfferPreviewCard"), "offer catalog uses simple offer preview");
-  assert(!offerCatalogSource.includes("VmbPageFrame"), "offer catalog does not use VmbPageFrame");
-  assert(!offerCatalogSource.includes("CardPreviewOfferBlock"), "offer catalog does not use card preview block");
-  assert(!offerCatalogSource.includes(">Terms<"), "offer catalog editor omits terms field");
-  assert(!offerCatalogSource.includes("Linked services"), "offer catalog removes linked services multi-select");
-  assert(!offerCatalogSource.includes("Linked add-ons"), "offer catalog removes linked add-ons multi-select");
-  assert(offerCatalogSource.includes("AdminOfferReviewModal"), "offer catalog includes review modal");
-  assert(offerCatalogSource.includes("Review Offer"), "offer catalog uses review offer action");
-  assert(offerCatalogSource.includes("Available to Clients"), "offer catalog uses client-facing active label");
-  assert(offerCatalogSource.includes("OFFER_CATALOG_SAVED_MESSAGE"), "offer catalog shows post-save invite builder message");
-  assert(!offerCatalogSource.includes("Save offer"), "offer catalog does not save directly from editor");
-  assert(offerCatalogSource.includes("OfferNailSelectionFields"), "offer catalog uses nail checkbox selections");
+  assert(flowNavSource.includes("Template Library"), "flow nav shows template library step");
+  assert(flowNavSource.includes("Preview"), "flow nav shows preview hint");
+  assert(!flowNavSource.includes("Invite Builder"), "flow nav removes invite builder label");
+  assert(!flowNavSource.includes("Final Card"), "flow nav removes final card label");
+  assert(!flowNavSource.includes("Offers"), "flow nav removes offers step");
+
   const offerSelectionSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/OfferNailSelectionFields.tsx"),
     "utf8",
   );
-  assert(offerSelectionSource.includes("Nail Services"), "offer selection shows nail services section");
-  assert(offerSelectionSource.includes("Rewards Included"), "offer selection shows rewards included section");
+  assert(offerSelectionSource.includes("Nail Services"), "template selection shows nail services section");
+  assert(offerSelectionSource.includes("Rewards Included"), "template selection shows rewards included section");
 
   const serviceCatalogSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/PlatformServiceCatalogClient.tsx"),

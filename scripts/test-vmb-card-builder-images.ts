@@ -129,11 +129,11 @@ function run(): void {
   assert(personalInviteSource.includes("<CardHero"), "salon invite preview renders CardHero from model slots");
   assert(!personalInviteSource.includes("avatar-inner"), "salon invite band avoids fake person placeholder");
 
-  const adminClientSource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/CardTemplateAdminClient.tsx"),
+  const templateLibrarySource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/TemplateLibraryAdminClient.tsx"),
     "utf8",
   );
-  assert(adminClientSource.includes("ownerPhotoUrl"), "admin client accepts owner profile photo prefill");
+  assert(templateLibrarySource.includes("ownerName"), "template library accepts owner name for preview tokens");
 
   console.log("OK: VMB card builder image tests passed");
 }

@@ -55,14 +55,11 @@ export function VmbHelpMenu() {
           <Link href="/vmb/support" className="vmb-help-menu__item" role="menuitem" onClick={() => setOpen(false)}>
             Support
           </Link>
-          <Link href="/admin/invites/services" className="vmb-help-menu__item" role="menuitem" onClick={() => setOpen(false)}>
+          <Link href="/admin/service-catalog" className="vmb-help-menu__item" role="menuitem" onClick={() => setOpen(false)}>
             Services
           </Link>
           <Link href="/admin/invites/offers" className="vmb-help-menu__item" role="menuitem" onClick={() => setOpen(false)}>
-            Offers
-          </Link>
-          <Link href="/admin/invites/templates" className="vmb-help-menu__item" role="menuitem" onClick={() => setOpen(false)}>
-            Templates
+            Template Library
           </Link>
         </div>
       ) : null}

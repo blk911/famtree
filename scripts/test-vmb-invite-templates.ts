@@ -46,7 +46,11 @@ import {
   offerToAdminNailInviteCardOffer,
   pickDefaultAttachedOfferId,
 } from "../lib/vmb/admin/invite-offer-attachment";
-import { listSavedCatalogOffers } from "../lib/vmb/admin/saved-offer-catalog";
+import {
+  buildNailTemplateDrafts,
+  nailTemplateDraftToOffer,
+  templateStorageId,
+} from "../lib/vmb/admin/nail-template-library";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -345,7 +349,7 @@ async function run(): Promise<void> {
   assert(cardOffer?.price === "$20 off", "offer card uses value label as price");
   assert(cardOffer?.serviceName === "Gel Manicure", "offer card includes linked service");
 
-  const catalogPool = listSavedCatalogOffers([
+  const catalogPool = buildNailTemplateDrafts("demo-salon", [
     {
       id: "default-birthday",
       name: "Birthday Default",
@@ -358,30 +362,42 @@ async function run(): Promise<void> {
       updatedAt: "",
     },
     {
-      id: "salon-birthday",
+      id: templateStorageId("demo-salon", "nails-birthday-celebration"),
+      templateId: "nails-birthday-celebration",
       name: "Birthday Saved",
       category: "birthday",
       description: "",
-      offerText: "Saved",
+      offerText: "Saved body",
+      headline: "Saved headline",
+      body: "Saved body",
+      ctaLabel: "Saved CTA",
       active: true,
       isDefault: false,
       createdAt: "",
       updatedAt: "",
     },
-    {
-      id: "salon-archived",
-      name: "Archived",
-      category: "vip",
-      description: "",
-      offerText: "Off",
-      active: false,
-      isDefault: false,
-      createdAt: "",
-      updatedAt: "",
-    },
   ]);
-  assert(catalogPool.length === 1, "saved catalog list excludes defaults and inactive offers");
-  assert(catalogPool[0]?.id === "salon-birthday", "saved catalog list keeps persisted salon offers");
+  const savedBirthday = catalogPool.find((row) => row.templateId === "nails-birthday-celebration");
+  assert(savedBirthday?.headline === "Saved headline", "template library merges saved headline");
+  assert(savedBirthday?.saved === true, "template library marks saved templates");
+
+  const offerPayload = nailTemplateDraftToOffer(
+    {
+      templateId: "nails-birthday-celebration",
+      displayName: "Birthday Celebration",
+      headline: "Headline",
+      body: "Body copy",
+      ctaLabel: "Book now",
+      serviceIds: ["default-nails-gel-manicure"],
+      serviceOptionIds: ["addon-chrome"],
+      active: true,
+      saved: false,
+      offerCategory: "birthday",
+    },
+    "demo-salon",
+  );
+  assert(offerPayload.templateId === "nails-birthday-celebration", "template save persists templateId");
+  assert(offerPayload.headline === "Headline", "template save persists headline");
 
   const patchedDrafts = patchInviteDraftRecord(draftMap, birthdayId, { body: "Edited birthday body" });
   assert(
@@ -393,49 +409,25 @@ async function run(): Promise<void> {
     "offer selection does not alter selectedTemplateId",
   );
 
-  const adminClientSource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/CardTemplateAdminClient.tsx"),
+  const templateLibrarySource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/TemplateLibraryAdminClient.tsx"),
     "utf8",
   );
-  assert(!adminClientSource.includes("CardPreview"), "admin templates page does not import CardPreview");
-  assert(
-    !adminClientSource.includes("PersonalInvitePreview"),
-    "admin templates page does not import PersonalInvitePreview",
-  );
-  assert(
-    adminClientSource.includes("AdminNailInviteCard"),
-    "admin templates page renders AdminNailInviteCard directly",
-  );
-  assert(adminClientSource.includes("Final invite preview"), "admin preview uses final invite preview label");
-  assert(!adminClientSource.includes("Select invite"), "admin editor has no invite dropdown");
-  assert(!adminClientSource.includes("AdminNailInvitePreviewDebugPanel"), "admin page has no debug panel");
-  assert(!adminClientSource.includes("PAGE RENDER DEBUG"), "admin page has no page debug box");
-  assert(!adminClientSource.includes("Catalog offer"), "admin page has no catalog offer dropdown");
-  assert(adminClientSource.includes("AdminBuilderShell"), "admin builder uses shared shell");
-  assert(adminClientSource.includes("vmb-admin-builder-grid"), "admin builder uses standard three-column grid");
-  assert(adminClientSource.includes("vmb-invite-builder__flow-guide"), "builder shows quiet flow guide");
-  assert(adminClientSource.includes("attachedOfferId"), "attached offer selection is separate from invite copy");
-  assert(adminClientSource.includes("offer={attachedOfferCard}"), "preview and modal receive attached offer");
-  assert(adminClientSource.includes("resolveNailOfferServiceLabels"), "attached offer uses catalog reward labels");
-  assert(adminClientSource.includes("listSavedCatalogOffers"), "invite builder loads saved catalog offers only");
-  assert(!adminClientSource.includes("pickDefaultAttachedOfferId"), "invite builder does not auto-attach default promos");
-  assert(!adminClientSource.match(/onAttachedOfferChange=\{[^}]*patchSelectedDraft/s), "offer picker does not patch invite draft");
-  const attachOfferSource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/InviteBuilderAttachOffer.tsx"),
+  assert(templateLibrarySource.includes("Template Library"), "template library client uses unified naming");
+  assert(templateLibrarySource.includes("buildNailTemplateDrafts"), "template library loads unified template drafts");
+  assert(templateLibrarySource.includes("AdminTemplatePreviewCard"), "template library renders client preview");
+  assert(templateLibrarySource.includes("Review Template"), "template library uses review template workflow");
+  assert(!templateLibrarySource.includes("InviteBuilderAttachOffer"), "template library removes attach offer UI");
+  assert(!templateLibrarySource.includes("attachedOfferId"), "template library removes attached offer state");
+  assert(!templateLibrarySource.includes("Offer Catalog"), "template library removes offer catalog language");
+
+  const previewSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/AdminTemplatePreviewCard.tsx"),
     "utf8",
   );
-  assert(attachOfferSource.includes("Attach Offer"), "attach offer section replaces insert elements");
-  assert(attachOfferSource.includes("Select saved offer"), "attach offer dropdown uses saved offer label");
-  assert(
-    attachOfferSource.includes("No saved offers yet. Create one in Offer Catalog."),
-    "attach offer empty state guides to catalog",
-  );
-  assert(attachOfferSource.includes("Open Offer Catalog"), "attach offer links to offer catalog");
-  assert(attachOfferSource.includes("/admin/invites/offers"), "attach offer catalog link uses offers route");
-  assert(attachOfferSource.includes("AdminOfferPreviewCard"), "attach offer shows selected offer preview");
-  assert(adminClientSource.includes("selectTemplate"), "pills use selectTemplate");
-  assert(adminClientSource.includes("selectedDraft"), "editor and preview use selectedDraft");
-  assert(!adminClientSource.includes("activeCardType"), "legacy card type does not drive preview");
+  assert(previewSource.includes("Rewards included"), "template preview shows rewards included");
+  assert(!previewSource.includes("Linked services"), "template preview hides linked services metadata");
+  assert(!previewSource.includes("offer block"), "template preview removes offer terminology");
 
   assert(NAIL_OFFER_SERVICE_CHOICES.length === 7, "seven nail service choices for offer editor");
   assert(NAIL_OFFER_ADDON_CHOICES.length === 7, "seven nail add-on choices for offer editor");
