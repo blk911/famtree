@@ -416,15 +416,24 @@ async function run(): Promise<void> {
   assert(builderSource.includes("Nails Template Builder"), "builder client uses factory naming");
   assert(builderSource.includes("useNailTemplateInventory"), "builder loads template drafts via shared inventory hook");
   assert(builderSource.includes("Review Template"), "builder uses review template workflow");
+  assert(builderSource.includes("BuilderImageInsertsSection"), "builder includes image insert placeholders");
 
-  const librarySource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/NailsLibraryAdminClient.tsx"),
+  const salonInviteCardSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/invites/SalonInviteCard.tsx"),
     "utf8",
   );
-  assert(librarySource.includes("Nails Library"), "library client uses inventory shelf naming");
-  assert(librarySource.includes("Publish To Salons"), "library exposes publish action placeholder");
-  assert(librarySource.includes("Edit"), "library links edit to builder");
-  assert(!librarySource.includes("OfferNailSelectionFields"), "library does not edit services inline");
+  assert(salonInviteCardSource.includes("SalonInviteCard"), "salon invite card component exists");
+  assert(salonInviteCardSource.includes("adminReview"), "salon invite card supports admin review mode");
+  assert(salonInviteCardSource.includes("Rewards included"), "salon invite card renders rewards");
+  assert(salonInviteCardSource.includes("ownerPhotoUrl"), "salon invite card accepts owner photo");
+  assert(salonInviteCardSource.includes("serviceImageUrl"), "salon invite card accepts service image");
+
+  const reviewModalSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/AdminSalonInviteReviewModal.tsx"),
+    "utf8",
+  );
+  assert(reviewModalSource.includes("Final Salon Invite Preview"), "review modal uses final salon invite title");
+  assert(reviewModalSource.includes("SalonInviteCard"), "review modal renders salon invite card");
 
   const routesSource = fs.readFileSync(
     path.join(process.cwd(), "lib/vmb/admin/nail-template-routes.ts"),

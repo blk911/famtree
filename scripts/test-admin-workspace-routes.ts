@@ -265,8 +265,12 @@ function run(): void {
   assert(librarySource.includes("activeStep=\"library\""), "library uses library flow step");
   assert(librarySource.includes("Publish To Salons"), "library includes publish to salons action");
   assert(librarySource.includes("builderRouteForTemplate"), "library edit opens template builder");
+  assert(librarySource.includes("Edit in Builder"), "library uses edit in builder label");
+  assert(librarySource.includes("Review Final Card"), "library opens final card review");
+  assert(librarySource.includes("AdminSalonInviteReviewModal"), "library uses salon invite review modal");
+  assert(librarySource.includes("vmb-admin-builder-grid--two-col"), "library uses two-column layout without preview");
+  assert(!librarySource.includes("AdminTemplatePreviewCard"), "library removes permanent preview column");
   assert(!librarySource.includes("OfferNailSelectionFields"), "library is read-only — no service checkboxes");
-  assert(librarySource.includes("AdminTemplatePreviewCard"), "library shows client preview");
 
   const flowNavSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/AdminBuilderFlowNav.tsx"),

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminTemplatePreviewCard } from "@/components/vmb/admin/AdminTemplatePreviewCard";
 import { AdminTemplateReviewModal } from "@/components/vmb/admin/AdminTemplateReviewModal";
+import { BuilderImageInsertsSection } from "@/components/vmb/admin/BuilderImageInsertsSection";
 import { OfferNailSelectionFields } from "@/components/vmb/admin/OfferNailSelectionFields";
 import { useNailTemplateInventory } from "@/components/vmb/admin/useNailTemplateInventory";
 import {
@@ -20,6 +21,10 @@ import {
 } from "@/lib/vmb/admin/nail-offer-builder-selections";
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
+import {
+  EMPTY_SALON_INVITE_IMAGE_INSERTS,
+  type SalonInviteImageInserts,
+} from "@/lib/vmb/invites/salon-invite-image-inserts";
 
 type Props = {
   salonId?: string;
@@ -42,6 +47,9 @@ export function TemplateBuilderAdminClient({
   const [reviewOpen, setReviewOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [imageInserts, setImageInserts] = useState<SalonInviteImageInserts>(
+    EMPTY_SALON_INVITE_IMAGE_INSERTS,
+  );
 
   useEffect(() => {
     if (!initialTemplateId) return;
@@ -186,6 +194,8 @@ export function TemplateBuilderAdminClient({
                 onServiceOptionIdsChange={(serviceOptionIds) => patchDraft({ serviceOptionIds })}
               />
 
+              <BuilderImageInsertsSection inserts={imageInserts} onChange={setImageInserts} />
+
               <label className="vmb-admin-builder-grid__field vmb-offer-admin__checkbox">
                 <input
                   type="checkbox"
@@ -224,7 +234,11 @@ export function TemplateBuilderAdminClient({
         <aside className="vmb-admin-builder-grid__preview">
           <AdminTemplatePreviewCard
             draft={draft}
+            serviceNames={previewServiceNames}
             rewardLabels={previewRewardLabels}
+            ownerName={ownerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName}
+            salonName={salonName}
+            imageInserts={imageInserts}
             tokenContext={tokenContext}
           />
         </aside>
@@ -236,6 +250,9 @@ export function TemplateBuilderAdminClient({
           draft={draft}
           serviceNames={previewServiceNames}
           rewardLabels={previewRewardLabels}
+          ownerName={ownerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName}
+          salonName={salonName}
+          imageInserts={imageInserts}
           tokenContext={tokenContext}
           busy={busy}
           onClose={() => setReviewOpen(false)}

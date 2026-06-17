@@ -1,7 +1,9 @@
 "use client";
 
-import { AdminTemplatePreviewCard } from "@/components/vmb/admin/AdminTemplatePreviewCard";
+import { SalonInviteCard } from "@/components/vmb/invites/SalonInviteCard";
 import type { NailTemplateDraft } from "@/lib/vmb/admin/nail-template-library";
+import type { SalonInviteImageInserts } from "@/lib/vmb/invites/salon-invite-image-inserts";
+import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
 import type { InviteTemplateTokenContext } from "@/lib/vmb/invite-templates/invite-template-types";
 
 type Props = {
@@ -9,6 +11,9 @@ type Props = {
   draft: NailTemplateDraft;
   serviceNames: string[];
   rewardLabels: string[];
+  ownerName?: string;
+  salonName?: string;
+  imageInserts?: SalonInviteImageInserts;
   tokenContext?: InviteTemplateTokenContext;
   busy?: boolean;
   onClose: () => void;
@@ -20,6 +25,9 @@ export function AdminTemplateReviewModal({
   draft,
   serviceNames,
   rewardLabels,
+  ownerName,
+  salonName,
+  imageInserts,
   tokenContext,
   busy = false,
   onClose,
@@ -87,9 +95,19 @@ export function AdminTemplateReviewModal({
             </div>
           </dl>
 
-          <AdminTemplatePreviewCard
-            draft={draft}
-            rewardLabels={rewardLabels}
+          <SalonInviteCard
+            inviteTypeLabel={draft.displayName}
+            headline={draft.headline}
+            body={draft.body}
+            ctaLabel={draft.ctaLabel}
+            services={serviceNames}
+            rewards={rewardLabels}
+            ownerName={ownerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName}
+            salonName={salonName}
+            ownerPhotoUrl={imageInserts?.ownerPhotoUrl}
+            salonLogoUrl={imageInserts?.salonLogoUrl}
+            serviceImageUrl={imageInserts?.serviceImageUrl}
+            mode="adminReview"
             tokenContext={tokenContext}
           />
         </div>
