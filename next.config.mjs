@@ -8,6 +8,7 @@ const nextConfig = {
     return [
       { source: "/admin/studio", destination: "/admin/discovery", permanent: false },
       { source: "/vmb/dashboard", destination: "/vmb/today", permanent: false },
+      { source: "/admin/invites", destination: "/admin/invites/builder", permanent: false },
       { source: "/vmb/admin/templates", destination: "/admin/invites/builder", permanent: false },
       { source: "/admin/invites/templates", destination: "/admin/invites/builder", permanent: false },
       { source: "/admin/invites/offers", destination: "/admin/invites/library", permanent: false },

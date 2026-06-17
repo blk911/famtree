@@ -173,7 +173,7 @@ async function run(): Promise<void> {
 
   const outreachLink = INVITES_HUB_SECONDARY_LINKS.find((link) => link.id === "outreach");
   assert(Boolean(outreachLink), "invites hub includes outreach secondary link");
-  assert(INVITES_BUILDER_HUB.href === INVITES_ADMIN_ROUTES.templates, "invite builder is templates route");
+  assert(INVITES_BUILDER_HUB.href === INVITES_ADMIN_ROUTES.builder, "invite builder is builder route");
 
   const adminClient = read("components/vmb/admin/OutreachMessagesAdminClient.tsx");
   assert(adminClient.includes("/api/vmb/outreach-presets"), "admin client loads outreach presets API");

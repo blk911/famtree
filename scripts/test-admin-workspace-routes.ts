@@ -70,6 +70,7 @@ function run(): void {
     assert(routePageExists(hub), `hub path resolves to page: ${hub}`);
   }
 
+  assert(ADMIN_WORKSPACE_ROUTES.invites === "/admin/invites/builder", "invites nav routes to template builder");
   assert(INVITES_BUILDER_HUB.href === "/admin/invites/builder", "template builder routes to builder page");
   assert(INVITES_HUB_SECONDARY_LINKS.length === 5, "five secondary invites hub links");
   assert(INVITES_HUB_COMING_LATER.length === 3, "three coming-later invites hub links");
@@ -81,8 +82,15 @@ function run(): void {
     path.join(process.cwd(), "components/admin/workspaces/InvitesOperatingCenter.tsx"),
     "utf8",
   );
-  assert(invitesHubSource.includes("Open Template Builder"), "invites hub has primary template builder CTA");
+  assert(!invitesHubSource.includes("Open Template Builder"), "invites hub removes primary builder CTA");
+  assert(!invitesHubSource.includes("vmb-invites-hub__primary"), "invites hub removes primary workbench card");
   assert(invitesHubSource.includes("INVITES_HUB_SECONDARY_LINKS"), "invites hub uses secondary text links");
+
+  const invitesPageSource = fs.readFileSync(
+    path.join(process.cwd(), "app/(app)/admin/(platform)/invites/page.tsx"),
+    "utf8",
+  );
+  assert(invitesPageSource.includes('redirect("/admin/invites/builder")'), "invites index redirects to builder");
   assert(!invitesHubSource.includes("INVITES_OPERATING_CARDS.map"), "invites hub does not render card grid");
   assert(!invitesHubSource.includes("Operating areas"), "invites hub removes operating areas grid heading");
 

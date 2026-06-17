@@ -175,7 +175,7 @@ export function NailInviteCatalogAdminClient({ salonId, salonName, providerName 
             Admin-defined invite templates — salon pages will consume these approved renders.
           </p>
         </div>
-        <Link href="/admin/invites" className="vmb-nail-invite-catalog__back">
+        <Link href="/admin/invites/builder" className="vmb-nail-invite-catalog__back">
           ← Invites
         </Link>
       </header>

@@ -30,7 +30,7 @@ export const ADMIN_WORKSPACE_ROUTES = {
   social: "/admin/social",
   operators: "/admin/operators",
   members: "/admin/members",
-  invites: "/admin/invites",
+  invites: "/admin/invites/builder",
   serviceCatalog: "/admin/service-catalog",
   vmbSalons: "/admin/products/vmb-salons",
 } as const;
@@ -473,7 +473,6 @@ export const ADMIN_PLATFORM_HUB_PATHS = [
   ADMIN_WORKSPACE_ROUTES.invites,
   ADMIN_WORKSPACE_ROUTES.serviceCatalog,
   ADMIN_WORKSPACE_ROUTES.vmbSalons,
-  "/admin/invites/builder",
   "/admin/invites/library",
   "/admin/invites/services",
   "/admin/invites/queue",
