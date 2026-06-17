@@ -298,8 +298,12 @@ function run(): void {
   assert(!offerCatalogSource.includes("Linked services"), "offer catalog removes linked services multi-select");
   assert(!offerCatalogSource.includes("Linked add-ons"), "offer catalog removes linked add-ons multi-select");
   assert(offerCatalogSource.includes("OfferNailSelectionFields"), "offer catalog uses nail checkbox selections");
-  assert(offerCatalogSource.includes("Applies to"), "offer catalog shows applies-to section");
-  assert(offerCatalogSource.includes("Offer includes"), "offer catalog shows offer-includes section");
+  const offerSelectionSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/OfferNailSelectionFields.tsx"),
+    "utf8",
+  );
+  assert(offerSelectionSource.includes("Applies to"), "offer selection shows applies-to section");
+  assert(offerSelectionSource.includes("Offer includes"), "offer selection shows offer-includes section");
 
   const serviceCatalogSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/PlatformServiceCatalogClient.tsx"),
