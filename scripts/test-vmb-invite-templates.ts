@@ -418,6 +418,8 @@ async function run(): Promise<void> {
   assert(builderSource.includes("Review Template"), "builder uses review template workflow");
   assert(builderSource.includes("SnapshotPreviewCard"), "builder preview renders from snapshot");
   assert(!builderSource.includes("AdminTemplatePreviewCard"), "builder removes live draft preview card");
+  assert(builderSource.includes("✓ Saved to Library"), "builder shows inline save confirmation");
+  assert(builderSource.includes("View in Library"), "builder links to library after save");
 
   const salonInviteCardSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/invites/SalonInviteCard.tsx"),

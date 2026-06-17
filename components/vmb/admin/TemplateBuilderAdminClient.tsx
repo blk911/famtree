@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminTemplateReviewModal } from "@/components/vmb/admin/AdminTemplateReviewModal";
@@ -12,10 +12,9 @@ import {
   baselineNailTemplateDraft,
   buildDraftInviteSnapshot,
   nailTemplateDraftToOffer,
-  TEMPLATE_LIBRARY_SAVED_MESSAGE,
   type NailTemplateDraft,
 } from "@/lib/vmb/admin/nail-template-library";
-import { NAILS_LIBRARY_ROUTE } from "@/lib/vmb/admin/nail-template-routes";
+import { libraryRouteForTemplate } from "@/lib/vmb/admin/nail-template-routes";
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
 import {
@@ -42,11 +41,13 @@ export function TemplateBuilderAdminClient({
   );
   const [draft, setDraft] = useState<NailTemplateDraft | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [imageInserts, setImageInserts] = useState<SalonInviteImageInserts>(
     EMPTY_SALON_INVITE_IMAGE_INSERTS,
   );
+  const loadedTemplateIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!initialTemplateId) return;
@@ -61,16 +62,19 @@ export function TemplateBuilderAdminClient({
   );
 
   useEffect(() => {
-    if (selectedBaseline) {
-      setDraft({ ...selectedBaseline });
-      const snapshot = selectedBaseline.librarySnapshot;
-      setImageInserts({
-        ownerPhotoUrl: snapshot?.ownerPhotoUrl,
-        salonLogoUrl: snapshot?.salonLogoUrl,
-        serviceImageUrl: snapshot?.serviceImageUrl,
-      });
-    }
-  }, [selectedBaseline]);
+    if (!selectedBaseline) return;
+    if (loadedTemplateIdRef.current === selectedTemplateId) return;
+    loadedTemplateIdRef.current = selectedTemplateId;
+    setDraft({ ...selectedBaseline });
+    const snapshot = selectedBaseline.librarySnapshot;
+    setImageInserts({
+      ownerPhotoUrl: snapshot?.ownerPhotoUrl,
+      salonLogoUrl: snapshot?.salonLogoUrl,
+      serviceImageUrl: snapshot?.serviceImageUrl,
+    });
+    setSaveSuccess(false);
+    setStatus(null);
+  }, [selectedBaseline, selectedTemplateId]);
 
   const tokenContext = useMemo(
     () => ({
@@ -93,7 +97,15 @@ export function TemplateBuilderAdminClient({
   }, [draft, imageInserts, ownerName, salonName]);
 
   function patchDraft(patch: Partial<NailTemplateDraft>) {
+    setSaveSuccess(false);
+    setStatus(null);
     setDraft((current) => (current ? { ...current, ...patch } : current));
+  }
+
+  function handleImageInsertsChange(next: SalonInviteImageInserts) {
+    setSaveSuccess(false);
+    setStatus(null);
+    setImageInserts(next);
   }
 
   async function handleSaveToLibrary() {
@@ -114,9 +126,13 @@ export function TemplateBuilderAdminClient({
     setBusy(false);
     if (data.ok) {
       setReviewOpen(false);
-      setStatus(`${TEMPLATE_LIBRARY_SAVED_MESSAGE} View in Library.`);
-      await reload();
+      setSaveSuccess(true);
+      setDraft((current) =>
+        current ? { ...current, saved: true, librarySnapshot: snapshot } : current,
+      );
+      void reload();
     } else {
+      setSaveSuccess(false);
       setStatus(data.error ?? "Save failed.");
     }
   }
@@ -127,6 +143,7 @@ export function TemplateBuilderAdminClient({
     if (!baseline) return;
     setBusy(true);
     setStatus(null);
+    setSaveSuccess(false);
     setDraft({ ...baseline, saved: false });
     setImageInserts(EMPTY_SALON_INVITE_IMAGE_INSERTS);
 
@@ -139,7 +156,8 @@ export function TemplateBuilderAdminClient({
 
     setBusy(false);
     setStatus("Reset to default template.");
-    await reload();
+    loadedTemplateIdRef.current = null;
+    void reload();
   }
 
   if (!salonId) {
@@ -155,7 +173,7 @@ export function TemplateBuilderAdminClient({
   return (
     <AdminBuilderShell
       title="Nails Template Builder"
-      subtitle="Create and refine invitation assets — then save finished versions to the Nails Library."
+      subtitle="Workbench for creating and refining invitation assets — save finished versions to Library."
       activeStep="builder"
     >
       <div className="vmb-admin-builder-grid">
@@ -167,7 +185,10 @@ export function TemplateBuilderAdminClient({
                 <button
                   type="button"
                   className={`vmb-admin-builder-grid__type${selectedTemplateId === row.templateId ? " vmb-admin-builder-grid__type--active" : ""}`}
-                  onClick={() => setSelectedTemplateId(row.templateId)}
+                  onClick={() => {
+                    loadedTemplateIdRef.current = null;
+                    setSelectedTemplateId(row.templateId);
+                  }}
                 >
                   {row.displayName}
                   {row.saved ? (
@@ -204,7 +225,7 @@ export function TemplateBuilderAdminClient({
                 onServiceOptionIdsChange={(serviceOptionIds) => patchDraft({ serviceOptionIds })}
               />
 
-              <BuilderImageInsertsSection inserts={imageInserts} onChange={setImageInserts} />
+              <BuilderImageInsertsSection inserts={imageInserts} onChange={handleImageInsertsChange} />
 
               <label className="vmb-admin-builder-grid__field vmb-offer-admin__checkbox">
                 <input
@@ -232,11 +253,22 @@ export function TemplateBuilderAdminClient({
                 >
                   Reset
                 </button>
-                <Link href={NAILS_LIBRARY_ROUTE} className="vmb-admin-builder__header-link">
-                  View Library
-                </Link>
               </div>
-              {status ? <p className="vmb-admin-builder-grid__status">{status}</p> : null}
+              {saveSuccess ? (
+                <div className="vmb-admin-builder-grid__save-success">
+                  <p className="vmb-admin-builder-grid__status vmb-admin-builder-grid__status--success">
+                    ✓ Saved to Library
+                  </p>
+                  <Link
+                    href={libraryRouteForTemplate(draft.templateId)}
+                    className="vmb-admin-builder-grid__save-link"
+                  >
+                    View in Library
+                  </Link>
+                </div>
+              ) : status ? (
+                <p className="vmb-admin-builder-grid__status">{status}</p>
+              ) : null}
             </>
           ) : null}
         </section>

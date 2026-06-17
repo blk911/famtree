@@ -23,8 +23,7 @@ export type NailTemplateDraft = {
   librarySnapshot?: InviteTemplateSnapshot | null;
 };
 
-export const TEMPLATE_LIBRARY_SAVED_MESSAGE =
-  "Saved to Nails Library.";
+export const TEMPLATE_LIBRARY_SAVED_MESSAGE = "Saved to Library";
 
 export function templateStorageId(salonId: string, templateId: string): string {
   return `${salonId}-${templateId}`;

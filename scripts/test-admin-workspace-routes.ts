@@ -266,6 +266,11 @@ function run(): void {
   assert(builderSource.includes("SnapshotPreviewCard"), "builder preview renders from snapshot");
   assert(!builderSource.includes("AdminTemplatePreviewCard"), "builder removes live draft preview card");
   assert(!builderSource.includes("Publish To Salons"), "builder does not publish to salons");
+  assert(builderSource.includes("✓ Saved to Library"), "builder shows inline save confirmation");
+  assert(builderSource.includes("View in Library"), "builder save offers view in library link");
+  assert(builderSource.includes("libraryRouteForTemplate"), "view in library links to library route");
+  assert(!builderSource.includes("router.push"), "builder save does not navigate away");
+  assert(!builderSource.includes("await reload()"), "builder save does not block on full inventory reload");
 
   const librarySource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/NailsLibraryAdminClient.tsx"),
@@ -283,13 +288,17 @@ function run(): void {
   assert(librarySource.includes("createSalonLocalCopy"), "library publish uses salon copy service");
   assert(!librarySource.includes("AdminTemplatePreviewCard"), "library removes permanent preview column");
   assert(!librarySource.includes("OfferNailSelectionFields"), "library is read-only — no service checkboxes");
+  assert(!librarySource.includes("buildDraftInviteSnapshot"), "library reads stored snapshots only");
+  assert(librarySource.includes("savedDrafts"), "library lists saved inventory assets only");
+  assert(!librarySource.includes("<dt>Headline</dt>"), "library omits builder-style content fields");
 
   const flowNavSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/AdminBuilderFlowNav.tsx"),
     "utf8",
   );
-  assert(flowNavSource.includes("Template Builder"), "flow nav shows template builder step");
+  assert(flowNavSource.includes("Builder"), "flow nav shows builder step");
   assert(flowNavSource.includes("Library"), "flow nav shows library step");
+  assert(!flowNavSource.includes("Template Builder"), "flow nav uses builder label");
   assert(flowNavSource.includes("/admin/invites/builder"), "flow nav links to builder route");
   assert(flowNavSource.includes("/admin/invites/library"), "flow nav links to library route");
   assert(!flowNavSource.includes("Preview"), "flow nav removes preview hint");

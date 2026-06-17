@@ -4732,6 +4732,37 @@
   color: #78716c;
 }
 
+.vmb-admin-builder-grid__status--success {
+  margin: 0;
+  color: #15803d;
+}
+
+.vmb-admin-builder-grid__save-success {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+.vmb-admin-builder-grid__save-link {
+  font-size: 13px;
+  color: #57534e;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.vmb-admin-builder-grid__save-link:hover {
+  color: #1c1917;
+}
+
+.vmb-nails-library__empty {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #78716c;
+}
+
 .vmb-card-preview-modal__template-indicator,
 .vmb-card-preview-modal__template-status {
   margin: 0 0 10px;
