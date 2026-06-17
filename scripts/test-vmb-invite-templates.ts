@@ -377,6 +377,15 @@ async function run(): Promise<void> {
   assert(adminClientSource.includes("vmb-invite-builder__flow-guide"), "builder shows quiet flow guide");
   assert(adminClientSource.includes("attachedOfferId"), "attached offer selection is separate from invite copy");
   assert(adminClientSource.includes("offer={attachedOfferCard}"), "preview and modal receive attached offer");
+  assert(adminClientSource.includes("resolveNailOfferServiceLabels"), "attached offer uses catalog reward labels");
+  assert(adminClientSource.includes("catalogOffers={activeOffers}"), "insert elements list saved catalog offers");
+  assert(!adminClientSource.match(/onAttachedOfferChange=\{[^}]*patchSelectedDraft/s), "offer picker does not patch invite draft");
+  const insertElementsSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/InviteBuilderInsertElements.tsx"),
+    "utf8",
+  );
+  assert(insertElementsSource.includes("Select from Offer Catalog"), "insert elements lists offer catalog");
+  assert(insertElementsSource.includes("offer block only"), "insert elements clarifies offer-only attachment");
   assert(adminClientSource.includes("selectTemplate"), "pills use selectTemplate");
   assert(adminClientSource.includes("selectedDraft"), "editor and preview use selectedDraft");
   assert(!adminClientSource.includes("activeCardType"), "legacy card type does not drive preview");
@@ -390,6 +399,14 @@ async function run(): Promise<void> {
   assert(
     resolveNailOfferAddonLabels(["addon-chrome"])[0] === "Chrome Upgrade",
     "offer add-on labels use salon-friendly names",
+  );
+  assert(
+    resolveNailOfferAddonLabels(["addon-french"])[0] === "French Tip Upgrade",
+    "french add-on uses French Tip Upgrade label",
+  );
+  assert(
+    resolveNailOfferAddonLabels(["offer-perk-removal-credit"])[0] === "Free Removal",
+    "removal perk uses Free Removal label",
   );
   assert(
     toggleOfferIdSelection(["default-nails-gel-x"], "default-nails-gel-x").length === 0,

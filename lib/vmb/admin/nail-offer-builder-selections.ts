@@ -17,12 +17,12 @@ export const NAIL_OFFER_SERVICE_CHOICES: readonly NailOfferBuilderChoice[] = [
 
 export const NAIL_OFFER_ADDON_CHOICES: readonly NailOfferBuilderChoice[] = [
   { id: "addon-chrome", label: "Chrome Upgrade" },
-  { id: "addon-french", label: "French Design" },
-  { id: "addon-freestyle-art", label: "Nail Art Credit" },
+  { id: "addon-french", label: "French Tip Upgrade" },
   { id: "addon-crystals", label: "Crystal Accent" },
+  { id: "addon-freestyle-art", label: "Custom Nail Art" },
   { id: "offer-perk-priority-booking", label: "Priority Booking" },
   { id: "offer-perk-complimentary-repair", label: "Complimentary Repair" },
-  { id: "offer-perk-removal-credit", label: "Removal Credit" },
+  { id: "offer-perk-removal-credit", label: "Free Removal" },
 ] as const;
 
 const SERVICE_LABEL_BY_ID = new Map(NAIL_OFFER_SERVICE_CHOICES.map((row) => [row.id, row.label]));

@@ -2,16 +2,16 @@ import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 
 type Props = {
   attachedOfferId: string;
-  activeOffers: readonly VmbOffer[];
+  catalogOffers: readonly VmbOffer[];
   onAttachedOfferChange: (offerId: string) => void;
 };
 
 export function InviteBuilderInsertElements({
   attachedOfferId,
-  activeOffers,
+  catalogOffers,
   onAttachedOfferChange,
 }: Props) {
-  const selectedOffer = activeOffers.find((offer) => offer.id === attachedOfferId);
+  const selectedOffer = catalogOffers.find((offer) => offer.id === attachedOfferId);
 
   return (
     <section className="vmb-invite-builder__inserts" aria-label="Insert elements">
@@ -23,17 +23,19 @@ export function InviteBuilderInsertElements({
           <select
             value={attachedOfferId}
             onChange={(event) => onAttachedOfferChange(event.target.value)}
-            aria-label="Select offer"
+            aria-label="Select offer from catalog"
           >
-            <option value="">Select offer</option>
-            {activeOffers.map((offer) => (
+            <option value="">Select from Offer Catalog</option>
+            {catalogOffers.map((offer) => (
               <option key={offer.id} value={offer.id}>
                 {offer.name}
               </option>
             ))}
           </select>
           <p className="vmb-invite-builder__insert-note">
-            {selectedOffer ? selectedOffer.name : "No offer attached yet."}
+            {selectedOffer
+              ? `${selectedOffer.name} — offer block only, invite copy unchanged.`
+              : "No offer attached yet."}
           </p>
         </div>
       </div>

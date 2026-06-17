@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminOfferPreviewCard } from "@/components/vmb/admin/AdminOfferPreviewCard";
+import {
+  AdminOfferReviewModal,
+  OFFER_CATALOG_SAVED_MESSAGE,
+} from "@/components/vmb/admin/AdminOfferReviewModal";
 import { OfferNailSelectionFields } from "@/components/vmb/admin/OfferNailSelectionFields";
 import {
   resolveNailOfferAddonLabels,
@@ -35,6 +39,7 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
   const [serviceOptions, setServiceOptions] = useState<VmbServiceOption[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<VmbOfferCategory>("birthday");
   const [draft, setDraft] = useState<VmbOffer | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -97,12 +102,12 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
     return resolveNailOfferServiceLabels(draft.serviceIds, serviceFallbackById);
   }, [draft, serviceFallbackById]);
 
-  const previewAddonLabels = useMemo(() => {
+  const previewRewardLabels = useMemo(() => {
     if (!draft) return [];
     return resolveNailOfferAddonLabels(draft.serviceOptionIds, optionFallbackById);
   }, [draft, optionFallbackById]);
 
-  async function handleSave() {
+  async function handleSaveToCatalog() {
     if (!draft || !salonId) return;
     setBusy(true);
     setStatus(null);
@@ -114,7 +119,8 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
     const data = (await res.json()) as { ok?: boolean; error?: string };
     setBusy(false);
     if (data.ok) {
-      setStatus("Offer saved.");
+      setReviewOpen(false);
+      setStatus(OFFER_CATALOG_SAVED_MESSAGE);
       await loadOffers();
     } else {
       setStatus(data.error ?? "Save failed.");
@@ -194,7 +200,7 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
               <h2 className="vmb-admin-builder__panel-title">{draft.name || CATEGORY_LABELS[draft.category]}</h2>
 
               <label className="vmb-admin-builder-grid__field">
-                <span>Name</span>
+                <span>Offer name</span>
                 <input value={draft.name} onChange={(e) => patchDraft({ name: e.target.value })} />
               </label>
               <label className="vmb-admin-builder-grid__field">
@@ -224,12 +230,17 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                   checked={draft.active}
                   onChange={(e) => patchDraft({ active: e.target.checked })}
                 />
-                <span>Active</span>
+                <span>Available to Clients</span>
               </label>
 
               <div className="vmb-admin-builder-grid__actions">
-                <button type="button" className="taikos-opp-card__cta" disabled={busy} onClick={() => void handleSave()}>
-                  {busy ? "Saving…" : "Save offer"}
+                <button
+                  type="button"
+                  className="taikos-opp-card__cta"
+                  disabled={busy}
+                  onClick={() => setReviewOpen(true)}
+                >
+                  Review Offer
                 </button>
                 {!draft.isDefault ? (
                   <button
@@ -259,10 +270,22 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
           <AdminOfferPreviewCard
             offer={draft}
             serviceNames={previewServiceNames}
-            addonLabels={previewAddonLabels}
+            addonLabels={previewRewardLabels}
           />
         </aside>
       </div>
+
+      {draft ? (
+        <AdminOfferReviewModal
+          open={reviewOpen}
+          offer={draft}
+          serviceNames={previewServiceNames}
+          rewardLabels={previewRewardLabels}
+          busy={busy}
+          onClose={() => setReviewOpen(false)}
+          onSave={() => void handleSaveToCatalog()}
+        />
+      ) : null}
     </AdminBuilderShell>
   );
 }

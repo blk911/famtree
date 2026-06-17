@@ -19,9 +19,9 @@ export function OfferNailSelectionFields({
 }: Props) {
   return (
     <div className="vmb-offer-builder-selections">
-      <section className="vmb-offer-builder-selections__group" aria-labelledby="offer-applies-to-heading">
-        <h3 id="offer-applies-to-heading" className="vmb-offer-builder-selections__heading">
-          Applies to
+      <section className="vmb-offer-builder-selections__group" aria-labelledby="offer-nail-services-heading">
+        <h3 id="offer-nail-services-heading" className="vmb-offer-builder-selections__heading">
+          Nail Services
         </h3>
         <ul className="vmb-offer-builder-selections__choices">
           {NAIL_OFFER_SERVICE_CHOICES.map((choice) => {
@@ -44,9 +44,9 @@ export function OfferNailSelectionFields({
         </ul>
       </section>
 
-      <section className="vmb-offer-builder-selections__group" aria-labelledby="offer-includes-heading">
-        <h3 id="offer-includes-heading" className="vmb-offer-builder-selections__heading">
-          Offer includes
+      <section className="vmb-offer-builder-selections__group" aria-labelledby="offer-rewards-heading">
+        <h3 id="offer-rewards-heading" className="vmb-offer-builder-selections__heading">
+          Rewards Included
         </h3>
         <ul className="vmb-offer-builder-selections__choices">
           {NAIL_OFFER_ADDON_CHOICES.map((choice) => {

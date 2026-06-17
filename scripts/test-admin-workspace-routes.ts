@@ -297,13 +297,18 @@ function run(): void {
   assert(!offerCatalogSource.includes(">Terms<"), "offer catalog editor omits terms field");
   assert(!offerCatalogSource.includes("Linked services"), "offer catalog removes linked services multi-select");
   assert(!offerCatalogSource.includes("Linked add-ons"), "offer catalog removes linked add-ons multi-select");
+  assert(offerCatalogSource.includes("AdminOfferReviewModal"), "offer catalog includes review modal");
+  assert(offerCatalogSource.includes("Review Offer"), "offer catalog uses review offer action");
+  assert(offerCatalogSource.includes("Available to Clients"), "offer catalog uses client-facing active label");
+  assert(offerCatalogSource.includes("OFFER_CATALOG_SAVED_MESSAGE"), "offer catalog shows post-save invite builder message");
+  assert(!offerCatalogSource.includes("Save offer"), "offer catalog does not save directly from editor");
   assert(offerCatalogSource.includes("OfferNailSelectionFields"), "offer catalog uses nail checkbox selections");
   const offerSelectionSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/OfferNailSelectionFields.tsx"),
     "utf8",
   );
-  assert(offerSelectionSource.includes("Applies to"), "offer selection shows applies-to section");
-  assert(offerSelectionSource.includes("Offer includes"), "offer selection shows offer-includes section");
+  assert(offerSelectionSource.includes("Nail Services"), "offer selection shows nail services section");
+  assert(offerSelectionSource.includes("Rewards Included"), "offer selection shows rewards included section");
 
   const serviceCatalogSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/PlatformServiceCatalogClient.tsx"),
@@ -318,7 +323,7 @@ function run(): void {
   const builderStyles = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
   assert(builderStyles.includes(".vmb-admin-workspace"), "globals define admin workspace container");
   assert(builderStyles.includes(".vmb-admin-builder"), "globals define admin builder page shell");
-  assert(builderStyles.includes(".vmb-admin-builder-grid"), "globals define admin builder grid");
+  assert(builderStyles.includes(".vmb-admin-review-modal"), "globals define offer review modal");
 
   const cardBodySource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/cards/CardBody.tsx"),

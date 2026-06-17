@@ -9,6 +9,10 @@ import {
   offerToAdminNailInviteCardOffer,
   pickDefaultAttachedOfferId,
 } from "@/lib/vmb/admin/invite-offer-attachment";
+import {
+  resolveNailOfferAddonLabels,
+  resolveNailOfferServiceLabels,
+} from "@/lib/vmb/admin/nail-offer-builder-selections";
 import { selectInviteTemplateId } from "@/lib/vmb/invite-templates/admin-invite-template-selection";
 import {
   cloneInviteTemplate,
@@ -121,7 +125,10 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
     setAttachedOfferId(pickDefaultAttachedOfferId(template, offers));
   }, [selectedTemplateId, offers]);
 
-  const activeOffers = useMemo(() => offers.filter((offer) => offer.active), [offers]);
+  const activeOffers = useMemo(
+    () => [...offers.filter((offer) => offer.active)].sort((a, b) => a.name.localeCompare(b.name)),
+    [offers],
+  );
 
   const attachedOffer = useMemo(
     () => activeOffers.find((offer) => offer.id === attachedOfferId),
@@ -130,13 +137,13 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
 
   const attachedOfferCard = useMemo(() => {
     if (!attachedOffer) return undefined;
-    const serviceNames = (attachedOffer.serviceIds ?? [])
-      .map((id) => services.find((service) => service.id === id)?.name)
-      .filter(Boolean) as string[];
-    const optionNames = (attachedOffer.serviceOptionIds ?? [])
-      .map((id) => serviceOptions.find((option) => option.id === id)?.name)
-      .filter(Boolean) as string[];
-    return offerToAdminNailInviteCardOffer(attachedOffer, serviceNames, optionNames);
+    const serviceNames = resolveNailOfferServiceLabels(attachedOffer.serviceIds, {
+      ...Object.fromEntries(services.map((service) => [service.id, service.name])),
+    });
+    const rewardLabels = resolveNailOfferAddonLabels(attachedOffer.serviceOptionIds, {
+      ...Object.fromEntries(serviceOptions.map((option) => [option.id, option.name])),
+    });
+    return offerToAdminNailInviteCardOffer(attachedOffer, serviceNames, rewardLabels);
   }, [attachedOffer, serviceOptions, services]);
 
   const tokenContext = useMemo(
@@ -322,7 +329,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
 
               <InviteBuilderInsertElements
                 attachedOfferId={attachedOfferId}
-                activeOffers={activeOffers}
+                catalogOffers={activeOffers}
                 onAttachedOfferChange={setAttachedOfferId}
               />
 

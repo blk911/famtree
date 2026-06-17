@@ -29,11 +29,11 @@ export function AdminOfferPreviewCard({ offer, serviceNames = [], addonLabels = 
         </p>
         {serviceNames.length > 0 ? (
           <p className="vmb-admin-offer-preview__applies">
-            Applies to {serviceNames.join(", ")}
+            Nail services: {serviceNames.join(", ")}
           </p>
         ) : null}
         {addonLabels.length > 0 ? (
-          <ul className="vmb-admin-offer-preview__chips" aria-label="Included add-ons">
+          <ul className="vmb-admin-offer-preview__chips" aria-label="Rewards included">
             {addonLabels.map((label) => (
               <li key={label}>
                 <span className="vmb-admin-offer-preview__chip">{label}</span>
