@@ -13,6 +13,8 @@ export type SalonOfferCatalogEntry = {
   /** Client-facing offer price (may override calculated) */
   priceCents: number;
   priceOverrideCents?: number | null;
+  /** Optional invite offer category for template matching */
+  offerCategoryId?: string;
   active: boolean;
   imageUrl?: string;
   createdAt: string;

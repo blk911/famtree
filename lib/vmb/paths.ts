@@ -79,6 +79,10 @@ export function getVmbSalonOfferCatalogFile(): string {
   return path.join(getVmbDataDir(), "salon-offer-catalog.json");
 }
 
+export function getVmbInviteTemplatesFile(): string {
+  return path.join(getVmbDataDir(), "invite-templates.json");
+}
+
 /** Legacy file-upload imports (admin engine path) — kept separate from book paste flow. */
 export function getVmbTrialImportsDir(): string {
   return path.join(getVmbDataDir(), "trial-imports");

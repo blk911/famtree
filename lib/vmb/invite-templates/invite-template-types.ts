@@ -1,0 +1,113 @@
+import type { ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
+
+/** Lightweight offer categories for invite ↔ offer matching (Nails first). */
+export type VmbInviteOfferCategory =
+  | "birthday"
+  | "vacation"
+  | "wedding"
+  | "self_care"
+  | "seasonal"
+  | "referral"
+  | "refresh"
+  | "open_chair"
+  | "vip"
+  | "new_client"
+  | "pcn";
+
+export const VMB_INVITE_OFFER_CATEGORIES: readonly VmbInviteOfferCategory[] = [
+  "birthday",
+  "vacation",
+  "wedding",
+  "self_care",
+  "seasonal",
+  "referral",
+  "refresh",
+  "open_chair",
+  "vip",
+  "new_client",
+  "pcn",
+] as const;
+
+export type VmbInviteType =
+  | "private_client_network"
+  | "birthday_celebration"
+  | "referral_invite"
+  | "open_chair"
+  | "refresh_reminder"
+  | "we_miss_you"
+  | "vip_thank_you"
+  | "favorite_providers"
+  | "first_visit_thank_you"
+  | "new_client_welcome";
+
+export const VMB_NAILS_INVITE_TYPES: readonly VmbInviteType[] = [
+  "private_client_network",
+  "birthday_celebration",
+  "referral_invite",
+  "open_chair",
+  "refresh_reminder",
+  "we_miss_you",
+  "vip_thank_you",
+  "favorite_providers",
+  "first_visit_thank_you",
+  "new_client_welcome",
+] as const;
+
+export type VmbInviteTemplate = {
+  id: string;
+  categoryId: ServiceCategoryId;
+  inviteType: VmbInviteType;
+  displayName: string;
+  intent: string;
+  subject: string;
+  eyebrow: string;
+  headline: string;
+  body: string;
+  ctaLabel: string;
+  defaultOfferCategory: VmbInviteOfferCategory;
+  allowedOfferCategories: VmbInviteOfferCategory[];
+  active: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type InviteTemplateTokenContext = {
+  clientName: string;
+  salonName: string;
+  providerName: string;
+  offerName?: string;
+  offerPrice?: string;
+  claimLink?: string;
+};
+
+export type InviteTemplateRenderOffer = {
+  name: string;
+  description: string;
+  priceLabel: string;
+  serviceName: string;
+  addonLabels: string[];
+};
+
+export type InviteTemplateRenderPayload = {
+  eyebrow: string;
+  headline: string;
+  body: string;
+  ctaLabel: string;
+  subject: string;
+  categoryLabel: string;
+  inviteTypeLabel: string;
+  offer?: InviteTemplateRenderOffer;
+};
+
+/** Future salon overrides — not wired yet. Admin master templates remain source of truth. */
+export type SalonInviteTemplateOverride = {
+  salonId: string;
+  templateId: string;
+  subjectOverride?: string;
+  headlineOverride?: string;
+  bodyOverride?: string;
+  ctaLabelOverride?: string;
+  activeOverride?: boolean;
+  updatedAt?: string;
+};

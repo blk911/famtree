@@ -6,6 +6,7 @@ import { ADMIN_WORKSPACE_ROUTES } from "@/lib/admin/workspace-routes";
 export const INVITES_ADMIN_ROUTES = {
   hub: ADMIN_WORKSPACE_ROUTES.invites,
   templates: "/admin/invites/templates",
+  nailCatalog: "/admin/invites/nails",
   offers: "/admin/invites/offers",
   services: ADMIN_WORKSPACE_ROUTES.serviceCatalog,
   outreach: "/admin/invites/outreach",
@@ -33,6 +34,13 @@ export const INVITES_OPERATING_CARDS: InvitesOperatingCard[] = [
     label: "Card Templates",
     description: "Relationship copy templates for PCN, birthday, reactivation, and outreach cards.",
     href: INVITES_ADMIN_ROUTES.templates,
+    status: "live",
+  },
+  {
+    id: "nail-catalog",
+    label: "Nail Invite Catalog",
+    description: "Category-aware invite templates with final salon dashboard render preview.",
+    href: INVITES_ADMIN_ROUTES.nailCatalog,
     status: "live",
   },
   {
@@ -88,6 +96,7 @@ export const INVITES_OPERATING_CARDS: InvitesOperatingCard[] = [
 
 export const INVITES_CANONICAL_ADMIN_ROUTES = [
   INVITES_ADMIN_ROUTES.templates,
+  INVITES_ADMIN_ROUTES.nailCatalog,
   INVITES_ADMIN_ROUTES.offers,
   INVITES_ADMIN_ROUTES.outreach,
 ] as const;
