@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { AdminNailBuilderShell } from "@/components/vmb/admin/AdminNailBuilderShell";
+import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import type { CatalogServiceOffer, ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
 import {
   formatCatalogDuration,
@@ -36,24 +36,24 @@ export function PlatformServiceCatalogClient() {
   const categoryLabel = categories.find((category) => category.id === selectedCategoryId)?.name ?? "";
 
   return (
-    <AdminNailBuilderShell
+    <AdminBuilderShell
       title="Service Catalog"
       activeStep="services"
       flowActions={
-        <Link href="/admin/service-catalog/presets" className="vmb-admin-nail-builder__header-link">
+        <Link href="/admin/service-catalog/presets" className="vmb-admin-builder__header-link">
           Manage Preset Cards
         </Link>
       }
     >
-      <div className="vmb-template-admin vmb-service-catalog-admin">
-        <aside className="vmb-template-admin__list">
-          <p className="vmb-template-admin__list-label">Categories</p>
+      <div className="vmb-admin-builder-grid vmb-service-catalog-admin">
+        <aside className="vmb-admin-builder-grid__list">
+          <p className="vmb-admin-builder-grid__list-label">Categories</p>
           <ul>
             {categories.map((category) => (
               <li key={category.id}>
                 <button
                   type="button"
-                  className={`vmb-template-admin__type${selectedCategoryId === category.id ? " vmb-template-admin__type--active" : ""}`}
+                  className={`vmb-admin-builder-grid__type${selectedCategoryId === category.id ? " vmb-admin-builder-grid__type--active" : ""}`}
                   onClick={() => {
                     setSelectedCategoryId(category.id);
                     setSelectedServiceId("");
@@ -66,8 +66,8 @@ export function PlatformServiceCatalogClient() {
           </ul>
         </aside>
 
-        <section className="vmb-template-admin__editor" aria-label={`${categoryLabel} services`}>
-          <h2 className="vmb-card-template-workspace__editor-title">{categoryLabel}</h2>
+        <section className="vmb-admin-builder-grid__editor" aria-label={`${categoryLabel} services`}>
+          <h2 className="vmb-admin-builder__panel-title">{categoryLabel}</h2>
           <ul className="vmb-service-catalog__service-list">
             {services.map((service) => (
               <li key={service.id}>
@@ -81,8 +81,8 @@ export function PlatformServiceCatalogClient() {
           </ul>
         </section>
 
-        <aside className="vmb-template-admin__preview" aria-label="Service detail">
-          <p className="vmb-template-admin__preview-label">Service detail</p>
+        <aside className="vmb-admin-builder-grid__preview" aria-label="Service detail">
+          <p className="vmb-admin-builder-grid__preview-label">Service detail</p>
           {selectedService ? (
             <div className="vmb-service-catalog__detail">
               <h3 className="vmb-service-catalog__detail-title">{selectedService.name}</h3>
@@ -124,7 +124,7 @@ export function PlatformServiceCatalogClient() {
           )}
         </aside>
       </div>
-    </AdminNailBuilderShell>
+    </AdminBuilderShell>
   );
 }
 

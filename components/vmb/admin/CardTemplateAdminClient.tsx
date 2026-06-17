@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AdminNailBuilderShell } from "@/components/vmb/admin/AdminNailBuilderShell";
+import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { InviteBuilderInsertElements } from "@/components/vmb/admin/InviteBuilderInsertElements";
 import { AdminFinalCardCheckModal } from "@/components/vmb/invites/AdminFinalCardCheckModal";
 import { AdminNailInviteCard } from "@/components/vmb/invites/AdminNailInviteCard";
@@ -209,115 +209,111 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
     await loadInviteTemplates();
   }
 
-  const templatePills = (
-    <div
-      className="vmb-card-template-workspace__types"
-      role="tablist"
-      aria-label="Nail invite template types"
-    >
-      {DEFAULT_NAIL_INVITE_TEMPLATES.map((baseline) => {
-        const isActive = selectedTemplateId === baseline.id;
-        const draft = inviteDrafts[baseline.id];
-        const isCustomized =
-          Boolean(draft) &&
-          (draft.body !== baseline.body ||
-            draft.ctaLabel !== baseline.ctaLabel ||
-            draft.headline !== baseline.headline);
-        return (
-          <button
-            key={baseline.id}
-            type="button"
-            role="tab"
-            id={`card-template-tab-${baseline.id}`}
-            aria-selected={isActive}
-            aria-controls="card-template-editor-panel"
-            tabIndex={isActive ? 0 : -1}
-            className={`vmb-card-template-workspace__type${isActive ? " vmb-card-template-workspace__type--active" : ""}`}
-            onClick={() => selectTemplate(baseline.id)}
-          >
-            {draft?.displayName ?? baseline.displayName}
-            {isCustomized ? (
-              <span className="vmb-template-admin__override-dot" aria-label="Customized" />
-            ) : null}
-          </button>
-        );
-      })}
-    </div>
-  );
-
-  const builderHeader = (
-    <>
-      <p className="vmb-invite-builder__flow-guide" aria-label="Builder flow">
-        <span>Invite Type</span>
-        <span className="vmb-invite-builder__flow-sep" aria-hidden="true">
-          →
-        </span>
-        <span>Message</span>
-        <span className="vmb-invite-builder__flow-sep" aria-hidden="true">
-          →
-        </span>
-        <span>Inserts</span>
-        <span className="vmb-invite-builder__flow-sep" aria-hidden="true">
-          →
-        </span>
-        <span>Final Preview</span>
-      </p>
-      {templatePills}
-    </>
+  const flowGuide = (
+    <p className="vmb-invite-builder__flow-guide" aria-label="Builder flow">
+      <span>Invite Type</span>
+      <span className="vmb-invite-builder__flow-sep" aria-hidden="true">
+        →
+      </span>
+      <span>Message</span>
+      <span className="vmb-invite-builder__flow-sep" aria-hidden="true">
+        →
+      </span>
+      <span>Inserts</span>
+      <span className="vmb-invite-builder__flow-sep" aria-hidden="true">
+        →
+      </span>
+      <span>Final Preview</span>
+    </p>
   );
 
   if (!salonId) {
     return (
-      <AdminNailBuilderShell
+      <AdminBuilderShell
         title="Invite Builder"
         subtitle="Choose an invite, edit the message, attach inserts, and preview the final card."
         activeStep="templates"
+        headerExtra={flowGuide}
       >
-        <p className="vmb-template-admin__status">Sign in to a VMB salon trial to manage nail invite templates.</p>
-      </AdminNailBuilderShell>
+        <p className="vmb-admin-builder-grid__status">Sign in to a VMB salon trial to manage nail invite templates.</p>
+      </AdminBuilderShell>
     );
   }
 
   return (
-    <AdminNailBuilderShell
+    <AdminBuilderShell
       title="Invite Builder"
       subtitle="Choose an invite, edit the message, attach inserts, and preview the final card."
       activeStep="templates"
-      headerExtra={builderHeader}
+      headerExtra={flowGuide}
     >
-      <div className="vmb-card-template-workspace__body">
+      <div className="vmb-admin-builder-grid">
+        <aside className="vmb-admin-builder-grid__list">
+          <p className="vmb-admin-builder-grid__list-label">Invite types</p>
+          <ul role="tablist" aria-label="Nail invite template types">
+            {DEFAULT_NAIL_INVITE_TEMPLATES.map((baseline) => {
+              const isActive = selectedTemplateId === baseline.id;
+              const draft = inviteDrafts[baseline.id];
+              const isCustomized =
+                Boolean(draft) &&
+                (draft.body !== baseline.body ||
+                  draft.ctaLabel !== baseline.ctaLabel ||
+                  draft.headline !== baseline.headline);
+              return (
+                <li key={baseline.id}>
+                  <button
+                    type="button"
+                    role="tab"
+                    id={`card-template-tab-${baseline.id}`}
+                    aria-selected={isActive}
+                    aria-controls="card-template-editor-panel"
+                    tabIndex={isActive ? 0 : -1}
+                    className={`vmb-admin-builder-grid__type${isActive ? " vmb-admin-builder-grid__type--active" : ""}`}
+                    onClick={() => selectTemplate(baseline.id)}
+                  >
+                    {draft?.displayName ?? baseline.displayName}
+                    {isCustomized ? (
+                      <span className="vmb-admin-builder-grid__override-dot" aria-label="Customized" />
+                    ) : null}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </aside>
+
         <section
           id="card-template-editor-panel"
           role="tabpanel"
           aria-labelledby={`card-template-tab-${selectedTemplateId}`}
-          className="vmb-card-template-workspace__editor"
+          className="vmb-admin-builder-grid__editor"
         >
           {selectedDraft ? (
             <>
-              <h2 className="vmb-card-template-workspace__editor-title">{selectedDraft.displayName}</h2>
+              <h2 className="vmb-admin-builder__panel-title">{selectedDraft.displayName}</h2>
 
-              <div key={selectedTemplateId} className="vmb-card-template-workspace__fields">
-                <label className="vmb-template-admin__field">
+              <div key={selectedTemplateId} className="vmb-admin-builder__fields">
+                <label className="vmb-admin-builder-grid__field">
                   <span>Headline</span>
                   <input
-                    className="vmb-card-template-workspace__copy-input"
+                    className="vmb-admin-builder__copy-input"
                     value={selectedDraft.headline}
                     onChange={(e) => patchSelectedDraft({ headline: e.target.value })}
                   />
                 </label>
-                <label className="vmb-template-admin__field">
+                <label className="vmb-admin-builder-grid__field">
                   <span>Body</span>
                   <textarea
                     rows={6}
-                    className="vmb-card-template-workspace__copy-input"
+                    className="vmb-admin-builder__copy-input"
                     value={selectedDraft.body}
                     onChange={(e) => patchSelectedDraft({ body: e.target.value })}
                   />
                 </label>
-                <label className="vmb-template-admin__field">
+                <label className="vmb-admin-builder-grid__field">
                   <span>CTA label</span>
                   <input
-                    className="vmb-card-template-workspace__copy-input"
+                    className="vmb-admin-builder__copy-input"
                     value={selectedDraft.ctaLabel}
                     onChange={(e) => patchSelectedDraft({ ctaLabel: e.target.value })}
                   />
@@ -330,7 +326,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                 onAttachedOfferChange={setAttachedOfferId}
               />
 
-              <div className="vmb-template-admin__actions">
+              <div className="vmb-admin-builder-grid__actions">
                 <button type="button" className="taikos-opp-card__cta" disabled={busy} onClick={() => void handleSave()}>
                   {busy ? "Saving…" : "Save template"}
                 </button>
@@ -350,13 +346,13 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                   Review final card
                 </button>
               </div>
-              {status ? <p className="vmb-template-admin__status">{status}</p> : null}
+              {status ? <p className="vmb-admin-builder-grid__status">{status}</p> : null}
             </>
           ) : null}
         </section>
 
-        <aside className="vmb-card-template-workspace__preview">
-          <p className="vmb-template-admin__preview-label">Final Invite Preview</p>
+        <aside className="vmb-admin-builder-grid__preview">
+          <p className="vmb-admin-builder-grid__preview-label">Final invite preview</p>
           {selectedDraft ? (
             <AdminNailInviteCard
               key={selectedTemplateId}
@@ -377,6 +373,6 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
           offer={attachedOfferCard}
         />
       ) : null}
-    </AdminNailBuilderShell>
+    </AdminBuilderShell>
   );
 }

@@ -175,6 +175,7 @@ export function AppShell({ user, coverUrl, children, vaultNotificationCount = 0 
         pathname.startsWith("/admin/operators") ||
         pathname.startsWith("/admin/members") ||
         pathname.startsWith("/admin/invites") ||
+        pathname.startsWith("/admin/service-catalog") ||
         pathname.startsWith("/admin/products/") ||
         pathname.startsWith("/admin/markets") ||
         pathname.startsWith("/admin/action-items") ||

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AdminNailBuilderShell } from "@/components/vmb/admin/AdminNailBuilderShell";
+import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminOfferPreviewCard } from "@/components/vmb/admin/AdminOfferPreviewCard";
 import { VMB_OFFER_CATEGORIES, type VmbOffer, type VmbOfferCategory } from "@/lib/vmb/offers/offer-types";
 import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
@@ -142,28 +142,28 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
 
   if (!salonId) {
     return (
-      <AdminNailBuilderShell title="Offer Catalog" activeStep="offers">
-        <p className="vmb-template-admin__status">Sign in to a VMB salon trial to manage your offer catalog.</p>
-      </AdminNailBuilderShell>
+      <AdminBuilderShell title="Offer Catalog" activeStep="offers">
+        <p className="vmb-admin-builder-grid__status">Sign in to a VMB salon trial to manage your offer catalog.</p>
+      </AdminBuilderShell>
     );
   }
 
   return (
-    <AdminNailBuilderShell title="Offer Catalog" activeStep="offers">
-      <div className="vmb-template-admin">
-        <aside className="vmb-template-admin__list">
-          <p className="vmb-template-admin__list-label">Offer categories</p>
+    <AdminBuilderShell title="Offer Catalog" activeStep="offers">
+      <div className="vmb-admin-builder-grid">
+        <aside className="vmb-admin-builder-grid__list">
+          <p className="vmb-admin-builder-grid__list-label">Offer categories</p>
           <ul>
             {VMB_OFFER_CATEGORIES.map((category) => (
               <li key={category}>
                 <button
                   type="button"
-                  className={`vmb-template-admin__type${selectedCategory === category ? " vmb-template-admin__type--active" : ""}`}
+                  className={`vmb-admin-builder-grid__type${selectedCategory === category ? " vmb-admin-builder-grid__type--active" : ""}`}
                   onClick={() => setSelectedCategory(category)}
                 >
                   {CATEGORY_LABELS[category]}
                   {offers.find((offer) => offer.category === category && !offer.isDefault) ? (
-                    <span className="vmb-template-admin__override-dot" aria-label="Customized" />
+                    <span className="vmb-admin-builder-grid__override-dot" aria-label="Customized" />
                   ) : null}
                 </button>
               </li>
@@ -171,23 +171,23 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
           </ul>
         </aside>
 
-        <section className="vmb-template-admin__editor">
+        <section className="vmb-admin-builder-grid__editor">
           {draft ? (
             <>
-              <h2 className="vmb-card-template-workspace__editor-title">{draft.name || CATEGORY_LABELS[draft.category]}</h2>
+              <h2 className="vmb-admin-builder__panel-title">{draft.name || CATEGORY_LABELS[draft.category]}</h2>
 
-              <label className="vmb-template-admin__field">
+              <label className="vmb-admin-builder-grid__field">
                 <span>Name</span>
                 <input value={draft.name} onChange={(e) => patchDraft({ name: e.target.value })} />
               </label>
-              <label className="vmb-template-admin__field">
+              <label className="vmb-admin-builder-grid__field">
                 <span>Value label</span>
                 <input
                   value={draft.valueLabel ?? ""}
                   onChange={(e) => patchDraft({ valueLabel: e.target.value })}
                 />
               </label>
-              <label className="vmb-template-admin__field">
+              <label className="vmb-admin-builder-grid__field">
                 <span>Offer text</span>
                 <textarea
                   rows={4}
@@ -195,7 +195,7 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                   onChange={(e) => patchDraft({ offerText: e.target.value })}
                 />
               </label>
-              <label className="vmb-template-admin__field">
+              <label className="vmb-admin-builder-grid__field">
                 <span>Linked services</span>
                 <select
                   multiple
@@ -213,7 +213,7 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                   ))}
                 </select>
               </label>
-              <label className="vmb-template-admin__field">
+              <label className="vmb-admin-builder-grid__field">
                 <span>Linked add-ons</span>
                 <select
                   multiple
@@ -233,7 +233,7 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                   ))}
                 </select>
               </label>
-              <label className="vmb-template-admin__field vmb-offer-admin__checkbox">
+              <label className="vmb-admin-builder-grid__field vmb-offer-admin__checkbox">
                 <input
                   type="checkbox"
                   checked={draft.active}
@@ -242,7 +242,7 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                 <span>Active</span>
               </label>
 
-              <div className="vmb-template-admin__actions">
+              <div className="vmb-admin-builder-grid__actions">
                 <button type="button" className="taikos-opp-card__cta" disabled={busy} onClick={() => void handleSave()}>
                   {busy ? "Saving…" : "Save offer"}
                 </button>
@@ -265,12 +265,12 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                   Reset defaults
                 </button>
               </div>
-              {status ? <p className="vmb-template-admin__status">{status}</p> : null}
+              {status ? <p className="vmb-admin-builder-grid__status">{status}</p> : null}
             </>
           ) : null}
         </section>
 
-        <aside className="vmb-template-admin__preview">
+        <aside className="vmb-admin-builder-grid__preview">
           <AdminOfferPreviewCard
             offer={draft}
             serviceNames={previewServiceNames}
@@ -278,6 +278,6 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
           />
         </aside>
       </div>
-    </AdminNailBuilderShell>
+    </AdminBuilderShell>
   );
 }

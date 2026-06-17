@@ -4450,7 +4450,156 @@
   color: #9d174d;
 }
 
-/* VMB card template admin */
+/* Admin workspace — canonical platform admin container */
+.vmb-admin-workspace {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .vmb-admin-workspace {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+.vmb-admin-workspace__chrome {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e7e5e4;
+}
+
+.vmb-admin-workspace__kicker {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-admin-workspace__body {
+  width: 100%;
+}
+
+/* Admin builder page header */
+.vmb-admin-builder {
+  width: 100%;
+}
+
+.vmb-admin-builder__title {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.vmb-admin-builder__subtitle {
+  margin: 0 0 10px;
+  max-width: 42rem;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #78716c;
+}
+
+.vmb-admin-builder__header {
+  margin-bottom: 0.75rem;
+}
+
+.vmb-admin-builder__header-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 10px;
+}
+
+.vmb-admin-builder__header-flow .vmb-admin-builder-flow-nav {
+  margin-bottom: 0;
+}
+
+.vmb-admin-builder__flow-actions {
+  flex-shrink: 0;
+}
+
+.vmb-admin-builder__header-link {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9d174d;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.vmb-admin-builder__header-link:hover {
+  text-decoration: underline;
+}
+
+.vmb-admin-builder__panel-title {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #292524;
+}
+
+.vmb-admin-builder__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vmb-admin-builder__copy-input {
+  width: 100%;
+  min-height: 3.25rem;
+  resize: vertical;
+  box-sizing: border-box;
+  line-height: 1.45;
+}
+
+.vmb-admin-builder-flow-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 13px;
+}
+
+.vmb-admin-builder-flow-nav__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vmb-admin-builder-flow-nav__link {
+  color: #9d174d;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.vmb-admin-builder-flow-nav__link:hover {
+  text-decoration: underline;
+}
+
+.vmb-admin-builder-flow-nav__current {
+  font-weight: 700;
+  color: #292524;
+}
+
+.vmb-admin-builder-flow-nav__hint {
+  color: #a8a29e;
+  font-weight: 500;
+}
+
+.vmb-admin-builder-flow-nav__sep {
+  color: #d6d3d1;
+}
+
+/* Admin builder — standard 3-column grid */
+.vmb-admin-builder-grid,
 .vmb-template-admin {
   display: grid;
   grid-template-columns: 220px minmax(280px, 1fr) minmax(280px, 360px);
@@ -4458,6 +4607,8 @@
   align-items: start;
 }
 
+.vmb-admin-builder-grid__list-label,
+.vmb-admin-builder-grid__preview-label,
 .vmb-template-admin__list-label,
 .vmb-template-admin__preview-label {
   font-size: 12px;
@@ -4468,6 +4619,7 @@
   margin: 0 0 10px;
 }
 
+.vmb-admin-builder-grid__list ul,
 .vmb-template-admin__list ul {
   list-style: none;
   margin: 0;
@@ -4477,6 +4629,7 @@
   gap: 6px;
 }
 
+.vmb-admin-builder-grid__type,
 .vmb-template-admin__type {
   width: 100%;
   display: flex;
@@ -4493,12 +4646,14 @@
   text-align: left;
 }
 
+.vmb-admin-builder-grid__type--active,
 .vmb-template-admin__type--active {
   border-color: #9d174d;
   background: #fdf2f8;
   color: #831843;
 }
 
+.vmb-admin-builder-grid__override-dot,
 .vmb-template-admin__override-dot {
   width: 8px;
   height: 8px;
@@ -4507,12 +4662,21 @@
   flex-shrink: 0;
 }
 
+.vmb-admin-builder-grid__editor,
+.vmb-admin-builder-grid__preview,
 .vmb-template-admin__editor,
 .vmb-template-admin__preview {
   border: 1px solid #e7e5e4;
   border-radius: 14px;
   background: #fff;
   padding: 16px;
+}
+
+.vmb-admin-builder-grid__preview,
+.vmb-template-admin__preview {
+  position: sticky;
+  top: 72px;
+  min-width: 0;
 }
 
 .vmb-template-admin__editor-head h2 {
@@ -4526,6 +4690,7 @@
   font-size: 13px;
 }
 
+.vmb-admin-builder-grid__field,
 .vmb-template-admin__field {
   display: flex;
   flex-direction: column;
@@ -4535,6 +4700,9 @@
   color: #44403c;
 }
 
+.vmb-admin-builder-grid__field input,
+.vmb-admin-builder-grid__field textarea,
+.vmb-admin-builder-grid__field select,
 .vmb-template-admin__field input,
 .vmb-template-admin__field textarea,
 .vmb-template-admin__field select {
@@ -4544,6 +4712,7 @@
   font: inherit;
 }
 
+.vmb-admin-builder-grid__actions,
 .vmb-template-admin__actions {
   display: flex;
   flex-wrap: wrap;
@@ -4551,6 +4720,7 @@
   margin-top: 8px;
 }
 
+.vmb-admin-builder-grid__status,
 .vmb-template-admin__status,
 .vmb-template-admin__preview-meta {
   margin: 10px 0 0;
@@ -4563,122 +4733,6 @@
   margin: 0 0 10px;
   font-size: 13px;
   color: #78716c;
-}
-
-/* Admin nail builder — shared shell for Services / Offers / Templates */
-.vmb-admin-nail-builder {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 0 1.5rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.vmb-admin-nail-builder__title {
-  margin: 0 0 6px;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1c1917;
-}
-
-.vmb-admin-nail-builder__subtitle {
-  margin: 0 0 10px;
-  max-width: 42rem;
-  font-size: 13px;
-  line-height: 1.45;
-  color: #78716c;
-}
-
-.vmb-admin-nail-builder__header {
-  margin-bottom: 0.75rem;
-}
-
-.vmb-admin-nail-builder__header-flow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
-  margin-bottom: 10px;
-}
-
-.vmb-admin-nail-builder__header-flow .vmb-admin-nail-builder-flow-nav {
-  margin-bottom: 0;
-}
-
-.vmb-admin-nail-builder__flow-actions {
-  flex-shrink: 0;
-}
-
-.vmb-admin-nail-builder__header-link {
-  display: inline-block;
-  font-size: 13px;
-  font-weight: 600;
-  color: #9d174d;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.vmb-admin-nail-builder__header-link:hover {
-  text-decoration: underline;
-}
-
-.vmb-admin-nail-builder-flow-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
-  margin-bottom: 12px;
-  font-size: 13px;
-}
-
-.vmb-admin-nail-builder-flow-nav__item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.vmb-admin-nail-builder-flow-nav__link {
-  color: #9d174d;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.vmb-admin-nail-builder-flow-nav__link:hover {
-  text-decoration: underline;
-}
-
-.vmb-admin-nail-builder-flow-nav__current {
-  font-weight: 700;
-  color: #292524;
-}
-
-.vmb-admin-nail-builder-flow-nav__hint {
-  color: #a8a29e;
-  font-weight: 500;
-}
-
-.vmb-admin-nail-builder-flow-nav__sep {
-  color: #d6d3d1;
-}
-
-.vmb-admin-nail-builder__attached-offer {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e7e5e4;
-}
-
-.vmb-admin-nail-builder__attached-offer-hint {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: #78716c;
-}
-
-.vmb-admin-nail-builder__workspace--two-col {
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: 20px;
-  align-items: start;
 }
 
 .vmb-service-catalog-admin .vmb-service-catalog__service-list {
@@ -4797,8 +4851,14 @@
 }
 
 @media (max-width: 1024px) {
-  .vmb-admin-nail-builder__workspace--two-col {
+  .vmb-admin-builder-grid,
+  .vmb-template-admin {
     grid-template-columns: 1fr;
+  }
+
+  .vmb-admin-builder-grid__preview,
+  .vmb-template-admin__preview {
+    position: static;
   }
 }
 
@@ -5031,8 +5091,14 @@
 }
 
 @media (max-width: 1024px) {
-  .vmb-admin-nail-builder__workspace--two-col {
+  .vmb-admin-builder-grid,
+  .vmb-template-admin {
     grid-template-columns: 1fr;
+  }
+
+  .vmb-admin-builder-grid__preview,
+  .vmb-template-admin__preview {
+    position: static;
   }
 }
 

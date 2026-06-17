@@ -139,12 +139,10 @@ async function run(): Promise<void> {
     "components/vmb/admin/PlatformServiceCatalogClient.tsx",
   );
   const serviceCatalogSource = fs.readFileSync(serviceCatalogClient, "utf8");
-  assert(serviceCatalogSource.includes("AdminNailBuilderShell"), "service catalog uses nail builder shell");
-  assert(serviceCatalogSource.includes("flowActions"), "preset link sits in shell flow action area");
-  assert(serviceCatalogSource.includes("vmb-template-admin"), "service catalog uses three-column admin grid");
-  assert(serviceCatalogSource.includes("vmb-template-admin__preview"), "service detail uses preview column");
-  assert(serviceCatalogSource.includes("vmb-service-catalog__id-row"), "service id hidden in collapsible row");
-  assert(!serviceCatalogSource.includes("vmb-admin-nail-builder__workspace--two-col"), "service catalog is not two-column");
+  assert(serviceCatalogSource.includes("AdminBuilderShell"), "service catalog uses builder shell");
+  assert(serviceCatalogSource.includes("vmb-admin-builder-grid"), "service catalog uses three-column builder grid");
+  assert(serviceCatalogSource.includes("vmb-admin-builder-grid__preview"), "service detail uses preview column");
+  assert(serviceCatalogSource.includes("flowActions"), "service catalog preset link uses flow action area");
 
   console.log("OK: VMB service catalog tests passed");
 }

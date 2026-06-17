@@ -238,25 +238,22 @@ function run(): void {
     "platform admin accordion navigates to its own default route",
   );
 
-  const shellSource = fs.readFileSync(
-    path.join(process.cwd(), "components/admin/MarketIntelPageShell.tsx"),
+  const workspaceShellSource = fs.readFileSync(
+    path.join(process.cwd(), "components/admin/workspaces/AdminWorkspaceShell.tsx"),
     "utf8",
   );
-  assert(!shellSource.includes("mx-auto"), "market intel page shell is left-aligned, not centered");
+  assert(workspaceShellSource.includes("vmb-admin-workspace"), "admin workspace shell uses canonical container");
+  assert(!workspaceShellSource.includes("MarketIntelPageShell"), "admin workspace shell does not nest market intel shell");
 
   const cardTemplateSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/CardTemplateAdminClient.tsx"),
     "utf8",
   );
-  assert(cardTemplateSource.includes("vmb-card-template-workspace__types"), "card templates use horizontal type pills");
-  assert(cardTemplateSource.includes("vmb-card-template-workspace__body"), "card templates use editor/preview split");
-  assert(cardTemplateSource.includes('role="tablist"'), "card template type selector is keyboard accessible");
+  assert(cardTemplateSource.includes("vmb-admin-builder-grid"), "invite builder uses standard three-column grid");
+  assert(cardTemplateSource.includes('role="tablist"'), "invite type selector is keyboard accessible");
+  assert(cardTemplateSource.includes("vmb-admin-builder__copy-input"), "invite copy fields use standard inputs");
   assert(
-    cardTemplateSource.includes("vmb-card-template-workspace__copy-input"),
-    "card template copy fields use two-line textarea inputs",
-  );
-  assert(
-    (cardTemplateSource.match(/vmb-card-template-workspace__copy-input/g) ?? []).length >= 3,
+    (cardTemplateSource.match(/vmb-admin-builder__copy-input/g) ?? []).length >= 3,
     "headline, body, and CTA fields are editable",
   );
   assert(
@@ -276,14 +273,14 @@ function run(): void {
     "admin templates page keys selection by template id",
   );
   assert(cardTemplateSource.includes("selectTemplate"), "admin templates page uses shared selectTemplate");
-  assert(cardTemplateSource.includes("Final Invite Preview"), "admin preview header is Final Invite Preview");
+  assert(cardTemplateSource.includes("Final invite preview"), "admin preview header is final invite preview");
   assert(!cardTemplateSource.includes("Select invite"), "admin templates page has no invite dropdown");
   assert(
     cardTemplateSource.includes("DEFAULT_NAIL_INVITE_TEMPLATES"),
     "admin templates page seeds tabs from nail catalog ids",
   );
   assert(cardTemplateSource.includes("AdminFinalCardCheckModal"), "admin final card check modal is available");
-  assert(cardTemplateSource.includes("AdminNailBuilderShell"), "admin templates use shared nail builder shell");
+  assert(cardTemplateSource.includes("AdminBuilderShell"), "admin templates use shared builder shell");
   assert(cardTemplateSource.includes("InviteBuilderInsertElements"), "admin builder includes insert elements for offer attachment");
   assert(cardTemplateSource.includes("Save template"), "invite template save action remains available");
   assert(cardTemplateSource.includes("Reset to default"), "invite template reset action remains available");
@@ -292,7 +289,8 @@ function run(): void {
     path.join(process.cwd(), "components/vmb/admin/OfferCatalogAdminClient.tsx"),
     "utf8",
   );
-  assert(offerCatalogSource.includes("AdminNailBuilderShell"), "offer catalog uses shared nail builder shell");
+  assert(offerCatalogSource.includes("AdminBuilderShell"), "offer catalog uses shared builder shell");
+  assert(offerCatalogSource.includes("vmb-admin-builder-grid"), "offer catalog uses standard three-column grid");
   assert(offerCatalogSource.includes("AdminOfferPreviewCard"), "offer catalog uses simple offer preview");
   assert(!offerCatalogSource.includes("VmbPageFrame"), "offer catalog does not use VmbPageFrame");
   assert(!offerCatalogSource.includes("CardPreviewOfferBlock"), "offer catalog does not use card preview block");
@@ -302,12 +300,16 @@ function run(): void {
     path.join(process.cwd(), "components/vmb/admin/PlatformServiceCatalogClient.tsx"),
     "utf8",
   );
-  assert(serviceCatalogSource.includes("AdminNailBuilderShell"), "service catalog uses shared nail builder shell");
-  assert(serviceCatalogSource.includes("vmb-template-admin"), "service catalog uses three-column admin grid");
-  assert(serviceCatalogSource.includes("flowActions"), "service catalog preset link uses flow action area");
+  assert(serviceCatalogSource.includes("AdminBuilderShell"), "service catalog uses shared builder shell");
+  assert(serviceCatalogSource.includes("vmb-admin-builder-grid"), "service catalog uses standard three-column grid");
 
-  const nailBuilderStyles = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
-  assert(nailBuilderStyles.includes(".vmb-admin-nail-builder"), "globals define admin nail builder shell styles");
+  const appShellSource = fs.readFileSync(path.join(process.cwd(), "components/AppShell.tsx"), "utf8");
+  assert(appShellSource.includes("/admin/service-catalog"), "service catalog uses full-bleed admin layout without page hero");
+
+  const builderStyles = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
+  assert(builderStyles.includes(".vmb-admin-workspace"), "globals define admin workspace container");
+  assert(builderStyles.includes(".vmb-admin-builder"), "globals define admin builder page shell");
+  assert(builderStyles.includes(".vmb-admin-builder-grid"), "globals define admin builder grid");
 
   const cardBodySource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/cards/CardBody.tsx"),
