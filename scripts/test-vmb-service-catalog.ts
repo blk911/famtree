@@ -134,6 +134,18 @@ async function run(): Promise<void> {
     "/vmb/services redirect still points to /vmb/service-presets",
   );
 
+  const serviceCatalogClient = path.join(
+    process.cwd(),
+    "components/vmb/admin/PlatformServiceCatalogClient.tsx",
+  );
+  const serviceCatalogSource = fs.readFileSync(serviceCatalogClient, "utf8");
+  assert(serviceCatalogSource.includes("AdminNailBuilderShell"), "service catalog uses nail builder shell");
+  assert(serviceCatalogSource.includes("flowActions"), "preset link sits in shell flow action area");
+  assert(serviceCatalogSource.includes("vmb-template-admin"), "service catalog uses three-column admin grid");
+  assert(serviceCatalogSource.includes("vmb-template-admin__preview"), "service detail uses preview column");
+  assert(serviceCatalogSource.includes("vmb-service-catalog__id-row"), "service id hidden in collapsible row");
+  assert(!serviceCatalogSource.includes("vmb-admin-nail-builder__workspace--two-col"), "service catalog is not two-column");
+
   console.log("OK: VMB service catalog tests passed");
 }
 

@@ -35,19 +35,17 @@ export function PlatformServiceCatalogClient() {
 
   const categoryLabel = categories.find((category) => category.id === selectedCategoryId)?.name ?? "";
 
-  const presetsLink = (
-    <Link href="/admin/service-catalog/presets" className="vmb-admin-nail-builder__header-link">
-      Manage Preset Cards
-    </Link>
-  );
-
   return (
     <AdminNailBuilderShell
       title="Service Catalog"
       activeStep="services"
-      headerExtra={presetsLink}
+      flowActions={
+        <Link href="/admin/service-catalog/presets" className="vmb-admin-nail-builder__header-link">
+          Manage Preset Cards
+        </Link>
+      }
     >
-      <div className="vmb-admin-nail-builder__workspace vmb-admin-nail-builder__workspace--two-col">
+      <div className="vmb-template-admin vmb-service-catalog-admin">
         <aside className="vmb-template-admin__list">
           <p className="vmb-template-admin__list-label">Categories</p>
           <ul>
@@ -70,7 +68,6 @@ export function PlatformServiceCatalogClient() {
 
         <section className="vmb-template-admin__editor" aria-label={`${categoryLabel} services`}>
           <h2 className="vmb-card-template-workspace__editor-title">{categoryLabel}</h2>
-          <p className="vmb-service-catalog__section-label">Services</p>
           <ul className="vmb-service-catalog__service-list">
             {services.map((service) => (
               <li key={service.id}>
@@ -82,13 +79,16 @@ export function PlatformServiceCatalogClient() {
               </li>
             ))}
           </ul>
+        </section>
 
+        <aside className="vmb-template-admin__preview" aria-label="Service detail">
+          <p className="vmb-template-admin__preview-label">Service detail</p>
           {selectedService ? (
-            <section className="vmb-service-catalog__detail" aria-label="Service detail">
+            <div className="vmb-service-catalog__detail">
               <h3 className="vmb-service-catalog__detail-title">{selectedService.name}</h3>
               <dl className="vmb-service-catalog__meta">
                 <div>
-                  <dt>Base Price</dt>
+                  <dt>Base price</dt>
                   <dd>{formatCatalogPrice(selectedService.basePriceCents)}</dd>
                 </div>
                 <div>
@@ -99,27 +99,30 @@ export function PlatformServiceCatalogClient() {
                   <dt>Status</dt>
                   <dd>{selectedService.active ? "Active" : "Inactive"}</dd>
                 </div>
-                <div>
-                  <dt>Service ID</dt>
-                  <dd className="vmb-service-catalog__id">{selectedService.id}</dd>
-                </div>
               </dl>
 
               {addons.length > 0 ? (
                 <>
-                  <p className="vmb-service-catalog__section-label">Available Add-ons</p>
+                  <p className="vmb-service-catalog__section-label">Add-ons</p>
                   <ul className="vmb-service-catalog__addon-list">
                     {addons.map((addon) => (
                       <li key={addon.id} className="vmb-service-catalog__addon-item">
-                        <span aria-hidden>✓</span> {addon.name}
+                        {addon.name}
                       </li>
                     ))}
                   </ul>
                 </>
               ) : null}
-            </section>
-          ) : null}
-        </section>
+
+              <details className="vmb-service-catalog__id-row">
+                <summary>Service ID</summary>
+                <code className="vmb-service-catalog__id">{selectedService.id}</code>
+              </details>
+            </div>
+          ) : (
+            <p className="vmb-service-catalog__detail-empty">Select a service to view detail.</p>
+          )}
+        </aside>
       </div>
     </AdminNailBuilderShell>
   );
@@ -140,7 +143,7 @@ function ServiceRow({
       className={`vmb-service-catalog__service-row${active ? " vmb-service-catalog__service-row--active" : ""}`}
       onClick={onSelect}
     >
-      <span>{service.name}</span>
+      <span className="vmb-service-catalog__service-name">{service.name}</span>
       <span className="vmb-service-catalog__service-meta">
         {formatCatalogPrice(service.basePriceCents)} · {formatCatalogDuration(service.durationMinutes)}
       </span>

@@ -289,7 +289,8 @@ function run(): void {
     "utf8",
   );
   assert(serviceCatalogSource.includes("AdminNailBuilderShell"), "service catalog uses shared nail builder shell");
-  assert(serviceCatalogSource.includes("vmb-admin-nail-builder__workspace--two-col"), "service catalog uses two-column layout");
+  assert(serviceCatalogSource.includes("vmb-template-admin"), "service catalog uses three-column admin grid");
+  assert(serviceCatalogSource.includes("flowActions"), "service catalog preset link uses flow action area");
 
   const nailBuilderStyles = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
   assert(nailBuilderStyles.includes(".vmb-admin-nail-builder"), "globals define admin nail builder shell styles");
