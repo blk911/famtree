@@ -54,3 +54,12 @@ export function resolveAdminNailInviteCardContent(
       : `CTA missing for ${template.id}`,
   };
 }
+
+export function inviteDraftsHaveDuplicateBodies(
+  drafts: Record<string, Pick<VmbInviteTemplate, "body">>,
+): boolean {
+  const bodies = Object.values(drafts)
+    .map((row) => row.body.trim())
+    .filter(Boolean);
+  return new Set(bodies).size < bodies.length;
+}

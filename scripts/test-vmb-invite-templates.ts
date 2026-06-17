@@ -79,9 +79,36 @@ async function run(): Promise<void> {
   const repairResult = await repairNailInviteTemplateContent();
   assert(repairResult.repaired === 10, "repair script seeds exactly 10 Nail templates");
   assert(repairResult.errors.length === 0, "repair script completes without errors");
+  assert(repairResult.after.uniqueBodies === 10, "repair leaves 10 unique stored bodies");
+  assert(repairResult.after.uniqueCtas >= 8, "repair leaves at least 8 unique stored CTAs");
 
   const listed = await listInviteTemplates("nails", { includeInactive: true });
   assert(listed.length === 10, "GET store returns 10 nails templates");
+
+  const storedUniqueBodies = new Set(listed.map((row) => row.body.trim())).size;
+  assert(storedUniqueBodies === 10, "store-level list has 10 unique bodies");
+
+  const storedById = new Map(listed.map((row) => [row.id, row]));
+  assert(
+    storedById.get("nails-birthday-celebration")!.body.startsWith("Happy Birthday"),
+    "stored birthday body starts with Happy Birthday",
+  );
+  assert(
+    storedById.get("nails-referral-invite")!.body.startsWith("Hi {clientName}, some of my best clients"),
+    "stored referral body starts correctly",
+  );
+  assert(
+    storedById.get("nails-open-chair")!.body.startsWith("Hi {clientName}, I had an appointment open up"),
+    "stored open chair body starts correctly",
+  );
+  assert(
+    storedById.get("nails-private-client-network")!.body.startsWith("Hi {clientName}, I'm inviting a small group"),
+    "stored PCN body starts correctly",
+  );
+  assert(
+    storedById.get("nails-refresh-reminder")!.body.startsWith("Hi {clientName}, it may be time"),
+    "stored refresh body starts correctly",
+  );
 
   const bodies = new Set(DEFAULT_NAIL_INVITE_TEMPLATES.map((template) => template.body.trim()));
   assert(bodies.size === 10, "each invite type has unique body content");
