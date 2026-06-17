@@ -46,6 +46,7 @@ import {
   offerToAdminNailInviteCardOffer,
   pickDefaultAttachedOfferId,
 } from "../lib/vmb/admin/invite-offer-attachment";
+import { listSavedCatalogOffers } from "../lib/vmb/admin/saved-offer-catalog";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -344,6 +345,44 @@ async function run(): Promise<void> {
   assert(cardOffer?.price === "$20 off", "offer card uses value label as price");
   assert(cardOffer?.serviceName === "Gel Manicure", "offer card includes linked service");
 
+  const catalogPool = listSavedCatalogOffers([
+    {
+      id: "default-birthday",
+      name: "Birthday Default",
+      category: "birthday",
+      description: "",
+      offerText: "Default",
+      active: true,
+      isDefault: true,
+      createdAt: "",
+      updatedAt: "",
+    },
+    {
+      id: "salon-birthday",
+      name: "Birthday Saved",
+      category: "birthday",
+      description: "",
+      offerText: "Saved",
+      active: true,
+      isDefault: false,
+      createdAt: "",
+      updatedAt: "",
+    },
+    {
+      id: "salon-archived",
+      name: "Archived",
+      category: "vip",
+      description: "",
+      offerText: "Off",
+      active: false,
+      isDefault: false,
+      createdAt: "",
+      updatedAt: "",
+    },
+  ]);
+  assert(catalogPool.length === 1, "saved catalog list excludes defaults and inactive offers");
+  assert(catalogPool[0]?.id === "salon-birthday", "saved catalog list keeps persisted salon offers");
+
   const patchedDrafts = patchInviteDraftRecord(draftMap, birthdayId, { body: "Edited birthday body" });
   assert(
     getSelectedInviteDraft(patchedDrafts, birthdayId)?.body === "Edited birthday body",
@@ -378,14 +417,22 @@ async function run(): Promise<void> {
   assert(adminClientSource.includes("attachedOfferId"), "attached offer selection is separate from invite copy");
   assert(adminClientSource.includes("offer={attachedOfferCard}"), "preview and modal receive attached offer");
   assert(adminClientSource.includes("resolveNailOfferServiceLabels"), "attached offer uses catalog reward labels");
-  assert(adminClientSource.includes("catalogOffers={activeOffers}"), "insert elements list saved catalog offers");
+  assert(adminClientSource.includes("listSavedCatalogOffers"), "invite builder loads saved catalog offers only");
+  assert(!adminClientSource.includes("pickDefaultAttachedOfferId"), "invite builder does not auto-attach default promos");
   assert(!adminClientSource.match(/onAttachedOfferChange=\{[^}]*patchSelectedDraft/s), "offer picker does not patch invite draft");
-  const insertElementsSource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/InviteBuilderInsertElements.tsx"),
+  const attachOfferSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/InviteBuilderAttachOffer.tsx"),
     "utf8",
   );
-  assert(insertElementsSource.includes("Select from Offer Catalog"), "insert elements lists offer catalog");
-  assert(insertElementsSource.includes("offer block only"), "insert elements clarifies offer-only attachment");
+  assert(attachOfferSource.includes("Attach Offer"), "attach offer section replaces insert elements");
+  assert(attachOfferSource.includes("Select saved offer"), "attach offer dropdown uses saved offer label");
+  assert(
+    attachOfferSource.includes("No saved offers yet. Create one in Offer Catalog."),
+    "attach offer empty state guides to catalog",
+  );
+  assert(attachOfferSource.includes("Open Offer Catalog"), "attach offer links to offer catalog");
+  assert(attachOfferSource.includes("/admin/invites/offers"), "attach offer catalog link uses offers route");
+  assert(attachOfferSource.includes("AdminOfferPreviewCard"), "attach offer shows selected offer preview");
   assert(adminClientSource.includes("selectTemplate"), "pills use selectTemplate");
   assert(adminClientSource.includes("selectedDraft"), "editor and preview use selectedDraft");
   assert(!adminClientSource.includes("activeCardType"), "legacy card type does not drive preview");

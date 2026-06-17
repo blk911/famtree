@@ -2,17 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
-import { InviteBuilderInsertElements } from "@/components/vmb/admin/InviteBuilderInsertElements";
+import { InviteBuilderAttachOffer } from "@/components/vmb/admin/InviteBuilderAttachOffer";
 import { AdminFinalCardCheckModal } from "@/components/vmb/invites/AdminFinalCardCheckModal";
 import { AdminNailInviteCard } from "@/components/vmb/invites/AdminNailInviteCard";
 import {
   offerToAdminNailInviteCardOffer,
-  pickDefaultAttachedOfferId,
 } from "@/lib/vmb/admin/invite-offer-attachment";
 import {
   resolveNailOfferAddonLabels,
   resolveNailOfferServiceLabels,
 } from "@/lib/vmb/admin/nail-offer-builder-selections";
+import { listSavedCatalogOffers } from "@/lib/vmb/admin/saved-offer-catalog";
 import { selectInviteTemplateId } from "@/lib/vmb/invite-templates/admin-invite-template-selection";
 import {
   cloneInviteTemplate,
@@ -119,32 +119,42 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
     void loadOffers();
   }, [loadOffers]);
 
-  useEffect(() => {
-    if (!selectedTemplateId || offers.length === 0) return;
-    const template = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === selectedTemplateId);
-    setAttachedOfferId(pickDefaultAttachedOfferId(template, offers));
-  }, [selectedTemplateId, offers]);
+  const savedCatalogOffers = useMemo(() => listSavedCatalogOffers(offers), [offers]);
 
-  const activeOffers = useMemo(
-    () => [...offers.filter((offer) => offer.active)].sort((a, b) => a.name.localeCompare(b.name)),
-    [offers],
-  );
+  useEffect(() => {
+    if (!attachedOfferId) return;
+    if (!savedCatalogOffers.some((offer) => offer.id === attachedOfferId)) {
+      setAttachedOfferId("");
+    }
+  }, [attachedOfferId, savedCatalogOffers]);
 
   const attachedOffer = useMemo(
-    () => activeOffers.find((offer) => offer.id === attachedOfferId),
-    [activeOffers, attachedOfferId],
+    () => savedCatalogOffers.find((offer) => offer.id === attachedOfferId),
+    [savedCatalogOffers, attachedOfferId],
   );
+
+  const attachedOfferServiceNames = useMemo(() => {
+    if (!attachedOffer) return [];
+    return resolveNailOfferServiceLabels(attachedOffer.serviceIds, {
+      ...Object.fromEntries(services.map((service) => [service.id, service.name])),
+    });
+  }, [attachedOffer, services]);
+
+  const attachedOfferRewardLabels = useMemo(() => {
+    if (!attachedOffer) return [];
+    return resolveNailOfferAddonLabels(attachedOffer.serviceOptionIds, {
+      ...Object.fromEntries(serviceOptions.map((option) => [option.id, option.name])),
+    });
+  }, [attachedOffer, serviceOptions]);
 
   const attachedOfferCard = useMemo(() => {
     if (!attachedOffer) return undefined;
-    const serviceNames = resolveNailOfferServiceLabels(attachedOffer.serviceIds, {
-      ...Object.fromEntries(services.map((service) => [service.id, service.name])),
-    });
-    const rewardLabels = resolveNailOfferAddonLabels(attachedOffer.serviceOptionIds, {
-      ...Object.fromEntries(serviceOptions.map((option) => [option.id, option.name])),
-    });
-    return offerToAdminNailInviteCardOffer(attachedOffer, serviceNames, rewardLabels);
-  }, [attachedOffer, serviceOptions, services]);
+    return offerToAdminNailInviteCardOffer(
+      attachedOffer,
+      attachedOfferServiceNames,
+      attachedOfferRewardLabels,
+    );
+  }, [attachedOffer, attachedOfferRewardLabels, attachedOfferServiceNames]);
 
   const tokenContext = useMemo(
     () => ({
@@ -226,7 +236,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
       <span className="vmb-invite-builder__flow-sep" aria-hidden="true">
         →
       </span>
-      <span>Inserts</span>
+      <span>Attach Offer</span>
       <span className="vmb-invite-builder__flow-sep" aria-hidden="true">
         →
       </span>
@@ -238,7 +248,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
     return (
       <AdminBuilderShell
         title="Invite Builder"
-        subtitle="Choose an invite, edit the message, attach inserts, and preview the final card."
+        subtitle="Choose an invite, edit the message, attach a saved offer, and preview the final card."
         activeStep="templates"
         headerExtra={flowGuide}
       >
@@ -327,9 +337,12 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                 </label>
               </div>
 
-              <InviteBuilderInsertElements
+              <InviteBuilderAttachOffer
                 attachedOfferId={attachedOfferId}
-                catalogOffers={activeOffers}
+                savedOffers={savedCatalogOffers}
+                selectedOffer={attachedOffer}
+                serviceNames={attachedOfferServiceNames}
+                rewardLabels={attachedOfferRewardLabels}
                 onAttachedOfferChange={setAttachedOfferId}
               />
 

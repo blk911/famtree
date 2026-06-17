@@ -281,7 +281,7 @@ function run(): void {
   );
   assert(cardTemplateSource.includes("AdminFinalCardCheckModal"), "admin final card check modal is available");
   assert(cardTemplateSource.includes("AdminBuilderShell"), "admin templates use shared builder shell");
-  assert(cardTemplateSource.includes("InviteBuilderInsertElements"), "admin builder includes insert elements for offer attachment");
+  assert(cardTemplateSource.includes("InviteBuilderAttachOffer"), "admin builder includes attach offer section");
   assert(cardTemplateSource.includes("Save template"), "invite template save action remains available");
   assert(cardTemplateSource.includes("Reset to default"), "invite template reset action remains available");
 

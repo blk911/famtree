@@ -4991,6 +4991,68 @@
   border-top: 1px solid #e7e5e4;
 }
 
+.vmb-invite-builder__attach {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e7e5e4;
+}
+
+.vmb-invite-builder__attach-title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-invite-builder__attach-field {
+  display: grid;
+  gap: 6px;
+}
+
+.vmb-invite-builder__attach-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #57534e;
+}
+
+.vmb-invite-builder__attach-field select {
+  width: 100%;
+  border: 1px solid #d6d3d1;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.vmb-invite-builder__attach-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #78716c;
+}
+
+.vmb-invite-builder__attach-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b45309;
+  text-decoration: none;
+}
+
+.vmb-invite-builder__attach-link:hover {
+  text-decoration: underline;
+}
+
+.vmb-invite-builder__attach-preview {
+  margin-top: 12px;
+}
+
+.vmb-invite-builder__attach-empty {
+  display: grid;
+  gap: 4px;
+}
+
 .vmb-invite-builder__inserts-title {
   margin: 0 0 10px;
   font-size: 12px;

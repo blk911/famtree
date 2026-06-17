@@ -4,13 +4,19 @@ type Props = {
   offer: VmbOffer | null;
   serviceNames?: string[];
   addonLabels?: string[];
+  label?: string;
 };
 
-export function AdminOfferPreviewCard({ offer, serviceNames = [], addonLabels = [] }: Props) {
+export function AdminOfferPreviewCard({
+  offer,
+  serviceNames = [],
+  addonLabels = [],
+  label = "Offer preview",
+}: Props) {
   if (!offer) {
     return (
       <div className="vmb-admin-offer-preview">
-        <p className="vmb-admin-offer-preview__label">Offer preview</p>
+        <p className="vmb-admin-offer-preview__label">{label}</p>
         <p className="vmb-admin-offer-preview__empty">Select an offer to preview.</p>
       </div>
     );
@@ -18,7 +24,7 @@ export function AdminOfferPreviewCard({ offer, serviceNames = [], addonLabels = 
 
   return (
     <div className="vmb-admin-offer-preview">
-      <p className="vmb-admin-offer-preview__label">Offer preview</p>
+      <p className="vmb-admin-offer-preview__label">{label}</p>
       <div className="vmb-admin-nail-invite-card__offer-card vmb-admin-offer-preview__card">
         <p className="vmb-admin-nail-invite-card__offer-name">{offer.name}</p>
         {offer.valueLabel ? (
