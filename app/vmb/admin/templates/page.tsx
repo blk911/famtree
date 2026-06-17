@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { LegacyAdminPathNotice } from "@/components/admin/workspaces/LegacyAdminPathNotice";
-import { TemplateLibraryAdminClient } from "@/components/vmb/admin/TemplateLibraryAdminClient";
+import { TemplateBuilderAdminClient } from "@/components/vmb/admin/TemplateBuilderAdminClient";
 import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Template Library (legacy)",
+  title: "Nails Template Builder (legacy)",
 };
 
-/** @deprecated Use /admin/invites/offers — VMB product shell compatibility route. */
+/** @deprecated Use /admin/invites/builder — VMB product shell compatibility route. */
 export default async function VmbAdminTemplatesPage() {
   const ctx = await loadVmbPageContext({});
   return (
@@ -17,11 +17,11 @@ export default async function VmbAdminTemplatesPage() {
       <div className="mx-auto max-w-[1500px] px-4 pt-5 sm:px-6 lg:px-8">
         <LegacyAdminPathNotice
           legacyPath="/vmb/admin/templates"
-          canonicalPath="/admin/invites/offers"
-          label="Template library admin"
+          canonicalPath="/admin/invites/builder"
+          label="Nails template builder"
         />
       </div>
-      <TemplateLibraryAdminClient
+      <TemplateBuilderAdminClient
         salonId={ctx.trialId}
         salonName={ctx.salonName}
         ownerName={ctx.workspace?.ownerName}

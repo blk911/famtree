@@ -579,7 +579,7 @@ export function CardPreviewModal({
                   </label>
                 ) : null}
 
-                <Link href="/admin/invites/offers" className="vmb-card-preview-modal__manage-offers">
+                <Link href="/admin/invites/library" className="vmb-card-preview-modal__manage-offers">
                   Manage Offers
                 </Link>
               </div>

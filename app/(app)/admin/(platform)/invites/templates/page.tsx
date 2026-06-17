@@ -4,10 +4,10 @@ import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Template Library · Invites",
+  title: "Nails Template Builder · Invites",
 };
 
-/** Legacy route — template editing lives in Template Library. */
+/** Legacy route — redirects to Template Builder. */
 export default function AdminInvitesTemplatesPage() {
-  redirect("/admin/invites/offers");
+  redirect("/admin/invites/builder");
 }

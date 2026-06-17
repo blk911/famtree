@@ -1,73 +1,54 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminTemplatePreviewCard } from "@/components/vmb/admin/AdminTemplatePreviewCard";
 import { AdminTemplateReviewModal } from "@/components/vmb/admin/AdminTemplateReviewModal";
 import { OfferNailSelectionFields } from "@/components/vmb/admin/OfferNailSelectionFields";
+import { useNailTemplateInventory } from "@/components/vmb/admin/useNailTemplateInventory";
 import {
   baselineNailTemplateDraft,
-  buildNailTemplateDrafts,
   nailTemplateDraftToOffer,
   TEMPLATE_LIBRARY_SAVED_MESSAGE,
   type NailTemplateDraft,
 } from "@/lib/vmb/admin/nail-template-library";
+import { NAILS_LIBRARY_ROUTE } from "@/lib/vmb/admin/nail-template-routes";
 import {
   resolveNailOfferAddonLabels,
   resolveNailOfferServiceLabels,
 } from "@/lib/vmb/admin/nail-offer-builder-selections";
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
-import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
-import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
-import type { VmbService } from "@/lib/vmb/services/service-types";
 
 type Props = {
   salonId?: string;
   salonName: string;
   ownerName?: string;
+  initialTemplateId?: string;
 };
 
-export function TemplateLibraryAdminClient({ salonId, salonName, ownerName }: Props) {
-  const [offers, setOffers] = useState<VmbOffer[]>([]);
-  const [services, setServices] = useState<VmbService[]>([]);
-  const [serviceOptions, setServiceOptions] = useState<VmbServiceOption[]>([]);
-  const [drafts, setDrafts] = useState<NailTemplateDraft[]>([]);
+export function TemplateBuilderAdminClient({
+  salonId,
+  salonName,
+  ownerName,
+  initialTemplateId,
+}: Props) {
+  const { drafts, reload, serviceFallbackById, optionFallbackById } = useNailTemplateInventory(salonId);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
-    DEFAULT_NAIL_INVITE_TEMPLATES[0]!.id,
+    initialTemplateId ?? DEFAULT_NAIL_INVITE_TEMPLATES[0]!.id,
   );
   const [draft, setDraft] = useState<NailTemplateDraft | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const loadOffers = useCallback(async () => {
-    if (!salonId) return;
-    const [offerRes, serviceRes] = await Promise.all([
-      fetch("/api/vmb/offers"),
-      fetch("/api/vmb/services"),
-    ]);
-    const offerData = (await offerRes.json()) as { ok?: boolean; offers?: VmbOffer[] };
-    const serviceData = (await serviceRes.json()) as {
-      ok?: boolean;
-      services?: VmbService[];
-      options?: VmbServiceOption[];
-    };
-    if (offerData.ok && offerData.offers) {
-      setOffers(offerData.offers);
-      setDrafts(buildNailTemplateDrafts(salonId, offerData.offers));
-    }
-    if (serviceData.ok && serviceData.services) {
-      setServices(serviceData.services);
-    }
-    if (serviceData.ok && serviceData.options) {
-      setServiceOptions(serviceData.options);
-    }
-  }, [salonId]);
-
   useEffect(() => {
-    void loadOffers();
-  }, [loadOffers]);
+    if (!initialTemplateId) return;
+    if (drafts.some((row) => row.templateId === initialTemplateId)) {
+      setSelectedTemplateId(initialTemplateId);
+    }
+  }, [drafts, initialTemplateId]);
 
   const selectedBaseline = useMemo(
     () => drafts.find((row) => row.templateId === selectedTemplateId),
@@ -79,22 +60,6 @@ export function TemplateLibraryAdminClient({ salonId, salonName, ownerName }: Pr
       setDraft({ ...selectedBaseline });
     }
   }, [selectedBaseline]);
-
-  const serviceFallbackById = useMemo(() => {
-    const map: Record<string, string | undefined> = {};
-    for (const service of services) {
-      map[service.id] = service.name;
-    }
-    return map;
-  }, [services]);
-
-  const optionFallbackById = useMemo(() => {
-    const map: Record<string, string | undefined> = {};
-    for (const option of serviceOptions) {
-      map[option.id] = option.name;
-    }
-    return map;
-  }, [serviceOptions]);
 
   const previewServiceNames = useMemo(() => {
     if (!draft) return [];
@@ -132,8 +97,8 @@ export function TemplateLibraryAdminClient({ salonId, salonName, ownerName }: Pr
     setBusy(false);
     if (data.ok) {
       setReviewOpen(false);
-      setStatus(TEMPLATE_LIBRARY_SAVED_MESSAGE);
-      await loadOffers();
+      setStatus(`${TEMPLATE_LIBRARY_SAVED_MESSAGE} View in Library.`);
+      await reload();
     } else {
       setStatus(data.error ?? "Save failed.");
     }
@@ -156,14 +121,14 @@ export function TemplateLibraryAdminClient({ salonId, salonName, ownerName }: Pr
 
     setBusy(false);
     setStatus("Reset to default template.");
-    await loadOffers();
+    await reload();
   }
 
   if (!salonId) {
     return (
-      <AdminBuilderShell title="Template Library" activeStep="library">
+      <AdminBuilderShell title="Nails Template Builder" activeStep="builder">
         <p className="vmb-admin-builder-grid__status">
-          Sign in to a VMB salon trial to manage your template library.
+          Sign in to a VMB salon trial to build invitation templates.
         </p>
       </AdminBuilderShell>
     );
@@ -171,13 +136,13 @@ export function TemplateLibraryAdminClient({ salonId, salonName, ownerName }: Pr
 
   return (
     <AdminBuilderShell
-      title="Template Library"
-      subtitle="Edit invite messages, nail services, and rewards — then preview what clients will see."
-      activeStep="library"
+      title="Nails Template Builder"
+      subtitle="Create and refine invitation assets — then save finished versions to the Nails Library."
+      activeStep="builder"
     >
       <div className="vmb-admin-builder-grid">
         <aside className="vmb-admin-builder-grid__list">
-          <p className="vmb-admin-builder-grid__list-label">Template types</p>
+          <p className="vmb-admin-builder-grid__list-label">Invite types</p>
           <ul>
             {drafts.map((row) => (
               <li key={row.templateId}>
@@ -188,7 +153,7 @@ export function TemplateLibraryAdminClient({ salonId, salonName, ownerName }: Pr
                 >
                   {row.displayName}
                   {row.saved ? (
-                    <span className="vmb-admin-builder-grid__override-dot" aria-label="Saved" />
+                    <span className="vmb-admin-builder-grid__override-dot" aria-label="In library" />
                   ) : null}
                 </button>
               </li>
@@ -247,6 +212,9 @@ export function TemplateLibraryAdminClient({ salonId, salonName, ownerName }: Pr
                 >
                   Reset
                 </button>
+                <Link href={NAILS_LIBRARY_ROUTE} className="vmb-admin-builder__header-link">
+                  View Library
+                </Link>
               </div>
               {status ? <p className="vmb-admin-builder-grid__status">{status}</p> : null}
             </>

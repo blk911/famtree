@@ -58,8 +58,11 @@ export function VmbHelpMenu() {
           <Link href="/admin/service-catalog" className="vmb-help-menu__item" role="menuitem" onClick={() => setOpen(false)}>
             Services
           </Link>
-          <Link href="/admin/invites/offers" className="vmb-help-menu__item" role="menuitem" onClick={() => setOpen(false)}>
-            Template Library
+          <Link href="/admin/invites/builder" className="vmb-help-menu__item" role="menuitem" onClick={() => setOpen(false)}>
+            Template Builder
+          </Link>
+          <Link href="/admin/invites/library" className="vmb-help-menu__item" role="menuitem" onClick={() => setOpen(false)}>
+            Nails Library
           </Link>
         </div>
       ) : null}

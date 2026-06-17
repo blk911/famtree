@@ -70,8 +70,8 @@ function run(): void {
     assert(routePageExists(hub), `hub path resolves to page: ${hub}`);
   }
 
-  assert(INVITES_BUILDER_HUB.href === "/admin/invites/offers", "template library routes to offers page");
-  assert(INVITES_HUB_SECONDARY_LINKS.length === 4, "four secondary invites hub links");
+  assert(INVITES_BUILDER_HUB.href === "/admin/invites/builder", "template builder routes to builder page");
+  assert(INVITES_HUB_SECONDARY_LINKS.length === 5, "five secondary invites hub links");
   assert(INVITES_HUB_COMING_LATER.length === 3, "three coming-later invites hub links");
   for (const card of INVITES_OPERATING_CARDS) {
     assert(routePageExists(card.href), `invites area route exists: ${card.href}`);
@@ -81,7 +81,7 @@ function run(): void {
     path.join(process.cwd(), "components/admin/workspaces/InvitesOperatingCenter.tsx"),
     "utf8",
   );
-  assert(invitesHubSource.includes("Open Template Library"), "invites hub has primary template library CTA");
+  assert(invitesHubSource.includes("Open Template Builder"), "invites hub has primary template builder CTA");
   assert(invitesHubSource.includes("INVITES_HUB_SECONDARY_LINKS"), "invites hub uses secondary text links");
   assert(!invitesHubSource.includes("INVITES_OPERATING_CARDS.map"), "invites hub does not render card grid");
   assert(!invitesHubSource.includes("Operating areas"), "invites hub removes operating areas grid heading");
@@ -245,34 +245,38 @@ function run(): void {
   assert(workspaceShellSource.includes("vmb-admin-workspace"), "admin workspace shell uses canonical container");
   assert(!workspaceShellSource.includes("MarketIntelPageShell"), "admin workspace shell does not nest market intel shell");
 
-  const templateLibrarySource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/TemplateLibraryAdminClient.tsx"),
+  const builderSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/TemplateBuilderAdminClient.tsx"),
     "utf8",
   );
-  assert(templateLibrarySource.includes("vmb-admin-builder-grid"), "template library uses standard three-column grid");
-  assert(templateLibrarySource.includes("Headline"), "template library edits headline");
-  assert(templateLibrarySource.includes("CTA Label"), "template library edits CTA label");
-  assert(templateLibrarySource.includes("OfferNailSelectionFields"), "template library includes nail services and rewards");
-  assert(templateLibrarySource.includes("AdminTemplatePreviewCard"), "template library uses client preview panel");
-  assert(templateLibrarySource.includes("AdminTemplateReviewModal"), "template library includes review modal");
-  assert(templateLibrarySource.includes("Review Template"), "template library uses review template action");
-  assert(templateLibrarySource.includes("Available To Clients"), "template library uses client-facing active label");
-  assert(templateLibrarySource.includes("TEMPLATE_LIBRARY_SAVED_MESSAGE"), "template library shows post-save confirmation");
-  assert(!templateLibrarySource.includes("Invite Builder"), "template library removes invite builder language");
-  assert(!templateLibrarySource.includes("Offer Catalog"), "template library removes offer catalog language");
-  assert(!templateLibrarySource.includes("Attached Offer"), "template library removes attached offer language");
-  assert(templateLibrarySource.includes("AdminBuilderShell"), "template library uses shared builder shell");
-  assert(templateLibrarySource.includes('title="Template Library"'), "template library page title is Template Library");
+  assert(builderSource.includes("vmb-admin-builder-grid"), "template builder uses standard three-column grid");
+  assert(builderSource.includes("Headline"), "template builder edits headline");
+  assert(builderSource.includes("Review Template"), "template builder uses review template action");
+  assert(builderSource.includes("AdminTemplateReviewModal"), "template builder includes review modal");
+  assert(builderSource.includes('title="Nails Template Builder"'), "builder page title is Nails Template Builder");
+  assert(builderSource.includes("activeStep=\"builder\""), "builder uses builder flow step");
+  assert(!builderSource.includes("Publish To Salons"), "builder does not publish to salons");
+
+  const librarySource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/NailsLibraryAdminClient.tsx"),
+    "utf8",
+  );
+  assert(librarySource.includes('title="Nails Library"'), "library page title is Nails Library");
+  assert(librarySource.includes("activeStep=\"library\""), "library uses library flow step");
+  assert(librarySource.includes("Publish To Salons"), "library includes publish to salons action");
+  assert(librarySource.includes("builderRouteForTemplate"), "library edit opens template builder");
+  assert(!librarySource.includes("OfferNailSelectionFields"), "library is read-only — no service checkboxes");
+  assert(librarySource.includes("AdminTemplatePreviewCard"), "library shows client preview");
 
   const flowNavSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/AdminBuilderFlowNav.tsx"),
     "utf8",
   );
-  assert(flowNavSource.includes("Template Library"), "flow nav shows template library step");
-  assert(flowNavSource.includes("Preview"), "flow nav shows preview hint");
-  assert(!flowNavSource.includes("Invite Builder"), "flow nav removes invite builder label");
-  assert(!flowNavSource.includes("Final Card"), "flow nav removes final card label");
-  assert(!flowNavSource.includes("Offers"), "flow nav removes offers step");
+  assert(flowNavSource.includes("Template Builder"), "flow nav shows template builder step");
+  assert(flowNavSource.includes("Library"), "flow nav shows library step");
+  assert(flowNavSource.includes("/admin/invites/builder"), "flow nav links to builder route");
+  assert(flowNavSource.includes("/admin/invites/library"), "flow nav links to library route");
+  assert(!flowNavSource.includes("Preview"), "flow nav removes preview hint");
 
   const offerSelectionSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/OfferNailSelectionFields.tsx"),
@@ -294,7 +298,7 @@ function run(): void {
   const builderStyles = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
   assert(builderStyles.includes(".vmb-admin-workspace"), "globals define admin workspace container");
   assert(builderStyles.includes(".vmb-admin-builder"), "globals define admin builder page shell");
-  assert(builderStyles.includes(".vmb-admin-review-modal"), "globals define offer review modal");
+  assert(builderStyles.includes(".vmb-nails-library__count"), "globals define nails library shelf styles");
 
   const cardBodySource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/cards/CardBody.tsx"),

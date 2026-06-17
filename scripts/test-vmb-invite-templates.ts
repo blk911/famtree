@@ -409,25 +409,29 @@ async function run(): Promise<void> {
     "offer selection does not alter selectedTemplateId",
   );
 
-  const templateLibrarySource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/TemplateLibraryAdminClient.tsx"),
+  const builderSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/TemplateBuilderAdminClient.tsx"),
     "utf8",
   );
-  assert(templateLibrarySource.includes("Template Library"), "template library client uses unified naming");
-  assert(templateLibrarySource.includes("buildNailTemplateDrafts"), "template library loads unified template drafts");
-  assert(templateLibrarySource.includes("AdminTemplatePreviewCard"), "template library renders client preview");
-  assert(templateLibrarySource.includes("Review Template"), "template library uses review template workflow");
-  assert(!templateLibrarySource.includes("InviteBuilderAttachOffer"), "template library removes attach offer UI");
-  assert(!templateLibrarySource.includes("attachedOfferId"), "template library removes attached offer state");
-  assert(!templateLibrarySource.includes("Offer Catalog"), "template library removes offer catalog language");
+  assert(builderSource.includes("Nails Template Builder"), "builder client uses factory naming");
+  assert(builderSource.includes("useNailTemplateInventory"), "builder loads template drafts via shared inventory hook");
+  assert(builderSource.includes("Review Template"), "builder uses review template workflow");
 
-  const previewSource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/AdminTemplatePreviewCard.tsx"),
+  const librarySource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/NailsLibraryAdminClient.tsx"),
     "utf8",
   );
-  assert(previewSource.includes("Rewards included"), "template preview shows rewards included");
-  assert(!previewSource.includes("Linked services"), "template preview hides linked services metadata");
-  assert(!previewSource.includes("offer block"), "template preview removes offer terminology");
+  assert(librarySource.includes("Nails Library"), "library client uses inventory shelf naming");
+  assert(librarySource.includes("Publish To Salons"), "library exposes publish action placeholder");
+  assert(librarySource.includes("Edit"), "library links edit to builder");
+  assert(!librarySource.includes("OfferNailSelectionFields"), "library does not edit services inline");
+
+  const routesSource = fs.readFileSync(
+    path.join(process.cwd(), "lib/vmb/admin/nail-template-routes.ts"),
+    "utf8",
+  );
+  assert(routesSource.includes("/admin/invites/builder"), "canonical builder route exists");
+  assert(routesSource.includes("/admin/invites/library"), "canonical library route exists");
 
   assert(NAIL_OFFER_SERVICE_CHOICES.length === 7, "seven nail service choices for offer editor");
   assert(NAIL_OFFER_ADDON_CHOICES.length === 7, "seven nail add-on choices for offer editor");

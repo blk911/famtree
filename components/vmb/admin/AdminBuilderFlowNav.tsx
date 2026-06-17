@@ -1,10 +1,11 @@
 import Link from "next/link";
 
-export type AdminBuilderStep = "services" | "library";
+export type AdminBuilderStep = "services" | "builder" | "library";
 
 const STEPS: { id: AdminBuilderStep; label: string; href: string }[] = [
   { id: "services", label: "Services", href: "/admin/service-catalog" },
-  { id: "library", label: "Template Library", href: "/admin/invites/offers" },
+  { id: "builder", label: "Template Builder", href: "/admin/invites/builder" },
+  { id: "library", label: "Library", href: "/admin/invites/library" },
 ];
 
 type Props = {
@@ -30,12 +31,6 @@ export function AdminBuilderFlowNav({ active }: Props) {
           )}
         </span>
       ))}
-      <span className="vmb-admin-builder-flow-nav__item">
-        <span className="vmb-admin-builder-flow-nav__sep" aria-hidden="true">
-          →
-        </span>
-        <span className="vmb-admin-builder-flow-nav__hint">Preview</span>
-      </span>
     </nav>
   );
 }

@@ -5136,6 +5136,57 @@
   margin: 0;
 }
 
+.vmb-nails-library__count {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #78716c;
+}
+
+.vmb-nails-library__draft-tag {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #a8a29e;
+}
+
+.vmb-nails-library__detail {
+  min-width: 0;
+}
+
+.vmb-nails-library__status {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #78716c;
+}
+
+.vmb-nails-library__meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin: 0 0 16px;
+}
+
+.vmb-nails-library__meta dt {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #78716c;
+}
+
+.vmb-nails-library__meta dd {
+  margin: 0;
+  font-size: 13px;
+  color: #1c1917;
+}
+
+.vmb-nails-library__meta-wide {
+  grid-column: 1 / -1;
+}
+
 .vmb-admin-offer-preview__label {
   font-size: 12px;
   font-weight: 600;

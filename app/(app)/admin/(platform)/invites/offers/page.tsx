@@ -1,20 +1,13 @@
 import type { Metadata } from "next";
-import { TemplateLibraryAdminClient } from "@/components/vmb/admin/TemplateLibraryAdminClient";
-import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Template Library · Invites",
+  title: "Nails Library · Invites",
 };
 
-export default async function AdminInvitesOffersPage() {
-  const ctx = await loadVmbPageContext({});
-  return (
-    <TemplateLibraryAdminClient
-      salonId={ctx.trialId}
-      salonName={ctx.salonName}
-      ownerName={ctx.workspace?.ownerName}
-    />
-  );
+/** Legacy route — redirects to Nails Library. */
+export default function AdminInvitesOffersPage() {
+  redirect("/admin/invites/library");
 }

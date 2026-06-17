@@ -17,7 +17,7 @@ export type NailTemplateDraft = {
 };
 
 export const TEMPLATE_LIBRARY_SAVED_MESSAGE =
-  "Saved to Template Library. Preview shows what clients will see.";
+  "Saved to Nails Library.";
 
 export function templateStorageId(salonId: string, templateId: string): string {
   return `${salonId}-${templateId}`;

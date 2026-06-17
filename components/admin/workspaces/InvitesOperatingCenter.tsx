@@ -11,7 +11,7 @@ export function InvitesOperatingCenter() {
       <header className="vmb-invites-hub__header">
         <h1 className="vmb-invites-hub__title">Invites</h1>
         <p className="vmb-invites-hub__lead">
-          Edit nail invite templates, services, and rewards — then preview what clients will see.
+          Edit nail invite templates in the factory, then browse finished assets in the Nails Library.
         </p>
       </header>
 
@@ -22,7 +22,7 @@ export function InvitesOperatingCenter() {
           </h2>
           <p className="vmb-invites-hub__workbench-desc">{INVITES_BUILDER_HUB.description}</p>
           <Link href={INVITES_BUILDER_HUB.href} className="taikos-opp-card__cta vmb-invites-hub__cta">
-            Open Template Library
+            Open Template Builder
           </Link>
         </div>
       </section>

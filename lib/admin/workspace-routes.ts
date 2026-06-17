@@ -279,9 +279,14 @@ export const INVITES_WORKSPACE_SECTIONS: WorkspaceSection[] = [
     title: "Configuration (canonical)",
     links: [
       {
-        label: "Template Library",
-        description: "Nail invite templates with message, services, and rewards.",
-        href: "/admin/invites/offers",
+        label: "Template Builder",
+        description: "Create and edit nail invitation assets.",
+        href: "/admin/invites/builder",
+      },
+      {
+        label: "Nails Library",
+        description: "Master inventory of finished invitation assets.",
+        href: "/admin/invites/library",
       },
       {
         label: "Services",
@@ -328,13 +333,13 @@ export const INVITES_WORKSPACE_SECTIONS: WorkspaceSection[] = [
     links: [
       {
         label: "Legacy VMB admin templates",
-        description: "Deprecated — redirects to Template Library.",
+        description: "Deprecated — redirects to Template Builder.",
         href: "/vmb/admin/templates",
         legacy: true,
       },
       {
         label: "Legacy VMB admin offers",
-        description: "Deprecated — redirects to /admin/invites/offers.",
+        description: "Deprecated — redirects to Nails Library.",
         href: "/vmb/admin/offers",
         legacy: true,
       },
@@ -359,9 +364,14 @@ export const VMB_SALONS_PRODUCT_SECTIONS: WorkspaceSection[] = [
         href: ADMIN_WORKSPACE_ROUTES.invites,
       },
       {
-        label: "Template Library",
-        description: "Nail invite templates with message, services, rewards, and preview.",
-        href: "/admin/invites/offers",
+        label: "Template Builder",
+        description: "Create and edit nail invitation assets.",
+        href: "/admin/invites/builder",
+      },
+      {
+        label: "Nails Library",
+        description: "Master inventory of finished invitation assets.",
+        href: "/admin/invites/library",
       },
       {
         label: "Service catalog",
@@ -463,8 +473,8 @@ export const ADMIN_PLATFORM_HUB_PATHS = [
   ADMIN_WORKSPACE_ROUTES.invites,
   ADMIN_WORKSPACE_ROUTES.serviceCatalog,
   ADMIN_WORKSPACE_ROUTES.vmbSalons,
-  "/admin/invites/templates",
-  "/admin/invites/offers",
+  "/admin/invites/builder",
+  "/admin/invites/library",
   "/admin/invites/services",
   "/admin/invites/queue",
   "/admin/invites/sent",
