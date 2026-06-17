@@ -242,8 +242,8 @@ function run(): void {
     "card template copy fields use two-line textarea inputs",
   );
   assert(
-    (cardTemplateSource.match(/vmb-card-template-workspace__copy-input/g) ?? []).length >= 5,
-    "invite template copy fields render editable inputs",
+    (cardTemplateSource.match(/vmb-card-template-workspace__copy-input/g) ?? []).length >= 3,
+    "headline, body, and CTA fields are editable",
   );
   assert(
     cardTemplateSource.includes("<AdminNailInviteCard"),
@@ -261,8 +261,9 @@ function run(): void {
     cardTemplateSource.includes("selectedTemplateId"),
     "admin templates page keys selection by template id",
   );
-  assert(cardTemplateSource.includes("Select invite"), "admin templates page has invite dropdown");
   assert(cardTemplateSource.includes("selectTemplate"), "admin templates page uses shared selectTemplate");
+  assert(cardTemplateSource.includes("Final Invite Preview"), "admin preview header is Final Invite Preview");
+  assert(!cardTemplateSource.includes("Select invite"), "admin templates page has no invite dropdown");
   assert(
     cardTemplateSource.includes("DEFAULT_NAIL_INVITE_TEMPLATES"),
     "admin templates page seeds tabs from nail catalog ids",

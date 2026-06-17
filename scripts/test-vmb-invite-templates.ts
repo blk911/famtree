@@ -307,8 +307,12 @@ async function run(): Promise<void> {
     adminClientSource.includes("AdminNailInviteCard"),
     "admin templates page renders AdminNailInviteCard directly",
   );
-  assert(adminClientSource.includes("Select invite"), "admin editor includes invite dropdown");
-  assert(adminClientSource.includes("selectTemplate"), "pills and dropdown share selectTemplate");
+  assert(adminClientSource.includes("Final Invite Preview"), "admin preview uses Final Invite Preview label");
+  assert(!adminClientSource.includes("Select invite"), "admin editor has no invite dropdown");
+  assert(!adminClientSource.includes("AdminNailInvitePreviewDebugPanel"), "admin page has no debug panel");
+  assert(!adminClientSource.includes("PAGE RENDER DEBUG"), "admin page has no page debug box");
+  assert(!adminClientSource.includes("Catalog offer"), "admin page has no catalog offer dropdown");
+  assert(adminClientSource.includes("selectTemplate"), "pills use selectTemplate");
   assert(adminClientSource.includes("selectedDraft"), "editor and preview use selectedDraft");
   assert(!adminClientSource.includes("activeCardType"), "legacy card type does not drive preview");
 

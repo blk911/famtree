@@ -4668,6 +4668,13 @@
   padding: 16px 18px;
 }
 
+.vmb-card-template-workspace__editor-title {
+  margin: 0 0 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #292524;
+}
+
 .vmb-card-template-workspace__editor-meta {
   display: flex;
   flex-wrap: wrap;

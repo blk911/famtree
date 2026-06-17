@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  ADMIN_INVITE_RENDER_DEBUG_STYLE,
-  debugPreview160,
   resolveAdminNailInviteCardContent,
   type AdminNailInviteCardOffer,
   type AdminNailInviteCardTemplate,
@@ -17,6 +15,7 @@ export type AdminNailInviteCardProps = {
 
 export function AdminNailInviteCard({ template, tokenContext, offer }: AdminNailInviteCardProps) {
   const content = resolveAdminNailInviteCardContent(template, tokenContext);
+  const label = template.displayName?.trim() || content.eyebrow;
 
   return (
     <article
@@ -24,27 +23,11 @@ export function AdminNailInviteCard({ template, tokenContext, offer }: AdminNail
       aria-label={`${template.displayName} admin invite card`}
       data-template-id={template.id}
     >
-      <div style={ADMIN_INVITE_RENDER_DEBUG_STYLE} data-testid="admin-nail-invite-card-props-debug">
-        <strong>CARD PROPS DEBUG (always visible)</strong>
-        {"\n"}template.id: {template.id}
-        {"\n"}headline: {template.headline}
-        {"\n"}ctaLabel: {template.ctaLabel}
-        {"\n"}body: {debugPreview160(template.body)}
-      </div>
-
-      <header className="vmb-admin-nail-invite-card__meta">
-        <span className="vmb-admin-nail-invite-card__type">{template.displayName}</span>
-      </header>
-
-      <div className="vmb-admin-nail-invite-card__invite">
-        {content.eyebrow ? (
-          <p className="vmb-admin-nail-invite-card__eyebrow">{content.eyebrow}</p>
-        ) : null}
-        {content.headline ? (
-          <h2 className="vmb-admin-nail-invite-card__headline">{content.headline}</h2>
-        ) : null}
-        <p className="vmb-admin-nail-invite-card__body">{content.body}</p>
-      </div>
+      {label ? <p className="vmb-admin-nail-invite-card__eyebrow">{label}</p> : null}
+      {content.headline ? (
+        <h2 className="vmb-admin-nail-invite-card__headline">{content.headline}</h2>
+      ) : null}
+      <p className="vmb-admin-nail-invite-card__body">{content.body}</p>
 
       {offer ? (
         <section className="vmb-admin-nail-invite-card__offer" aria-label="Offer">
@@ -58,14 +41,12 @@ export function AdminNailInviteCard({ template, tokenContext, offer }: AdminNail
             ) : null}
             {offer.addonLabels && offer.addonLabels.length > 0 ? (
               <ul className="vmb-admin-nail-invite-card__offer-addons">
-                {offer.addonLabels.map((label) => (
-                  <li key={label}>{label}</li>
+                {offer.addonLabels.map((item) => (
+                  <li key={item}>{item}</li>
                 ))}
               </ul>
             ) : null}
-            {offer.price ? (
-              <p className="vmb-admin-nail-invite-card__offer-price">{offer.price}</p>
-            ) : null}
+            {offer.price ? <p className="vmb-admin-nail-invite-card__offer-price">{offer.price}</p> : null}
           </div>
         </section>
       ) : null}
