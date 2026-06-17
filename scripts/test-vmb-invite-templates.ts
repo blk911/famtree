@@ -1,6 +1,9 @@
 /**
  * npm run test:vmb:invite-templates
  */
+import fs from "node:fs";
+import path from "node:path";
+import { resolveAdminNailInviteCardContent } from "../lib/vmb/invite-templates/admin-nail-invite-card-content";
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "../lib/vmb/invite-templates/default-nail-invite-templates";
 import {
   inviteTemplateHasLegacyBleed,
@@ -18,6 +21,7 @@ import {
   CARD_TYPE_TO_INVITE_TEMPLATE_ID,
   getInviteTemplateIdForCardType,
 } from "../lib/vmb/invite-templates/card-type-invite-template-map";
+import { repairNailInviteTemplateContent } from "../lib/vmb/invite-templates/repair-nail-invite-template-content";
 import {
   listInviteTemplates,
   upsertInviteTemplate,
@@ -42,27 +46,56 @@ const PREVIEW_CONTEXT = {
   },
 };
 
+const TOKEN_CONTEXT = {
+  ...INVITE_TEMPLATE_PREVIEW_CONTEXT,
+  ...PREVIEW_CONTEXT.recipientPreview,
+  ...PREVIEW_CONTEXT.providerPreview,
+};
+
+const EXPECTED_CTAS: Record<string, string> = {
+  "nails-private-client-network": "Join My Private Client Network",
+  "nails-birthday-celebration": "View My Birthday Offer",
+  "nails-referral-invite": "Invite Someone You Care About",
+  "nails-open-chair": "Claim This Opening",
+  "nails-refresh-reminder": "Book My Refresh",
+  "nails-we-miss-you": "Come Back In",
+  "nails-vip-thank-you": "View My Thank-You Offer",
+  "nails-favorite-providers": "See My Trusted Favorites",
+  "nails-first-visit-thank-you": "Plan My Next Visit",
+  "nails-new-client-welcome": "Choose My First Offer",
+};
+
 function expectedRenderedBody(template: (typeof DEFAULT_NAIL_INVITE_TEMPLATES)[number]): string {
-  return applyInviteTemplateTokens(template.body, {
-    ...INVITE_TEMPLATE_PREVIEW_CONTEXT,
-    ...PREVIEW_CONTEXT.recipientPreview,
-    ...PREVIEW_CONTEXT.providerPreview,
-  });
+  return applyInviteTemplateTokens(template.body, TOKEN_CONTEXT);
 }
 
 function expectedRenderedCta(template: (typeof DEFAULT_NAIL_INVITE_TEMPLATES)[number]): string {
-  return applyInviteTemplateTokens(template.ctaLabel, {
-    ...INVITE_TEMPLATE_PREVIEW_CONTEXT,
-    ...PREVIEW_CONTEXT.recipientPreview,
-    ...PREVIEW_CONTEXT.providerPreview,
-  });
+  return applyInviteTemplateTokens(template.ctaLabel, TOKEN_CONTEXT);
 }
 
 async function run(): Promise<void> {
   assert(DEFAULT_NAIL_INVITE_TEMPLATES.length === 10, "all 10 Nails invite templates exist");
 
+  const repairResult = await repairNailInviteTemplateContent();
+  assert(repairResult.repaired === 10, "repair script seeds exactly 10 Nail templates");
+  assert(repairResult.errors.length === 0, "repair script completes without errors");
+
+  const listed = await listInviteTemplates("nails", { includeInactive: true });
+  assert(listed.length === 10, "GET store returns 10 nails templates");
+
   const bodies = new Set(DEFAULT_NAIL_INVITE_TEMPLATES.map((template) => template.body.trim()));
   assert(bodies.size === 10, "each invite type has unique body content");
+
+  const pcn = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-private-client-network")!;
+  const referral = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-referral-invite")!;
+  const birthday = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-birthday-celebration")!;
+  const openChair = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-open-chair")!;
+  const refresh = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-refresh-reminder")!;
+
+  assert(referral.body !== pcn.body, "referral body does not equal PCN body");
+  assert(birthday.body !== pcn.body, "birthday body does not equal PCN body");
+  assert(openChair.body !== pcn.body, "open chair body does not equal PCN body");
+  assert(refresh.body !== pcn.body, "refresh body does not equal PCN body");
 
   for (const template of DEFAULT_NAIL_INVITE_TEMPLATES) {
     assert(template.categoryId === "nails", `${template.id} has categoryId nails`);
@@ -70,6 +103,17 @@ async function run(): Promise<void> {
     assert(
       template.allowedOfferCategories.includes(template.defaultOfferCategory),
       `${template.id} defaultOfferCategory is allowed`,
+    );
+    assert(
+      template.ctaLabel === EXPECTED_CTAS[template.id],
+      `${template.id} has exact expected CTA`,
+    );
+
+    const adminCard = resolveAdminNailInviteCardContent(template, TOKEN_CONTEXT);
+    assert(adminCard.body === expectedRenderedBody(template), `${template.id} admin card renders exact template body`);
+    assert(
+      adminCard.ctaLabel === expectedRenderedCta(template),
+      `${template.id} admin card renders exact template ctaLabel`,
     );
 
     const payload = buildInviteTemplateRenderPayload({
@@ -102,59 +146,42 @@ async function run(): Promise<void> {
     addonLabels: ["Chrome Finish", "Crystal Accents"],
   };
 
-  const referral = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-referral-invite")!;
-  const referralWithoutOffer = buildInviteTemplateRenderPayload({
-    inviteTemplate: referral,
-    ...PREVIEW_CONTEXT,
-  });
-  const referralWithOffer = buildInviteTemplateRenderPayload({
+  const referralWithoutOffer = resolveAdminNailInviteCardContent(referral, TOKEN_CONTEXT);
+  const referralWithOfferPayload = buildInviteTemplateRenderPayload({
     inviteTemplate: referral,
     ...PREVIEW_CONTEXT,
     salonOffer: resolvedSalonOfferToRenderOffer(mockDisplay),
   });
-  assert(referralWithOffer.offer?.name === "Birthday Babe", "preview renders with selected offer");
+  assert(referralWithOfferPayload.offer?.name === "Birthday Babe", "preview renders with selected offer");
   assert(
-    referralWithOffer.body === referralWithoutOffer.body,
+    referralWithOfferPayload.body === expectedRenderedBody(referral),
     "selecting a salon offer does not change invite body",
   );
   assert(
-    referralWithOffer.ctaLabel === referralWithoutOffer.ctaLabel,
+    referralWithOfferPayload.ctaLabel === expectedRenderedCta(referral),
     "selecting a salon offer does not change invite CTA",
   );
   assert(referralWithoutOffer.body.includes("friend"), "referral invite preview body is referral-specific");
 
-  const birthday = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-birthday-celebration")!;
-  const birthdayPreview = buildInviteTemplateRenderPayload({
-    inviteTemplate: birthday,
-    ...PREVIEW_CONTEXT,
-  });
+  const birthdayPreview = resolveAdminNailInviteCardContent(birthday, TOKEN_CONTEXT);
   assert(birthdayPreview.body.startsWith("Happy Birthday Grace!"), "birthday body starts correctly");
   assert(birthdayPreview.ctaLabel === "View My Birthday Offer", "birthday CTA is exact");
 
-  const openChair = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-open-chair")!;
-  const openChairPreview = buildInviteTemplateRenderPayload({
-    inviteTemplate: openChair,
-    ...PREVIEW_CONTEXT,
-  });
-  assert(openChairPreview.body.startsWith("Hi Grace, I had an appointment open up"), "open chair body starts correctly");
+  const openChairPreview = resolveAdminNailInviteCardContent(openChair, TOKEN_CONTEXT);
+  assert(
+    openChairPreview.body.startsWith("Hi Grace, I had an appointment open up"),
+    "open chair body starts correctly",
+  );
   assert(openChairPreview.ctaLabel === "Claim This Opening", "open chair CTA is exact");
 
-  const pcn = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-private-client-network")!;
-  const pcnPreview = buildInviteTemplateRenderPayload({
-    inviteTemplate: pcn,
-    ...PREVIEW_CONTEXT,
-  });
+  const pcnPreview = resolveAdminNailInviteCardContent(pcn, TOKEN_CONTEXT);
   assert(pcnPreview.ctaLabel === "Join My Private Client Network", "PCN CTA is exact");
   assert(
     pcnPreview.body.startsWith("Hi Grace, I'm inviting a small group"),
     "PCN body starts correctly",
   );
 
-  const refresh = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-refresh-reminder")!;
-  const refreshPreview = buildInviteTemplateRenderPayload({
-    inviteTemplate: refresh,
-    ...PREVIEW_CONTEXT,
-  });
+  const refreshPreview = resolveAdminNailInviteCardContent(refresh, TOKEN_CONTEXT);
   assert(refreshPreview.body.startsWith("Hi Grace, it may be time"), "refresh body starts correctly");
   assert(refreshPreview.ctaLabel === "Book My Refresh", "refresh CTA is exact");
 
@@ -167,14 +194,11 @@ async function run(): Promise<void> {
   const sanitized = sanitizeInviteTemplateAgainstLegacyBleed(corruptedReferral);
   assert(sanitized.body === referral.body, "sanitizer restores nail-catalog referral body");
 
-  const emptyBodyPayload = buildInviteTemplateRenderPayload({
-    inviteTemplate: { ...referral, body: "   " },
-    ...PREVIEW_CONTEXT,
-  });
-  assert(emptyBodyPayload.body === "Template body missing.", "empty body shows visible missing message");
-
-  const listed = await listInviteTemplates("nails", { includeInactive: true });
-  assert(listed.length === 10, "listInviteTemplates returns 10 nails templates");
+  const emptyBodyCard = resolveAdminNailInviteCardContent({ ...referral, body: "   " }, TOKEN_CONTEXT);
+  assert(
+    emptyBodyCard.body === "Template body missing for nails-referral-invite",
+    "empty body shows visible missing message",
+  );
 
   const cardTemplates = await getTemplatesForSalon("invite-template-test-salon");
   assert(cardTemplates.length >= 8, "existing card template behavior still loads defaults");
@@ -184,6 +208,20 @@ async function run(): Promise<void> {
     "pcn card type maps to nails-private-client-network",
   );
   assert(Object.keys(CARD_TYPE_TO_INVITE_TEMPLATE_ID).length === 8, "eight legacy card types mapped");
+
+  const adminClientSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/CardTemplateAdminClient.tsx"),
+    "utf8",
+  );
+  assert(!adminClientSource.includes("CardPreview"), "admin templates page does not import CardPreview");
+  assert(
+    !adminClientSource.includes("PersonalInvitePreview"),
+    "admin templates page does not import PersonalInvitePreview",
+  );
+  assert(
+    adminClientSource.includes("AdminNailInviteCard"),
+    "admin templates page renders AdminNailInviteCard directly",
+  );
 
   if (process.env.DATABASE_URL?.trim()) {
     const sample = { ...DEFAULT_NAIL_INVITE_TEMPLATES[0]! };

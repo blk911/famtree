@@ -243,37 +243,31 @@ function run(): void {
   );
   assert(
     (cardTemplateSource.match(/vmb-card-template-workspace__copy-input/g) ?? []).length >= 5,
-    "all five template copy fields render as textareas",
+    "invite template copy fields render editable inputs",
   );
-  assert(cardTemplateSource.includes("<CardPreview"), "card template editor still renders live preview");
-  assert(!cardTemplateSource.includes(">Tone<"), "tone is not shown in main card template editor");
-  assert(!cardTemplateSource.includes(">Image mode<"), "image mode is not shown in main card template editor");
-  assert(cardTemplateSource.includes("CardBuilderImageSlots"), "card images section renders three slots");
   assert(
-    cardTemplateSource.includes("ownerPhotoUrl"),
-    "card template admin prefill slot 3 from owner profile photo",
+    cardTemplateSource.includes("<AdminNailInviteCard"),
+    "admin templates page renders AdminNailInviteCard directly",
   );
-  const cardBuilderImageSource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/CardBuilderImageSlots.tsx"),
-    "utf8",
+  assert(!cardTemplateSource.includes("<CardPreview"), "admin templates page does not use CardPreview");
+  assert(
+    !cardTemplateSource.includes("PersonalInvitePreview"),
+    "admin templates page does not use PersonalInvitePreview",
   );
-  assert(cardBuilderImageSource.includes("Service image 1"), "slot 1 labeled service image 1");
-  assert(cardBuilderImageSource.includes("Owner photo"), "slot 3 labeled owner photo");
-  assert(cardBuilderImageSource.includes("Preview only"), "draft-only storage note is visible");
-  assert(cardBuilderImageSource.includes("onDrop"), "card image slots support drag-and-drop upload");
-  assert(cardBuilderImageSource.includes('accept="image/*"'), "card image slots accept image files only");
-  const personalInviteSource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/cards/PersonalInvitePreview.tsx"),
-    "utf8",
+  assert(!cardTemplateSource.includes(">Tone<"), "tone is not shown in nail invite template editor");
+  assert(!cardTemplateSource.includes(">Image mode<"), "image mode is not shown in nail invite template editor");
+  assert(!cardTemplateSource.includes("CardBuilderImageSlots"), "card images disconnected from admin templates page");
+  assert(
+    cardTemplateSource.includes("selectedTemplateId"),
+    "admin templates page keys selection by template id",
   );
-  assert(personalInviteSource.includes("<CardHero"), "PCN preview uses CardHero for builder images");
-  assert(cardTemplateSource.includes("vmb-card-builder__offer-card"), "offer section displays selected offer preview");
-  assert(cardTemplateSource.includes("vmb-card-builder__advanced"), "template name lives in advanced section");
-  assert(cardTemplateSource.includes("Personal note"), "renamed personal note label renders");
-  assert(cardTemplateSource.includes("Why this matters"), "renamed relationship label renders");
-  assert(cardTemplateSource.includes("Offer note"), "renamed offer note label renders");
-  assert(cardTemplateSource.includes("Save template"), "card template save action remains available");
-  assert(cardTemplateSource.includes("Reset to default"), "card template reset action remains available");
+  assert(
+    cardTemplateSource.includes("DEFAULT_NAIL_INVITE_TEMPLATES"),
+    "admin templates page seeds tabs from nail catalog ids",
+  );
+  assert(cardTemplateSource.includes("AdminFinalCardCheckModal"), "admin final card check modal is available");
+  assert(cardTemplateSource.includes("Save template"), "invite template save action remains available");
+  assert(cardTemplateSource.includes("Reset to default"), "invite template reset action remains available");
 
   const cardBodySource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/cards/CardBody.tsx"),

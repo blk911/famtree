@@ -6425,3 +6425,194 @@
   }
 }
 
+.vmb-admin-nail-invite-card {
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  padding: 18px 20px;
+  background: #fff;
+}
+
+.vmb-admin-nail-invite-card__meta {
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #78716c;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.vmb-admin-nail-invite-card__eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: #78716c;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.vmb-admin-nail-invite-card__headline {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #292524;
+}
+
+.vmb-admin-nail-invite-card__body {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #44403c;
+}
+
+.vmb-admin-nail-invite-card__offer {
+  margin-bottom: 16px;
+}
+
+.vmb-admin-nail-invite-card__offer-card {
+  padding: 12px 14px;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  background: #fafaf9;
+}
+
+.vmb-admin-nail-invite-card__offer-name {
+  margin: 0 0 4px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.vmb-admin-nail-invite-card__offer-desc,
+.vmb-admin-nail-invite-card__offer-service {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: #57534e;
+  line-height: 1.4;
+}
+
+.vmb-admin-nail-invite-card__offer-addons {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.vmb-admin-nail-invite-card__offer-addons li {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  font-size: 12px;
+}
+
+.vmb-admin-nail-invite-card__offer-price {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.vmb-admin-nail-invite-card__cta {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid #292524;
+  border-radius: 6px;
+  background: #292524;
+  color: #fff;
+  font-size: 14px;
+  cursor: default;
+}
+
+.vmb-admin-nail-invite-debug {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px dashed #d6d3d1;
+  border-radius: 8px;
+  background: #fafaf9;
+  font-size: 12px;
+}
+
+.vmb-admin-nail-invite-debug__title {
+  margin: 0 0 8px;
+  font-weight: 700;
+  color: #44403c;
+}
+
+.vmb-admin-nail-invite-debug__list {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.vmb-admin-nail-invite-debug__list div {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 8px;
+}
+
+.vmb-admin-nail-invite-debug__list dt {
+  margin: 0;
+  color: #78716c;
+}
+
+.vmb-admin-nail-invite-debug__list dd {
+  margin: 0;
+  color: #292524;
+  word-break: break-word;
+}
+
+.vmb-admin-nail-invite-debug__warning {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.vmb-admin-final-card-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(28, 25, 23, 0.45);
+}
+
+.vmb-admin-final-card-modal__dialog {
+  width: min(480px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+.vmb-admin-final-card-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e7e5e4;
+}
+
+.vmb-admin-final-card-modal__header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.vmb-admin-final-card-modal__close {
+  border: 0;
+  background: transparent;
+  color: #57534e;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.vmb-admin-final-card-modal__body {
+  padding: 20px;
+}
+
