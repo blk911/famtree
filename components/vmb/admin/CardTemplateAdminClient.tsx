@@ -9,6 +9,8 @@ import { getAllDefaultOffers } from "@/lib/vmb/offers/default-offers";
 import { sortOffersForSelectorDisplay } from "@/lib/vmb/offers/offer-display-order";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 import {
+  ADMIN_INVITE_RENDER_DEBUG_STYLE,
+  debugPreview160,
   inviteDraftsHaveDuplicateBodies,
   inviteDraftStats,
 } from "@/lib/vmb/invite-templates/admin-nail-invite-card-content";
@@ -67,6 +69,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
   );
 
   const selectedDraft = inviteDrafts[selectedTemplateId];
+  const previewTemplate = selectedDraft;
 
   const selectTemplate = useCallback(
     (templateId: string) => {
@@ -231,6 +234,17 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
   if (!salonId) {
     return (
       <div className="vmb-card-template-workspace">
+        <div style={ADMIN_INVITE_RENDER_DEBUG_STYLE} data-testid="admin-invite-page-render-debug">
+          <strong>PAGE RENDER DEBUG (always visible)</strong>
+          {"\n"}selectedTemplateId: {selectedTemplateId}
+          {"\n"}selectedDraft.headline: {selectedDraft?.headline ?? "(missing draft)"}
+          {"\n"}selectedDraft.ctaLabel: {selectedDraft?.ctaLabel ?? "(missing draft)"}
+          {"\n"}selectedDraft.body: {debugPreview160(selectedDraft?.body)}
+          {"\n"}previewTemplate.id: {previewTemplate?.id ?? "(missing)"}
+          {"\n"}previewTemplate.headline: {previewTemplate?.headline ?? "(missing)"}
+          {"\n"}previewTemplate.ctaLabel: {previewTemplate?.ctaLabel ?? "(missing)"}
+          {"\n"}previewTemplate.body: {debugPreview160(previewTemplate?.body)}
+        </div>
         <header className="vmb-card-template-workspace__header">
           <h1 className="vmb-card-template-workspace__title">Nail Invite Templates</h1>
           <p className="vmb-card-template-workspace__subtitle">Admin template manager</p>
@@ -242,6 +256,17 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
 
   return (
     <div className="vmb-card-template-workspace">
+      <div style={ADMIN_INVITE_RENDER_DEBUG_STYLE} data-testid="admin-invite-page-render-debug">
+        <strong>PAGE RENDER DEBUG (always visible)</strong>
+        {"\n"}selectedTemplateId: {selectedTemplateId}
+        {"\n"}selectedDraft.headline: {selectedDraft?.headline ?? "(missing draft)"}
+        {"\n"}selectedDraft.ctaLabel: {selectedDraft?.ctaLabel ?? "(missing draft)"}
+        {"\n"}selectedDraft.body: {debugPreview160(selectedDraft?.body)}
+        {"\n"}previewTemplate.id: {previewTemplate?.id ?? "(missing)"}
+        {"\n"}previewTemplate.headline: {previewTemplate?.headline ?? "(missing)"}
+        {"\n"}previewTemplate.ctaLabel: {previewTemplate?.ctaLabel ?? "(missing)"}
+        {"\n"}previewTemplate.body: {debugPreview160(previewTemplate?.body)}
+      </div>
       <header className="vmb-card-template-workspace__header">
         <div className="vmb-card-template-workspace__header-row">
           <div>

@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  ADMIN_INVITE_RENDER_DEBUG_STYLE,
+  debugPreview160,
   resolveAdminNailInviteCardContent,
   type AdminNailInviteCardOffer,
   type AdminNailInviteCardTemplate,
@@ -22,6 +24,14 @@ export function AdminNailInviteCard({ template, tokenContext, offer }: AdminNail
       aria-label={`${template.displayName} admin invite card`}
       data-template-id={template.id}
     >
+      <div style={ADMIN_INVITE_RENDER_DEBUG_STYLE} data-testid="admin-nail-invite-card-props-debug">
+        <strong>CARD PROPS DEBUG (always visible)</strong>
+        {"\n"}template.id: {template.id}
+        {"\n"}headline: {template.headline}
+        {"\n"}ctaLabel: {template.ctaLabel}
+        {"\n"}body: {debugPreview160(template.body)}
+      </div>
+
       <header className="vmb-admin-nail-invite-card__meta">
         <span className="vmb-admin-nail-invite-card__type">{template.displayName}</span>
       </header>

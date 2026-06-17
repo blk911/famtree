@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { applyInviteTemplateTokens } from "./invite-template-tokens";
 import type { InviteTemplateTokenContext, VmbInviteTemplate } from "./invite-template-types";
 
@@ -63,6 +64,26 @@ export function inviteDraftsHaveDuplicateBodies(
     .filter(Boolean);
   return new Set(bodies).size < bodies.length;
 }
+
+export function debugPreview160(text: string | undefined): string {
+  const trimmed = text?.trim() ?? "";
+  if (!trimmed) return "(empty)";
+  if (trimmed.length <= 160) return trimmed;
+  return `${trimmed.slice(0, 160)}…`;
+}
+
+export const ADMIN_INVITE_RENDER_DEBUG_STYLE: CSSProperties = {
+  background: "#fee2e2",
+  border: "3px solid #dc2626",
+  color: "#7f1d1d",
+  padding: "12px 14px",
+  marginBottom: "12px",
+  fontFamily: "monospace",
+  fontSize: "12px",
+  lineHeight: 1.45,
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-word",
+};
 
 export function inviteDraftStats(drafts: Record<string, Pick<VmbInviteTemplate, "body">>): {
   count: number;
