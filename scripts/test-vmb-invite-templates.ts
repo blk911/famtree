@@ -34,6 +34,11 @@ import {
   validateInviteTemplateInput,
 } from "../lib/vmb/invite-templates/invite-template-store";
 import { getTemplatesForSalon } from "../lib/vmb/card-templates/card-template-store";
+import {
+  mapInviteOfferCategoryToOfferCategory,
+  offerToAdminNailInviteCardOffer,
+  pickDefaultAttachedOfferId,
+} from "../lib/vmb/admin/invite-offer-attachment";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -284,6 +289,54 @@ async function run(): Promise<void> {
     "editor draft and preview payload use same template id",
   );
 
+  assert(mapInviteOfferCategoryToOfferCategory("pcn") === "pcn", "pcn maps to offer category");
+  assert(mapInviteOfferCategoryToOfferCategory("open_chair") === "open_slot", "open chair maps to open slot");
+  const pcnTemplate = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.defaultOfferCategory === "pcn")!;
+  const attachedId = pickDefaultAttachedOfferId(pcnTemplate, [
+    {
+      id: "default-birthday",
+      name: "Birthday",
+      category: "birthday",
+      description: "",
+      offerText: "Birthday treat",
+      active: true,
+      isDefault: true,
+      createdAt: "",
+      updatedAt: "",
+    },
+    {
+      id: "default-pcn",
+      name: "PCN Early Access",
+      category: "pcn",
+      description: "",
+      offerText: "PCN offer",
+      active: true,
+      isDefault: true,
+      createdAt: "",
+      updatedAt: "",
+    },
+  ]);
+  assert(attachedId === "default-pcn", "attached offer defaults to template category match");
+  const cardOffer = offerToAdminNailInviteCardOffer(
+    {
+      id: "default-pcn",
+      name: "PCN Early Access",
+      category: "pcn",
+      description: "desc",
+      offerText: "20% off",
+      valueLabel: "$20 off",
+      active: true,
+      isDefault: true,
+      createdAt: "",
+      updatedAt: "",
+    },
+    ["Gel Manicure"],
+    ["Chrome finish"],
+  );
+  assert(cardOffer?.name === "PCN Early Access", "offer card uses offer name");
+  assert(cardOffer?.price === "$20 off", "offer card uses value label as price");
+  assert(cardOffer?.serviceName === "Gel Manicure", "offer card includes linked service");
+
   const patchedDrafts = patchInviteDraftRecord(draftMap, birthdayId, { body: "Edited birthday body" });
   assert(
     getSelectedInviteDraft(patchedDrafts, birthdayId)?.body === "Edited birthday body",
@@ -312,6 +365,10 @@ async function run(): Promise<void> {
   assert(!adminClientSource.includes("AdminNailInvitePreviewDebugPanel"), "admin page has no debug panel");
   assert(!adminClientSource.includes("PAGE RENDER DEBUG"), "admin page has no page debug box");
   assert(!adminClientSource.includes("Catalog offer"), "admin page has no catalog offer dropdown");
+  assert(adminClientSource.includes("AdminNailBuilderShell"), "admin templates use shared nail builder shell");
+  assert(adminClientSource.includes("Attached offer"), "admin templates include attached offer block");
+  assert(adminClientSource.includes("attachedOfferId"), "attached offer selection is separate from invite copy");
+  assert(adminClientSource.includes("offer={attachedOfferCard}"), "preview and modal receive attached offer");
   assert(adminClientSource.includes("selectTemplate"), "pills use selectTemplate");
   assert(adminClientSource.includes("selectedDraft"), "editor and preview use selectedDraft");
   assert(!adminClientSource.includes("activeCardType"), "legacy card type does not drive preview");

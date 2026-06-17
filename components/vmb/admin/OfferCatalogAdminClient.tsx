@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CardPreviewOfferBlock } from "@/components/vmb/cards/CardPreviewOfferBlock";
-import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
-import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
+import { AdminNailBuilderShell } from "@/components/vmb/admin/AdminNailBuilderShell";
+import { AdminOfferPreviewCard } from "@/components/vmb/admin/AdminOfferPreviewCard";
 import { VMB_OFFER_CATEGORIES, type VmbOffer, type VmbOfferCategory } from "@/lib/vmb/offers/offer-types";
 import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
 import type { VmbService } from "@/lib/vmb/services/service-types";
@@ -73,32 +71,19 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
     }
   }, [selectedOffer]);
 
-  const previewModel = useMemo((): CardPreviewModel | null => {
-    if (!draft) return null;
-    return {
-      cardType: "birthday_card",
-      salutation: "Dear Grace,",
-      title: "Happy Birthday",
-      subtitle: "Wishing you a wonderful year",
-      body: "I hope your birthday feels special.",
-      imageLayout: "single",
-      imageSlots: [{ id: "hero", label: "Hero image" }],
-      accent: "rose",
-      cta: "Claim Birthday Treat",
-      tags: [],
-      metadata: {},
-      includeOffer: true,
-      offerProminent: true,
-      offer: {
-        id: draft.id,
-        name: draft.name,
-        valueLabel: draft.valueLabel,
-        offerText: draft.offerText,
-        terms: draft.terms,
-        category: draft.category,
-      },
-    };
-  }, [draft]);
+  const previewServiceNames = useMemo(() => {
+    if (!draft) return [];
+    return (draft.serviceIds ?? [])
+      .map((id) => services.find((service) => service.id === id)?.name)
+      .filter(Boolean) as string[];
+  }, [draft, services]);
+
+  const previewOptionNames = useMemo(() => {
+    if (!draft) return [];
+    return (draft.serviceOptionIds ?? [])
+      .map((id) => serviceOptions.find((option) => option.id === id)?.name)
+      .filter(Boolean) as string[];
+  }, [draft, serviceOptions]);
 
   async function handleSave() {
     if (!draft || !salonId) return;
@@ -157,15 +142,15 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
 
   if (!salonId) {
     return (
-      <VmbPageFrame title="Offer Catalog" subtitle="Salon offers for outreach cards">
-        <p>Sign in to a VMB salon trial to manage your offer catalog.</p>
-      </VmbPageFrame>
+      <AdminNailBuilderShell title="Offer Catalog" activeStep="offers">
+        <p className="vmb-template-admin__status">Sign in to a VMB salon trial to manage your offer catalog.</p>
+      </AdminNailBuilderShell>
     );
   }
 
   return (
-    <VmbPageFrame title="Offer Catalog" subtitle="Editable salon offers for template slots">
-      <div className="vmb-template-admin vmb-offer-admin">
+    <AdminNailBuilderShell title="Offer Catalog" activeStep="offers">
+      <div className="vmb-template-admin">
         <aside className="vmb-template-admin__list">
           <p className="vmb-template-admin__list-label">Offer categories</p>
           <ul>
@@ -184,34 +169,16 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
               </li>
             ))}
           </ul>
-          <div className="vmb-offer-admin__links">
-            <Link href="/admin/invites/services">Services</Link>
-            <Link href="/admin/invites/templates">Templates</Link>
-          </div>
         </aside>
 
         <section className="vmb-template-admin__editor">
           {draft ? (
             <>
-              <div className="vmb-template-admin__editor-head">
-                <h2>{CATEGORY_LABELS[draft.category]}</h2>
-                <p>
-                  {draft.isDefault ? "Default offer" : "Salon offer"} · Source:{" "}
-                  {draft.source ?? "default"}
-                  {draft.confidence != null ? ` · Confidence: ${Math.round(draft.confidence * 100)}%` : ""}
-                </p>
-              </div>
+              <h2 className="vmb-card-template-workspace__editor-title">{draft.name || CATEGORY_LABELS[draft.category]}</h2>
 
               <label className="vmb-template-admin__field">
                 <span>Name</span>
                 <input value={draft.name} onChange={(e) => patchDraft({ name: e.target.value })} />
-              </label>
-              <label className="vmb-template-admin__field">
-                <span>Description</span>
-                <input
-                  value={draft.description}
-                  onChange={(e) => patchDraft({ description: e.target.value })}
-                />
               </label>
               <label className="vmb-template-admin__field">
                 <span>Value label</span>
@@ -226,14 +193,6 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                   rows={4}
                   value={draft.offerText}
                   onChange={(e) => patchDraft({ offerText: e.target.value })}
-                />
-              </label>
-              <label className="vmb-template-admin__field">
-                <span>Terms</span>
-                <textarea
-                  rows={2}
-                  value={draft.terms ?? ""}
-                  onChange={(e) => patchDraft({ terms: e.target.value })}
                 />
               </label>
               <label className="vmb-template-admin__field">
@@ -255,7 +214,7 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                 </select>
               </label>
               <label className="vmb-template-admin__field">
-                <span>Linked service options</span>
+                <span>Linked add-ons</span>
                 <select
                   multiple
                   value={draft.serviceOptionIds ?? []}
@@ -274,20 +233,6 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                   ))}
                 </select>
               </label>
-              <label className="vmb-template-admin__field">
-                <span>Service tags (comma-separated)</span>
-                <input
-                  value={(draft.serviceTags ?? []).join(", ")}
-                  onChange={(e) =>
-                    patchDraft({
-                      serviceTags: e.target.value
-                        .split(",")
-                        .map((tag) => tag.trim())
-                        .filter(Boolean),
-                    })
-                  }
-                />
-              </label>
               <label className="vmb-template-admin__field vmb-offer-admin__checkbox">
                 <input
                   type="checkbox"
@@ -296,12 +241,6 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                 />
                 <span>Active</span>
               </label>
-              {draft.confidence != null ? (
-                <label className="vmb-template-admin__field">
-                  <span>Detection confidence</span>
-                  <input value={`${Math.round(draft.confidence * 100)}%`} readOnly />
-                </label>
-              ) : null}
 
               <div className="vmb-template-admin__actions">
                 <button type="button" className="taikos-opp-card__cta" disabled={busy} onClick={() => void handleSave()}>
@@ -332,19 +271,13 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
         </section>
 
         <aside className="vmb-template-admin__preview">
-          <p className="vmb-template-admin__preview-label">Card preview</p>
-          <p className="vmb-template-admin__preview-meta">How this offer appears in a birthday card</p>
-          {previewModel ? (
-            <div className="vmb-offer-admin__card-preview">
-              <p className="vmb-card-preview__salutation">{previewModel.salutation}</p>
-              <h3 className="vmb-card-preview__title">{previewModel.title}</h3>
-              <p className="vmb-card-preview__subtitle">{previewModel.subtitle}</p>
-              <p className="vmb-card-preview__copy">{previewModel.body}</p>
-              <CardPreviewOfferBlock model={previewModel} />
-            </div>
-          ) : null}
+          <AdminOfferPreviewCard
+            offer={draft}
+            serviceNames={previewServiceNames}
+            optionNames={previewOptionNames}
+          />
         </aside>
       </div>
-    </VmbPageFrame>
+    </AdminNailBuilderShell>
   );
 }

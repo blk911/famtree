@@ -269,8 +269,30 @@ function run(): void {
     "admin templates page seeds tabs from nail catalog ids",
   );
   assert(cardTemplateSource.includes("AdminFinalCardCheckModal"), "admin final card check modal is available");
+  assert(cardTemplateSource.includes("AdminNailBuilderShell"), "admin templates use shared nail builder shell");
+  assert(cardTemplateSource.includes("Attached offer"), "admin templates include attached offer block");
   assert(cardTemplateSource.includes("Save template"), "invite template save action remains available");
   assert(cardTemplateSource.includes("Reset to default"), "invite template reset action remains available");
+
+  const offerCatalogSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/OfferCatalogAdminClient.tsx"),
+    "utf8",
+  );
+  assert(offerCatalogSource.includes("AdminNailBuilderShell"), "offer catalog uses shared nail builder shell");
+  assert(offerCatalogSource.includes("AdminOfferPreviewCard"), "offer catalog uses simple offer preview");
+  assert(!offerCatalogSource.includes("VmbPageFrame"), "offer catalog does not use VmbPageFrame");
+  assert(!offerCatalogSource.includes("CardPreviewOfferBlock"), "offer catalog does not use card preview block");
+  assert(!offerCatalogSource.includes(">Terms<"), "offer catalog editor omits terms field");
+
+  const serviceCatalogSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/PlatformServiceCatalogClient.tsx"),
+    "utf8",
+  );
+  assert(serviceCatalogSource.includes("AdminNailBuilderShell"), "service catalog uses shared nail builder shell");
+  assert(serviceCatalogSource.includes("vmb-admin-nail-builder__workspace--two-col"), "service catalog uses two-column layout");
+
+  const nailBuilderStyles = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
+  assert(nailBuilderStyles.includes(".vmb-admin-nail-builder"), "globals define admin nail builder shell styles");
 
   const cardBodySource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/cards/CardBody.tsx"),

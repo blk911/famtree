@@ -1,8 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AdminNailBuilderShell } from "@/components/vmb/admin/AdminNailBuilderShell";
 import { AdminFinalCardCheckModal } from "@/components/vmb/invites/AdminFinalCardCheckModal";
 import { AdminNailInviteCard } from "@/components/vmb/invites/AdminNailInviteCard";
+import {
+  offerToAdminNailInviteCardOffer,
+  pickDefaultAttachedOfferId,
+} from "@/lib/vmb/admin/invite-offer-attachment";
 import { selectInviteTemplateId } from "@/lib/vmb/invite-templates/admin-invite-template-selection";
 import {
   cloneInviteTemplate,
@@ -14,6 +19,9 @@ import {
 } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
 import type { VmbInviteTemplate } from "@/lib/vmb/invite-templates/invite-template-types";
+import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
+import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
+import type { VmbService } from "@/lib/vmb/services/service-types";
 
 type Props = {
   salonId?: string;
@@ -35,6 +43,10 @@ function buildInitialDrafts(): Record<string, VmbInviteTemplate> {
 export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props) {
   const [inviteDrafts, setInviteDrafts] = useState<Record<string, VmbInviteTemplate>>(buildInitialDrafts);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("nails-private-client-network");
+  const [offers, setOffers] = useState<VmbOffer[]>([]);
+  const [services, setServices] = useState<VmbService[]>([]);
+  const [serviceOptions, setServiceOptions] = useState<VmbServiceOption[]>([]);
+  const [attachedOfferId, setAttachedOfferId] = useState<string>("");
   const [finalCardCheckOpen, setFinalCardCheckOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -71,9 +83,60 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
     );
   }, [templateIds]);
 
+  const loadOffers = useCallback(async () => {
+    if (!salonId) return;
+    const [offerRes, serviceRes] = await Promise.all([
+      fetch("/api/vmb/offers"),
+      fetch("/api/vmb/services"),
+    ]);
+    const offerData = (await offerRes.json()) as { ok?: boolean; offers?: VmbOffer[] };
+    const serviceData = (await serviceRes.json()) as {
+      ok?: boolean;
+      services?: VmbService[];
+      options?: VmbServiceOption[];
+    };
+    if (offerData.ok && offerData.offers) {
+      setOffers(offerData.offers);
+    }
+    if (serviceData.ok && serviceData.services) {
+      setServices(serviceData.services);
+    }
+    if (serviceData.ok && serviceData.options) {
+      setServiceOptions(serviceData.options);
+    }
+  }, [salonId]);
+
   useEffect(() => {
     void loadInviteTemplates();
   }, [loadInviteTemplates]);
+
+  useEffect(() => {
+    void loadOffers();
+  }, [loadOffers]);
+
+  useEffect(() => {
+    if (!selectedTemplateId || offers.length === 0) return;
+    const template = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === selectedTemplateId);
+    setAttachedOfferId(pickDefaultAttachedOfferId(template, offers));
+  }, [selectedTemplateId, offers]);
+
+  const activeOffers = useMemo(() => offers.filter((offer) => offer.active), [offers]);
+
+  const attachedOffer = useMemo(
+    () => activeOffers.find((offer) => offer.id === attachedOfferId),
+    [activeOffers, attachedOfferId],
+  );
+
+  const attachedOfferCard = useMemo(() => {
+    if (!attachedOffer) return undefined;
+    const serviceNames = (attachedOffer.serviceIds ?? [])
+      .map((id) => services.find((service) => service.id === id)?.name)
+      .filter(Boolean) as string[];
+    const optionNames = (attachedOffer.serviceOptionIds ?? [])
+      .map((id) => serviceOptions.find((option) => option.id === id)?.name)
+      .filter(Boolean) as string[];
+    return offerToAdminNailInviteCardOffer(attachedOffer, serviceNames, optionNames);
+  }, [attachedOffer, serviceOptions, services]);
 
   const tokenContext = useMemo(
     () => ({
@@ -145,56 +208,52 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
     await loadInviteTemplates();
   }
 
+  const templatePills = (
+    <div
+      className="vmb-card-template-workspace__types"
+      role="tablist"
+      aria-label="Nail invite template types"
+    >
+      {DEFAULT_NAIL_INVITE_TEMPLATES.map((baseline) => {
+        const isActive = selectedTemplateId === baseline.id;
+        const draft = inviteDrafts[baseline.id];
+        const isCustomized =
+          Boolean(draft) &&
+          (draft.body !== baseline.body ||
+            draft.ctaLabel !== baseline.ctaLabel ||
+            draft.headline !== baseline.headline);
+        return (
+          <button
+            key={baseline.id}
+            type="button"
+            role="tab"
+            id={`card-template-tab-${baseline.id}`}
+            aria-selected={isActive}
+            aria-controls="card-template-editor-panel"
+            tabIndex={isActive ? 0 : -1}
+            className={`vmb-card-template-workspace__type${isActive ? " vmb-card-template-workspace__type--active" : ""}`}
+            onClick={() => selectTemplate(baseline.id)}
+          >
+            {draft?.displayName ?? baseline.displayName}
+            {isCustomized ? (
+              <span className="vmb-template-admin__override-dot" aria-label="Customized" />
+            ) : null}
+          </button>
+        );
+      })}
+    </div>
+  );
+
   if (!salonId) {
     return (
-      <div className="vmb-card-template-workspace">
-        <header className="vmb-card-template-workspace__header">
-          <h1 className="vmb-card-template-workspace__title">Nail Invite Templates</h1>
-        </header>
+      <AdminNailBuilderShell title="Invite Templates" activeStep="templates">
         <p className="vmb-template-admin__status">Sign in to a VMB salon trial to manage nail invite templates.</p>
-      </div>
+      </AdminNailBuilderShell>
     );
   }
 
   return (
-    <div className="vmb-card-template-workspace">
-      <header className="vmb-card-template-workspace__header">
-        <h1 className="vmb-card-template-workspace__title">Nail Invite Templates</h1>
-        <div
-          className="vmb-card-template-workspace__types"
-          role="tablist"
-          aria-label="Nail invite template types"
-        >
-          {DEFAULT_NAIL_INVITE_TEMPLATES.map((baseline) => {
-            const isActive = selectedTemplateId === baseline.id;
-            const draft = inviteDrafts[baseline.id];
-            const isCustomized =
-              Boolean(draft) &&
-              (draft.body !== baseline.body ||
-                draft.ctaLabel !== baseline.ctaLabel ||
-                draft.headline !== baseline.headline);
-            return (
-              <button
-                key={baseline.id}
-                type="button"
-                role="tab"
-                id={`card-template-tab-${baseline.id}`}
-                aria-selected={isActive}
-                aria-controls="card-template-editor-panel"
-                tabIndex={isActive ? 0 : -1}
-                className={`vmb-card-template-workspace__type${isActive ? " vmb-card-template-workspace__type--active" : ""}`}
-                onClick={() => selectTemplate(baseline.id)}
-              >
-                {draft?.displayName ?? baseline.displayName}
-                {isCustomized ? (
-                  <span className="vmb-template-admin__override-dot" aria-label="Customized" />
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      </header>
-
+    <AdminNailBuilderShell title="Invite Templates" activeStep="templates" headerExtra={templatePills}>
       <div className="vmb-card-template-workspace__body">
         <section
           id="card-template-editor-panel"
@@ -232,6 +291,26 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
                     onChange={(e) => patchSelectedDraft({ ctaLabel: e.target.value })}
                   />
                 </label>
+
+                <div className="vmb-admin-nail-builder__attached-offer">
+                  <label className="vmb-template-admin__field">
+                    <span>Attached offer</span>
+                    <select
+                      value={attachedOfferId}
+                      onChange={(event) => setAttachedOfferId(event.target.value)}
+                    >
+                      <option value="">No offer attached</option>
+                      {activeOffers.map((offer) => (
+                        <option key={offer.id} value={offer.id}>
+                          {offer.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <p className="vmb-admin-nail-builder__attached-offer-hint">
+                    Promo block only — does not change invite copy above.
+                  </p>
+                </div>
               </div>
 
               <div className="vmb-template-admin__actions">
@@ -266,6 +345,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
               key={selectedTemplateId}
               template={selectedDraft}
               tokenContext={tokenContext}
+              offer={attachedOfferCard}
             />
           ) : null}
         </aside>
@@ -277,8 +357,9 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
           onClose={() => setFinalCardCheckOpen(false)}
           template={selectedDraft}
           tokenContext={tokenContext}
+          offer={attachedOfferCard}
         />
       ) : null}
-    </div>
+    </AdminNailBuilderShell>
   );
 }

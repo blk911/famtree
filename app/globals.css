@@ -4565,6 +4565,138 @@
   color: #78716c;
 }
 
+/* Admin nail builder — shared shell for Services / Offers / Templates */
+.vmb-admin-nail-builder {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 2rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.vmb-admin-nail-builder__title {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.vmb-admin-nail-builder__header {
+  margin-bottom: 1rem;
+}
+
+.vmb-admin-nail-builder__header-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9d174d;
+  text-decoration: none;
+}
+
+.vmb-admin-nail-builder__header-link:hover {
+  text-decoration: underline;
+}
+
+.vmb-admin-nail-builder-flow-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.vmb-admin-nail-builder-flow-nav__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vmb-admin-nail-builder-flow-nav__link {
+  color: #9d174d;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.vmb-admin-nail-builder-flow-nav__link:hover {
+  text-decoration: underline;
+}
+
+.vmb-admin-nail-builder-flow-nav__current {
+  font-weight: 700;
+  color: #292524;
+}
+
+.vmb-admin-nail-builder-flow-nav__hint {
+  color: #a8a29e;
+  font-weight: 500;
+}
+
+.vmb-admin-nail-builder-flow-nav__sep {
+  color: #d6d3d1;
+}
+
+.vmb-admin-nail-builder__attached-offer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e7e5e4;
+}
+
+.vmb-admin-nail-builder__attached-offer-hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #78716c;
+}
+
+.vmb-admin-nail-builder__workspace--two-col {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.vmb-admin-offer-preview__label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+  margin: 0 0 12px;
+}
+
+.vmb-admin-offer-preview__empty {
+  margin: 0;
+  font-size: 13px;
+  color: #78716c;
+}
+
+.vmb-admin-offer-preview__list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 13px;
+  color: #57534e;
+}
+
+.vmb-admin-offer-preview__list li {
+  padding: 2px 0;
+}
+
+.vmb-admin-offer-preview__list--addons {
+  color: #78716c;
+}
+
+.vmb-admin-offer-preview__card {
+  margin-top: 0;
+}
+
+@media (max-width: 1024px) {
+  .vmb-admin-nail-builder__workspace--two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Card template editor workspace — horizontal type pills + editor/preview split */
 .vmb-card-template-workspace {
   width: 100%;
