@@ -3,22 +3,19 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
-import { AdminTemplatePreviewCard } from "@/components/vmb/admin/AdminTemplatePreviewCard";
 import { AdminTemplateReviewModal } from "@/components/vmb/admin/AdminTemplateReviewModal";
 import { BuilderImageInsertsSection } from "@/components/vmb/admin/BuilderImageInsertsSection";
 import { OfferNailSelectionFields } from "@/components/vmb/admin/OfferNailSelectionFields";
+import { SnapshotPreviewCard } from "@/components/vmb/admin/SnapshotPreviewCard";
 import { useNailTemplateInventory } from "@/components/vmb/admin/useNailTemplateInventory";
 import {
   baselineNailTemplateDraft,
+  buildDraftInviteSnapshot,
   nailTemplateDraftToOffer,
   TEMPLATE_LIBRARY_SAVED_MESSAGE,
   type NailTemplateDraft,
 } from "@/lib/vmb/admin/nail-template-library";
 import { NAILS_LIBRARY_ROUTE } from "@/lib/vmb/admin/nail-template-routes";
-import {
-  resolveNailOfferAddonLabels,
-  resolveNailOfferServiceLabels,
-} from "@/lib/vmb/admin/nail-offer-builder-selections";
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
 import {
@@ -66,18 +63,14 @@ export function TemplateBuilderAdminClient({
   useEffect(() => {
     if (selectedBaseline) {
       setDraft({ ...selectedBaseline });
+      const snapshot = selectedBaseline.librarySnapshot;
+      setImageInserts({
+        ownerPhotoUrl: snapshot?.ownerPhotoUrl,
+        salonLogoUrl: snapshot?.salonLogoUrl,
+        serviceImageUrl: snapshot?.serviceImageUrl,
+      });
     }
   }, [selectedBaseline]);
-
-  const previewServiceNames = useMemo(() => {
-    if (!draft) return [];
-    return resolveNailOfferServiceLabels(draft.serviceIds, serviceFallbackById);
-  }, [draft, serviceFallbackById]);
-
-  const previewRewardLabels = useMemo(() => {
-    if (!draft) return [];
-    return resolveNailOfferAddonLabels(draft.serviceOptionIds, optionFallbackById);
-  }, [draft, optionFallbackById]);
 
   const tokenContext = useMemo(
     () => ({
@@ -88,18 +81,34 @@ export function TemplateBuilderAdminClient({
     [ownerName, salonName],
   );
 
+  const previewSnapshot = useMemo(() => {
+    if (!draft) return null;
+    return buildDraftInviteSnapshot(draft, {
+      ownerName: ownerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName,
+      salonName,
+      ownerPhotoUrl: imageInserts.ownerPhotoUrl,
+      salonLogoUrl: imageInserts.salonLogoUrl,
+      serviceImageUrl: imageInserts.serviceImageUrl,
+    });
+  }, [draft, imageInserts, ownerName, salonName]);
+
   function patchDraft(patch: Partial<NailTemplateDraft>) {
     setDraft((current) => (current ? { ...current, ...patch } : current));
   }
 
   async function handleSaveToLibrary() {
-    if (!draft || !salonId) return;
+    if (!draft || !salonId || !previewSnapshot) return;
     setBusy(true);
     setStatus(null);
+    const snapshot = {
+      ...previewSnapshot,
+      status: "library" as const,
+      version: previewSnapshot.version > 0 ? previewSnapshot.version : 1,
+    };
     const res = await fetch("/api/vmb/offers", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ offer: nailTemplateDraftToOffer(draft, salonId) }),
+      body: JSON.stringify({ offer: nailTemplateDraftToOffer(draft, salonId, snapshot) }),
     });
     const data = (await res.json()) as { ok?: boolean; error?: string };
     setBusy(false);
@@ -119,6 +128,7 @@ export function TemplateBuilderAdminClient({
     setBusy(true);
     setStatus(null);
     setDraft({ ...baseline, saved: false });
+    setImageInserts(EMPTY_SALON_INVITE_IMAGE_INSERTS);
 
     if (selectedBaseline?.saved) {
       await fetch(
@@ -232,28 +242,23 @@ export function TemplateBuilderAdminClient({
         </section>
 
         <aside className="vmb-admin-builder-grid__preview">
-          <AdminTemplatePreviewCard
-            draft={draft}
-            serviceNames={previewServiceNames}
-            rewardLabels={previewRewardLabels}
-            ownerName={ownerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName}
-            salonName={salonName}
-            imageInserts={imageInserts}
+          <SnapshotPreviewCard
+            snapshot={previewSnapshot}
             tokenContext={tokenContext}
+            serviceFallbackById={serviceFallbackById}
+            rewardFallbackById={optionFallbackById}
           />
         </aside>
       </div>
 
-      {draft ? (
+      {previewSnapshot && draft ? (
         <AdminTemplateReviewModal
           open={reviewOpen}
-          draft={draft}
-          serviceNames={previewServiceNames}
-          rewardLabels={previewRewardLabels}
-          ownerName={ownerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName}
-          salonName={salonName}
-          imageInserts={imageInserts}
+          snapshot={previewSnapshot}
+          active={draft.active}
           tokenContext={tokenContext}
+          serviceFallbackById={serviceFallbackById}
+          rewardFallbackById={optionFallbackById}
           busy={busy}
           onClose={() => setReviewOpen(false)}
           onSave={() => void handleSaveToLibrary()}

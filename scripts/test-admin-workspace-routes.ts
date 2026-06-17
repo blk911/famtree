@@ -263,6 +263,8 @@ function run(): void {
   assert(builderSource.includes("AdminTemplateReviewModal"), "template builder includes review modal");
   assert(builderSource.includes('title="Nails Template Builder"'), "builder page title is Nails Template Builder");
   assert(builderSource.includes("activeStep=\"builder\""), "builder uses builder flow step");
+  assert(builderSource.includes("SnapshotPreviewCard"), "builder preview renders from snapshot");
+  assert(!builderSource.includes("AdminTemplatePreviewCard"), "builder removes live draft preview card");
   assert(!builderSource.includes("Publish To Salons"), "builder does not publish to salons");
 
   const librarySource = fs.readFileSync(
@@ -277,6 +279,8 @@ function run(): void {
   assert(librarySource.includes("Review Final Card"), "library opens final card review");
   assert(librarySource.includes("AdminSalonInviteReviewModal"), "library uses salon invite review modal");
   assert(librarySource.includes("vmb-admin-builder-grid--two-col"), "library uses two-column layout without preview");
+  assert(librarySource.includes("formatSnapshotStatus"), "library displays snapshot status");
+  assert(librarySource.includes("createSalonLocalCopy"), "library publish uses salon copy service");
   assert(!librarySource.includes("AdminTemplatePreviewCard"), "library removes permanent preview column");
   assert(!librarySource.includes("OfferNailSelectionFields"), "library is read-only — no service checkboxes");
 

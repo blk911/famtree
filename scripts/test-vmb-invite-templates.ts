@@ -416,7 +416,8 @@ async function run(): Promise<void> {
   assert(builderSource.includes("Nails Template Builder"), "builder client uses factory naming");
   assert(builderSource.includes("useNailTemplateInventory"), "builder loads template drafts via shared inventory hook");
   assert(builderSource.includes("Review Template"), "builder uses review template workflow");
-  assert(builderSource.includes("BuilderImageInsertsSection"), "builder includes image insert placeholders");
+  assert(builderSource.includes("SnapshotPreviewCard"), "builder preview renders from snapshot");
+  assert(!builderSource.includes("AdminTemplatePreviewCard"), "builder removes live draft preview card");
 
   const salonInviteCardSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/invites/SalonInviteCard.tsx"),
@@ -433,7 +434,57 @@ async function run(): Promise<void> {
     "utf8",
   );
   assert(reviewModalSource.includes("Final Salon Invite Preview"), "review modal uses final salon invite title");
-  assert(reviewModalSource.includes("SalonInviteCard"), "review modal renders salon invite card");
+  assert(reviewModalSource.includes("snapshotToSalonInviteCardProps"), "review modal renders from snapshot payload");
+
+  const snapshotModule = fs.readFileSync(
+    path.join(process.cwd(), "lib/vmb/invites/invite-template-snapshot.ts"),
+    "utf8",
+  );
+  assert(snapshotModule.includes("InviteTemplateSnapshot"), "invite template snapshot model exists");
+  assert(snapshotModule.includes("ownerPhotoUrl"), "snapshot carries owner photo field");
+  assert(snapshotModule.includes("buildInviteTemplateSnapshot"), "snapshot builder exists");
+
+  const publishModule = fs.readFileSync(
+    path.join(process.cwd(), "lib/vmb/invites/publish-template-to-salons.ts"),
+    "utf8",
+  );
+  assert(publishModule.includes("createSalonLocalCopy"), "publish service creates salon local copy");
+
+  const { buildDraftInviteSnapshot } = await import("../lib/vmb/admin/nail-template-library");
+  const { createSalonLocalCopy } = await import("../lib/vmb/invites/publish-template-to-salons");
+
+  const draftForSnapshot = {
+    templateId: "nails-birthday-celebration",
+    displayName: "Birthday Celebration",
+    headline: "Happy Birthday",
+    body: "Celebrate with us",
+    ctaLabel: "Book now",
+    serviceIds: ["default-nails-gel-manicure"],
+    serviceOptionIds: ["addon-chrome"],
+    active: true,
+    saved: false,
+    offerCategory: "birthday" as const,
+  };
+  const builtSnapshot = buildDraftInviteSnapshot(draftForSnapshot, {
+    ownerName: "Alex",
+    salonName: "Glow Nails",
+    ownerPhotoUrl: "https://example.com/owner.jpg",
+  });
+  assert(builtSnapshot.headline === "Happy Birthday", "draft snapshot captures headline");
+  assert(builtSnapshot.ownerPhotoUrl === "https://example.com/owner.jpg", "draft snapshot carries image fields");
+  assert(builtSnapshot.serviceIds.length === 1, "draft snapshot captures service ids");
+
+  const savedOffer = nailTemplateDraftToOffer(draftForSnapshot, "demo-salon", {
+    ...builtSnapshot,
+    status: "library",
+    version: 1,
+  });
+  assert(savedOffer.inviteSnapshot?.version === 1, "save embeds invite snapshot on offer");
+
+  const salonCopy = createSalonLocalCopy(savedOffer.inviteSnapshot!, "salon-123");
+  assert(salonCopy.sourceTemplateId === "nails-birthday-celebration", "salon copy tracks source template");
+  assert(salonCopy.publishedVersion === 1, "salon copy tracks published version");
+  assert(salonCopy.snapshot.headline === "Happy Birthday", "salon copy snapshot is independent payload");
 
   const routesSource = fs.readFileSync(
     path.join(process.cwd(), "lib/vmb/admin/nail-template-routes.ts"),

@@ -1,6 +1,11 @@
 import { mapInviteOfferCategoryToOfferCategory } from "@/lib/vmb/admin/invite-offer-attachment";
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import type { VmbInviteTemplate } from "@/lib/vmb/invite-templates/invite-template-types";
+import {
+  buildInviteTemplateSnapshot,
+  parseInviteTemplateSnapshot,
+  type InviteTemplateSnapshot,
+} from "@/lib/vmb/invites/invite-template-snapshot";
 import type { VmbOffer, VmbOfferCategory } from "@/lib/vmb/offers/offer-types";
 
 export type NailTemplateDraft = {
@@ -14,6 +19,8 @@ export type NailTemplateDraft = {
   active: boolean;
   saved: boolean;
   offerCategory: VmbOfferCategory;
+  /** Frozen library asset when saved — preview and publish use this payload. */
+  librarySnapshot?: InviteTemplateSnapshot | null;
 };
 
 export const TEMPLATE_LIBRARY_SAVED_MESSAGE =
@@ -61,6 +68,9 @@ export function buildNailTemplateDraft(
     active: savedOffer?.active ?? template.active,
     saved: Boolean(savedOffer && !savedOffer.isDefault),
     offerCategory: offerCategoryForInviteTemplate(template),
+    librarySnapshot: savedOffer?.inviteSnapshot
+      ? parseInviteTemplateSnapshot(savedOffer.inviteSnapshot)
+      : null,
   };
 }
 
@@ -73,8 +83,15 @@ export function buildNailTemplateDrafts(
   );
 }
 
-export function nailTemplateDraftToOffer(draft: NailTemplateDraft, salonId: string): VmbOffer {
+export function nailTemplateDraftToOffer(
+  draft: NailTemplateDraft,
+  salonId: string,
+  snapshot?: InviteTemplateSnapshot,
+): VmbOffer {
   const now = new Date().toISOString();
+  const embeddedSnapshot =
+    snapshot ??
+    (draft.librarySnapshot ? { ...draft.librarySnapshot, updatedAt: now } : undefined);
   return {
     id: templateStorageId(salonId, draft.templateId),
     templateId: draft.templateId,
@@ -91,9 +108,41 @@ export function nailTemplateDraftToOffer(draft: NailTemplateDraft, salonId: stri
     active: draft.active,
     isDefault: false,
     source: "manual",
-    createdAt: now,
+    inviteSnapshot: embeddedSnapshot,
+    createdAt: embeddedSnapshot?.createdAt ?? now,
     updatedAt: now,
   };
+}
+
+export type BuildDraftSnapshotOptions = {
+  ownerName?: string;
+  salonName?: string;
+  ownerPhotoUrl?: string;
+  salonLogoUrl?: string;
+  serviceImageUrl?: string;
+  priceLabel?: string;
+  expirationLabel?: string;
+  termsText?: string;
+};
+
+/** Builds the frozen snapshot payload used for preview, library storage, and publish. */
+export function buildDraftInviteSnapshot(
+  draft: NailTemplateDraft,
+  options: BuildDraftSnapshotOptions = {},
+): InviteTemplateSnapshot {
+  return buildInviteTemplateSnapshot({
+    draft,
+    previousSnapshot: draft.librarySnapshot,
+    ownerName: options.ownerName,
+    salonName: options.salonName,
+    ownerPhotoUrl: options.ownerPhotoUrl,
+    salonLogoUrl: options.salonLogoUrl,
+    serviceImageUrl: options.serviceImageUrl,
+    priceLabel: options.priceLabel,
+    expirationLabel: options.expirationLabel,
+    termsText: options.termsText,
+    status: draft.saved ? "library" : "draft",
+  });
 }
 
 export function baselineNailTemplateDraft(templateId: string): NailTemplateDraft | undefined {

@@ -1,3 +1,5 @@
+import type { InviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
+
 export type VmbOfferCategory =
   | "new_client"
   | "birthday"
@@ -57,6 +59,8 @@ export type VmbOffer = {
   expiresAt?: string;
   createdAt: string;
   updatedAt: string;
+  /** Frozen master library asset — copied to salons on publish. */
+  inviteSnapshot?: InviteTemplateSnapshot;
 };
 
 export type CardPreviewOffer = {

@@ -1,20 +1,21 @@
 "use client";
 
 import { SalonInviteCard } from "@/components/vmb/invites/SalonInviteCard";
-import type { NailTemplateDraft } from "@/lib/vmb/admin/nail-template-library";
-import type { SalonInviteImageInserts } from "@/lib/vmb/invites/salon-invite-image-inserts";
-import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
+import {
+  resolveSnapshotRewardLabels,
+  resolveSnapshotServiceLabels,
+  snapshotToSalonInviteCardProps,
+  type InviteTemplateSnapshot,
+} from "@/lib/vmb/invites/invite-template-snapshot";
 import type { InviteTemplateTokenContext } from "@/lib/vmb/invite-templates/invite-template-types";
 
 type Props = {
   open: boolean;
-  draft: NailTemplateDraft;
-  serviceNames: string[];
-  rewardLabels: string[];
-  ownerName?: string;
-  salonName?: string;
-  imageInserts?: SalonInviteImageInserts;
+  snapshot: InviteTemplateSnapshot;
   tokenContext?: InviteTemplateTokenContext;
+  serviceFallbackById?: Record<string, string | undefined>;
+  rewardFallbackById?: Record<string, string | undefined>;
+  active?: boolean;
   busy?: boolean;
   onClose: () => void;
   onSave: () => void;
@@ -22,18 +23,24 @@ type Props = {
 
 export function AdminTemplateReviewModal({
   open,
-  draft,
-  serviceNames,
-  rewardLabels,
-  ownerName,
-  salonName,
-  imageInserts,
+  snapshot,
   tokenContext,
+  serviceFallbackById,
+  rewardFallbackById,
+  active = true,
   busy = false,
   onClose,
   onSave,
 }: Props) {
   if (!open) return null;
+
+  const serviceNames = resolveSnapshotServiceLabels(snapshot, serviceFallbackById);
+  const rewardLabels = resolveSnapshotRewardLabels(snapshot, rewardFallbackById);
+  const cardProps = snapshotToSalonInviteCardProps(snapshot, {
+    tokenContext,
+    serviceFallbackById,
+    rewardFallbackById,
+  });
 
   return (
     <div className="vmb-admin-review-modal" role="presentation" onClick={onClose}>
@@ -55,23 +62,23 @@ export function AdminTemplateReviewModal({
           <dl className="vmb-admin-offer-review__summary">
             <div>
               <dt>Template type</dt>
-              <dd>{draft.displayName}</dd>
+              <dd>{snapshot.templateName}</dd>
             </div>
             <div>
               <dt>Available to clients</dt>
-              <dd>{draft.active ? "Yes" : "No"}</dd>
+              <dd>{active ? "Yes" : "No"}</dd>
             </div>
             <div className="vmb-admin-offer-review__summary-wide">
               <dt>Headline</dt>
-              <dd>{draft.headline}</dd>
+              <dd>{snapshot.headline}</dd>
             </div>
             <div className="vmb-admin-offer-review__summary-wide">
               <dt>Body</dt>
-              <dd>{draft.body}</dd>
+              <dd>{snapshot.body}</dd>
             </div>
             <div>
               <dt>CTA</dt>
-              <dd>{draft.ctaLabel}</dd>
+              <dd>{snapshot.ctaLabel}</dd>
             </div>
             <div>
               <dt>Selected services</dt>
@@ -95,21 +102,7 @@ export function AdminTemplateReviewModal({
             </div>
           </dl>
 
-          <SalonInviteCard
-            inviteTypeLabel={draft.displayName}
-            headline={draft.headline}
-            body={draft.body}
-            ctaLabel={draft.ctaLabel}
-            services={serviceNames}
-            rewards={rewardLabels}
-            ownerName={ownerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName}
-            salonName={salonName}
-            ownerPhotoUrl={imageInserts?.ownerPhotoUrl}
-            salonLogoUrl={imageInserts?.salonLogoUrl}
-            serviceImageUrl={imageInserts?.serviceImageUrl}
-            mode="adminReview"
-            tokenContext={tokenContext}
-          />
+          <SalonInviteCard {...cardProps} mode="adminReview" />
         </div>
 
         <footer className="vmb-admin-review-modal__footer">
