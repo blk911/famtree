@@ -3,10 +3,10 @@ import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 type Props = {
   offer: VmbOffer | null;
   serviceNames?: string[];
-  optionNames?: string[];
+  addonLabels?: string[];
 };
 
-export function AdminOfferPreviewCard({ offer, serviceNames = [], optionNames = [] }: Props) {
+export function AdminOfferPreviewCard({ offer, serviceNames = [], addonLabels = [] }: Props) {
   if (!offer) {
     return (
       <div className="vmb-admin-offer-preview">
@@ -28,16 +28,16 @@ export function AdminOfferPreviewCard({ offer, serviceNames = [], optionNames = 
           {offer.offerText || offer.description}
         </p>
         {serviceNames.length > 0 ? (
-          <ul className="vmb-admin-offer-preview__list">
-            {serviceNames.map((name) => (
-              <li key={name}>{name}</li>
-            ))}
-          </ul>
+          <p className="vmb-admin-offer-preview__applies">
+            Applies to {serviceNames.join(", ")}
+          </p>
         ) : null}
-        {optionNames.length > 0 ? (
-          <ul className="vmb-admin-offer-preview__list vmb-admin-offer-preview__list--addons">
-            {optionNames.map((name) => (
-              <li key={name}>+ {name}</li>
+        {addonLabels.length > 0 ? (
+          <ul className="vmb-admin-offer-preview__chips" aria-label="Included add-ons">
+            {addonLabels.map((label) => (
+              <li key={label}>
+                <span className="vmb-admin-offer-preview__chip">{label}</span>
+              </li>
             ))}
           </ul>
         ) : null}

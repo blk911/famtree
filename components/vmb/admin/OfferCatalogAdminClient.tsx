@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminOfferPreviewCard } from "@/components/vmb/admin/AdminOfferPreviewCard";
+import { OfferNailSelectionFields } from "@/components/vmb/admin/OfferNailSelectionFields";
+import {
+  resolveNailOfferAddonLabels,
+  resolveNailOfferServiceLabels,
+} from "@/lib/vmb/admin/nail-offer-builder-selections";
 import { VMB_OFFER_CATEGORIES, type VmbOffer, type VmbOfferCategory } from "@/lib/vmb/offers/offer-types";
 import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
 import type { VmbService } from "@/lib/vmb/services/service-types";
@@ -71,19 +76,31 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
     }
   }, [selectedOffer]);
 
+  const serviceFallbackById = useMemo(() => {
+    const map: Record<string, string | undefined> = {};
+    for (const service of services) {
+      map[service.id] = service.name;
+    }
+    return map;
+  }, [services]);
+
+  const optionFallbackById = useMemo(() => {
+    const map: Record<string, string | undefined> = {};
+    for (const option of serviceOptions) {
+      map[option.id] = option.name;
+    }
+    return map;
+  }, [serviceOptions]);
+
   const previewServiceNames = useMemo(() => {
     if (!draft) return [];
-    return (draft.serviceIds ?? [])
-      .map((id) => services.find((service) => service.id === id)?.name)
-      .filter(Boolean) as string[];
-  }, [draft, services]);
+    return resolveNailOfferServiceLabels(draft.serviceIds, serviceFallbackById);
+  }, [draft, serviceFallbackById]);
 
-  const previewOptionNames = useMemo(() => {
+  const previewAddonLabels = useMemo(() => {
     if (!draft) return [];
-    return (draft.serviceOptionIds ?? [])
-      .map((id) => serviceOptions.find((option) => option.id === id)?.name)
-      .filter(Boolean) as string[];
-  }, [draft, serviceOptions]);
+    return resolveNailOfferAddonLabels(draft.serviceOptionIds, optionFallbackById);
+  }, [draft, optionFallbackById]);
 
   async function handleSave() {
     if (!draft || !salonId) return;
@@ -195,44 +212,12 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
                   onChange={(e) => patchDraft({ offerText: e.target.value })}
                 />
               </label>
-              <label className="vmb-admin-builder-grid__field">
-                <span>Linked services</span>
-                <select
-                  multiple
-                  value={draft.serviceIds ?? []}
-                  onChange={(e) =>
-                    patchDraft({
-                      serviceIds: Array.from(e.target.selectedOptions).map((option) => option.value),
-                    })
-                  }
-                >
-                  {services.map((service) => (
-                    <option key={service.id} value={service.id}>
-                      {service.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="vmb-admin-builder-grid__field">
-                <span>Linked add-ons</span>
-                <select
-                  multiple
-                  value={draft.serviceOptionIds ?? []}
-                  onChange={(e) =>
-                    patchDraft({
-                      serviceOptionIds: Array.from(e.target.selectedOptions).map((option) => option.value),
-                    })
-                  }
-                >
-                  {serviceOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {services.find((service) => service.id === option.serviceId)?.name ?? "Service"} ·{" "}
-                      {option.groupName ? `${option.groupName}: ` : ""}
-                      {option.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <OfferNailSelectionFields
+                serviceIds={draft.serviceIds}
+                serviceOptionIds={draft.serviceOptionIds}
+                onServiceIdsChange={(serviceIds) => patchDraft({ serviceIds })}
+                onServiceOptionIdsChange={(serviceOptionIds) => patchDraft({ serviceOptionIds })}
+              />
               <label className="vmb-admin-builder-grid__field vmb-offer-admin__checkbox">
                 <input
                   type="checkbox"
@@ -274,7 +259,7 @@ export function OfferCatalogAdminClient({ salonId }: Props) {
           <AdminOfferPreviewCard
             offer={draft}
             serviceNames={previewServiceNames}
-            optionNames={previewOptionNames}
+            addonLabels={previewAddonLabels}
           />
         </aside>
       </div>

@@ -35,6 +35,13 @@ import {
 } from "../lib/vmb/invite-templates/invite-template-store";
 import { getTemplatesForSalon } from "../lib/vmb/card-templates/card-template-store";
 import {
+  NAIL_OFFER_ADDON_CHOICES,
+  NAIL_OFFER_SERVICE_CHOICES,
+  resolveNailOfferAddonLabels,
+  resolveNailOfferServiceLabels,
+  toggleOfferIdSelection,
+} from "../lib/vmb/admin/nail-offer-builder-selections";
+import {
   mapInviteOfferCategoryToOfferCategory,
   offerToAdminNailInviteCardOffer,
   pickDefaultAttachedOfferId,
@@ -373,6 +380,25 @@ async function run(): Promise<void> {
   assert(adminClientSource.includes("selectTemplate"), "pills use selectTemplate");
   assert(adminClientSource.includes("selectedDraft"), "editor and preview use selectedDraft");
   assert(!adminClientSource.includes("activeCardType"), "legacy card type does not drive preview");
+
+  assert(NAIL_OFFER_SERVICE_CHOICES.length === 7, "seven nail service choices for offer editor");
+  assert(NAIL_OFFER_ADDON_CHOICES.length === 7, "seven nail add-on choices for offer editor");
+  assert(
+    resolveNailOfferServiceLabels(["default-nails-gel-manicure"])[0] === "Gel Manicure",
+    "offer service labels resolve from curated choices",
+  );
+  assert(
+    resolveNailOfferAddonLabels(["addon-chrome"])[0] === "Chrome Upgrade",
+    "offer add-on labels use salon-friendly names",
+  );
+  assert(
+    toggleOfferIdSelection(["default-nails-gel-x"], "default-nails-gel-x").length === 0,
+    "toggle removes selected offer service id",
+  );
+  assert(
+    toggleOfferIdSelection([], "offer-perk-priority-booking").includes("offer-perk-priority-booking"),
+    "toggle adds offer perk id",
+  );
 
   if (process.env.DATABASE_URL?.trim()) {
     const sample = { ...DEFAULT_NAIL_INVITE_TEMPLATES[0]! };
