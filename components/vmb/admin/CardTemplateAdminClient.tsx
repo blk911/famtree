@@ -22,7 +22,7 @@ import {
   cloneInviteTemplate,
   sanitizeInviteTemplateAgainstLegacyBleed,
 } from "@/lib/vmb/invite-templates/invite-template-copy-guard";
-import { inviteDraftsHaveDuplicateBodies } from "@/lib/vmb/invite-templates/admin-nail-invite-card-content";
+import { inviteDraftsHaveDuplicateBodies, inviteDraftStats } from "@/lib/vmb/invite-templates/admin-nail-invite-card-content";
 
 import {
 
@@ -78,6 +78,9 @@ function buildInitialDrafts(): Record<string, VmbInviteTemplate> {
 
 }
 
+const NAIL_INVITE_TEMPLATES_URL =
+  "/api/vmb/invite-templates?categoryId=nails&includeInactive=1";
+
 
 
 export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props) {
@@ -96,11 +99,16 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
 
   const [busy, setBusy] = useState(false);
 
+  const [serverReloadStats, setServerReloadStats] = useState<{
+    count: number;
+    uniqueBodies: number;
+  } | null>(null);
+
 
 
   const loadInviteTemplates = useCallback(async () => {
 
-    const inviteRes = await fetch("/api/vmb/invite-templates?categoryId=nails&includeInactive=1");
+    const inviteRes = await fetch(NAIL_INVITE_TEMPLATES_URL, { cache: "no-store" });
 
     const inviteData = (await inviteRes.json()) as { ok?: boolean; templates?: VmbInviteTemplate[] };
 
@@ -120,11 +128,43 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
 
     }
 
+    const stats = inviteDraftStats(nextDrafts);
+
     setInviteDrafts(nextDrafts);
+
+    setServerReloadStats(stats);
 
     setSelectedTemplateId((current) => (nextDrafts[current] ? current : DEFAULT_NAIL_INVITE_TEMPLATES[0]!.id));
 
+    return stats;
+
   }, []);
+
+
+
+  async function handleReloadFromServer() {
+
+    setBusy(true);
+
+    setStatus(null);
+
+    try {
+
+      const stats = await loadInviteTemplates();
+
+      setStatus(`Reloaded ${stats.count} templates from server (${stats.uniqueBodies} unique bodies).`);
+
+    } catch {
+
+      setStatus("Failed to reload templates from server.");
+
+    } finally {
+
+      setBusy(false);
+
+    }
+
+  }
 
 
 
@@ -401,6 +441,15 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
           </div>
 
           <div className="vmb-card-template-workspace__catalog-links">
+
+            <button
+              type="button"
+              className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
+              disabled={busy}
+              onClick={() => void handleReloadFromServer()}
+            >
+              {busy ? "Reloading…" : "Reload templates from server"}
+            </button>
 
             <Link href="/admin/invites/nails">Nail catalog</Link>
 
@@ -846,6 +895,10 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName }: Props
               template={selectedTemplate}
 
               tokenContext={tokenContext}
+
+              serverTemplateCount={serverReloadStats?.count}
+
+              serverUniqueBodyCount={serverReloadStats?.uniqueBodies}
 
             />
 

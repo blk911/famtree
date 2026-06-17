@@ -63,3 +63,14 @@ export function inviteDraftsHaveDuplicateBodies(
     .filter(Boolean);
   return new Set(bodies).size < bodies.length;
 }
+
+export function inviteDraftStats(drafts: Record<string, Pick<VmbInviteTemplate, "body">>): {
+  count: number;
+  uniqueBodies: number;
+} {
+  const rows = Object.values(drafts);
+  return {
+    count: rows.length,
+    uniqueBodies: new Set(rows.map((row) => row.body.trim())).size,
+  };
+}

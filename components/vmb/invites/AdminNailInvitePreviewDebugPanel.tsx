@@ -11,6 +11,8 @@ type Props = {
   selectedTemplateId: string;
   template: AdminNailInviteCardTemplate;
   tokenContext: InviteTemplateTokenContext;
+  serverTemplateCount?: number;
+  serverUniqueBodyCount?: number;
 };
 
 function preview80(text: string): string {
@@ -21,6 +23,8 @@ export function AdminNailInvitePreviewDebugPanel({
   selectedTemplateId,
   template,
   tokenContext,
+  serverTemplateCount,
+  serverUniqueBodyCount,
 }: Props) {
   if (process.env.NODE_ENV === "production") return null;
 
@@ -66,6 +70,18 @@ export function AdminNailInvitePreviewDebugPanel({
           <dt>source</dt>
           <dd>VmbInviteTemplate</dd>
         </div>
+        {serverTemplateCount != null ? (
+          <div>
+            <dt>server template count</dt>
+            <dd>{serverTemplateCount}</dd>
+          </div>
+        ) : null}
+        {serverUniqueBodyCount != null ? (
+          <div>
+            <dt>server unique bodies</dt>
+            <dd>{serverUniqueBodyCount}</dd>
+          </div>
+        ) : null}
       </dl>
       {bodyMismatch ? (
         <p className="vmb-admin-nail-invite-debug__warning" role="alert">

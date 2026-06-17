@@ -6,6 +6,11 @@ import type { VmbInviteTemplate } from "@/lib/vmb/invite-templates/invite-templa
 
 export const dynamic = "force-dynamic";
 
+const NO_STORE_HEADERS = {
+  "Cache-Control": "no-store, no-cache, must-revalidate",
+  Pragma: "no-cache",
+} as const;
+
 const CATEGORIES: ServiceCategoryId[] = [
   "nails",
   "hair",
@@ -39,7 +44,7 @@ export async function GET(request: NextRequest) {
   }
 
   const templates = await listInviteTemplates(categoryId, { includeInactive });
-  return NextResponse.json({ ok: true, categoryId, templates });
+  return NextResponse.json({ ok: true, categoryId, templates }, { headers: NO_STORE_HEADERS });
 }
 
 export async function PUT(request: NextRequest) {
@@ -58,5 +63,5 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ ok: false, error: saved.error }, { status: 400 });
   }
 
-  return NextResponse.json({ ok: true, template: saved.template });
+  return NextResponse.json({ ok: true, template: saved.template }, { headers: NO_STORE_HEADERS });
 }
