@@ -8,6 +8,10 @@ import {
 } from "../lib/vmb/invite-templates/invite-template-render";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "../lib/vmb/invite-templates/invite-template-tokens";
 import {
+  CARD_TYPE_TO_INVITE_TEMPLATE_ID,
+  getInviteTemplateIdForCardType,
+} from "../lib/vmb/invite-templates/card-type-invite-template-map";
+import {
   listInviteTemplates,
   upsertInviteTemplate,
   validateInviteTemplateInput,
@@ -70,6 +74,54 @@ async function run(): Promise<void> {
 
   const cardTemplates = await getTemplatesForSalon("invite-template-test-salon");
   assert(cardTemplates.length >= 8, "existing card template behavior still loads defaults");
+
+  const previewBodies = new Set<string>();
+  const previewCtas = new Set<string>();
+  for (const template of DEFAULT_NAIL_INVITE_TEMPLATES) {
+    const payload = buildInviteTemplateRenderPayload(template, INVITE_TEMPLATE_PREVIEW_CONTEXT);
+    previewBodies.add(payload.body.trim());
+    previewCtas.add(payload.ctaLabel.trim());
+  }
+  assert(previewBodies.size === 10, "each invite type produces unique rendered preview body");
+  assert(previewCtas.size === 10, "each invite type produces unique rendered preview CTA");
+
+  const referral = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-referral-invite")!;
+  const referralPreview = buildInviteTemplateRenderPayload(referral, INVITE_TEMPLATE_PREVIEW_CONTEXT);
+  assert(
+    referralPreview.body.includes("friend"),
+    "referral invite preview body is referral-specific",
+  );
+
+  const birthday = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-birthday-celebration")!;
+  const birthdayPreview = buildInviteTemplateRenderPayload(birthday, INVITE_TEMPLATE_PREVIEW_CONTEXT);
+  assert(
+    birthdayPreview.body.includes("Birthday"),
+    "birthday invite preview body is birthday-specific",
+  );
+
+  const openChair = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-open-chair")!;
+  const openChairPreview = buildInviteTemplateRenderPayload(openChair, INVITE_TEMPLATE_PREVIEW_CONTEXT);
+  assert(
+    openChairPreview.body.toLowerCase().includes("opening") ||
+      openChairPreview.body.toLowerCase().includes("open"),
+    "open chair invite preview body is open-chair-specific",
+  );
+
+  const pcn = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-private-client-network")!;
+  const refresh = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === "nails-refresh-reminder")!;
+  const refreshPreview = buildInviteTemplateRenderPayload(refresh, INVITE_TEMPLATE_PREVIEW_CONTEXT);
+  assert(
+    !refreshPreview.body.includes("Private Client Network"),
+    "refresh preview does not use PCN fallback copy",
+  );
+  assert(
+    getInviteTemplateIdForCardType("pcn_invite") === pcn.id,
+    "pcn card type maps to nails-private-client-network",
+  );
+  assert(
+    Object.keys(CARD_TYPE_TO_INVITE_TEMPLATE_ID).length === 8,
+    "eight legacy card types map to nail invite templates",
+  );
 
   if (process.env.DATABASE_URL?.trim()) {
     const sample = { ...DEFAULT_NAIL_INVITE_TEMPLATES[0]! };

@@ -1,50 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CardBuilderImageSlots } from "@/components/vmb/admin/CardBuilderImageSlots";
-import { CardPreview } from "@/components/vmb/cards/CardPreview";
+import { InviteTemplateRenderCard } from "@/components/vmb/invites/InviteTemplateRenderCard";
 import {
-  applyCardBuilderImagesToPreview,
   createInitialCardBuilderImageSlots,
   type CardBuilderDraftImageSlot,
 } from "@/lib/vmb/card-templates/card-builder-preview-images";
-import { buildPreviewFromTemplate } from "@/lib/vmb/card-templates/apply-card-template";
-import {
-  normalizeTemplateForEditor,
-  resolveTemplateCta,
-} from "@/lib/vmb/card-templates/template-copy-fields";
+import { normalizeTemplateForEditor } from "@/lib/vmb/card-templates/template-copy-fields";
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
-import { CARD_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/card-templates/default-card-templates";
 import { getAllDefaultOffers } from "@/lib/vmb/offers/default-offers";
-import { resolveOfferForTemplate } from "@/lib/vmb/offers/offer-resolver";
 import { sortOffersForSelectorDisplay } from "@/lib/vmb/offers/offer-display-order";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
-import type { SalonOfferCatalogEntry } from "@/lib/vmb/salon-offers/salon-offer-catalog-types";
-import { formatOfferPrice } from "@/lib/vmb/salon-offers/salon-offer-pricing";
+import { getCardTypeForInviteTemplateId } from "@/lib/vmb/invite-templates/card-type-invite-template-map";
+import { getDefaultNailInviteTemplate } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import {
-  getAllDefaultServiceOptions,
-  getAllDefaultServices,
-} from "@/lib/vmb/services/default-service-catalog";
-import { VMB_CARD_TYPES, type VmbCardType } from "@/lib/vmb/cards/card-types";
-import { cardActionLabel } from "@/lib/vmb/cards/card-type-labels";
+  buildInviteTemplateRenderPayload,
+  resolvedSalonOfferToRenderOffer,
+} from "@/lib/vmb/invite-templates/invite-template-render";
+import {
+  INVITE_TEMPLATE_PREVIEW_CONTEXT,
+  applyInviteTemplateTokens,
+} from "@/lib/vmb/invite-templates/invite-template-tokens";
+import type {
+  InviteTemplateRenderOffer,
+  VmbInviteOfferCategory,
+  VmbInviteTemplate,
+} from "@/lib/vmb/invite-templates/invite-template-types";
+import { VMB_INVITE_OFFER_CATEGORIES } from "@/lib/vmb/invite-templates/invite-template-types";
+import type { ResolvedSalonOfferDisplay } from "@/lib/vmb/salon-offers/salon-offer-catalog-types";
+import { formatOfferPrice } from "@/lib/vmb/salon-offers/salon-offer-pricing";
+import type { SalonOfferCatalogEntry } from "@/lib/vmb/salon-offers/salon-offer-catalog-types";
 
 type Props = {
   salonId?: string;
   salonName: string;
   ownerName?: string;
   ownerPhotoUrl?: string;
-};
-
-const TYPE_LABELS: Record<VmbCardType, string> = {
-  pcn_invite: "Private Client Network",
-  refresh_card: "Refresh Reminder",
-  reactivation_card: "We Miss You",
-  open_slot_fill: "Opening Just Became Available",
-  referral_invite: "Referral Invite",
-  vip_thank_you: "VIP Thank You",
-  birthday_card: "Birthday",
-  service_card: "Favorite Providers",
 };
 
 function revokeDraftImageUrls(slots: CardBuilderDraftImageSlot[]) {
@@ -55,34 +48,64 @@ function revokeDraftImageUrls(slots: CardBuilderDraftImageSlot[]) {
   }
 }
 
+function catalogOfferToRenderOffer(offer: VmbOffer): InviteTemplateRenderOffer {
+  return {
+    name: offer.name,
+    description: offer.description || offer.offerText,
+    priceLabel: offer.valueLabel ?? "",
+    serviceName: offer.name,
+    addonLabels: [],
+  };
+}
+
 export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPhotoUrl }: Props) {
-  const [templates, setTemplates] = useState<VmbCardTemplate[]>([]);
+  const [cardTemplates, setCardTemplates] = useState<VmbCardTemplate[]>([]);
+  const [inviteTemplates, setInviteTemplates] = useState<VmbInviteTemplate[]>([]);
+  const [inviteDrafts, setInviteDrafts] = useState<Record<string, VmbInviteTemplate>>({});
   const [offers, setOffers] = useState<VmbOffer[]>(getAllDefaultOffers());
   const [salonCatalogOffers, setSalonCatalogOffers] = useState<SalonOfferCatalogEntry[]>([]);
-  const [selectedType, setSelectedType] = useState<VmbCardType>("pcn_invite");
-  const [draft, setDraft] = useState<VmbCardTemplate | null>(null);
-  const [selectedOfferId, setSelectedOfferId] = useState("");
+  const [selectedInviteId, setSelectedInviteId] = useState<string>("nails-private-client-network");
+  const [cardDraft, setCardDraft] = useState<VmbCardTemplate | null>(null);
+  const [selectedCatalogOfferId, setSelectedCatalogOfferId] = useState("");
+  const [selectedSalonOfferId, setSelectedSalonOfferId] = useState("");
+  const [salonOfferDisplay, setSalonOfferDisplay] = useState<ResolvedSalonOfferDisplay | null>(null);
   const [imageSlots, setImageSlots] = useState<CardBuilderDraftImageSlot[]>(() =>
     createInitialCardBuilderImageSlots(ownerPhotoUrl),
   );
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const loadTemplates = useCallback(async () => {
+  const loadData = useCallback(async () => {
     if (!salonId) return;
-    const [templateRes, offerRes, salonOfferRes] = await Promise.all([
+    const [cardRes, inviteRes, offerRes, salonOfferRes] = await Promise.all([
       fetch("/api/vmb/card-templates"),
+      fetch("/api/vmb/invite-templates?categoryId=nails&includeInactive=1"),
       fetch("/api/vmb/offers"),
       fetch("/api/vmb/salon-offers?activeOnly=1"),
     ]);
-    const data = (await templateRes.json()) as { ok?: boolean; templates?: VmbCardTemplate[] };
+    const cardData = (await cardRes.json()) as { ok?: boolean; templates?: VmbCardTemplate[] };
+    const inviteData = (await inviteRes.json()) as { ok?: boolean; templates?: VmbInviteTemplate[] };
     const offerData = (await offerRes.json()) as { ok?: boolean; offers?: VmbOffer[] };
     const salonOfferData = (await salonOfferRes.json()) as {
       ok?: boolean;
       offers?: SalonOfferCatalogEntry[];
     };
-    if (data.ok && data.templates) {
-      setTemplates(data.templates);
+
+    if (cardData.ok && cardData.templates) {
+      setCardTemplates(cardData.templates);
+    }
+    if (inviteData.ok && inviteData.templates?.length) {
+      setInviteTemplates(inviteData.templates);
+      const nextDrafts: Record<string, VmbInviteTemplate> = {};
+      for (const template of inviteData.templates) {
+        nextDrafts[template.id] = template;
+      }
+      setInviteDrafts(nextDrafts);
+      setSelectedInviteId((current) =>
+        inviteData.templates!.some((row) => row.id === current)
+          ? current
+          : inviteData.templates![0]!.id,
+      );
     }
     if (offerData.ok && offerData.offers) {
       setOffers(offerData.offers);
@@ -93,168 +116,183 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
   }, [salonId]);
 
   useEffect(() => {
-    void loadTemplates();
-  }, [loadTemplates]);
+    void loadData();
+  }, [loadData]);
 
-  const selectedTemplate = useMemo(
-    () => templates.find((template) => template.type === selectedType),
-    [templates, selectedType],
-  );
+  const selectedInvite = inviteDrafts[selectedInviteId];
+  const mappedCardType = getCardTypeForInviteTemplateId(selectedInviteId);
+
+  const selectedCardTemplate = useMemo(() => {
+    if (!mappedCardType) return undefined;
+    return cardTemplates.find((template) => template.type === mappedCardType);
+  }, [cardTemplates, mappedCardType]);
 
   useEffect(() => {
-    if (!selectedTemplate) return;
-    const normalized = normalizeTemplateForEditor({ ...selectedTemplate });
-    setDraft(normalized);
-    const resolved = resolveOfferForTemplate(normalized, offers);
-    setSelectedOfferId(resolved?.id ?? "");
-  }, [selectedTemplate, offers]);
+    if (!selectedCardTemplate) {
+      setCardDraft(null);
+      setSelectedSalonOfferId("");
+      return;
+    }
+    const normalized = normalizeTemplateForEditor({ ...selectedCardTemplate });
+    setCardDraft(normalized);
+    setSelectedSalonOfferId(normalized.salonOfferCatalogId ?? "");
+  }, [selectedCardTemplate]);
 
   useEffect(() => {
     setImageSlots((current) => {
       revokeDraftImageUrls(current);
       return createInitialCardBuilderImageSlots(ownerPhotoUrl);
     });
-  }, [selectedType, ownerPhotoUrl]);
+  }, [selectedInviteId, ownerPhotoUrl]);
 
-  const services = useMemo(() => getAllDefaultServices(), []);
-  const serviceOptions = useMemo(() => getAllDefaultServiceOptions(), []);
+  useEffect(() => {
+    if (!selectedSalonOfferId || !salonId) {
+      setSalonOfferDisplay(null);
+      return;
+    }
+    void (async () => {
+      const res = await fetch(`/api/vmb/salon-offers/${encodeURIComponent(selectedSalonOfferId)}`);
+      if (!res.ok) {
+        setSalonOfferDisplay(null);
+        return;
+      }
+      const json = (await res.json()) as { display?: ResolvedSalonOfferDisplay };
+      setSalonOfferDisplay(json.display ?? null);
+    })();
+  }, [selectedSalonOfferId, salonId]);
 
   const activeOffers = useMemo(
     () => sortOffersForSelectorDisplay(offers.filter((offer) => offer.active)),
     [offers],
   );
 
-  const selectedOffer = useMemo(
-    () => activeOffers.find((offer) => offer.id === selectedOfferId),
-    [activeOffers, selectedOfferId],
+  const selectedCatalogOffer = useMemo(
+    () => activeOffers.find((offer) => offer.id === selectedCatalogOfferId),
+    [activeOffers, selectedCatalogOfferId],
   );
 
-  const offerSelectionEnabled = Boolean(draft && draft.offerMode !== "none");
-
-  const selectedSalonCatalogOffer = useMemo(
-    () => salonCatalogOffers.find((offer) => offer.id === draft?.salonOfferCatalogId),
-    [draft?.salonOfferCatalogId, salonCatalogOffers],
+  const tokenContext = useMemo(
+    () => ({
+      ...INVITE_TEMPLATE_PREVIEW_CONTEXT,
+      clientName: INVITE_TEMPLATE_PREVIEW_CONTEXT.clientName,
+      salonName: salonName || INVITE_TEMPLATE_PREVIEW_CONTEXT.salonName,
+      providerName: ownerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName,
+      offerName: salonOfferDisplay?.name ?? selectedCatalogOffer?.name ?? INVITE_TEMPLATE_PREVIEW_CONTEXT.offerName,
+      offerPrice: salonOfferDisplay
+        ? formatOfferPrice(salonOfferDisplay.priceCents)
+        : selectedCatalogOffer?.valueLabel ?? INVITE_TEMPLATE_PREVIEW_CONTEXT.offerPrice,
+    }),
+    [ownerName, salonName, salonOfferDisplay, selectedCatalogOffer],
   );
 
-  const preview = useMemo(() => {
-    if (!draft) return null;
-    const base = buildPreviewFromTemplate(
-      draft,
-      {
-        cardType: draft.type,
-        recipientName: CARD_TEMPLATE_PREVIEW_CONTEXT.clientName,
-        salonName: salonName || CARD_TEMPLATE_PREVIEW_CONTEXT.salonName,
-        techName: ownerName || CARD_TEMPLATE_PREVIEW_CONTEXT.ownerName,
-        serviceName: CARD_TEMPLATE_PREVIEW_CONTEXT.serviceName,
-        lastVisit: CARD_TEMPLATE_PREVIEW_CONTEXT.lastVisit,
-        visitCount: CARD_TEMPLATE_PREVIEW_CONTEXT.visitCount,
-        referralCount: CARD_TEMPLATE_PREVIEW_CONTEXT.referralCount,
-        recommendationText: CARD_TEMPLATE_PREVIEW_CONTEXT.offer,
-        nextOpening: CARD_TEMPLATE_PREVIEW_CONTEXT.nextOpening,
-        offers,
-        selectedOfferId: selectedOfferId || undefined,
-        services,
-        serviceOptions,
-      },
-      ownerName || CARD_TEMPLATE_PREVIEW_CONTEXT.ownerName,
-    );
-    let model = applyCardBuilderImagesToPreview(base, imageSlots);
+  const previewOffer = useMemo((): InviteTemplateRenderOffer | undefined => {
+    if (salonOfferDisplay) return resolvedSalonOfferToRenderOffer(salonOfferDisplay);
+    if (selectedCatalogOffer) return catalogOfferToRenderOffer(selectedCatalogOffer);
+    return undefined;
+  }, [salonOfferDisplay, selectedCatalogOffer]);
 
-    if (selectedSalonCatalogOffer) {
-      const offerText =
-        selectedSalonCatalogOffer.description.trim() || selectedSalonCatalogOffer.name;
-      model = {
-        ...model,
-        includeOffer: true,
-        offer: {
-          id: selectedSalonCatalogOffer.id,
-          name: selectedSalonCatalogOffer.name,
-          valueLabel: formatOfferPrice(selectedSalonCatalogOffer.priceCents),
-          offerText,
-          category: "salon",
-        },
-        inviteCopy: model.inviteCopy
-          ? { ...model.inviteCopy, offerMessage: offerText }
-          : model.inviteCopy,
-      };
-    }
+  const previewPayload = useMemo(() => {
+    if (!selectedInvite) return null;
+    return buildInviteTemplateRenderPayload(selectedInvite, tokenContext, previewOffer);
+  }, [previewOffer, selectedInvite, tokenContext]);
 
-    return model;
-  }, [
-    draft,
-    salonName,
-    ownerName,
-    offers,
-    selectedOfferId,
-    services,
-    serviceOptions,
-    imageSlots,
-    selectedSalonCatalogOffer,
-  ]);
+  const offerSelectionEnabled = Boolean(
+    cardDraft && cardDraft.offerMode !== "none" && mappedCardType,
+  );
 
-  async function handleSave() {
-    if (!draft || !salonId) return;
-    setBusy(true);
-    setStatus(null);
-    const res = await fetch("/api/vmb/card-templates", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ template: draft }),
-    });
-    const data = (await res.json()) as { ok?: boolean; error?: string };
-    setBusy(false);
-    if (data.ok) {
-      setStatus("Template saved.");
-      await loadTemplates();
-    } else {
-      setStatus(data.error ?? "Save failed.");
-    }
+  function patchInviteDraft(id: string, patch: Partial<VmbInviteTemplate>) {
+    setInviteDrafts((prev) => ({
+      ...prev,
+      [id]: { ...prev[id]!, ...patch },
+    }));
   }
 
-  async function handleReset() {
-    if (!salonId) return;
-    setBusy(true);
-    setStatus(null);
-    const res = await fetch(`/api/vmb/card-templates?type=${selectedType}`, { method: "DELETE" });
-    const data = (await res.json()) as { ok?: boolean; template?: VmbCardTemplate; error?: string };
-    setBusy(false);
-    if (data.ok && data.template) {
-      setDraft(normalizeTemplateForEditor({ ...data.template }));
-      const resolved = resolveOfferForTemplate(data.template, offers);
-      setSelectedOfferId(resolved?.id ?? "");
-      setImageSlots((current) => {
-        revokeDraftImageUrls(current);
-        return createInitialCardBuilderImageSlots(ownerPhotoUrl);
-      });
-      setStatus("Reset to default template.");
-      await loadTemplates();
-    } else {
-      setStatus(data.error ?? "Reset failed.");
-    }
-  }
-
-  function patchDraft(patch: Partial<VmbCardTemplate>) {
-    setDraft((current) => (current ? { ...current, ...patch } : current));
+  function toggleAllowedCategory(id: string, category: VmbInviteOfferCategory) {
+    const draft = inviteDrafts[id];
+    if (!draft) return;
+    const current = new Set(draft.allowedOfferCategories);
+    if (current.has(category)) current.delete(category);
+    else current.add(category);
+    patchInviteDraft(id, { allowedOfferCategories: Array.from(current) });
   }
 
   function handleSalonOfferChange(offerId: string) {
-    patchDraft({ salonOfferCatalogId: offerId || undefined });
-  }
-
-  function handleOfferChange(offerId: string) {
-    setSelectedOfferId(offerId);
-    const offer = activeOffers.find((entry) => entry.id === offerId);
-    if (offer) {
-      patchDraft({ offerCategory: offer.category });
+    setSelectedSalonOfferId(offerId);
+    if (cardDraft) {
+      setCardDraft({ ...cardDraft, salonOfferCatalogId: offerId || undefined });
     }
   }
 
-  function handleTypeKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
-    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-    event.preventDefault();
-    const offset = event.key === "ArrowRight" ? 1 : -1;
-    const nextIndex = (index + offset + VMB_CARD_TYPES.length) % VMB_CARD_TYPES.length;
-    setSelectedType(VMB_CARD_TYPES[nextIndex]!);
+  async function handleSave() {
+    if (!salonId || !selectedInvite) return;
+    setBusy(true);
+    setStatus(null);
+
+    const inviteRes = await fetch("/api/vmb/invite-templates", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(selectedInvite),
+    });
+    const inviteData = (await inviteRes.json()) as { ok?: boolean; error?: string };
+
+    if (!inviteRes.ok) {
+      setBusy(false);
+      setStatus(inviteData.error ?? "Invite template save failed.");
+      return;
+    }
+
+    if (cardDraft && mappedCardType) {
+      const cardRes = await fetch("/api/vmb/card-templates", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          template: {
+            ...cardDraft,
+            salonOfferCatalogId: selectedSalonOfferId || undefined,
+          },
+        }),
+      });
+      const cardData = (await cardRes.json()) as { ok?: boolean; error?: string };
+      setBusy(false);
+      if (!cardRes.ok) {
+        setStatus(cardData.error ?? "Offer settings save failed.");
+        return;
+      }
+    } else {
+      setBusy(false);
+    }
+
+    setStatus("Template saved.");
+    await loadData();
+  }
+
+  async function handleReset() {
+    if (!salonId || !selectedInvite) return;
+    setBusy(true);
+    setStatus(null);
+
+    const baseline = getDefaultNailInviteTemplate(selectedInvite.id);
+    if (baseline) {
+      patchInviteDraft(selectedInvite.id, baseline);
+      await fetch("/api/vmb/invite-templates", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(baseline),
+      });
+    }
+
+    if (mappedCardType) {
+      const res = await fetch(`/api/vmb/card-templates?type=${mappedCardType}`, { method: "DELETE" });
+      const data = (await res.json()) as { ok?: boolean; template?: VmbCardTemplate; error?: string };
+      if (data.ok && data.template) {
+        setCardDraft(normalizeTemplateForEditor({ ...data.template }));
+        setSelectedSalonOfferId(data.template.salonOfferCatalogId ?? "");
+      }
+    }
+
+    setBusy(false);
+    setStatus("Reset to default template.");
+    await loadData();
   }
 
   if (!salonId) {
@@ -276,10 +314,11 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
           <div>
             <h1 className="vmb-card-template-workspace__title">Card Templates</h1>
             <p className="vmb-card-template-workspace__subtitle">
-              Choose the offer, edit the message, add card images, and watch the preview update
+              Nail invite templates are the source of truth — edit copy, attach offers, and preview the salon render
             </p>
           </div>
           <div className="vmb-card-template-workspace__catalog-links">
+            <Link href="/admin/invites/nails">Nail catalog</Link>
             <Link href="/admin/invites/services">Services</Link>
             <Link href="/admin/invites/offers">Offers</Link>
           </div>
@@ -288,25 +327,34 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
         <div
           className="vmb-card-template-workspace__types"
           role="tablist"
-          aria-label="Outreach card template types"
+          aria-label="Nail invite template types"
         >
-          {VMB_CARD_TYPES.map((type, index) => {
-            const isActive = selectedType === type;
-            const isCustomized = templates.some((template) => template.type === type && !template.isDefault);
+          {inviteTemplates.map((template) => {
+            const isActive = selectedInviteId === template.id;
+            const baseline = getDefaultNailInviteTemplate(template.id);
+            const draft = inviteDrafts[template.id];
+            const isCustomized =
+              Boolean(baseline && draft) &&
+              Boolean(
+                draft &&
+                  baseline &&
+                  (draft.body !== baseline.body ||
+                    draft.ctaLabel !== baseline.ctaLabel ||
+                    draft.headline !== baseline.headline),
+              );
             return (
               <button
-                key={type}
+                key={template.id}
                 type="button"
                 role="tab"
-                id={`card-template-tab-${type}`}
+                id={`card-template-tab-${template.id}`}
                 aria-selected={isActive}
                 aria-controls="card-template-editor-panel"
                 tabIndex={isActive ? 0 : -1}
                 className={`vmb-card-template-workspace__type${isActive ? " vmb-card-template-workspace__type--active" : ""}`}
-                onClick={() => setSelectedType(type)}
-                onKeyDown={(event) => handleTypeKeyDown(event, index)}
+                onClick={() => setSelectedInviteId(template.id)}
               >
-                {TYPE_LABELS[type]}
+                {inviteDrafts[template.id]?.displayName ?? template.displayName}
                 {isCustomized ? (
                   <span className="vmb-template-admin__override-dot" aria-label="Customized" />
                 ) : null}
@@ -320,27 +368,33 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
         <section
           id="card-template-editor-panel"
           role="tabpanel"
-          aria-labelledby={`card-template-tab-${selectedType}`}
+          aria-labelledby={`card-template-tab-${selectedInviteId}`}
           className="vmb-card-template-workspace__editor"
         >
-          {draft ? (
+          {selectedInvite ? (
             <>
               <div className="vmb-card-template-workspace__editor-meta">
-                <span>{cardActionLabel(draft.type)}</span>
+                <span>{selectedInvite.displayName}</span>
                 <span aria-hidden="true">·</span>
-                <span>{draft.isDefault ? "Default template" : "Salon override"}</span>
+                <span>Nails</span>
+                {mappedCardType ? (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span>Card slot: {mappedCardType.replace(/_/g, " ")}</span>
+                  </>
+                ) : null}
               </div>
 
               <section className="vmb-card-builder__section" aria-labelledby="card-builder-offer-heading">
                 <h3 id="card-builder-offer-heading" className="vmb-card-builder__section-title">
                   Offer
                 </h3>
-                {offerSelectionEnabled ? (
+                {offerSelectionEnabled || salonCatalogOffers.length > 0 ? (
                   <>
                     <label className="vmb-template-admin__field">
                       <span>Choose offer (salon)</span>
                       <select
-                        value={draft.salonOfferCatalogId ?? ""}
+                        value={selectedSalonOfferId}
                         onChange={(event) => handleSalonOfferChange(event.target.value)}
                       >
                         <option value="">Select a salon offer</option>
@@ -351,21 +405,11 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
                         ))}
                       </select>
                     </label>
-                    {selectedSalonCatalogOffer ? (
-                      <div className="vmb-card-builder__offer-card">
-                        <p className="vmb-card-builder__offer-card-title">
-                          {selectedSalonCatalogOffer.name}
-                        </p>
-                        <p className="vmb-card-builder__offer-card-body">
-                          {selectedSalonCatalogOffer.description}
-                        </p>
-                      </div>
-                    ) : null}
                     <label className="vmb-template-admin__field">
-                      <span className="vmb-card-builder__sr-only">Choose catalog offer fallback</span>
+                      <span>Catalog offer fallback</span>
                       <select
-                        value={selectedOfferId}
-                        onChange={(event) => handleOfferChange(event.target.value)}
+                        value={selectedCatalogOfferId}
+                        onChange={(event) => setSelectedCatalogOfferId(event.target.value)}
                       >
                         <option value="">Select an offer</option>
                         {activeOffers.map((offer) => (
@@ -375,81 +419,117 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
                         ))}
                       </select>
                     </label>
-                    {selectedOffer ? (
-                      <div className="vmb-card-builder__offer-card">
-                        <p className="vmb-card-builder__offer-card-title">{selectedOffer.name}</p>
-                        <p className="vmb-card-builder__offer-card-body">
-                          {selectedOffer.description || selectedOffer.offerText}
-                        </p>
-                        <p className="vmb-card-builder__offer-card-cta">{resolveTemplateCta(draft)}</p>
-                      </div>
-                    ) : (
-                      <p className="vmb-card-builder__section-note">Select an offer to preview on the card.</p>
-                    )}
+                    <p className="vmb-card-builder__section-note">
+                      Offer fills the offer area only — invite copy and CTA stay on the nail template.
+                    </p>
                   </>
                 ) : (
-                  <p className="vmb-card-builder__section-note">This card type does not attach a catalog offer.</p>
+                  <p className="vmb-card-builder__section-note">
+                    Attach a salon or catalog offer to preview the offer area.
+                  </p>
                 )}
               </section>
 
               <section className="vmb-card-builder__section" aria-labelledby="card-builder-message-heading">
                 <h3 id="card-builder-message-heading" className="vmb-card-builder__section-title">
-                  Message
+                  Invite content
                 </h3>
                 <div className="vmb-card-template-workspace__fields">
                   <label className="vmb-template-admin__field">
-                    <span>Personal note</span>
+                    <span>Intent (internal)</span>
                     <textarea
                       rows={2}
                       className="vmb-card-template-workspace__copy-input"
-                      value={draft.messageTemplate}
-                      onChange={(e) => patchDraft({ messageTemplate: e.target.value })}
+                      value={selectedInvite.intent}
+                      onChange={(e) => patchInviteDraft(selectedInvite.id, { intent: e.target.value })}
                     />
                   </label>
                   <label className="vmb-template-admin__field">
-                    <span>Why this matters</span>
-                    <textarea
-                      rows={2}
+                    <span>Subject</span>
+                    <input
                       className="vmb-card-template-workspace__copy-input"
-                      value={draft.relationshipBenefitTemplate ?? ""}
-                      onChange={(e) => patchDraft({ relationshipBenefitTemplate: e.target.value })}
+                      value={selectedInvite.subject}
+                      onChange={(e) => patchInviteDraft(selectedInvite.id, { subject: e.target.value })}
                     />
                   </label>
                   <label className="vmb-template-admin__field">
-                    <span>Offer note</span>
-                    <textarea
-                      rows={2}
+                    <span>Eyebrow</span>
+                    <input
                       className="vmb-card-template-workspace__copy-input"
-                      value={draft.offerTemplate ?? ""}
-                      onChange={(e) => patchDraft({ offerTemplate: e.target.value })}
+                      value={selectedInvite.eyebrow}
+                      onChange={(e) => patchInviteDraft(selectedInvite.id, { eyebrow: e.target.value })}
                     />
                   </label>
                   <label className="vmb-template-admin__field">
-                    <span>Signature</span>
-                    <textarea
-                      rows={2}
+                    <span>Headline</span>
+                    <input
                       className="vmb-card-template-workspace__copy-input"
-                      value={draft.signatureTemplate}
-                      onChange={(e) => patchDraft({ signatureTemplate: e.target.value })}
+                      value={selectedInvite.headline}
+                      onChange={(e) => patchInviteDraft(selectedInvite.id, { headline: e.target.value })}
                     />
+                  </label>
+                  <label className="vmb-template-admin__field">
+                    <span>Body</span>
+                    <textarea
+                      rows={4}
+                      className="vmb-card-template-workspace__copy-input"
+                      value={selectedInvite.body}
+                      onChange={(e) => patchInviteDraft(selectedInvite.id, { body: e.target.value })}
+                    />
+                  </label>
+                  <label className="vmb-template-admin__field">
+                    <span>CTA label</span>
+                    <input
+                      className="vmb-card-template-workspace__copy-input"
+                      value={selectedInvite.ctaLabel}
+                      onChange={(e) => patchInviteDraft(selectedInvite.id, { ctaLabel: e.target.value })}
+                    />
+                  </label>
+                  <label className="vmb-template-admin__field">
+                    <span>Default offer category</span>
+                    <select
+                      value={selectedInvite.defaultOfferCategory}
+                      onChange={(e) =>
+                        patchInviteDraft(selectedInvite.id, {
+                          defaultOfferCategory: e.target.value as VmbInviteOfferCategory,
+                        })
+                      }
+                    >
+                      {VMB_INVITE_OFFER_CATEGORIES.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                 </div>
+
+                <fieldset className="vmb-nail-invite-catalog__allowed">
+                  <legend>Allowed offer categories</legend>
+                  <ul>
+                    {VMB_INVITE_OFFER_CATEGORIES.map((category) => (
+                      <li key={category}>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={selectedInvite.allowedOfferCategories.includes(category)}
+                            onChange={() => toggleAllowedCategory(selectedInvite.id, category)}
+                          />
+                          {category}
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </fieldset>
+
+                <p className="vmb-nail-invite-catalog__subject-preview">
+                  Subject preview: {applyInviteTemplateTokens(selectedInvite.subject, tokenContext)}
+                </p>
               </section>
 
-              <CardBuilderImageSlots slots={imageSlots} onChange={setImageSlots} />
-
-              <details className="vmb-card-builder__advanced">
-                <summary>Advanced</summary>
-                <label className="vmb-template-admin__field">
-                  <span>Template name (internal)</span>
-                  <textarea
-                    rows={2}
-                    className="vmb-card-template-workspace__copy-input"
-                    value={draft.name}
-                    onChange={(e) => patchDraft({ name: e.target.value })}
-                  />
-                </label>
-              </details>
+              {mappedCardType ? (
+                <CardBuilderImageSlots slots={imageSlots} onChange={setImageSlots} />
+              ) : null}
 
               <div className="vmb-template-admin__actions">
                 <button type="button" className="taikos-opp-card__cta" disabled={busy} onClick={() => void handleSave()}>
@@ -470,17 +550,12 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
         </section>
 
         <aside className="vmb-card-template-workspace__preview">
-          <p className="vmb-template-admin__preview-label">Live preview</p>
+          <p className="vmb-template-admin__preview-label">Salon dashboard preview</p>
           <p className="vmb-template-admin__preview-meta">
-            {CARD_TEMPLATE_PREVIEW_CONTEXT.clientName} · {CARD_TEMPLATE_PREVIEW_CONTEXT.serviceName} ·{" "}
-            {CARD_TEMPLATE_PREVIEW_CONTEXT.visitCount} visits · last visit{" "}
-            {CARD_TEMPLATE_PREVIEW_CONTEXT.lastVisit}
+            {tokenContext.clientName} · {selectedInvite?.displayName ?? "Invite"}
           </p>
-          {preview ? (
-            <CardPreview
-              model={preview}
-              variant={draft?.type === "pcn_invite" ? "salon-invite" : "default"}
-            />
+          {previewPayload ? (
+            <InviteTemplateRenderCard payload={previewPayload} mode="adminPreview" />
           ) : null}
         </aside>
       </div>
