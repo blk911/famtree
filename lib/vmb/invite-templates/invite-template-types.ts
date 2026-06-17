@@ -90,6 +90,8 @@ export type InviteTemplateRenderOffer = {
 };
 
 export type InviteTemplateRenderPayload = {
+  templateId: string;
+  intent: string;
   eyebrow: string;
   headline: string;
   body: string;

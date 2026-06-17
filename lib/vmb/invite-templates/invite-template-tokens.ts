@@ -1,7 +1,7 @@
 import type { InviteTemplateTokenContext } from "./invite-template-types";
 
 export const INVITE_TEMPLATE_PREVIEW_CONTEXT: InviteTemplateTokenContext = {
-  clientName: "Sarah",
+  clientName: "Grace",
   salonName: "Luxe Nail Studio",
   providerName: "Jess",
   offerName: "Birthday Babe",

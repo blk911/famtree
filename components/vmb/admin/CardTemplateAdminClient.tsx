@@ -8,15 +8,16 @@ import {
   createInitialCardBuilderImageSlots,
   type CardBuilderDraftImageSlot,
 } from "@/lib/vmb/card-templates/card-builder-preview-images";
-import { normalizeTemplateForEditor } from "@/lib/vmb/card-templates/template-copy-fields";
 import type { VmbCardTemplate } from "@/lib/vmb/card-templates/card-template-types";
 import { getAllDefaultOffers } from "@/lib/vmb/offers/default-offers";
 import { sortOffersForSelectorDisplay } from "@/lib/vmb/offers/offer-display-order";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 import { getCardTypeForInviteTemplateId } from "@/lib/vmb/invite-templates/card-type-invite-template-map";
+import { cloneInviteTemplate } from "@/lib/vmb/invite-templates/invite-template-copy-guard";
 import { getDefaultNailInviteTemplate } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import {
   buildInviteTemplateRenderPayload,
+  debugInvitePreviewSource,
   resolvedSalonOfferToRenderOffer,
 } from "@/lib/vmb/invite-templates/invite-template-render";
 import {
@@ -55,6 +56,17 @@ function catalogOfferToRenderOffer(offer: VmbOffer): InviteTemplateRenderOffer {
     priceLabel: offer.valueLabel ?? "",
     serviceName: offer.name,
     addonLabels: [],
+  };
+}
+
+/** Card-template store keeps offer/image metadata only — never invite copy fields. */
+function buildCardTemplateOfferPayload(
+  cardDraft: VmbCardTemplate,
+  salonOfferCatalogId?: string,
+): VmbCardTemplate {
+  return {
+    ...cardDraft,
+    salonOfferCatalogId: salonOfferCatalogId || undefined,
   };
 }
 
@@ -98,7 +110,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
       setInviteTemplates(inviteData.templates);
       const nextDrafts: Record<string, VmbInviteTemplate> = {};
       for (const template of inviteData.templates) {
-        nextDrafts[template.id] = template;
+        nextDrafts[template.id] = cloneInviteTemplate(template);
       }
       setInviteDrafts(nextDrafts);
       setSelectedInviteId((current) =>
@@ -119,7 +131,10 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
     void loadData();
   }, [loadData]);
 
-  const selectedInvite = inviteDrafts[selectedInviteId];
+  const selectedInvite = useMemo(
+    () => (selectedInviteId ? inviteDrafts[selectedInviteId] : undefined),
+    [inviteDrafts, selectedInviteId],
+  );
   const mappedCardType = getCardTypeForInviteTemplateId(selectedInviteId);
 
   const selectedCardTemplate = useMemo(() => {
@@ -133,7 +148,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
       setSelectedSalonOfferId("");
       return;
     }
-    const normalized = normalizeTemplateForEditor({ ...selectedCardTemplate });
+    const normalized = { ...selectedCardTemplate };
     setCardDraft(normalized);
     setSelectedSalonOfferId(normalized.salonOfferCatalogId ?? "");
   }, [selectedCardTemplate]);
@@ -171,18 +186,23 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
     [activeOffers, selectedCatalogOfferId],
   );
 
-  const tokenContext = useMemo(
+  const recipientPreview = useMemo(
     () => ({
-      ...INVITE_TEMPLATE_PREVIEW_CONTEXT,
       clientName: INVITE_TEMPLATE_PREVIEW_CONTEXT.clientName,
       salonName: salonName || INVITE_TEMPLATE_PREVIEW_CONTEXT.salonName,
-      providerName: ownerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName,
-      offerName: salonOfferDisplay?.name ?? selectedCatalogOffer?.name ?? INVITE_TEMPLATE_PREVIEW_CONTEXT.offerName,
+      offerName: salonOfferDisplay?.name ?? selectedCatalogOffer?.name,
       offerPrice: salonOfferDisplay
         ? formatOfferPrice(salonOfferDisplay.priceCents)
-        : selectedCatalogOffer?.valueLabel ?? INVITE_TEMPLATE_PREVIEW_CONTEXT.offerPrice,
+        : selectedCatalogOffer?.valueLabel,
     }),
-    [ownerName, salonName, salonOfferDisplay, selectedCatalogOffer],
+    [salonName, salonOfferDisplay, selectedCatalogOffer],
+  );
+
+  const providerPreview = useMemo(
+    () => ({
+      providerName: ownerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName,
+    }),
+    [ownerName],
   );
 
   const previewOffer = useMemo((): InviteTemplateRenderOffer | undefined => {
@@ -192,9 +212,27 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
   }, [salonOfferDisplay, selectedCatalogOffer]);
 
   const previewPayload = useMemo(() => {
-    if (!selectedInvite) return null;
-    return buildInviteTemplateRenderPayload(selectedInvite, tokenContext, previewOffer);
-  }, [previewOffer, selectedInvite, tokenContext]);
+    if (!selectedInvite || selectedInvite.id !== selectedInviteId) return null;
+    return buildInviteTemplateRenderPayload({
+      inviteTemplate: selectedInvite,
+      recipientPreview,
+      providerPreview,
+      salonOffer: previewOffer,
+    });
+  }, [previewOffer, recipientPreview, providerPreview, selectedInvite, selectedInviteId]);
+
+  useEffect(() => {
+    if (!selectedInvite || !previewPayload) return;
+    debugInvitePreviewSource({
+      selectedInviteTemplateId: selectedInviteId,
+      templateBody: selectedInvite.body,
+      templateCtaLabel: selectedInvite.ctaLabel,
+      legacyPersonalNote: cardDraft?.messageTemplate,
+      legacyWhyThisMatters: cardDraft?.relationshipBenefitTemplate,
+      finalBody: previewPayload.body,
+      finalCtaLabel: previewPayload.ctaLabel,
+    });
+  }, [cardDraft, previewPayload, selectedInvite, selectedInviteId]);
 
   const offerSelectionEnabled = Boolean(
     cardDraft && cardDraft.offerMode !== "none" && mappedCardType,
@@ -203,7 +241,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
   function patchInviteDraft(id: string, patch: Partial<VmbInviteTemplate>) {
     setInviteDrafts((prev) => ({
       ...prev,
-      [id]: { ...prev[id]!, ...patch },
+      [id]: cloneInviteTemplate({ ...prev[id]!, ...patch }),
     }));
   }
 
@@ -233,7 +271,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(selectedInvite),
     });
-    const inviteData = (await inviteRes.json()) as { ok?: boolean; error?: string };
+    const inviteData = (await inviteRes.json()) as { ok?: boolean; template?: VmbInviteTemplate; error?: string };
 
     if (!inviteRes.ok) {
       setBusy(false);
@@ -241,15 +279,19 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
       return;
     }
 
+    if (inviteData.template) {
+      setInviteDrafts((prev) => ({
+        ...prev,
+        [inviteData.template!.id]: cloneInviteTemplate(inviteData.template!),
+      }));
+    }
+
     if (cardDraft && mappedCardType) {
       const cardRes = await fetch("/api/vmb/card-templates", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          template: {
-            ...cardDraft,
-            salonOfferCatalogId: selectedSalonOfferId || undefined,
-          },
+          template: buildCardTemplateOfferPayload(cardDraft, selectedSalonOfferId || undefined),
         }),
       });
       const cardData = (await cardRes.json()) as { ok?: boolean; error?: string };
@@ -263,7 +305,9 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
     }
 
     setStatus("Template saved.");
-    await loadData();
+    if (cardDraft && mappedCardType) {
+      await loadData();
+    }
   }
 
   async function handleReset() {
@@ -285,7 +329,7 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
       const res = await fetch(`/api/vmb/card-templates?type=${mappedCardType}`, { method: "DELETE" });
       const data = (await res.json()) as { ok?: boolean; template?: VmbCardTemplate; error?: string };
       if (data.ok && data.template) {
-        setCardDraft(normalizeTemplateForEditor({ ...data.template }));
+        setCardDraft({ ...data.template });
         setSelectedSalonOfferId(data.template.salonOfferCatalogId ?? "");
       }
     }
@@ -523,7 +567,12 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
                 </fieldset>
 
                 <p className="vmb-nail-invite-catalog__subject-preview">
-                  Subject preview: {applyInviteTemplateTokens(selectedInvite.subject, tokenContext)}
+                  Subject preview:{" "}
+                  {applyInviteTemplateTokens(selectedInvite.subject, {
+                    ...INVITE_TEMPLATE_PREVIEW_CONTEXT,
+                    ...recipientPreview,
+                    ...providerPreview,
+                  })}
                 </p>
               </section>
 
@@ -552,10 +601,15 @@ export function CardTemplateAdminClient({ salonId, salonName, ownerName, ownerPh
         <aside className="vmb-card-template-workspace__preview">
           <p className="vmb-template-admin__preview-label">Salon dashboard preview</p>
           <p className="vmb-template-admin__preview-meta">
-            {tokenContext.clientName} · {selectedInvite?.displayName ?? "Invite"}
+            {recipientPreview.clientName ?? INVITE_TEMPLATE_PREVIEW_CONTEXT.clientName} ·{" "}
+            {selectedInvite?.displayName ?? "Invite"}
           </p>
-          {previewPayload ? (
-            <InviteTemplateRenderCard payload={previewPayload} mode="adminPreview" />
+          {previewPayload && previewPayload.templateId === selectedInviteId ? (
+            <InviteTemplateRenderCard
+              key={selectedInviteId}
+              payload={previewPayload}
+              mode="adminPreview"
+            />
           ) : null}
         </aside>
       </div>

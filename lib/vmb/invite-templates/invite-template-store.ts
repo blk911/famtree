@@ -8,6 +8,7 @@ import {
   getDefaultNailInviteTemplate,
   listDefaultInviteTemplatesForCategory,
 } from "./default-nail-invite-templates";
+import { sanitizeInviteTemplateAgainstLegacyBleed } from "./invite-template-copy-guard";
 import type { VmbInviteOfferCategory, VmbInviteTemplate, VmbInviteType } from "./invite-template-types";
 import { VMB_INVITE_OFFER_CATEGORIES, VMB_NAILS_INVITE_TYPES } from "./invite-template-types";
 import {
@@ -42,7 +43,10 @@ function mergeTemplateLayers(
   override?: VmbInviteTemplate,
 ): VmbInviteTemplate {
   if (!override) return { ...baseline };
-  return {
+  if (override.id !== baseline.id || override.inviteType !== baseline.inviteType) {
+    return { ...baseline };
+  }
+  const merged: VmbInviteTemplate = {
     ...baseline,
     ...override,
     id: baseline.id,
@@ -52,6 +56,7 @@ function mergeTemplateLayers(
       ? override.allowedOfferCategories
       : baseline.allowedOfferCategories,
   };
+  return sanitizeInviteTemplateAgainstLegacyBleed(merged);
 }
 
 export async function listInviteTemplates(

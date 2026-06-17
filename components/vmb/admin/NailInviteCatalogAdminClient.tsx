@@ -106,27 +106,26 @@ export function NailInviteCatalogAdminClient({ salonId, salonName, providerName 
 
   const selected = selectedId ? drafts[selectedId] : undefined;
 
-  const tokenContext = useMemo(
-    () => ({
-      ...INVITE_TEMPLATE_PREVIEW_CONTEXT,
-      salonName: salonName || INVITE_TEMPLATE_PREVIEW_CONTEXT.salonName,
-      providerName: providerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName,
-      offerName: selectedOfferDisplay?.name ?? INVITE_TEMPLATE_PREVIEW_CONTEXT.offerName,
-      offerPrice: selectedOfferDisplay
-        ? `$${Math.round(selectedOfferDisplay.priceCents / 100)}`
-        : INVITE_TEMPLATE_PREVIEW_CONTEXT.offerPrice,
-    }),
-    [providerName, salonName, selectedOfferDisplay],
-  );
-
   const previewPayload = useMemo(() => {
     if (!selected) return null;
-    return buildInviteTemplateRenderPayload(
-      selected,
-      tokenContext,
-      selectedOfferDisplay ? resolvedSalonOfferToRenderOffer(selectedOfferDisplay) : undefined,
-    );
-  }, [selected, selectedOfferDisplay, tokenContext]);
+    return buildInviteTemplateRenderPayload({
+      inviteTemplate: selected,
+      recipientPreview: {
+        clientName: INVITE_TEMPLATE_PREVIEW_CONTEXT.clientName,
+        salonName: salonName || INVITE_TEMPLATE_PREVIEW_CONTEXT.salonName,
+        offerName: selectedOfferDisplay?.name ?? INVITE_TEMPLATE_PREVIEW_CONTEXT.offerName,
+        offerPrice: selectedOfferDisplay
+          ? `$${Math.round(selectedOfferDisplay.priceCents / 100)}`
+          : INVITE_TEMPLATE_PREVIEW_CONTEXT.offerPrice,
+      },
+      providerPreview: {
+        providerName: providerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName,
+      },
+      salonOffer: selectedOfferDisplay
+        ? resolvedSalonOfferToRenderOffer(selectedOfferDisplay)
+        : undefined,
+    });
+  }, [providerName, salonName, selected, selectedOfferDisplay]);
 
   function updateDraft(id: string, patch: Partial<VmbInviteTemplate>) {
     setDrafts((prev) => ({
@@ -378,9 +377,14 @@ export function NailInviteCatalogAdminClient({ salonId, salonName, providerName 
                 </label>
               ) : null}
 
-              <p className="vmb-nail-invite-catalog__subject-preview">
-                Subject preview: {applyInviteTemplateTokens(selected.subject, tokenContext)}
-              </p>
+                <p className="vmb-nail-invite-catalog__subject-preview">
+                  Subject preview:{" "}
+                  {applyInviteTemplateTokens(selected.subject, {
+                    ...INVITE_TEMPLATE_PREVIEW_CONTEXT,
+                    salonName: salonName || INVITE_TEMPLATE_PREVIEW_CONTEXT.salonName,
+                    providerName: providerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName,
+                  })}
+                </p>
 
               <button
                 type="button"
