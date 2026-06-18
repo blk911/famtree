@@ -198,6 +198,11 @@ export function VmbInvitesClient({
     publishedCopies,
   ]);
 
+  const unpublishedSuggestedRecommendations = useMemo(
+    () => suggestedRecommendations.filter((recommendation) => !recommendation.publishedCopy),
+    [suggestedRecommendations],
+  );
+
   const filteredDrafts = useMemo(() => {
     if (tab === "drafts") return drafts.filter((d) => d.status === "draft");
     if (tab === "paused") {
@@ -415,17 +420,17 @@ export function VmbInvitesClient({
             publishedCopies={publishedCopyDebugEntries}
             recommendations={suggestedRecommendations}
           />
+          <PublishedInvitationsSection
+            copies={publishedCopies}
+            onPreview={(copy) => setActivePublishedCopy(copy)}
+          />
           <SuggestedMatchesSection
-            recommendations={suggestedRecommendations}
+            recommendations={unpublishedSuggestedRecommendations}
             actionBusyId={actionBusyId}
             onPreview={handlePreview}
             onApprove={(recommendation) => void handleApprove(recommendation)}
             onEditCopy={(recommendation) => void handleEditCopy(recommendation)}
             onPause={(recommendation) => void handlePause(recommendation)}
-          />
-          <PublishedInvitationsSection
-            copies={publishedCopies}
-            onPreview={(copy) => setActivePublishedCopy(copy)}
           />
         </div>
       ) : filteredDrafts.length === 0 ? (
@@ -513,11 +518,11 @@ function SuggestedMatchesSection({
       <header style={{ marginBottom: 14 }}>
         <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Suggested Matches</h2>
         <p style={{ margin: "6px 0 0", fontSize: 14, color: VMB_THEME.muted }}>
-          Client-specific recommendations matched to published invitations.
+          Client-specific recommendations still waiting on a published invitation template.
         </p>
       </header>
       {recommendations.length === 0 ? (
-        <EmptyPanel message="No suggested matches yet." />
+        <EmptyPanel message="No unpublished suggestions — every match has a published template." />
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
           {recommendations.map((recommendation) => (
