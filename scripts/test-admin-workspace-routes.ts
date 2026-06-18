@@ -310,6 +310,17 @@ function run(): void {
   assert(offerSelectionSource.includes("Nail Services"), "template selection shows nail services section");
   assert(offerSelectionSource.includes("Rewards Included"), "template selection shows rewards included section");
 
+  const offerSelectionCss = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
+  assert(
+    offerSelectionCss.includes(".vmb-offer-builder-selections") &&
+      offerSelectionCss.includes("grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)"),
+    "builder services and rewards use two-column layout",
+  );
+
+  assert(librarySource.includes("Publish verification"), "library shows publish verification note");
+  assert(librarySource.includes("Salon copy ID"), "library publish note includes copy id");
+  assert(librarySource.includes("Target salon"), "library publish note includes target salon");
+
   const serviceCatalogSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/PlatformServiceCatalogClient.tsx"),
     "utf8",

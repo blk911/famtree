@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminSalonInviteReviewModal } from "@/components/vmb/admin/AdminSalonInviteReviewModal";
@@ -11,6 +11,7 @@ import {
 } from "@/lib/vmb/admin/nail-template-routes";
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
+import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 import {
   formatSnapshotStatus,
   formatSnapshotUpdatedAt,
@@ -35,6 +36,7 @@ export function NailsLibraryAdminClient({
   );
   const [reviewOpen, setReviewOpen] = useState(false);
   const [publishStatus, setPublishStatus] = useState<string | null>(null);
+  const [publishVerification, setPublishVerification] = useState<SalonInviteLocalCopy | null>(null);
   const [publishBusy, setPublishBusy] = useState(false);
 
   const savedDrafts = useMemo(() => drafts.filter((row) => row.saved), [drafts]);
@@ -45,6 +47,11 @@ export function NailsLibraryAdminClient({
   );
 
   const librarySnapshot = selected?.librarySnapshot ?? null;
+
+  useEffect(() => {
+    setPublishVerification(null);
+    setPublishStatus(null);
+  }, [selectedTemplateId]);
 
   const tokenContext = useMemo(
     () => ({
@@ -59,6 +66,7 @@ export function NailsLibraryAdminClient({
     if (!librarySnapshot || !salonId || !selected) return;
     setPublishBusy(true);
     setPublishStatus(null);
+    setPublishVerification(null);
     const res = await fetch("/api/vmb/invite-library/publish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -67,13 +75,12 @@ export function NailsLibraryAdminClient({
     const data = (await res.json()) as {
       ok?: boolean;
       error?: string;
-      copy?: { id: string; publishedVersion: number };
+      copy?: SalonInviteLocalCopy;
     };
     setPublishBusy(false);
     if (data.ok && data.copy) {
-      setPublishStatus(
-        `Published to salon inventory — v${data.copy.publishedVersion} (${data.copy.id}).`,
-      );
+      setPublishVerification(data.copy);
+      setPublishStatus("Published to salon inventory.");
     } else {
       setPublishStatus(data.error ?? "Publish failed.");
     }
@@ -177,6 +184,31 @@ export function NailsLibraryAdminClient({
                   {publishBusy ? "Publishing…" : "Publish To Salons"}
                 </button>
               </div>
+              {publishVerification ? (
+                <div className="vmb-nails-library__publish-verify" aria-live="polite">
+                  <p className="vmb-nails-library__publish-verify-title">Publish verification</p>
+                  <dl>
+                    <div>
+                      <dt>Target salon</dt>
+                      <dd>
+                        {salonName || publishVerification.salonId} ({publishVerification.salonId})
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Salon copy ID</dt>
+                      <dd>{publishVerification.id}</dd>
+                    </div>
+                    <div>
+                      <dt>Source template</dt>
+                      <dd>{publishVerification.sourceTemplateId}</dd>
+                    </div>
+                    <div>
+                      <dt>Published version</dt>
+                      <dd>v{publishVerification.publishedVersion}</dd>
+                    </div>
+                  </dl>
+                </div>
+              ) : null}
               {publishStatus ? <p className="vmb-admin-builder-grid__status">{publishStatus}</p> : null}
             </>
           ) : null}
