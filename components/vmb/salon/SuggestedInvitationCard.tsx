@@ -8,9 +8,9 @@ type Props = {
   recommendation: SuggestedInvitationRecommendation;
   onPreview: () => void;
   onApprove: () => void;
-  onEditCopy: () => void;
   onPause: () => void;
   busy?: boolean;
+  approveSuccess?: boolean;
 };
 
 function actionButtonStyle(variant: "primary" | "default" = "default"): CSSProperties {
@@ -30,9 +30,9 @@ export function SuggestedInvitationCard({
   recommendation,
   onPreview,
   onApprove,
-  onEditCopy,
   onPause,
   busy = false,
+  approveSuccess = false,
 }: Props) {
   const thumbnailUrl = recommendation.snapshot?.serviceImageUrl;
 
@@ -91,6 +91,11 @@ export function SuggestedInvitationCard({
             Published template v{recommendation.publishedCopy.publishedVersion}
           </p>
         )}
+        {approveSuccess ? (
+          <p style={{ margin: 0, fontSize: 12, color: "#15803d", fontWeight: 600 }}>
+            Approved. Ready to send later.
+          </p>
+        ) : null}
       </div>
 
       <footer
@@ -105,13 +110,15 @@ export function SuggestedInvitationCard({
         <button type="button" disabled={busy} onClick={onPreview} style={actionButtonStyle()}>
           Preview
         </button>
-        <button type="button" disabled={busy} onClick={onApprove} style={actionButtonStyle("primary")}>
+        <button
+          type="button"
+          disabled={busy || !recommendation.publishedCopy || approveSuccess}
+          onClick={onApprove}
+          style={actionButtonStyle("primary")}
+        >
           Approve
         </button>
-        <button type="button" disabled={busy} onClick={onEditCopy} style={actionButtonStyle()}>
-          Edit Copy
-        </button>
-        <button type="button" disabled={busy} onClick={onPause} style={actionButtonStyle()}>
+        <button type="button" disabled={busy || approveSuccess} onClick={onPause} style={actionButtonStyle()}>
           Pause
         </button>
       </footer>

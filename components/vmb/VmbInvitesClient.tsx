@@ -5,6 +5,8 @@ import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftP
 import { BookLoadedStatusNote } from "@/components/vmb/BookLoadedStatusNote";
 import { SalonInvitationPreviewModal } from "@/components/vmb/salon/SalonInvitationPreviewModal";
 import { SalonInvitationEditCopyModal } from "@/components/vmb/salon/SalonInvitationEditCopyModal";
+import { ApprovedInvitationsSection } from "@/components/vmb/salon/ApprovedInvitationsSection";
+import { ApprovedInvitationCard } from "@/components/vmb/salon/ApprovedInvitationCard";
 import { PublishedInvitationsSection } from "@/components/vmb/salon/PublishedInvitationsSection";
 import { SuggestedInvitationCard } from "@/components/vmb/salon/SuggestedInvitationCard";
 import { SuggestedInviteMatchingDebug } from "@/components/vmb/salon/SuggestedInviteMatchingDebug";
@@ -35,13 +37,20 @@ import { useSortableList } from "@/lib/vmb/useSortableList";
 import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
 import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
+import {
+  approvalDedupeKey,
+  approvalDedupeKeyFromRecommendation,
+  buildApprovalInputFromRecommendation,
+} from "@/lib/vmb/invites/salon-invitation-approval-workflow";
+import type { InviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
+import type { SalonInvitationApproval } from "@/types/vmb/salon-invitation-approval";
 import { friendlyInviteDraftError } from "@/lib/vmb/invite-drafts/invite-draft-storage-errors";
 
-type TabId = "suggested" | "drafts" | "sent" | "paused";
+type TabId = "suggested" | "approved" | "sent" | "paused";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "suggested", label: "Suggested" },
-  { id: "drafts", label: "Drafts" },
+  { id: "approved", label: "Approved" },
   { id: "sent", label: "Sent" },
   { id: "paused", label: "Paused" },
 ];
@@ -66,6 +75,7 @@ export function VmbInvitesClient({
   );
   const [drafts, setDrafts] = useState<VmbInviteDraft[]>([]);
   const [publishedCopies, setPublishedCopies] = useState<SalonInviteLocalCopy[]>([]);
+  const [approvals, setApprovals] = useState<SalonInvitationApproval[]>([]);
   const [publishedSalonId, setPublishedSalonId] = useState<string | null>(salonIdProp ?? null);
   const [opportunitySummary, setOpportunitySummary] = useState<TaikosOpportunitySummary | null>(null);
   const [loadingSuggested, setLoadingSuggested] = useState(true);
@@ -75,10 +85,32 @@ export function VmbInvitesClient({
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
   const [editDraftId, setEditDraftId] = useState<string | null>(null);
   const [activePublishedCopy, setActivePublishedCopy] = useState<SalonInviteLocalCopy | null>(null);
+  const [previewApprovalSnapshot, setPreviewApprovalSnapshot] = useState<InviteTemplateSnapshot | null>(null);
   const [editPublishedCopy, setEditPublishedCopy] = useState<SalonInviteLocalCopy | null>(null);
   const [actionBusyId, setActionBusyId] = useState<string | null>(null);
+  const [approveSuccessId, setApproveSuccessId] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
   const [savingInventory, setSavingInventory] = useState(false);
+
+  const loadApprovals = useCallback(async () => {
+    try {
+      const res = await fetch("/api/vmb/salon-invitation-approvals", {
+        cache: "no-store",
+        credentials: "include",
+      });
+      const json = (await res.json()) as {
+        ok?: boolean;
+        approvals?: SalonInvitationApproval[];
+        salonId?: string;
+      };
+      setApprovals(json.ok && json.approvals ? json.approvals : []);
+      if (json.ok && json.salonId) {
+        setPublishedSalonId(json.salonId);
+      }
+    } catch {
+      setApprovals([]);
+    }
+  }, []);
 
   const loadPublished = useCallback(async () => {
     try {
@@ -165,18 +197,23 @@ export function VmbInvitesClient({
 
   const loadSuggested = useCallback(async () => {
     setLoadingSuggested(true);
-    await Promise.all([loadPublished(), loadOpportunities(), loadDrafts()]);
+    await Promise.all([loadPublished(), loadOpportunities(), loadDrafts(), loadApprovals()]);
     setLoadingSuggested(false);
-  }, [loadDrafts, loadOpportunities, loadPublished]);
+  }, [loadApprovals, loadDrafts, loadOpportunities, loadPublished]);
+
+  const loadWorkflowTabs = useCallback(async () => {
+    setLoadingDrafts(true);
+    await Promise.all([loadDrafts(), loadApprovals(), loadPublished()]);
+    setLoadingDrafts(false);
+  }, [loadApprovals, loadDrafts, loadPublished]);
 
   useEffect(() => {
     if (tab === "suggested") {
       void loadSuggested();
       return;
     }
-    setLoadingDrafts(true);
-    void loadDrafts().finally(() => setLoadingDrafts(false));
-  }, [loadDrafts, loadSuggested, tab]);
+    void loadWorkflowTabs();
+  }, [loadSuggested, loadWorkflowTabs, tab]);
 
   useEffect(() => {
     setFocusSection(parseInviteSection(initialSection));
@@ -206,16 +243,43 @@ export function VmbInvitesClient({
     matchingPublishedCopies,
   ]);
 
-  const unpublishedSuggestedRecommendations = useMemo(
-    () => suggestedRecommendations.filter((recommendation) => !recommendation.publishedCopy),
-    [suggestedRecommendations],
+  const approvalDedupeKeys = useMemo(
+    () => new Set(approvals.map((approval) => approvalDedupeKey(approval))),
+    [approvals],
+  );
+
+  const resolvedSalonId = publishedSalonId ?? salonIdProp ?? null;
+
+  const visibleSuggestedRecommendations = useMemo(() => {
+    return suggestedRecommendations.filter((recommendation) => {
+      if (!resolvedSalonId) return true;
+      const key = approvalDedupeKeyFromRecommendation(resolvedSalonId, recommendation);
+      if (!key) return true;
+      return !approvalDedupeKeys.has(key);
+    });
+  }, [approvalDedupeKeys, resolvedSalonId, suggestedRecommendations]);
+
+  const approvedRecords = useMemo(
+    () => approvals.filter((approval) => approval.status === "approved"),
+    [approvals],
+  );
+
+  const sentApprovals = useMemo(
+    () => approvals.filter((approval) => approval.status === "sent"),
+    [approvals],
+  );
+
+  const pausedApprovals = useMemo(
+    () => approvals.filter((approval) => approval.status === "paused"),
+    [approvals],
+  );
+
+  const pausedInventoryCopies = useMemo(
+    () => publishedCopies.filter((copy) => getSalonInviteInventoryStatus(copy) === "paused"),
+    [publishedCopies],
   );
 
   const filteredDrafts = useMemo(() => {
-    if (tab === "drafts") return drafts.filter((d) => d.status === "draft");
-    if (tab === "paused") {
-      return drafts.filter((d) => d.status === "skipped" || d.status === "approved");
-    }
     if (tab === "sent") return drafts.filter((d) => d.status === "sent");
     return [];
   }, [drafts, tab]);
@@ -307,12 +371,41 @@ export function VmbInvitesClient({
     }
   }
 
+  async function createApprovalFromRecommendation(
+    recommendation: SuggestedInvitationRecommendation,
+    action: "approve" | "pause",
+  ): Promise<SalonInvitationApproval | null> {
+    if (!resolvedSalonId) return null;
+    const input = buildApprovalInputFromRecommendation(resolvedSalonId, recommendation, action);
+    if ("error" in input) return null;
+
+    const res = await fetch("/api/vmb/salon-invitation-approvals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ action, ...input }),
+    });
+    const json = (await res.json()) as { ok?: boolean; approval?: SalonInvitationApproval };
+    if (!res.ok || !json.ok || !json.approval) return null;
+
+    setApprovals((prev) => {
+      const key = approvalDedupeKey(json.approval!);
+      const others = prev.filter((row) => approvalDedupeKey(row) !== key);
+      return [json.approval!, ...others].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    });
+    return json.approval;
+  }
+
   async function handleApprove(recommendation: SuggestedInvitationRecommendation) {
     setActionBusyId(recommendation.id);
     try {
-      const draft = await ensureDraftForRecommendation(recommendation);
-      if (!draft) return;
-      await patchDraft(draft.draftId, { status: "approved" });
+      const approval = await createApprovalFromRecommendation(recommendation, "approve");
+      if (approval) {
+        setApproveSuccessId(recommendation.id);
+        window.setTimeout(() => {
+          setApproveSuccessId((current) => (current === recommendation.id ? null : current));
+        }, 2500);
+      }
     } finally {
       setActionBusyId(null);
     }
@@ -321,19 +414,32 @@ export function VmbInvitesClient({
   async function handlePause(recommendation: SuggestedInvitationRecommendation) {
     setActionBusyId(recommendation.id);
     try {
-      const draft = await ensureDraftForRecommendation(recommendation);
-      if (!draft) return;
-      await patchDraft(draft.draftId, { status: "skipped" });
+      await createApprovalFromRecommendation(recommendation, "pause");
     } finally {
       setActionBusyId(null);
     }
   }
 
-  async function handleEditCopy(recommendation: SuggestedInvitationRecommendation) {
-    setActionBusyId(recommendation.id);
+  async function patchApprovalStatus(
+    approval: SalonInvitationApproval,
+    action: "pause" | "resume",
+  ): Promise<boolean> {
+    setActionBusyId(approval.id);
     try {
-      const draft = await ensureDraftForRecommendation(recommendation);
-      if (draft) setEditDraftId(draft.draftId);
+      const res = await fetch(`/api/vmb/salon-invitation-approvals/${encodeURIComponent(approval.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ action }),
+      });
+      const json = (await res.json()) as { ok?: boolean; approval?: SalonInvitationApproval };
+      if (!res.ok || !json.ok || !json.approval) return false;
+      setApprovals((prev) =>
+        prev.map((row) => (row.id === approval.id ? json.approval! : row)),
+      );
+      return true;
+    } catch {
+      return false;
     } finally {
       setActionBusyId(null);
     }
@@ -416,6 +522,9 @@ export function VmbInvitesClient({
   }
 
   function emptyMessage(): string {
+    if (tab === "approved") {
+      return "No invitations approved yet.";
+    }
     if (tab === "sent") {
       return "No sent invitations yet.";
     }
@@ -488,7 +597,7 @@ export function VmbInvitesClient({
       ) : tab === "suggested" ? (
         <div style={{ display: "grid", gap: 28 }}>
           <SuggestedInviteMatchingDebug
-            salonId={salonId}
+            salonId={resolvedSalonId}
             publishedCount={publishedCopies.length}
             publishedCopies={publishedCopyDebugEntries}
             recommendations={suggestedRecommendations}
@@ -503,43 +612,69 @@ export function VmbInvitesClient({
             onDuplicate={(copy) => void handleInventoryDuplicate(copy)}
           />
           <SuggestedMatchesSection
-            recommendations={unpublishedSuggestedRecommendations}
+            recommendations={visibleSuggestedRecommendations}
             actionBusyId={actionBusyId}
+            approveSuccessId={approveSuccessId}
             onPreview={handlePreview}
             onApprove={(recommendation) => void handleApprove(recommendation)}
-            onEditCopy={(recommendation) => void handleEditCopy(recommendation)}
             onPause={(recommendation) => void handlePause(recommendation)}
           />
         </div>
-      ) : filteredDrafts.length === 0 ? (
+      ) : tab === "approved" ? (
+        <ApprovedInvitationsSection
+          approvals={approvedRecords}
+          actionBusyId={actionBusyId}
+          onPreview={(approval) => setPreviewApprovalSnapshot(approval.snapshot)}
+          onPause={(approval) => void patchApprovalStatus(approval, "pause")}
+        />
+      ) : tab === "paused" ? (
+        <PausedInvitationsSection
+          pausedApprovals={pausedApprovals}
+          pausedInventoryCopies={pausedInventoryCopies}
+          actionBusyId={actionBusyId}
+          onPreviewApproval={(approval) => setPreviewApprovalSnapshot(approval.snapshot)}
+          onPreviewInventory={(copy) => setActivePublishedCopy(copy)}
+          onResumeApproval={(approval) => void patchApprovalStatus(approval, "resume")}
+        />
+      ) : tab === "sent" && sentApprovals.length === 0 && filteredDrafts.length === 0 ? (
         <EmptyPanel message={emptyMessage()} />
-      ) : (
+      ) : tab === "sent" ? (
         <div style={{ display: "grid", gap: 28 }}>
-          {INVITE_SECTION_ORDER.map((section) => {
-            const rows = grouped.get(section) ?? [];
-            if (rows.length === 0) return null;
-            const highlighted = focusSection === section;
-            return (
-              <section
-                key={section}
-                id={`invite-section-${section}`}
-                style={{
-                  borderRadius: 14,
-                  border: `1px solid ${highlighted ? VMB_THEME.accent : VMB_THEME.line}`,
-                  background: "#fff",
-                  padding: "16px 16px 8px",
-                  boxShadow: highlighted ? "0 2px 8px rgba(157, 23, 77, 0.06)" : "none",
-                }}
-              >
-                <h2 style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 800 }}>
-                  {INVITE_SECTION_LABELS[section]}
-                </h2>
-                <InviteSectionRows rows={rows} onPreview={(draftId) => setActiveDraftId(draftId)} />
-              </section>
-            );
-          })}
+          {sentApprovals.length > 0 ? (
+            <section>
+              <header style={{ marginBottom: 14 }}>
+                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Sent Invitations</h2>
+              </header>
+              <div style={{ display: "grid", gap: 16 }}>
+                {sentApprovals.map((approval) => (
+                  <ApprovedInvitationCard
+                    key={approval.id}
+                    approval={approval}
+                    busy={actionBusyId === approval.id}
+                    onPreview={() => setPreviewApprovalSnapshot(approval.snapshot)}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
+          {filteredDrafts.length > 0 ? (
+            <div style={{ display: "grid", gap: 28 }}>
+              {INVITE_SECTION_ORDER.map((section) => {
+                const rows = grouped.get(section) ?? [];
+                if (rows.length === 0) return null;
+                return (
+                  <section key={section}>
+                    <h2 style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 800 }}>
+                      {INVITE_SECTION_LABELS[section]}
+                    </h2>
+                    <InviteSectionRows rows={rows} onPreview={(draftId) => setActiveDraftId(draftId)} />
+                  </section>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
-      )}
+      ) : null}
 
       {activeDraft ? (
         <InviteDraftPreviewModal
@@ -573,6 +708,15 @@ export function VmbInvitesClient({
         />
       ) : null}
 
+      {previewApprovalSnapshot ? (
+        <SalonInvitationPreviewModal
+          open
+          snapshot={previewApprovalSnapshot}
+          tokenContext={tokenContext}
+          onClose={() => setPreviewApprovalSnapshot(null)}
+        />
+      ) : null}
+
       {editPublishedCopy ? (
         <SalonInvitationEditCopyModal
           copy={editPublishedCopy}
@@ -592,16 +736,16 @@ export function VmbInvitesClient({
 function SuggestedMatchesSection({
   recommendations,
   actionBusyId,
+  approveSuccessId,
   onPreview,
   onApprove,
-  onEditCopy,
   onPause,
 }: {
   recommendations: SuggestedInvitationRecommendation[];
   actionBusyId: string | null;
+  approveSuccessId: string | null;
   onPreview: (recommendation: SuggestedInvitationRecommendation) => void;
   onApprove: (recommendation: SuggestedInvitationRecommendation) => void;
-  onEditCopy: (recommendation: SuggestedInvitationRecommendation) => void;
   onPause: (recommendation: SuggestedInvitationRecommendation) => void;
 }) {
   return (
@@ -609,11 +753,11 @@ function SuggestedMatchesSection({
       <header style={{ marginBottom: 14 }}>
         <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Suggested Matches</h2>
         <p style={{ margin: "6px 0 0", fontSize: 14, color: VMB_THEME.muted }}>
-          Client-specific recommendations still waiting on a published invitation template.
+          TAIKOS recommendations mapped to your published salon invitation inventory.
         </p>
       </header>
       {recommendations.length === 0 ? (
-        <EmptyPanel message="No unpublished suggestions — every match has a published template." />
+        <EmptyPanel message="No suggested invitations right now." />
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
           {recommendations.map((recommendation) => (
@@ -621,13 +765,100 @@ function SuggestedMatchesSection({
               key={recommendation.id}
               recommendation={recommendation}
               busy={actionBusyId === recommendation.id}
+              approveSuccess={approveSuccessId === recommendation.id}
               onPreview={() => onPreview(recommendation)}
               onApprove={() => onApprove(recommendation)}
-              onEditCopy={() => onEditCopy(recommendation)}
               onPause={() => onPause(recommendation)}
             />
           ))}
         </div>
+      )}
+    </section>
+  );
+}
+
+function PausedInvitationsSection({
+  pausedApprovals,
+  pausedInventoryCopies,
+  actionBusyId,
+  onPreviewApproval,
+  onPreviewInventory,
+  onResumeApproval,
+}: {
+  pausedApprovals: SalonInvitationApproval[];
+  pausedInventoryCopies: SalonInviteLocalCopy[];
+  actionBusyId: string | null;
+  onPreviewApproval: (approval: SalonInvitationApproval) => void;
+  onPreviewInventory: (copy: SalonInviteLocalCopy) => void;
+  onResumeApproval: (approval: SalonInvitationApproval) => void;
+}) {
+  const hasItems = pausedApprovals.length > 0 || pausedInventoryCopies.length > 0;
+
+  return (
+    <section style={{ display: "grid", gap: 24 }}>
+      <header>
+        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Paused Invitations</h2>
+        <p style={{ margin: "6px 0 0", fontSize: 14, color: VMB_THEME.muted }}>
+          Paused suggestions and inventory templates excluded from active matching.
+        </p>
+      </header>
+      {!hasItems ? (
+        <EmptyPanel message="No paused invitations." />
+      ) : (
+        <>
+          {pausedApprovals.length > 0 ? (
+            <div style={{ display: "grid", gap: 16 }}>
+              {pausedApprovals.map((approval) => (
+                <ApprovedInvitationCard
+                  key={approval.id}
+                  approval={approval}
+                  busy={actionBusyId === approval.id}
+                  onPreview={() => onPreviewApproval(approval)}
+                  onResume={() => onResumeApproval(approval)}
+                />
+              ))}
+            </div>
+          ) : null}
+          {pausedInventoryCopies.length > 0 ? (
+            <div style={{ display: "grid", gap: 12 }}>
+              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Paused inventory templates</h3>
+              <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
+                {pausedInventoryCopies.map((copy) => (
+                  <li
+                    key={copy.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 12,
+                      alignItems: "center",
+                      padding: "12px 14px",
+                      borderRadius: 10,
+                      border: `1px solid ${VMB_THEME.line}`,
+                      background: "#fff",
+                    }}
+                  >
+                    <span style={{ fontSize: 14, fontWeight: 600 }}>{copy.snapshot.templateName}</span>
+                    <button
+                      type="button"
+                      onClick={() => onPreviewInventory(copy)}
+                      style={{
+                        padding: "6px 10px",
+                        borderRadius: 8,
+                        border: `1px solid ${VMB_THEME.line}`,
+                        background: "#fff",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Preview
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </>
       )}
     </section>
   );

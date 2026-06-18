@@ -543,8 +543,8 @@ async function run(): Promise<void> {
   assert(invitesClientSource.includes("SalonInvitationPreviewModal"), "invitations previews via salon card");
   assert(invitesClientSource.includes("previewOnly"), "invitations draft preview is read-only");
   assert(
-    invitesClientSource.includes("No unpublished suggestions"),
-    "invitations suggested matches empty state for unpublished only",
+    invitesClientSource.includes("No suggested invitations right now."),
+    "invitations suggested matches empty state",
   );
   assert(
     invitesClientSource.includes("No invitations have been published to your salon yet."),
@@ -756,12 +756,12 @@ async function run(): Promise<void> {
     saved: true,
     offerCategory: "pcn" as const,
   };
-  const pcnSnapshot = buildDraftInviteSnapshot(pcnDraft, {
+  const pcnLibrarySnapshot = buildDraftInviteSnapshot(pcnDraft, {
     ownerName: "Alex",
     salonName: "Glow Nails",
   });
   const pcnOffer = nailTemplateDraftToOffer(pcnDraft, salonId, {
-    ...pcnSnapshot,
+    ...pcnLibrarySnapshot,
     status: "library",
     version: 3,
   });
@@ -792,6 +792,96 @@ async function run(): Promise<void> {
     );
     assert(listed[0]!.publishedVersion === published.copy.publishedVersion, "listed copy version matches publish");
   }
+
+  const approvalSalonId = `approval-test-${Date.now()}`;
+  const {
+    approveSalonInvitation,
+    listSalonInvitationApprovals,
+    pauseSalonInvitationApproval,
+  } = await import("../lib/vmb/invites/salon-invitation-approval-store");
+
+  const approvalSnapshot = buildDraftInviteSnapshot(
+    {
+      templateId: "nails-birthday-celebration",
+      displayName: "Birthday Celebration",
+      headline: "Happy Birthday Snapshot",
+      body: "Celebrate with us",
+      ctaLabel: "Book now",
+      serviceIds: ["default-nails-gel-manicure"],
+      serviceOptionIds: ["addon-chrome"],
+      active: true,
+      saved: true,
+      offerCategory: "birthday",
+    },
+    { ownerName: "Alex", salonName: "Glow Nails" },
+  );
+
+  const approved = await approveSalonInvitation(approvalSalonId, {
+    clientName: "Grace Garcia",
+    opportunityId: "opp-birthday-grace",
+    opportunityType: "Birthday",
+    sourceCopyId: "copy-birthday-v1",
+    sourceTemplateId: "nails-birthday-celebration",
+    snapshot: { ...approvalSnapshot, status: "published", version: 1 },
+    reasonText: "Birthday this month",
+    estimatedValue: 85,
+  });
+  assert(!("error" in approved), "approve suggested invitation creates approved record");
+  assert(approved.created === true, "first approval creates a new record");
+  assert(approved.approval.snapshot.headline === "Happy Birthday Snapshot", "approved record stores snapshot");
+
+  const duplicate = await approveSalonInvitation(approvalSalonId, {
+    clientName: "Grace Garcia",
+    opportunityId: "opp-birthday-grace",
+    opportunityType: "Birthday",
+    sourceCopyId: "copy-birthday-v1",
+    sourceTemplateId: "nails-birthday-celebration",
+    snapshot: { ...approvalSnapshot, headline: "Changed Headline", status: "published", version: 1 },
+    reasonText: "Birthday this month",
+    estimatedValue: 85,
+  });
+  assert(!("error" in duplicate), "duplicate approve returns existing record");
+  assert(duplicate.created === false, "duplicate approve does not create duplicate");
+  assert(
+    duplicate.approval.snapshot.headline === "Happy Birthday Snapshot",
+    "approved snapshot stays frozen when approve is retried",
+  );
+  const approvalRows = await listSalonInvitationApprovals(approvalSalonId);
+  assert(approvalRows.length === 1, "approved record persists in store");
+
+  const paused = await pauseSalonInvitationApproval(approvalSalonId, {
+    clientName: "Maria Lopez",
+    opportunityId: "opp-pcn-maria",
+    opportunityType: "PCN",
+    sourceCopyId: "copy-pcn-v1",
+    sourceTemplateId: "nails-private-client-network",
+    snapshot: { ...approvalSnapshot, templateName: "Private Client Network", status: "published", version: 2 },
+    reasonText: "PCN invite candidate",
+    estimatedValue: 120,
+    status: "paused",
+  });
+  assert(!("error" in paused), "pause creates paused approval record");
+  const pausedRows = await listSalonInvitationApprovals(approvalSalonId).then((rows) =>
+    rows.filter((row) => row.status === "paused"),
+  );
+  assert(pausedRows.length === 1, "paused record appears in store");
+
+  const approvalsRoute = fs.readFileSync(
+    path.join(process.cwd(), "app/api/vmb/salon-invitation-approvals/route.ts"),
+    "utf8",
+  );
+  assert(approvalsRoute.includes("salon-invitation-approvals"), "approval API route exists");
+
+  const invitesClientSource2 = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/VmbInvitesClient.tsx"),
+    "utf8",
+  );
+  assert(invitesClientSource2.includes('"approved"'), "invites client exposes Approved tab");
+  assert(invitesClientSource2.includes("ApprovedInvitationsSection"), "invites client renders approved section");
+  assert(
+    invitesClientSource2.includes("salon-invitation-approvals"),
+    "invites client loads approval records",
+  );
 
   if (process.env.DATABASE_URL?.trim()) {
     const sample = { ...DEFAULT_NAIL_INVITE_TEMPLATES[0]! };

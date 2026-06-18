@@ -91,6 +91,13 @@ function run(): void {
   const publishRoute = read("app/api/vmb/invite-library/publish/route.ts");
   assert(publishRoute.includes("backend"), "publish API returns backend diagnostic");
 
+  const approvalsStore = read("lib/vmb/invites/salon-invitation-approval-store.ts");
+  assert(approvalsStore.includes("getVmbSalonInvitationApprovalsFile"), "approval store uses json fallback path helper");
+
+  const invitesClientApprovals = read("components/vmb/VmbInvitesClient.tsx");
+  assert(invitesClientApprovals.includes("Approved"), "invites client shows Approved tab");
+  assert(invitesClientApprovals.includes("/api/vmb/salon-invitation-approvals"), "invites client uses approval API");
+
   const useInviteDrafts = read("components/vmb/dashboard/useInviteDrafts.ts");
   assert(
     !useInviteDrafts.includes("/api/vmb/invite-drafts/build"),
