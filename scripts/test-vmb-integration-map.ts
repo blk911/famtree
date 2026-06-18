@@ -100,7 +100,8 @@ async function run(): Promise<void> {
   assert(invitesHandoff.includes("/vmb/invites"), "dashboard handoff targets invites");
   assert(invitesHandoff.includes("section=new_client_welcome"), "dashboard handoff section");
 
-  assert(VMB_SALON_NAV.some((n) => n.href === "/vmb/invites"), "invites in salon nav");
+  assert(VMB_SALON_NAV.some((n) => n.href === "/vmb/invites" && n.label === "Invitations"), "invitations in salon nav");
+  assert(!VMB_SALON_NAV.some((n) => n.href === "/vmb/offers"), "offers not in primary salon nav");
   assert(!VMB_SALON_NAV.some((n) => n.href.includes("/admin")), "no admin in salon nav");
   assert(VMB_BOOK_LOAD_ROUTE === "/vmb/start", "book load route wired to start flow");
   assert(VMB_BOOK_LOAD_LABEL.length > 0, "book load label defined");

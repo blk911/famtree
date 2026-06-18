@@ -85,11 +85,17 @@ function run(): void {
   assert(nextConfig.includes('"/vmb/today"'), "dashboard redirect targets today");
 
   assert(VMB_SALON_NAV.some((item) => item.href === "/vmb/today"), "nav home is Today");
-  assert(VMB_SALON_NAV.some((item) => item.href === "/vmb/queue"), "nav includes queue");
-  assert(VMB_SALON_NAV.some((item) => item.href === "/vmb/invites"), "nav includes invites");
+  assert(
+    VMB_SALON_NAV.some((item) => item.href === "/vmb/invites" && item.label === "Invitations"),
+    "nav includes invitations",
+  );
+  assert(!VMB_SALON_NAV.some((item) => item.href === "/vmb/queue"), "nav hides queue");
+  assert(!VMB_SALON_NAV.some((item) => item.href === "/vmb/offers"), "nav hides offers");
+  assert(!VMB_SALON_NAV.some((item) => item.href === "/vmb/campaigns"), "nav hides campaigns");
+  assert(!VMB_SALON_NAV.some((item) => item.href === "/vmb/opportunities"), "nav hides opportunities");
 
   const analysisId = "analysis-test-id";
-  for (const route of ["/vmb/today", "/vmb/queue", "/vmb/campaigns", "/vmb/opportunities"]) {
+  for (const route of ["/vmb/today", "/vmb/invites"]) {
     assert(VMB_ANALYSIS_ROUTES.has(route), `${route} preserves analysis param`);
     const href = buildVmbSalonNavHref(
       VMB_SALON_NAV.find((item) => item.href === route)!,

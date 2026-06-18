@@ -10,10 +10,11 @@ type Props = {
   draft: VmbInviteDraft;
   salonName?: string;
   onClose: () => void;
-  onSave: (message: string) => void;
-  onApprove: (message: string) => void;
-  onSkip: () => void;
+  onSave?: (message: string) => void;
+  onApprove?: (message: string) => void;
+  onSkip?: () => void;
   saving?: boolean;
+  previewOnly?: boolean;
 };
 
 export function InviteDraftPreviewModal({
@@ -24,6 +25,7 @@ export function InviteDraftPreviewModal({
   onApprove,
   onSkip,
   saving = false,
+  previewOnly = false,
 }: Props) {
   const [message, setMessage] = useState(draft.editableMessage);
   const categoryLabel = INVITE_SECTION_LABELS[draft.inviteCategory] ?? draft.inviteCategory;
@@ -89,11 +91,12 @@ export function InviteDraftPreviewModal({
         <LockedRow label="Subject" value={draft.subject} />
 
         <label style={{ display: "block", marginBottom: 6, fontSize: 13, color: VMB_THEME.muted }}>
-          Message (editable)
+          Message{previewOnly ? "" : " (editable)"}
         </label>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          readOnly={previewOnly}
           rows={9}
           style={{
             width: "100%",
@@ -124,11 +127,17 @@ export function InviteDraftPreviewModal({
           {footer}
         </pre>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-          <ModalButton label="Save" variant="secondary" disabled={saving} onClick={() => onSave(message)} />
-          <ModalButton label="Approve" disabled={saving} onClick={() => onApprove(message)} />
-          <ModalButton label="Skip" variant="secondary" disabled={saving} onClick={onSkip} />
-        </div>
+        {previewOnly ? (
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <ModalButton label="Close" variant="secondary" onClick={onClose} />
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            <ModalButton label="Save" variant="secondary" disabled={saving} onClick={() => onSave?.(message)} />
+            <ModalButton label="Approve" disabled={saving} onClick={() => onApprove?.(message)} />
+            <ModalButton label="Skip" variant="secondary" disabled={saving} onClick={() => onSkip?.()} />
+          </div>
+        )}
       </div>
     </div>
   );

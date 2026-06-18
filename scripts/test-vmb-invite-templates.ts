@@ -502,6 +502,21 @@ async function run(): Promise<void> {
   assert(salonCopy.publishedVersion === 1, "salon copy tracks published version");
   assert(salonCopy.snapshot.headline === "Happy Birthday", "salon copy snapshot is independent payload");
 
+  const salonNavSource = fs.readFileSync(path.join(process.cwd(), "lib/vmb/salon-nav.ts"), "utf8");
+  assert(salonNavSource.includes('label: "Invitations"'), "salon nav labels invitations");
+  assert(!salonNavSource.includes('label: "Offers"'), "salon nav removes offers");
+  assert(!salonNavSource.includes('label: "Queue"'), "salon nav removes queue");
+
+  const invitesClientSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/VmbInvitesClient.tsx"),
+    "utf8",
+  );
+  assert(invitesClientSource.includes("My Invitations"), "invitations page title");
+  assert(invitesClientSource.includes("/api/vmb/salon-invites"), "invitations loads published copies");
+  assert(invitesClientSource.includes("SalonInvitationPreviewModal"), "invitations previews via salon card");
+  assert(invitesClientSource.includes("previewOnly"), "invitations draft preview is read-only");
+  assert(invitesClientSource.includes("No invitations have been published to your salon yet"), "invitations empty state");
+
   const routesSource = fs.readFileSync(
     path.join(process.cwd(), "lib/vmb/admin/nail-template-routes.ts"),
     "utf8",

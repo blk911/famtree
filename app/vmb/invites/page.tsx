@@ -6,7 +6,7 @@ import { VmbPageLoading } from "@/components/vmb/VmbPageFrame";
 import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
 
 export const metadata: Metadata = {
-  title: "Invites",
+  title: "Invitations",
 };
 
 type Props = {
@@ -22,8 +22,8 @@ export default async function VmbInvitesPage({ searchParams }: Props) {
       <Suspense fallback={<VmbPageLoading label="Loading invite draft…" />}>
         <VmbTaikosDraftWorkspace
           workspace="invites"
-          eyebrow="Invites"
-          title="Invite drafts"
+          eyebrow="Invitations"
+          title="Invitation drafts"
           subtitle="Saved PCN invites and referral asks from tAIkOS."
         />
       </Suspense>

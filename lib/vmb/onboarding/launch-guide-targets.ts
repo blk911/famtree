@@ -284,6 +284,6 @@ export function performLaunchGuideCta(target: LaunchGuideTarget): LaunchGuideCta
 
 export function launchGuideTargetForNavId(navId: string): LaunchGuideTarget | undefined {
   if (navId === "home") return "nav-today";
-  if (navId === "queue") return "queue-nav";
+  if (navId === "invitations") return "queue-nav";
   return undefined;
 }
