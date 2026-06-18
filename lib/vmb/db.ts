@@ -149,6 +149,19 @@ const DDL_STATEMENTS: string[] = [
   )`,
   `CREATE INDEX IF NOT EXISTS vmb_invite_template_category_id
     ON vmb_invite_template (category_id)`,
+  `CREATE TABLE IF NOT EXISTS vmb_salon_invite_copy (
+    id text PRIMARY KEY,
+    salon_id text NOT NULL,
+    source_template_id text NOT NULL,
+    published_version integer NOT NULL DEFAULT 1,
+    payload jsonb NOT NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS vmb_salon_invite_copy_salon_id
+    ON vmb_salon_invite_copy (salon_id)`,
+  `CREATE INDEX IF NOT EXISTS vmb_salon_invite_copy_salon_source
+    ON vmb_salon_invite_copy (salon_id, source_template_id)`,
 ];
 
 const MIGRATION_STATEMENTS: string[] = [

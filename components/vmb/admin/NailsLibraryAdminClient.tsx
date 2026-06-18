@@ -12,6 +12,7 @@ import {
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
+import type { SalonInviteCopyBackend } from "@/lib/vmb/invites/salon-invite-local-copy-store";
 import {
   formatSnapshotStatus,
   formatSnapshotUpdatedAt,
@@ -22,6 +23,12 @@ type Props = {
   salonName: string;
   ownerName?: string;
   initialTemplateId?: string;
+};
+
+type PublishVerification = {
+  copy: SalonInviteLocalCopy;
+  backend: SalonInviteCopyBackend;
+  salonId: string;
 };
 
 export function NailsLibraryAdminClient({
@@ -36,7 +43,7 @@ export function NailsLibraryAdminClient({
   );
   const [reviewOpen, setReviewOpen] = useState(false);
   const [publishStatus, setPublishStatus] = useState<string | null>(null);
-  const [publishVerification, setPublishVerification] = useState<SalonInviteLocalCopy | null>(null);
+  const [publishVerification, setPublishVerification] = useState<PublishVerification | null>(null);
   const [publishBusy, setPublishBusy] = useState(false);
 
   const savedDrafts = useMemo(() => drafts.filter((row) => row.saved), [drafts]);
@@ -76,11 +83,20 @@ export function NailsLibraryAdminClient({
       ok?: boolean;
       error?: string;
       copy?: SalonInviteLocalCopy;
+      backend?: SalonInviteCopyBackend;
+      salonId?: string;
+      copyId?: string;
+      sourceTemplateId?: string;
+      publishedVersion?: number;
     };
     setPublishBusy(false);
-    if (data.ok && data.copy) {
-      setPublishVerification(data.copy);
-      setPublishStatus("Published to salon inventory.");
+    if (data.ok && data.copy && data.backend && data.salonId) {
+      setPublishVerification({
+        copy: data.copy,
+        backend: data.backend,
+        salonId: data.salonId,
+      });
+      setPublishStatus(`Published to salon inventory — v${data.copy.publishedVersion}`);
     } else {
       setPublishStatus(data.error ?? "Publish failed.");
     }
@@ -189,22 +205,26 @@ export function NailsLibraryAdminClient({
                   <p className="vmb-nails-library__publish-verify-title">Publish verification</p>
                   <dl>
                     <div>
-                      <dt>Target salon</dt>
+                      <dt>Salon</dt>
                       <dd>
                         {salonName || publishVerification.salonId} ({publishVerification.salonId})
                       </dd>
                     </div>
                     <div>
-                      <dt>Salon copy ID</dt>
-                      <dd>{publishVerification.id}</dd>
+                      <dt>Copy</dt>
+                      <dd>{publishVerification.copy.id}</dd>
                     </div>
                     <div>
                       <dt>Source template</dt>
-                      <dd>{publishVerification.sourceTemplateId}</dd>
+                      <dd>{publishVerification.copy.sourceTemplateId}</dd>
                     </div>
                     <div>
                       <dt>Published version</dt>
-                      <dd>v{publishVerification.publishedVersion}</dd>
+                      <dd>v{publishVerification.copy.publishedVersion}</dd>
+                    </div>
+                    <div>
+                      <dt>Backend</dt>
+                      <dd>{publishVerification.backend}</dd>
                     </div>
                   </dl>
                 </div>

@@ -77,6 +77,14 @@ function run(): void {
 
   const publishStore = read("lib/vmb/invites/salon-invite-local-copy-store.ts");
   assert(publishStore.includes("normalizeSourceTemplateId"), "publish dedupes by normalized template keys");
+  assert(
+    !publishStore.includes("SALON_INVITE_COPY_POSTGRES_REQUIRED"),
+    "publish store does not hard-require postgres in local/dev",
+  );
+  assert(publishStore.includes("resolveVmbStorageBackend"), "publish store resolves json/postgres backend");
+
+  const publishRoute = read("app/api/vmb/invite-library/publish/route.ts");
+  assert(publishRoute.includes("backend"), "publish API returns backend diagnostic");
 
   const useInviteDrafts = read("components/vmb/dashboard/useInviteDrafts.ts");
   assert(

@@ -470,6 +470,15 @@ async function run(): Promise<void> {
   );
   assert(publishStore.includes("publishLibraryTemplateToSalon"), "publish store persists salon copies");
   assert(
+    !publishStore.includes("SALON_INVITE_COPY_POSTGRES_REQUIRED"),
+    "salon invite copy store does not hard-fail with postgres-only error",
+  );
+  assert(publishStore.includes("resolveVmbStorageBackend"), "salon invite copy store resolves storage backend");
+  assert(
+    fs.existsSync(path.join(process.cwd(), "lib/vmb/invites/salon-invite-local-copy-store-postgres.ts")),
+    "salon invite copy postgres adapter exists",
+  );
+  assert(
     fs.existsSync(path.join(process.cwd(), "app/api/vmb/invite-library/publish/route.ts")),
     "invite library publish API route exists",
   );
@@ -670,6 +679,78 @@ async function run(): Promise<void> {
     toggleOfferIdSelection([], "offer-perk-priority-booking").includes("offer-perk-priority-booking"),
     "toggle adds offer perk id",
   );
+
+  const publishRoute = fs.readFileSync(
+    path.join(process.cwd(), "app/api/vmb/invite-library/publish/route.ts"),
+    "utf8",
+  );
+  assert(publishRoute.includes("backend"), "publish API returns backend diagnostic");
+  assert(publishRoute.includes("copyId"), "publish API returns copyId diagnostic");
+
+  const libraryClient = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/NailsLibraryAdminClient.tsx"),
+    "utf8",
+  );
+  assert(libraryClient.includes("Published to salon inventory — v"), "library shows published version status");
+  assert(libraryClient.includes("Backend"), "library publish verification shows backend");
+
+  const { resetVmbStorageBackendCache } = await import("../lib/vmb/db");
+  const { upsertOffer } = await import("../lib/vmb/offers/offer-store");
+  const {
+    listSalonInviteLocalCopies,
+    publishLibraryTemplateToSalon,
+  } = await import("../lib/vmb/invites/salon-invite-local-copy-store");
+
+  const salonId = `invite-copy-test-${Date.now()}`;
+  const templateId = "nails-private-client-network";
+  const pcnDraft = {
+    templateId,
+    displayName: "Private Client Network",
+    headline: "Join my network",
+    body: "Exclusive access for you",
+    ctaLabel: "Join now",
+    serviceIds: ["default-nails-gel-manicure"],
+    serviceOptionIds: [],
+    active: true,
+    saved: true,
+    offerCategory: "pcn" as const,
+  };
+  const pcnSnapshot = buildDraftInviteSnapshot(pcnDraft, {
+    ownerName: "Alex",
+    salonName: "Glow Nails",
+  });
+  const pcnOffer = nailTemplateDraftToOffer(pcnDraft, salonId, {
+    ...pcnSnapshot,
+    status: "library",
+    version: 3,
+  });
+  const offerSaved = await upsertOffer(salonId, pcnOffer);
+  assert(!("error" in offerSaved), "library offer saved before publish");
+
+  resetVmbStorageBackendCache();
+  const published = await publishLibraryTemplateToSalon(salonId, templateId);
+  assert(
+    !("error" in published),
+    `publish creates salon invite copy (${"error" in published ? published.error : "ok"})`,
+  );
+  if (!("error" in published)) {
+    assert(published.copy.salonId === salonId, "publish uses target salonId");
+    assert(
+      published.copy.sourceTemplateId === templateId,
+      "publish stores sourceTemplateId on salon copy",
+    );
+    assert(
+      published.backend === "json" || published.backend === "postgres",
+      "publish reports storage backend",
+    );
+
+    const listed = await listSalonInviteLocalCopies(salonId);
+    assert(
+      listed.some((row) => row.id === published.copy.id),
+      "listSalonInviteLocalCopies reads published copy from same backend",
+    );
+    assert(listed[0]!.publishedVersion === published.copy.publishedVersion, "listed copy version matches publish");
+  }
 
   if (process.env.DATABASE_URL?.trim()) {
     const sample = { ...DEFAULT_NAIL_INVITE_TEMPLATES[0]! };
