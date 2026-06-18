@@ -15,7 +15,6 @@ import {
   formatSnapshotStatus,
   formatSnapshotUpdatedAt,
 } from "@/lib/vmb/invites/invite-template-snapshot";
-import { createSalonLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 
 type Props = {
   salonId?: string;
@@ -36,6 +35,7 @@ export function NailsLibraryAdminClient({
   );
   const [reviewOpen, setReviewOpen] = useState(false);
   const [publishStatus, setPublishStatus] = useState<string | null>(null);
+  const [publishBusy, setPublishBusy] = useState(false);
 
   const savedDrafts = useMemo(() => drafts.filter((row) => row.saved), [drafts]);
 
@@ -55,12 +55,28 @@ export function NailsLibraryAdminClient({
     [ownerName, salonName],
   );
 
-  function handlePublishToSalons() {
-    if (!librarySnapshot || !salonId) return;
-    const copy = createSalonLocalCopy(librarySnapshot, salonId);
-    setPublishStatus(
-      `Prepared salon-local copy v${copy.publishedVersion} (${copy.id}). Persistence ships in a later phase.`,
-    );
+  async function handlePublishToSalons() {
+    if (!librarySnapshot || !salonId || !selected) return;
+    setPublishBusy(true);
+    setPublishStatus(null);
+    const res = await fetch("/api/vmb/invite-library/publish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ templateId: selected.templateId }),
+    });
+    const data = (await res.json()) as {
+      ok?: boolean;
+      error?: string;
+      copy?: { id: string; publishedVersion: number };
+    };
+    setPublishBusy(false);
+    if (data.ok && data.copy) {
+      setPublishStatus(
+        `Published to salon inventory — v${data.copy.publishedVersion} (${data.copy.id}).`,
+      );
+    } else {
+      setPublishStatus(data.error ?? "Publish failed.");
+    }
   }
 
   if (!salonId) {
@@ -155,9 +171,10 @@ export function NailsLibraryAdminClient({
                 <button
                   type="button"
                   className="taikos-opp-card__cta taikos-opp-card__cta--ghost"
-                  onClick={handlePublishToSalons}
+                  disabled={publishBusy}
+                  onClick={() => void handlePublishToSalons()}
                 >
-                  Publish To Salons
+                  {publishBusy ? "Publishing…" : "Publish To Salons"}
                 </button>
               </div>
               {publishStatus ? <p className="vmb-admin-builder-grid__status">{publishStatus}</p> : null}

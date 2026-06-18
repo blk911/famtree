@@ -13,7 +13,7 @@ export type SalonInviteLocalCopy = {
 
 /**
  * Creates an independent salon-local copy from a master library snapshot.
- * Placeholder — persistence and salon rollout ship in a later phase.
+ * Persist via publishLibraryTemplateToSalon in salon-invite-local-copy-store.
  */
 export function createSalonLocalCopy(
   snapshot: InviteTemplateSnapshot,

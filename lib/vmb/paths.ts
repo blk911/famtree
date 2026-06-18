@@ -83,6 +83,10 @@ export function getVmbInviteTemplatesFile(): string {
   return path.join(getVmbDataDir(), "invite-templates.json");
 }
 
+export function getVmbSalonInviteCopiesFile(): string {
+  return path.join(getVmbDataDir(), "salon-invite-copies.json");
+}
+
 /** Legacy file-upload imports (admin engine path) — kept separate from book paste flow. */
 export function getVmbTrialImportsDir(): string {
   return path.join(getVmbDataDir(), "trial-imports");

@@ -452,6 +452,20 @@ async function run(): Promise<void> {
   );
   assert(publishModule.includes("createSalonLocalCopy"), "publish service creates salon local copy");
 
+  const publishStore = fs.readFileSync(
+    path.join(process.cwd(), "lib/vmb/invites/salon-invite-local-copy-store.ts"),
+    "utf8",
+  );
+  assert(publishStore.includes("publishLibraryTemplateToSalon"), "publish store persists salon copies");
+  assert(
+    fs.existsSync(path.join(process.cwd(), "app/api/vmb/invite-library/publish/route.ts")),
+    "invite library publish API route exists",
+  );
+  assert(
+    fs.existsSync(path.join(process.cwd(), "app/api/vmb/salon-invites/route.ts")),
+    "salon invites list API route exists",
+  );
+
   const { buildDraftInviteSnapshot } = await import("../lib/vmb/admin/nail-template-library");
   const { createSalonLocalCopy } = await import("../lib/vmb/invites/publish-template-to-salons");
 
