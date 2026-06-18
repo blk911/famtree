@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
+import { BookLoadedStatusNote } from "@/components/vmb/BookLoadedStatusNote";
 import { VmbOperatingDashboard } from "@/components/vmb/dashboard/VmbOperatingDashboard";
 import { VmbPageEmpty, VmbPageFrame, VmbPageLoading } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
@@ -207,6 +208,10 @@ export function VmbDashboardClient({ analysisId }: Props) {
           }}
         />
       ) : null}
+      <BookLoadedStatusNote
+        loadedAt={analysis.generatedAt}
+        clientCount={analysis.recordCount}
+      />
       <VmbOperatingDashboard analysis={analysis} />
     </>
   );

@@ -275,6 +275,11 @@ export function VmbStartFlow({ refreshMode = false, activeBook = null }: Props) 
         form.append("providerPlatform", provider);
         form.append("file", uploadFile);
         if (bookText.trim()) form.append("inputText", bookText);
+        if (isRefreshMode || replaceBook) {
+          form.append("reprocess", "true");
+          form.append("replaceBook", "true");
+        }
+        if (isRefreshMode) form.append("refreshMode", "true");
         analyzeRes = await fetch("/api/vmb/analyze-book", {
           method: "POST",
           credentials: "include",
@@ -291,6 +296,9 @@ export function VmbStartFlow({ refreshMode = false, activeBook = null }: Props) 
             providerPlatform: provider,
             inputText: bookText,
             sourceType: usingSample || bookText === VMB_SAMPLE_BOOK_TEXT ? "sample" : "paste",
+            reprocess: isRefreshMode || replaceBook,
+            replaceBook: isRefreshMode || replaceBook,
+            refreshMode: isRefreshMode,
           }),
         });
       }

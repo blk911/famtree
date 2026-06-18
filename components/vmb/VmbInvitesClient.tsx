@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftPreviewModal";
+import { BookLoadedStatusNote } from "@/components/vmb/BookLoadedStatusNote";
 import { SalonInvitationPreviewModal } from "@/components/vmb/salon/SalonInvitationPreviewModal";
 import { SuggestedInvitationCard } from "@/components/vmb/salon/SuggestedInvitationCard";
 import { SortableListHeader } from "@/components/vmb/SortableListHeader";
@@ -378,6 +379,13 @@ export function VmbInvitesClient({
 
       {draftError && tab !== "suggested" ? (
         <p style={{ margin: "0 0 16px", fontSize: 14, color: "#b91c1c" }}>{draftError}</p>
+      ) : null}
+
+      {tab === "suggested" && analysis ? (
+        <BookLoadedStatusNote
+          loadedAt={analysis.generatedAt}
+          clientCount={analysis.recordCount}
+        />
       ) : null}
 
       {loading ? (

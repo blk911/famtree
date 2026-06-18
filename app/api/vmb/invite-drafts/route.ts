@@ -1,8 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { ensureInviteDraftsForAnalysis } from "@/lib/vmb/invite-drafts/invite-draft-store";
-import { mapInviteDraftStoreErrorForApi } from "@/lib/vmb/invite-drafts/invite-draft-storage-errors";
+import { listInviteDraftsForTrialAnalysis } from "@/lib/vmb/invite-drafts/invite-draft-store";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 
 export async function GET(req: NextRequest) {
@@ -16,14 +15,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "analysisId is required" }, { status: 400 });
   }
 
-  const result = await ensureInviteDraftsForAnalysis(trialId, analysisId);
-  if ("error" in result) {
-    const mapped = mapInviteDraftStoreErrorForApi(result.error);
-    return NextResponse.json(
-      { ok: false, error: mapped.error, message: mapped.message, data: [] },
-      { status: mapped.status },
-    );
-  }
-
-  return NextResponse.json({ ok: true, data: result.drafts });
+  const drafts = await listInviteDraftsForTrialAnalysis(trialId, analysisId);
+  return NextResponse.json({ ok: true, data: drafts });
 }

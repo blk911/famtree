@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeSalonBackOfficeUpload } from "@/lib/intelligence/salon/backoffice/analyze-import";
 import { resolveActiveBook } from "@/lib/vmb/active-book-resolver";
+import { shouldRunBookIngest, type BookIngestRequestIntent } from "@/lib/vmb/book-ingest-policy";
 import { getVmbBookAnalysis, getVmbBookAnalysisForTrial } from "@/lib/vmb/book-analysis/analysis-store";
 import { bridgeGgenImportToVmbAnalysis } from "@/lib/vmb/ggen-conversion-bridge";
 import { resolveTrialIdFromRequest } from "@/lib/vmb/resolve-trial-from-request";
@@ -55,6 +56,24 @@ export async function GET(req: NextRequest) {
   return res;
 }
 
+function parseIngestIntent(raw: Record<string, FormDataEntryValue | unknown>): BookIngestRequestIntent {
+  const truthy = (value: unknown) =>
+    value === true || value === "true" || value === "1" || value === 1;
+  return {
+    reprocess: truthy(raw.reprocess),
+    refreshMode: truthy(raw.refreshMode),
+    replaceBook: truthy(raw.replaceBook),
+  };
+}
+
+function formRecord(form: FormData): Record<string, FormDataEntryValue> {
+  const record: Record<string, FormDataEntryValue> = {};
+  form.forEach((value, key) => {
+    record[key] = value;
+  });
+  return record;
+}
+
 async function extractAnalyzeInput(req: NextRequest): Promise<
   | {
       trialId?: string;
@@ -64,6 +83,7 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
       sourceType: "paste" | "csv_upload" | "sample";
       fileName?: string;
       fileBuffer?: Buffer;
+      ingestIntent: BookIngestRequestIntent;
     }
   | { error: string }
 > {
@@ -71,6 +91,7 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
 
   if (contentType.includes("multipart/form-data")) {
     const form = await req.formData();
+    const ingestIntent = parseIngestIntent(formRecord(form));
     const file = form.get("file");
     const trialId = String(form.get("trialId") ?? "").trim() || undefined;
     const salonName = String(form.get("salonName") ?? "").trim() || undefined;
@@ -89,6 +110,7 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
         sourceType: "csv_upload",
         fileName: file.name,
         fileBuffer: buffer,
+        ingestIntent,
       };
     }
 
@@ -99,6 +121,7 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
         providerPlatform,
         rawText: inputText,
         sourceType: "paste",
+        ingestIntent,
       };
     }
 
@@ -106,6 +129,7 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
   }
 
   const body = (await req.json()) as Record<string, unknown>;
+  const ingestIntent = parseIngestIntent(body);
   const trialId = String(body.trialId ?? "").trim() || undefined;
   const salonName = String(body.salonName ?? "").trim() || undefined;
   const providerPlatform = normalizePlatform(body.providerPlatform);
@@ -125,6 +149,7 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
       sourceType: "csv_upload",
       fileName,
       fileBuffer: buffer,
+      ingestIntent,
     };
   }
 
@@ -139,6 +164,7 @@ async function extractAnalyzeInput(req: NextRequest): Promise<
     rawText: inputText,
     sourceType: body.sourceType === "sample" ? "sample" : "paste",
     fileName: body.fileName ? fileName : undefined,
+    ingestIntent,
   };
 }
 
@@ -204,6 +230,27 @@ export async function POST(req: NextRequest) {
         { ok: false, error: "trialId does not match current trial session" },
         { status: 403 },
       );
+    }
+
+    const [workspace, activeBook] = await Promise.all([
+      getWorkspaceForTrial(trialId),
+      resolveActiveBook(trialId),
+    ]);
+
+    if (!shouldRunBookIngest({ workspace, activeBook }, extracted.ingestIntent)) {
+      const existing = activeBook.analysis;
+      if (existing) {
+        const res = NextResponse.json({
+          ok: true,
+          data: {
+            analysis: existing,
+            alreadyLoaded: true,
+            skippedIngest: true,
+          },
+        });
+        applyVmbTrialCookie(res, trialId);
+        return res;
+      }
     }
 
     const outcome = await runVmbBookAnalysis({

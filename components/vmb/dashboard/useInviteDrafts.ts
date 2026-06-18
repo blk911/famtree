@@ -44,25 +44,7 @@ export function useInviteDrafts({ analysis, isDemo = false }: Options) {
         return;
       }
 
-      const buildRes = await fetch("/api/vmb/invite-drafts/build", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ analysisId: analysis.analysisId }),
-      });
-      const buildJson = (await buildRes.json()) as {
-        ok: boolean;
-        data?: VmbInviteDraft[];
-        error?: string;
-      };
-
-      if (!buildRes.ok || !buildJson.ok || !buildJson.data) {
-        setError(friendlyInviteDraftError(buildJson.error));
-        setDrafts([]);
-        return;
-      }
-
-      setDrafts(buildJson.data);
+      setDrafts([]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load invite drafts");
       setDrafts([]);
