@@ -6330,6 +6330,35 @@
   font-variant-numeric: tabular-nums;
 }
 
+.vmb-service-preset-card__participating {
+  margin-bottom: 14px;
+}
+
+.vmb-service-preset-card__participating-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.vmb-service-preset-card__invite-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  border: 1px solid #e7e5e4;
+  background: center / cover no-repeat #fafaf9;
+  flex-shrink: 0;
+}
+
+.vmb-service-preset-card__participating-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+  color: #44403c;
+}
+
 .vmb-service-preset-card__configure {
   display: flex;
   flex-wrap: wrap;

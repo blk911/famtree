@@ -51,6 +51,14 @@ import {
   nailTemplateDraftToOffer,
   templateStorageId,
 } from "../lib/vmb/admin/nail-template-library";
+import {
+  buildServiceTemplateParticipation,
+  participatingTemplatesForService,
+} from "../lib/vmb/invites/service-template-participation";
+import {
+  buildSuggestedInvitationsFromOpportunities,
+  opportunityReasonHeadline,
+} from "../lib/vmb/invites/suggested-invitation-workflow";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -513,9 +521,74 @@ async function run(): Promise<void> {
   );
   assert(invitesClientSource.includes("My Invitations"), "invitations page title");
   assert(invitesClientSource.includes("/api/vmb/salon-invites"), "invitations loads published copies");
+  assert(invitesClientSource.includes("/api/taikos/opportunities"), "invitations loads opportunity intelligence");
+  assert(invitesClientSource.includes("SuggestedInvitationCard"), "invitations suggested tab uses workflow cards");
+  assert(invitesClientSource.includes("What should I send today?"), "invitations suggested subtitle");
   assert(invitesClientSource.includes("SalonInvitationPreviewModal"), "invitations previews via salon card");
   assert(invitesClientSource.includes("previewOnly"), "invitations draft preview is read-only");
-  assert(invitesClientSource.includes("No invitations have been published to your salon yet"), "invitations empty state");
+  assert(
+    invitesClientSource.includes("No suggested invitations yet"),
+    "invitations suggested empty state",
+  );
+
+  const servicesClientSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/salon/SalonServicesClient.tsx"),
+    "utf8",
+  );
+  assert(servicesClientSource.includes("participatingTemplates"), "services page shows participating templates");
+  assert(servicesClientSource.includes("buildServiceTemplateParticipation"), "services page maps template participation");
+
+  const birthdayOpportunity = {
+    opportunityId: "opp-birthday-grace",
+    title: "Birthday celebration",
+    category: "Birthday" as const,
+    estimatedValue: 85,
+    confidence: 0.9,
+    recommendation: "Grace Garcia has a birthday this month and loves gel manicures.",
+    suggestedAction: "CREATE_INVITE_DRAFT" as const,
+    priority: "High" as const,
+    score: 92,
+  };
+  assert(
+    opportunityReasonHeadline(birthdayOpportunity) === "Birthday this month",
+    "birthday opportunity reason headline",
+  );
+
+  const reactivationOpportunity = {
+    ...birthdayOpportunity,
+    opportunityId: "opp-reactivation-whitney",
+    category: "Reactivation" as const,
+    recommendation: "Whitney Scott has not returned in 75 days.",
+  };
+  assert(
+    opportunityReasonHeadline(reactivationOpportunity) === "Inactive 75 days",
+    "reactivation opportunity reason headline",
+  );
+
+  const participationCopy = createSalonLocalCopy(
+    {
+      ...savedOffer.inviteSnapshot!,
+      serviceIds: ["default-nails-gel-manicure"],
+      rewardIds: ["addon-chrome", "addon-french"],
+    },
+    "salon-123",
+  );
+  const participation = buildServiceTemplateParticipation([participationCopy]);
+  assert(
+    participatingTemplatesForService(participation, "default-nails-gel-manicure").length === 1,
+    "service participation maps published templates",
+  );
+
+  const suggested = buildSuggestedInvitationsFromOpportunities(
+    [birthdayOpportunity],
+    [participationCopy],
+    { drafts: [] },
+  );
+  assert(suggested.length === 1, "suggested invitations built from opportunities");
+  assert(suggested[0]!.clientName === "Grace Garcia", "suggested invitation extracts client name");
+  assert(suggested[0]!.templateName === "Birthday Celebration", "suggested invitation matches published template");
+  assert(suggested[0]!.services.includes("Gel Manicure"), "suggested invitation lists services from snapshot");
+  assert(suggested[0]!.rewards.includes("Chrome Upgrade"), "suggested invitation lists rewards from snapshot");
 
   const routesSource = fs.readFileSync(
     path.join(process.cwd(), "lib/vmb/admin/nail-template-routes.ts"),

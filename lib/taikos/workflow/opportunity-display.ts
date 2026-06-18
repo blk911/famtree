@@ -16,6 +16,9 @@ export function clientNameFromOpportunity(opportunity: TaikosOpportunity): strin
   const singleMatch = rec.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+is\s+a\b/);
   if (singleMatch) return singleMatch[1];
 
+  const hasMatch = rec.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+has\b/);
+  if (hasMatch) return hasMatch[1];
+
   const pairMatch = rec.match(/^([A-Z][a-z]+)\s+and\s+([A-Z][a-z]+)\b/);
   if (pairMatch) return `${pairMatch[1]} & ${pairMatch[2]}`;
 

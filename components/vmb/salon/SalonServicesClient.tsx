@@ -1,12 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { ServicePresetCard } from "@/components/vmb/services/ServicePresetCard";
 import { getServiceCategoryLabel } from "@/lib/vmb/services/canonical-service-catalog";
 import type { SalonServiceConfig, ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
 import { mergePresetsWithSalonConfigs } from "@/lib/vmb/services/merge-salon-service-offers";
-import type { SalonFacingServiceOffer, ServicePresetCard as ServicePresetCardModel } from "@/lib/vmb/services/service-preset-types";
+import {
+  buildServiceTemplateParticipation,
+  participatingTemplatesForService,
+} from "@/lib/vmb/invites/service-template-participation";
+import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
+import type {
+  SalonFacingServiceOffer,
+  ServicePresetCard as ServicePresetCardModel,
+} from "@/lib/vmb/services/service-preset-types";
 
 type ServiceDraft = {
   priceCents: number;
@@ -29,6 +37,7 @@ export function SalonServicesClient({
   const [savingId, setSavingId] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, ServiceDraft>>({});
   const [configureOpenId, setConfigureOpenId] = useState<string | null>(null);
+  const [publishedCopies, setPublishedCopies] = useState<SalonInviteLocalCopy[]>([]);
 
   const syncDrafts = useCallback((items: SalonFacingServiceOffer[]) => {
     const next: Record<string, ServiceDraft> = {};
@@ -47,9 +56,10 @@ export function SalonServicesClient({
     setLoading(true);
     setError(null);
     try {
-      const [presetsRes, configsRes] = await Promise.all([
+      const [presetsRes, configsRes, invitesRes] = await Promise.all([
         fetch("/api/vmb/service-presets"),
         fetch("/api/vmb/salon-services?configs=1"),
+        fetch("/api/vmb/salon-invites", { cache: "no-store", credentials: "include" }),
       ]);
       if (!presetsRes.ok || !configsRes.ok) throw new Error("Could not load services");
       const presetsJson = (await presetsRes.json()) as {
@@ -64,6 +74,13 @@ export function SalonServicesClient({
       const merged = mergePresetsWithSalonConfigs(presetsJson.presets, configsJson.configs);
       setServices(merged);
       syncDrafts(merged);
+
+      if (invitesRes.ok) {
+        const invitesJson = (await invitesRes.json()) as { ok?: boolean; copies?: SalonInviteLocalCopy[] };
+        setPublishedCopies(invitesJson.ok && invitesJson.copies ? invitesJson.copies : []);
+      } else {
+        setPublishedCopies([]);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Load failed");
     } finally {
@@ -123,6 +140,11 @@ export function SalonServicesClient({
     ? getServiceCategoryLabel(categoryId as ServiceCategoryId)
     : null;
 
+  const templateParticipation = useMemo(
+    () => buildServiceTemplateParticipation(publishedCopies),
+    [publishedCopies],
+  );
+
   return (
     <VmbPageFrame
       title="Services"
@@ -158,6 +180,12 @@ export function SalonServicesClient({
                 if (!draft) return null;
                 const saving = savingId === svc.serviceOfferId;
                 const configureOpen = configureOpenId === svc.serviceOfferId;
+                const participation = participatingTemplatesForService(
+                  templateParticipation,
+                  svc.serviceOfferId,
+                );
+                const participatingNames = participation.map((row) => row.templateName);
+                const inviteThumbnailUrl = participation[0]?.snapshot?.serviceImageUrl;
                 return (
                   <li key={svc.serviceOfferId}>
                     <ServicePresetCard
@@ -170,6 +198,8 @@ export function SalonServicesClient({
                       enabled={draft.enabled}
                       saving={saving}
                       configureOpen={configureOpen}
+                      participatingTemplates={participatingNames}
+                      inviteThumbnailUrl={inviteThumbnailUrl}
                       addons={svc.addons.map((addon) => ({
                         id: addon.addonId,
                         label: addon.label,

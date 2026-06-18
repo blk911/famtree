@@ -32,6 +32,9 @@ export type ServicePresetCardProps = {
   onToggleActive?: () => void;
   onEditPreset?: () => void;
   onClaim?: () => void;
+  /** Salon-only: published invitation templates that include this service. */
+  participatingTemplates?: readonly string[];
+  inviteThumbnailUrl?: string;
 };
 
 function formatPrice(cents: number): string {
@@ -74,6 +77,8 @@ export function ServicePresetCard({
   onToggleActive,
   onEditPreset,
   onClaim,
+  participatingTemplates = [],
+  inviteThumbnailUrl,
 }: ServicePresetCardProps) {
   const [configureOpenInternal, setConfigureOpenInternal] = useState(false);
   const configureOpen = configureOpenProp ?? configureOpenInternal;
@@ -164,6 +169,26 @@ export function ServicePresetCard({
               );
             })}
           </ul>
+        </section>
+      ) : null}
+
+      {isSalon && participatingTemplates.length > 0 ? (
+        <section className="vmb-service-preset-card__participating" aria-label="Participating templates">
+          <p className="vmb-service-preset-card__section-label">Participates in</p>
+          <div className="vmb-service-preset-card__participating-row">
+            {inviteThumbnailUrl ? (
+              <div
+                className="vmb-service-preset-card__invite-thumb"
+                style={{ backgroundImage: `url(${inviteThumbnailUrl})` }}
+                aria-hidden
+              />
+            ) : null}
+            <ul className="vmb-service-preset-card__participating-list">
+              {participatingTemplates.map((name) => (
+                <li key={name}>{name}</li>
+              ))}
+            </ul>
+          </div>
         </section>
       ) : null}
 

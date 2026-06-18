@@ -1,0 +1,202 @@
+import { clientNameFromOpportunity } from "@/lib/taikos/workflow/opportunity-display";
+import type { TaikosOpportunity, TaikosOpportunityPriority } from "@/lib/taikos/opportunities/types";
+import type { VmbCardType } from "@/lib/vmb/cards/card-types";
+import { getInviteTemplateIdForCardType } from "@/lib/vmb/invite-templates/card-type-invite-template-map";
+import { getDefaultNailInviteTemplate } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
+import {
+  resolveSnapshotRewardLabels,
+  resolveSnapshotServiceLabels,
+  type InviteTemplateSnapshot,
+} from "@/lib/vmb/invites/invite-template-snapshot";
+import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
+import {
+  buildOpportunityIntelligence,
+  type OpportunityAnalysisContext,
+} from "@/lib/vmb/opportunities/opportunity-intelligence";
+import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
+
+export type SuggestedInvitationCategory =
+  | "PCN"
+  | "Birthday"
+  | "Referral"
+  | "VIP"
+  | "Refresh"
+  | "New Client"
+  | "Open Chair"
+  | "Reactivation";
+
+export type SuggestedInvitationRecommendation = {
+  id: string;
+  opportunityId: string;
+  clientName: string;
+  reasonHeadline: string;
+  categoryLabel: SuggestedInvitationCategory;
+  suggestedCardType: VmbCardType;
+  templateId: string;
+  templateName: string;
+  publishedCopy: SalonInviteLocalCopy | null;
+  snapshot: InviteTemplateSnapshot | null;
+  services: string[];
+  rewards: string[];
+  estimatedValue: number;
+  priority: TaikosOpportunityPriority;
+  draftId?: string;
+  draftStatus?: VmbInviteDraft["status"];
+};
+
+const CATEGORY_LABEL_BY_CARD_TYPE: Record<VmbCardType, SuggestedInvitationCategory> = {
+  pcn_invite: "PCN",
+  birthday_card: "Birthday",
+  referral_invite: "Referral",
+  vip_thank_you: "VIP",
+  refresh_card: "Refresh",
+  service_card: "New Client",
+  open_slot_fill: "Open Chair",
+  reactivation_card: "Reactivation",
+};
+
+const PRIORITY_RANK: Record<TaikosOpportunityPriority, number> = {
+  High: 0,
+  Medium: 1,
+  Low: 2,
+};
+
+function normalizeClientName(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+export function opportunityReasonHeadline(opportunity: TaikosOpportunity): string {
+  const rec = opportunity.recommendation.trim();
+  const lower = rec.toLowerCase();
+
+  if (opportunity.category === "Birthday" || lower.includes("birthday")) {
+    return "Birthday this month";
+  }
+
+  if (opportunity.category === "Reactivation" || lower.includes("has not returned") || lower.includes("lapsed")) {
+    const daysMatch = rec.match(/(\d+)\s*days?/i);
+    return daysMatch ? `Inactive ${daysMatch[1]} days` : "Ready to reconnect";
+  }
+
+  if (
+    opportunity.category === "Retention" ||
+    lower.includes("refresh") ||
+    lower.includes("overdue") ||
+    lower.includes("normal cycle")
+  ) {
+    const daysMatch = rec.match(/(\d+)\s*days?/i);
+    return daysMatch ? `Due for refresh · ${daysMatch[1]} days` : "Due for refresh";
+  }
+
+  if (opportunity.category === "PCN Invite") {
+    return "PCN invite candidate";
+  }
+
+  if (opportunity.category === "Referral" || lower.includes("referral")) {
+    return "Referral opportunity";
+  }
+
+  if (opportunity.category === "Open Slot" || lower.includes("open slot") || lower.includes("calendar gap")) {
+    return "Open chair available";
+  }
+
+  if (lower.includes("new client") || lower.includes("first visit")) {
+    return "New client welcome";
+  }
+
+  if (lower.includes("vip") || lower.includes("high value")) {
+    return "VIP relationship";
+  }
+
+  if (opportunity.title.trim()) {
+    return opportunity.title.trim();
+  }
+
+  return rec.length > 72 ? `${rec.slice(0, 69)}…` : rec;
+}
+
+export function defaultTemplateNameForCardType(cardType: VmbCardType): string {
+  const templateId = getInviteTemplateIdForCardType(cardType);
+  if (!templateId) return "Suggested invitation";
+  return getDefaultNailInviteTemplate(templateId)?.displayName ?? templateId;
+}
+
+export function publishedCopyByTemplateId(
+  copies: SalonInviteLocalCopy[],
+): Map<string, SalonInviteLocalCopy> {
+  const map = new Map<string, SalonInviteLocalCopy>();
+  for (const copy of copies) {
+    const existing = map.get(copy.sourceTemplateId);
+    if (!existing || copy.publishedVersion > existing.publishedVersion) {
+      map.set(copy.sourceTemplateId, copy);
+    }
+  }
+  return map;
+}
+
+function findMatchingDraft(
+  drafts: VmbInviteDraft[],
+  clientName: string,
+): VmbInviteDraft | undefined {
+  const normalized = normalizeClientName(clientName);
+  return drafts.find((draft) => normalizeClientName(draft.clientName) === normalized);
+}
+
+function isActionableDraft(draft: VmbInviteDraft | undefined): boolean {
+  if (!draft) return true;
+  return draft.status === "draft";
+}
+
+export function buildSuggestedInvitationsFromOpportunities(
+  opportunities: TaikosOpportunity[],
+  publishedCopies: SalonInviteLocalCopy[],
+  options: {
+    analysisContext?: OpportunityAnalysisContext;
+    drafts?: VmbInviteDraft[];
+  } = {},
+): SuggestedInvitationRecommendation[] {
+  const copiesByTemplate = publishedCopyByTemplateId(publishedCopies);
+  const drafts = options.drafts ?? [];
+  const context = options.analysisContext ?? {};
+
+  const rows: SuggestedInvitationRecommendation[] = [];
+
+  for (const opportunity of opportunities) {
+    const intelligence = buildOpportunityIntelligence(opportunity, context);
+    const clientName = intelligence.subjectName ?? clientNameFromOpportunity(opportunity);
+    const draft = findMatchingDraft(drafts, clientName);
+    if (!isActionableDraft(draft)) continue;
+
+    const suggestedCardType = intelligence.suggestedCardType;
+    const templateId =
+      getInviteTemplateIdForCardType(suggestedCardType) ?? `nails-${suggestedCardType.replace(/_/g, "-")}`;
+    const publishedCopy = copiesByTemplate.get(templateId) ?? null;
+    const snapshot = publishedCopy?.snapshot ?? null;
+    const templateName = snapshot?.templateName ?? defaultTemplateNameForCardType(suggestedCardType);
+
+    rows.push({
+      id: opportunity.opportunityId,
+      opportunityId: opportunity.opportunityId,
+      clientName,
+      reasonHeadline: opportunityReasonHeadline(opportunity),
+      categoryLabel: CATEGORY_LABEL_BY_CARD_TYPE[suggestedCardType],
+      suggestedCardType,
+      templateId,
+      templateName,
+      publishedCopy,
+      snapshot,
+      services: snapshot ? resolveSnapshotServiceLabels(snapshot) : [],
+      rewards: snapshot ? resolveSnapshotRewardLabels(snapshot) : [],
+      estimatedValue: opportunity.estimatedValue,
+      priority: opportunity.priority,
+      draftId: draft?.draftId,
+      draftStatus: draft?.status,
+    });
+  }
+
+  return rows.sort((a, b) => {
+    const priorityDelta = PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority];
+    if (priorityDelta !== 0) return priorityDelta;
+    return b.estimatedValue - a.estimatedValue;
+  });
+}

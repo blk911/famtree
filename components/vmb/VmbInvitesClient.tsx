@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftPreviewModal";
 import { SalonInvitationPreviewModal } from "@/components/vmb/salon/SalonInvitationPreviewModal";
+import { SuggestedInvitationCard } from "@/components/vmb/salon/SuggestedInvitationCard";
 import { SortableListHeader } from "@/components/vmb/SortableListHeader";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
@@ -15,10 +16,15 @@ import {
 } from "@/lib/vmb/invites/sections";
 import { formatSnapshotUpdatedAt } from "@/lib/vmb/invites/invite-template-snapshot";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
+import {
+  buildSuggestedInvitationsFromOpportunities,
+  type SuggestedInvitationRecommendation,
+} from "@/lib/vmb/invites/suggested-invitation-workflow";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import { useSortableList } from "@/lib/vmb/useSortableList";
+import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
 import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 import type { VmbBookAnalysisResult } from "@/types/vmb/book-analysis";
 import { friendlyInviteDraftError } from "@/lib/vmb/invite-drafts/invite-draft-storage-errors";
@@ -50,15 +56,18 @@ export function VmbInvitesClient({
   );
   const [drafts, setDrafts] = useState<VmbInviteDraft[]>([]);
   const [publishedCopies, setPublishedCopies] = useState<SalonInviteLocalCopy[]>([]);
-  const [loadingPublished, setLoadingPublished] = useState(true);
+  const [opportunitySummary, setOpportunitySummary] = useState<TaikosOpportunitySummary | null>(null);
+  const [loadingSuggested, setLoadingSuggested] = useState(true);
   const [loadingDrafts, setLoadingDrafts] = useState(false);
   const [draftError, setDraftError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<VmbBookAnalysisResult | null>(null);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
+  const [editDraftId, setEditDraftId] = useState<string | null>(null);
   const [activePublishedCopy, setActivePublishedCopy] = useState<SalonInviteLocalCopy | null>(null);
+  const [actionBusyId, setActionBusyId] = useState<string | null>(null);
+  const [savingDraft, setSavingDraft] = useState(false);
 
   const loadPublished = useCallback(async () => {
-    setLoadingPublished(true);
     try {
       const res = await fetch("/api/vmb/salon-invites", {
         cache: "no-store",
@@ -68,21 +77,38 @@ export function VmbInvitesClient({
       setPublishedCopies(json.ok && json.copies ? json.copies : []);
     } catch {
       setPublishedCopies([]);
-    } finally {
-      setLoadingPublished(false);
+    }
+  }, []);
+
+  const loadOpportunities = useCallback(async () => {
+    try {
+      const res = await fetch("/api/taikos/opportunities", {
+        cache: "no-store",
+        credentials: "include",
+      });
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        setOpportunitySummary(null);
+        return;
+      }
+      const json = (await res.json()) as { ok: boolean; data?: TaikosOpportunitySummary };
+      setOpportunitySummary(res.ok && json.ok && json.data ? json.data : null);
+    } catch {
+      setOpportunitySummary(null);
     }
   }, []);
 
   const loadDrafts = useCallback(async () => {
     if (resolved.resolving) return;
-    setLoadingDrafts(true);
     setDraftError(null);
     try {
       const analysisOutcome = await fetchVmbAnalysisForSalon(resolved);
       if (!analysisOutcome.ok) {
         setAnalysis(null);
         setDrafts([]);
-        setDraftError(`No active book analysis — ${VMB_BOOK_LOAD_LABEL.toLowerCase()} first.`);
+        if (tab !== "suggested") {
+          setDraftError(`No active book analysis — ${VMB_BOOK_LOAD_LABEL.toLowerCase()} first.`);
+        }
         return;
       }
       setAnalysis(analysisOutcome.data);
@@ -99,7 +125,9 @@ export function VmbInvitesClient({
       };
       if (!draftRes.ok || !draftJson.ok) {
         setDrafts([]);
-        setDraftError(friendlyInviteDraftError(draftJson.error));
+        if (tab !== "suggested") {
+          setDraftError(friendlyInviteDraftError(draftJson.error));
+        }
         return;
       }
       setDrafts(
@@ -111,24 +139,49 @@ export function VmbInvitesClient({
     } catch {
       setDrafts([]);
       setAnalysis(null);
-      setDraftError("Could not load invite drafts.");
-    } finally {
-      setLoadingDrafts(false);
+      if (tab !== "suggested") {
+        setDraftError("Could not load invite drafts.");
+      }
     }
-  }, [resolved.analysisId, resolved.resolving, resolved.source]);
+  }, [resolved.analysisId, resolved.resolving, resolved.source, tab]);
+
+  const loadSuggested = useCallback(async () => {
+    setLoadingSuggested(true);
+    await Promise.all([loadPublished(), loadOpportunities(), loadDrafts()]);
+    setLoadingSuggested(false);
+  }, [loadDrafts, loadOpportunities, loadPublished]);
 
   useEffect(() => {
-    void loadPublished();
-  }, [loadPublished]);
-
-  useEffect(() => {
-    if (tab === "suggested") return;
-    void loadDrafts();
-  }, [loadDrafts, tab]);
+    if (tab === "suggested") {
+      void loadSuggested();
+      return;
+    }
+    setLoadingDrafts(true);
+    void loadDrafts().finally(() => setLoadingDrafts(false));
+  }, [loadDrafts, loadSuggested, tab]);
 
   useEffect(() => {
     setFocusSection(parseInviteSection(initialSection));
   }, [initialSection]);
+
+  const suggestedRecommendations = useMemo(() => {
+    const opportunities = opportunitySummary?.opportunities ?? [];
+    return buildSuggestedInvitationsFromOpportunities(opportunities, publishedCopies, {
+      analysisContext: {
+        analysisId: analysis?.analysisId ?? initialAnalysisId,
+        salonName: analysis?.salonName,
+        hasRealBookData: opportunities.length > 0,
+      },
+      drafts,
+    });
+  }, [
+    analysis?.analysisId,
+    analysis?.salonName,
+    drafts,
+    initialAnalysisId,
+    opportunitySummary?.opportunities,
+    publishedCopies,
+  ]);
 
   const filteredDrafts = useMemo(() => {
     if (tab === "drafts") return drafts.filter((d) => d.status === "draft");
@@ -155,6 +208,7 @@ export function VmbInvitesClient({
 
   const salonName = salonNameProp ?? analysis?.salonName ?? "your salon";
   const activeDraft = drafts.find((d) => d.draftId === activeDraftId) ?? null;
+  const editDraft = drafts.find((d) => d.draftId === editDraftId) ?? null;
 
   const tokenContext = useMemo(
     () => ({
@@ -164,11 +218,109 @@ export function VmbInvitesClient({
     [salonName],
   );
 
-  const loading = tab === "suggested" ? loadingPublished : loadingDrafts || resolved.resolving;
+  const loading = tab === "suggested" ? loadingSuggested : loadingDrafts || resolved.resolving;
+
+  async function ensureDraftForRecommendation(
+    recommendation: SuggestedInvitationRecommendation,
+  ): Promise<VmbInviteDraft | null> {
+    if (recommendation.draftId) {
+      return drafts.find((d) => d.draftId === recommendation.draftId) ?? null;
+    }
+    if (!analysis?.analysisId) return null;
+
+    const buildRes = await fetch("/api/vmb/invite-drafts/build", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ analysisId: analysis.analysisId }),
+    });
+    const buildJson = (await buildRes.json()) as { ok?: boolean; data?: VmbInviteDraft[] };
+    if (!buildRes.ok || !buildJson.ok || !buildJson.data) return null;
+
+    const normalized = buildJson.data.map((d) => ({
+      ...d,
+      inviteCategory: d.inviteCategory ?? "private_client_network",
+    }));
+    setDrafts(normalized);
+
+    const match = normalized.find(
+      (d) => d.clientName.trim().toLowerCase() === recommendation.clientName.trim().toLowerCase(),
+    );
+    return match ?? null;
+  }
+
+  async function patchDraft(
+    draftId: string,
+    patch: { status?: VmbInviteDraft["status"]; editableMessage?: string },
+  ): Promise<boolean> {
+    setSavingDraft(true);
+    try {
+      const res = await fetch(`/api/vmb/invite-drafts/${encodeURIComponent(draftId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(patch),
+      });
+      const json = (await res.json()) as { ok?: boolean; data?: VmbInviteDraft };
+      if (!res.ok || !json.ok || !json.data) return false;
+      setDrafts((prev) => prev.map((d) => (d.draftId === draftId ? json.data! : d)));
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setSavingDraft(false);
+    }
+  }
+
+  async function handleApprove(recommendation: SuggestedInvitationRecommendation) {
+    setActionBusyId(recommendation.id);
+    try {
+      const draft = await ensureDraftForRecommendation(recommendation);
+      if (!draft) return;
+      await patchDraft(draft.draftId, { status: "approved" });
+    } finally {
+      setActionBusyId(null);
+    }
+  }
+
+  async function handlePause(recommendation: SuggestedInvitationRecommendation) {
+    setActionBusyId(recommendation.id);
+    try {
+      const draft = await ensureDraftForRecommendation(recommendation);
+      if (!draft) return;
+      await patchDraft(draft.draftId, { status: "skipped" });
+    } finally {
+      setActionBusyId(null);
+    }
+  }
+
+  async function handleEditCopy(recommendation: SuggestedInvitationRecommendation) {
+    setActionBusyId(recommendation.id);
+    try {
+      const draft = await ensureDraftForRecommendation(recommendation);
+      if (draft) setEditDraftId(draft.draftId);
+    } finally {
+      setActionBusyId(null);
+    }
+  }
+
+  function handlePreview(recommendation: SuggestedInvitationRecommendation) {
+    if (recommendation.publishedCopy) {
+      setActivePublishedCopy(recommendation.publishedCopy);
+      return;
+    }
+    const draft = drafts.find((d) => d.draftId === recommendation.draftId);
+    if (draft) {
+      setActiveDraftId(draft.draftId);
+    }
+  }
 
   function emptyMessage(): string {
     if (tab === "suggested") {
-      return "No invitations have been published to your salon yet.";
+      if ((opportunitySummary?.totalOpportunities ?? 0) === 0) {
+        return "No suggested invitations yet — load your client book to see who to invite today.";
+      }
+      return "No actionable invitations right now. Check Drafts or Paused for items you already reviewed.";
     }
     if (tab === "sent") {
       return "No sent invitations yet.";
@@ -186,7 +338,9 @@ export function VmbInvitesClient({
         <p className="vmb-page-frame__eyebrow">{typeof salonName === "string" ? salonName : undefined}</p>
         <h1 className="vmb-page-frame__title">My Invitations</h1>
         <p className="vmb-page-frame__subtitle">
-          Review the invitations VMB prepared for your salon.
+          {tab === "suggested"
+            ? "What should I send today? Review suggested invitations from your book."
+            : "Review the invitations VMB prepared for your salon."}
         </p>
       </header>
 
@@ -231,13 +385,28 @@ export function VmbInvitesClient({
       {loading ? (
         <p style={{ fontSize: 14, color: VMB_THEME.muted }}>Loading invitations…</p>
       ) : tab === "suggested" ? (
-        publishedCopies.length === 0 ? (
+        suggestedRecommendations.length === 0 ? (
           <EmptyPanel message={emptyMessage()} />
         ) : (
-          <SuggestedPublishedList
-            copies={publishedCopies}
-            onPreview={(copy) => setActivePublishedCopy(copy)}
-          />
+          <div style={{ display: "grid", gap: 16 }}>
+            {suggestedRecommendations.map((recommendation) => (
+              <SuggestedInvitationCard
+                key={recommendation.id}
+                recommendation={recommendation}
+                busy={actionBusyId === recommendation.id}
+                onPreview={() => handlePreview(recommendation)}
+                onApprove={() => void handleApprove(recommendation)}
+                onEditCopy={() => void handleEditCopy(recommendation)}
+                onPause={() => void handlePause(recommendation)}
+              />
+            ))}
+            {publishedCopies.length > 0 ? (
+              <PublishedLibrarySection
+                copies={publishedCopies}
+                onPreview={(copy) => setActivePublishedCopy(copy)}
+              />
+            ) : null}
+          </div>
         )
       ) : filteredDrafts.length === 0 ? (
         <EmptyPanel message={emptyMessage()} />
@@ -278,6 +447,20 @@ export function VmbInvitesClient({
         />
       ) : null}
 
+      {editDraft ? (
+        <InviteDraftPreviewModal
+          draft={editDraft}
+          salonName={typeof salonName === "string" ? salonName : "Your Salon"}
+          saving={savingDraft}
+          onClose={() => setEditDraftId(null)}
+          onSave={(message) => void patchDraft(editDraft.draftId, { editableMessage: message })}
+          onApprove={(message) =>
+            void patchDraft(editDraft.draftId, { status: "approved", editableMessage: message })
+          }
+          onSkip={() => void patchDraft(editDraft.draftId, { status: "skipped" })}
+        />
+      ) : null}
+
       {activePublishedCopy ? (
         <SalonInvitationPreviewModal
           open
@@ -305,7 +488,7 @@ function EmptyPanel({ message }: { message: string }) {
   );
 }
 
-function SuggestedPublishedList({
+function PublishedLibrarySection({
   copies,
   onPreview,
 }: {
@@ -313,7 +496,7 @@ function SuggestedPublishedList({
   onPreview: (copy: SalonInviteLocalCopy) => void;
 }) {
   return (
-    <div
+    <section
       style={{
         borderRadius: 14,
         border: `1px solid ${VMB_THEME.line}`,
@@ -321,6 +504,12 @@ function SuggestedPublishedList({
         overflow: "hidden",
       }}
     >
+      <header style={{ padding: "14px 16px", borderBottom: `1px solid ${VMB_THEME.line}` }}>
+        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 800 }}>Published invitation library</h2>
+        <p style={{ margin: "4px 0 0", fontSize: 13, color: VMB_THEME.muted }}>
+          Admin-published templates available for your salon.
+        </p>
+      </header>
       <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
         {copies.map((copy) => (
           <li
@@ -335,9 +524,7 @@ function SuggestedPublishedList({
             }}
           >
             <div>
-              <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>
-                {copy.snapshot.templateName}
-              </p>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{copy.snapshot.templateName}</p>
               <p style={{ margin: "4px 0 0", fontSize: 13, color: VMB_THEME.muted }}>
                 Published from VMB library
               </p>
@@ -364,7 +551,7 @@ function SuggestedPublishedList({
           </li>
         ))}
       </ul>
-    </div>
+    </section>
   );
 }
 
