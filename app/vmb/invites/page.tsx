@@ -35,6 +35,7 @@ export default async function VmbInvitesPage({ searchParams }: Props) {
       initialAnalysisId={ctx.activeAnalysisId ?? params.analysis?.trim()}
       initialSection={params.section?.trim()}
       salonName={ctx.salonName}
+      salonId={ctx.trialId}
     />
   );
 }

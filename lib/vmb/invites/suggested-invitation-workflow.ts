@@ -1,7 +1,13 @@
 import { clientNameFromOpportunity } from "@/lib/taikos/workflow/opportunity-display";
 import type { TaikosOpportunity, TaikosOpportunityPriority } from "@/lib/taikos/opportunities/types";
 import type { VmbCardType } from "@/lib/vmb/cards/card-types";
-import { getInviteTemplateIdForCardType } from "@/lib/vmb/invite-templates/card-type-invite-template-map";
+import {
+  expectedTemplateIdForCardType,
+  expectedTemplateIdForOpportunity,
+  findPublishedCopyForTemplateId,
+  indexPublishedCopiesByTemplateId,
+  type PublishedCopyMatchSource,
+} from "@/lib/vmb/invites/published-copy-matching";
 import { getDefaultNailInviteTemplate } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import {
   resolveSnapshotRewardLabels,
@@ -33,6 +39,8 @@ export type SuggestedInvitationRecommendation = {
   categoryLabel: SuggestedInvitationCategory;
   suggestedCardType: VmbCardType;
   templateId: string;
+  matchNormalizedTemplateId: string;
+  matchSource: PublishedCopyMatchSource;
   templateName: string;
   publishedCopy: SalonInviteLocalCopy | null;
   snapshot: InviteTemplateSnapshot | null;
@@ -116,22 +124,15 @@ export function opportunityReasonHeadline(opportunity: TaikosOpportunity): strin
 }
 
 export function defaultTemplateNameForCardType(cardType: VmbCardType): string {
-  const templateId = getInviteTemplateIdForCardType(cardType);
-  if (!templateId) return "Suggested invitation";
+  const templateId = expectedTemplateIdForCardType(cardType);
   return getDefaultNailInviteTemplate(templateId)?.displayName ?? templateId;
 }
 
+/** @deprecated Prefer indexPublishedCopiesByTemplateId from published-copy-matching. */
 export function publishedCopyByTemplateId(
   copies: SalonInviteLocalCopy[],
 ): Map<string, SalonInviteLocalCopy> {
-  const map = new Map<string, SalonInviteLocalCopy>();
-  for (const copy of copies) {
-    const existing = map.get(copy.sourceTemplateId);
-    if (!existing || copy.publishedVersion > existing.publishedVersion) {
-      map.set(copy.sourceTemplateId, copy);
-    }
-  }
-  return map;
+  return indexPublishedCopiesByTemplateId(copies);
 }
 
 function findMatchingDraft(
@@ -155,7 +156,6 @@ export function buildSuggestedInvitationsFromOpportunities(
     drafts?: VmbInviteDraft[];
   } = {},
 ): SuggestedInvitationRecommendation[] {
-  const copiesByTemplate = publishedCopyByTemplateId(publishedCopies);
   const drafts = options.drafts ?? [];
   const context = options.analysisContext ?? {};
 
@@ -168,9 +168,9 @@ export function buildSuggestedInvitationsFromOpportunities(
     if (!isActionableDraft(draft)) continue;
 
     const suggestedCardType = intelligence.suggestedCardType;
-    const templateId =
-      getInviteTemplateIdForCardType(suggestedCardType) ?? `nails-${suggestedCardType.replace(/_/g, "-")}`;
-    const publishedCopy = copiesByTemplate.get(templateId) ?? null;
+    const templateId = expectedTemplateIdForOpportunity(opportunity, suggestedCardType);
+    const match = findPublishedCopyForTemplateId(publishedCopies, templateId);
+    const publishedCopy = match.copy;
     const snapshot = publishedCopy?.snapshot ?? null;
     const templateName = snapshot?.templateName ?? defaultTemplateNameForCardType(suggestedCardType);
 
@@ -182,6 +182,8 @@ export function buildSuggestedInvitationsFromOpportunities(
       categoryLabel: CATEGORY_LABEL_BY_CARD_TYPE[suggestedCardType],
       suggestedCardType,
       templateId,
+      matchNormalizedTemplateId: match.normalizedExpectedTemplateId,
+      matchSource: match.matchSource,
       templateName,
       publishedCopy,
       snapshot,

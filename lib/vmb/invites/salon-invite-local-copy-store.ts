@@ -1,5 +1,9 @@
 import { templateStorageId } from "@/lib/vmb/admin/nail-template-library";
 import { parseInviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
+import {
+  normalizeSourceTemplateId,
+  templateKeysForPublishedCopy,
+} from "@/lib/vmb/invites/published-copy-matching";
 import { createSalonLocalCopy, type SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 import { getOffersForSalon } from "@/lib/vmb/offers/offer-store";
 import { getVmbSalonInviteCopiesFile } from "@/lib/vmb/paths";
@@ -49,7 +53,8 @@ export async function publishLibraryTemplateToSalon(
   const writable = await assertCopyWritable();
   if ("error" in writable) return writable;
 
-  const storageId = templateStorageId(salonId, templateId);
+  const canonicalTemplateId = normalizeSourceTemplateId(templateId) ?? templateId;
+  const storageId = templateStorageId(salonId, canonicalTemplateId);
   const offers = await getOffersForSalon(salonId);
   const saved = offers.find((offer) => offer.id === storageId && !offer.isDefault);
   const snapshot = parseInviteTemplateSnapshot(saved?.inviteSnapshot);
@@ -59,9 +64,11 @@ export async function publishLibraryTemplateToSalon(
 
   const copy = createSalonLocalCopy(snapshot, salonId);
   const all = await listStoredJson();
-  const others = all.filter(
-    (row) => !(row.salonId === salonId && row.copy.sourceTemplateId === templateId),
-  );
+  const others = all.filter((row) => {
+    if (row.salonId !== salonId) return true;
+    const keys = templateKeysForPublishedCopy(row.copy);
+    return !keys.includes(canonicalTemplateId);
+  });
   const err = await writeJsonArray(getVmbSalonInviteCopiesFile(), [...others, { salonId, copy }]);
   if (err) {
     return vmbProductionRequiresPostgres() ? { error: SALON_INVITE_COPY_POSTGRES_REQUIRED } : { error: err };

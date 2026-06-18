@@ -5,6 +5,7 @@ import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftP
 import { BookLoadedStatusNote } from "@/components/vmb/BookLoadedStatusNote";
 import { SalonInvitationPreviewModal } from "@/components/vmb/salon/SalonInvitationPreviewModal";
 import { SuggestedInvitationCard } from "@/components/vmb/salon/SuggestedInvitationCard";
+import { SuggestedInviteMatchingDebug } from "@/components/vmb/salon/SuggestedInviteMatchingDebug";
 import { SortableListHeader } from "@/components/vmb/SortableListHeader";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { useVmbActiveAnalysisState } from "@/components/vmb/useVmbActiveAnalysis";
@@ -25,6 +26,7 @@ import {
   buildSuggestedInvitationsFromOpportunities,
   type SuggestedInvitationRecommendation,
 } from "@/lib/vmb/invites/suggested-invitation-workflow";
+import { publishedCopiesForDebug } from "@/lib/vmb/invites/published-copy-matching";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
 import { VMB_THEME } from "@/lib/vmb/theme";
@@ -47,12 +49,14 @@ type Props = {
   initialAnalysisId?: string;
   initialSection?: string;
   salonName?: string;
+  salonId?: string;
 };
 
 export function VmbInvitesClient({
   initialAnalysisId,
   initialSection,
   salonName: salonNameProp,
+  salonId: salonIdProp,
 }: Props) {
   const resolved = useVmbActiveAnalysisState(initialAnalysisId);
   const [tab, setTab] = useState<TabId>("suggested");
@@ -61,6 +65,7 @@ export function VmbInvitesClient({
   );
   const [drafts, setDrafts] = useState<VmbInviteDraft[]>([]);
   const [publishedCopies, setPublishedCopies] = useState<SalonInviteLocalCopy[]>([]);
+  const [publishedSalonId, setPublishedSalonId] = useState<string | null>(salonIdProp ?? null);
   const [opportunitySummary, setOpportunitySummary] = useState<TaikosOpportunitySummary | null>(null);
   const [loadingSuggested, setLoadingSuggested] = useState(true);
   const [loadingDrafts, setLoadingDrafts] = useState(false);
@@ -78,8 +83,13 @@ export function VmbInvitesClient({
         cache: "no-store",
         credentials: "include",
       });
-      const json = (await res.json()) as { ok?: boolean; copies?: SalonInviteLocalCopy[] };
+      const json = (await res.json()) as {
+        ok?: boolean;
+        copies?: SalonInviteLocalCopy[];
+        salonId?: string;
+      };
       setPublishedCopies(json.ok && json.copies ? json.copies : []);
+      setPublishedSalonId(json.ok && json.salonId ? json.salonId : null);
     } catch {
       setPublishedCopies([]);
     }
@@ -212,6 +222,13 @@ export function VmbInvitesClient({
   }, [filteredDrafts]);
 
   const salonName = salonNameProp ?? analysis?.salonName ?? "your salon";
+
+  const publishedCopyDebugEntries = useMemo(
+    () => publishedCopiesForDebug(publishedCopies),
+    [publishedCopies],
+  );
+
+  const salonId = publishedSalonId ?? salonIdProp ?? null;
   const activeDraft = drafts.find((d) => d.draftId === activeDraftId) ?? null;
   const editDraft = drafts.find((d) => d.draftId === editDraftId) ?? null;
 
@@ -392,6 +409,12 @@ export function VmbInvitesClient({
         <p style={{ fontSize: 14, color: VMB_THEME.muted }}>Loading invitations…</p>
       ) : tab === "suggested" ? (
         <div style={{ display: "grid", gap: 28 }}>
+          <SuggestedInviteMatchingDebug
+            salonId={salonId}
+            publishedCount={publishedCopies.length}
+            publishedCopies={publishedCopyDebugEntries}
+            recommendations={suggestedRecommendations}
+          />
           <SuggestedMatchesSection
             recommendations={suggestedRecommendations}
             actionBusyId={actionBusyId}

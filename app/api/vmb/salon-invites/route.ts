@@ -11,5 +11,5 @@ export async function GET(req: NextRequest) {
   }
 
   const copies = await listSalonInviteLocalCopies(salonId);
-  return NextResponse.json({ ok: true, copies });
+  return NextResponse.json({ ok: true, salonId, copies });
 }

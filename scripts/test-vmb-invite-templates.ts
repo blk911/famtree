@@ -56,6 +56,10 @@ import {
   participatingTemplatesForService,
 } from "../lib/vmb/invites/service-template-participation";
 import {
+  findPublishedCopyForTemplateId,
+  normalizeSourceTemplateId,
+} from "../lib/vmb/invites/published-copy-matching";
+import {
   buildSuggestedInvitationsFromOpportunities,
   opportunityReasonHeadline,
 } from "../lib/vmb/invites/suggested-invitation-workflow";
@@ -533,6 +537,7 @@ async function run(): Promise<void> {
     invitesClientSource.includes("No invitations have been published to your salon yet."),
     "invitations published empty state",
   );
+  assert(invitesClientSource.includes("SuggestedInviteMatchingDebug"), "invites suggested tab shows match debug");
 
   const servicesClientSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/salon/SalonServicesClient.tsx"),
@@ -592,6 +597,45 @@ async function run(): Promise<void> {
   assert(suggested[0]!.templateName === "Birthday Celebration", "suggested invitation matches published template");
   assert(suggested[0]!.services.includes("Gel Manicure"), "suggested invitation lists services from snapshot");
   assert(suggested[0]!.rewards.includes("Chrome Upgrade"), "suggested invitation lists rewards from snapshot");
+  assert(suggested[0]!.publishedCopy?.id === participationCopy.id, "suggested invitation links published copy");
+  assert(suggested[0]!.matchSource !== "none", "suggested invitation records match source");
+
+  const pcnOpportunity = {
+    ...birthdayOpportunity,
+    opportunityId: "opp-pcn-maria",
+    category: "PCN Invite" as const,
+    title: "PCN invite for Maria",
+    recommendation: "Maria Lopez is a strong PCN candidate.",
+    clientName: "Maria Lopez",
+  };
+  const pcnSnapshot = {
+    ...savedOffer.inviteSnapshot!,
+    sourceTemplateId: "nails-private-client-network",
+    templateName: "Private Client Network",
+    version: 2,
+  };
+  const pcnCopy = createSalonLocalCopy(pcnSnapshot, "salon-123");
+  pcnCopy.sourceTemplateId = `${pcnCopy.salonId}-nails-private-client-network`;
+  const pcnSuggested = buildSuggestedInvitationsFromOpportunities([pcnOpportunity], [pcnCopy], {
+    drafts: [],
+  });
+  assert(pcnSuggested.length === 1, "PCN suggested invitation built");
+  assert(pcnSuggested[0]!.templateId === "nails-private-client-network", "PCN maps to stable template key");
+  assert(!!pcnSuggested[0]!.publishedCopy, "PCN matches published copy via normalized sourceTemplateId");
+  assert(
+    findPublishedCopyForTemplateId([pcnCopy], "nails-private-client-network").copy?.id === pcnCopy.id,
+    "normalized lookup finds salon-prefixed sourceTemplateId",
+  );
+  assert(
+    normalizeSourceTemplateId("salon-123-nails-private-client-network") === "nails-private-client-network",
+    "normalize strips salon storage prefix",
+  );
+
+  const salonInvitesRoute = fs.readFileSync(
+    path.join(process.cwd(), "app/api/vmb/salon-invites/route.ts"),
+    "utf8",
+  );
+  assert(salonInvitesRoute.includes("salonId"), "salon invites API returns salonId for debug");
 
   const routesSource = fs.readFileSync(
     path.join(process.cwd(), "lib/vmb/admin/nail-template-routes.ts"),

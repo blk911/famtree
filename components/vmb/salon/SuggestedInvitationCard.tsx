@@ -86,7 +86,11 @@ export function SuggestedInvitationCard({
           <p style={{ margin: 0, fontSize: 12, color: "#b45309" }}>
             Template not published yet — preview uses the default library design.
           </p>
-        ) : null}
+        ) : (
+          <p style={{ margin: 0, fontSize: 12, color: VMB_THEME.muted }}>
+            Published template v{recommendation.publishedCopy.publishedVersion}
+          </p>
+        )}
       </div>
 
       <footer

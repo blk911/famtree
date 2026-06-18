@@ -69,6 +69,14 @@ function run(): void {
   );
   assert(!invitesClient.includes("/api/vmb/analyze-book"), "invites client never calls analyze-book");
   assert(invitesClient.includes("/api/taikos/opportunities"), "suggested tab reads existing opportunities");
+  assert(invitesClient.includes("/api/vmb/salon-invites"), "suggested tab loads published salon copies");
+  assert(invitesClient.includes("SuggestedInviteMatchingDebug"), "suggested tab exposes invite match debug");
+
+  const salonInvitesRoute = read("app/api/vmb/salon-invites/route.ts");
+  assert(salonInvitesRoute.includes("salonId"), "salon invites API includes salonId in response");
+
+  const publishStore = read("lib/vmb/invites/salon-invite-local-copy-store.ts");
+  assert(publishStore.includes("normalizeSourceTemplateId"), "publish dedupes by normalized template keys");
 
   const useInviteDrafts = read("components/vmb/dashboard/useInviteDrafts.ts");
   assert(
