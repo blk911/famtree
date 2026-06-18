@@ -1,4 +1,5 @@
 import type { InviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
+import type { SalonInviteInventoryStatus } from "@/lib/vmb/invites/salon-invite-inventory";
 
 /** Salon-local invite copy — independent from admin master library after publish. */
 export type SalonInviteLocalCopy = {
@@ -6,6 +7,8 @@ export type SalonInviteLocalCopy = {
   salonId: string;
   sourceTemplateId: string;
   publishedVersion: number;
+  /** Salon inventory availability — paused copies stay in inventory but skip TAIKOS matching. */
+  inventoryStatus?: SalonInviteInventoryStatus;
   snapshot: InviteTemplateSnapshot;
   createdAt: string;
   updatedAt: string;
@@ -27,6 +30,7 @@ export function createSalonLocalCopy(
     salonId,
     sourceTemplateId: snapshot.sourceTemplateId,
     publishedVersion: snapshot.version,
+    inventoryStatus: "published",
     snapshot: {
       ...snapshot,
       id: copyId,

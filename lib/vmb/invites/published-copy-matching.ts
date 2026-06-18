@@ -6,6 +6,7 @@ import {
 } from "@/lib/vmb/invite-templates/card-type-invite-template-map";
 import type { VmbInviteType } from "@/lib/vmb/invite-templates/invite-template-types";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
+import { isSalonInviteMatchingActive } from "@/lib/vmb/invites/salon-invite-inventory";
 
 export type PublishedCopyMatchSource =
   | "copy.sourceTemplateId"
@@ -82,6 +83,7 @@ export function indexPublishedCopiesByTemplateId(
 ): Map<string, SalonInviteLocalCopy> {
   const map = new Map<string, SalonInviteLocalCopy>();
   for (const copy of copies) {
+    if (!isSalonInviteMatchingActive(copy)) continue;
     for (const key of templateKeysForPublishedCopy(copy)) {
       const existing = map.get(key);
       if (!existing || copy.publishedVersion > existing.publishedVersion) {

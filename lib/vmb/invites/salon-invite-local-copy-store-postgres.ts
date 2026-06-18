@@ -116,6 +116,48 @@ export async function publishSalonInviteLocalCopyPostgres(
   }
 }
 
+export async function upsertSalonInviteLocalCopyPostgres(
+  salonId: string,
+  copy: SalonInviteLocalCopy,
+): Promise<{ copy: SalonInviteLocalCopy } | { error: string }> {
+  if ((await resolveVmbStorageBackend()) !== "postgres") {
+    return { error: "Postgres storage backend unavailable" };
+  }
+
+  try {
+    const payload = JSON.stringify(copy);
+    await prisma.$executeRaw`
+      INSERT INTO vmb_salon_invite_copy (
+        id,
+        salon_id,
+        source_template_id,
+        published_version,
+        payload,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        ${copy.id},
+        ${salonId.trim()},
+        ${copy.sourceTemplateId},
+        ${copy.publishedVersion},
+        ${payload}::jsonb,
+        ${copy.createdAt}::timestamptz,
+        ${copy.updatedAt}::timestamptz
+      )
+      ON CONFLICT (id) DO UPDATE SET
+        source_template_id = EXCLUDED.source_template_id,
+        published_version = EXCLUDED.published_version,
+        payload = EXCLUDED.payload,
+        updated_at = EXCLUDED.updated_at
+    `;
+
+    return { copy };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 export async function clearSalonInviteLocalCopiesPostgres(salonId: string): Promise<void> {
   if ((await resolveVmbStorageBackend()) !== "postgres") return;
   try {

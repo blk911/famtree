@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftPreviewModal";
 import { BookLoadedStatusNote } from "@/components/vmb/BookLoadedStatusNote";
 import { SalonInvitationPreviewModal } from "@/components/vmb/salon/SalonInvitationPreviewModal";
+import { SalonInvitationEditCopyModal } from "@/components/vmb/salon/SalonInvitationEditCopyModal";
+import { PublishedInvitationsSection } from "@/components/vmb/salon/PublishedInvitationsSection";
 import { SuggestedInvitationCard } from "@/components/vmb/salon/SuggestedInvitationCard";
 import { SuggestedInviteMatchingDebug } from "@/components/vmb/salon/SuggestedInviteMatchingDebug";
 import { SortableListHeader } from "@/components/vmb/SortableListHeader";
@@ -16,12 +18,11 @@ import {
   parseInviteSection,
   type InviteSectionId,
 } from "@/lib/vmb/invites/sections";
-import {
-  formatSnapshotUpdatedAt,
-  resolveSnapshotRewardLabels,
-  resolveSnapshotServiceLabels,
-} from "@/lib/vmb/invites/invite-template-snapshot";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
+import {
+  getSalonInviteInventoryStatus,
+  publishedCopiesForMatching,
+} from "@/lib/vmb/invites/salon-invite-inventory";
 import {
   buildSuggestedInvitationsFromOpportunities,
   type SuggestedInvitationRecommendation,
@@ -74,8 +75,10 @@ export function VmbInvitesClient({
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
   const [editDraftId, setEditDraftId] = useState<string | null>(null);
   const [activePublishedCopy, setActivePublishedCopy] = useState<SalonInviteLocalCopy | null>(null);
+  const [editPublishedCopy, setEditPublishedCopy] = useState<SalonInviteLocalCopy | null>(null);
   const [actionBusyId, setActionBusyId] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
+  const [savingInventory, setSavingInventory] = useState(false);
 
   const loadPublished = useCallback(async () => {
     try {
@@ -179,9 +182,14 @@ export function VmbInvitesClient({
     setFocusSection(parseInviteSection(initialSection));
   }, [initialSection]);
 
+  const matchingPublishedCopies = useMemo(
+    () => publishedCopiesForMatching(publishedCopies),
+    [publishedCopies],
+  );
+
   const suggestedRecommendations = useMemo(() => {
     const opportunities = opportunitySummary?.opportunities ?? [];
-    return buildSuggestedInvitationsFromOpportunities(opportunities, publishedCopies, {
+    return buildSuggestedInvitationsFromOpportunities(opportunities, matchingPublishedCopies, {
       analysisContext: {
         analysisId: analysis?.analysisId ?? initialAnalysisId,
         salonName: analysis?.salonName,
@@ -195,7 +203,7 @@ export function VmbInvitesClient({
     drafts,
     initialAnalysisId,
     opportunitySummary?.opportunities,
-    publishedCopies,
+    matchingPublishedCopies,
   ]);
 
   const unpublishedSuggestedRecommendations = useMemo(
@@ -342,6 +350,71 @@ export function VmbInvitesClient({
     }
   }
 
+  function replacePublishedCopy(updated: SalonInviteLocalCopy) {
+    setPublishedCopies((prev) => {
+      const next = prev.filter((copy) => copy.id !== updated.id);
+      return [updated, ...next].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    });
+  }
+
+  async function patchPublishedCopy(
+    copy: SalonInviteLocalCopy,
+    patch: {
+      inventoryStatus?: "published" | "paused";
+      headline?: string;
+      body?: string;
+      ctaLabel?: string;
+    },
+  ): Promise<boolean> {
+    setSavingInventory(true);
+    try {
+      const res = await fetch(`/api/vmb/salon-invites/${encodeURIComponent(copy.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(patch),
+      });
+      const json = (await res.json()) as { ok?: boolean; copy?: SalonInviteLocalCopy };
+      if (!res.ok || !json.ok || !json.copy) return false;
+      replacePublishedCopy(json.copy);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setSavingInventory(false);
+    }
+  }
+
+  async function handleInventoryPause(copy: SalonInviteLocalCopy) {
+    setActionBusyId(copy.id);
+    try {
+      const nextStatus = getSalonInviteInventoryStatus(copy) === "paused" ? "published" : "paused";
+      await patchPublishedCopy(copy, { inventoryStatus: nextStatus });
+    } finally {
+      setActionBusyId(null);
+    }
+  }
+
+  async function handleInventoryDuplicate(copy: SalonInviteLocalCopy) {
+    setActionBusyId(copy.id);
+    try {
+      const res = await fetch(`/api/vmb/salon-invites/${encodeURIComponent(copy.id)}`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const json = (await res.json()) as { ok?: boolean; copy?: SalonInviteLocalCopy };
+      if (res.ok && json.ok && json.copy) {
+        replacePublishedCopy(json.copy);
+      }
+    } finally {
+      setActionBusyId(null);
+    }
+  }
+
+  function handleInventoryEditCopy(copy: SalonInviteLocalCopy) {
+    setEditPublishedCopy(copy);
+  }
+
   function emptyMessage(): string {
     if (tab === "sent") {
       return "No sent invitations yet.";
@@ -422,7 +495,12 @@ export function VmbInvitesClient({
           />
           <PublishedInvitationsSection
             copies={publishedCopies}
+            tokenContext={tokenContext}
+            actionBusyId={actionBusyId}
             onPreview={(copy) => setActivePublishedCopy(copy)}
+            onEditCopy={handleInventoryEditCopy}
+            onPause={(copy) => void handleInventoryPause(copy)}
+            onDuplicate={(copy) => void handleInventoryDuplicate(copy)}
           />
           <SuggestedMatchesSection
             recommendations={unpublishedSuggestedRecommendations}
@@ -494,6 +572,19 @@ export function VmbInvitesClient({
           onClose={() => setActivePublishedCopy(null)}
         />
       ) : null}
+
+      {editPublishedCopy ? (
+        <SalonInvitationEditCopyModal
+          copy={editPublishedCopy}
+          saving={savingInventory}
+          onClose={() => setEditPublishedCopy(null)}
+          onSave={(patch) =>
+            void patchPublishedCopy(editPublishedCopy, patch).then((ok) => {
+              if (ok) setEditPublishedCopy(null);
+            })
+          }
+        />
+      ) : null}
     </VmbPageFrame>
   );
 }
@@ -536,94 +627,6 @@ function SuggestedMatchesSection({
               onPause={() => onPause(recommendation)}
             />
           ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function PublishedInvitationsSection({
-  copies,
-  onPreview,
-}: {
-  copies: SalonInviteLocalCopy[];
-  onPreview: (copy: SalonInviteLocalCopy) => void;
-}) {
-  return (
-    <section>
-      <header style={{ marginBottom: 14 }}>
-        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Published Invitations</h2>
-        <p style={{ margin: "6px 0 0", fontSize: 14, color: VMB_THEME.muted }}>
-          Every invitation published from the VMB admin library for your salon.
-        </p>
-      </header>
-      {copies.length === 0 ? (
-        <EmptyPanel message="No invitations have been published to your salon yet." />
-      ) : (
-        <div
-          style={{
-            borderRadius: 14,
-            border: `1px solid ${VMB_THEME.line}`,
-            background: "#fff",
-            overflow: "hidden",
-          }}
-        >
-          <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-            {copies.map((copy) => {
-              const services = resolveSnapshotServiceLabels(copy.snapshot);
-              const rewards = resolveSnapshotRewardLabels(copy.snapshot);
-              return (
-                <li
-                  key={copy.id}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr auto",
-                    gap: 16,
-                    alignItems: "start",
-                    padding: "16px",
-                    borderTop: `1px solid ${VMB_THEME.line}`,
-                  }}
-                >
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>
-                      {copy.snapshot.templateName}
-                    </p>
-                    {services.length > 0 ? (
-                      <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>
-                        <span style={{ fontWeight: 600, color: VMB_THEME.ink }}>Services: </span>
-                        {services.join(", ")}
-                      </p>
-                    ) : null}
-                    {rewards.length > 0 ? (
-                      <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>
-                        <span style={{ fontWeight: 600, color: VMB_THEME.ink }}>Rewards: </span>
-                        {rewards.join(", ")}
-                      </p>
-                    ) : null}
-                    <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>
-                      v{copy.publishedVersion} · Updated {formatSnapshotUpdatedAt(copy.snapshot)}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onPreview(copy)}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: 8,
-                      border: `1px solid ${VMB_THEME.line}`,
-                      background: "#fff",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Preview
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
         </div>
       )}
     </section>

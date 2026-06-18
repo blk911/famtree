@@ -538,15 +538,36 @@ async function run(): Promise<void> {
   assert(invitesClientSource.includes("SuggestedInvitationCard"), "invitations suggested tab uses workflow cards");
   assert(invitesClientSource.includes("SuggestedMatchesSection"), "invitations suggested tab has matches section");
   assert(invitesClientSource.includes("PublishedInvitationsSection"), "invitations suggested tab has published section");
+  assert(invitesClientSource.includes("publishedCopiesForMatching"), "suggested matching uses active inventory only");
   assert(invitesClientSource.includes("What should I send today?"), "invitations suggested subtitle");
   assert(invitesClientSource.includes("SalonInvitationPreviewModal"), "invitations previews via salon card");
   assert(invitesClientSource.includes("previewOnly"), "invitations draft preview is read-only");
-  assert(invitesClientSource.includes("No suggested matches yet."), "invitations suggested matches empty state");
+  assert(
+    invitesClientSource.includes("No unpublished suggestions"),
+    "invitations suggested matches empty state for unpublished only",
+  );
   assert(
     invitesClientSource.includes("No invitations have been published to your salon yet."),
     "invitations published empty state",
   );
   assert(invitesClientSource.includes("SuggestedInviteMatchingDebug"), "invites suggested tab shows match debug");
+
+  const publishedSectionSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/salon/PublishedInvitationsSection.tsx"),
+    "utf8",
+  );
+  assert(
+    publishedSectionSource.includes("Published Invitations ("),
+    "published invitations header shows inventory count",
+  );
+  assert(
+    publishedSectionSource.includes("TAIKOS matching and salon outreach"),
+    "published invitations header explains inventory purpose",
+  );
+  assert(
+    publishedSectionSource.includes("PublishedInvitationInventoryCard"),
+    "published invitations section uses inventory cards",
+  );
 
   const servicesClientSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/salon/SalonServicesClient.tsx"),
@@ -639,6 +660,26 @@ async function run(): Promise<void> {
     normalizeSourceTemplateId("salon-123-nails-private-client-network") === "nails-private-client-network",
     "normalize strips salon storage prefix",
   );
+
+  const {
+    applySalonInviteLocalCopyPatch,
+    duplicateSalonInviteLocalCopy,
+    getSalonInviteInventoryStatus,
+    publishedCopiesForMatching,
+  } = await import("../lib/vmb/invites/salon-invite-inventory");
+  const pausedCopy = applySalonInviteLocalCopyPatch(pcnCopy, { inventoryStatus: "paused" });
+  assert(getSalonInviteInventoryStatus(pausedCopy) === "paused", "inventory status can be paused");
+  assert(publishedCopiesForMatching([pausedCopy]).length === 0, "paused copies skip TAIKOS matching");
+  assert(
+    findPublishedCopyForTemplateId([pausedCopy], "nails-private-client-network").copy === null,
+    "paused inventory is excluded from template matching",
+  );
+  const duplicated = duplicateSalonInviteLocalCopy(pcnCopy);
+  assert(duplicated.id !== pcnCopy.id, "duplicate creates a new inventory copy id");
+  assert(duplicated.snapshot.templateName.includes("(Copy)"), "duplicate labels copied template");
+
+  const globalsCss = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
+  assert(globalsCss.includes("vmb-published-invite-grid"), "published invite inventory uses responsive grid");
 
   const salonInvitesRoute = fs.readFileSync(
     path.join(process.cwd(), "app/api/vmb/salon-invites/route.ts"),

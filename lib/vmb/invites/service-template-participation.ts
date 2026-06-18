@@ -1,5 +1,6 @@
 import type { InviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
+import { isSalonInviteMatchingActive } from "@/lib/vmb/invites/salon-invite-inventory";
 
 export type ServiceTemplateParticipation = {
   templateId: string;
@@ -16,6 +17,7 @@ export function buildServiceTemplateParticipation(
   const map = new Map<string, Map<string, ServiceTemplateParticipation>>();
 
   for (const copy of publishedCopies) {
+    if (!isSalonInviteMatchingActive(copy)) continue;
     const entry: ServiceTemplateParticipation = {
       templateId: copy.sourceTemplateId,
       templateName: copy.snapshot.templateName,

@@ -82,6 +82,11 @@ function run(): void {
     "publish store does not hard-require postgres in local/dev",
   );
   assert(publishStore.includes("resolveVmbStorageBackend"), "publish store resolves json/postgres backend");
+  assert(publishStore.includes("updateSalonInviteLocalCopy"), "salon invite store supports inventory updates");
+
+  const inventoryCard = read("components/vmb/salon/PublishedInvitationInventoryCard.tsx");
+  assert(inventoryCard.includes("SalonInvitationThumbnail"), "inventory card renders invitation thumbnail");
+  assert(inventoryCard.includes("Duplicate"), "inventory card supports duplicate action");
 
   const publishRoute = read("app/api/vmb/invite-library/publish/route.ts");
   assert(publishRoute.includes("backend"), "publish API returns backend diagnostic");
