@@ -523,12 +523,15 @@ async function run(): Promise<void> {
   assert(invitesClientSource.includes("/api/vmb/salon-invites"), "invitations loads published copies");
   assert(invitesClientSource.includes("/api/taikos/opportunities"), "invitations loads opportunity intelligence");
   assert(invitesClientSource.includes("SuggestedInvitationCard"), "invitations suggested tab uses workflow cards");
+  assert(invitesClientSource.includes("SuggestedMatchesSection"), "invitations suggested tab has matches section");
+  assert(invitesClientSource.includes("PublishedInvitationsSection"), "invitations suggested tab has published section");
   assert(invitesClientSource.includes("What should I send today?"), "invitations suggested subtitle");
   assert(invitesClientSource.includes("SalonInvitationPreviewModal"), "invitations previews via salon card");
   assert(invitesClientSource.includes("previewOnly"), "invitations draft preview is read-only");
+  assert(invitesClientSource.includes("No suggested matches yet."), "invitations suggested matches empty state");
   assert(
-    invitesClientSource.includes("No suggested invitations yet"),
-    "invitations suggested empty state",
+    invitesClientSource.includes("No invitations have been published to your salon yet."),
+    "invitations published empty state",
   );
 
   const servicesClientSource = fs.readFileSync(

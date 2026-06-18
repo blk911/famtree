@@ -14,7 +14,11 @@ import {
   parseInviteSection,
   type InviteSectionId,
 } from "@/lib/vmb/invites/sections";
-import { formatSnapshotUpdatedAt } from "@/lib/vmb/invites/invite-template-snapshot";
+import {
+  formatSnapshotUpdatedAt,
+  resolveSnapshotRewardLabels,
+  resolveSnapshotServiceLabels,
+} from "@/lib/vmb/invites/invite-template-snapshot";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 import {
   buildSuggestedInvitationsFromOpportunities,
@@ -316,12 +320,6 @@ export function VmbInvitesClient({
   }
 
   function emptyMessage(): string {
-    if (tab === "suggested") {
-      if ((opportunitySummary?.totalOpportunities ?? 0) === 0) {
-        return "No suggested invitations yet — load your client book to see who to invite today.";
-      }
-      return "No actionable invitations right now. Check Drafts or Paused for items you already reviewed.";
-    }
     if (tab === "sent") {
       return "No sent invitations yet.";
     }
@@ -385,29 +383,20 @@ export function VmbInvitesClient({
       {loading ? (
         <p style={{ fontSize: 14, color: VMB_THEME.muted }}>Loading invitations…</p>
       ) : tab === "suggested" ? (
-        suggestedRecommendations.length === 0 ? (
-          <EmptyPanel message={emptyMessage()} />
-        ) : (
-          <div style={{ display: "grid", gap: 16 }}>
-            {suggestedRecommendations.map((recommendation) => (
-              <SuggestedInvitationCard
-                key={recommendation.id}
-                recommendation={recommendation}
-                busy={actionBusyId === recommendation.id}
-                onPreview={() => handlePreview(recommendation)}
-                onApprove={() => void handleApprove(recommendation)}
-                onEditCopy={() => void handleEditCopy(recommendation)}
-                onPause={() => void handlePause(recommendation)}
-              />
-            ))}
-            {publishedCopies.length > 0 ? (
-              <PublishedLibrarySection
-                copies={publishedCopies}
-                onPreview={(copy) => setActivePublishedCopy(copy)}
-              />
-            ) : null}
-          </div>
-        )
+        <div style={{ display: "grid", gap: 28 }}>
+          <SuggestedMatchesSection
+            recommendations={suggestedRecommendations}
+            actionBusyId={actionBusyId}
+            onPreview={handlePreview}
+            onApprove={(recommendation) => void handleApprove(recommendation)}
+            onEditCopy={(recommendation) => void handleEditCopy(recommendation)}
+            onPause={(recommendation) => void handlePause(recommendation)}
+          />
+          <PublishedInvitationsSection
+            copies={publishedCopies}
+            onPreview={(copy) => setActivePublishedCopy(copy)}
+          />
+        </div>
       ) : filteredDrafts.length === 0 ? (
         <EmptyPanel message={emptyMessage()} />
       ) : (
@@ -473,6 +462,138 @@ export function VmbInvitesClient({
   );
 }
 
+function SuggestedMatchesSection({
+  recommendations,
+  actionBusyId,
+  onPreview,
+  onApprove,
+  onEditCopy,
+  onPause,
+}: {
+  recommendations: SuggestedInvitationRecommendation[];
+  actionBusyId: string | null;
+  onPreview: (recommendation: SuggestedInvitationRecommendation) => void;
+  onApprove: (recommendation: SuggestedInvitationRecommendation) => void;
+  onEditCopy: (recommendation: SuggestedInvitationRecommendation) => void;
+  onPause: (recommendation: SuggestedInvitationRecommendation) => void;
+}) {
+  return (
+    <section>
+      <header style={{ marginBottom: 14 }}>
+        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Suggested Matches</h2>
+        <p style={{ margin: "6px 0 0", fontSize: 14, color: VMB_THEME.muted }}>
+          Client-specific recommendations matched to published invitations.
+        </p>
+      </header>
+      {recommendations.length === 0 ? (
+        <EmptyPanel message="No suggested matches yet." />
+      ) : (
+        <div style={{ display: "grid", gap: 16 }}>
+          {recommendations.map((recommendation) => (
+            <SuggestedInvitationCard
+              key={recommendation.id}
+              recommendation={recommendation}
+              busy={actionBusyId === recommendation.id}
+              onPreview={() => onPreview(recommendation)}
+              onApprove={() => onApprove(recommendation)}
+              onEditCopy={() => onEditCopy(recommendation)}
+              onPause={() => onPause(recommendation)}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function PublishedInvitationsSection({
+  copies,
+  onPreview,
+}: {
+  copies: SalonInviteLocalCopy[];
+  onPreview: (copy: SalonInviteLocalCopy) => void;
+}) {
+  return (
+    <section>
+      <header style={{ marginBottom: 14 }}>
+        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Published Invitations</h2>
+        <p style={{ margin: "6px 0 0", fontSize: 14, color: VMB_THEME.muted }}>
+          Every invitation published from the VMB admin library for your salon.
+        </p>
+      </header>
+      {copies.length === 0 ? (
+        <EmptyPanel message="No invitations have been published to your salon yet." />
+      ) : (
+        <div
+          style={{
+            borderRadius: 14,
+            border: `1px solid ${VMB_THEME.line}`,
+            background: "#fff",
+            overflow: "hidden",
+          }}
+        >
+          <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+            {copies.map((copy) => {
+              const services = resolveSnapshotServiceLabels(copy.snapshot);
+              const rewards = resolveSnapshotRewardLabels(copy.snapshot);
+              return (
+                <li
+                  key={copy.id}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto",
+                    gap: 16,
+                    alignItems: "start",
+                    padding: "16px",
+                    borderTop: `1px solid ${VMB_THEME.line}`,
+                  }}
+                >
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>
+                      {copy.snapshot.templateName}
+                    </p>
+                    {services.length > 0 ? (
+                      <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>
+                        <span style={{ fontWeight: 600, color: VMB_THEME.ink }}>Services: </span>
+                        {services.join(", ")}
+                      </p>
+                    ) : null}
+                    {rewards.length > 0 ? (
+                      <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>
+                        <span style={{ fontWeight: 600, color: VMB_THEME.ink }}>Rewards: </span>
+                        {rewards.join(", ")}
+                      </p>
+                    ) : null}
+                    <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>
+                      v{copy.publishedVersion} · Updated {formatSnapshotUpdatedAt(copy.snapshot)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onPreview(copy)}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      border: `1px solid ${VMB_THEME.line}`,
+                      background: "#fff",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Preview
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function EmptyPanel({ message }: { message: string }) {
   return (
     <div
@@ -485,73 +606,6 @@ function EmptyPanel({ message }: { message: string }) {
     >
       <p style={{ margin: 0, fontSize: 15, lineHeight: 1.5, color: VMB_THEME.muted }}>{message}</p>
     </div>
-  );
-}
-
-function PublishedLibrarySection({
-  copies,
-  onPreview,
-}: {
-  copies: SalonInviteLocalCopy[];
-  onPreview: (copy: SalonInviteLocalCopy) => void;
-}) {
-  return (
-    <section
-      style={{
-        borderRadius: 14,
-        border: `1px solid ${VMB_THEME.line}`,
-        background: "#fff",
-        overflow: "hidden",
-      }}
-    >
-      <header style={{ padding: "14px 16px", borderBottom: `1px solid ${VMB_THEME.line}` }}>
-        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 800 }}>Published invitation library</h2>
-        <p style={{ margin: "4px 0 0", fontSize: 13, color: VMB_THEME.muted }}>
-          Admin-published templates available for your salon.
-        </p>
-      </header>
-      <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-        {copies.map((copy) => (
-          <li
-            key={copy.id}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr auto auto auto",
-              gap: 12,
-              alignItems: "center",
-              padding: "14px 16px",
-              borderTop: `1px solid ${VMB_THEME.line}`,
-            }}
-          >
-            <div>
-              <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{copy.snapshot.templateName}</p>
-              <p style={{ margin: "4px 0 0", fontSize: 13, color: VMB_THEME.muted }}>
-                Published from VMB library
-              </p>
-            </div>
-            <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>v{copy.publishedVersion}</p>
-            <p style={{ margin: 0, fontSize: 13, color: VMB_THEME.muted }}>
-              {formatSnapshotUpdatedAt(copy.snapshot)}
-            </p>
-            <button
-              type="button"
-              onClick={() => onPreview(copy)}
-              style={{
-                padding: "8px 12px",
-                borderRadius: 8,
-                border: `1px solid ${VMB_THEME.line}`,
-                background: "#fff",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              Preview
-            </button>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
 
