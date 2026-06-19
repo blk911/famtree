@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
+import { RestoreExistingBookPanel } from "@/components/vmb/RestoreExistingBookPanel";
 import { BookLoadedStatusNote } from "@/components/vmb/BookLoadedStatusNote";
 import { VmbOperatingDashboard } from "@/components/vmb/dashboard/VmbOperatingDashboard";
 import { VmbPageEmpty, VmbPageFrame, VmbPageLoading } from "@/components/vmb/VmbPageFrame";
@@ -38,7 +39,12 @@ function EmptyHome({ noSession }: { noSession?: boolean }) {
   return (
     <VmbPageEmpty
       message={message}
-      action={<LoadYourBookCta />}
+      action={
+        <>
+          <LoadYourBookCta />
+          <RestoreExistingBookPanel />
+        </>
+      }
     />
   );
 }

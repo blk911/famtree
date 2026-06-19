@@ -112,6 +112,16 @@ function run(): void {
   assert(startFlow.includes("/api/vmb/analyze-book"), "explicit load book still posts analyze-book");
   assert(startFlow.includes("reprocess"), "start flow sends reprocess flag for refresh/replace");
 
+  const restoreRoute = read("app/api/vmb/active-book/restore/route.ts");
+  assert(!restoreRoute.includes("analyze-book"), "restore route does not call analyze-book");
+  assert(!restoreRoute.includes("ensureInviteDraftsForAnalysis"), "restore route does not generate drafts");
+
+  const restorePanel = read("components/vmb/RestoreExistingBookPanel.tsx");
+  assert(!restorePanel.includes("/api/vmb/analyze-book"), "restore panel does not call analyze-book");
+
+  const dashboardClient = read("components/vmb/VmbDashboardClient.tsx");
+  assert(dashboardClient.includes("RestoreExistingBookPanel"), "dashboard empty state offers restore");
+
   console.log("OK: VMB salon read-only load tests passed");
 }
 

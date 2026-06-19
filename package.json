@@ -52,6 +52,7 @@
     "test:vmb:launch-guide": "tsx scripts/test-vmb-launch-guide.ts",
     "test:vmb:active-book-resolution": "tsx scripts/test-vmb-active-book-resolution.ts",
     "test:vmb:active-book-stickiness": "tsx scripts/test-vmb-active-book-stickiness.ts",
+    "test:vmb:active-book-restore": "tsx scripts/test-vmb-active-book-restore.ts",
     "test:vmb:invite-card-queue-persistence": "tsx scripts/test-vmb-invite-card-queue-persistence.ts",
     "test:vmb:demo-login": "tsx scripts/test-vmb-demo-login.ts",
     "test:vmb:runtime": "tsx scripts/test-vmb-runtime.ts",

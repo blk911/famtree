@@ -45,6 +45,15 @@ async function tryLoadAnalysisForTrial(
   if (scoped) return scoped;
   const loose = await getVmbBookAnalysis(id);
   if (loose && (!loose.trialId || loose.trialId === trialId)) return loose;
+  if (loose) {
+    const [workspace, pointer] = await Promise.all([
+      getWorkspaceForTrial(trialId),
+      getActiveBookPointer(trialId),
+    ]);
+    if (workspace?.latestAnalysisId === id || pointer?.analysisId === id) {
+      return loose;
+    }
+  }
   return undefined;
 }
 
