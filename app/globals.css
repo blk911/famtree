@@ -6061,8 +6061,8 @@
 
 @media (min-width: 900px) {
   .vmb-salon-services__layout {
-    grid-template-columns: minmax(240px, 34%) minmax(0, 1fr);
-    gap: 20px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
     align-items: start;
   }
 }
@@ -6098,7 +6098,7 @@
   border: 1px solid #e7e5e4;
   border-radius: 12px;
   background: #fff;
-  padding: 12px 14px;
+  padding: 14px 16px;
   cursor: pointer;
 }
 
@@ -6106,6 +6106,15 @@
   border-color: #f9a8d4;
   background: #fdf2f8;
   box-shadow: 0 0 0 1px #fbcfe8;
+}
+
+.vmb-salon-services__list-item--selected .vmb-salon-services__list-name {
+  color: #1c1917;
+}
+
+.vmb-salon-services__list-item--selected .vmb-salon-services__list-meta,
+.vmb-salon-services__list-item--selected .vmb-salon-services__list-addons {
+  color: #44403c;
 }
 
 .vmb-salon-services__list-head {
@@ -6117,7 +6126,7 @@
 
 .vmb-salon-services__list-name {
   margin: 0;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   line-height: 1.25;
   color: #1c1917;
@@ -6149,16 +6158,22 @@
 
 .vmb-salon-services__list-meta {
   margin: 8px 0 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: #57534e;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #44403c;
 }
 
 .vmb-salon-services__list-addons {
   margin: 6px 0 0;
-  font-size: 11px;
-  line-height: 1.4;
-  color: #78716c;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #44403c;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .vmb-salon-services__list-action {
@@ -6179,9 +6194,9 @@
   border: 1px solid #e7e5e4;
   border-radius: 14px;
   background: #fff;
-  padding: 18px 20px;
+  padding: 16px;
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .vmb-salon-services__editor-title {
@@ -6254,26 +6269,22 @@
 }
 
 .vmb-salon-services__addon-editor-row {
-  display: grid;
-  gap: 6px 12px;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  padding: 8px 10px;
+  gap: 8px 16px;
+  padding: 8px 12px;
   border: 1px solid #f5f5f4;
   border-radius: 8px;
   background: #fafaf9;
 }
 
-@media (min-width: 640px) {
-  .vmb-salon-services__addon-editor-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-}
-
 .vmb-salon-services__addon-check {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
+  flex: 0 1 auto;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -6284,19 +6295,19 @@
 }
 
 .vmb-salon-services__addon-price-wrap {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 12px;
-  justify-content: flex-end;
+  gap: 8px 10px;
+  flex: 0 0 auto;
 }
 
 .vmb-salon-services__addon-price-field {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
-  color: #78716c;
+  font-size: 13px;
+  color: #57534e;
 }
 
 .vmb-salon-services__addon-price-label {

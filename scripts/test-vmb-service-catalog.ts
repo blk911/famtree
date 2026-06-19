@@ -271,6 +271,13 @@ async function run(): Promise<void> {
   assert(salonServiceListItem.includes("formatSelectedAddonSummary"), "service list card summarizes add-ons");
   assert(salonServiceListItem.includes("vmb-salon-services__list-addons"), "service list card shows add-on summary line");
 
+  const salonServicesCss = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
+  assert(
+    salonServicesCss.includes("grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)"),
+    "salon services layout uses equal 50/50 columns on desktop",
+  );
+  assert(salonServicesCss.includes("-webkit-line-clamp: 2"), "add-on summary allows two-line wrap on service cards");
+
   console.log("OK: VMB service catalog tests passed");
 }
 
