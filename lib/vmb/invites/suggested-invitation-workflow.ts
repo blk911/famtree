@@ -13,6 +13,10 @@ import {
   resolveAdminDefaultPackageLabels,
 } from "@/lib/vmb/invite-templates/admin-default-invitation-package";
 import {
+  pricingFromSnapshotFields,
+  type InvitationPackagePricing,
+} from "@/lib/vmb/invites/invitation-package-pricing";
+import {
   resolveSnapshotRewardLabels,
   resolveSnapshotServiceLabels,
   type InviteTemplateSnapshot,
@@ -51,6 +55,7 @@ export type SuggestedInvitationRecommendation = {
   rewards: string[];
   expirationLabel?: string;
   estimatedValue: number;
+  pricing?: InvitationPackagePricing;
   priority: TaikosOpportunityPriority;
   draftId?: string;
   draftStatus?: VmbInviteDraft["status"];
@@ -178,6 +183,8 @@ export function buildSuggestedInvitationsFromOpportunities(
     const snapshot = publishedCopy?.snapshot ?? null;
     const templateName = snapshot?.templateName ?? defaultTemplateNameForCardType(suggestedCardType);
     const adminLabels = resolveAdminDefaultPackageLabels(templateId);
+    const snapshotPricing = snapshot ? pricingFromSnapshotFields(snapshot) : null;
+    const pricing = snapshotPricing ?? adminLabels.pricing;
 
     rows.push({
       id: opportunity.opportunityId,
@@ -195,7 +202,8 @@ export function buildSuggestedInvitationsFromOpportunities(
       services: snapshot ? resolveSnapshotServiceLabels(snapshot) : adminLabels.services,
       rewards: snapshot ? resolveSnapshotRewardLabels(snapshot) : adminLabels.rewards,
       expirationLabel: snapshot?.expirationLabel ?? adminLabels.expirationLabel,
-      estimatedValue: opportunity.estimatedValue,
+      estimatedValue: pricing?.offerPrice ?? opportunity.estimatedValue,
+      pricing,
       priority: opportunity.priority,
       draftId: draft?.draftId,
       draftStatus: draft?.status,

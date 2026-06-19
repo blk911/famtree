@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { formatInvitationPrice } from "@/lib/vmb/invites/invitation-package-pricing";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { SuggestedInvitationRecommendation } from "@/lib/vmb/invites/suggested-invitation-workflow";
 
@@ -84,7 +85,20 @@ export function SuggestedInvitationCard({
         {recommendation.expirationLabel ? (
           <Row label="Expiration" value={recommendation.expirationLabel} />
         ) : null}
-        <Row label="Estimated Value" value={`$${recommendation.estimatedValue.toLocaleString()}`} />
+        {recommendation.pricing ? (
+          <>
+            <Row label="Value" value={recommendation.pricing.valueLabel} />
+            {recommendation.pricing.savingsAmount > 0 ? (
+              <Row
+                label="Savings"
+                value={formatInvitationPrice(recommendation.pricing.savingsAmount)}
+              />
+            ) : null}
+            <Row label="Offer" value={recommendation.pricing.priceLabel} />
+          </>
+        ) : (
+          <Row label="Estimated Value" value={`$${recommendation.estimatedValue.toLocaleString()}`} />
+        )}
         {!recommendation.publishedCopy ? (
           <p style={{ margin: 0, fontSize: 12, color: "#b45309" }}>
             Template not published yet — preview uses the default library design.

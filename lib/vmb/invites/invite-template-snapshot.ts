@@ -25,6 +25,10 @@ export type InviteTemplateSnapshot = {
   priceLabel?: string;
   expirationLabel?: string;
   termsText?: string;
+  totalValue?: number;
+  savingsAmount?: number;
+  offerPrice?: number;
+  valueLabel?: string;
   ownerName?: string;
   salonName?: string;
   status: InviteTemplateSnapshotStatus;
@@ -43,6 +47,10 @@ export type BuildInviteTemplateSnapshotInput = {
   priceLabel?: string;
   expirationLabel?: string;
   termsText?: string;
+  totalValue?: number;
+  savingsAmount?: number;
+  offerPrice?: number;
+  valueLabel?: string;
   status?: InviteTemplateSnapshotStatus;
   version?: number;
   previousSnapshot?: InviteTemplateSnapshot | null;
@@ -80,6 +88,10 @@ export function buildInviteTemplateSnapshot(
     priceLabel: input.priceLabel,
     expirationLabel: input.expirationLabel,
     termsText: input.termsText,
+    totalValue: input.totalValue,
+    savingsAmount: input.savingsAmount,
+    offerPrice: input.offerPrice,
+    valueLabel: input.valueLabel,
     ownerName: input.ownerName,
     salonName: input.salonName,
     status,

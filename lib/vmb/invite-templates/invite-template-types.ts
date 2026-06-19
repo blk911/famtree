@@ -60,6 +60,7 @@ export type VmbDefaultInvitationPackage = {
   serviceOptionIds: string[];
   /** Human-readable expiration window shown on cards. */
   expirationLabel: string;
+  /** Optional marketing caption — separate from calculated Offer price. */
   priceLabel?: string;
   termsText?: string;
 };

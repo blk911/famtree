@@ -234,6 +234,7 @@ export function TemplateBuilderAdminClient({
               {selectedTemplate ? (
                 <AdminDefaultPackageSummary
                   pkg={selectedTemplate.defaultPackage}
+                  templateId={selectedTemplate.id}
                   serviceFallbackById={serviceFallbackById}
                   rewardFallbackById={optionFallbackById}
                 />

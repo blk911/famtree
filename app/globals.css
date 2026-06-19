@@ -7799,6 +7799,15 @@
   line-height: 1.45;
 }
 
+.vmb-nails-library__asset-pricing {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #78716c;
+  line-height: 1.35;
+}
+
 .vmb-salon-invite-card__footer {
   margin: 0;
 }

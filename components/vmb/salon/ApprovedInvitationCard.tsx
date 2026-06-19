@@ -8,6 +8,8 @@ import {
   resolveSnapshotRewardLabels,
   resolveSnapshotServiceLabels,
 } from "@/lib/vmb/invites/invite-template-snapshot";
+import { resolveInvitationPricing } from "@/lib/vmb/invites/invitation-pricing-display";
+import { formatInvitationPrice } from "@/lib/vmb/invites/invitation-package-pricing";
 import { VMB_THEME } from "@/lib/vmb/theme";
 import type { SalonInvitationApproval } from "@/types/vmb/salon-invitation-approval";
 
@@ -41,6 +43,7 @@ export function ApprovedInvitationCard({
 }: Props) {
   const services = resolveSnapshotServiceLabels(approval.snapshot);
   const rewards = resolveSnapshotRewardLabels(approval.snapshot);
+  const pricing = resolveInvitationPricing(approval.snapshot);
   const isPaused = approval.status === "paused";
 
   return (
@@ -87,6 +90,11 @@ export function ApprovedInvitationCard({
         {approval.snapshot.expirationLabel ? (
           <Row label="Expiration" value={approval.snapshot.expirationLabel} />
         ) : null}
+        <Row label="Value" value={pricing.valueLabel} />
+        {pricing.savingsAmount > 0 ? (
+          <Row label="Savings" value={formatInvitationPrice(pricing.savingsAmount)} />
+        ) : null}
+        <Row label="Offer" value={pricing.priceLabel} />
         <Row label="Approved" value={formatApprovalDate(approval.approvedAt ?? approval.createdAt)} />
       </div>
 

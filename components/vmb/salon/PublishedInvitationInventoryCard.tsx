@@ -7,6 +7,8 @@ import {
   resolveSnapshotRewardLabels,
   resolveSnapshotServiceLabels,
 } from "@/lib/vmb/invites/invite-template-snapshot";
+import { resolveInvitationPricing } from "@/lib/vmb/invites/invitation-pricing-display";
+import { formatInvitationPrice } from "@/lib/vmb/invites/invitation-package-pricing";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 import {
   getSalonInviteInventoryStatus,
@@ -49,6 +51,7 @@ export function PublishedInvitationInventoryCard({
 }: Props) {
   const services = resolveSnapshotServiceLabels(copy.snapshot);
   const rewards = resolveSnapshotRewardLabels(copy.snapshot);
+  const pricing = resolveInvitationPricing(copy.snapshot);
   const status = getSalonInviteInventoryStatus(copy);
   const isPaused = status === "paused";
 
@@ -103,6 +106,11 @@ export function PublishedInvitationInventoryCard({
         {copy.snapshot.expirationLabel ? (
           <InventoryRow label="Expiration" value={copy.snapshot.expirationLabel} />
         ) : null}
+        <InventoryRow label="Value" value={pricing.valueLabel} />
+        {pricing.savingsAmount > 0 ? (
+          <InventoryRow label="Savings" value={formatInvitationPrice(pricing.savingsAmount)} />
+        ) : null}
+        <InventoryRow label="Offer" value={pricing.priceLabel} />
       </div>
 
       <footer

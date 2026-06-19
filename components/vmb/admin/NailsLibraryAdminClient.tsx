@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AdminDefaultPackageSummary } from "@/components/vmb/admin/AdminDefaultPackageSummary";
+import { resolveAdminDefaultInvitationPackageWithPricing } from "@/lib/vmb/invite-templates/admin-default-invitation-package";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminSalonInviteReviewModal } from "@/components/vmb/admin/AdminSalonInviteReviewModal";
 import { useNailTemplateInventory } from "@/components/vmb/admin/useNailTemplateInventory";
@@ -145,7 +146,9 @@ export function NailsLibraryAdminClient({
             </p>
           ) : (
             <ul>
-              {savedDrafts.map((row) => (
+              {savedDrafts.map((row) => {
+                const assetPricing = resolveAdminDefaultInvitationPackageWithPricing(row.templateId)?.pricing;
+                return (
                 <li key={row.templateId}>
                   <button
                     type="button"
@@ -153,10 +156,16 @@ export function NailsLibraryAdminClient({
                     onClick={() => setSelectedTemplateId(row.templateId)}
                   >
                     {row.displayName}
+                    {assetPricing ? (
+                      <span className="vmb-nails-library__asset-pricing">
+                        Value {assetPricing.valueLabel} · Offer {assetPricing.priceLabel}
+                      </span>
+                    ) : null}
                     <span className="vmb-admin-builder-grid__override-dot" aria-label="In library" />
                   </button>
                 </li>
-              ))}
+              );
+              })}
             </ul>
           )}
         </aside>
@@ -189,10 +198,30 @@ export function NailsLibraryAdminClient({
               {selectedTemplate ? (
                 <AdminDefaultPackageSummary
                   pkg={selectedTemplate.defaultPackage}
+                  templateId={selectedTemplate.id}
                   serviceFallbackById={serviceFallbackById}
                   rewardFallbackById={optionFallbackById}
                   title="Admin default package (source)"
                 />
+              ) : null}
+
+              {librarySnapshot?.valueLabel && librarySnapshot?.priceLabel ? (
+                <dl className="vmb-nails-library__meta vmb-nails-library__meta--compact">
+                  <div>
+                    <dt>Value</dt>
+                    <dd>{librarySnapshot.valueLabel}</dd>
+                  </div>
+                  {(librarySnapshot.savingsAmount ?? 0) > 0 ? (
+                    <div>
+                      <dt>Savings</dt>
+                      <dd>${librarySnapshot.savingsAmount!.toLocaleString()}</dd>
+                    </div>
+                  ) : null}
+                  <div>
+                    <dt>Offer</dt>
+                    <dd>{librarySnapshot.priceLabel}</dd>
+                  </div>
+                </dl>
               ) : null}
 
               <div className="vmb-admin-builder-grid__actions">

@@ -6,6 +6,10 @@ import {
   parseInviteTemplateSnapshot,
   type InviteTemplateSnapshot,
 } from "@/lib/vmb/invites/invite-template-snapshot";
+import {
+  applyPricingToSnapshotFields,
+  calculateInvitationPackagePricing,
+} from "@/lib/vmb/invites/invitation-package-pricing";
 import type { VmbOffer, VmbOfferCategory } from "@/lib/vmb/offers/offer-types";
 
 export type NailTemplateDraft = {
@@ -128,6 +132,10 @@ export type BuildDraftSnapshotOptions = {
   priceLabel?: string;
   expirationLabel?: string;
   termsText?: string;
+  totalValue?: number;
+  savingsAmount?: number;
+  offerPrice?: number;
+  valueLabel?: string;
 };
 
 /** Builds the frozen snapshot payload used for preview, library storage, and publish. */
@@ -137,6 +145,22 @@ export function buildDraftInviteSnapshot(
 ): InviteTemplateSnapshot {
   const template = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === draft.templateId);
   const adminPackage = template?.defaultPackage;
+  const pricing =
+    options.totalValue != null && options.offerPrice != null
+      ? {
+          totalValue: options.totalValue,
+          savingsAmount: options.savingsAmount ?? 0,
+          offerPrice: options.offerPrice,
+          valueLabel: options.valueLabel ?? "",
+          priceLabel: options.priceLabel ?? "",
+        }
+      : applyPricingToSnapshotFields(
+          calculateInvitationPackagePricing({
+            serviceIds: draft.serviceIds,
+            serviceOptionIds: draft.serviceOptionIds,
+            inviteType: template?.inviteType,
+          }),
+        );
   return buildInviteTemplateSnapshot({
     draft,
     previousSnapshot: draft.librarySnapshot,
@@ -145,10 +169,14 @@ export function buildDraftInviteSnapshot(
     ownerPhotoUrl: options.ownerPhotoUrl,
     salonLogoUrl: options.salonLogoUrl,
     serviceImageUrl: options.serviceImageUrl,
-    priceLabel: options.priceLabel ?? adminPackage?.priceLabel,
+    priceLabel: options.priceLabel ?? pricing.priceLabel,
     expirationLabel: options.expirationLabel ?? adminPackage?.expirationLabel,
     termsText: options.termsText ?? adminPackage?.termsText,
     status: draft.saved ? "library" : "draft",
+    totalValue: pricing.totalValue,
+    savingsAmount: pricing.savingsAmount,
+    offerPrice: pricing.offerPrice,
+    valueLabel: pricing.valueLabel,
   });
 }
 

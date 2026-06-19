@@ -13,9 +13,11 @@ import {
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "../lib/vmb/invite-templates/default-nail-invite-templates";
 import {
   buildAdminDefaultSnapshotFromTemplate,
+  resolveAdminDefaultInvitationPackageWithPricing,
   validateDefaultInvitationPackage,
 } from "../lib/vmb/invite-templates/admin-default-invitation-package";
 import { DEFAULT_NAIL_INVITATION_PACKAGES } from "../lib/vmb/invite-templates/default-nail-invitation-packages";
+import { calculateInvitationPackagePricing } from "../lib/vmb/invites/invitation-package-pricing";
 import {
   inviteTemplateHasLegacyBleed,
   sanitizeInviteTemplateAgainstLegacyBleed,
@@ -152,6 +154,27 @@ async function run(): Promise<void> {
     "admin default snapshot carries expiration",
   );
   assert(adminSnapshot!.serviceIds.length > 0, "admin default snapshot carries service ids");
+  assert(adminSnapshot!.totalValue === 110, "birthday admin snapshot freezes total value");
+  assert(adminSnapshot!.savingsAmount === 15, "birthday admin snapshot freezes savings");
+  assert(adminSnapshot!.offerPrice === 95, "birthday admin snapshot freezes offer price");
+  assert(adminSnapshot!.valueLabel === "$110", "birthday admin snapshot carries value label");
+  assert(adminSnapshot!.priceLabel === "$95", "birthday admin snapshot carries offer label");
+
+  const gelManicurePricing = calculateInvitationPackagePricing({
+    serviceIds: ["default-nails-gel-manicure"],
+    serviceOptionIds: ["addon-chrome"],
+  });
+  assert(gelManicurePricing.serviceTotal === 55, "pricing sums service defaults");
+  assert(gelManicurePricing.addOnTotal === 15, "pricing sums add-on defaults");
+  assert(gelManicurePricing.totalValue === 70, "pricing totals service and add-ons");
+
+  const birthdayResolved = resolveAdminDefaultInvitationPackageWithPricing("nails-birthday-celebration");
+  assert((birthdayResolved?.pricing.savingsAmount ?? 0) > 0, "birthday default package has nonzero savings");
+  assert(birthdayResolved?.pricing.totalValue === 110, "birthday package value is gel-x plus chrome");
+
+  const pcnResolved = resolveAdminDefaultInvitationPackageWithPricing("nails-private-client-network");
+  assert(pcnResolved?.pricing.savingsAmount === 0, "PCN default package has zero savings");
+  assert(pcnResolved?.pricing.offerPrice === pcnResolved?.pricing.totalValue, "PCN offer equals full value");
 
   const repairResult = await repairNailInviteTemplateContent();
   assert(repairResult.repaired === 10, "repair script seeds exactly 10 Nail templates");
@@ -683,6 +706,9 @@ async function run(): Promise<void> {
   assert(suggested[0]!.rewards.includes("Chrome Upgrade"), "suggested invitation lists rewards from snapshot");
   assert(suggested[0]!.publishedCopy?.id === participationCopy.id, "suggested invitation links published copy");
   assert(suggested[0]!.matchSource !== "none", "suggested invitation records match source");
+  assert(!!suggested[0]!.pricing, "suggested card receives pricing summary");
+  assert(suggested[0]!.pricing!.totalValue === 70, "suggested pricing uses snapshot services when published");
+  assert(suggested[0]!.estimatedValue === suggested[0]!.pricing!.offerPrice, "suggested estimated value uses offer price");
 
   const pcnOpportunity = {
     ...birthdayOpportunity,
@@ -861,7 +887,7 @@ async function run(): Promise<void> {
       headline: "Happy Birthday Snapshot",
       body: "Celebrate with us",
       ctaLabel: "Book now",
-      serviceIds: ["default-nails-gel-manicure"],
+      serviceIds: ["default-nails-gel-x"],
       serviceOptionIds: ["addon-chrome"],
       active: true,
       saved: true,
@@ -869,6 +895,8 @@ async function run(): Promise<void> {
     },
     { ownerName: "Alex", salonName: "Glow Nails" },
   );
+  assert(approvalSnapshot.totalValue === 110, "approval snapshot freezes total value at build time");
+  assert(approvalSnapshot.offerPrice === 95, "approval snapshot freezes offer price at build time");
 
   const approved = await approveSalonInvitation(approvalSalonId, {
     clientName: "Grace Garcia",
@@ -899,6 +927,14 @@ async function run(): Promise<void> {
   assert(
     duplicate.approval.snapshot.headline === "Happy Birthday Snapshot",
     "approved snapshot stays frozen when approve is retried",
+  );
+  assert(
+    duplicate.approval.snapshot.totalValue === 110,
+    "approved snapshot keeps frozen pricing when approve is retried",
+  );
+  assert(
+    duplicate.approval.snapshot.offerPrice === 95,
+    "approved snapshot keeps frozen offer price when approve is retried",
   );
   const approvalRows = await listSalonInvitationApprovals(approvalSalonId);
   assert(approvalRows.length === 1, "approved record persists in store");
