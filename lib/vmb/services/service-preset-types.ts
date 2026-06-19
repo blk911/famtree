@@ -45,10 +45,14 @@ export type SalonFacingServiceOffer = {
   durationMinutes: number;
   enabled: boolean;
   sortOrder: number;
+  adminBasePriceCents: number;
+  adminDurationMinutes: number;
+  hasSalonConfig: boolean;
   addons: Array<{
     addonId: string;
     label: string;
     priceCents: number;
+    defaultPriceCents: number;
     enabled: boolean;
   }>;
 };

@@ -59,6 +59,7 @@ export async function PUT(request: NextRequest) {
     priceCents?: number;
     durationMinutes?: number;
     enabledAddonIds?: string[];
+    addonPriceCentsById?: Record<string, number>;
   };
 
   if (!body.catalogServiceId?.trim()) {
@@ -82,6 +83,10 @@ export async function PUT(request: NextRequest) {
     enabledAddonIds: Array.isArray(body.enabledAddonIds)
       ? body.enabledAddonIds
       : (existing?.enabledAddonIds ?? []),
+    addonPriceCentsById:
+      body.addonPriceCentsById && typeof body.addonPriceCentsById === "object"
+        ? body.addonPriceCentsById
+        : (existing?.addonPriceCentsById ?? {}),
   });
 
   if ("error" in saved) {

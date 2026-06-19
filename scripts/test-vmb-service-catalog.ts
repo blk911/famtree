@@ -12,6 +12,7 @@ import {
 } from "../lib/vmb/services/canonical-service-catalog";
 import { DEFAULT_NAILS_SERVICE_PRESETS } from "../lib/vmb/services/default-service-presets";
 import {
+  hasSalonSavedConfig,
   mergePresetWithSalonConfig,
   mergePresetsWithSalonConfigs,
 } from "../lib/vmb/services/merge-salon-service-offers";
@@ -80,6 +81,11 @@ async function run(): Promise<void> {
     Boolean(gelXPreset?.addons.some((addon) => addon.label === "Chrome" && addon.priceCents === 1500)),
     "facing service includes priced addon presets",
   );
+  assert(typeof gelXPreset?.adminBasePriceCents === "number", "facing service exposes admin default price");
+  assert(gelXPreset?.hasSalonConfig === false, "unsaved facing service is not marked as salon override");
+
+  const builderPreset = nailsPresets.find((preset) => preset.serviceOfferId === "default-nails-builder-gel");
+  assert((builderPreset?.addonPresets.length ?? 0) > 0, "builder gel preset includes add-ons");
 
   const merged = mergePresetsWithSalonConfigs(nailsPresets, []);
   assert(merged.length === 7, "client merge helper returns seven services");
@@ -125,6 +131,53 @@ async function run(): Promise<void> {
     const gelAfter = afterPartial.find((service) => service.id === "default-nails-gel-manicure");
     assert(gelAfter?.enabled === true, "saving salon config does not reset enabled state");
     assert(gelAfter?.priceCents === 6200, "salon price update persists");
+
+    const builderSaved = await upsertSalonServiceConfig(salonId, {
+      catalogServiceId: "default-nails-builder-gel",
+      enabled: true,
+      priceCents: 7500,
+      durationMinutes: 60,
+      enabledAddonIds: ["addon-chrome"],
+      addonPriceCentsById: { "addon-chrome": 1800 },
+    });
+    if ("error" in builderSaved) {
+      console.error("builder gel save failed:", builderSaved.error);
+      process.exit(1);
+    }
+    const reloadedFacing = await getSalonFacingServicesForCategory(salonId, "nails");
+    const builderFacing = reloadedFacing.find(
+      (service) => service.serviceOfferId === "default-nails-builder-gel",
+    );
+    assert(builderFacing?.enabled === true, "builder gel enabled state persists after reload");
+    assert(builderFacing?.hasSalonConfig === true, "builder gel marks salon config after save");
+    assert(builderFacing?.priceCents === 7500, "builder gel salon price persists after reload");
+
+    const gelXSaved = await upsertSalonServiceConfig(salonId, {
+      catalogServiceId: "default-nails-gel-x",
+      enabled: true,
+      priceCents: 8800,
+      durationMinutes: 90,
+      enabledAddonIds: ["addon-chrome"],
+      addonPriceCentsById: { "addon-chrome": 1600 },
+    });
+    if ("error" in gelXSaved) {
+      console.error("gel-x save failed:", gelXSaved.error);
+      process.exit(1);
+    }
+    const gelXReloaded = await getSalonFacingServicesForCategory(salonId, "nails");
+    const gelXFacing = gelXReloaded.find((service) => service.serviceOfferId === "default-nails-gel-x");
+    assert(gelXFacing?.priceCents === 8800, "gel-x base price persists after reload");
+    assert(
+      gelXFacing?.addons.some((addon) => addon.addonId === "addon-chrome" && addon.enabled),
+      "gel-x chrome add-on toggle persists after reload",
+    );
+    assert(
+      gelXFacing?.addons.find((addon) => addon.addonId === "addon-chrome")?.priceCents === 1600,
+      "gel-x chrome add-on price persists after reload",
+    );
+
+    const storedBuilderConfig = (await getSalonServiceConfig(salonId, "default-nails-builder-gel"))!;
+    assert(hasSalonSavedConfig(storedBuilderConfig), "stored builder gel config is marked saved");
   }
 
   const servicesPage = path.join(process.cwd(), "app", "vmb", "services", "page.tsx");
@@ -143,6 +196,15 @@ async function run(): Promise<void> {
   assert(serviceCatalogSource.includes("vmb-admin-builder-grid"), "service catalog uses three-column builder grid");
   assert(serviceCatalogSource.includes("vmb-admin-builder-grid__preview"), "service detail uses preview column");
   assert(serviceCatalogSource.includes("flowActions"), "service catalog preset link uses flow action area");
+
+  const salonServicesClient = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/salon/SalonServicesClient.tsx"),
+    "utf8",
+  );
+  assert(salonServicesClient.includes("vmb-salon-services__layout"), "salon services uses two-column layout");
+  assert(salonServicesClient.includes("SalonServiceEditor"), "salon services uses selected service editor");
+  assert(salonServicesClient.includes('fetch("/api/vmb/salon-services"'), "salon services loads merged salon menu");
+  assert(!salonServicesClient.includes("ServicePresetCard"), "salon services removes per-card save layout");
 
   console.log("OK: VMB service catalog tests passed");
 }

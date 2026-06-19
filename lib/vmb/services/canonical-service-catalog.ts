@@ -266,22 +266,30 @@ export const SERVICE_OFFERS: CatalogServiceOffer[] = [
 ];
 
 const GEL_X_ID = offerId("nails", "gel-x");
+const BUILDER_GEL_ID = offerId("nails", "builder-gel");
+const STRUCTURED_GEL_ID = offerId("nails", "structured-gel");
+const ACRYLIC_ID = offerId("nails", "acrylic-extensions");
+
+const NAILS_ART_ADDON_IDS = [
+  addonId("french"),
+  addonId("chrome"),
+  addonId("crystals"),
+  addonId("freestyle-art"),
+];
+
+const NAILS_EXTENSION_ADDON_IDS = [
+  ...NAILS_ART_ADDON_IDS,
+  addonId("medium-length"),
+  addonId("long-length"),
+  addonId("xl-length"),
+];
 
 export const OFFER_ADDON_MAP: OfferAddonMapEntry[] = [
+  ...NAILS_ART_ADDON_IDS.map((addon) => ({ serviceOfferId: BUILDER_GEL_ID, addonId: addon })),
+  ...NAILS_ART_ADDON_IDS.map((addon) => ({ serviceOfferId: STRUCTURED_GEL_ID, addonId: addon })),
+  ...NAILS_EXTENSION_ADDON_IDS.map((addon) => ({ serviceOfferId: ACRYLIC_ID, addonId: addon })),
   ...SERVICE_ADDONS.filter((addon) =>
-    [
-      addonId("medium-length"),
-      addonId("long-length"),
-      addonId("xl-length"),
-      addonId("french"),
-      addonId("chrome"),
-      addonId("cat-eye"),
-      addonId("aura"),
-      addonId("ombre"),
-      addonId("crystals"),
-      addonId("charms"),
-      addonId("freestyle-art"),
-    ].includes(addon.id),
+    NAILS_EXTENSION_ADDON_IDS.includes(addon.id),
   ).map((addon) => ({ serviceOfferId: GEL_X_ID, addonId: addon.id })),
   { serviceOfferId: offerId("hair", "color"), addonId: addonId("root-touch") },
   { serviceOfferId: offerId("hair", "color"), addonId: addonId("full-color") },

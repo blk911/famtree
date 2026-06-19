@@ -40,7 +40,7 @@ async function run(): Promise<void> {
   const disabledAddonId = gelX.addons.find((addon) => !addon.enabled)?.addonId;
   assert(Boolean(disabledAddonId), "salon service exposes at least one disabled add-on for validation");
   const calculated = calculateSalonOfferPriceCents(gelX, ["addon-chrome", "addon-crystals"]);
-  assert(calculated === 8000 + 1500 + 1000, "offer price calculates service plus add-ons");
+  assert(calculated === 8000 + 1500 + 1500, "offer price calculates service plus add-ons");
 
   const override = resolveOfferPriceCents(calculated, 11500);
   assert(override === 11500, "price override applies");

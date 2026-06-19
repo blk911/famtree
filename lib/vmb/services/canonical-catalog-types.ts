@@ -52,6 +52,8 @@ export type SalonServiceConfig = {
   priceCents: number;
   durationMinutes: number;
   enabledAddonIds: string[];
+  /** Salon-local add-on price overrides (cents) — admin preset prices remain defaults. */
+  addonPriceCentsById?: Record<string, number>;
   updatedAt: string;
 };
 

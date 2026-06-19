@@ -6047,11 +6047,246 @@
   color: #44403c;
 }
 
-/* Salon owner services — list-first configuration */
+/* Salon owner services — list + editor layout */
 .vmb-salon-services__context {
   margin: 0 0 16px;
   font-size: 14px;
   color: #78716c;
+}
+
+.vmb-salon-services__layout {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 900px) {
+  .vmb-salon-services__layout {
+    grid-template-columns: minmax(240px, 34%) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+}
+
+.vmb-salon-services__panel-label {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-salon-services__list-panel {
+  min-width: 0;
+}
+
+.vmb-salon-services__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.vmb-salon-services__list-item {
+  margin: 0;
+}
+
+.vmb-salon-services__list-button {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #e7e5e4;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.vmb-salon-services__list-item--selected .vmb-salon-services__list-button {
+  border-color: #f9a8d4;
+  background: #fdf2f8;
+  box-shadow: 0 0 0 1px #fbcfe8;
+}
+
+.vmb-salon-services__list-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.vmb-salon-services__list-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #1c1917;
+}
+
+.vmb-salon-services__status-badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f5f5f4;
+  color: #78716c;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.vmb-salon-services__status-badge--enabled {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.vmb-salon-services__list-desc {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #78716c;
+}
+
+.vmb-salon-services__list-meta {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #57534e;
+}
+
+.vmb-salon-services__list-action {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9d174d;
+}
+
+.vmb-salon-services__editor-panel {
+  min-width: 0;
+}
+
+.vmb-salon-services__editor {
+  border: 1px solid #e7e5e4;
+  border-radius: 14px;
+  background: #fff;
+  padding: 18px 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.vmb-salon-services__editor-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.vmb-salon-services__editor-desc {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #78716c;
+}
+
+.vmb-salon-services__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.vmb-salon-services__field-grid {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  .vmb-salon-services__field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.vmb-salon-services__section-label {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-salon-services__default-note {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #78716c;
+}
+
+.vmb-salon-services__included-line {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #44403c;
+}
+
+.vmb-salon-services__addons-empty {
+  margin: 0;
+  font-size: 13px;
+  color: #78716c;
+}
+
+.vmb-salon-services__addon-editor-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.vmb-salon-services__addon-editor-row {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #f5f5f4;
+  border-radius: 10px;
+  background: #fafaf9;
+}
+
+@media (min-width: 640px) {
+  .vmb-salon-services__addon-editor-row {
+    grid-template-columns: minmax(0, 1fr) 140px;
+    align-items: start;
+  }
+}
+
+.vmb-salon-services__addon-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.vmb-salon-services__addon-price-field {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: #78716c;
+}
+
+.vmb-salon-services__participating-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #44403c;
+}
+
+.vmb-salon-services__editor-footer {
+  padding-top: 4px;
+  border-top: 1px solid #e7e5e4;
 }
 
 .vmb-salon-services__state,

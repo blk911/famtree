@@ -12,8 +12,13 @@ import {
   listCatalogServiceOffers,
   listServiceCategories,
 } from "./canonical-service-catalog";
-import { getDefaultPresetForOffer } from "./default-service-presets";
-import { buildDefaultSalonConfigFromPreset, mergePresetsWithSalonConfigs } from "./merge-salon-service-offers";
+import { getDefaultPresetForOffer, listDefaultPresetsForCategory } from "./default-service-presets";
+import {
+  buildDefaultSalonConfigFromPreset,
+  hasSalonSavedConfig,
+  mergePresetsWithSalonConfigs,
+  sanitizeSalonServiceConfigForPreset,
+} from "./merge-salon-service-offers";
 import { listServicePresetCards } from "./service-preset-store";
 import { resolveVmbStorageBackend } from "@/lib/vmb/db";
 import { getVmbSalonServiceConfigsFile } from "@/lib/vmb/paths";
@@ -79,15 +84,27 @@ function mergeConfig(
   offer: CatalogServiceOffer,
   stored?: SalonServiceConfig,
 ): SalonServiceConfig {
-  const defaults = defaultConfigForOffer(salonId, offer);
-  if (!stored) return defaults;
-  const validAddonIds = new Set(listAddonsForServiceOffer(offer.id).map((addon) => addon.id));
+  const preset = getDefaultPresetForOffer(offer.id);
+  const defaults = preset
+    ? buildDefaultSalonConfigFromPreset(salonId, preset)
+    : defaultConfigForOffer(salonId, offer);
+  if (!stored || !hasSalonSavedConfig(stored)) return defaults;
+  const sanitized = preset
+    ? sanitizeSalonServiceConfigForPreset(preset, stored)
+    : {
+        catalogServiceId: offer.id,
+        enabled: stored.enabled,
+        priceCents: stored.priceCents,
+        durationMinutes: stored.durationMinutes,
+        enabledAddonIds: stored.enabledAddonIds,
+        addonPriceCentsById: stored.addonPriceCentsById ?? {},
+      };
   return {
     ...defaults,
-    ...stored,
+    ...sanitized,
     salonId,
     catalogServiceId: offer.id,
-    enabledAddonIds: (stored.enabledAddonIds ?? []).filter((id) => validAddonIds.has(id)),
+    updatedAt: stored.updatedAt,
   };
 }
 
@@ -143,10 +160,10 @@ export async function getSalonServiceConfigsForCategory(
   categoryId: ServiceCategoryId,
 ): Promise<SalonServiceConfig[]> {
   const stored = await loadSalonConfigs(salonId);
-  const byServiceId = new Map(stored.map((config) => [config.catalogServiceId, config]));
-  return listCatalogServiceOffers(categoryId).map((offer) =>
-    mergeConfig(salonId, offer, byServiceId.get(offer.id)),
-  );
+  return stored.filter((config) => {
+    const offer = getCatalogServiceOffer(config.catalogServiceId);
+    return offer?.categoryId === categoryId;
+  });
 }
 
 export async function getSalonServiceConfig(
@@ -161,7 +178,9 @@ export async function getSalonServiceConfig(
 
 export async function upsertSalonServiceConfig(
   salonId: string,
-  input: Omit<SalonServiceConfig, "salonId" | "updatedAt">,
+  input: Partial<Omit<SalonServiceConfig, "salonId" | "updatedAt">> & {
+    catalogServiceId: string;
+  },
 ): Promise<{ config: SalonServiceConfig } | { error: string }> {
   const offer = getCatalogServiceOffer(input.catalogServiceId);
   if (!offer) return { error: "Service not found in catalog" };
@@ -169,8 +188,33 @@ export async function upsertSalonServiceConfig(
   const writable = await assertWritable();
   if ("error" in writable) return writable;
 
+  const existingStored = (await loadSalonConfigs(salonId)).find(
+    (config) => config.catalogServiceId === input.catalogServiceId,
+  );
+  const existing = mergeConfig(salonId, offer, existingStored);
+  const mergedInput = {
+    catalogServiceId: input.catalogServiceId,
+    enabled: input.enabled ?? existing.enabled,
+    priceCents: input.priceCents ?? existing.priceCents,
+    durationMinutes: input.durationMinutes ?? existing.durationMinutes,
+    enabledAddonIds: input.enabledAddonIds ?? existing.enabledAddonIds,
+    addonPriceCentsById: input.addonPriceCentsById ?? existing.addonPriceCentsById ?? {},
+  };
+
+  const preset = getDefaultPresetForOffer(offer.id);
+  const sanitized = preset
+    ? sanitizeSalonServiceConfigForPreset(preset, mergedInput)
+    : {
+        catalogServiceId: mergedInput.catalogServiceId,
+        enabled: mergedInput.enabled,
+        priceCents: mergedInput.priceCents,
+        durationMinutes: mergedInput.durationMinutes,
+        enabledAddonIds: mergedInput.enabledAddonIds,
+        addonPriceCentsById: mergedInput.addonPriceCentsById,
+      };
+
   const payload: SalonServiceConfig = mergeConfig(salonId, offer, {
-    ...input,
+    ...sanitized,
     salonId,
     updatedAt: new Date().toISOString(),
   });

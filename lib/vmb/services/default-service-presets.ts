@@ -10,25 +10,33 @@ const GEL_X_ADDON_PRICES: Record<string, number> = {
   "addon-medium-length": 1000,
   "addon-long-length": 2000,
   "addon-xl-length": 3500,
-  "addon-french": 1000,
+  "addon-french": 1200,
   "addon-chrome": 1500,
   "addon-cat-eye": 1500,
   "addon-aura": 2000,
   "addon-ombre": 2000,
-  "addon-crystals": 1000,
+  "addon-crystals": 1500,
   "addon-charms": 1500,
-  "addon-freestyle-art": 5000,
+  "addon-freestyle-art": 2500,
 };
 
-function gelXAddonPresets(): ServiceAddonPreset[] {
-  return listAddonsForServiceOffer("default-nails-gel-x").map((addon, index) => ({
+function addonPresetsForOffer(
+  serviceOfferId: string,
+  addonIds: string[],
+  priceMap: Record<string, number> = GEL_X_ADDON_PRICES,
+): ServiceAddonPreset[] {
+  return listAddonsForServiceOffer(serviceOfferId).map((addon, index) => ({
     addonId: addon.id,
     label: addon.name,
-    priceCents: GEL_X_ADDON_PRICES[addon.id] ?? 0,
+    priceCents: priceMap[addon.id] ?? 0,
     active: true,
     defaultSelected: false,
     sortOrder: index + 1,
   }));
+}
+
+function gelXAddonPresets(): ServiceAddonPreset[] {
+  return addonPresetsForOffer("default-nails-gel-x", []);
 }
 
 function card(
@@ -67,6 +75,7 @@ export const DEFAULT_NAILS_SERVICE_PRESETS: ServicePresetCard[] = [
     defaultEnabled: false,
     active: true,
     sortOrder: 2,
+    addonPresets: addonPresetsForOffer("default-nails-builder-gel", []),
   }),
   card("default-nails-structured-gel", {
     displayName: "Structured Gel",
@@ -77,6 +86,7 @@ export const DEFAULT_NAILS_SERVICE_PRESETS: ServicePresetCard[] = [
     defaultEnabled: false,
     active: true,
     sortOrder: 3,
+    addonPresets: addonPresetsForOffer("default-nails-structured-gel", []),
   }),
   card("default-nails-gel-x", {
     displayName: "Gel-X Extensions",
@@ -98,6 +108,7 @@ export const DEFAULT_NAILS_SERVICE_PRESETS: ServicePresetCard[] = [
     defaultEnabled: false,
     active: true,
     sortOrder: 5,
+    addonPresets: addonPresetsForOffer("default-nails-acrylic-extensions", []),
   }),
   card("default-nails-smart-pedicure", {
     displayName: "Smart Pedicure",
