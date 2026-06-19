@@ -15,6 +15,7 @@ type Props = {
   tokenContext?: InviteTemplateTokenContext;
   serviceFallbackById?: Record<string, string | undefined>;
   rewardFallbackById?: Record<string, string | undefined>;
+  notice?: string;
 };
 
 export function SalonInvitationPreviewModal({
@@ -24,6 +25,7 @@ export function SalonInvitationPreviewModal({
   tokenContext,
   serviceFallbackById,
   rewardFallbackById,
+  notice = "Published from VMB master library — preview only.",
 }: Props) {
   if (!open) return null;
 
@@ -54,7 +56,7 @@ export function SalonInvitationPreviewModal({
         </header>
         <div className="vmb-admin-salon-invite-review-modal__body">
           <p style={{ margin: "0 0 12px", fontSize: 13, color: VMB_THEME.muted }}>
-            Published from VMB master library — preview only.
+            {notice}
           </p>
           <SalonInviteCard {...cardProps} mode="salon" />
         </div>

@@ -509,6 +509,17 @@ async function run(): Promise<void> {
     ),
     "suggested invitation cards show expiration",
   );
+  const suggestedCardSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/salon/SuggestedInvitationCard.tsx"),
+    "utf8",
+  );
+  assert(suggestedCardSource.includes("vmb-suggested-invite-card__body"), "suggested cards use compact layout");
+  assert(suggestedCardSource.includes("Needs published template"), "suggested cards show unpublished badge");
+  assert(suggestedCardSource.includes("SalonInvitationThumbnail"), "suggested cards show invite thumbnail");
+  assert(
+    suggestedCardSource.includes("Publish this invitation from Admin Library before approving."),
+    "suggested cards explain disabled approve state",
+  );
   assert(salonInviteCardSource.includes("adminReview"), "salon invite card supports admin review mode");
   assert(salonInviteCardSource.includes("Rewards included"), "salon invite card renders rewards");
   assert(salonInviteCardSource.includes("ownerPhotoUrl"), "salon invite card accepts owner photo");
@@ -608,7 +619,7 @@ async function run(): Promise<void> {
   assert(invitesClientSource.includes("/api/taikos/opportunities"), "invitations loads opportunity intelligence");
   assert(invitesClientSource.includes("SuggestedInvitationCard"), "invitations suggested tab uses workflow cards");
   assert(
-    invitesClientSource.includes("buildAdminDefaultSnapshotFromTemplate"),
+    invitesClientSource.includes("resolveRecommendationPreviewSnapshot"),
     "invites preview uses admin default snapshot when unpublished",
   );
   assert(invitesClientSource.includes("SuggestedMatchesSection"), "invitations suggested tab has matches section");
@@ -626,6 +637,10 @@ async function run(): Promise<void> {
       "No invitations have been published to your salon yet.",
     ),
     "invitations published empty state",
+  );
+  assert(
+    invitesClientSource.includes("Suggested matches below are previews only"),
+    "invitations suggested tab explains unpublished preview state",
   );
   assert(invitesClientSource.includes("SuggestedInviteMatchingDebug"), "invites suggested tab shows match debug");
 
@@ -709,6 +724,39 @@ async function run(): Promise<void> {
   assert(!!suggested[0]!.pricing, "suggested card receives pricing summary");
   assert(suggested[0]!.pricing!.totalValue === 70, "suggested pricing uses snapshot services when published");
   assert(suggested[0]!.estimatedValue === suggested[0]!.pricing!.offerPrice, "suggested estimated value uses offer price");
+
+  const unpublishedSuggested = buildSuggestedInvitationsFromOpportunities(
+    [birthdayOpportunity],
+    [],
+    { drafts: [] },
+  );
+  assert(unpublishedSuggested.length === 1, "unpublished suggested built without inventory");
+  assert(!unpublishedSuggested[0]!.publishedCopy, "unpublished suggested has no published copy");
+  assert(!!unpublishedSuggested[0]!.pricing, "unpublished suggested still has package pricing");
+
+  const {
+    buildApprovalInputFromRecommendation,
+    approvalDedupeKeyFromRecommendation,
+  } = await import("../lib/vmb/invites/salon-invitation-approval-workflow");
+  const pauseSalonId = "suggested-pause-test";
+  const pauseInput = buildApprovalInputFromRecommendation(
+    pauseSalonId,
+    unpublishedSuggested[0]!,
+    "pause",
+  );
+  assert(!("error" in pauseInput), "pause builds without published template");
+  assert(pauseInput.status === "paused", "unpublished pause creates paused record");
+  assert(pauseInput.sourceCopyId.startsWith("unpublished-"), "unpublished pause uses synthetic copy id");
+  const approveBlocked = buildApprovalInputFromRecommendation(
+    pauseSalonId,
+    unpublishedSuggested[0]!,
+    "approve",
+  );
+  assert("error" in approveBlocked, "approve blocked without published template");
+  assert(
+    !!approvalDedupeKeyFromRecommendation(pauseSalonId, unpublishedSuggested[0]!),
+    "unpublished recommendation has dedupe key for pause filtering",
+  );
 
   const pcnOpportunity = {
     ...birthdayOpportunity,

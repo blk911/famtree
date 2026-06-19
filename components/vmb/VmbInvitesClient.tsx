@@ -30,7 +30,6 @@ import {
   type SuggestedInvitationRecommendation,
 } from "@/lib/vmb/invites/suggested-invitation-workflow";
 import { publishedCopiesForDebug } from "@/lib/vmb/invites/published-copy-matching";
-import { buildAdminDefaultSnapshotFromTemplate } from "@/lib/vmb/invite-templates/admin-default-invitation-package";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
 import { VMB_THEME } from "@/lib/vmb/theme";
@@ -42,8 +41,10 @@ import {
   approvalDedupeKey,
   approvalDedupeKeyFromRecommendation,
   buildApprovalInputFromRecommendation,
+  resolveRecommendationPreviewSnapshot,
 } from "@/lib/vmb/invites/salon-invitation-approval-workflow";
 import type { InviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
+import type { InviteTemplateTokenContext } from "@/lib/vmb/invite-templates/invite-template-types";
 import type { SalonInvitationApproval } from "@/types/vmb/salon-invitation-approval";
 import { friendlyInviteDraftError } from "@/lib/vmb/invite-drafts/invite-draft-storage-errors";
 
@@ -55,6 +56,12 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "sent", label: "Sent" },
   { id: "paused", label: "Paused" },
 ];
+
+const SUGGESTED_PUBLISHED_EMPTY_MESSAGE =
+  "No invitations have been published to your salon yet. Suggested matches below are previews only until Admin publishes matching invitations.";
+
+const DEFAULT_PACKAGE_PREVIEW_NOTICE =
+  "Preview uses default package because this template has not been published.";
 
 type Props = {
   initialAnalysisId?: string;
@@ -87,6 +94,7 @@ export function VmbInvitesClient({
   const [editDraftId, setEditDraftId] = useState<string | null>(null);
   const [activePublishedCopy, setActivePublishedCopy] = useState<SalonInviteLocalCopy | null>(null);
   const [previewApprovalSnapshot, setPreviewApprovalSnapshot] = useState<InviteTemplateSnapshot | null>(null);
+  const [previewNotice, setPreviewNotice] = useState<string | null>(null);
   const [editPublishedCopy, setEditPublishedCopy] = useState<SalonInviteLocalCopy | null>(null);
   const [actionBusyId, setActionBusyId] = useState<string | null>(null);
   const [approveSuccessId, setApproveSuccessId] = useState<string | null>(null);
@@ -398,6 +406,7 @@ export function VmbInvitesClient({
   }
 
   async function handleApprove(recommendation: SuggestedInvitationRecommendation) {
+    if (!recommendation.publishedCopy) return;
     setActionBusyId(recommendation.id);
     try {
       const approval = await createApprovalFromRecommendation(recommendation, "approve");
@@ -415,7 +424,10 @@ export function VmbInvitesClient({
   async function handlePause(recommendation: SuggestedInvitationRecommendation) {
     setActionBusyId(recommendation.id);
     try {
-      await createApprovalFromRecommendation(recommendation, "pause");
+      const approval = await createApprovalFromRecommendation(recommendation, "pause");
+      if (approval) {
+        setTab("paused");
+      }
     } finally {
       setActionBusyId(null);
     }
@@ -448,13 +460,15 @@ export function VmbInvitesClient({
 
   function handlePreview(recommendation: SuggestedInvitationRecommendation) {
     if (recommendation.publishedCopy) {
+      setPreviewNotice(null);
       setActivePublishedCopy(recommendation.publishedCopy);
       return;
     }
-    const adminSnapshot = buildAdminDefaultSnapshotFromTemplate(recommendation.templateId, {
-      salonName: salonName ?? INVITE_TEMPLATE_PREVIEW_CONTEXT.salonName,
+    const adminSnapshot = resolveRecommendationPreviewSnapshot(recommendation, {
+      salonName: typeof salonName === "string" ? salonName : undefined,
     });
     if (adminSnapshot) {
+      setPreviewNotice(DEFAULT_PACKAGE_PREVIEW_NOTICE);
       setPreviewApprovalSnapshot(adminSnapshot);
       return;
     }
@@ -462,6 +476,11 @@ export function VmbInvitesClient({
     if (draft) {
       setActiveDraftId(draft.draftId);
     }
+  }
+
+  function closePreviewSnapshot() {
+    setPreviewApprovalSnapshot(null);
+    setPreviewNotice(null);
   }
 
   function replacePublishedCopy(updated: SalonInviteLocalCopy) {
@@ -614,6 +633,7 @@ export function VmbInvitesClient({
             copies={publishedCopies}
             tokenContext={tokenContext}
             actionBusyId={actionBusyId}
+            emptyMessage={SUGGESTED_PUBLISHED_EMPTY_MESSAGE}
             onPreview={(copy) => setActivePublishedCopy(copy)}
             onEditCopy={handleInventoryEditCopy}
             onPause={(copy) => void handleInventoryPause(copy)}
@@ -623,6 +643,8 @@ export function VmbInvitesClient({
             recommendations={visibleSuggestedRecommendations}
             actionBusyId={actionBusyId}
             approveSuccessId={approveSuccessId}
+            tokenContext={tokenContext}
+            salonName={typeof salonName === "string" ? salonName : undefined}
             onPreview={handlePreview}
             onApprove={(recommendation) => void handleApprove(recommendation)}
             onPause={(recommendation) => void handlePause(recommendation)}
@@ -721,7 +743,8 @@ export function VmbInvitesClient({
           open
           snapshot={previewApprovalSnapshot}
           tokenContext={tokenContext}
-          onClose={() => setPreviewApprovalSnapshot(null)}
+          notice={previewNotice ?? undefined}
+          onClose={closePreviewSnapshot}
         />
       ) : null}
 
@@ -745,6 +768,8 @@ function SuggestedMatchesSection({
   recommendations,
   actionBusyId,
   approveSuccessId,
+  tokenContext,
+  salonName,
   onPreview,
   onApprove,
   onPause,
@@ -752,6 +777,8 @@ function SuggestedMatchesSection({
   recommendations: SuggestedInvitationRecommendation[];
   actionBusyId: string | null;
   approveSuccessId: string | null;
+  tokenContext: InviteTemplateTokenContext;
+  salonName?: string;
   onPreview: (recommendation: SuggestedInvitationRecommendation) => void;
   onApprove: (recommendation: SuggestedInvitationRecommendation) => void;
   onPause: (recommendation: SuggestedInvitationRecommendation) => void;
@@ -767,18 +794,27 @@ function SuggestedMatchesSection({
       {recommendations.length === 0 ? (
         <EmptyPanel message="No suggested invitations right now." />
       ) : (
-        <div style={{ display: "grid", gap: 16 }}>
-          {recommendations.map((recommendation) => (
-            <SuggestedInvitationCard
-              key={recommendation.id}
-              recommendation={recommendation}
-              busy={actionBusyId === recommendation.id}
-              approveSuccess={approveSuccessId === recommendation.id}
-              onPreview={() => onPreview(recommendation)}
-              onApprove={() => onApprove(recommendation)}
-              onPause={() => onPause(recommendation)}
-            />
-          ))}
+        <div className="vmb-suggested-invite-list">
+          {recommendations.map((recommendation) => {
+            const previewSnapshot = resolveRecommendationPreviewSnapshot(recommendation, { salonName });
+            const cardTokenContext = {
+              ...tokenContext,
+              clientName: recommendation.clientName,
+            };
+            return (
+              <SuggestedInvitationCard
+                key={recommendation.id}
+                recommendation={recommendation}
+                previewSnapshot={previewSnapshot}
+                tokenContext={cardTokenContext}
+                busy={actionBusyId === recommendation.id}
+                approveSuccess={approveSuccessId === recommendation.id}
+                onPreview={() => onPreview(recommendation)}
+                onApprove={() => onApprove(recommendation)}
+                onPause={() => onPause(recommendation)}
+              />
+            );
+          })}
         </div>
       )}
     </section>

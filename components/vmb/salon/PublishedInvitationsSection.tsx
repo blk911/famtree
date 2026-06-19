@@ -9,6 +9,7 @@ type Props = {
   copies: SalonInviteLocalCopy[];
   tokenContext?: InviteTemplateTokenContext;
   actionBusyId: string | null;
+  emptyMessage?: string;
   onPreview: (copy: SalonInviteLocalCopy) => void;
   onEditCopy: (copy: SalonInviteLocalCopy) => void;
   onPause: (copy: SalonInviteLocalCopy) => void;
@@ -19,6 +20,7 @@ export function PublishedInvitationsSection({
   copies,
   tokenContext,
   actionBusyId,
+  emptyMessage = "No invitations have been published to your salon yet.",
   onPreview,
   onEditCopy,
   onPause,
@@ -35,7 +37,7 @@ export function PublishedInvitationsSection({
         </p>
       </header>
       {copies.length === 0 ? (
-        <EmptyPanel message="No invitations have been published to your salon yet." />
+        <EmptyPanel message={emptyMessage} />
       ) : (
         <div className="vmb-published-invite-grid">
           {copies.map((copy) => (

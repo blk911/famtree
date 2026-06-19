@@ -12,6 +12,7 @@ type Props = {
   tokenContext?: InviteTemplateTokenContext;
   serviceFallbackById?: Record<string, string | undefined>;
   rewardFallbackById?: Record<string, string | undefined>;
+  compact?: boolean;
 };
 
 /** Scaled salon invite card preview — same renderer as the preview modal. */
@@ -20,6 +21,7 @@ export function SalonInvitationThumbnail({
   tokenContext,
   serviceFallbackById,
   rewardFallbackById,
+  compact = false,
 }: Props) {
   const cardProps = snapshotToSalonInviteCardProps(snapshot, {
     tokenContext,
@@ -28,7 +30,10 @@ export function SalonInvitationThumbnail({
   });
 
   return (
-    <div className="vmb-salon-invite-thumbnail" aria-hidden>
+    <div
+      className={`vmb-salon-invite-thumbnail${compact ? " vmb-salon-invite-thumbnail--compact" : ""}`}
+      aria-hidden
+    >
       <div className="vmb-salon-invite-thumbnail__frame">
         <SalonInviteCard {...cardProps} mode="salon" />
       </div>

@@ -1,4 +1,5 @@
 import type { InviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
+import { buildAdminDefaultSnapshotFromTemplate } from "@/lib/vmb/invite-templates/admin-default-invitation-package";
 import type { SuggestedInvitationRecommendation } from "@/lib/vmb/invites/suggested-invitation-workflow";
 import type {
   CreateSalonInvitationApprovalInput,
@@ -39,13 +40,24 @@ export function approvalDedupeKeyFromRecommendation(
   salonId: string,
   recommendation: SuggestedInvitationRecommendation,
 ): string | null {
-  if (!recommendation.publishedCopy) return null;
+  const sourceCopyId =
+    recommendation.publishedCopy?.id ?? `unpublished-${recommendation.templateId}`;
   return buildApprovalDedupeKey({
     salonId,
     opportunityId: recommendation.opportunityId,
     clientName: recommendation.clientName,
     opportunityType: recommendation.categoryLabel,
-    sourceCopyId: recommendation.publishedCopy.id,
+    sourceCopyId,
+  });
+}
+
+export function resolveRecommendationPreviewSnapshot(
+  recommendation: SuggestedInvitationRecommendation,
+  options: { salonName?: string } = {},
+): InviteTemplateSnapshot | null {
+  if (recommendation.snapshot) return recommendation.snapshot;
+  return buildAdminDefaultSnapshotFromTemplate(recommendation.templateId, {
+    salonName: options.salonName,
   });
 }
 
@@ -54,23 +66,44 @@ export function buildApprovalInputFromRecommendation(
   recommendation: SuggestedInvitationRecommendation,
   action: "approve" | "pause",
 ): CreateSalonInvitationApprovalInput | { error: string } {
-  if (!recommendation.publishedCopy?.snapshot) {
-    return { error: "Suggested invitation requires a published salon template before approval." };
+  if (action === "approve") {
+    if (!recommendation.publishedCopy?.snapshot) {
+      return { error: "Suggested invitation requires a published salon template before approval." };
+    }
+
+    return {
+      clientName: recommendation.clientName,
+      opportunityId: recommendation.opportunityId,
+      opportunityType: recommendation.categoryLabel,
+      sourceCopyId: recommendation.publishedCopy.id,
+      sourceTemplateId: recommendation.publishedCopy.sourceTemplateId,
+      snapshot: cloneInviteTemplateSnapshot(recommendation.publishedCopy.snapshot),
+      reasonText: recommendation.reasonHeadline,
+      estimatedValue: recommendation.estimatedValue,
+      status: "approved",
+    };
   }
 
-  const status: CreateSalonInvitationApprovalInput["status"] =
-    action === "approve" ? "approved" : "paused";
+  const snapshot = resolveRecommendationPreviewSnapshot(recommendation);
+  if (!snapshot) {
+    return { error: "Suggested invitation requires a preview snapshot before pausing." };
+  }
+
+  const sourceCopyId =
+    recommendation.publishedCopy?.id ?? `unpublished-${recommendation.templateId}`;
+  const sourceTemplateId =
+    recommendation.publishedCopy?.sourceTemplateId ?? recommendation.templateId;
 
   return {
     clientName: recommendation.clientName,
     opportunityId: recommendation.opportunityId,
     opportunityType: recommendation.categoryLabel,
-    sourceCopyId: recommendation.publishedCopy.id,
-    sourceTemplateId: recommendation.publishedCopy.sourceTemplateId,
-    snapshot: cloneInviteTemplateSnapshot(recommendation.publishedCopy.snapshot),
+    sourceCopyId,
+    sourceTemplateId,
+    snapshot: cloneInviteTemplateSnapshot(snapshot),
     reasonText: recommendation.reasonHeadline,
     estimatedValue: recommendation.estimatedValue,
-    status,
+    status: "paused",
   };
 }
 

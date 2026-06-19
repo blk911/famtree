@@ -1,153 +1,139 @@
-"use client";
-
-import type { CSSProperties } from "react";
-import { formatInvitationPrice } from "@/lib/vmb/invites/invitation-package-pricing";
-import { VMB_THEME } from "@/lib/vmb/theme";
-import type { SuggestedInvitationRecommendation } from "@/lib/vmb/invites/suggested-invitation-workflow";
-
-type Props = {
-  recommendation: SuggestedInvitationRecommendation;
-  onPreview: () => void;
-  onApprove: () => void;
-  onPause: () => void;
-  busy?: boolean;
-  approveSuccess?: boolean;
-};
-
-function actionButtonStyle(variant: "primary" | "default" = "default"): CSSProperties {
-  return {
-    padding: "8px 12px",
-    borderRadius: 8,
-    border: `1px solid ${variant === "primary" ? VMB_THEME.accent : VMB_THEME.line}`,
-    background: variant === "primary" ? VMB_THEME.accentSoft : "#fff",
-    fontSize: 13,
-    fontWeight: 600,
-    color: variant === "primary" ? VMB_THEME.ink : VMB_THEME.muted,
-    cursor: "pointer",
-  };
-}
-
-export function SuggestedInvitationCard({
-  recommendation,
-  onPreview,
-  onApprove,
-  onPause,
-  busy = false,
-  approveSuccess = false,
-}: Props) {
-  const thumbnailUrl = recommendation.snapshot?.serviceImageUrl;
-
-  return (
-    <article
-      className="vmb-suggested-invite-card"
-      style={{
-        borderRadius: 14,
-        border: `1px solid ${VMB_THEME.line}`,
-        background: "#fff",
-        padding: "18px 18px 16px",
-        display: "grid",
-        gap: 14,
-      }}
-    >
-      <header style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start" }}>
-        <div>
-          <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", color: VMB_THEME.muted }}>
-            {recommendation.categoryLabel.toUpperCase()}
-          </p>
-          <h2 style={{ margin: "4px 0 0", fontSize: 18, fontWeight: 800 }}>{recommendation.clientName}</h2>
-          <p style={{ margin: "6px 0 0", fontSize: 14, color: VMB_THEME.muted }}>
-            {recommendation.reasonHeadline}
-          </p>
-        </div>
-        {thumbnailUrl ? (
-          <div
-            aria-hidden
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 10,
-              background: `center/cover no-repeat url(${thumbnailUrl})`,
-              border: `1px solid ${VMB_THEME.line}`,
-              flexShrink: 0,
-            }}
-          />
-        ) : null}
-      </header>
-
-      <div style={{ display: "grid", gap: 8 }}>
-        <Row label="Suggested Invitation" value={recommendation.templateName} />
-        {recommendation.services.length > 0 ? (
-          <Row label="Services" value={recommendation.services.join(", ")} />
-        ) : null}
-        {recommendation.rewards.length > 0 ? (
-          <Row label="Rewards" value={recommendation.rewards.join(", ")} />
-        ) : null}
-        {recommendation.expirationLabel ? (
-          <Row label="Expiration" value={recommendation.expirationLabel} />
-        ) : null}
-        {recommendation.pricing ? (
-          <>
-            <Row label="Value" value={recommendation.pricing.valueLabel} />
-            {recommendation.pricing.savingsAmount > 0 ? (
-              <Row
-                label="Savings"
-                value={formatInvitationPrice(recommendation.pricing.savingsAmount)}
-              />
-            ) : null}
-            <Row label="Offer" value={recommendation.pricing.priceLabel} />
-          </>
-        ) : (
-          <Row label="Estimated Value" value={`$${recommendation.estimatedValue.toLocaleString()}`} />
-        )}
-        {!recommendation.publishedCopy ? (
-          <p style={{ margin: 0, fontSize: 12, color: "#b45309" }}>
-            Template not published yet — preview uses the default library design.
-          </p>
-        ) : (
-          <p style={{ margin: 0, fontSize: 12, color: VMB_THEME.muted }}>
-            Published template v{recommendation.publishedCopy.publishedVersion}
-          </p>
-        )}
-        {approveSuccess ? (
-          <p style={{ margin: 0, fontSize: 12, color: "#15803d", fontWeight: 600 }}>
-            Approved. Ready to send later.
-          </p>
-        ) : null}
-      </div>
-
-      <footer
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 8,
-          paddingTop: 4,
-          borderTop: `1px solid ${VMB_THEME.line}`,
-        }}
-      >
-        <button type="button" disabled={busy} onClick={onPreview} style={actionButtonStyle()}>
-          Preview
-        </button>
-        <button
-          type="button"
-          disabled={busy || !recommendation.publishedCopy || approveSuccess}
-          onClick={onApprove}
-          style={actionButtonStyle("primary")}
-        >
-          Approve
-        </button>
-        <button type="button" disabled={busy || approveSuccess} onClick={onPause} style={actionButtonStyle()}>
-          Pause
-        </button>
-      </footer>
-    </article>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8, alignItems: "baseline" }}>
-      <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: VMB_THEME.muted }}>{label}</p>
-      <p style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{value}</p>
-    </div>
-  );
-}
+"use client";
+
+import { SalonInvitationThumbnail } from "@/components/vmb/salon/SalonInvitationThumbnail";
+import { formatInvitationPrice } from "@/lib/vmb/invites/invitation-package-pricing";
+import type { InviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
+import type { InviteTemplateTokenContext } from "@/lib/vmb/invite-templates/invite-template-types";
+import type { SuggestedInvitationRecommendation } from "@/lib/vmb/invites/suggested-invitation-workflow";
+
+type Props = {
+  recommendation: SuggestedInvitationRecommendation;
+  previewSnapshot: InviteTemplateSnapshot | null;
+  tokenContext?: InviteTemplateTokenContext;
+  onPreview: () => void;
+  onApprove: () => void;
+  onPause: () => void;
+  busy?: boolean;
+  approveSuccess?: boolean;
+};
+
+const APPROVE_DISABLED_HINT = "Publish this invitation from Admin Library before approving.";
+
+export function SuggestedInvitationCard({
+  recommendation,
+  previewSnapshot,
+  tokenContext,
+  onPreview,
+  onApprove,
+  onPause,
+  busy = false,
+  approveSuccess = false,
+}: Props) {
+  const hasPublishedTemplate = Boolean(recommendation.publishedCopy);
+  const canApprove = hasPublishedTemplate && !approveSuccess;
+
+  return (
+    <article className="vmb-suggested-invite-card">
+      <div className="vmb-suggested-invite-card__body">
+        <div className="vmb-suggested-invite-card__client">
+          <div className="vmb-suggested-invite-card__client-head">
+            <p className="vmb-suggested-invite-card__category">{recommendation.categoryLabel}</p>
+            {!hasPublishedTemplate ? (
+              <span className="vmb-suggested-invite-card__badge">Needs published template</span>
+            ) : (
+              <span className="vmb-suggested-invite-card__badge vmb-suggested-invite-card__badge--ready">
+                Published v{recommendation.publishedCopy!.publishedVersion}
+              </span>
+            )}
+          </div>
+          <h2 className="vmb-suggested-invite-card__client-name">{recommendation.clientName}</h2>
+          <p className="vmb-suggested-invite-card__reason">{recommendation.reasonHeadline}</p>
+        </div>
+
+        <dl className="vmb-suggested-invite-card__details">
+          <DetailRow label="Suggested Invitation" value={recommendation.templateName} />
+          {recommendation.services.length > 0 ? (
+            <DetailRow label="Services" value={recommendation.services.join(", ")} />
+          ) : null}
+          {recommendation.rewards.length > 0 ? (
+            <DetailRow label="Rewards" value={recommendation.rewards.join(", ")} />
+          ) : null}
+          {recommendation.expirationLabel ? (
+            <DetailRow label="Expiration" value={recommendation.expirationLabel} />
+          ) : null}
+          {recommendation.pricing ? (
+            <>
+              <DetailRow label="Value" value={recommendation.pricing.valueLabel} />
+              {recommendation.pricing.savingsAmount > 0 ? (
+                <DetailRow
+                  label="Savings"
+                  value={formatInvitationPrice(recommendation.pricing.savingsAmount)}
+                />
+              ) : null}
+              <DetailRow label="Offer" value={recommendation.pricing.priceLabel} />
+            </>
+          ) : (
+            <DetailRow
+              label="Estimated Value"
+              value={`$${recommendation.estimatedValue.toLocaleString()}`}
+            />
+          )}
+        </dl>
+
+        <div className="vmb-suggested-invite-card__preview">
+          {previewSnapshot ? (
+            <SalonInvitationThumbnail snapshot={previewSnapshot} tokenContext={tokenContext} compact />
+          ) : (
+            <div className="vmb-suggested-invite-card__thumb-placeholder">
+              Template not published yet
+            </div>
+          )}
+        </div>
+      </div>
+
+      {approveSuccess ? (
+        <p className="vmb-suggested-invite-card__success">Approved. Ready to send later.</p>
+      ) : null}
+
+      <footer className="vmb-suggested-invite-card__footer">
+        <button type="button" className="vmb-suggested-invite-card__action" disabled={busy} onClick={onPreview}>
+          Preview
+        </button>
+        <span className="vmb-suggested-invite-card__approve-wrap" title={!canApprove ? APPROVE_DISABLED_HINT : undefined}>
+          <button
+            type="button"
+            className="vmb-suggested-invite-card__action vmb-suggested-invite-card__action--primary"
+            disabled={busy || !canApprove}
+            aria-describedby={!canApprove ? `approve-hint-${recommendation.id}` : undefined}
+            onClick={onApprove}
+          >
+            Approve
+          </button>
+        </span>
+        <button
+          type="button"
+          className="vmb-suggested-invite-card__action"
+          disabled={busy || approveSuccess}
+          onClick={onPause}
+        >
+          Pause
+        </button>
+        {!canApprove && !approveSuccess ? (
+          <p id={`approve-hint-${recommendation.id}`} className="vmb-suggested-invite-card__approve-hint">
+            {APPROVE_DISABLED_HINT}
+          </p>
+        ) : null}
+      </footer>
+    </article>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="vmb-suggested-invite-card__detail-row">
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  );
+}
+

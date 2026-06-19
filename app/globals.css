@@ -7855,6 +7855,189 @@
   pointer-events: none;
 }
 
+.vmb-salon-invite-thumbnail--compact {
+  height: 132px;
+}
+
+.vmb-salon-invite-thumbnail--compact .vmb-salon-invite-thumbnail__frame {
+  transform: translateX(-50%) scale(0.38);
+}
+
+.vmb-suggested-invite-list {
+  display: grid;
+  gap: 14px;
+}
+
+.vmb-suggested-invite-card {
+  border-radius: 14px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  padding: 14px 16px 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.vmb-suggested-invite-card__body {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 768px) {
+  .vmb-suggested-invite-card__body {
+    grid-template-columns: minmax(150px, 20%) minmax(0, 1fr) minmax(128px, 24%);
+    gap: 16px 20px;
+    align-items: start;
+  }
+}
+
+.vmb-suggested-invite-card__client-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.vmb-suggested-invite-card__category {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-suggested-invite-card__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.vmb-suggested-invite-card__badge--ready {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.vmb-suggested-invite-card__client-name {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.vmb-suggested-invite-card__reason {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #78716c;
+}
+
+.vmb-suggested-invite-card__details {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+
+.vmb-suggested-invite-card__detail-row {
+  display: grid;
+  grid-template-columns: minmax(88px, 34%) minmax(0, 1fr);
+  gap: 6px 10px;
+  align-items: baseline;
+}
+
+.vmb-suggested-invite-card__detail-row dt {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #78716c;
+}
+
+.vmb-suggested-invite-card__detail-row dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #1c1917;
+}
+
+.vmb-suggested-invite-card__preview {
+  min-width: 0;
+}
+
+.vmb-suggested-invite-card__thumb-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 132px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed #d6d3d1;
+  background: #fafaf9;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #78716c;
+}
+
+.vmb-suggested-invite-card__success {
+  margin: 0;
+  font-size: 12px;
+  color: #15803d;
+  font-weight: 600;
+}
+
+.vmb-suggested-invite-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #e7e5e4;
+}
+
+.vmb-suggested-invite-card__action {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #78716c;
+  cursor: pointer;
+}
+
+.vmb-suggested-invite-card__action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.vmb-suggested-invite-card__action--primary {
+  border-color: #f9a8d4;
+  background: #fdf2f8;
+  color: #1c1917;
+}
+
+.vmb-suggested-invite-card__approve-wrap {
+  display: inline-flex;
+}
+
+.vmb-suggested-invite-card__approve-hint {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #78716c;
+}
+
 .vmb-builder-image-inserts {
   margin-top: 12px;
   padding-top: 12px;
