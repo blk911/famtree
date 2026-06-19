@@ -10,6 +10,9 @@ import {
 } from "@/lib/vmb/invites/published-copy-matching";
 import { getDefaultNailInviteTemplate } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import {
+  resolveAdminDefaultPackageLabels,
+} from "@/lib/vmb/invite-templates/admin-default-invitation-package";
+import {
   resolveSnapshotRewardLabels,
   resolveSnapshotServiceLabels,
   type InviteTemplateSnapshot,
@@ -46,6 +49,7 @@ export type SuggestedInvitationRecommendation = {
   snapshot: InviteTemplateSnapshot | null;
   services: string[];
   rewards: string[];
+  expirationLabel?: string;
   estimatedValue: number;
   priority: TaikosOpportunityPriority;
   draftId?: string;
@@ -173,6 +177,7 @@ export function buildSuggestedInvitationsFromOpportunities(
     const publishedCopy = match.copy;
     const snapshot = publishedCopy?.snapshot ?? null;
     const templateName = snapshot?.templateName ?? defaultTemplateNameForCardType(suggestedCardType);
+    const adminLabels = resolveAdminDefaultPackageLabels(templateId);
 
     rows.push({
       id: opportunity.opportunityId,
@@ -187,8 +192,9 @@ export function buildSuggestedInvitationsFromOpportunities(
       templateName,
       publishedCopy,
       snapshot,
-      services: snapshot ? resolveSnapshotServiceLabels(snapshot) : [],
-      rewards: snapshot ? resolveSnapshotRewardLabels(snapshot) : [],
+      services: snapshot ? resolveSnapshotServiceLabels(snapshot) : adminLabels.services,
+      rewards: snapshot ? resolveSnapshotRewardLabels(snapshot) : adminLabels.rewards,
+      expirationLabel: snapshot?.expirationLabel ?? adminLabels.expirationLabel,
       estimatedValue: opportunity.estimatedValue,
       priority: opportunity.priority,
       draftId: draft?.draftId,

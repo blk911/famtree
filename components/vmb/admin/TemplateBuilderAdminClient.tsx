@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { AdminDefaultPackageSummary } from "@/components/vmb/admin/AdminDefaultPackageSummary";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminTemplateReviewModal } from "@/components/vmb/admin/AdminTemplateReviewModal";
 import { BuilderImageInsertsSection } from "@/components/vmb/admin/BuilderImageInsertsSection";
@@ -59,6 +60,11 @@ export function TemplateBuilderAdminClient({
   const selectedBaseline = useMemo(
     () => drafts.find((row) => row.templateId === selectedTemplateId),
     [drafts, selectedTemplateId],
+  );
+
+  const selectedTemplate = useMemo(
+    () => DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === selectedTemplateId),
+    [selectedTemplateId],
   );
 
   useEffect(() => {
@@ -224,6 +230,14 @@ export function TemplateBuilderAdminClient({
                 onServiceIdsChange={(serviceIds) => patchDraft({ serviceIds })}
                 onServiceOptionIdsChange={(serviceOptionIds) => patchDraft({ serviceOptionIds })}
               />
+
+              {selectedTemplate ? (
+                <AdminDefaultPackageSummary
+                  pkg={selectedTemplate.defaultPackage}
+                  serviceFallbackById={serviceFallbackById}
+                  rewardFallbackById={optionFallbackById}
+                />
+              ) : null}
 
               <BuilderImageInsertsSection inserts={imageInserts} onChange={handleImageInsertsChange} />
 

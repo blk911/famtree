@@ -1,4 +1,5 @@
 import type { VmbInviteTemplate } from "./invite-template-types";
+import { getDefaultNailInvitationPackage } from "./default-nail-invitation-packages";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 
@@ -6,7 +7,14 @@ function template(
   inviteType: VmbInviteTemplate["inviteType"],
   fields: Omit<
     VmbInviteTemplate,
-    "id" | "categoryId" | "inviteType" | "createdAt" | "updatedAt" | "active" | "sortOrder"
+    | "id"
+    | "categoryId"
+    | "inviteType"
+    | "createdAt"
+    | "updatedAt"
+    | "active"
+    | "sortOrder"
+    | "defaultPackage"
   > & { sortOrder: number },
 ): VmbInviteTemplate {
   const slug = inviteType.replace(/_/g, "-");
@@ -17,6 +25,7 @@ function template(
     active: true,
     createdAt: NOW,
     updatedAt: NOW,
+    defaultPackage: getDefaultNailInvitationPackage(inviteType),
     ...fields,
   };
 }

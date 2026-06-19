@@ -53,6 +53,17 @@ export const VMB_NAILS_INVITE_TYPES: readonly VmbInviteType[] = [
   "new_client_welcome",
 ] as const;
 
+export type VmbDefaultInvitationPackage = {
+  /** Canonical service offer ids (Admin Default — no salon override yet). */
+  serviceIds: string[];
+  /** Add-on / perk ids included with the invitation. */
+  serviceOptionIds: string[];
+  /** Human-readable expiration window shown on cards. */
+  expirationLabel: string;
+  priceLabel?: string;
+  termsText?: string;
+};
+
 export type VmbInviteTemplate = {
   id: string;
   categoryId: ServiceCategoryId;
@@ -66,6 +77,8 @@ export type VmbInviteTemplate = {
   ctaLabel: string;
   defaultOfferCategory: VmbInviteOfferCategory;
   allowedOfferCategories: VmbInviteOfferCategory[];
+  /** Admin Default service / add-on / expiration package for this invite type. */
+  defaultPackage: VmbDefaultInvitationPackage;
   active: boolean;
   sortOrder: number;
   createdAt: string;

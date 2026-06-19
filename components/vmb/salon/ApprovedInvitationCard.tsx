@@ -84,6 +84,9 @@ export function ApprovedInvitationCard({
         <Row label="Invitation" value={approval.snapshot.templateName} />
         {services.length > 0 ? <Row label="Services" value={services.join(", ")} /> : null}
         {rewards.length > 0 ? <Row label="Rewards" value={rewards.join(", ")} /> : null}
+        {approval.snapshot.expirationLabel ? (
+          <Row label="Expiration" value={approval.snapshot.expirationLabel} />
+        ) : null}
         <Row label="Approved" value={formatApprovalDate(approval.approvedAt ?? approval.createdAt)} />
       </div>
 

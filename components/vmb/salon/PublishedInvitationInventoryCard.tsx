@@ -100,6 +100,9 @@ export function PublishedInvitationInventoryCard({
         {rewards.length > 0 ? (
           <InventoryRow label="Included Rewards" value={rewards.join(", ")} />
         ) : null}
+        {copy.snapshot.expirationLabel ? (
+          <InventoryRow label="Expiration" value={copy.snapshot.expirationLabel} />
+        ) : null}
       </div>
 
       <footer

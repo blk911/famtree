@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { AdminDefaultPackageSummary } from "@/components/vmb/admin/AdminDefaultPackageSummary";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminSalonInviteReviewModal } from "@/components/vmb/admin/AdminSalonInviteReviewModal";
 import { useNailTemplateInventory } from "@/components/vmb/admin/useNailTemplateInventory";
@@ -54,6 +55,11 @@ export function NailsLibraryAdminClient({
   );
 
   const librarySnapshot = selected?.librarySnapshot ?? null;
+
+  const selectedTemplate = useMemo(
+    () => DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === selectedTemplateId),
+    [selectedTemplateId],
+  );
 
   useEffect(() => {
     setPublishVerification(null);
@@ -179,6 +185,15 @@ export function NailsLibraryAdminClient({
                   <dd>{formatSnapshotUpdatedAt(librarySnapshot)}</dd>
                 </div>
               </dl>
+
+              {selectedTemplate ? (
+                <AdminDefaultPackageSummary
+                  pkg={selectedTemplate.defaultPackage}
+                  serviceFallbackById={serviceFallbackById}
+                  rewardFallbackById={optionFallbackById}
+                  title="Admin default package (source)"
+                />
+              ) : null}
 
               <div className="vmb-admin-builder-grid__actions">
                 <Link href={builderRouteForTemplate(selected.templateId)} className="taikos-opp-card__cta">

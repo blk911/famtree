@@ -81,6 +81,9 @@ export function SuggestedInvitationCard({
         {recommendation.rewards.length > 0 ? (
           <Row label="Rewards" value={recommendation.rewards.join(", ")} />
         ) : null}
+        {recommendation.expirationLabel ? (
+          <Row label="Expiration" value={recommendation.expirationLabel} />
+        ) : null}
         <Row label="Estimated Value" value={`$${recommendation.estimatedValue.toLocaleString()}`} />
         {!recommendation.publishedCopy ? (
           <p style={{ margin: 0, fontSize: 12, color: "#b45309" }}>

@@ -173,6 +173,7 @@ export function snapshotToSalonInviteCardProps(
     ctaLabel: snapshot.ctaLabel,
     services: resolveSnapshotServiceLabels(snapshot, options.serviceFallbackById),
     rewards: resolveSnapshotRewardLabels(snapshot, options.rewardFallbackById),
+    expirationLabel: snapshot.expirationLabel,
     ownerName: snapshot.ownerName ?? "Your nail tech",
     ownerPhotoUrl: snapshot.ownerPhotoUrl,
     salonName: snapshot.salonName,

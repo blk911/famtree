@@ -12,6 +12,11 @@ import {
 } from "../lib/vmb/invite-templates/admin-invite-template-selection";
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "../lib/vmb/invite-templates/default-nail-invite-templates";
 import {
+  buildAdminDefaultSnapshotFromTemplate,
+  validateDefaultInvitationPackage,
+} from "../lib/vmb/invite-templates/admin-default-invitation-package";
+import { DEFAULT_NAIL_INVITATION_PACKAGES } from "../lib/vmb/invite-templates/default-nail-invitation-packages";
+import {
   inviteTemplateHasLegacyBleed,
   sanitizeInviteTemplateAgainstLegacyBleed,
 } from "../lib/vmb/invite-templates/invite-template-copy-guard";
@@ -110,6 +115,43 @@ function expectedRenderedCta(template: (typeof DEFAULT_NAIL_INVITE_TEMPLATES)[nu
 
 async function run(): Promise<void> {
   assert(DEFAULT_NAIL_INVITE_TEMPLATES.length === 10, "all 10 Nails invite templates exist");
+
+  for (const template of DEFAULT_NAIL_INVITE_TEMPLATES) {
+    assert(!!template.defaultPackage, `${template.id} has admin defaultPackage`);
+    assert(
+      validateDefaultInvitationPackage(template.defaultPackage) === null,
+      `${template.id} defaultPackage validates`,
+    );
+    assert(template.defaultPackage.serviceIds.length > 0, `${template.id} defaultPackage has services`);
+    assert(
+      template.defaultPackage.expirationLabel.trim().length > 0,
+      `${template.id} defaultPackage has expiration`,
+    );
+    assert(
+      JSON.stringify(template.defaultPackage) ===
+        JSON.stringify(DEFAULT_NAIL_INVITATION_PACKAGES[template.inviteType]),
+      `${template.id} defaultPackage matches canonical package map`,
+    );
+  }
+
+  const unsavedBirthdayDraft = buildNailTemplateDrafts("pkg-test-salon", []).find(
+    (row) => row.templateId === "nails-birthday-celebration",
+  );
+  assert(unsavedBirthdayDraft?.serviceIds.length === 1, "unsaved draft inherits admin default services");
+  assert(
+    (unsavedBirthdayDraft?.serviceOptionIds.length ?? 0) > 0,
+    "unsaved draft inherits admin default add-ons",
+  );
+
+  const adminSnapshot = buildAdminDefaultSnapshotFromTemplate("nails-birthday-celebration", {
+    salonName: "Glow Nails",
+  });
+  assert(!!adminSnapshot, "admin default snapshot builds for template");
+  assert(
+    adminSnapshot!.expirationLabel === DEFAULT_NAIL_INVITATION_PACKAGES.birthday_celebration.expirationLabel,
+    "admin default snapshot carries expiration",
+  );
+  assert(adminSnapshot!.serviceIds.length > 0, "admin default snapshot carries service ids");
 
   const repairResult = await repairNailInviteTemplateContent();
   assert(repairResult.repaired === 10, "repair script seeds exactly 10 Nail templates");
@@ -428,7 +470,7 @@ async function run(): Promise<void> {
   assert(builderSource.includes("Nails Template Builder"), "builder client uses factory naming");
   assert(builderSource.includes("useNailTemplateInventory"), "builder loads template drafts via shared inventory hook");
   assert(builderSource.includes("Review Template"), "builder uses review template workflow");
-  assert(builderSource.includes("SnapshotPreviewCard"), "builder preview renders from snapshot");
+  assert(builderSource.includes("AdminDefaultPackageSummary"), "builder shows admin default package");
   assert(!builderSource.includes("AdminTemplatePreviewCard"), "builder removes live draft preview card");
   assert(builderSource.includes("✓ Saved to Library"), "builder shows inline save confirmation");
   assert(builderSource.includes("View in Library"), "builder links to library after save");
@@ -437,7 +479,13 @@ async function run(): Promise<void> {
     path.join(process.cwd(), "components/vmb/invites/SalonInviteCard.tsx"),
     "utf8",
   );
-  assert(salonInviteCardSource.includes("SalonInviteCard"), "salon invite card component exists");
+  assert(salonInviteCardSource.includes("expirationLabel"), "salon invite card renders expiration");
+  assert(
+    fs.readFileSync(path.join(process.cwd(), "components/vmb/salon/SuggestedInvitationCard.tsx"), "utf8").includes(
+      "expirationLabel",
+    ),
+    "suggested invitation cards show expiration",
+  );
   assert(salonInviteCardSource.includes("adminReview"), "salon invite card supports admin review mode");
   assert(salonInviteCardSource.includes("Rewards included"), "salon invite card renders rewards");
   assert(salonInviteCardSource.includes("ownerPhotoUrl"), "salon invite card accepts owner photo");
@@ -536,6 +584,10 @@ async function run(): Promise<void> {
   assert(invitesClientSource.includes("/api/vmb/salon-invites"), "invitations loads published copies");
   assert(invitesClientSource.includes("/api/taikos/opportunities"), "invitations loads opportunity intelligence");
   assert(invitesClientSource.includes("SuggestedInvitationCard"), "invitations suggested tab uses workflow cards");
+  assert(
+    invitesClientSource.includes("buildAdminDefaultSnapshotFromTemplate"),
+    "invites preview uses admin default snapshot when unpublished",
+  );
   assert(invitesClientSource.includes("SuggestedMatchesSection"), "invitations suggested tab has matches section");
   assert(invitesClientSource.includes("PublishedInvitationsSection"), "invitations suggested tab has published section");
   assert(invitesClientSource.includes("publishedCopiesForMatching"), "suggested matching uses active inventory only");
@@ -547,7 +599,9 @@ async function run(): Promise<void> {
     "invitations suggested matches empty state",
   );
   assert(
-    invitesClientSource.includes("No invitations have been published to your salon yet."),
+    fs.readFileSync(path.join(process.cwd(), "components/vmb/salon/PublishedInvitationsSection.tsx"), "utf8").includes(
+      "No invitations have been published to your salon yet.",
+    ),
     "invitations published empty state",
   );
   assert(invitesClientSource.includes("SuggestedInviteMatchingDebug"), "invites suggested tab shows match debug");
@@ -870,7 +924,7 @@ async function run(): Promise<void> {
     path.join(process.cwd(), "app/api/vmb/salon-invitation-approvals/route.ts"),
     "utf8",
   );
-  assert(approvalsRoute.includes("salon-invitation-approvals"), "approval API route exists");
+  assert(approvalsRoute.includes("listSalonInvitationApprovals"), "approval API route exists");
 
   const invitesClientSource2 = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/VmbInvitesClient.tsx"),

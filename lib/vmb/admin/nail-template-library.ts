@@ -56,14 +56,20 @@ export function buildNailTemplateDraft(
   template: VmbInviteTemplate,
   savedOffer: VmbOffer | undefined,
 ): NailTemplateDraft {
+  const adminPackage = template.defaultPackage;
+  const useSavedOffer = Boolean(savedOffer && !savedOffer.isDefault);
   return {
     templateId: template.id,
     displayName: template.displayName,
     headline: savedOffer?.headline?.trim() || template.headline,
     body: savedOffer?.body?.trim() || template.body,
     ctaLabel: savedOffer?.ctaLabel?.trim() || template.ctaLabel,
-    serviceIds: savedOffer?.serviceIds ? [...savedOffer.serviceIds] : [],
-    serviceOptionIds: savedOffer?.serviceOptionIds ? [...savedOffer.serviceOptionIds] : [],
+    serviceIds: useSavedOffer
+      ? [...(savedOffer?.serviceIds ?? [])]
+      : [...adminPackage.serviceIds],
+    serviceOptionIds: useSavedOffer
+      ? [...(savedOffer?.serviceOptionIds ?? [])]
+      : [...adminPackage.serviceOptionIds],
     active: savedOffer?.active ?? template.active,
     saved: Boolean(savedOffer && !savedOffer.isDefault),
     offerCategory: offerCategoryForInviteTemplate(template),
@@ -129,6 +135,8 @@ export function buildDraftInviteSnapshot(
   draft: NailTemplateDraft,
   options: BuildDraftSnapshotOptions = {},
 ): InviteTemplateSnapshot {
+  const template = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === draft.templateId);
+  const adminPackage = template?.defaultPackage;
   return buildInviteTemplateSnapshot({
     draft,
     previousSnapshot: draft.librarySnapshot,
@@ -137,9 +145,9 @@ export function buildDraftInviteSnapshot(
     ownerPhotoUrl: options.ownerPhotoUrl,
     salonLogoUrl: options.salonLogoUrl,
     serviceImageUrl: options.serviceImageUrl,
-    priceLabel: options.priceLabel,
-    expirationLabel: options.expirationLabel,
-    termsText: options.termsText,
+    priceLabel: options.priceLabel ?? adminPackage?.priceLabel,
+    expirationLabel: options.expirationLabel ?? adminPackage?.expirationLabel,
+    termsText: options.termsText ?? adminPackage?.termsText,
     status: draft.saved ? "library" : "draft",
   });
 }

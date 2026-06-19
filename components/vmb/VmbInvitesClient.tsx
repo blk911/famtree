@@ -30,6 +30,7 @@ import {
   type SuggestedInvitationRecommendation,
 } from "@/lib/vmb/invites/suggested-invitation-workflow";
 import { publishedCopiesForDebug } from "@/lib/vmb/invites/published-copy-matching";
+import { buildAdminDefaultSnapshotFromTemplate } from "@/lib/vmb/invite-templates/admin-default-invitation-package";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
 import { fetchVmbAnalysisForSalon } from "@/lib/vmb/resolve-active-analysis-client";
 import { VMB_THEME } from "@/lib/vmb/theme";
@@ -448,6 +449,13 @@ export function VmbInvitesClient({
   function handlePreview(recommendation: SuggestedInvitationRecommendation) {
     if (recommendation.publishedCopy) {
       setActivePublishedCopy(recommendation.publishedCopy);
+      return;
+    }
+    const adminSnapshot = buildAdminDefaultSnapshotFromTemplate(recommendation.templateId, {
+      salonName: salonName ?? INVITE_TEMPLATE_PREVIEW_CONTEXT.salonName,
+    });
+    if (adminSnapshot) {
+      setPreviewApprovalSnapshot(adminSnapshot);
       return;
     }
     const draft = drafts.find((d) => d.draftId === recommendation.draftId);

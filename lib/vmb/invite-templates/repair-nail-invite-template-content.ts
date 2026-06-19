@@ -29,6 +29,7 @@ function buildRepairPayload(template: VmbInviteTemplate): VmbInviteTemplate {
     intent: template.intent,
     defaultOfferCategory: template.defaultOfferCategory,
     allowedOfferCategories: [...template.allowedOfferCategories],
+    defaultPackage: template.defaultPackage,
     active: template.active,
     sortOrder: template.sortOrder,
     updatedAt: now,

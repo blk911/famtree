@@ -16,6 +16,7 @@ export type SalonInviteCardProps = {
   ctaLabel: string;
   services: readonly string[];
   rewards: readonly string[];
+  expirationLabel?: string;
   ownerName: string;
   ownerPhotoUrl?: string;
   salonName?: string;
@@ -33,6 +34,7 @@ export function SalonInviteCard({
   ctaLabel,
   services,
   rewards,
+  expirationLabel,
   ownerName,
   ownerPhotoUrl,
   salonName,
@@ -113,6 +115,10 @@ export function SalonInviteCard({
 
         {services.length > 0 ? (
           <p className="vmb-salon-invite-card__services">{services.join(" · ")}</p>
+        ) : null}
+
+        {expirationLabel?.trim() ? (
+          <p className="vmb-salon-invite-card__expiration">{expirationLabel.trim()}</p>
         ) : null}
 
         <footer className="vmb-salon-invite-card__footer">

@@ -8,6 +8,7 @@ import {
   getDefaultNailInviteTemplate,
   listDefaultInviteTemplatesForCategory,
 } from "./default-nail-invite-templates";
+import { validateDefaultInvitationPackage } from "@/lib/vmb/invite-templates/admin-default-invitation-package";
 import { sanitizeInviteTemplateAgainstLegacyBleed } from "./invite-template-copy-guard";
 import type { VmbInviteOfferCategory, VmbInviteTemplate, VmbInviteType } from "./invite-template-types";
 import { VMB_INVITE_OFFER_CATEGORIES, VMB_NAILS_INVITE_TYPES } from "./invite-template-types";
@@ -52,6 +53,7 @@ function mergeTemplateLayers(
     id: baseline.id,
     categoryId: baseline.categoryId,
     inviteType: baseline.inviteType,
+    defaultPackage: baseline.defaultPackage,
     allowedOfferCategories: override.allowedOfferCategories?.length
       ? override.allowedOfferCategories
       : baseline.allowedOfferCategories,
@@ -114,6 +116,8 @@ export function validateInviteTemplateInput(
     .map((field) => field?.trim())
     .filter(Boolean);
   if (content.length === 0) return "Content fields cannot all be empty";
+  const packageError = validateDefaultInvitationPackage(input.defaultPackage);
+  if (packageError) return packageError;
   return null;
 }
 
@@ -143,6 +147,7 @@ export async function upsertInviteTemplate(
     id: baseline.id,
     categoryId: baseline.categoryId,
     inviteType: baseline.inviteType as VmbInviteType,
+    defaultPackage: baseline.defaultPackage,
     updatedAt: now,
     createdAt: baseline.createdAt,
   };
