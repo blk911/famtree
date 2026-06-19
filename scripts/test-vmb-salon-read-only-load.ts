@@ -122,6 +122,26 @@ function run(): void {
   const dashboardClient = read("components/vmb/VmbDashboardClient.tsx");
   assert(dashboardClient.includes("RestoreExistingBookPanel"), "dashboard empty state offers restore");
 
+  const salonPagePage = read("app/vmb/salon-page/page.tsx");
+  assert(salonPagePage.includes("SalonPageClient"), "salon page route renders client preview");
+  assert(salonPagePage.includes("loadVmbPageContext"), "salon page loads trial salon context");
+
+  const salonPageClient = read("components/vmb/salon/SalonPageClient.tsx");
+  assert(salonPageClient.includes('status === "active"'), "salon page renders active services only");
+  assert(salonPageClient.includes("publishedCopiesForMatching"), "salon page uses published invitations only");
+  assert(salonPageClient.includes("SalonInvitationThumbnail"), "salon page renders invitation thumbnails");
+  assert(salonPageClient.includes("Join My Private Client Network"), "salon page includes PCN section");
+  assert(salonPageClient.includes("Favorite Providers"), "salon page includes favorite providers placeholder");
+  assert(salonPageClient.includes("Join My Network"), "salon page includes PCN CTA placeholder");
+  assert(!salonPageClient.includes("/api/vmb/analyze-book"), "salon page does not trigger book ingest");
+
+  const invitesClientLanding = read("components/vmb/VmbInvitesClient.tsx");
+  assert(invitesClientLanding.includes("Opportunity Center"), "invites reframed as opportunity center");
+  assert(
+    invitesClientLanding.includes("appear on your salon page"),
+    "invites subhead aligns with salon landing destination",
+  );
+
   console.log("OK: VMB salon read-only load tests passed");
 }
 

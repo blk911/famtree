@@ -6769,6 +6769,264 @@
   cursor: not-allowed;
 }
 
+/* Salon landing page — client destination preview */
+.vmb-salon-landing {
+  display: grid;
+  gap: 28px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.vmb-salon-landing__preview-note {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fdf2f8;
+  border: 1px solid #fbcfe8;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9d174d;
+}
+
+.vmb-salon-landing__state {
+  margin: 0;
+  padding: 24px 0;
+  font-size: 15px;
+  color: #57534e;
+}
+
+.vmb-salon-landing__state--error {
+  color: #b91c1c;
+}
+
+.vmb-salon-landing__hero {
+  display: grid;
+  gap: 20px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid #e7e5e4;
+  background: linear-gradient(160deg, #fff 0%, #fafaf9 100%);
+}
+
+@media (min-width: 768px) {
+  .vmb-salon-landing__hero {
+    grid-template-columns: 200px minmax(0, 1fr);
+    align-items: center;
+    gap: 24px;
+  }
+}
+
+.vmb-salon-landing__hero-media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 160px;
+  border-radius: 14px;
+  border: 1px dashed #d6d3d1;
+  background: #f5f5f4;
+}
+
+.vmb-salon-landing__hero-media-icon {
+  font-size: 32px;
+  color: #a8a29e;
+  line-height: 1;
+}
+
+.vmb-salon-landing__hero-media-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #78716c;
+}
+
+.vmb-salon-landing__owner {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #78716c;
+}
+
+.vmb-salon-landing__salon-name {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 800;
+  line-height: 1.15;
+  color: #1c1917;
+}
+
+.vmb-salon-landing__headline {
+  margin: 10px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #44403c;
+}
+
+.vmb-salon-landing__intro {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #57534e;
+  max-width: 52ch;
+}
+
+.vmb-salon-landing__section {
+  display: grid;
+  gap: 14px;
+}
+
+.vmb-salon-landing__section-head {
+  display: grid;
+  gap: 4px;
+}
+
+.vmb-salon-landing__section-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1c1917;
+}
+
+.vmb-salon-landing__section-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #57534e;
+}
+
+.vmb-salon-landing__empty {
+  margin: 0;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #57534e;
+}
+
+.vmb-salon-landing__service-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.vmb-salon-landing__service-card {
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+}
+
+.vmb-salon-landing__service-name {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #1c1917;
+}
+
+.vmb-salon-landing__service-meta {
+  margin: 8px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #292524;
+}
+
+.vmb-salon-landing__service-upgrades {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f5f5f4;
+}
+
+.vmb-salon-landing__service-upgrades-label {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #57534e;
+}
+
+.vmb-salon-landing__service-upgrades ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.vmb-salon-landing__service-upgrades li {
+  font-size: 14px;
+  font-weight: 500;
+  color: #292524;
+}
+
+.vmb-salon-landing__offer-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.vmb-salon-landing__offer-card {
+  display: grid;
+  gap: 10px;
+}
+
+.vmb-salon-landing__offer-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #292524;
+  text-align: center;
+}
+
+.vmb-salon-landing__pcn {
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+}
+
+.vmb-salon-landing__cta {
+  justify-self: start;
+  margin-top: 4px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 999px;
+  background: #1c1917;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.vmb-salon-landing__providers {
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px dashed #d6d3d1;
+  background: #fafaf9;
+}
+
+.vmb-salon-landing__coming-soon {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #44403c;
+}
+
+.vmb-salon-landing__providers-future {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #78716c;
+}
+
 /* Reusable service preset card — salon, admin, client */
 .vmb-service-preset-card {
   border: 1px solid #e7e5e4;

@@ -614,7 +614,11 @@ async function run(): Promise<void> {
     path.join(process.cwd(), "components/vmb/VmbInvitesClient.tsx"),
     "utf8",
   );
-  assert(invitesClientSource.includes("My Invitations"), "invitations page title");
+  assert(invitesClientSource.includes("Opportunity Center"), "invitations page title");
+  assert(
+    invitesClientSource.includes("appear on your salon page"),
+    "invitations page subhead references salon page destination",
+  );
   assert(invitesClientSource.includes("/api/vmb/salon-invites"), "invitations loads published copies");
   assert(invitesClientSource.includes("/api/taikos/opportunities"), "invitations loads opportunity intelligence");
   assert(invitesClientSource.includes("SuggestedInvitationCard"), "invitations suggested tab uses workflow cards");
@@ -625,7 +629,10 @@ async function run(): Promise<void> {
   assert(invitesClientSource.includes("SuggestedMatchesSection"), "invitations suggested tab has matches section");
   assert(invitesClientSource.includes("PublishedInvitationsSection"), "invitations suggested tab has published section");
   assert(invitesClientSource.includes("publishedCopiesForMatching"), "suggested matching uses active inventory only");
-  assert(invitesClientSource.includes("What should I send today?"), "invitations suggested subtitle");
+  assert(
+    invitesClientSource.includes("Review client opportunities"),
+    "invitations opportunity center subtitle",
+  );
   assert(invitesClientSource.includes("SalonInvitationPreviewModal"), "invitations previews via salon card");
   assert(invitesClientSource.includes("previewOnly"), "invitations draft preview is read-only");
   assert(

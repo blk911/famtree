@@ -566,11 +566,10 @@ export function VmbInvitesClient({
     <VmbPageFrame width="full" headerless>
       <header className="vmb-page-frame__header">
         <p className="vmb-page-frame__eyebrow">{typeof salonName === "string" ? salonName : undefined}</p>
-        <h1 className="vmb-page-frame__title">My Invitations</h1>
+        <h1 className="vmb-page-frame__title">Opportunity Center</h1>
         <p className="vmb-page-frame__subtitle">
-          {tab === "suggested"
-            ? "What should I send today? Review suggested invitations from your book."
-            : "Review the invitations VMB prepared for your salon."}
+          Review client opportunities and choose which invitations should appear on your salon page
+          and future outreach.
         </p>
       </header>
 
