@@ -3,7 +3,7 @@
 import {
   formatSalonDuration,
   formatSalonPrice,
-  formatSelectedAddonSummary,
+  listSelectedUpgradeLines,
   salonServiceStatusLabel,
 } from "@/lib/vmb/services/salon-service-summary";
 import type { SalonFacingServiceOffer } from "@/lib/vmb/services/service-preset-types";
@@ -18,22 +18,32 @@ type Props = {
 };
 
 export function SalonServiceListItem({ name, service, draft, selected, onSelect }: Props) {
-  const addonSummary = formatSelectedAddonSummary(service, draft);
+  const upgrades = listSelectedUpgradeLines(service, draft);
 
   return (
-    <li className={`vmb-salon-services__list-item${selected ? " vmb-salon-services__list-item--selected" : ""}`}>
-      <button type="button" className="vmb-salon-services__list-button" onClick={onSelect}>
-        <h3 className="vmb-salon-services__list-name">{name}</h3>
-        <span
-          className={`vmb-salon-services__status-badge vmb-salon-services__status-badge--${draft.status}`}
-        >
-          {salonServiceStatusLabel(draft.status)}
-        </span>
-        <p className="vmb-salon-services__list-meta">
-          {formatSalonPrice(draft.priceCents)} · {formatSalonDuration(draft.durationMinutes)}
+    <li className={`vmb-salon-services__menu-card${selected ? " vmb-salon-services__menu-card--selected" : ""}`}>
+      <button type="button" className="vmb-salon-services__menu-card-button" onClick={onSelect}>
+        <div className="vmb-salon-services__menu-card-head">
+          <h3 className="vmb-salon-services__menu-card-name">{name}</h3>
+          <span
+            className={`vmb-salon-services__status-badge vmb-salon-services__status-badge--${draft.status}`}
+          >
+            {salonServiceStatusLabel(draft.status)}
+          </span>
+        </div>
+        <p className="vmb-salon-services__menu-card-meta">
+          {formatSalonPrice(draft.priceCents)} &bull; {formatSalonDuration(draft.durationMinutes)}
         </p>
-        <p className="vmb-salon-services__list-addons">{addonSummary}</p>
-        <span className="vmb-salon-services__list-action">{selected ? "Selected" : "Configure"}</span>
+        {upgrades.length > 0 ? (
+          <div className="vmb-salon-services__menu-card-upgrades">
+            <p className="vmb-salon-services__menu-card-upgrades-label">Selected Upgrades:</p>
+            <ul className="vmb-salon-services__menu-card-upgrades-list">
+              {upgrades.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </button>
     </li>
   );

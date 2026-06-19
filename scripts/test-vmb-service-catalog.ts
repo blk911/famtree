@@ -30,6 +30,7 @@ import {
   formatSelectedAddonSummary,
   listSummaryFromService,
   priceDiffersFromAdmin,
+  calculateServiceRevenueSummary,
 } from "../lib/vmb/services/salon-service-summary";
 import {
   activeSalonServiceIdSet,
@@ -161,11 +162,16 @@ async function run(): Promise<void> {
     formatSelectedAddonSummary(
       { addons: builderFacingBase.addons },
       { addonIds: [], addonPrices: {} },
-    ) === "No add-ons selected",
+    ) === "No upgrades selected",
     "empty add-on selection shows no add-ons selected",
   );
   assert(!priceDiffersFromAdmin(1500, 1500), "admin default note hidden when salon price matches admin");
   assert(priceDiffersFromAdmin(1800, 1500), "admin default note shown when salon price differs from admin");
+
+  const revenue = calculateServiceRevenueSummary(activeDraft, builderFacingBase);
+  assert(revenue.baseCents === 7000, "revenue summary uses base service price");
+  assert(revenue.upgradesCents === 3000, "revenue summary totals selected upgrades");
+  assert(revenue.typicalTicketCents === 10000, "revenue summary calculates typical ticket");
 
   const saved = await upsertSalonServiceConfig(salonId, {
     catalogServiceId: "default-nails-gel-manicure",
@@ -351,7 +357,8 @@ async function run(): Promise<void> {
   assert(salonServicesClient.includes("applyDraftToSalonService"), "salon services updates local state after save");
   assert(!salonServicesClient.includes("ServicePresetCard"), "salon services removes per-card save layout");
 
-  assert(salonServicesClient.includes("lifecycleAction"), "salon services uses lifecycle save/activate/deactivate");
+  assert(salonServicesClient.includes("Service Collection"), "salon services labels service collection");
+  assert(salonServicesClient.includes("Service Studio"), "salon services labels service studio");
   assert(!salonServicesClient.includes("enabled: draft.enabled"), "salon services no longer saves enable toggle");
 
   const salonServiceEditor = fs.readFileSync(
@@ -362,23 +369,29 @@ async function run(): Promise<void> {
   assert(salonServiceEditor.includes("Price</span>"), "add-on price label is simple Price");
   assert(!salonServiceEditor.includes("Add-on price"), "add-on price label removes verbose wording");
 
-  assert(salonServiceEditor.includes("Activate Service"), "editor exposes activate action");
-  assert(salonServiceEditor.includes("Deactivate Service"), "editor exposes deactivate action");
-  assert(!salonServiceEditor.includes("Enable this service"), "editor removes legacy enable wording");
+  assert(salonServiceEditor.includes("Go Live"), "editor exposes go live action");
+  assert(salonServiceEditor.includes("Pause Service"), "editor exposes pause service action");
+  assert(salonServiceEditor.includes("Revenue Summary"), "editor shows revenue summary");
+  assert(salonServiceEditor.includes("Service photo coming soon"), "editor reserves service preview area");
+  assert(!salonServiceEditor.includes("Save Changes"), "editor removes software save wording");
+  assert(!salonServiceEditor.includes("Activate Service"), "editor removes software activate wording");
 
   const salonServiceListItem = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/salon/SalonServiceListItem.tsx"),
     "utf8",
   );
-  assert(salonServiceListItem.includes("formatSelectedAddonSummary"), "service list card summarizes add-ons");
-  assert(salonServiceListItem.includes("vmb-salon-services__list-addons"), "service list card shows add-on summary line");
-
+  assert(salonServiceListItem.includes("listSelectedUpgradeLines"), "menu cards list selected upgrades");
+  assert(salonServiceListItem.includes("Selected Upgrades:"), "menu cards label selected upgrades");
+  assert(!salonServiceListItem.includes("Configure"), "menu cards remove configure links");
+  assert(salonServiceListItem.includes("vmb-salon-services__menu-card"), "menu cards use merchandising layout");
+  assert(salonServiceListItem.includes("salonServiceStatusLabel"), "service list card shows lifecycle status badge");
   const salonServicesCss = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
   assert(
     salonServicesCss.includes("grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)"),
     "salon services layout uses equal 50/50 columns on desktop",
   );
-  assert(salonServiceListItem.includes("salonServiceStatusLabel"), "service list card shows lifecycle status badge");
+  assert(salonServicesCss.includes("vmb-salon-services__studio"), "service studio panel styling present");
+  assert(salonServicesCss.includes("vmb-salon-services__revenue"), "revenue summary styling present");
   assert(salonServicesCss.includes("status-badge--active"), "active badge uses green styling");
   assert(salonServicesCss.includes("status-badge--configured"), "configured badge uses amber styling");
 
