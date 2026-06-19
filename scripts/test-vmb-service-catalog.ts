@@ -23,6 +23,13 @@ import {
   upsertSalonServiceConfig,
 } from "../lib/vmb/services/salon-service-config-store";
 import { listServicePresetCards } from "../lib/vmb/services/service-preset-store";
+import {
+  applyDraftToSalonService,
+  draftFromSalonService,
+  formatSelectedAddonSummary,
+  listSummaryFromService,
+  priceDiffersFromAdmin,
+} from "../lib/vmb/services/salon-service-summary";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -94,6 +101,48 @@ async function run(): Promise<void> {
     undefined,
   );
   assert(gelMerged.priceCents === 5500, "merge uses preset base price when no salon config saved");
+
+  const builderFacingBase = facing.find((service) => service.serviceOfferId === "default-nails-builder-gel")!;
+  const enabledDraft = {
+    ...draftFromSalonService(builderFacingBase),
+    enabled: true,
+    priceCents: 7000,
+    durationMinutes: 60,
+    addonIds: ["addon-chrome", "addon-crystals"],
+    addonPrices: { "addon-chrome": 1500, "addon-crystals": 1500 },
+  };
+  const enabledSaved = applyDraftToSalonService(builderFacingBase, enabledDraft);
+  const enabledSummary = listSummaryFromService(enabledSaved);
+  assert(enabledSummary.enabled === true, "enabling service updates summary enabled flag");
+  assert(enabledSummary.priceCents === 7000, "enabling service updates summary price");
+  assert(
+    enabledSummary.addonSummary.includes("Chrome +$15"),
+    "selected add-ons appear on card summary after save",
+  );
+  assert(
+    enabledSummary.addonSummary.includes("Crystals +$15"),
+    "multiple selected add-ons appear on card summary after save",
+  );
+
+  const overrideDraft = {
+    ...enabledDraft,
+    addonPrices: { "addon-chrome": 1800, "addon-crystals": 1500 },
+  };
+  const overrideSaved = applyDraftToSalonService(builderFacingBase, overrideDraft);
+  const overrideSummary = listSummaryFromService(overrideSaved);
+  assert(
+    overrideSummary.addonSummary.includes("Chrome +$18"),
+    "add-on price override appears on card summary after save",
+  );
+  assert(
+    formatSelectedAddonSummary(
+      { addons: builderFacingBase.addons },
+      { addonIds: [], addonPrices: {} },
+    ) === "No add-ons selected",
+    "empty add-on selection shows no add-ons selected",
+  );
+  assert(!priceDiffersFromAdmin(1500, 1500), "admin default note hidden when salon price matches admin");
+  assert(priceDiffersFromAdmin(1800, 1500), "admin default note shown when salon price differs from admin");
 
   const saved = await upsertSalonServiceConfig(salonId, {
     catalogServiceId: "default-nails-gel-manicure",
@@ -204,7 +253,23 @@ async function run(): Promise<void> {
   assert(salonServicesClient.includes("vmb-salon-services__layout"), "salon services uses two-column layout");
   assert(salonServicesClient.includes("SalonServiceEditor"), "salon services uses selected service editor");
   assert(salonServicesClient.includes('fetch("/api/vmb/salon-services"'), "salon services loads merged salon menu");
+  assert(salonServicesClient.includes("applyDraftToSalonService"), "salon services updates local state after save");
   assert(!salonServicesClient.includes("ServicePresetCard"), "salon services removes per-card save layout");
+
+  const salonServiceEditor = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/salon/SalonServiceEditor.tsx"),
+    "utf8",
+  );
+  assert(salonServiceEditor.includes("addonPriceDiffers"), "add-on admin default only when price differs");
+  assert(salonServiceEditor.includes("Price</span>"), "add-on price label is simple Price");
+  assert(!salonServiceEditor.includes("Add-on price"), "add-on price label removes verbose wording");
+
+  const salonServiceListItem = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/salon/SalonServiceListItem.tsx"),
+    "utf8",
+  );
+  assert(salonServiceListItem.includes("formatSelectedAddonSummary"), "service list card summarizes add-ons");
+  assert(salonServiceListItem.includes("vmb-salon-services__list-addons"), "service list card shows add-on summary line");
 
   console.log("OK: VMB service catalog tests passed");
 }

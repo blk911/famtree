@@ -6154,6 +6154,13 @@
   color: #57534e;
 }
 
+.vmb-salon-services__list-addons {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #78716c;
+}
+
 .vmb-salon-services__list-action {
   display: inline-block;
   margin-top: 8px;
@@ -6243,38 +6250,72 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 12px;
+  gap: 6px;
 }
 
 .vmb-salon-services__addon-editor-row {
   display: grid;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 6px 12px;
+  align-items: center;
+  padding: 8px 10px;
   border: 1px solid #f5f5f4;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #fafaf9;
 }
 
 @media (min-width: 640px) {
   .vmb-salon-services__addon-editor-row {
-    grid-template-columns: minmax(0, 1fr) 140px;
-    align-items: start;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 
 .vmb-salon-services__addon-check {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.vmb-salon-services__addon-name {
+  min-width: 0;
+}
+
+.vmb-salon-services__addon-price-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  justify-content: flex-end;
 }
 
 .vmb-salon-services__addon-price-field {
-  display: grid;
-  gap: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
   color: #78716c;
+}
+
+.vmb-salon-services__addon-price-label {
+  flex-shrink: 0;
+}
+
+.vmb-salon-services__addon-price-field input {
+  width: 72px;
+  padding: 6px 8px;
+  border: 1px solid #d6d3d1;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1c1917;
+}
+
+.vmb-salon-services__default-note--inline {
+  margin: 0;
+  white-space: nowrap;
 }
 
 .vmb-salon-services__participating-list {
