@@ -10,6 +10,8 @@ type Props = {
   eyebrow?: string;
   children: ReactNode;
   width?: VmbPageFrameWidth;
+  /** Optional action aligned top-right of the header (e.g. View Salon Page). */
+  headerAction?: ReactNode;
   /** Omit the default header block (custom in-page header). */
   headerless?: boolean;
   /** Home feed uses uppercase “This Week” styling. */
@@ -24,6 +26,7 @@ export function VmbPageFrame({
   eyebrow,
   children,
   width = "standard",
+  headerAction,
   headerless = false,
   titleVariant = "default",
   showAiosSparkle = false,
@@ -38,14 +41,21 @@ export function VmbPageFrame({
     <div className={`vmb-page-frame vmb-page-frame--${width}`}>
       {showHeader ? (
         <header className="vmb-page-frame__header">
-          {eyebrow ? <p className="vmb-page-frame__eyebrow">{eyebrow}</p> : null}
-          {title ? (
-            <div className="vmb-page-frame__title-row">
-              <h1 className={titleClass}>{title}</h1>
-              {showAiosSparkle ? <AiosHeaderSparkle label={title} /> : null}
+          <div className="vmb-page-frame__header-main">
+            <div className="vmb-page-frame__header-copy">
+              {eyebrow ? <p className="vmb-page-frame__eyebrow">{eyebrow}</p> : null}
+              {title ? (
+                <div className="vmb-page-frame__title-row">
+                  <h1 className={titleClass}>{title}</h1>
+                  {showAiosSparkle ? <AiosHeaderSparkle label={title} /> : null}
+                </div>
+              ) : null}
+              {subtitle ? <p className="vmb-page-frame__subtitle">{subtitle}</p> : null}
             </div>
-          ) : null}
-          {subtitle ? <p className="vmb-page-frame__subtitle">{subtitle}</p> : null}
+            {headerAction ? (
+              <div className="vmb-page-frame__header-action">{headerAction}</div>
+            ) : null}
+          </div>
         </header>
       ) : null}
       {children}

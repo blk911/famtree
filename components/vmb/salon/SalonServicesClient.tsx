@@ -8,6 +8,8 @@ import { SalonServiceEditor, type SalonServiceEditorDraft } from "@/components/v
 
 import { SalonServiceListItem } from "@/components/vmb/salon/SalonServiceListItem";
 
+import { ViewSalonPageLink } from "@/components/vmb/salon/ViewSalonPageLink";
+
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 
 import { getServiceCategoryLabel } from "@/lib/vmb/services/canonical-service-catalog";
@@ -379,13 +381,10 @@ export function SalonServicesClient({
   return (
 
     <VmbPageFrame
-
       title="Services"
-
       subtitle="Build your menu, set pricing and upgrades, then go live when you're ready to sell."
-
       width="full"
-
+      headerAction={<ViewSalonPageLink />}
     >
 
       <div className="vmb-salon-services">

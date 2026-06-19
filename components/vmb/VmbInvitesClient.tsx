@@ -47,6 +47,7 @@ import type { InviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-s
 import type { InviteTemplateTokenContext } from "@/lib/vmb/invite-templates/invite-template-types";
 import type { SalonInvitationApproval } from "@/types/vmb/salon-invitation-approval";
 import { friendlyInviteDraftError } from "@/lib/vmb/invite-drafts/invite-draft-storage-errors";
+import { ViewSalonPageLink } from "@/components/vmb/salon/ViewSalonPageLink";
 
 type TabId = "suggested" | "approved" | "sent" | "paused";
 
@@ -565,12 +566,19 @@ export function VmbInvitesClient({
   return (
     <VmbPageFrame width="full" headerless>
       <header className="vmb-page-frame__header">
-        <p className="vmb-page-frame__eyebrow">{typeof salonName === "string" ? salonName : undefined}</p>
-        <h1 className="vmb-page-frame__title">Opportunity Center</h1>
-        <p className="vmb-page-frame__subtitle">
-          Review client opportunities and choose which invitations should appear on your salon page
-          and future outreach.
-        </p>
+        <div className="vmb-page-frame__header-main">
+          <div className="vmb-page-frame__header-copy">
+            <p className="vmb-page-frame__eyebrow">{typeof salonName === "string" ? salonName : undefined}</p>
+            <h1 className="vmb-page-frame__title">Opportunity Center</h1>
+            <p className="vmb-page-frame__subtitle">
+              Review client opportunities and choose which invitations should appear on your salon page
+              and future outreach.
+            </p>
+          </div>
+          <div className="vmb-page-frame__header-action">
+            <ViewSalonPageLink />
+          </div>
+        </div>
       </header>
 
       <div
