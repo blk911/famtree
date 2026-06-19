@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { AiosHeaderSparkle } from "@/components/taikos/AiosHeaderSparkle";
 import { VMB_THEME } from "@/lib/vmb/theme";
 
-export type VmbPageFrameWidth = "feed" | "standard" | "wide";
+export type VmbPageFrameWidth = "feed" | "standard" | "wide" | "full";
 
 type Props = {
   title?: string;

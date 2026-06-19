@@ -563,7 +563,7 @@ export function VmbInvitesClient({
   }
 
   return (
-    <VmbPageFrame width="feed" headerless>
+    <VmbPageFrame width="full" headerless>
       <header className="vmb-page-frame__header">
         <p className="vmb-page-frame__eyebrow">{typeof salonName === "string" ? salonName : undefined}</p>
         <h1 className="vmb-page-frame__title">My Invitations</h1>

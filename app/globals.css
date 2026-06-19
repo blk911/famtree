@@ -447,6 +447,10 @@
   max-width: 800px;
 }
 
+.vmb-page-frame--full {
+  max-width: none;
+}
+
 .vmb-page-frame__header {
   margin-bottom: 20px;
   padding-bottom: 18px;
@@ -7884,9 +7888,16 @@
 
 @media (min-width: 768px) {
   .vmb-suggested-invite-card__body {
-    grid-template-columns: minmax(150px, 20%) minmax(0, 1fr) minmax(128px, 24%);
-    gap: 16px 20px;
+    grid-template-columns: minmax(150px, 18%) minmax(0, 1fr) minmax(160px, 28%);
+    gap: 16px 24px;
     align-items: start;
+  }
+}
+
+@media (min-width: 1100px) {
+  .vmb-suggested-invite-card__body {
+    grid-template-columns: minmax(170px, 16%) minmax(240px, 1fr) minmax(200px, 320px);
+    gap: 20px 28px;
   }
 }
 
