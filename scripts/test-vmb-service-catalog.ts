@@ -18,6 +18,7 @@ import {
 } from "../lib/vmb/services/merge-salon-service-offers";
 import {
   getSalonFacingServicesForCategory,
+  getActiveSalonFacingServicesForCategory,
   getSalonServiceConfig,
   getSalonServicesForCategory,
   upsertSalonServiceConfig,
@@ -30,6 +31,13 @@ import {
   listSummaryFromService,
   priceDiffersFromAdmin,
 } from "../lib/vmb/services/salon-service-summary";
+import {
+  activeSalonServiceIdSet,
+  publishedCopyEligibleForActiveServices,
+  resolveSalonServiceStatus,
+  resolveStatusAfterLifecycleAction,
+} from "../lib/vmb/services/salon-service-lifecycle";
+import { buildServiceTemplateParticipation } from "../lib/vmb/invites/service-template-participation";
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -77,9 +85,24 @@ async function run(): Promise<void> {
   const salonId = `catalog-salon-${Date.now()}`;
   const menu = await getSalonServicesForCategory(salonId, "nails");
   assert(menu.length === 7, "salon menu loads nails services from catalog");
-  assert(menu.every((service) => !service.enabled), "services start disabled until salon enables");
+  assert(menu.every((service) => !service.enabled), "resolved menu keeps legacy enabled false until active");
+
+  assert(resolveStatusAfterLifecycleAction("draft", "save") === "configured", "save moves draft to configured");
+  assert(resolveStatusAfterLifecycleAction("configured", "activate") === "active", "activate moves configured to active");
+  assert(
+    resolveStatusAfterLifecycleAction("active", "deactivate") === "configured",
+    "deactivate moves active to configured",
+  );
+  assert(
+    typeof resolveStatusAfterLifecycleAction("draft", "activate") === "object",
+    "activate requires saved configuration",
+  );
 
   const facing = await getSalonFacingServicesForCategory(salonId, "nails");
+  assert(
+    facing.every((service) => service.status === "draft"),
+    "facing services start as draft until salon saves configuration",
+  );
   assert(facing.length === 7, "salon facing services merge presets with defaults");
   const gelXPreset = facing.find((service) => service.serviceOfferId === "default-nails-gel-x");
   assert(gelXPreset?.displayName === "Gel-X Extensions", "facing service uses preset display name");
@@ -103,32 +126,32 @@ async function run(): Promise<void> {
   assert(gelMerged.priceCents === 5500, "merge uses preset base price when no salon config saved");
 
   const builderFacingBase = facing.find((service) => service.serviceOfferId === "default-nails-builder-gel")!;
-  const enabledDraft = {
+  const activeDraft = {
     ...draftFromSalonService(builderFacingBase),
-    enabled: true,
+    status: "active" as const,
     priceCents: 7000,
     durationMinutes: 60,
     addonIds: ["addon-chrome", "addon-crystals"],
     addonPrices: { "addon-chrome": 1500, "addon-crystals": 1500 },
   };
-  const enabledSaved = applyDraftToSalonService(builderFacingBase, enabledDraft);
-  const enabledSummary = listSummaryFromService(enabledSaved);
-  assert(enabledSummary.enabled === true, "enabling service updates summary enabled flag");
-  assert(enabledSummary.priceCents === 7000, "enabling service updates summary price");
+  const activeSaved = applyDraftToSalonService(builderFacingBase, activeDraft, "active");
+  const activeSummary = listSummaryFromService(activeSaved);
+  assert(activeSummary.status === "active", "activating service updates summary status");
+  assert(activeSummary.priceCents === 7000, "activating service updates summary price");
   assert(
-    enabledSummary.addonSummary.includes("Chrome +$15"),
+    activeSummary.addonSummary.includes("Chrome +$15"),
     "selected add-ons appear on card summary after save",
   );
   assert(
-    enabledSummary.addonSummary.includes("Crystals +$15"),
+    activeSummary.addonSummary.includes("Crystals +$15"),
     "multiple selected add-ons appear on card summary after save",
   );
 
   const overrideDraft = {
-    ...enabledDraft,
+    ...activeDraft,
     addonPrices: { "addon-chrome": 1800, "addon-crystals": 1500 },
   };
-  const overrideSaved = applyDraftToSalonService(builderFacingBase, overrideDraft);
+  const overrideSaved = applyDraftToSalonService(builderFacingBase, overrideDraft, "active");
   const overrideSummary = listSummaryFromService(overrideSaved);
   assert(
     overrideSummary.addonSummary.includes("Chrome +$18"),
@@ -146,7 +169,7 @@ async function run(): Promise<void> {
 
   const saved = await upsertSalonServiceConfig(salonId, {
     catalogServiceId: "default-nails-gel-manicure",
-    enabled: true,
+    lifecycleAction: "save",
     priceCents: 6000,
     durationMinutes: 50,
     enabledAddonIds: [],
@@ -159,15 +182,31 @@ async function run(): Promise<void> {
       process.exit(1);
     }
   } else {
+    const configuredFacing = await getSalonFacingServicesForCategory(salonId, "nails");
+    const gelManiFacing = configuredFacing.find(
+      (service) => service.serviceOfferId === "default-nails-gel-manicure",
+    );
+    assert(gelManiFacing?.status === "configured", "save moves gel manicure to configured");
+    assert(gelManiFacing?.priceCents === 6000, "salon price override persists on save");
+
+    const activated = await upsertSalonServiceConfig(salonId, {
+      catalogServiceId: "default-nails-gel-manicure",
+      lifecycleAction: "activate",
+    });
+    if ("error" in activated) {
+      console.error("activate failed:", activated.error);
+      process.exit(1);
+    }
+
     const updated = await getSalonServicesForCategory(salonId, "nails");
     const gelMani = updated.find((service) => service.id === "default-nails-gel-manicure");
-    assert(gelMani?.enabled === true, "salon enables gel manicure");
-    assert(gelMani?.priceCents === 6000, "salon price override persists");
+    assert(gelMani?.enabled === true, "active service exposes legacy enabled true");
+    assert(resolveSalonServiceStatus(activated.config) === "active", "activate persists active status");
 
     const gelConfig = await getSalonServiceConfig(salonId, "default-nails-gel-manicure");
     const priceOnlySave = await upsertSalonServiceConfig(salonId, {
       catalogServiceId: "default-nails-gel-manicure",
-      enabled: true,
+      lifecycleAction: "save",
       priceCents: 6200,
       durationMinutes: gelConfig!.durationMinutes,
       enabledAddonIds: gelConfig!.enabledAddonIds,
@@ -178,12 +217,12 @@ async function run(): Promise<void> {
     }
     const afterPartial = await getSalonServicesForCategory(salonId, "nails");
     const gelAfter = afterPartial.find((service) => service.id === "default-nails-gel-manicure");
-    assert(gelAfter?.enabled === true, "saving salon config does not reset enabled state");
+    assert(gelAfter?.enabled === true, "saving active service keeps active state");
     assert(gelAfter?.priceCents === 6200, "salon price update persists");
 
     const builderSaved = await upsertSalonServiceConfig(salonId, {
       catalogServiceId: "default-nails-builder-gel",
-      enabled: true,
+      lifecycleAction: "save",
       priceCents: 7500,
       durationMinutes: 60,
       enabledAddonIds: ["addon-chrome"],
@@ -193,17 +232,25 @@ async function run(): Promise<void> {
       console.error("builder gel save failed:", builderSaved.error);
       process.exit(1);
     }
+    const builderActivated = await upsertSalonServiceConfig(salonId, {
+      catalogServiceId: "default-nails-builder-gel",
+      lifecycleAction: "activate",
+    });
+    if ("error" in builderActivated) {
+      console.error("builder gel activate failed:", builderActivated.error);
+      process.exit(1);
+    }
     const reloadedFacing = await getSalonFacingServicesForCategory(salonId, "nails");
     const builderFacing = reloadedFacing.find(
       (service) => service.serviceOfferId === "default-nails-builder-gel",
     );
-    assert(builderFacing?.enabled === true, "builder gel enabled state persists after reload");
+    assert(builderFacing?.status === "active", "builder gel active state persists after reload");
     assert(builderFacing?.hasSalonConfig === true, "builder gel marks salon config after save");
     assert(builderFacing?.priceCents === 7500, "builder gel salon price persists after reload");
 
     const gelXSaved = await upsertSalonServiceConfig(salonId, {
       catalogServiceId: "default-nails-gel-x",
-      enabled: true,
+      lifecycleAction: "save",
       priceCents: 8800,
       durationMinutes: 90,
       enabledAddonIds: ["addon-chrome"],
@@ -213,8 +260,17 @@ async function run(): Promise<void> {
       console.error("gel-x save failed:", gelXSaved.error);
       process.exit(1);
     }
+    const gelXActivated = await upsertSalonServiceConfig(salonId, {
+      catalogServiceId: "default-nails-gel-x",
+      lifecycleAction: "activate",
+    });
+    if ("error" in gelXActivated) {
+      console.error("gel-x activate failed:", gelXActivated.error);
+      process.exit(1);
+    }
     const gelXReloaded = await getSalonFacingServicesForCategory(salonId, "nails");
     const gelXFacing = gelXReloaded.find((service) => service.serviceOfferId === "default-nails-gel-x");
+    assert(gelXFacing?.status === "active", "gel-x active status persists after reload");
     assert(gelXFacing?.priceCents === 8800, "gel-x base price persists after reload");
     assert(
       gelXFacing?.addons.some((addon) => addon.addonId === "addon-chrome" && addon.enabled),
@@ -223,6 +279,45 @@ async function run(): Promise<void> {
     assert(
       gelXFacing?.addons.find((addon) => addon.addonId === "addon-chrome")?.priceCents === 1600,
       "gel-x chrome add-on price persists after reload",
+    );
+
+    const deactivated = await upsertSalonServiceConfig(salonId, {
+      catalogServiceId: "default-nails-gel-x",
+      lifecycleAction: "deactivate",
+    });
+    if ("error" in deactivated) {
+      console.error("gel-x deactivate failed:", deactivated.error);
+      process.exit(1);
+    }
+    const gelXConfigured = await getSalonFacingServicesForCategory(salonId, "nails");
+    const gelXAfterDeactivate = gelXConfigured.find(
+      (service) => service.serviceOfferId === "default-nails-gel-x",
+    );
+    assert(gelXAfterDeactivate?.status === "configured", "deactivate moves gel-x back to configured");
+    assert(gelXAfterDeactivate?.priceCents === 8800, "deactivate preserves gel-x pricing");
+
+    const activeOnly = await getActiveSalonFacingServicesForCategory(salonId, "nails");
+    assert(
+      activeOnly.every((service) => service.status === "active"),
+      "client-facing menu includes only active services",
+    );
+    assert(
+      !activeOnly.some((service) => service.serviceOfferId === "default-nails-gel-x"),
+      "deactivated gel-x is hidden from client-facing menu",
+    );
+
+    const activeIds = activeSalonServiceIdSet(activeOnly.map((service) => service.serviceOfferId));
+    assert(
+      !publishedCopyEligibleForActiveServices(["default-nails-gel-x"], activeIds),
+      "invitation matching excludes configured-only services",
+    );
+    assert(
+      publishedCopyEligibleForActiveServices(["default-nails-builder-gel"], activeIds),
+      "invitation matching includes active services",
+    );
+    assert(
+      Object.keys(buildServiceTemplateParticipation([], { activeServiceIds: activeIds })).length === 0,
+      "participation map respects active service filter",
     );
 
     const storedBuilderConfig = (await getSalonServiceConfig(salonId, "default-nails-builder-gel"))!;
@@ -256,6 +351,9 @@ async function run(): Promise<void> {
   assert(salonServicesClient.includes("applyDraftToSalonService"), "salon services updates local state after save");
   assert(!salonServicesClient.includes("ServicePresetCard"), "salon services removes per-card save layout");
 
+  assert(salonServicesClient.includes("lifecycleAction"), "salon services uses lifecycle save/activate/deactivate");
+  assert(!salonServicesClient.includes("enabled: draft.enabled"), "salon services no longer saves enable toggle");
+
   const salonServiceEditor = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/salon/SalonServiceEditor.tsx"),
     "utf8",
@@ -263,6 +361,10 @@ async function run(): Promise<void> {
   assert(salonServiceEditor.includes("addonPriceDiffers"), "add-on admin default only when price differs");
   assert(salonServiceEditor.includes("Price</span>"), "add-on price label is simple Price");
   assert(!salonServiceEditor.includes("Add-on price"), "add-on price label removes verbose wording");
+
+  assert(salonServiceEditor.includes("Activate Service"), "editor exposes activate action");
+  assert(salonServiceEditor.includes("Deactivate Service"), "editor exposes deactivate action");
+  assert(!salonServiceEditor.includes("Enable this service"), "editor removes legacy enable wording");
 
   const salonServiceListItem = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/salon/SalonServiceListItem.tsx"),
@@ -276,7 +378,9 @@ async function run(): Promise<void> {
     salonServicesCss.includes("grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)"),
     "salon services layout uses equal 50/50 columns on desktop",
   );
-  assert(salonServicesCss.includes("-webkit-line-clamp: 2"), "add-on summary allows two-line wrap on service cards");
+  assert(salonServiceListItem.includes("salonServiceStatusLabel"), "service list card shows lifecycle status badge");
+  assert(salonServicesCss.includes("status-badge--active"), "active badge uses green styling");
+  assert(salonServicesCss.includes("status-badge--configured"), "configured badge uses amber styling");
 
   console.log("OK: VMB service catalog tests passed");
 }

@@ -20,6 +20,13 @@ import {
   sanitizeSalonServiceConfigForPreset,
 } from "./merge-salon-service-offers";
 import { listServicePresetCards } from "./service-preset-store";
+import {
+  enabledFromSalonServiceStatus,
+  normalizeSalonServiceConfig,
+  resolveSalonServiceStatus,
+  resolveStatusAfterLifecycleAction,
+  type SalonServiceLifecycleAction,
+} from "./salon-service-lifecycle";
 import { resolveVmbStorageBackend } from "@/lib/vmb/db";
 import { getVmbSalonServiceConfigsFile } from "@/lib/vmb/paths";
 import { readJsonArray, writeJsonArray } from "@/lib/vmb/runtime-json-store";
@@ -72,6 +79,7 @@ function defaultConfigForOffer(salonId: string, offer: CatalogServiceOffer): Sal
     salonId,
     catalogServiceId: offer.id,
     enabled: false,
+    status: "draft",
     priceCents: offer.basePriceCents,
     durationMinutes: offer.durationMinutes,
     enabledAddonIds: addonIds,
@@ -94,6 +102,7 @@ function mergeConfig(
     : {
         catalogServiceId: offer.id,
         enabled: stored.enabled,
+        status: resolveSalonServiceStatus(stored),
         priceCents: stored.priceCents,
         durationMinutes: stored.durationMinutes,
         enabledAddonIds: stored.enabledAddonIds,
@@ -118,7 +127,7 @@ export function resolveSalonService(
   }));
   return {
     ...offer,
-    enabled: config.enabled,
+    enabled: enabledFromSalonServiceStatus(resolveSalonServiceStatus(config)),
     priceCents: config.priceCents,
     durationMinutes: config.durationMinutes,
     addons,
@@ -127,9 +136,9 @@ export function resolveSalonService(
 
 export async function getSalonPrimaryCategory(salonId: string): Promise<ServiceCategoryId> {
   const configs = await loadSalonConfigs(salonId);
-  const enabled = configs.find((config) => config.enabled);
-  if (enabled) {
-    const offer = getCatalogServiceOffer(enabled.catalogServiceId);
+  const active = configs.find((config) => resolveSalonServiceStatus(config) === "active");
+  if (active) {
+    const offer = getCatalogServiceOffer(active.catalogServiceId);
     if (offer) return offer.categoryId;
   }
   return "nails";
@@ -144,6 +153,20 @@ export async function getSalonServicesForCategory(
   return listCatalogServiceOffers(categoryId).map((offer) =>
     resolveSalonService(offer, mergeConfig(salonId, offer, byServiceId.get(offer.id))),
   );
+}
+
+export async function getActiveSalonFacingServicesForCategory(
+  salonId: string,
+  categoryId: ServiceCategoryId,
+) {
+  const services = await getSalonFacingServicesForCategory(salonId, categoryId);
+  return services.filter((service) => service.status === "active");
+}
+
+export async function getActiveSalonServiceIds(salonId: string): Promise<string[]> {
+  const categoryId = await getSalonPrimaryCategory(salonId);
+  const active = await getActiveSalonFacingServicesForCategory(salonId, categoryId);
+  return active.map((service) => service.serviceOfferId);
 }
 
 export async function getSalonFacingServicesForCategory(
@@ -180,6 +203,7 @@ export async function upsertSalonServiceConfig(
   salonId: string,
   input: Partial<Omit<SalonServiceConfig, "salonId" | "updatedAt">> & {
     catalogServiceId: string;
+    lifecycleAction?: SalonServiceLifecycleAction;
   },
 ): Promise<{ config: SalonServiceConfig } | { error: string }> {
   const offer = getCatalogServiceOffer(input.catalogServiceId);
@@ -192,9 +216,17 @@ export async function upsertSalonServiceConfig(
     (config) => config.catalogServiceId === input.catalogServiceId,
   );
   const existing = mergeConfig(salonId, offer, existingStored);
+  const currentStatus = resolveSalonServiceStatus(existingStored);
+  const lifecycleAction = input.lifecycleAction ?? "save";
+  const nextStatus = resolveStatusAfterLifecycleAction(currentStatus, lifecycleAction);
+  if (typeof nextStatus === "object" && "error" in nextStatus) {
+    return nextStatus;
+  }
+
   const mergedInput = {
     catalogServiceId: input.catalogServiceId,
-    enabled: input.enabled ?? existing.enabled,
+    enabled: enabledFromSalonServiceStatus(nextStatus),
+    status: nextStatus,
     priceCents: input.priceCents ?? existing.priceCents,
     durationMinutes: input.durationMinutes ?? existing.durationMinutes,
     enabledAddonIds: input.enabledAddonIds ?? existing.enabledAddonIds,
@@ -207,17 +239,20 @@ export async function upsertSalonServiceConfig(
     : {
         catalogServiceId: mergedInput.catalogServiceId,
         enabled: mergedInput.enabled,
+        status: mergedInput.status,
         priceCents: mergedInput.priceCents,
         durationMinutes: mergedInput.durationMinutes,
         enabledAddonIds: mergedInput.enabledAddonIds,
         addonPriceCentsById: mergedInput.addonPriceCentsById,
       };
 
-  const payload: SalonServiceConfig = mergeConfig(salonId, offer, {
-    ...sanitized,
-    salonId,
-    updatedAt: new Date().toISOString(),
-  });
+  const payload: SalonServiceConfig = normalizeSalonServiceConfig(
+    mergeConfig(salonId, offer, {
+      ...sanitized,
+      salonId,
+      updatedAt: new Date().toISOString(),
+    }),
+  );
   payload.updatedAt = new Date().toISOString();
 
   if (writable.backend === "postgres") {

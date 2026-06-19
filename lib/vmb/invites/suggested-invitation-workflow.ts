@@ -26,6 +26,10 @@ import {
   buildOpportunityIntelligence,
   type OpportunityAnalysisContext,
 } from "@/lib/vmb/opportunities/opportunity-intelligence";
+import {
+  filterServiceIdsToActive,
+  publishedCopyEligibleForActiveServices,
+} from "@/lib/vmb/services/salon-service-lifecycle";
 import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
 
 export type SuggestedInvitationCategory =
@@ -163,10 +167,12 @@ export function buildSuggestedInvitationsFromOpportunities(
   options: {
     analysisContext?: OpportunityAnalysisContext;
     drafts?: VmbInviteDraft[];
+    activeServiceIds?: ReadonlySet<string>;
   } = {},
 ): SuggestedInvitationRecommendation[] {
   const drafts = options.drafts ?? [];
   const context = options.analysisContext ?? {};
+  const activeServiceIds = options.activeServiceIds;
 
   const rows: SuggestedInvitationRecommendation[] = [];
 
@@ -180,11 +186,21 @@ export function buildSuggestedInvitationsFromOpportunities(
     const templateId = expectedTemplateIdForOpportunity(opportunity, suggestedCardType);
     const match = findPublishedCopyForTemplateId(publishedCopies, templateId);
     const publishedCopy = match.copy;
+    if (
+      publishedCopy &&
+      activeServiceIds &&
+      !publishedCopyEligibleForActiveServices(publishedCopy.snapshot.serviceIds, activeServiceIds)
+    ) {
+      continue;
+    }
     const snapshot = publishedCopy?.snapshot ?? null;
     const templateName = snapshot?.templateName ?? defaultTemplateNameForCardType(suggestedCardType);
     const adminLabels = resolveAdminDefaultPackageLabels(templateId);
     const snapshotPricing = snapshot ? pricingFromSnapshotFields(snapshot) : null;
     const pricing = snapshotPricing ?? adminLabels.pricing;
+    const activeSnapshotServiceIds = snapshot
+      ? filterServiceIdsToActive(snapshot.serviceIds, activeServiceIds ?? new Set())
+      : [];
 
     rows.push({
       id: opportunity.opportunityId,
@@ -199,7 +215,15 @@ export function buildSuggestedInvitationsFromOpportunities(
       templateName,
       publishedCopy,
       snapshot,
-      services: snapshot ? resolveSnapshotServiceLabels(snapshot) : adminLabels.services,
+      services: snapshot
+        ? resolveSnapshotServiceLabels({
+            ...snapshot,
+            serviceIds:
+              activeServiceIds && snapshot.serviceIds.length > 0
+                ? activeSnapshotServiceIds
+                : snapshot.serviceIds,
+          })
+        : adminLabels.services,
       rewards: snapshot ? resolveSnapshotRewardLabels(snapshot) : adminLabels.rewards,
       expirationLabel: snapshot?.expirationLabel ?? adminLabels.expirationLabel,
       estimatedValue: pricing?.offerPrice ?? opportunity.estimatedValue,

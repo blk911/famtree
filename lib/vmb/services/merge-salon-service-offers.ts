@@ -1,6 +1,8 @@
 import type { SalonServiceConfig } from "./canonical-catalog-types";
-
-import { getDefaultPresetForOffer, listDefaultPresetsForCategory } from "./default-service-presets";
+import {
+  enabledFromSalonServiceStatus,
+  resolveSalonServiceStatus,
+} from "./salon-service-lifecycle";
 
 import type { ServicePresetCard } from "./service-preset-types";
 
@@ -9,12 +11,18 @@ import type { SalonFacingServiceOffer } from "./service-preset-types";
 import type { ServiceCategoryId } from "./canonical-catalog-types";
 
 import { listAddonsForServiceOffer, listCatalogServiceOffers } from "./canonical-service-catalog";
+import { getDefaultPresetForOffer, listDefaultPresetsForCategory } from "./default-service-presets";
 
 
 
 const EPOCH = new Date(0).toISOString();
 
-
+function resolveInputStatus(
+  input: Pick<SalonServiceConfig, "enabled" | "status">,
+): "configured" | "active" {
+  if (input.status === "active" || input.status === "configured") return input.status;
+  return input.enabled ? "active" : "configured";
+}
 
 export function hasSalonSavedConfig(config: SalonServiceConfig | undefined): boolean {
 
@@ -80,7 +88,7 @@ export function mergePresetWithSalonConfig(
 
     durationMinutes: saved ? stored!.durationMinutes : preset.durationMinutes,
 
-    enabled: saved ? stored!.enabled : preset.defaultEnabled,
+    status: saved ? resolveSalonServiceStatus(stored) : "draft",
 
     sortOrder: preset.sortOrder,
 
@@ -158,7 +166,9 @@ export function buildDefaultSalonConfigFromPreset(
 
     catalogServiceId: preset.serviceOfferId,
 
-    enabled: preset.defaultEnabled,
+    enabled: false,
+
+    status: "draft",
 
     priceCents: preset.basePriceCents,
 
@@ -202,7 +212,9 @@ export function sanitizeSalonServiceConfigForPreset(
 
     catalogServiceId: preset.serviceOfferId,
 
-    enabled: input.enabled,
+    enabled: enabledFromSalonServiceStatus(resolveInputStatus(input)),
+
+    status: resolveInputStatus(input),
 
     priceCents: Math.max(0, Math.round(input.priceCents)),
 

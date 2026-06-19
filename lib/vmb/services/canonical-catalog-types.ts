@@ -1,5 +1,7 @@
 /** Platform canonical service catalog — single source of truth for VMB. */
 
+import type { SalonServiceLifecycleStatus } from "./salon-service-lifecycle";
+
 export type ServiceCategoryId =
   | "nails"
   | "hair"
@@ -48,7 +50,9 @@ export type CatalogServiceOfferWithAddons = CatalogServiceOffer & {
 export type SalonServiceConfig = {
   salonId: string;
   catalogServiceId: string;
+  /** @deprecated Derived from status — kept for legacy payloads. */
   enabled: boolean;
+  status?: SalonServiceLifecycleStatus;
   priceCents: number;
   durationMinutes: number;
   enabledAddonIds: string[];

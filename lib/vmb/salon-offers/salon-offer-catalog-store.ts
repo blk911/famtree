@@ -80,12 +80,19 @@ export async function getSalonOfferCatalogEntry(
   return getOfferJson(salonId, offerId);
 }
 
-export async function getEnabledSalonServicesForOffers(
+export async function getActiveSalonServicesForOffers(
   salonId: string,
 ): Promise<SalonFacingServiceOffer[]> {
   const categoryId = await getSalonPrimaryCategory(salonId);
   const services = await getSalonFacingServicesForCategory(salonId, categoryId);
-  return services.filter((service) => service.enabled);
+  return services.filter((service) => service.status === "active");
+}
+
+/** @deprecated Prefer getActiveSalonServicesForOffers */
+export async function getEnabledSalonServicesForOffers(
+  salonId: string,
+): Promise<SalonFacingServiceOffer[]> {
+  return getActiveSalonServicesForOffers(salonId);
 }
 
 async function validateOfferService(
@@ -93,10 +100,10 @@ async function validateOfferService(
   serviceId: string,
   addonIds: string[],
 ): Promise<{ service: SalonFacingServiceOffer } | { error: string }> {
-  const enabled = await getEnabledSalonServicesForOffers(salonId);
-  const service = enabled.find((row) => row.serviceOfferId === serviceId);
+  const active = await getActiveSalonServicesForOffers(salonId);
+  const service = active.find((row) => row.serviceOfferId === serviceId);
   if (!service) {
-    return { error: "Service must be enabled in your salon menu before building an offer" };
+    return { error: "Service must be active in your salon menu before building an offer" };
   }
   const allowed = new Set(
     service.addons.filter((addon) => addon.enabled).map((addon) => addon.addonId),

@@ -27,14 +27,18 @@ async function run(): Promise<void> {
 
   await upsertSalonServiceConfig(salonId, {
     catalogServiceId: "default-nails-gel-x",
-    enabled: true,
+    lifecycleAction: "save",
     priceCents: 8000,
     durationMinutes: 90,
     enabledAddonIds: ["addon-chrome", "addon-crystals"],
   });
+  await upsertSalonServiceConfig(salonId, {
+    catalogServiceId: "default-nails-gel-x",
+    lifecycleAction: "activate",
+  });
 
   const enabled = await getEnabledSalonServicesForOffers(salonId);
-  assert(enabled.some((service) => service.serviceOfferId === "default-nails-gel-x"), "enabled services include Gel-X");
+  assert(enabled.some((service) => service.serviceOfferId === "default-nails-gel-x"), "active services include Gel-X");
 
   const gelX = enabled.find((service) => service.serviceOfferId === "default-nails-gel-x")!;
   const disabledAddonId = gelX.addons.find((addon) => !addon.enabled)?.addonId;
@@ -88,7 +92,7 @@ async function run(): Promise<void> {
 
   await upsertSalonServiceConfig(salonId, {
     catalogServiceId: "default-nails-gel-x",
-    enabled: false,
+    lifecycleAction: "deactivate",
   });
 
   const displayAfterDisable = await resolveSalonOfferDisplay(salonId, created.entry.id);

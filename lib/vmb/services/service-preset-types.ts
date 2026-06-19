@@ -1,4 +1,5 @@
 import type { ServiceCategoryId } from "./canonical-catalog-types";
+import type { SalonServiceLifecycleStatus } from "./salon-service-lifecycle";
 
 /** Launch onboarding signoff — surfaced later during book ingest / launch flow. */
 export type SalonServiceSignoffStatus = "pending" | "reviewed" | "approved";
@@ -43,7 +44,7 @@ export type SalonFacingServiceOffer = {
   includedText: string;
   priceCents: number;
   durationMinutes: number;
-  enabled: boolean;
+  status: SalonServiceLifecycleStatus;
   sortOrder: number;
   adminBasePriceCents: number;
   adminDurationMinutes: number;

@@ -1,6 +1,7 @@
 import type { InviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 import { isSalonInviteMatchingActive } from "@/lib/vmb/invites/salon-invite-inventory";
+import { publishedCopyEligibleForActiveServices } from "@/lib/vmb/services/salon-service-lifecycle";
 
 export type ServiceTemplateParticipation = {
   templateId: string;
@@ -13,11 +14,19 @@ export type ServiceTemplateParticipationMap = Record<string, ServiceTemplatePart
 /** Map each catalog service id to published invitation templates that include it. */
 export function buildServiceTemplateParticipation(
   publishedCopies: SalonInviteLocalCopy[],
+  options?: { activeServiceIds?: ReadonlySet<string> },
 ): ServiceTemplateParticipationMap {
+  const activeServiceIds = options?.activeServiceIds;
   const map = new Map<string, Map<string, ServiceTemplateParticipation>>();
 
   for (const copy of publishedCopies) {
     if (!isSalonInviteMatchingActive(copy)) continue;
+    if (
+      activeServiceIds &&
+      !publishedCopyEligibleForActiveServices(copy.snapshot.serviceIds, activeServiceIds)
+    ) {
+      continue;
+    }
     const entry: ServiceTemplateParticipation = {
       templateId: copy.sourceTemplateId,
       templateName: copy.snapshot.templateName,
@@ -44,6 +53,8 @@ export function buildServiceTemplateParticipation(
 export function participatingTemplatesForService(
   participation: ServiceTemplateParticipationMap,
   serviceOfferId: string,
+  serviceStatus?: "draft" | "configured" | "active",
 ): ServiceTemplateParticipation[] {
+  if (serviceStatus && serviceStatus !== "active") return [];
   return participation[serviceOfferId] ?? [];
 }
