@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { VmbDevStateControls } from "@/components/vmb/VmbDevStateControls";
 import { ServicePhotoImage } from "@/components/vmb/salon/ServicePhotoImage";
 import { getInviteArtImage, getServiceImage } from "@/lib/vmb/assets";
 import type { InviteArtCategory } from "@/lib/vmb/assets/invite-art-types";
@@ -50,6 +51,8 @@ export default function VmbImageSmokePage() {
           Resolver samples by category — verify URLs, category labels, source badges, and image loading.
         </p>
       </header>
+
+      <VmbDevStateControls />
 
       <section style={{ display: "grid", gap: 14 }}>
         <h2 style={{ margin: 0 }}>Service photos</h2>

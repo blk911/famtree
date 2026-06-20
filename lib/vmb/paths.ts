@@ -91,6 +91,10 @@ export function getVmbSalonInvitationApprovalsFile(): string {
   return path.join(getVmbDataDir(), "salon-invitation-approvals.json");
 }
 
+export function getVmbDevStateFile(): string {
+  return path.join(getVmbDataDir(), "dev-state", "latest-working-state.json");
+}
+
 /** Legacy file-upload imports (admin engine path) — kept separate from book paste flow. */
 export function getVmbTrialImportsDir(): string {
   return path.join(getVmbDataDir(), "trial-imports");

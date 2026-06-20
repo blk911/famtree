@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } fro
 import { useRouter } from "next/navigation";
 import { VmbActiveBookResume } from "@/components/vmb/VmbActiveBookResume";
 import { UseAdminDemoBookButton } from "@/components/vmb/AdminDemoBookControls";
+import { VmbDevStateControls } from "@/components/vmb/VmbDevStateControls";
 import { VmbCard } from "@/components/vmb/VmbCard";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import {
@@ -361,6 +362,8 @@ export function VmbStartFlow({ refreshMode = false, activeBook = null }: Props) 
           }}
         />
       )}
+
+      <VmbDevStateControls />
 
       {!showResume ? (
       <div style={{ display: "grid", gap: 28 }}>

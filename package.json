@@ -76,6 +76,7 @@
     "test:vmb:salon-read-only-load": "tsx scripts/test-vmb-salon-read-only-load.ts",
     "test:vmb:today-command-center": "tsx scripts/test-vmb-today-command-center.ts",
     "test:vmb:invite-preset-admin": "tsx scripts/test-vmb-invite-preset-admin.ts",
+    "test:vmb:dev-state": "tsx scripts/test-vmb-dev-state-restore.ts",
     "test:admin:workspaces": "tsx scripts/test-admin-workspace-routes.ts",
     "qa:vmb:ui-smoke": "tsx scripts/vmb-ui-smoke-tester.ts",
     "qa:vmb:placeholder-hunter": "tsx scripts/vmb-placeholder-hunter.ts",
