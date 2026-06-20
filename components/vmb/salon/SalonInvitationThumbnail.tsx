@@ -12,6 +12,7 @@ type Props = {
   tokenContext?: InviteTemplateTokenContext;
   serviceFallbackById?: Record<string, string | undefined>;
   rewardFallbackById?: Record<string, string | undefined>;
+  salonId?: string;
   compact?: boolean;
 };
 
@@ -21,12 +22,14 @@ export function SalonInvitationThumbnail({
   tokenContext,
   serviceFallbackById,
   rewardFallbackById,
+  salonId,
   compact = false,
 }: Props) {
   const cardProps = snapshotToSalonInviteCardProps(snapshot, {
     tokenContext,
     serviceFallbackById,
     rewardFallbackById,
+    salonId,
   });
 
   return (

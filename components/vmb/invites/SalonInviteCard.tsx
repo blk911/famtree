@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ownerPreviewInitial } from "@/lib/vmb/cards/card-owner-preview-copy";
+import { getFallbackServiceAsset } from "@/lib/vmb/assets/service-photo-library";
 import {
   INVITE_TEMPLATE_PREVIEW_CONTEXT,
   applyInviteTemplateTokens,
@@ -55,6 +57,14 @@ export function SalonInviteCard({
   const resolvedCta = applyInviteTemplateTokens(ctaLabel, tokens);
   const ownerInitial = ownerPreviewInitial(ownerName);
   const identityLine = [ownerName.trim(), salonName?.trim()].filter(Boolean).join(" · ");
+  const fallbackServiceImageUrl = getFallbackServiceAsset().imageUrl;
+  const [resolvedServiceImageUrl, setResolvedServiceImageUrl] = useState(
+    serviceImageUrl?.trim() || fallbackServiceImageUrl,
+  );
+
+  useEffect(() => {
+    setResolvedServiceImageUrl(serviceImageUrl?.trim() || fallbackServiceImageUrl);
+  }, [serviceImageUrl, fallbackServiceImageUrl]);
 
   return (
     <article
@@ -88,13 +98,18 @@ export function SalonInviteCard({
         ) : null}
       </header>
 
-      <div
-        className={`vmb-salon-invite-card__service-image${serviceImageUrl ? "" : " vmb-salon-invite-card__service-image--placeholder"}`}
-      >
-        {serviceImageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={serviceImageUrl} alt="" className="vmb-salon-invite-card__service-image-img" />
-        ) : null}
+      <div className="vmb-salon-invite-card__service-image">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={resolvedServiceImageUrl}
+          alt=""
+          className="vmb-salon-invite-card__service-image-img"
+          onError={() => {
+            if (resolvedServiceImageUrl !== fallbackServiceImageUrl) {
+              setResolvedServiceImageUrl(fallbackServiceImageUrl);
+            }
+          }}
+        />
       </div>
 
       <div className="vmb-salon-invite-card__content">

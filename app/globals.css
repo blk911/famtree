@@ -6877,6 +6877,8 @@
 }
 
 .vmb-salon-landing__hero-media {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -6885,8 +6887,12 @@
   min-height: 220px;
   border-radius: 20px;
   border: none;
-  background: linear-gradient(145deg, #fff1f2 0%, #fce7f3 45%, #fdf4ff 100%);
+  background: #f5f5f4;
   box-shadow: 0 12px 40px rgba(190, 24, 93, 0.08);
+}
+
+.vmb-salon-landing__hero-media-image {
+  object-fit: cover;
 }
 
 .vmb-salon-landing__hero-media-icon {

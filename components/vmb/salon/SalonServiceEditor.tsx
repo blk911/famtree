@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import {
   buildServiceImageInput,
   getServiceImage,
 } from "@/lib/vmb/assets";
+import { ServicePhotoImage } from "@/components/vmb/salon/ServicePhotoImage";
 import {
   calculateServiceRevenueSummary,
   formatSalonDurationMinutes,
@@ -58,13 +58,11 @@ export function SalonServiceEditor({
   return (
     <section className="vmb-salon-services__studio" aria-label={`Service studio for ${service.displayName}`}>
       <div className="vmb-salon-services__preview">
-        <Image
-          src={resolvedImage.imageUrl}
+        <ServicePhotoImage
+          resolved={resolvedImage}
           alt={resolvedImage.title || service.displayName}
-          fill
           sizes="(max-width: 768px) 100vw, 420px"
           className="vmb-salon-services__preview-image"
-          priority={false}
         />
       </div>
 

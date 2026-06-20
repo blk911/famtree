@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { SalonInvitationThumbnail } from "@/components/vmb/salon/SalonInvitationThumbnail";
 import { ServicePhotoImage } from "@/components/vmb/salon/ServicePhotoImage";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
-import { buildServiceImageInput, getServiceImage } from "@/lib/vmb/assets";
+import { buildServiceImageInput, getFallbackServiceAsset, getServiceImage } from "@/lib/vmb/assets";
 
 import type { InviteTemplateTokenContext } from "@/lib/vmb/invite-templates/invite-template-types";
 
@@ -298,6 +298,7 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
   const headline = heroHeadline(resolvedOwnerName);
 
   const networkCta = pcnCtaLabel(resolvedOwnerName);
+  const heroImage = getFallbackServiceAsset();
 
 
 
@@ -329,12 +330,19 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
             <section className="vmb-salon-landing__hero" aria-label="Salon welcome">
 
-              <div className="vmb-salon-landing__hero-media" aria-hidden="true">
-
-                <span className="vmb-salon-landing__hero-media-icon">✦</span>
-
-                <p className="vmb-salon-landing__hero-media-label">Salon photo</p>
-
+              <div className="vmb-salon-landing__hero-media">
+                <ServicePhotoImage
+                  resolved={{
+                    imageUrl: heroImage.imageUrl,
+                    title: heroImage.title,
+                    source: "fallback",
+                    assetId: heroImage.id,
+                    category: heroImage.category,
+                  }}
+                  alt={heroImage.title || "Salon atmosphere"}
+                  sizes="(max-width: 768px) 100vw, 480px"
+                  className="vmb-salon-landing__hero-media-image"
+                />
               </div>
 
               <div className="vmb-salon-landing__hero-copy">
@@ -511,13 +519,10 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
                       <li key={copy.id} className="vmb-salon-landing__offer-card">
 
                         <SalonInvitationThumbnail
-
                           snapshot={copy.snapshot}
-
                           tokenContext={tokenContext}
-
+                          salonId={salonId}
                           compact
-
                         />
 
                         <div className="vmb-salon-landing__offer-details">

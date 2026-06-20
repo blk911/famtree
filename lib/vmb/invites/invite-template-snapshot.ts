@@ -3,6 +3,7 @@ import {
   resolveNailOfferAddonLabels,
   resolveNailOfferServiceLabels,
 } from "@/lib/vmb/admin/nail-offer-builder-selections";
+import { resolveInviteServiceImageUrl } from "@/lib/vmb/assets/service-image-resolver";
 import type { SalonInviteCardProps } from "@/components/vmb/invites/SalonInviteCard";
 import type { InviteTemplateTokenContext } from "@/lib/vmb/invite-templates/invite-template-types";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
@@ -176,21 +177,29 @@ export function snapshotToSalonInviteCardProps(
     tokenContext?: InviteTemplateTokenContext;
     serviceFallbackById?: Record<string, string | undefined>;
     rewardFallbackById?: Record<string, string | undefined>;
+    salonId?: string;
   } = {},
 ): Omit<SalonInviteCardProps, "mode"> {
+  const services = resolveSnapshotServiceLabels(snapshot, options.serviceFallbackById);
+
   return {
     inviteTypeLabel: snapshot.templateName,
     headline: snapshot.headline,
     body: snapshot.body,
     ctaLabel: snapshot.ctaLabel,
-    services: resolveSnapshotServiceLabels(snapshot, options.serviceFallbackById),
+    services,
     rewards: resolveSnapshotRewardLabels(snapshot, options.rewardFallbackById),
     expirationLabel: snapshot.expirationLabel,
     ownerName: snapshot.ownerName ?? "Your nail tech",
     ownerPhotoUrl: snapshot.ownerPhotoUrl,
     salonName: snapshot.salonName,
     salonLogoUrl: snapshot.salonLogoUrl,
-    serviceImageUrl: snapshot.serviceImageUrl,
+    serviceImageUrl: resolveInviteServiceImageUrl({
+      serviceImageUrl: snapshot.serviceImageUrl,
+      serviceName: services[0] ?? snapshot.templateName,
+      serviceId: snapshot.serviceIds[0],
+      salonId: options.salonId,
+    }),
     tokenContext: options.tokenContext,
   };
 }

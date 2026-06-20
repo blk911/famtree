@@ -71,3 +71,24 @@ export function getServiceImage(input: ServiceImageInput): ResolvedServiceImage 
     sourceUrl: asset.sourceUrl,
   };
 }
+
+export function resolveInviteServiceImageUrl(input: {
+  serviceImageUrl?: string | null;
+  serviceName?: string;
+  serviceId?: string;
+  salonId?: string;
+}): string {
+  const explicit = input.serviceImageUrl?.trim();
+  if (explicit) return explicit;
+
+  const serviceName = input.serviceName?.trim();
+  if (!serviceName) {
+    return getFallbackServiceAsset().imageUrl;
+  }
+
+  return getServiceImage({
+    serviceName,
+    serviceId: input.serviceId,
+    salonId: input.salonId?.trim() || "vmb-demo-salon",
+  }).imageUrl;
+}

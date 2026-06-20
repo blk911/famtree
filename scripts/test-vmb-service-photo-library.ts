@@ -4,6 +4,7 @@
 import {
   countAssetsByCategory,
   getServiceImage,
+  resolveInviteServiceImageUrl,
   resolveServicePhotoCategory,
   servicePhotoLibrary,
 } from "../lib/vmb/assets";
@@ -87,6 +88,22 @@ function run(): void {
     "unknown service maps to generic category",
   );
   assert(unknown.source === "fallback" || unknown.category === "generic_salon", "unknown service falls back safely");
+
+  const inviteFallback = resolveInviteServiceImageUrl({
+    serviceName: "Gel Manicure",
+    serviceId: "gel-manicure",
+    salonId: "debug-salon",
+  });
+  assert(inviteFallback.startsWith("https://"), "invite fallback resolves real image URL");
+  console.log("  invite resolver sample:", inviteFallback);
+
+  const gelManicure = getServiceImage({
+    serviceName: "Gel Manicure",
+    serviceId: "gel-manicure",
+    salonId: "debug-salon",
+  });
+  assert(gelManicure.imageUrl.startsWith("https://"), "gel manicure resolves real image URL");
+  console.log("  gel manicure sample:", gelManicure.imageUrl);
 
   console.log("OK: VMB service photo library tests passed");
   console.log("  asset counts:", counts);

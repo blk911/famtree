@@ -373,7 +373,7 @@ async function run(): Promise<void> {
   assert(salonServiceEditor.includes("Pause Service"), "editor exposes pause service action");
   assert(salonServiceEditor.includes("Revenue Summary"), "editor shows revenue summary");
   assert(salonServiceEditor.includes("getServiceImage"), "editor resolves service photo from library");
-  assert(salonServiceEditor.includes("next/image"), "editor renders service photo with next/image");
+  assert(salonServiceEditor.includes("ServicePhotoImage"), "editor renders service photo via ServicePhotoImage");
   assert(!salonServiceEditor.includes("Service photo coming soon"), "editor replaces photo placeholder");
   assert(!salonServiceEditor.includes("Save Changes"), "editor removes software save wording");
   assert(!salonServiceEditor.includes("Activate Service"), "editor removes software activate wording");
