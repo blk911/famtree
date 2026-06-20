@@ -24,6 +24,7 @@ export type SalonInviteCardProps = {
   salonName?: string;
   salonLogoUrl?: string;
   serviceImageUrl?: string;
+  inviteArtImageUrl?: string;
   mode: SalonInviteCardMode;
   /** Token context override — defaults to preview client name in adminReview. */
   tokenContext?: InviteTemplateTokenContext;
@@ -42,6 +43,7 @@ export function SalonInviteCard({
   salonName,
   salonLogoUrl,
   serviceImageUrl,
+  inviteArtImageUrl,
   mode,
   tokenContext,
 }: SalonInviteCardProps) {
@@ -58,13 +60,12 @@ export function SalonInviteCard({
   const ownerInitial = ownerPreviewInitial(ownerName);
   const identityLine = [ownerName.trim(), salonName?.trim()].filter(Boolean).join(" · ");
   const fallbackServiceImageUrl = getFallbackServiceAsset().imageUrl;
-  const [resolvedServiceImageUrl, setResolvedServiceImageUrl] = useState(
-    serviceImageUrl?.trim() || fallbackServiceImageUrl,
-  );
+  const heroImageUrl = inviteArtImageUrl?.trim() || serviceImageUrl?.trim() || fallbackServiceImageUrl;
+  const [resolvedServiceImageUrl, setResolvedServiceImageUrl] = useState(heroImageUrl);
 
   useEffect(() => {
-    setResolvedServiceImageUrl(serviceImageUrl?.trim() || fallbackServiceImageUrl);
-  }, [serviceImageUrl, fallbackServiceImageUrl]);
+    setResolvedServiceImageUrl(heroImageUrl);
+  }, [heroImageUrl]);
 
   return (
     <article

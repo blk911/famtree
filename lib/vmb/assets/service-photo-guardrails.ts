@@ -137,24 +137,27 @@ export function validateServicePhotoAsset(asset: ServicePhotoAsset): CategoryGua
     }
   }
 
-  if (asset.category === "pedicure" && pexelsId !== 3997991) {
+  if (
+    asset.category === "pedicure" &&
+    !(pexelsId === 3997991 || (asset.shotType === "feet" && (tags.has("pedicure") || tags.has("feet"))))
+  ) {
     violations.push({
       assetId: asset.id,
       category: asset.category,
       rule: "pedicure-source",
-      detail: "pedicure category must use verified feet pedicure source",
+      detail: "pedicure category must use verified feet/pedicure imagery",
     });
   }
 
   if (
     (asset.category === "gel_x" || asset.category === "acrylic") &&
-    unsplashId !== "1777287852750-53eb2ca506e9"
+    !(unsplashId === "1777287852750-53eb2ca506e9" || (asset.nailLength === "long" && tags.has("extensions")))
   ) {
     violations.push({
       assetId: asset.id,
       category: asset.category,
       rule: "extension-source",
-      detail: "extension categories must use verified long-nail extension photography",
+      detail: "extension categories must use long extension imagery",
     });
   }
 

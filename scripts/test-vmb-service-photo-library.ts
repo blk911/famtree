@@ -40,21 +40,21 @@ function run(): void {
 
   const requiredMinimums: Record<string, number> = {
 
-    gel_manicure: 8,
+    gel_manicure: 14,
 
-    builder_gel: 6,
+    builder_gel: 10,
 
-    structured_gel: 6,
+    structured_gel: 10,
 
-    gel_x: 6,
+    gel_x: 12,
 
-    acrylic: 6,
+    acrylic: 12,
 
-    pedicure: 6,
+    pedicure: 12,
 
-    fill_refresh: 5,
+    fill_refresh: 10,
 
-    generic_salon: 4,
+    generic_salon: 8,
 
   };
 
@@ -118,13 +118,9 @@ function run(): void {
 
   assert(gelXImage.category === "gel_x", "gel-x resolves to gel_x category pool");
 
-  assert(
-
-    gelXImage.imageUrl.includes("1777287852750-53eb2ca506e9"),
-
-    "gel-x resolves to long extension photography",
-
-  );
+  const gelXAsset = servicePhotoLibrary.find((asset) => asset.id === gelXImage.assetId);
+  assert(gelXAsset?.nailLength === "long", "gel-x resolves to long extension photography");
+  assert(gelXAsset.tags.includes("extensions"), "gel-x resolves to extension-tagged photography");
 
 
 
@@ -142,13 +138,9 @@ function run(): void {
 
   assert(pedicureImage.category === "pedicure", "pedicure resolves to pedicure category pool");
 
-  assert(
-
-    pedicureImage.imageUrl.includes("/3997991/"),
-
-    "pedicure resolves to feet/spa pedicure photography",
-
-  );
+  const pedicureAsset = servicePhotoLibrary.find((asset) => asset.id === pedicureImage.assetId);
+  assert(pedicureAsset?.shotType === "feet", "pedicure resolves to feet photography");
+  assert(pedicureAsset.tags.some((tag) => tag === "pedicure" || tag === "feet"), "pedicure resolves to pedicure-tagged photography");
 
 
 

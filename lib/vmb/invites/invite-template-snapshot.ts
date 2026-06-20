@@ -3,6 +3,7 @@ import {
   resolveNailOfferAddonLabels,
   resolveNailOfferServiceLabels,
 } from "@/lib/vmb/admin/nail-offer-builder-selections";
+import { getInviteArtImage } from "@/lib/vmb/assets/invite-art-resolver";
 import { resolveInviteServiceImageUrl } from "@/lib/vmb/assets/service-image-resolver";
 import type { SalonInviteCardProps } from "@/components/vmb/invites/SalonInviteCard";
 import type { InviteTemplateTokenContext } from "@/lib/vmb/invite-templates/invite-template-types";
@@ -23,6 +24,9 @@ export type InviteTemplateSnapshot = {
   ownerPhotoUrl?: string;
   salonLogoUrl?: string;
   serviceImageUrl?: string;
+  inviteArtImageUrl?: string;
+  lockedInviteArtAssetId?: string;
+  selectedInviteArtUrl?: string;
   priceLabel?: string;
   expirationLabel?: string;
   termsText?: string;
@@ -45,6 +49,9 @@ export type BuildInviteTemplateSnapshotInput = {
   ownerPhotoUrl?: string;
   salonLogoUrl?: string;
   serviceImageUrl?: string;
+  inviteArtImageUrl?: string;
+  lockedInviteArtAssetId?: string;
+  selectedInviteArtUrl?: string;
   priceLabel?: string;
   expirationLabel?: string;
   termsText?: string;
@@ -86,6 +93,9 @@ export function buildInviteTemplateSnapshot(
     ownerPhotoUrl: input.ownerPhotoUrl,
     salonLogoUrl: input.salonLogoUrl,
     serviceImageUrl: input.serviceImageUrl,
+    inviteArtImageUrl: input.inviteArtImageUrl,
+    lockedInviteArtAssetId: input.lockedInviteArtAssetId,
+    selectedInviteArtUrl: input.selectedInviteArtUrl,
     priceLabel: input.priceLabel,
     expirationLabel: input.expirationLabel,
     termsText: input.termsText,
@@ -181,6 +191,15 @@ export function snapshotToSalonInviteCardProps(
   } = {},
 ): Omit<SalonInviteCardProps, "mode"> {
   const services = resolveSnapshotServiceLabels(snapshot, options.serviceFallbackById);
+  const inviteArt = getInviteArtImage({
+    templateType: snapshot.sourceTemplateId || snapshot.templateName,
+    invitationType: snapshot.templateName,
+    serviceName: services[0],
+    salonId: options.salonId,
+    inviteId: snapshot.id,
+    lockedInviteArtAssetId: snapshot.lockedInviteArtAssetId,
+    selectedInviteArtUrl: snapshot.selectedInviteArtUrl ?? snapshot.inviteArtImageUrl,
+  });
 
   return {
     inviteTypeLabel: snapshot.templateName,
@@ -200,6 +219,7 @@ export function snapshotToSalonInviteCardProps(
       serviceId: snapshot.serviceIds[0],
       salonId: options.salonId,
     }),
+    inviteArtImageUrl: inviteArt.imageUrl,
     tokenContext: options.tokenContext,
   };
 }

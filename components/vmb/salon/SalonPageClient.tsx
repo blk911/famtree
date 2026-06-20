@@ -423,48 +423,55 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
                     return (
 
                       <li key={service.serviceOfferId} className="vmb-salon-landing__service-card">
+                        <div className="vmb-salon-landing__service-copy">
+                          <h3 className="vmb-salon-landing__service-name">{service.displayName}</h3>
+
+                          <p className="vmb-salon-landing__service-meta">
+
+                            {formatSalonPrice(service.priceCents)} &bull;{" "}
+
+                            {formatSalonDuration(service.durationMinutes)}
+
+                          </p>
+
+                          {service.shortDescription ? (
+
+                            <p className="vmb-salon-landing__service-desc">{service.shortDescription}</p>
+
+                          ) : null}
+
+                          {upgrades.length > 0 ? (
+
+                            <div className="vmb-salon-landing__service-upgrades">
+
+                              <p className="vmb-salon-landing__service-upgrades-label">Top upgrades</p>
+
+                              <ul>
+
+                                {upgrades.map((line) => (
+
+                                  <li key={line}>{line}</li>
+
+                                ))}
+
+                              </ul>
+
+                            </div>
+
+                          ) : null}
+
+                          <button type="button" className="vmb-salon-landing__service-cta" disabled>
+                            Request this service
+                          </button>
+                        </div>
+
                         <div className="vmb-salon-landing__service-photo">
                           <ServicePhotoImage
                             resolved={serviceImage}
                             alt={serviceImage.title || service.displayName}
-                            sizes="(max-width: 768px) 100vw, 420px"
+                            sizes="(max-width: 768px) 100vw, 200px"
                           />
                         </div>
-                        <h3 className="vmb-salon-landing__service-name">{service.displayName}</h3>
-
-                        <p className="vmb-salon-landing__service-meta">
-
-                          {formatSalonPrice(service.priceCents)} &bull;{" "}
-
-                          {formatSalonDuration(service.durationMinutes)}
-
-                        </p>
-
-                        {service.shortDescription ? (
-
-                          <p className="vmb-salon-landing__service-desc">{service.shortDescription}</p>
-
-                        ) : null}
-
-                        {upgrades.length > 0 ? (
-
-                          <div className="vmb-salon-landing__service-upgrades">
-
-                            <p className="vmb-salon-landing__service-upgrades-label">Top upgrades</p>
-
-                            <ul>
-
-                              {upgrades.map((line) => (
-
-                                <li key={line}>{line}</li>
-
-                              ))}
-
-                            </ul>
-
-                          </div>
-
-                        ) : null}
 
                       </li>
 

@@ -19,6 +19,11 @@ export type ServiceImageSource =
   | "rotating_library"
   | "fallback";
 
+export type ServicePhotoMood = "soft" | "clean" | "luxury" | "glam" | "spa" | "social" | "neutral";
+export type ServicePhotoShotType = "hands" | "feet" | "tools" | "salon" | "client" | "lifestyle";
+export type ServicePhotoNailLength = "short" | "medium" | "long";
+export type ServicePhotoStyle = "natural" | "french" | "chrome" | "color" | "art" | "neutral";
+
 export interface ServicePhotoAsset {
   id: string;
   category: ServicePhotoCategory;
@@ -31,6 +36,10 @@ export interface ServicePhotoAsset {
   tags: string[];
   active: boolean;
   featured?: boolean;
+  mood?: ServicePhotoMood;
+  shotType?: ServicePhotoShotType;
+  nailLength?: ServicePhotoNailLength;
+  style?: ServicePhotoStyle;
 }
 
 export interface ServiceImageInput {

@@ -5,6 +5,7 @@
  */
 import fs from "node:fs/promises";
 import path from "node:path";
+import { inviteArtLibrary } from "../lib/vmb/assets/invite-art-library";
 import { servicePhotoLibrary } from "../lib/vmb/assets/service-photo-library";
 
 type AssetCandidate = {
@@ -50,6 +51,17 @@ async function collectCandidates(): Promise<AssetCandidate[]> {
     for (const [kind, url] of [
       ["service photo", asset.imageUrl],
       ["thumbnail", asset.thumbnailUrl],
+    ] as const) {
+      if (!url) continue;
+      const candidate = { id: `${asset.id}:${kind}`, category: asset.category, url };
+      candidates.set(assetKey(candidate), candidate);
+    }
+  }
+
+  for (const asset of inviteArtLibrary.filter((row) => row.active)) {
+    for (const [kind, url] of [
+      ["invite artwork", asset.imageUrl],
+      ["invite thumbnail", asset.thumbnailUrl],
     ] as const) {
       if (!url) continue;
       const candidate = { id: `${asset.id}:${kind}`, category: asset.category, url };

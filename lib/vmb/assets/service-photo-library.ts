@@ -1,4 +1,11 @@
-import type { ServicePhotoAsset, ServicePhotoCategory } from "./service-image-types";
+import type {
+  ServicePhotoAsset,
+  ServicePhotoCategory,
+  ServicePhotoMood,
+  ServicePhotoNailLength,
+  ServicePhotoShotType,
+  ServicePhotoStyle,
+} from "./service-image-types";
 
 
 
@@ -23,6 +30,10 @@ type AssetSeed = {
   tags: string[];
 
   featured?: boolean;
+  mood?: ServicePhotoMood;
+  shotType?: ServicePhotoShotType;
+  nailLength?: ServicePhotoNailLength;
+  style?: ServicePhotoStyle;
 
 };
 
@@ -81,6 +92,10 @@ function buildAsset(seed: AssetSeed): ServicePhotoAsset {
     active: true,
 
     featured: seed.featured,
+    mood: seed.mood,
+    shotType: seed.shotType,
+    nailLength: seed.nailLength,
+    style: seed.style,
 
   };
 
@@ -1088,7 +1103,108 @@ const ASSET_SEEDS: AssetSeed[] = [
 
 
 
-export const servicePhotoLibrary: ServicePhotoAsset[] = ASSET_SEEDS.map(buildAsset);
+const SOURCE_PROFILES = {
+  luxeHands: {
+    pexelsId: 34373406,
+    photographer: "Moo Lens",
+    sourceUrl: "https://www.pexels.com/photo/elegant-manicured-hands-with-gold-jewelry-34373406/",
+  },
+  artHands: {
+    pexelsId: 29004934,
+    photographer: "Mert Coskun",
+    sourceUrl: "https://www.pexels.com/photo/trendy-hand-with-artistic-nail-art-on-denim-29004934/",
+  },
+  handCare: {
+    pexelsId: 4210658,
+    photographer: "Kaboompics",
+    sourceUrl: "https://www.pexels.com/photo/crop-woman-with-moisturizer-on-hands-4210658/",
+  },
+  polishPalette: {
+    pexelsId: 27913837,
+    photographer: "Dmitry Ovsyannikov",
+    sourceUrl: "https://www.pexels.com/photo/gel-nail-polish-with-marshmallows-and-candy-27913837/",
+  },
+  redLifestyle: {
+    pexelsId: 6029150,
+    photographer: "Kaboompics",
+    sourceUrl: "https://www.pexels.com/photo/person-with-red-nails-writing-on-a-notebook-6029150/",
+  },
+  proManicure: {
+    pexelsId: 4677850,
+    photographer: "Leeloo The First",
+    sourceUrl: "https://www.pexels.com/photo/woman-getting-professional-manicure-4677850/",
+  },
+  redPedicure: {
+    pexelsId: 6660631,
+    photographer: "Kaboompics",
+    sourceUrl: "https://www.pexels.com/photo/close-up-of-woman-foot-6660631/",
+  },
+  luxePedicure: {
+    pexelsId: 7067963,
+    photographer: "Vika Glitter",
+    sourceUrl: "https://www.pexels.com/photo/unrecognizable-woman-legs-and-hands-in-silver-anklets-and-rings-7067963/",
+  },
+} satisfies Record<string, Pick<AssetSeed, "pexelsId" | "photographer" | "sourceUrl">>;
+
+function pexelsSeed(
+  profile: keyof typeof SOURCE_PROFILES,
+  seed: Omit<AssetSeed, "pexelsId" | "photographer" | "sourceName" | "sourceUrl">,
+): AssetSeed {
+  return {
+    ...seed,
+    ...SOURCE_PROFILES[profile],
+    sourceName: "Pexels",
+  };
+}
+
+const EXTRA_ASSET_SEEDS: AssetSeed[] = [
+  pexelsSeed("luxeHands", { id: "gel-manicure-009", category: "gel_manicure", title: "Elegant grey gel manicure", tags: ["gel", "manicure", "neutral", "jewelry"], mood: "luxury", shotType: "hands", nailLength: "short", style: "neutral" }),
+  pexelsSeed("handCare", { id: "gel-manicure-010", category: "gel_manicure", title: "Hand care gel finish", tags: ["gel", "manicure", "natural", "hands"], mood: "soft", shotType: "hands", nailLength: "short", style: "natural" }),
+  pexelsSeed("polishPalette", { id: "gel-manicure-011", category: "gel_manicure", title: "Pastel gel polish collection", tags: ["gel", "manicure", "polish", "pastel"], mood: "soft", shotType: "tools", style: "color" }),
+  pexelsSeed("redLifestyle", { id: "gel-manicure-012", category: "gel_manicure", title: "Red manicure lifestyle moment", tags: ["gel", "manicure", "red", "lifestyle"], mood: "clean", shotType: "lifestyle", nailLength: "short", style: "color" }),
+  pexelsSeed("artHands", { id: "gel-manicure-013", category: "gel_manicure", title: "Modern nail art gel finish", tags: ["gel", "manicure", "art", "denim"], mood: "glam", shotType: "hands", nailLength: "medium", style: "art" }),
+  pexelsSeed("proManicure", { id: "gel-manicure-014", category: "gel_manicure", title: "Professional gel dryer service", tags: ["gel", "manicure", "dryer", "polish"], mood: "clean", shotType: "tools", nailLength: "short", style: "natural" }),
+  pexelsSeed("handCare", { id: "builder-gel-007", category: "builder_gel", title: "Builder gel natural overlay", tags: ["builder", "overlay", "natural", "hands"], mood: "clean", shotType: "hands", nailLength: "short", style: "natural" }),
+  pexelsSeed("proManicure", { id: "builder-gel-008", category: "builder_gel", title: "Builder gel prep tools", tags: ["builder", "application", "tools", "dryer"], mood: "clean", shotType: "tools", nailLength: "short", style: "natural" }),
+  pexelsSeed("luxeHands", { id: "builder-gel-009", category: "builder_gel", title: "Neutral builder gel finish", tags: ["builder", "overlay", "neutral", "strengthening"], mood: "luxury", shotType: "hands", nailLength: "short", style: "neutral" }),
+  pexelsSeed("artHands", { id: "builder-gel-010", category: "builder_gel", title: "Builder gel shaped color", tags: ["builder", "application", "overlay", "art"], mood: "glam", shotType: "hands", nailLength: "medium", style: "art" }),
+  pexelsSeed("luxeHands", { id: "structured-gel-007", category: "structured_gel", title: "Structured gel neutral shape", tags: ["structured", "architecture", "neutral", "hands"], mood: "luxury", shotType: "hands", nailLength: "short", style: "neutral" }),
+  pexelsSeed("proManicure", { id: "structured-gel-008", category: "structured_gel", title: "Structured gel prep station", tags: ["structured", "sculpted", "tools", "application"], mood: "clean", shotType: "tools", nailLength: "short", style: "natural" }),
+  pexelsSeed("handCare", { id: "structured-gel-009", category: "structured_gel", title: "Structured gel natural care", tags: ["structured", "overlay", "natural", "care"], mood: "soft", shotType: "hands", nailLength: "short", style: "natural" }),
+  pexelsSeed("artHands", { id: "structured-gel-010", category: "structured_gel", title: "Structured gel art profile", tags: ["structured", "sculpted", "art", "architecture"], mood: "glam", shotType: "hands", nailLength: "medium", style: "art" }),
+  pexelsSeed("artHands", { id: "gel-x-007", category: "gel_x", title: "Gel-X full-set extension detail", tags: ["gel-x", "extensions", "full-set", "long"], mood: "glam", shotType: "hands", nailLength: "long", style: "art" }),
+  pexelsSeed("luxeHands", { id: "gel-x-008", category: "gel_x", title: "Long Gel-X jewelry look", tags: ["gel-x", "extensions", "long", "neutral"], mood: "luxury", shotType: "hands", nailLength: "long", style: "neutral" }),
+  pexelsSeed("proManicure", { id: "gel-x-009", category: "gel_x", title: "Gel-X appointment finish", tags: ["gel-x", "extensions", "full-set", "application"], mood: "clean", shotType: "tools", nailLength: "long", style: "natural" }),
+  pexelsSeed("redLifestyle", { id: "gel-x-010", category: "gel_x", title: "Gel-X polished lifestyle", tags: ["gel-x", "extensions", "long", "color"], mood: "clean", shotType: "lifestyle", nailLength: "long", style: "color" }),
+  pexelsSeed("polishPalette", { id: "gel-x-011", category: "gel_x", title: "Gel-X full-set polish tools", tags: ["gel-x", "full-set", "extensions", "polish"], mood: "glam", shotType: "tools", nailLength: "long", style: "color" }),
+  { id: "gel-x-012", category: "gel_x", title: "Gel-X long extension set", unsplashId: LONG_EXTENSION_SET, photographer: "Unsplash", sourceName: "Unsplash", sourceUrl: "https://unsplash.com/photos/1777287852750-53eb2ca506e9", tags: ["gel-x", "extensions", "long", "full-set"], mood: "glam", shotType: "hands", nailLength: "long", style: "color" },
+  pexelsSeed("artHands", { id: "acrylic-007", category: "acrylic", title: "Acrylic extension art profile", tags: ["acrylic", "extensions", "long", "art"], mood: "glam", shotType: "hands", nailLength: "long", style: "art" }),
+  pexelsSeed("luxeHands", { id: "acrylic-008", category: "acrylic", title: "Neutral acrylic extension finish", tags: ["acrylic", "extensions", "long", "neutral"], mood: "luxury", shotType: "hands", nailLength: "long", style: "neutral" }),
+  pexelsSeed("proManicure", { id: "acrylic-009", category: "acrylic", title: "Acrylic full-set salon service", tags: ["acrylic", "extensions", "full-set", "application"], mood: "clean", shotType: "tools", nailLength: "long", style: "natural" }),
+  pexelsSeed("redLifestyle", { id: "acrylic-010", category: "acrylic", title: "Acrylic color lifestyle look", tags: ["acrylic", "extensions", "long", "color"], mood: "social", shotType: "lifestyle", nailLength: "long", style: "color" }),
+  pexelsSeed("polishPalette", { id: "acrylic-011", category: "acrylic", title: "Acrylic polish palette", tags: ["acrylic", "extensions", "full-set", "polish"], mood: "glam", shotType: "tools", nailLength: "long", style: "color" }),
+  { id: "acrylic-012", category: "acrylic", title: "Long acrylic extension set", unsplashId: LONG_EXTENSION_SET, photographer: "Unsplash", sourceName: "Unsplash", sourceUrl: "https://unsplash.com/photos/1777287852750-53eb2ca506e9", tags: ["acrylic", "extensions", "long", "full-set"], mood: "glam", shotType: "hands", nailLength: "long", style: "color" },
+  pexelsSeed("redPedicure", { id: "pedicure-007", category: "pedicure", title: "Red pedicure close-up", tags: ["pedicure", "feet", "spa", "red"], mood: "spa", shotType: "feet", style: "color" }),
+  pexelsSeed("luxePedicure", { id: "pedicure-008", category: "pedicure", title: "Soft pedicure jewelry detail", tags: ["pedicure", "feet", "anklet", "spa"], mood: "luxury", shotType: "feet", style: "neutral" }),
+  pexelsSeed("redPedicure", { id: "pedicure-009", category: "pedicure", title: "Pedicure spa refresh", tags: ["pedicure", "feet", "refresh", "spa"], mood: "soft", shotType: "feet", style: "color" }),
+  pexelsSeed("luxePedicure", { id: "pedicure-010", category: "pedicure", title: "Pedicure polish detail", tags: ["pedicure", "feet", "toes", "spa"], mood: "luxury", shotType: "feet", style: "neutral" }),
+  pexelsSeed("redPedicure", { id: "pedicure-011", category: "pedicure", title: "Pedicure treatment moment", tags: ["pedicure", "feet", "treatment", "spa"], mood: "spa", shotType: "feet", style: "natural" }),
+  pexelsSeed("luxePedicure", { id: "pedicure-012", category: "pedicure", title: "Pedicure care detail", tags: ["pedicure", "feet", "care", "spa"], mood: "spa", shotType: "feet", style: "neutral" }),
+  pexelsSeed("proManicure", { id: "fill-refresh-006", category: "fill_refresh", title: "Fill refresh maintenance visit", tags: ["fill", "refresh", "maintenance", "application"], mood: "clean", shotType: "tools", nailLength: "medium", style: "natural" }),
+  pexelsSeed("luxeHands", { id: "fill-refresh-007", category: "fill_refresh", title: "Neutral refill finish", tags: ["refill", "refresh", "maintenance", "neutral"], mood: "luxury", shotType: "hands", nailLength: "medium", style: "neutral" }),
+  pexelsSeed("handCare", { id: "fill-refresh-008", category: "fill_refresh", title: "Refresh appointment hand care", tags: ["refresh", "maintenance", "care", "hands"], mood: "soft", shotType: "hands", nailLength: "short", style: "natural" }),
+  pexelsSeed("redLifestyle", { id: "fill-refresh-009", category: "fill_refresh", title: "Color refresh check-in", tags: ["fill", "refresh", "maintenance", "color"], mood: "clean", shotType: "lifestyle", nailLength: "medium", style: "color" }),
+  pexelsSeed("polishPalette", { id: "fill-refresh-010", category: "fill_refresh", title: "Polish refresh palette", tags: ["refresh", "maintenance", "polish", "fill"], mood: "soft", shotType: "tools", style: "color" }),
+  pexelsSeed("proManicure", { id: "generic-salon-005", category: "generic_salon", title: "Professional manicure appointment", tags: ["salon", "beauty", "appointment", "service"], mood: "clean", shotType: "salon", style: "natural" }),
+  pexelsSeed("handCare", { id: "generic-salon-006", category: "generic_salon", title: "Soft salon hand care", tags: ["salon", "beauty", "care", "hands"], mood: "soft", shotType: "client", style: "natural" }),
+  pexelsSeed("luxeHands", { id: "generic-salon-007", category: "generic_salon", title: "Elegant salon finish", tags: ["salon", "luxury", "beauty", "hands"], mood: "luxury", shotType: "client", style: "neutral" }),
+  pexelsSeed("polishPalette", { id: "generic-salon-008", category: "generic_salon", title: "Polish palette salon detail", tags: ["salon", "polish", "beauty", "tools"], mood: "glam", shotType: "tools", style: "color" }),
+];
+
+export const servicePhotoLibrary: ServicePhotoAsset[] = [
+  ...ASSET_SEEDS,
+  ...EXTRA_ASSET_SEEDS,
+].map(buildAsset);
 
 
 
