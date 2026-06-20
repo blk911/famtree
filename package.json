@@ -63,6 +63,7 @@
     "test:vmb:offers": "tsx scripts/test-vmb-offers.ts",
     "test:vmb:services": "tsx scripts/test-vmb-services.ts",
     "test:vmb:service-catalog": "tsx scripts/test-vmb-service-catalog.ts",
+    "test:vmb:service-photos": "tsx scripts/test-vmb-service-photo-library.ts",
     "test:vmb:salon-offers": "tsx scripts/test-vmb-salon-offers.ts",
     "test:vmb:invite-templates": "tsx scripts/test-vmb-invite-templates.ts",
     "debug:nail-invite-templates": "tsx scripts/debug-nail-invite-templates.ts",

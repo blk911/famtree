@@ -1,5 +1,10 @@
 "use client";
 
+import Image from "next/image";
+import {
+  buildServiceImageInput,
+  getServiceImage,
+} from "@/lib/vmb/assets";
 import {
   calculateServiceRevenueSummary,
   formatSalonDurationMinutes,
@@ -15,6 +20,7 @@ export type { SalonServiceEditorDraft };
 type Props = {
   service: SalonFacingServiceOffer;
   draft: SalonServiceEditorDraft;
+  salonId?: string;
   saving: boolean;
   participatingTemplates: readonly string[];
   onDraftChange: (patch: Partial<SalonServiceEditorDraft>) => void;
@@ -33,6 +39,7 @@ function splitIncludedItems(text: string): string[] {
 export function SalonServiceEditor({
   service,
   draft,
+  salonId,
   saving,
   participatingTemplates,
   onDraftChange,
@@ -46,14 +53,19 @@ export function SalonServiceEditor({
   const isActive = draft.status === "active";
   const canGoLive = draft.status === "configured";
   const revenue = calculateServiceRevenueSummary(draft, service);
+  const resolvedImage = getServiceImage(buildServiceImageInput(service, salonId));
 
   return (
     <section className="vmb-salon-services__studio" aria-label={`Service studio for ${service.displayName}`}>
-      <div className="vmb-salon-services__preview" aria-hidden="true">
-        <span className="vmb-salon-services__preview-icon" aria-hidden="true">
-          ✦
-        </span>
-        <p className="vmb-salon-services__preview-label">Service photo coming soon</p>
+      <div className="vmb-salon-services__preview">
+        <Image
+          src={resolvedImage.imageUrl}
+          alt={resolvedImage.title || service.displayName}
+          fill
+          sizes="(max-width: 768px) 100vw, 420px"
+          className="vmb-salon-services__preview-image"
+          priority={false}
+        />
       </div>
 
       <header className="vmb-salon-services__studio-head">

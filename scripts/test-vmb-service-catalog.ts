@@ -372,7 +372,9 @@ async function run(): Promise<void> {
   assert(salonServiceEditor.includes("Go Live"), "editor exposes go live action");
   assert(salonServiceEditor.includes("Pause Service"), "editor exposes pause service action");
   assert(salonServiceEditor.includes("Revenue Summary"), "editor shows revenue summary");
-  assert(salonServiceEditor.includes("Service photo coming soon"), "editor reserves service preview area");
+  assert(salonServiceEditor.includes("getServiceImage"), "editor resolves service photo from library");
+  assert(salonServiceEditor.includes("next/image"), "editor renders service photo with next/image");
+  assert(!salonServiceEditor.includes("Service photo coming soon"), "editor replaces photo placeholder");
   assert(!salonServiceEditor.includes("Save Changes"), "editor removes software save wording");
   assert(!salonServiceEditor.includes("Activate Service"), "editor removes software activate wording");
 
@@ -380,7 +382,8 @@ async function run(): Promise<void> {
     path.join(process.cwd(), "components/vmb/salon/SalonServiceListItem.tsx"),
     "utf8",
   );
-  assert(salonServiceListItem.includes("listSelectedUpgradeLines"), "menu cards list selected upgrades");
+  assert(salonServiceListItem.includes("getServiceImage"), "menu cards resolve service thumbnails");
+  assert(salonServiceListItem.includes("ServicePhotoImage"), "menu cards render photo thumbnails");
   assert(salonServiceListItem.includes("Selected Upgrades:"), "menu cards label selected upgrades");
   assert(!salonServiceListItem.includes("Configure"), "menu cards remove configure links");
   assert(salonServiceListItem.includes("vmb-salon-services__menu-card"), "menu cards use merchandising layout");

@@ -6157,6 +6157,27 @@
   transform: translateY(-1px);
 }
 
+.vmb-salon-services__menu-card-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.vmb-salon-services__menu-card-thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f5f5f4;
+}
+
+.vmb-salon-services__menu-card-body {
+  min-width: 0;
+  flex: 1;
+}
+
 .vmb-salon-services__menu-card-head {
   display: flex;
   align-items: flex-start;
@@ -6244,28 +6265,16 @@
 }
 
 .vmb-salon-services__preview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 120px;
-  border: 1px dashed #d6d3d1;
+  position: relative;
+  overflow: hidden;
+  min-height: 160px;
+  border: 1px solid #e7e5e4;
   border-radius: 12px;
-  background: linear-gradient(145deg, #fafaf9 0%, #f5f5f4 100%);
+  background: #f5f5f4;
 }
 
-.vmb-salon-services__preview-icon {
-  font-size: 28px;
-  color: #a8a29e;
-  line-height: 1;
-}
-
-.vmb-salon-services__preview-label {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: #78716c;
+.vmb-salon-services__preview-image {
+  object-fit: cover;
 }
 
 .vmb-salon-services__studio-head {
@@ -6986,6 +6995,16 @@
   border: 1px solid #fce7f3;
   background: linear-gradient(180deg, #fff 0%, #fffafb 100%);
   box-shadow: 0 4px 18px rgba(190, 24, 93, 0.05);
+}
+
+.vmb-salon-landing__service-photo {
+  position: relative;
+  width: 100%;
+  height: 128px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #fdf2f8;
 }
 
 .vmb-salon-landing__service-desc {

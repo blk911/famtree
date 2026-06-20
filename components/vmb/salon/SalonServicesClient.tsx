@@ -449,6 +449,8 @@ export function SalonServicesClient({
 
                         draft={cardDraft}
 
+                        salonId={salonId}
+
                         selected={selectedServiceId === svc.serviceOfferId}
 
                         onSelect={() => setSelectedServiceId(svc.serviceOfferId)}
@@ -475,6 +477,8 @@ export function SalonServicesClient({
                     service={selectedService}
 
                     draft={selectedDraft}
+
+                    salonId={salonId}
 
                     saving={savingId === selectedService.serviceOfferId}
 

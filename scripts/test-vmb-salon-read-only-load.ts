@@ -135,6 +135,7 @@ function run(): void {
   assert(salonPageClient.includes("SalonInvitationThumbnail"), "salon page renders invitation thumbnails");
   assert(salonPageClient.includes("possessiveLabel"), "salon page personalizes owner copy");
   assert(salonPageClient.includes("shortDescription"), "salon page shows service descriptions");
+  assert(salonPageClient.includes("getServiceImage"), "salon page resolves service photos");
   assert(salonPageClient.includes("View Offer"), "salon page includes offer CTA placeholder");
   assert(salonPageClient.includes("Featured Services"), "salon page uses featured services title");
   assert(salonPageClient.includes("Private Offers"), "salon page uses private offers title");
