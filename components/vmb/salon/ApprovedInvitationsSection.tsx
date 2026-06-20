@@ -8,6 +8,7 @@ type Props = {
   approvals: SalonInvitationApproval[];
   actionBusyId: string | null;
   onPreview: (approval: SalonInvitationApproval) => void;
+  onReviewSendPackage: (approval: SalonInvitationApproval) => void;
   onPause: (approval: SalonInvitationApproval) => void;
 };
 
@@ -15,6 +16,7 @@ export function ApprovedInvitationsSection({
   approvals,
   actionBusyId,
   onPreview,
+  onReviewSendPackage,
   onPause,
 }: Props) {
   return (
@@ -24,7 +26,7 @@ export function ApprovedInvitationsSection({
           Approved Invitations ({approvals.length})
         </h2>
         <p style={{ margin: "6px 0 0", fontSize: 14, color: VMB_THEME.muted }}>
-          Salon-approved invitations ready to send later.
+          Ready to prepare send package.
         </p>
       </header>
       {approvals.length === 0 ? (
@@ -37,6 +39,7 @@ export function ApprovedInvitationsSection({
               approval={approval}
               busy={actionBusyId === approval.id}
               onPreview={() => onPreview(approval)}
+              onReviewSendPackage={() => onReviewSendPackage(approval)}
               onPause={() => onPause(approval)}
             />
           ))}

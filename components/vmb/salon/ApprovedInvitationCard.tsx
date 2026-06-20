@@ -16,6 +16,7 @@ import type { SalonInvitationApproval } from "@/types/vmb/salon-invitation-appro
 type Props = {
   approval: SalonInvitationApproval;
   onPreview: () => void;
+  onReviewSendPackage?: () => void;
   onPause?: () => void;
   onResume?: () => void;
   busy?: boolean;
@@ -37,6 +38,7 @@ function actionButtonStyle(variant: "primary" | "default" = "default"): CSSPrope
 export function ApprovedInvitationCard({
   approval,
   onPreview,
+  onReviewSendPackage,
   onPause,
   onResume,
   busy = false,
@@ -107,6 +109,16 @@ export function ApprovedInvitationCard({
           borderTop: `1px solid ${VMB_THEME.line}`,
         }}
       >
+        {!isPaused && onReviewSendPackage ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onReviewSendPackage}
+            style={actionButtonStyle("primary")}
+          >
+            Review Send Package
+          </button>
+        ) : null}
         <button type="button" disabled={busy} onClick={onPreview} style={actionButtonStyle()}>
           Preview
         </button>

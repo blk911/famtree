@@ -1028,6 +1028,51 @@ async function run(): Promise<void> {
     "invites client loads approval records",
   );
 
+  const { buildSendPackageCopy } = await import("../lib/vmb/invites/send-package-copy");
+  const birthdayCopy = buildSendPackageCopy({
+    id: "approval-1",
+    salonId: approvalSalonId,
+    clientName: "Grace Garcia",
+    opportunityType: "Birthday",
+    sourceCopyId: "copy-birthday-v1",
+    sourceTemplateId: "nails-birthday-celebration",
+    snapshot: { ...approvalSnapshot, ownerName: "Jenny Nguyen", status: "published", version: 1 },
+    reasonText: "Birthday this month",
+    status: "approved",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+  assert(
+    birthdayCopy.subjectLine.includes("birthday surprise from Jenny"),
+    "birthday send package subject uses provider name",
+  );
+
+  const pcnSendCopy = buildSendPackageCopy({
+    id: "approval-2",
+    salonId: approvalSalonId,
+    clientName: "Maria Lopez",
+    opportunityType: "PCN",
+    sourceCopyId: "copy-pcn-v1",
+    sourceTemplateId: "nails-private-client-network",
+    snapshot: { ...approvalSnapshot, ownerName: "Jenny Nguyen", templateName: "Private Client Network", status: "published", version: 2 },
+    reasonText: "PCN invite candidate",
+    status: "approved",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+  assert(
+    pcnSendCopy.subjectLine.includes("Jenny invited you into her private client network"),
+    "PCN send package subject matches static copy",
+  );
+  assert(pcnSendCopy.envelopeCtaLabel === "Open My Invitation", "send package envelope CTA is static");
+
+  const sendPackageModalSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/salon/SendPackagePreviewModal.tsx"),
+    "utf8",
+  );
+  assert(sendPackageModalSource.includes("buildSendPackageCopy"), "send package modal uses copy helper");
+  assert(sendPackageModalSource.includes("SalonInviteCard"), "send package modal previews invitation card");
+
   if (process.env.DATABASE_URL?.trim()) {
     const sample = { ...DEFAULT_NAIL_INVITE_TEMPLATES[0]! };
     sample.headline = "Test headline for persistence";

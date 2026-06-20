@@ -130,16 +130,30 @@ function run(): void {
   assert(salonPageClient.includes('status === "active"'), "salon page renders active services only");
   assert(salonPageClient.includes("publishedCopiesForMatching"), "salon page uses published invitations only");
   assert(salonPageClient.includes("SalonInvitationThumbnail"), "salon page renders invitation thumbnails");
-  assert(salonPageClient.includes("Client preview"), "salon page shows client preview badge");
+  assert(salonPageClient.includes("possessiveLabel"), "salon page personalizes owner copy");
+  assert(salonPageClient.includes("shortDescription"), "salon page shows service descriptions");
+  assert(salonPageClient.includes("View Offer"), "salon page includes offer CTA placeholder");
   assert(salonPageClient.includes("Featured Services"), "salon page uses featured services title");
   assert(salonPageClient.includes("Private Offers"), "salon page uses private offers title");
   assert(salonPageClient.includes("resolveInvitationPricing"), "salon page shows offer pricing on cards");
   assert(salonPageClient.includes("Join My Private Client Network"), "salon page includes PCN section");
   assert(salonPageClient.includes("Favorite Providers"), "salon page includes favorite providers section");
   assert(salonPageClient.includes("Join My Network"), "salon page includes PCN CTA placeholder");
+  assert(!salonPageClient.includes("Client preview"), "salon page removes admin preview badge");
   assert(!salonPageClient.includes("Client destination preview"), "salon page removes internal preview banner");
   assert(!salonPageClient.includes("salonServiceStatusLabel"), "salon page hides lifecycle status badges");
   assert(!salonPageClient.includes("/api/vmb/analyze-book"), "salon page does not trigger book ingest");
+
+  const sendPackageCopy = read("lib/vmb/invites/send-package-copy.ts");
+  assert(sendPackageCopy.includes("buildSendPackageCopy"), "send package copy helper exists");
+
+  const sendPackageModal = read("components/vmb/salon/SendPackagePreviewModal.tsx");
+  assert(sendPackageModal.includes("Send Package Preview"), "send package modal has title");
+  assert(sendPackageModal.includes("ViewSalonPageLink"), "send package modal links to salon page");
+  assert(sendPackageModal.includes("Send Email — Coming Next"), "send package modal stubs email send");
+
+  const approvedCard = read("components/vmb/salon/ApprovedInvitationCard.tsx");
+  assert(approvedCard.includes("Review Send Package"), "approved card exposes send package action");
 
   const viewSalonPageLink = read("components/vmb/salon/ViewSalonPageLink.tsx");
   assert(viewSalonPageLink.includes("/vmb/salon-page"), "view salon page link targets salon landing route");
@@ -154,6 +168,10 @@ function run(): void {
     "invites subhead aligns with salon landing destination",
   );
   assert(invitesClientLanding.includes("ViewSalonPageLink"), "opportunity center links to salon landing preview");
+  assert(invitesClientLanding.includes("SendPackagePreviewModal"), "invites client wires send package preview");
+
+  const approvedSection = read("components/vmb/salon/ApprovedInvitationsSection.tsx");
+  assert(approvedSection.includes("Ready to prepare send package"), "approved tab aligns with send package flow");
 
   console.log("OK: VMB salon read-only load tests passed");
 }

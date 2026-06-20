@@ -6809,9 +6809,10 @@
 /* Salon landing page — client destination preview */
 .vmb-salon-landing {
   display: grid;
-  gap: 28px;
-  max-width: 960px;
+  gap: 32px;
+  max-width: 980px;
   margin: 0 auto;
+  padding: 8px 0 24px;
 }
 
 .vmb-salon-landing__preview-note {
@@ -6852,17 +6853,17 @@
 .vmb-salon-landing__hero {
   display: grid;
   gap: 20px;
-  padding: 20px;
-  border-radius: 18px;
-  border: 1px solid #e7e5e4;
-  background: linear-gradient(160deg, #fff 0%, #fafaf9 100%);
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  background: transparent;
 }
 
 @media (min-width: 768px) {
   .vmb-salon-landing__hero {
-    grid-template-columns: 200px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
     align-items: center;
-    gap: 24px;
+    gap: 28px;
   }
 }
 
@@ -6871,31 +6872,34 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 160px;
-  border-radius: 14px;
-  border: 1px dashed #d6d3d1;
-  background: #f5f5f4;
+  gap: 10px;
+  min-height: 220px;
+  border-radius: 20px;
+  border: none;
+  background: linear-gradient(145deg, #fff1f2 0%, #fce7f3 45%, #fdf4ff 100%);
+  box-shadow: 0 12px 40px rgba(190, 24, 93, 0.08);
 }
 
 .vmb-salon-landing__hero-media-icon {
-  font-size: 32px;
-  color: #a8a29e;
+  font-size: 40px;
+  color: #db2777;
   line-height: 1;
 }
 
 .vmb-salon-landing__hero-media-label {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: #78716c;
+  color: #9d174d;
+  letter-spacing: 0.02em;
 }
 
 .vmb-salon-landing__owner {
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   font-size: 14px;
-  font-weight: 700;
-  color: #78716c;
+  font-weight: 600;
+  color: #a8a29e;
+  letter-spacing: 0.01em;
 }
 
 .vmb-salon-landing__salon-name {
@@ -6907,18 +6911,19 @@
 }
 
 .vmb-salon-landing__headline {
-  margin: 10px 0 0;
-  font-size: 18px;
-  font-weight: 700;
+  margin: 12px 0 0;
+  font-size: clamp(17px, 2.5vw, 20px);
+  font-weight: 600;
+  line-height: 1.45;
   color: #44403c;
 }
 
 .vmb-salon-landing__intro {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.6;
   color: #57534e;
-  max-width: 52ch;
+  max-width: 48ch;
 }
 
 .vmb-salon-landing__section {
@@ -6976,10 +6981,18 @@
 }
 
 .vmb-salon-landing__service-card {
-  padding: 16px 18px;
-  border-radius: 14px;
-  border: 1px solid #e7e5e4;
-  background: #fff;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid #fce7f3;
+  background: linear-gradient(180deg, #fff 0%, #fffafb 100%);
+  box-shadow: 0 4px 18px rgba(190, 24, 93, 0.05);
+}
+
+.vmb-salon-landing__service-desc {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #57534e;
 }
 
 .vmb-salon-landing__service-name {
@@ -7036,7 +7049,12 @@
 
 .vmb-salon-landing__offer-card {
   display: grid;
-  gap: 10px;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid #fce7f3;
+  background: #fff;
+  box-shadow: 0 4px 18px rgba(190, 24, 93, 0.05);
 }
 
 .vmb-salon-landing__offer-details {
@@ -7063,6 +7081,35 @@
   color: #57534e;
 }
 
+.vmb-salon-landing__offer-reward {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #9d174d;
+}
+
+.vmb-salon-landing__offer-service {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #57534e;
+}
+
+.vmb-salon-landing__offer-cta {
+  justify-self: start;
+  margin-top: 4px;
+  padding: 8px 14px;
+  border: 1px solid #fbcfe8;
+  border-radius: 999px;
+  background: #fdf2f8;
+  color: #9d174d;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .vmb-salon-landing__offer-price {
   margin: 2px 0 0;
   font-size: 15px;
@@ -7077,24 +7124,25 @@
 }
 
 .vmb-salon-landing__pcn {
-  padding: 20px;
-  border-radius: 16px;
-  border: 1px solid #e7e5e4;
-  background: #fff;
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid #fce7f3;
+  background: linear-gradient(160deg, #fff 0%, #fff7fb 100%);
 }
 
 .vmb-salon-landing__cta {
   justify-self: start;
-  margin-top: 4px;
-  padding: 12px 20px;
+  margin-top: 8px;
+  padding: 12px 22px;
   border: none;
   border-radius: 999px;
-  background: #1c1917;
+  background: linear-gradient(135deg, #831843 0%, #be185d 100%);
   color: #fff;
   font-size: 14px;
   font-weight: 700;
   cursor: not-allowed;
   opacity: 0.72;
+  box-shadow: 0 6px 20px rgba(190, 24, 93, 0.2);
 }
 
 .vmb-salon-landing__cta--hero {
@@ -7102,10 +7150,10 @@
 }
 
 .vmb-salon-landing__providers {
-  padding: 20px;
-  border-radius: 16px;
-  border: 1px dashed #d6d3d1;
-  background: #fafaf9;
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px dashed #fbcfe8;
+  background: linear-gradient(180deg, #fffafb 0%, #fff 100%);
 }
 
 .vmb-salon-landing__provider-chips {
@@ -7118,13 +7166,219 @@
 }
 
 .vmb-salon-landing__provider-chips li {
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid #e7e5e4;
+  border: 1px solid #fce7f3;
   background: #fff;
   font-size: 13px;
   font-weight: 600;
-  color: #44403c;
+  color: #831843;
+}
+
+/* Send package preview modal — approved invitation send flow */
+.vmb-send-package-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(28, 25, 23, 0.5);
+}
+
+.vmb-send-package-modal__dialog {
+  width: min(980px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  border-radius: 18px;
+  background: #fafaf9;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.22);
+}
+
+.vmb-send-package-modal__header {
+  padding: 18px 22px;
+  border-bottom: 1px solid #e7e5e4;
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+}
+
+.vmb-send-package-modal__header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.vmb-send-package-modal__subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #57534e;
+}
+
+.vmb-send-package-modal__body {
+  padding: 20px 22px;
+}
+
+.vmb-send-package-modal__columns {
+  display: grid;
+  gap: 20px;
+}
+
+@media (min-width: 860px) {
+  .vmb-send-package-modal__columns {
+    grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.1fr);
+    align-items: start;
+  }
+}
+
+.vmb-send-package-modal__column-title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #57534e;
+}
+
+.vmb-send-package-modal__summary-list {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+}
+
+.vmb-send-package-modal__summary-list dt {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-send-package-modal__summary-list dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1c1917;
+}
+
+.vmb-send-package-modal__block {
+  margin-bottom: 18px;
+}
+
+.vmb-send-package-modal__block-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-send-package-modal__subject {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.vmb-send-package-modal__envelope {
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid #fbcfe8;
+  background: linear-gradient(160deg, #fff 0%, #fdf2f8 100%);
+  text-align: center;
+}
+
+.vmb-send-package-modal__envelope-headline {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #831843;
+}
+
+.vmb-send-package-modal__envelope-body {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #57534e;
+}
+
+.vmb-send-package-modal__envelope-cta {
+  margin-top: 14px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #831843 0%, #be185d 100%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.vmb-send-package-modal__destination {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  display: grid;
+  gap: 6px;
+}
+
+.vmb-send-package-modal__destination-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-send-package-modal__destination-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #1c1917;
+}
+
+.vmb-send-package-modal__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 22px 18px;
+  border-top: 1px solid #e7e5e4;
+  background: #fff;
+  border-radius: 0 0 18px 18px;
+}
+
+.vmb-send-package-modal__send-stub {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 999px;
+  background: #1c1917;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.vmb-send-package-modal__close {
+  border: 0;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 /* Reusable service preset card — salon, admin, client */

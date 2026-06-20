@@ -5,6 +5,7 @@ import { InviteDraftPreviewModal } from "@/components/vmb/dashboard/InviteDraftP
 import { BookLoadedStatusNote } from "@/components/vmb/BookLoadedStatusNote";
 import { SalonInvitationPreviewModal } from "@/components/vmb/salon/SalonInvitationPreviewModal";
 import { SalonInvitationEditCopyModal } from "@/components/vmb/salon/SalonInvitationEditCopyModal";
+import { SendPackagePreviewModal } from "@/components/vmb/salon/SendPackagePreviewModal";
 import { ApprovedInvitationsSection } from "@/components/vmb/salon/ApprovedInvitationsSection";
 import { ApprovedInvitationCard } from "@/components/vmb/salon/ApprovedInvitationCard";
 import { PublishedInvitationsSection } from "@/components/vmb/salon/PublishedInvitationsSection";
@@ -95,6 +96,7 @@ export function VmbInvitesClient({
   const [editDraftId, setEditDraftId] = useState<string | null>(null);
   const [activePublishedCopy, setActivePublishedCopy] = useState<SalonInviteLocalCopy | null>(null);
   const [previewApprovalSnapshot, setPreviewApprovalSnapshot] = useState<InviteTemplateSnapshot | null>(null);
+  const [sendPackageApproval, setSendPackageApproval] = useState<SalonInvitationApproval | null>(null);
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
   const [editPublishedCopy, setEditPublishedCopy] = useState<SalonInviteLocalCopy | null>(null);
   const [actionBusyId, setActionBusyId] = useState<string | null>(null);
@@ -662,6 +664,7 @@ export function VmbInvitesClient({
           approvals={approvedRecords}
           actionBusyId={actionBusyId}
           onPreview={(approval) => setPreviewApprovalSnapshot(approval.snapshot)}
+          onReviewSendPackage={(approval) => setSendPackageApproval(approval)}
           onPause={(approval) => void patchApprovalStatus(approval, "pause")}
         />
       ) : tab === "paused" ? (
@@ -752,6 +755,16 @@ export function VmbInvitesClient({
           tokenContext={tokenContext}
           notice={previewNotice ?? undefined}
           onClose={closePreviewSnapshot}
+        />
+      ) : null}
+
+      {sendPackageApproval ? (
+        <SendPackagePreviewModal
+          open
+          approval={sendPackageApproval}
+          tokenContext={tokenContext}
+          salonName={typeof salonName === "string" ? salonName : "Your Salon"}
+          onClose={() => setSendPackageApproval(null)}
         />
       ) : null}
 
