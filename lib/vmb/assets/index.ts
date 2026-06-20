@@ -36,4 +36,5 @@ export * from "./service-image-analytics";
 export * from "./service-image-resolver";
 export * from "./service-image-seed";
 export * from "./service-image-types";
+export * from "./service-photo-guardrails";
 export * from "./service-photo-library";
