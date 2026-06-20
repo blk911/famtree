@@ -1,0 +1,53 @@
+name: VMB UI Smoke Tester
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VMB_QA_BASE_URL: http://127.0.0.1:3000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npm run playwright:install-chromium
+
+      - name: Generate Prisma client
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/vmbqa?schema=public
+        run: npm run db:generate
+
+      - name: Start Next dev server
+        run: |
+          npm run dev &
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:3000/vmb/start >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Next dev server did not become ready" >&2
+          exit 1
+
+      - name: Run VMB UI smoke test
+        run: npm run qa:vmb:ui-smoke
+
+      - name: Upload screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vmb-ui-smoke-tester-artifacts
+          path: artifacts/vmb-ui-smoke-tester
