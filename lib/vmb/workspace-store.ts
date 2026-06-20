@@ -171,4 +171,25 @@ export async function setLatestAnalysis(
   return { workspace };
 }
 
+export async function clearWorkspaceActiveBookBinding(
+  trialId: string,
+): Promise<{ ok: true } | { error: string }> {
+  const id = trialId.trim();
+  if (!id) return { error: "trialId is required" };
+
+  const existing = await getWorkspaceForTrial(id);
+  if (!existing) return { ok: true };
+
+  const workspace: VmbSalonWorkspace = {
+    ...existing,
+    latestAnalysisId: undefined,
+    firstIngestCompleted: false,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const err = await persistWorkspace(workspace);
+  if (err) return { error: err };
+  return { ok: true };
+}
+
 export { isRefreshDue, workspaceLatestAnalysisId } from "./workspace-lifecycle";

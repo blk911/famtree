@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { VmbActiveBookResume } from "@/components/vmb/VmbActiveBookResume";
+import { UseAdminDemoBookButton } from "@/components/vmb/AdminDemoBookControls";
 import { VmbCard } from "@/components/vmb/VmbCard";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import {
@@ -353,7 +354,13 @@ export function VmbStartFlow({ refreshMode = false, activeBook = null }: Props) 
         <div style={{ marginBottom: 28 }}>
           <VmbActiveBookResume activeBook={resolvedActiveBook!} onReplace={() => setReplaceBook(true)} />
         </div>
-      ) : null}
+      ) : (
+        <UseAdminDemoBookButton
+          onBound={() => {
+            window.location.href = "/vmb/dashboard";
+          }}
+        />
+      )}
 
       {!showResume ? (
       <div style={{ display: "grid", gap: 28 }}>

@@ -1,5 +1,6 @@
 import { getActiveBookPointer } from "@/lib/vmb/active-book-pointer";
-import { resolveActiveBook, type ResolvedActiveBook } from "@/lib/vmb/active-book-resolver";
+import { resolveActiveBookForSession } from "@/lib/vmb/active-book-session-resolver";
+import { type ResolvedActiveBook } from "@/lib/vmb/active-book-resolver";
 import {
   getLatestVmbBookAnalysisForTrial,
   getVmbBookAnalysis,
@@ -60,7 +61,7 @@ export async function buildActiveBookDebugPayload(input: {
   const latest = trialId ? await getLatestVmbBookAnalysisForTrial(trialId) : undefined;
 
   const resolved: ResolvedActiveBook = trialId
-    ? await resolveActiveBook(trialId, { queryId: input.queryId, sessionId: input.sessionId })
+    ? await resolveActiveBookForSession(trialId, { queryId: input.queryId, sessionId: input.sessionId })
     : { hasActiveBook: false, source: "none" };
 
   let analysisId = resolved.analysisId;

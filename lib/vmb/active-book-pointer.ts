@@ -88,3 +88,33 @@ export async function setActiveBookPointer(
   if (err) return { error: err };
   return { pointer };
 }
+
+export async function clearActiveBookPointer(
+  salonId: string,
+): Promise<{ ok: true } | { error: string }> {
+  const trimmedSalon = salonId.trim();
+  if (!trimmedSalon) return { error: "salonId is required" };
+
+  const writable = await assertVmbWritableBackend();
+  if (!writable.ok) return { error: writable.error };
+
+  if (writable.backend === "postgres") {
+    const { clearActiveBookPointerPostgres } = await import(
+      "@/lib/vmb/active-book-pointer-postgres"
+    );
+    const err = await clearActiveBookPointerPostgres(trimmedSalon);
+    if (err) return { error: err };
+    if (vmbJsonFallbackAllowed()) {
+      const all = await listActiveBookPointersJson();
+      const next = all.filter((p) => p.salonId !== trimmedSalon);
+      await writeJsonArray(getVmbActiveBookFile(), next);
+    }
+    return { ok: true };
+  }
+
+  const all = await listActiveBookPointersJson();
+  const next = all.filter((p) => p.salonId !== trimmedSalon);
+  const err = await writeJsonArray(getVmbActiveBookFile(), next);
+  if (err) return { error: err };
+  return { ok: true };
+}

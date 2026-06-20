@@ -85,3 +85,17 @@ export async function saveActiveBookPointerPostgres(
     return e instanceof Error ? e.message : String(e);
   }
 }
+
+export async function clearActiveBookPointerPostgres(salonId: string): Promise<string | null> {
+  try {
+    const backend = await resolveVmbStorageBackend();
+    if (backend !== "postgres") return "Postgres backend unavailable";
+
+    await prisma.$executeRaw`
+      DELETE FROM vmb_active_book WHERE salon_id = ${salonId.trim()}
+    `;
+    return null;
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e);
+  }
+}

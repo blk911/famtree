@@ -111,6 +111,7 @@ function run(): void {
   const startFlow = read("components/vmb/VmbStartFlow.tsx");
   assert(startFlow.includes("/api/vmb/analyze-book"), "explicit load book still posts analyze-book");
   assert(startFlow.includes("reprocess"), "start flow sends reprocess flag for refresh/replace");
+  assert(startFlow.includes("UseAdminDemoBookButton"), "load book flow offers admin demo book in dev");
 
   const restoreRoute = read("app/api/vmb/active-book/restore/route.ts");
   assert(!restoreRoute.includes("analyze-book"), "restore route does not call analyze-book");
@@ -121,6 +122,8 @@ function run(): void {
 
   const dashboardClient = read("components/vmb/VmbDashboardClient.tsx");
   assert(dashboardClient.includes("RestoreExistingBookPanel"), "dashboard empty state offers restore");
+  assert(dashboardClient.includes("UseAdminDemoBookButton"), "dashboard empty state offers admin demo book");
+  assert(dashboardClient.includes("AdminDemoBookNote"), "dashboard shows admin demo book note");
 
   const salonPagePage = read("app/vmb/salon-page/page.tsx");
   assert(salonPagePage.includes("SalonPageClient"), "salon page route renders client preview");
@@ -173,7 +176,105 @@ function run(): void {
   const approvedSection = read("components/vmb/salon/ApprovedInvitationsSection.tsx");
   assert(approvedSection.includes("Ready to prepare send package"), "approved tab aligns with send package flow");
 
+  const pageContextLoader = read("lib/vmb/load-vmb-page-context.ts");
+  assert(pageContextLoader.includes("resolveActiveBookForSession"), "page context auto-binds demo book in dev");
+
+  const activeBookDebug = read("lib/vmb/active-book-debug.ts");
+  assert(activeBookDebug.includes("resolveActiveBookForSession"), "active-book API auto-binds demo book in dev");
+
+  const useDemoRoute = read("app/api/vmb/active-book/use-demo/route.ts");
+  assert(useDemoRoute.includes("bindAdminDemoBookToSalon"), "use-demo route binds demo analysis");
+  assert(!useDemoRoute.includes("analyze-book"), "use-demo does not call analyze-book");
+  assert(!useDemoRoute.includes("runVmbBookAnalysis"), "use-demo does not ingest book");
+
+  const clearDemoRoute = read("app/api/vmb/active-book/clear-demo/route.ts");
+  assert(clearDemoRoute.includes("clearAdminDemoBookBindingForSalon"), "clear-demo route clears salon binding");
+  assert(!clearDemoRoute.includes("deleteVmbBookAnalysis"), "clear-demo does not delete analysis");
+
+  const adminDemoBook = read("lib/vmb/admin-demo-book.ts");
+  assert(adminDemoBook.includes("VMB_ADMIN_DEMO_ANALYSIS_ID"), "admin demo book reads analysis env");
+  assert(adminDemoBook.includes("isVmbDevOperatorApiEnabled"), "admin demo book disabled in production");
+}
+
+async function runIntegrationChecks(): Promise<void> {
+  const { bindAdminDemoBookToSalon, clearAdminDemoBookBindingForSalon, maybeAutoBindAdminDemoBook } =
+    await import("../lib/vmb/admin-demo-book");
+  const { resolveActiveBookForSession } = await import("../lib/vmb/active-book-session-resolver");
+  const { resolveActiveBook } = await import("../lib/vmb/active-book-resolver");
+  const { runVmbBookAnalysis } = await import("../lib/vmb/run-book-analysis");
+  const { createVmbTrialLead } = await import("../lib/vmb/trial-store");
+  const { upsertWorkspaceForTrial } = await import("../lib/vmb/workspace-store");
+  const { VMB_SAMPLE_BOOK_TEXT } = await import("../lib/vmb/sample-book");
+
+  const prevDemoId = process.env.VMB_ADMIN_DEMO_ANALYSIS_ID;
+
+  const sourceTrial = await createVmbTrialLead({
+    salonName: "Demo Source Salon",
+    ownerName: "Jenny",
+    email: `vmb-demo-source-${Date.now()}@salon.test`,
+    providerPlatform: "glossgenius",
+  });
+  if ("error" in sourceTrial) process.exit(1);
+
+  await upsertWorkspaceForTrial({
+    trialId: sourceTrial.lead.id,
+    salonName: sourceTrial.lead.salonName,
+    providerPlatform: "glossgenius",
+  });
+  const analyzed = await runVmbBookAnalysis({
+    trialId: sourceTrial.lead.id,
+    salonName: sourceTrial.lead.salonName,
+    providerPlatform: "glossgenius",
+    rawText: VMB_SAMPLE_BOOK_TEXT,
+    sourceType: "sample",
+  });
+  assert(analyzed.ok, "demo bind integration creates source analysis");
+  if (!analyzed.ok) process.exit(1);
+
+  process.env.VMB_ADMIN_DEMO_ANALYSIS_ID = analyzed.data.analysis.analysisId;
+
+  const targetTrial = await createVmbTrialLead({
+    salonName: "Demo Target Salon",
+    ownerName: "Pat",
+    email: `vmb-demo-target-${Date.now()}@salon.test`,
+    providerPlatform: "glossgenius",
+  });
+  if ("error" in targetTrial) process.exit(1);
+  const targetSalonId = targetTrial.lead.id;
+  await upsertWorkspaceForTrial({
+    trialId: targetSalonId,
+    salonName: targetTrial.lead.salonName,
+    providerPlatform: "glossgenius",
+  });
+
+  const before = await resolveActiveBookForSession(targetSalonId, {});
+  assert(before.hasActiveBook, "auto-bind attaches demo book when session has no active book");
+  assert(before.analysisId === analyzed.data.analysis.analysisId, "auto-bind uses configured demo analysis");
+
+  const rebound = await maybeAutoBindAdminDemoBook(targetSalonId);
+  assert(!rebound.bound, "auto-bind does not re-bind when active book already exists");
+
+  const cleared = await clearAdminDemoBookBindingForSalon(targetSalonId);
+  assert(cleared.ok, "clear-demo removes demo binding for current salon");
+
+  const afterClear = await resolveActiveBook(targetSalonId, {});
+  assert(!afterClear.hasActiveBook, "clear-demo returns salon to empty active-book state");
+
+  const manualBind = await bindAdminDemoBookToSalon(targetSalonId);
+  assert(manualBind.ok, "manual use-demo bind succeeds");
+  if (!manualBind.ok) process.exit(1);
+
+  const afterManual = await resolveActiveBookForSession(targetSalonId, {});
+  assert(afterManual.hasActiveBook, "dashboard resolves after manual use-demo bind");
+
+  if (prevDemoId) process.env.VMB_ADMIN_DEMO_ANALYSIS_ID = prevDemoId;
+  else delete process.env.VMB_ADMIN_DEMO_ANALYSIS_ID;
+}
+
+async function main(): Promise<void> {
+  run();
+  await runIntegrationChecks();
   console.log("OK: VMB salon read-only load tests passed");
 }
 
-run();
+void main();

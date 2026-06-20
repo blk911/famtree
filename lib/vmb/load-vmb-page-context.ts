@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { resolveActiveBook } from "@/lib/vmb/active-book-resolver";
+import { resolveActiveBookForSession } from "@/lib/vmb/active-book-session-resolver";
 import { logVmbFlow } from "@/lib/vmb/flow-log";
 import { isVmbProcessComplete } from "@/lib/vmb/process-complete";
 import { getVmbBookAnalysis } from "@/lib/vmb/book-analysis/analysis-store";
@@ -134,7 +134,7 @@ export async function loadVmbPageContext(
 
   const workspace = await getWorkspaceForTrial(trialId);
   const activeBookPointer = await getActiveBookPointer(trialId);
-  const bookResolution = await resolveActiveBook(trialId, { queryId: queryAnalysisId });
+  const bookResolution = await resolveActiveBookForSession(trialId, { queryId: queryAnalysisId });
   const activeAnalysisId = bookResolution.analysisId;
   const activeAnalysis = bookResolution.analysis;
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
 import { RestoreExistingBookPanel } from "@/components/vmb/RestoreExistingBookPanel";
+import { AdminDemoBookNote, UseAdminDemoBookButton } from "@/components/vmb/AdminDemoBookControls";
 import { BookLoadedStatusNote } from "@/components/vmb/BookLoadedStatusNote";
 import { VmbOperatingDashboard } from "@/components/vmb/dashboard/VmbOperatingDashboard";
 import { VmbPageEmpty, VmbPageFrame, VmbPageLoading } from "@/components/vmb/VmbPageFrame";
@@ -42,6 +43,7 @@ function EmptyHome({ noSession }: { noSession?: boolean }) {
       action={
         <>
           <LoadYourBookCta />
+          <UseAdminDemoBookButton />
           <RestoreExistingBookPanel />
         </>
       }
@@ -214,6 +216,7 @@ export function VmbDashboardClient({ analysisId }: Props) {
           }}
         />
       ) : null}
+      <AdminDemoBookNote />
       <BookLoadedStatusNote
         loadedAt={analysis.generatedAt}
         clientCount={analysis.recordCount}
