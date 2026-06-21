@@ -306,7 +306,11 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
     <VmbPageFrame width="full" headerless>
 
-      <div className="vmb-salon-landing">
+      <div
+        className="vmb-salon-landing vmb-salon-landing--botanical"
+        data-vmb-page="salon-page"
+        data-vmb-style="botanical-stationery"
+      >
 
         {loading ? (
 
@@ -328,9 +332,9 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
           <>
 
-            <section className="vmb-salon-landing__hero" aria-label="Salon welcome">
+            <section className="vmb-salon-landing__hero" data-vmb-region="salon-hero" aria-label="Salon welcome">
 
-              <div className="vmb-salon-landing__hero-media">
+              <div className="vmb-salon-landing__hero-media" data-vmb-element="hero-image">
                 <ServicePhotoImage
                   resolved={{
                     imageUrl: heroImage.imageUrl,
@@ -345,7 +349,7 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
                 />
               </div>
 
-              <div className="vmb-salon-landing__hero-copy">
+              <div className="vmb-salon-landing__hero-copy" data-vmb-element="hero-copy">
 
                 {resolvedOwnerName ? (
 
@@ -371,7 +375,7 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
 
 
-            <section className="vmb-salon-landing__section" aria-label="Featured services">
+            <section className="vmb-salon-landing__section" data-vmb-region="featured-services" aria-label="Featured services">
 
               <header className="vmb-salon-landing__section-head">
 
@@ -422,8 +426,8 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
                     return (
 
-                      <li key={service.serviceOfferId} className="vmb-salon-landing__service-card">
-                        <div className="vmb-salon-landing__service-copy">
+                      <li key={service.serviceOfferId} className="vmb-salon-landing__service-card" data-vmb-element="service-card">
+                        <div className="vmb-salon-landing__service-copy" data-vmb-element="service-copy">
                           <h3 className="vmb-salon-landing__service-name">{service.displayName}</h3>
 
                           <p className="vmb-salon-landing__service-meta">
@@ -465,7 +469,7 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
                           </button>
                         </div>
 
-                        <div className="vmb-salon-landing__service-photo">
+                        <div className="vmb-salon-landing__service-photo" data-vmb-element="service-image">
                           <ServicePhotoImage
                             resolved={serviceImage}
                             alt={serviceImage.title || service.displayName}
@@ -487,7 +491,7 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
 
 
-            <section className="vmb-salon-landing__section" aria-label="Private offers">
+            <section className="vmb-salon-landing__section" data-vmb-region="private-offers" aria-label="Private offers">
 
               <header className="vmb-salon-landing__section-head">
 
@@ -523,7 +527,7 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
                     return (
 
-                      <li key={copy.id} className="vmb-salon-landing__offer-card">
+                      <li key={copy.id} className="vmb-salon-landing__offer-card" data-vmb-element="invite-card">
 
                         <SalonInvitationThumbnail
                           snapshot={copy.snapshot}
@@ -592,21 +596,21 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
 
 
-            <section className="vmb-salon-landing__section vmb-salon-landing__pcn" aria-label="Private Client Network">
+            <section className="vmb-salon-landing__section vmb-salon-landing__pcn" data-vmb-region="private-client-network" aria-label="Private Client Network">
 
-              <h2 className="vmb-salon-landing__section-title">Join My Private Client Network</h2>
+              <h2 className="vmb-salon-landing__section-title">Stay on My Private Client List</h2>
 
               <p className="vmb-salon-landing__section-desc">
 
-                Get first access to openings, private offers, birthday surprises, referral gifts, and trusted
+                Keep your invite connection open for future openings, private offers, birthday notes, referral
 
-                provider recommendations.
+                gifts, and trusted provider recommendations.
 
               </p>
 
               <button type="button" className="vmb-salon-landing__cta" disabled>
 
-                Join My Network
+                Join for Updates
 
               </button>
 
@@ -614,7 +618,7 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
 
 
-            <section className="vmb-salon-landing__section vmb-salon-landing__providers" aria-label="Favorite providers">
+            <section className="vmb-salon-landing__section vmb-salon-landing__providers" data-vmb-region="favorite-providers" aria-label="Favorite providers">
 
               <h2 className="vmb-salon-landing__section-title">{providersTitle}</h2>
 

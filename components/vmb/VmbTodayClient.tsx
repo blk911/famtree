@@ -7,7 +7,7 @@ import { TodayCommandCenter } from "@/components/vmb/today/TodayCommandCenter";
 import { ActivityTimeline } from "@/components/taikos/activity/ActivityTimeline";
 import { InlineAiosPanel } from "@/components/taikos/InlineAiosPanel";
 import { TaikosInsightList } from "@/components/taikos/coda/TaikosInsightList";
-import { TodayCodaBanner, TODAY_CODA_SEARCH_INPUT_ID } from "@/components/taikos/coda/TodayCodaBanner";
+import { TodayCodaBanner } from "@/components/taikos/coda/TodayCodaBanner";
 import { SalonQaPreviewModal } from "@/components/taikos/coda/SalonQaPreviewModal";
 import { GoalSummary } from "@/components/taikos/goals/GoalSummary";
 import { OpportunityList } from "@/components/taikos/opportunities/OpportunityList";
@@ -18,7 +18,6 @@ import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import { LaunchGuideBubble } from "@/components/vmb/onboarding/LaunchGuideBubble";
 import { LaunchGuideOverlay } from "@/components/vmb/onboarding/LaunchGuideOverlay";
 import { LaunchGuideSummaryModal } from "@/components/vmb/onboarding/LaunchGuideSummaryModal";
-import { TaikosAskReminder } from "@/components/vmb/onboarding/TaikosAskReminder";
 import { emptyCodaSummary } from "@/lib/taikos/coda/defaults";
 import type { TaikosActivitySummary } from "@/lib/taikos/activity/activity-types";
 import type { CodaSummary } from "@/lib/taikos/coda/types";
@@ -309,6 +308,14 @@ export function VmbTodayClient({
   const codaSummary = data?.codaSummary ?? emptyCodaSummary(operatorName);
   const insights = codaSummary.insights ?? [];
   const greeting = data?.greeting ?? buildTodayGreeting(operatorName, salonName);
+  const todayLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+      }).format(new Date()),
+    [],
+  );
 
   const analyzedClientCount = Math.max(
     debugClientCount,
@@ -341,24 +348,6 @@ export function VmbTodayClient({
 
   return (
     <VmbPageFrame width="standard" headerless>
-      {process.env.NODE_ENV === "development" ? (
-        <p
-          style={{
-            margin: "0 0 12px",
-            padding: "6px 10px",
-            fontSize: 12,
-            fontWeight: 800,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            background: "#fef3c7",
-            color: "#92400e",
-            border: "1px solid #fcd34d",
-          }}
-        >
-          TODAY COMPONENT MOUNTED
-        </p>
-      ) : null}
-
       <header className="vmb-page-frame__header">
         {!todayUnlocked ? (
           <>
@@ -372,21 +361,6 @@ export function VmbTodayClient({
           </>
         ) : null}
       </header>
-
-      {process.env.NODE_ENV === "development" ? (
-        <div
-          style={{
-            margin: "0 0 16px",
-            padding: "10px 12px",
-            border: "1px dashed #94a3b8",
-            borderRadius: 8,
-            fontSize: 14,
-            color: "#334155",
-          }}
-        >
-          Today scaffold rendered
-        </div>
-      ) : null}
 
       {!todayUnlocked ? (
         <div className="vmb-page-state">
@@ -414,19 +388,19 @@ export function VmbTodayClient({
           </p>
         </div>
       ) : (
-        <div className="vmb-today">
+        <div className="vmb-today vmb-today--daily-brief">
           {contextLoading && !data ? (
             <p className="vmb-page-state">Loading your operating brief…</p>
           ) : null}
 
           <div className="today-page-title">
-            <div className="today-page-title__salon">{salonName}</div>
-            <TaikosAskReminder
-              visible={showTaikosReminder}
-              onFocusInput={() => {
-                document.getElementById(TODAY_CODA_SEARCH_INPUT_ID)?.focus();
-              }}
-            />
+            <div className="today-page-title__top">
+              <div className="today-page-title__salon">{salonName}</div>
+              <div className="today-page-title__meta">
+                <span>{commandCenter?.bookStatusLabel ?? "Book status"}</span>
+                <span>Date: {todayLabel}</span>
+              </div>
+            </div>
             <div className="today-page-title__heading">
               <h1>
                 Today{" "}
@@ -442,7 +416,7 @@ export function VmbTodayClient({
               </h1>
             </div>
             <p className="today-page-title__subtitle">
-              Your book, the money VMB found, and what to do next.
+              What is ready now. Refresh the book only when new client data is due.
             </p>
             {aiosOpen ? (
               <InlineAiosPanel
@@ -455,20 +429,21 @@ export function VmbTodayClient({
             ) : null}
           </div>
 
-          {commandCenter ? <TodayCommandCenter snapshot={commandCenter} /> : null}
-
-          <div className="today-greeting-card">
+          <section className="today-greeting-card today-greeting-card--brief" aria-label="Suggested next move">
             <TodayCodaBanner
               coda={codaSummary}
               operatorName={operatorName}
               salonName={salonName}
               analysisId={activeAnalysisId}
+              showAskReminder={showTaikosReminder}
               onQuestionAnswer={setActiveQuestionResult}
               onPreviewFirstCard={() => setPreviewFirstCardSignal((n) => n + 1)}
               onPreviewSuggestedCard={setQaPreviewAction}
               onAnswerActiveChange={setHasActiveTaikosAnswer}
             />
-          </div>
+          </section>
+
+          {commandCenter ? <TodayCommandCenter snapshot={commandCenter} /> : null}
 
           {launchGuide.showBubble ? (
             <LaunchGuideOverlay target={LAUNCH_GUIDE_STEPS[launchGuide.currentStep - 1]?.target ?? null}>
@@ -509,52 +484,94 @@ export function VmbTodayClient({
             onRefresh={loadContext}
           />
 
-          <TodayProspectFeedProvider>
-            <div className="today-prospect-feed">
-              {(activeQuestionResult?.queryMode === "opportunity" &&
-                (activeQuestionResult?.suggestedCards.length ?? 0) > 0) ? null : (
-                <TaikosInsightList insights={insights} onRefresh={loadContext} />
-              )}
-
-              <OpportunityList
-                summary={data?.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY}
-                insights={insights}
-                goals={data?.goalSummary.goals ?? []}
-                analysisContext={{
-                  analysisId: activeAnalysisId,
-                  salonName,
-                  hasRealBookData: hasCompletedFirstIngest,
-                }}
-                todayLayout
-                questionResult={activeQuestionResult}
-                previewFirstCardSignal={previewFirstCardSignal}
-                onPreviewFirstCardConsumed={() => setPreviewFirstCardSignal(0)}
-                onClearQuestionFilter={() => setActiveQuestionResult(null)}
-                onRefresh={loadContext}
-                salonId={typeof pageContext?.trialId === "string" ? pageContext.trialId : undefined}
-              />
-            </div>
-          </TodayProspectFeedProvider>
-
-          <GoalSummary
-            summary={data?.goalSummary ?? EMPTY_GOAL_SUMMARY}
-            opportunities={data?.opportunitySummary.opportunities ?? []}
-            onRefresh={loadContext}
-          />
-
-          <TodayQueuePanel summary={data?.queueSummary ?? EMPTY_QUEUE_SUMMARY} />
-
-          <TodayDraftPanel drafts={data?.draftSummary.recentDrafts ?? []} onRefresh={loadContext} />
-
-          <section className="vmb-today__section">
-            <div className="vmb-today__section-head">
-              <h3 className="taikos-section-title">Activity</h3>
-              <Link href="/vmb/activity" className="vmb-today__link">
-                View all
+          <details className="vmb-today-daily-panel vmb-today-daily-panel--drawer" aria-label="Relationship opportunities">
+            <summary className="vmb-today-daily-panel__head">
+              <div>
+                <p className="vmb-today-daily-panel__kicker">Review when ready</p>
+                <h2 className="vmb-today-daily-panel__title">Relationship discoveries</h2>
+                <p className="vmb-today-daily-panel__note">
+                  Full list is here when you want to inspect every opportunity.
+                </p>
+              </div>
+              <Link
+                href={
+                  activeAnalysisId
+                    ? `/vmb/opportunities?analysis=${encodeURIComponent(activeAnalysisId)}`
+                    : "/vmb/opportunities"
+                }
+                className="vmb-today__link"
+              >
+                Open full list
               </Link>
-            </div>
-            <ActivityTimeline summary={data?.activitySummary ?? EMPTY_ACTIVITY_SUMMARY} compact />
-          </section>
+            </summary>
+            <TodayProspectFeedProvider>
+              <div className="today-prospect-feed today-prospect-feed--brief">
+                {(activeQuestionResult?.queryMode === "opportunity" &&
+                  (activeQuestionResult?.suggestedCards.length ?? 0) > 0) ? null : (
+                  <TaikosInsightList insights={insights} onRefresh={loadContext} />
+                )}
+
+                <OpportunityList
+                  summary={data?.opportunitySummary ?? EMPTY_OPPORTUNITY_SUMMARY}
+                  insights={insights}
+                  goals={data?.goalSummary.goals ?? []}
+                  analysisContext={{
+                    analysisId: activeAnalysisId,
+                    salonName,
+                    hasRealBookData: hasCompletedFirstIngest,
+                  }}
+                  todayLayout
+                  questionResult={activeQuestionResult}
+                  previewFirstCardSignal={previewFirstCardSignal}
+                  onPreviewFirstCardConsumed={() => setPreviewFirstCardSignal(0)}
+                  onClearQuestionFilter={() => setActiveQuestionResult(null)}
+                  onRefresh={loadContext}
+                  salonId={typeof pageContext?.trialId === "string" ? pageContext.trialId : undefined}
+                />
+              </div>
+            </TodayProspectFeedProvider>
+          </details>
+
+          <div className="vmb-today-drawers" aria-label="Today supporting details">
+            <details className="vmb-today-drawer">
+              <summary>
+                <span>Goals and invite previews</span>
+                <small>Open when you want the larger cards</small>
+              </summary>
+              <GoalSummary
+                summary={data?.goalSummary ?? EMPTY_GOAL_SUMMARY}
+                opportunities={data?.opportunitySummary.opportunities ?? []}
+                onRefresh={loadContext}
+              />
+            </details>
+
+            <details className="vmb-today-drawer">
+              <summary>
+                <span>Queue and drafts</span>
+                <small>Operational details after the next action</small>
+              </summary>
+              <div className="vmb-today-drawer__grid">
+                <TodayQueuePanel summary={data?.queueSummary ?? EMPTY_QUEUE_SUMMARY} />
+                <TodayDraftPanel drafts={data?.draftSummary.recentDrafts ?? []} onRefresh={loadContext} />
+              </div>
+            </details>
+
+            <details className="vmb-today-drawer">
+              <summary>
+                <span>Recent activity</span>
+                <small>Quiet log of what happened</small>
+              </summary>
+              <section className="vmb-today__section">
+                <div className="vmb-today__section-head">
+                  <h3 className="taikos-section-title">Activity</h3>
+                  <Link href="/vmb/activity" className="vmb-today__link">
+                    View all
+                  </Link>
+                </div>
+                <ActivityTimeline summary={data?.activitySummary ?? EMPTY_ACTIVITY_SUMMARY} compact />
+              </section>
+            </details>
+          </div>
         </div>
       )}
     </VmbPageFrame>

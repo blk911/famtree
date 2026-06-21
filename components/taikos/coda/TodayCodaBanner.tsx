@@ -27,6 +27,7 @@ type Props = {
   operatorName?: string;
   salonName?: string;
   analysisId?: string;
+  showAskReminder?: boolean;
   onQuestionAnswer?: (answer: TodayActiveQuestionResult) => void;
   onPreviewFirstCard?: () => void;
   onPreviewSuggestedCard?: (action: SalonQaPreviewCardAction) => void;
@@ -39,6 +40,7 @@ export function TodayCodaBanner({
   operatorName,
   salonName,
   analysisId,
+  showAskReminder = false,
   onQuestionAnswer,
   onPreviewFirstCard,
   onPreviewSuggestedCard,
@@ -58,6 +60,15 @@ export function TodayCodaBanner({
   const count = relationshipOpportunityCount(coda);
   const focusLabel = coda?.objective?.label ?? "Make today's relationship moves";
   const conversationLines = useMemo(() => buildTodayConversationLines(coda), [coda]);
+  const focusBullets = useMemo(
+    () => [
+      `${count} relationship ${count === 1 ? "opportunity is" : "opportunities are"} ready for review.`,
+      `Today's focus: ${focusLabel}.`,
+      conversationLines[0] ?? "Start with the client most likely to respond.",
+      conversationLines[1] ?? "Use the guide to collect what you need before sending.",
+    ],
+    [conversationLines, count, focusLabel],
+  );
 
   const resolvedAction = useMemo(
     () => normalizeSalonQaSuggestedAction(qaAnswer?.suggestedAction),
@@ -157,21 +168,11 @@ export function TodayCodaBanner({
     <section className="vmb-today-coda-banner">
       <div className="vmb-today-coda-banner__content">
         <p className="vmb-today-coda-banner__hello">{headline}</p>
-        <p className="vmb-today-coda-banner__summary">
-          I found {count} relationship {count === 1 ? "opportunity" : "opportunities"} worth your
-          attention.
-        </p>
-        <div className="vmb-today-coda-banner__focus">
-          <p className="vmb-today-coda-banner__focus-label">Today&apos;s focus:</p>
-          <p className="vmb-today-coda-banner__focus-value">{focusLabel}</p>
-        </div>
-        <div className="vmb-today-coda-banner__conversation">
-          {conversationLines.map((line) => (
-            <p key={line} className="vmb-today-coda-banner__conversation-line">
-              {line}
-            </p>
+        <ul className="vmb-today-coda-banner__focus-list">
+          {focusBullets.map((line) => (
+            <li key={line}>{line}</li>
           ))}
-        </div>
+        </ul>
 
         {error ? <p className="taikos-inline-workflow__error">{error}</p> : null}
 
@@ -305,9 +306,20 @@ export function TodayCodaBanner({
       </div>
 
       <form className="vmb-today-coda-banner__search" onSubmit={(e) => void handleSubmit(e)}>
-        <label className="vmb-today-coda-banner__search-label" htmlFor="today-coda-search">
-          What else are you thinking about?
-        </label>
+        <div className="vmb-today-coda-banner__search-head">
+          <label className="vmb-today-coda-banner__search-label" htmlFor="today-coda-search">
+            What else are you thinking about?
+          </label>
+          {showAskReminder ? (
+            <button
+              type="button"
+              className="vmb-taikos-ask-reminder vmb-taikos-ask-reminder--inline"
+              onClick={() => document.getElementById(TODAY_CODA_SEARCH_INPUT_ID)?.focus()}
+            >
+              ✨ Ask TAIKOS about your business
+            </button>
+          ) : null}
+        </div>
         <div className="vmb-today-coda-banner__chips vmb-today-coda-banner__chips--scroll">
           {SALON_QA_SUGGESTED_CHIPS.map((chip) => (
             <button

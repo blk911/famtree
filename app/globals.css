@@ -1449,6 +1449,34 @@
   color: #44403c;
 }
 
+.vmb-today-coda-banner__focus-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vmb-today-coda-banner__focus-list li {
+  position: relative;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #4b403b;
+}
+
+.vmb-today-coda-banner__focus-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #be185d;
+}
+
 .vmb-today-coda-banner__phase {
   margin: 8px 0 0;
   font-size: 13px;
@@ -1692,6 +1720,14 @@
   border-top: 1px dashed #f9a8d4;
   display: grid;
   gap: 8px;
+}
+
+.vmb-today-coda-banner__search-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
 }
 
 .vmb-today-coda-banner__search-label {
@@ -3596,6 +3632,294 @@
   margin: 0;
 }
 
+/* Local visual experiment: calmer VMB Today daily brief */
+.vmb-today--daily-brief {
+  display: grid;
+  gap: 18px;
+  max-width: 900px;
+}
+
+.vmb-today--daily-brief .today-page-title {
+  margin-bottom: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #eee7df;
+}
+
+.today-page-title__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.today-page-title__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  font-size: 13px;
+  color: #6f625d;
+}
+
+.today-page-title__meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid #eadfd6;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  font-weight: 700;
+}
+
+.vmb-today--daily-brief .today-page-title__heading h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(34px, 5vw, 58px);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  color: #241b18;
+}
+
+.vmb-today--daily-brief .today-page-title__subtitle {
+  max-width: 34rem;
+  font-size: 14px;
+  color: #6f625d;
+}
+
+.vmb-today--daily-brief .vmb-today-command {
+  margin: 0;
+  padding: clamp(16px, 2.4vw, 22px);
+  border: 1px solid #eadfd6;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(244, 114, 182, 0.12), transparent 32%),
+    linear-gradient(135deg, #fff 0%, #fbf7f2 100%);
+  box-shadow: 0 10px 28px rgba(68, 49, 38, 0.065);
+}
+
+.vmb-today-command__kicker,
+.vmb-today-daily-panel__kicker {
+  margin: 0 0 7px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9d174d;
+}
+
+.vmb-today--daily-brief .vmb-today-command__head {
+  max-width: 38rem;
+  margin-bottom: 14px;
+}
+
+.vmb-today--daily-brief .vmb-today-command__title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(25px, 3.4vw, 36px);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+
+.vmb-today--daily-brief .vmb-today-command__lead {
+  max-width: 34rem;
+  color: #5f5551;
+}
+
+.vmb-today--daily-brief .vmb-today-command__cta {
+  margin-top: 10px;
+}
+
+.vmb-today--daily-brief .vmb-today-command__grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.vmb-today--daily-brief .vmb-today-command__card {
+  padding: 12px 13px;
+  border-color: #eee7df;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: none;
+}
+
+.vmb-today--daily-brief .vmb-today-command__value,
+.vmb-today--daily-brief .vmb-today-command__count-value {
+  font-size: 20px;
+}
+
+.vmb-today--daily-brief .vmb-today-command__opps {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 0;
+}
+
+.vmb-today--daily-brief .vmb-today-command__opps li {
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  padding: 8px 10px;
+  border: 1px solid #f1e7ee;
+  border-radius: 999px;
+  background: rgba(253, 242, 248, 0.55);
+}
+
+.vmb-today--daily-brief .vmb-today-command__opp-rank {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #9d174d;
+  color: #fff;
+  font-size: 11px;
+}
+
+.vmb-today--daily-brief .today-greeting-card--brief {
+  margin: 0;
+}
+
+.vmb-today--daily-brief .today-greeting-card--brief .vmb-today-coda-banner {
+  border-color: #eadfd6;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fff 0%, #fff8fb 100%);
+  box-shadow: 0 8px 24px rgba(157, 23, 77, 0.045);
+}
+
+.vmb-today-daily-panel {
+  padding: 0;
+  border: 1px solid #eadfd6;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  overflow: hidden;
+}
+
+.vmb-today-daily-panel__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.vmb-today-daily-panel__head::-webkit-details-marker {
+  display: none;
+}
+
+.vmb-today-daily-panel[open] .vmb-today-daily-panel__head {
+  border-bottom: 1px solid #eadfd6;
+}
+
+.vmb-today-daily-panel__title {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  color: #241b18;
+}
+
+.vmb-today-daily-panel__note {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: #7c6f68;
+}
+
+.today-prospect-feed--brief {
+  gap: 14px;
+  margin: 14px;
+}
+
+.today-prospect-feed--brief .taikos-section-title {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: #7c6f68;
+}
+
+.today-prospect-feed--brief .taikos-prospect-card,
+.today-prospect-feed--brief .taikos-insight-card,
+.today-prospect-feed--brief .taikos-opp-card {
+  box-shadow: none;
+  border-color: #eee7df;
+}
+
+.vmb-today-drawers {
+  display: grid;
+  gap: 10px;
+}
+
+.vmb-today-drawer {
+  border: 1px solid #eadfd6;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.62);
+  overflow: hidden;
+}
+
+.vmb-today-drawer > summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 15px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.vmb-today-drawer > summary::-webkit-details-marker {
+  display: none;
+}
+
+.vmb-today-drawer > summary span {
+  font-size: 14px;
+  font-weight: 800;
+  color: #2f2926;
+}
+
+.vmb-today-drawer > summary small {
+  font-size: 12px;
+  color: #8a7c75;
+}
+
+.vmb-today-drawer[open] > summary {
+  border-bottom: 1px solid #eadfd6;
+}
+
+.vmb-today-drawer > *:not(summary) {
+  margin: 14px;
+}
+
+.vmb-today-drawer__grid {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 900px) {
+  .vmb-today-drawer__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .today-page-title__top {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .today-page-title__meta {
+    justify-content: flex-start;
+  }
+
+  .vmb-today--daily-brief .vmb-today-command__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vmb-today-daily-panel__head,
+  .vmb-today-drawer > summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 /* Today prospect cards — single-line decision row + optional expand */
 .taikos-prospect-card {
   padding: 10px 14px;
@@ -4441,6 +4765,16 @@
   font-weight: 600;
   color: #9d174d;
   cursor: pointer;
+}
+
+.vmb-taikos-ask-reminder--inline {
+  margin: 0;
+  padding: 7px 11px;
+  border: 1px solid #fbcfe8;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgba(157, 23, 77, 0.06);
 }
 
 .vmb-help-menu {
@@ -7237,6 +7571,768 @@
   font-size: 13px;
   font-weight: 600;
   color: #831843;
+}
+
+/* Local visual experiment: emo editorial salon skin */
+.vmb-salon-landing--emo {
+  --emo-ink: #120b12;
+  --emo-plum: #251022;
+  --emo-blood: #8f153b;
+  --emo-rose: #e23a6f;
+  --emo-paper: #f7efe9;
+  --emo-ash: #b9a8ae;
+  position: relative;
+  max-width: 1160px;
+  gap: clamp(34px, 5vw, 64px);
+  padding: clamp(18px, 3vw, 36px);
+  color: var(--emo-paper);
+  isolation: isolate;
+}
+
+.vmb-salon-landing--emo::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(226, 58, 111, 0.28), transparent 34vw),
+    radial-gradient(circle at 82% 4%, rgba(118, 15, 55, 0.35), transparent 26vw),
+    linear-gradient(135deg, #080608 0%, #160a16 42%, #2a0d1d 100%);
+}
+
+.vmb-salon-landing--emo::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.22;
+  background-image:
+    linear-gradient(rgba(247, 239, 233, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247, 239, 233, 0.05) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__hero {
+  position: relative;
+  grid-template-columns: minmax(260px, 0.88fr) minmax(0, 1.12fr);
+  min-height: clamp(520px, 62vw, 680px);
+  align-items: end;
+  gap: clamp(22px, 4vw, 54px);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__hero::before {
+  content: "private salon journal";
+  position: absolute;
+  top: 4%;
+  right: 2%;
+  max-width: 8rem;
+  color: rgba(247, 239, 233, 0.42);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(36px, 8vw, 94px);
+  line-height: 0.82;
+  letter-spacing: -0.08em;
+  text-align: right;
+  transform: rotate(-7deg);
+  pointer-events: none;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__hero-media {
+  min-height: clamp(390px, 52vw, 620px);
+  border-radius: 34px 34px 130px 34px;
+  border: 1px solid rgba(247, 239, 233, 0.18);
+  background: #1b0b17;
+  box-shadow:
+    0 34px 80px rgba(0, 0, 0, 0.42),
+    -22px 22px 0 rgba(143, 21, 59, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transform: rotate(-2.2deg);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 38%, rgba(0, 0, 0, 0.58) 100%),
+    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.18), transparent 24%);
+  mix-blend-mode: screen;
+  opacity: 0.5;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__hero-media-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  filter: saturate(0.88) contrast(1.08) brightness(0.82);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__hero-copy {
+  position: relative;
+  padding: clamp(20px, 4vw, 44px) 0 clamp(16px, 3vw, 38px);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__owner {
+  display: inline-flex;
+  margin: 0 0 18px;
+  padding: 7px 12px;
+  border: 1px solid rgba(247, 239, 233, 0.22);
+  border-radius: 999px;
+  color: var(--emo-ash);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__salon-name {
+  max-width: 8.5em;
+  color: var(--emo-paper);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(58px, 10vw, 132px);
+  font-weight: 500;
+  line-height: 0.82;
+  letter-spacing: -0.09em;
+  text-wrap: balance;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__headline {
+  max-width: 34rem;
+  margin-top: 24px;
+  color: #fff7f2;
+  font-size: clamp(20px, 2.6vw, 31px);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__intro,
+.vmb-salon-landing--emo .vmb-salon-landing__section-desc {
+  color: rgba(247, 239, 233, 0.76);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__cta,
+.vmb-salon-landing--emo .vmb-salon-landing__service-cta,
+.vmb-salon-landing--emo .vmb-salon-landing__offer-cta {
+  border: 1px solid rgba(247, 239, 233, 0.24);
+  background: linear-gradient(135deg, #f7efe9 0%, #e23a6f 100%);
+  color: #160a16;
+  box-shadow: 0 16px 34px rgba(226, 58, 111, 0.2);
+  opacity: 0.92;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__section {
+  position: relative;
+  gap: 20px;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__section-head {
+  border-top: 1px solid rgba(247, 239, 233, 0.16);
+  padding-top: 18px;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__section-title {
+  color: var(--emo-paper);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(34px, 5vw, 66px);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-list {
+  gap: clamp(18px, 3vw, 30px);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-card {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr) clamp(190px, 22vw, 260px);
+  min-height: 230px;
+  padding: clamp(22px, 3vw, 34px);
+  border: 1px solid rgba(247, 239, 233, 0.16);
+  border-radius: 28px;
+  background:
+    linear-gradient(135deg, rgba(247, 239, 233, 0.1), rgba(255, 255, 255, 0.02)),
+    rgba(18, 11, 18, 0.76);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-card:nth-child(even) {
+  grid-template-columns: clamp(190px, 22vw, 260px) minmax(0, 1fr);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-card:nth-child(even) .vmb-salon-landing__service-copy {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-card:nth-child(even) .vmb-salon-landing__service-photo {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+  transform: rotate(-2deg);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-card::before {
+  content: "";
+  position: absolute;
+  inset: auto -40px -70px auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: rgba(226, 58, 111, 0.2);
+  filter: blur(4px);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-name {
+  color: #fff7f2;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(26px, 3vw, 42px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-meta {
+  color: var(--emo-rose);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-desc,
+.vmb-salon-landing--emo .vmb-salon-landing__service-upgrades li,
+.vmb-salon-landing--emo .vmb-salon-landing__offer-line,
+.vmb-salon-landing--emo .vmb-salon-landing__offer-service,
+.vmb-salon-landing--emo .vmb-salon-landing__offer-value {
+  color: rgba(247, 239, 233, 0.76);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-upgrades {
+  border-top-color: rgba(247, 239, 233, 0.12);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-upgrades-label {
+  color: rgba(247, 239, 233, 0.56);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-photo {
+  max-width: 260px;
+  height: 190px;
+  border-radius: 22px;
+  border: 1px solid rgba(247, 239, 233, 0.14);
+  background: #251022;
+  box-shadow: 12px 12px 0 rgba(143, 21, 59, 0.34);
+  transform: rotate(2deg);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__service-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  filter: saturate(0.92) contrast(1.06);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__offer-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__offer-card,
+.vmb-salon-landing--emo .vmb-salon-landing__empty,
+.vmb-salon-landing--emo .vmb-salon-landing__pcn,
+.vmb-salon-landing--emo .vmb-salon-landing__providers {
+  border: 1px solid rgba(247, 239, 233, 0.16);
+  background:
+    linear-gradient(160deg, rgba(247, 239, 233, 0.11), rgba(247, 239, 233, 0.03)),
+    rgba(18, 11, 18, 0.68);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__offer-name,
+.vmb-salon-landing--emo .vmb-salon-landing__empty-title {
+  color: #fff7f2;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__offer-reward,
+.vmb-salon-landing--emo .vmb-salon-landing__offer-price {
+  color: var(--emo-rose);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__empty-help {
+  color: rgba(247, 239, 233, 0.68);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__pcn {
+  padding: clamp(24px, 4vw, 46px);
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 82% 0%, rgba(226, 58, 111, 0.22), transparent 34%),
+    rgba(18, 11, 18, 0.82);
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__providers {
+  border-style: solid;
+}
+
+.vmb-salon-landing--emo .vmb-salon-landing__provider-chips li {
+  border-color: rgba(247, 239, 233, 0.16);
+  background: rgba(247, 239, 233, 0.08);
+  color: #ffe9ef;
+}
+
+@media (max-width: 767px) {
+  .vmb-salon-landing--emo {
+    padding: 12px;
+  }
+
+  .vmb-salon-landing--emo .vmb-salon-landing__hero,
+  .vmb-salon-landing--emo .vmb-salon-landing__service-card,
+  .vmb-salon-landing--emo .vmb-salon-landing__service-card:nth-child(even) {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .vmb-salon-landing--emo .vmb-salon-landing__hero::before {
+    top: -10px;
+    right: 0;
+    opacity: 0.38;
+  }
+
+  .vmb-salon-landing--emo .vmb-salon-landing__hero-media {
+    min-height: 360px;
+    border-radius: 28px 28px 86px 28px;
+    transform: rotate(-1deg);
+  }
+
+  .vmb-salon-landing--emo .vmb-salon-landing__service-card:nth-child(even) .vmb-salon-landing__service-copy,
+  .vmb-salon-landing--emo .vmb-salon-landing__service-card:nth-child(even) .vmb-salon-landing__service-photo {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .vmb-salon-landing--emo .vmb-salon-landing__service-photo,
+  .vmb-salon-landing--emo .vmb-salon-landing__service-card:nth-child(even) .vmb-salon-landing__service-photo {
+    order: -1;
+    max-width: none;
+    height: 230px;
+    justify-self: stretch;
+    transform: rotate(0deg);
+  }
+}
+
+/* Local visual experiment: botanical stationery salon skin */
+.vmb-salon-landing--botanical {
+  --botanical-ink: #253126;
+  --botanical-olive: #59633a;
+  --botanical-moss: #7c8a51;
+  --botanical-rose: #ad4967;
+  --botanical-clay: #b87856;
+  --botanical-paper: #fbf4e8;
+  --botanical-cream: #fffaf0;
+  position: relative;
+  max-width: 1140px;
+  gap: clamp(26px, 4vw, 46px);
+  padding: clamp(16px, 2.6vw, 28px);
+  color: var(--botanical-ink);
+  isolation: isolate;
+}
+
+.vmb-salon-landing--botanical::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(173, 73, 103, 0.1), transparent 34vw),
+    radial-gradient(circle at 84% 10%, rgba(124, 138, 81, 0.14), transparent 30vw),
+    linear-gradient(135deg, #fffaf0 0%, #f8eedc 48%, #f2e6cc 100%);
+}
+
+.vmb-salon-landing--botanical::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image:
+    radial-gradient(circle at 20px 20px, rgba(89, 99, 58, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(89, 99, 58, 0.05) 1px, transparent 1px);
+  background-size: 34px 34px, 68px 68px;
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 90%);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__hero {
+  position: relative;
+  grid-template-columns: minmax(280px, 0.95fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: clamp(22px, 4vw, 52px);
+  min-height: clamp(460px, 52vw, 590px);
+  padding: clamp(16px, 2.6vw, 28px);
+  border: 1px solid rgba(89, 99, 58, 0.13);
+  border-radius: 28px;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 240, 0.88), rgba(251, 244, 232, 0.52)),
+    rgba(255, 250, 240, 0.68);
+  box-shadow: 0 18px 48px rgba(83, 64, 42, 0.09);
+  overflow: hidden;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__hero::before {
+  content: "botanical booking";
+  position: absolute;
+  top: 26px;
+  right: clamp(18px, 3vw, 36px);
+  color: rgba(89, 99, 58, 0.13);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(36px, 7vw, 86px);
+  font-style: italic;
+  line-height: 0.82;
+  letter-spacing: -0.08em;
+  text-align: right;
+  pointer-events: none;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__hero::after {
+  content: "";
+  position: absolute;
+  right: -72px;
+  bottom: -90px;
+  width: 260px;
+  height: 360px;
+  border: 1px solid rgba(89, 99, 58, 0.12);
+  border-radius: 999px 999px 0 0;
+  background: rgba(124, 138, 81, 0.06);
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__hero-media {
+  min-height: clamp(340px, 43vw, 500px);
+  border: 7px solid rgba(255, 250, 240, 0.9);
+  border-radius: 999px 999px 32px 32px;
+  background: #f1dfc3;
+  box-shadow:
+    0 16px 38px rgba(83, 64, 42, 0.14),
+    12px 12px 0 rgba(89, 99, 58, 0.08);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(255, 250, 240, 0.72);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__hero-media-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  filter: saturate(0.92) contrast(1.02) sepia(0.08);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__hero-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__owner {
+  margin: 0 0 16px;
+  color: var(--botanical-rose);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__salon-name {
+  max-width: 8.8em;
+  color: var(--botanical-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(44px, 7.4vw, 92px);
+  font-weight: 500;
+  line-height: 0.86;
+  letter-spacing: -0.07em;
+  text-wrap: balance;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__headline {
+  max-width: 35rem;
+  margin-top: 20px;
+  color: #3a3c28;
+  font-size: clamp(18px, 2.1vw, 25px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__intro,
+.vmb-salon-landing--botanical .vmb-salon-landing__section-desc,
+.vmb-salon-landing--botanical .vmb-salon-landing__empty-help {
+  color: rgba(37, 49, 38, 0.72);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__cta,
+.vmb-salon-landing--botanical .vmb-salon-landing__service-cta,
+.vmb-salon-landing--botanical .vmb-salon-landing__offer-cta {
+  border: 1px solid rgba(37, 49, 38, 0.18);
+  background: linear-gradient(135deg, var(--botanical-ink), var(--botanical-olive));
+  color: #fffaf0;
+  box-shadow: 0 10px 24px rgba(89, 99, 58, 0.14);
+  opacity: 0.86;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__section {
+  gap: 18px;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__section-head {
+  position: relative;
+  padding-left: 56px;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__section-head::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 38px;
+  height: 1px;
+  background: var(--botanical-rose);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__section-title {
+  color: var(--botanical-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(30px, 4.2vw, 50px);
+  font-weight: 500;
+  line-height: 0.92;
+  letter-spacing: -0.048em;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__service-list {
+  gap: clamp(16px, 2.8vw, 26px);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__service-card {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr) clamp(170px, 22vw, 230px);
+  padding: clamp(20px, 2.6vw, 28px);
+  border: 1px solid rgba(89, 99, 58, 0.13);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 240, 0.92), rgba(251, 244, 232, 0.74)),
+    rgba(255, 250, 240, 0.86);
+  box-shadow: 0 12px 32px rgba(83, 64, 42, 0.075);
+  overflow: hidden;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__service-card::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  bottom: 18px;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(var(--botanical-rose), var(--botanical-moss));
+  opacity: 0.38;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__service-copy {
+  padding-left: 16px;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__service-name {
+  color: var(--botanical-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(23px, 2.45vw, 34px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__service-meta {
+  color: var(--botanical-rose);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__service-desc,
+.vmb-salon-landing--botanical .vmb-salon-landing__service-upgrades li,
+.vmb-salon-landing--botanical .vmb-salon-landing__offer-line,
+.vmb-salon-landing--botanical .vmb-salon-landing__offer-service,
+.vmb-salon-landing--botanical .vmb-salon-landing__offer-value {
+  color: rgba(37, 49, 38, 0.72);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__service-upgrades {
+  border-top-color: rgba(89, 99, 58, 0.14);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__service-upgrades-label {
+  color: rgba(37, 49, 38, 0.54);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__service-photo {
+  max-width: 230px;
+  height: 168px;
+  border: 5px solid var(--botanical-cream);
+  border-radius: 999px 999px 18px 18px;
+  background: #f1dfc3;
+  box-shadow: 7px 7px 0 rgba(124, 138, 81, 0.09);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__service-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__offer-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__offer-card,
+.vmb-salon-landing--botanical .vmb-salon-landing__empty,
+.vmb-salon-landing--botanical .vmb-salon-landing__pcn,
+.vmb-salon-landing--botanical .vmb-salon-landing__providers {
+  border: 1px solid rgba(89, 99, 58, 0.13);
+  background:
+    linear-gradient(135deg, rgba(255, 250, 240, 0.92), rgba(251, 244, 232, 0.72)),
+    rgba(255, 250, 240, 0.84);
+  box-shadow: 0 12px 30px rgba(83, 64, 42, 0.075);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__offer-name,
+.vmb-salon-landing--botanical .vmb-salon-landing__empty-title {
+  color: var(--botanical-ink);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__offer-reward,
+.vmb-salon-landing--botanical .vmb-salon-landing__offer-price {
+  color: var(--botanical-rose);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__pcn,
+.vmb-salon-landing--botanical .vmb-salon-landing__providers {
+  padding: clamp(22px, 3.2vw, 36px);
+  border-radius: 26px;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__pcn {
+  display: grid;
+  gap: 12px;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__pcn .vmb-salon-landing__section-title,
+.vmb-salon-landing--botanical .vmb-salon-landing__providers .vmb-salon-landing__section-title {
+  position: relative;
+  padding-left: 46px;
+  font-size: clamp(26px, 3.3vw, 40px);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__pcn .vmb-salon-landing__section-title::before,
+.vmb-salon-landing--botanical .vmb-salon-landing__providers .vmb-salon-landing__section-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.58em;
+  width: 30px;
+  height: 1px;
+  background: rgba(173, 73, 103, 0.62);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__pcn .vmb-salon-landing__section-desc,
+.vmb-salon-landing--botanical .vmb-salon-landing__providers .vmb-salon-landing__section-desc {
+  max-width: 48rem;
+  font-size: 14px;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__pcn .vmb-salon-landing__cta {
+  margin-top: 4px;
+  padding: 9px 16px;
+  background: rgba(255, 250, 240, 0.68);
+  color: var(--botanical-olive);
+  border-color: rgba(89, 99, 58, 0.18);
+  box-shadow: none;
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__pcn {
+  background:
+    radial-gradient(circle at 88% 8%, rgba(173, 73, 103, 0.045), transparent 34%),
+    linear-gradient(135deg, rgba(255, 250, 240, 0.86), rgba(242, 226, 198, 0.54));
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__providers {
+  border-style: dashed;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 240, 0.72), rgba(251, 244, 232, 0.48)),
+    rgba(255, 250, 240, 0.62);
+}
+
+.vmb-salon-landing--botanical .vmb-salon-landing__provider-chips li {
+  border-color: rgba(89, 99, 58, 0.14);
+  background: rgba(255, 250, 240, 0.82);
+  color: var(--botanical-olive);
+}
+
+@media (max-width: 767px) {
+  .vmb-salon-landing--botanical {
+    padding: 12px;
+  }
+
+  .vmb-salon-landing--botanical .vmb-salon-landing__hero,
+  .vmb-salon-landing--botanical .vmb-salon-landing__service-card {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .vmb-salon-landing--botanical .vmb-salon-landing__hero {
+    padding: 14px;
+  }
+
+  .vmb-salon-landing--botanical .vmb-salon-landing__hero-media {
+    min-height: 350px;
+  }
+
+  .vmb-salon-landing--botanical .vmb-salon-landing__section-head {
+    padding-left: 0;
+  }
+
+  .vmb-salon-landing--botanical .vmb-salon-landing__section-head::before {
+    display: none;
+  }
+
+  .vmb-salon-landing--botanical .vmb-salon-landing__pcn .vmb-salon-landing__section-title,
+  .vmb-salon-landing--botanical .vmb-salon-landing__providers .vmb-salon-landing__section-title {
+    padding-left: 0;
+  }
+
+  .vmb-salon-landing--botanical .vmb-salon-landing__pcn .vmb-salon-landing__section-title::before,
+  .vmb-salon-landing--botanical .vmb-salon-landing__providers .vmb-salon-landing__section-title::before {
+    display: none;
+  }
+
+  .vmb-salon-landing--botanical .vmb-salon-landing__service-photo {
+    order: -1;
+    max-width: none;
+    height: 230px;
+    justify-self: stretch;
+  }
 }
 
 /* Send package preview modal — approved invitation send flow */
