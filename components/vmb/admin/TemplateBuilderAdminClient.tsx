@@ -242,15 +242,6 @@ export function TemplateBuilderAdminClient({
 
               <BuilderImageInsertsSection inserts={imageInserts} onChange={handleImageInsertsChange} />
 
-              <label className="vmb-admin-builder-grid__field vmb-offer-admin__checkbox">
-                <input
-                  type="checkbox"
-                  checked={draft.active}
-                  onChange={(e) => patchDraft({ active: e.target.checked })}
-                />
-                <span>Available To Clients</span>
-              </label>
-
               <div className="vmb-admin-builder-grid__actions">
                 <button
                   type="button"

@@ -106,7 +106,7 @@ export function AdminDefaultPackageSummary({
 
           <>
 
-            <div>
+            <div className="vmb-admin-default-package__price">
 
               <dt>Value</dt>
 
@@ -114,7 +114,7 @@ export function AdminDefaultPackageSummary({
 
             </div>
 
-            <div>
+            <div className="vmb-admin-default-package__price">
 
               <dt>Savings</dt>
 
@@ -122,7 +122,7 @@ export function AdminDefaultPackageSummary({
 
             </div>
 
-            <div>
+            <div className="vmb-admin-default-package__price">
 
               <dt>Offer</dt>
 
@@ -136,7 +136,7 @@ export function AdminDefaultPackageSummary({
 
         {pkg.priceLabel?.trim() ? (
 
-          <div>
+          <div className="vmb-admin-default-package__caption">
 
             <dt>Caption</dt>
 

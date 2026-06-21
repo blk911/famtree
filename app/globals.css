@@ -10071,7 +10071,7 @@
 }
 
 .vmb-admin-default-package__title {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -10081,8 +10081,24 @@
 
 .vmb-admin-default-package__list {
   display: grid;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(64px, 0.5fr));
+  gap: 8px 14px;
+  align-items: start;
   margin: 0;
+}
+
+.vmb-admin-default-package__list > div:not(.vmb-admin-default-package__price):not(.vmb-admin-default-package__caption) {
+  grid-column: 1;
+}
+
+.vmb-admin-default-package__price {
+  grid-row: 1;
+}
+
+.vmb-admin-default-package__caption {
+  grid-column: 1 / -1;
+  padding-top: 8px;
+  border-top: 1px solid #e7e5e4;
 }
 
 .vmb-admin-default-package__list dt {
@@ -10096,7 +10112,21 @@
   margin: 0;
   font-size: 13px;
   color: #1c1917;
-  line-height: 1.45;
+  line-height: 1.35;
+}
+
+@media (max-width: 767px) {
+  .vmb-admin-default-package__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .vmb-admin-default-package__list > div:not(.vmb-admin-default-package__price):not(.vmb-admin-default-package__caption) {
+    grid-column: auto;
+  }
+
+  .vmb-admin-default-package__price {
+    grid-row: auto;
+  }
 }
 
 .vmb-nails-library__asset-pricing {
