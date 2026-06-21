@@ -241,14 +241,6 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
           <span>Client name</span>
           <input value={clientName} onChange={(event) => setClientName(event.target.value)} />
         </label>
-        <label>
-          <span>Email</span>
-          <input value={email} onChange={(event) => setEmail(event.target.value)} />
-        </label>
-        <label>
-          <span>Phone</span>
-          <input value={phone} onChange={(event) => setPhone(event.target.value)} />
-        </label>
       </div>
 
       <section className="vmb-today-invite-composer__feature" aria-label="Invite options and send">
@@ -292,6 +284,17 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
           </button>
         </div>
       </section>
+
+      <div className="vmb-today-invite-composer__grid vmb-today-invite-composer__grid--contact">
+        <label>
+          <span>Email</span>
+          <input value={email} onChange={(event) => setEmail(event.target.value)} />
+        </label>
+        <label>
+          <span>Phone</span>
+          <input value={phone} onChange={(event) => setPhone(event.target.value)} />
+        </label>
+      </div>
 
       <details className="vmb-today-invite-composer__message-drawer">
         <summary>Edit reason and message</summary>
