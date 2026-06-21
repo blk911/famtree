@@ -63,7 +63,7 @@ const SUGGESTED_PUBLISHED_EMPTY_MESSAGE =
   "No invitations have been published to your salon yet. Suggested matches below are previews only until Admin publishes matching invitations.";
 
 const DEFAULT_PACKAGE_PREVIEW_NOTICE =
-  "Preview uses default package because this template has not been published.";
+  "Template status: Not published. This preview uses the default package until an admin publishes the salon invitation template.";
 
 type Props = {
   initialAnalysisId?: string;

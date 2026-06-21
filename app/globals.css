@@ -9885,6 +9885,17 @@
   padding: 20px;
 }
 
+.vmb-admin-salon-invite-review-modal__status {
+  margin: 0 0 12px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #57534e;
+}
+
 .vmb-salon-invite-card {
   overflow: hidden;
   border-radius: 20px;
@@ -10099,6 +10110,12 @@
   font-size: 14px;
   font-weight: 700;
   cursor: default;
+}
+
+.vmb-salon-invite-card__cta--preview {
+  background: #292524;
+  color: #fff;
+  opacity: 0.62;
 }
 
 .vmb-published-invite-grid {

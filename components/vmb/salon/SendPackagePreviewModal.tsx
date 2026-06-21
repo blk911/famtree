@@ -106,7 +106,7 @@ export function SendPackagePreviewModal({
 
               <div className="vmb-send-package-modal__block">
                 <p className="vmb-send-package-modal__block-label">Invitation Card Preview</p>
-                <SalonInviteCard {...cardProps} mode="salon" />
+                <SalonInviteCard {...cardProps} mode="salon" previewOnly />
               </div>
 
               <div className="vmb-send-package-modal__block">

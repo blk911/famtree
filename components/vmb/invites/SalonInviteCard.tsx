@@ -26,6 +26,7 @@ export type SalonInviteCardProps = {
   serviceImageUrl?: string;
   inviteArtImageUrl?: string;
   mode: SalonInviteCardMode;
+  previewOnly?: boolean;
   /** Token context override — defaults to preview client name in adminReview. */
   tokenContext?: InviteTemplateTokenContext;
 };
@@ -45,6 +46,7 @@ export function SalonInviteCard({
   serviceImageUrl,
   inviteArtImageUrl,
   mode,
+  previewOnly = false,
   tokenContext,
 }: SalonInviteCardProps) {
   const tokens: InviteTemplateTokenContext = {
@@ -138,8 +140,12 @@ export function SalonInviteCard({
         ) : null}
 
         <footer className="vmb-salon-invite-card__footer">
-          <button type="button" className="vmb-salon-invite-card__cta" disabled={mode === "adminReview"}>
-            {resolvedCta}
+          <button
+            type="button"
+            className={`vmb-salon-invite-card__cta${previewOnly ? " vmb-salon-invite-card__cta--preview" : ""}`}
+            disabled={mode === "adminReview" || previewOnly}
+          >
+            {previewOnly ? "Client CTA Preview" : resolvedCta}
           </button>
         </footer>
       </div>

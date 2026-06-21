@@ -25,7 +25,7 @@ export function SalonInvitationPreviewModal({
   tokenContext,
   serviceFallbackById,
   rewardFallbackById,
-  notice = "Published from VMB master library — preview only.",
+  notice = "Template status: Active. This invitation is approved for salon use.",
 }: Props) {
   if (!open) return null;
 
@@ -55,10 +55,10 @@ export function SalonInvitationPreviewModal({
           </button>
         </header>
         <div className="vmb-admin-salon-invite-review-modal__body">
-          <p style={{ margin: "0 0 12px", fontSize: 13, color: VMB_THEME.muted }}>
+          <p className="vmb-admin-salon-invite-review-modal__status">
             {notice}
           </p>
-          <SalonInviteCard {...cardProps} mode="salon" />
+          <SalonInviteCard {...cardProps} mode="salon" previewOnly />
         </div>
       </div>
     </div>
