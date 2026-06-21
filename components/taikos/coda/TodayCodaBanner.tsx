@@ -19,6 +19,7 @@ import {
   buildTodayGreeting,
   relationshipOpportunityCount,
 } from "@/lib/taikos/context/today-conversation";
+import type { TaikosOpportunity } from "@/lib/taikos/opportunities/types";
 
 export const TODAY_CODA_SEARCH_INPUT_ID = "today-coda-search";
 
@@ -33,7 +34,19 @@ type Props = {
   onPreviewSuggestedCard?: (action: SalonQaPreviewCardAction) => void;
   onSubmitFollowUp?: (question: string) => void;
   onAnswerActiveChange?: (active: boolean) => void;
+  selectedOfferLabel?: string;
+  offerRecommendations?: TaikosOpportunity[];
+  onUseOfferOpportunity?: (opportunity: TaikosOpportunity) => void;
 };
+
+function opportunityClientLabel(opportunity: TaikosOpportunity): string {
+  const rec = opportunity.recommendation.trim();
+  const singleMatch = rec.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:is|has)\b/);
+  if (singleMatch?.[1]) return singleMatch[1];
+  const pairMatch = rec.match(/^([A-Z][a-z]+)\s+and\s+([A-Z][a-z]+)\b/);
+  if (pairMatch) return `${pairMatch[1]} & ${pairMatch[2]}`;
+  return opportunity.title;
+}
 
 export function TodayCodaBanner({
   coda,
@@ -46,6 +59,9 @@ export function TodayCodaBanner({
   onPreviewSuggestedCard,
   onSubmitFollowUp,
   onAnswerActiveChange,
+  selectedOfferLabel,
+  offerRecommendations = [],
+  onUseOfferOpportunity,
 }: Props) {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -218,6 +234,33 @@ export function TodayCodaBanner({
             {searching ? "Thinking…" : "Ask"}
           </button>
         </div>
+        {selectedOfferLabel ? (
+          <div className="vmb-today-offer-finds" aria-label={`TAIKOS finds for ${selectedOfferLabel}`}>
+            <div className="vmb-today-offer-finds__head">
+              <p>TAIKOS finds</p>
+              <strong>{selectedOfferLabel}</strong>
+            </div>
+            {offerRecommendations.length > 0 ? (
+              <ul className="vmb-today-offer-finds__list">
+                {offerRecommendations.map((opportunity) => (
+                  <li key={opportunity.opportunityId} className="vmb-today-offer-finds__item">
+                    <div>
+                      <strong>{opportunityClientLabel(opportunity)}</strong>
+                      <span>{opportunity.recommendation}</span>
+                    </div>
+                    <button type="button" onClick={() => onUseOfferOpportunity?.(opportunity)}>
+                      Use
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="vmb-today-offer-finds__empty">
+                No matching TAIKOS finds yet for this offer.
+              </p>
+            )}
+          </div>
+        ) : null}
         {error ? <p className="taikos-inline-workflow__error">{error}</p> : null}
 
         {qaAnswer ? (

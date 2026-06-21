@@ -4,7 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
 import { TodayCommandCenter } from "@/components/vmb/today/TodayCommandCenter";
-import { SalonInviteComposer } from "@/components/vmb/today/SalonInviteComposer";
+import {
+  SalonInviteComposer,
+  SALON_INVITE_REASON_LABELS,
+  salonInviteReasonForOpportunity,
+  type SalonInviteReasonId,
+} from "@/components/vmb/today/SalonInviteComposer";
 import { ActivityTimeline } from "@/components/taikos/activity/ActivityTimeline";
 import { InlineAiosPanel } from "@/components/taikos/InlineAiosPanel";
 import { TaikosInsightList } from "@/components/taikos/coda/TaikosInsightList";
@@ -25,7 +30,7 @@ import type { CodaSummary } from "@/lib/taikos/coda/types";
 import type { SalonQaPreviewCardAction, TodayActiveQuestionResult } from "@/lib/taikos/salon-qa/types";
 import type { TaikosDraftSummary } from "@/lib/taikos/drafts/types";
 import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
-import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
+import type { TaikosOpportunity, TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
 import type { TaikosQueueSummary } from "@/lib/taikos/queue/types";
 import { buildTodayGreeting } from "@/lib/taikos/context/today-conversation";
 import type { AiosContextPacket } from "@/lib/taikos/types";
@@ -125,6 +130,8 @@ export function VmbTodayClient({
   const [qaPreviewAction, setQaPreviewAction] = useState<SalonQaPreviewCardAction | null>(null);
   const [hasActiveTaikosAnswer, setHasActiveTaikosAnswer] = useState(false);
   const [vmbInviteDrafts, setVmbInviteDrafts] = useState<VmbInviteDraft[]>([]);
+  const [selectedOfferReason, setSelectedOfferReason] = useState<SalonInviteReasonId>("new-client");
+  const [offerPrefill, setOfferPrefill] = useState<{ opportunity: TaikosOpportunity; key: number } | null>(null);
 
   useEffect(() => {
     console.error("[TODAY-MOUNT]", {
@@ -347,6 +354,13 @@ export function VmbTodayClient({
     vmbInviteDrafts,
   ]);
 
+  const selectedOfferRecommendations = useMemo(() => {
+    const opportunities = data?.opportunitySummary.opportunities ?? [];
+    return opportunities
+      .filter((opportunity) => salonInviteReasonForOpportunity(opportunity) === selectedOfferReason)
+      .slice(0, 5);
+  }, [data?.opportunitySummary.opportunities, selectedOfferReason]);
+
   return (
     <VmbPageFrame width="wide" headerless>
       <header className="vmb-page-frame__header">
@@ -442,11 +456,20 @@ export function VmbTodayClient({
                 onPreviewFirstCard={() => setPreviewFirstCardSignal((n) => n + 1)}
                 onPreviewSuggestedCard={setQaPreviewAction}
                 onAnswerActiveChange={setHasActiveTaikosAnswer}
+                selectedOfferLabel={SALON_INVITE_REASON_LABELS[selectedOfferReason]}
+                offerRecommendations={selectedOfferRecommendations}
+                onUseOfferOpportunity={(opportunity) => {
+                  setSelectedOfferReason(salonInviteReasonForOpportunity(opportunity) ?? selectedOfferReason);
+                  setOfferPrefill({ opportunity, key: Date.now() });
+                }}
               />
               <SalonInviteComposer
                 salonName={salonName}
                 analysisId={resolvedAnalysisId}
-                opportunities={data?.opportunitySummary.opportunities ?? []}
+                selectedReason={selectedOfferReason}
+                prefillOpportunity={offerPrefill?.opportunity ?? null}
+                prefillKey={offerPrefill?.key}
+                onSelectedReasonChange={setSelectedOfferReason}
               />
             </div>
           </section>

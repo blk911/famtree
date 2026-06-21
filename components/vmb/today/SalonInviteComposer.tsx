@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { TaikosOpportunity } from "@/lib/taikos/opportunities/types";
+import type { TaikosOpportunity, TaikosOpportunityCategory } from "@/lib/taikos/opportunities/types";
 import type { VmbService } from "@/lib/vmb/services/service-types";
 import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
 
 type Props = {
   salonName: string;
   analysisId?: string;
-  opportunities: TaikosOpportunity[];
+  selectedReason: SalonInviteReasonId;
+  prefillOpportunity?: TaikosOpportunity | null;
+  prefillKey?: number;
+  onSelectedReasonChange: (reason: SalonInviteReasonId) => void;
 };
 
-type ReasonId =
+export type SalonInviteReasonId =
   | "new-client"
   | "birthday"
   | "pcn"
@@ -22,7 +25,7 @@ type ReasonId =
   | "open-chair"
   | "custom";
 
-const REASON_LABELS: Record<ReasonId, string> = {
+export const SALON_INVITE_REASON_LABELS: Record<SalonInviteReasonId, string> = {
   "new-client": "New Client Offer",
   birthday: "Birthday / Event",
   pcn: "Private Client Invite",
@@ -34,7 +37,32 @@ const REASON_LABELS: Record<ReasonId, string> = {
   custom: "Custom",
 };
 
-function defaultTitle(reason: ReasonId, clientName: string): string {
+const CATEGORY_TO_REASON: Partial<Record<TaikosOpportunityCategory, SalonInviteReasonId>> = {
+  Birthday: "birthday",
+  "PCN Invite": "pcn",
+  Referral: "referral",
+  Reactivation: "reactivation",
+  Retention: "refresh",
+  "Open Slot": "open-chair",
+};
+
+export function salonInviteReasonForOpportunity(
+  opportunity: TaikosOpportunity,
+): SalonInviteReasonId | null {
+  return CATEGORY_TO_REASON[opportunity.category] ?? null;
+}
+
+export function clientNameFromInviteOpportunity(opportunity: TaikosOpportunity | undefined): string {
+  if (!opportunity) return "";
+  const rec = opportunity.recommendation.trim();
+  const singleMatch = rec.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:is|has)\b/);
+  if (singleMatch?.[1]) return singleMatch[1];
+  const pairMatch = rec.match(/^([A-Z][a-z]+)\s+and\s+([A-Z][a-z]+)\b/);
+  if (pairMatch) return `${pairMatch[1]} & ${pairMatch[2]}`;
+  return "";
+}
+
+function defaultTitle(reason: SalonInviteReasonId, clientName: string): string {
   const who = clientName.trim() || "your client";
   switch (reason) {
     case "new-client":
@@ -58,7 +86,7 @@ function defaultTitle(reason: ReasonId, clientName: string): string {
   }
 }
 
-function defaultMessage(reason: ReasonId, salonName: string): string {
+function defaultMessage(reason: SalonInviteReasonId, salonName: string): string {
   switch (reason) {
     case "new-client":
       return `I put together a new client offer from ${salonName} so your first visit is easy to book.`;
@@ -86,15 +114,21 @@ function contactSummary(email: string, phone: string): string {
   return parts.length > 0 ? parts.join(" / ") : "No contact yet";
 }
 
-export function SalonInviteComposer({ salonName, analysisId }: Props) {
+export function SalonInviteComposer({
+  salonName,
+  analysisId,
+  selectedReason,
+  prefillOpportunity,
+  prefillKey,
+  onSelectedReasonChange,
+}: Props) {
   const [services, setServices] = useState<VmbService[]>([]);
   const [options, setOptions] = useState<VmbServiceOption[]>([]);
   const [clientName, setClientName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [reason, setReason] = useState<ReasonId>("new-client");
-  const [title, setTitle] = useState(defaultTitle("new-client", ""));
-  const [message, setMessage] = useState(defaultMessage("new-client", salonName));
+  const [title, setTitle] = useState(defaultTitle(selectedReason, ""));
+  const [message, setMessage] = useState(defaultMessage(selectedReason, salonName));
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [selectedOptionId, setSelectedOptionId] = useState("");
   const [offerPreviewOpen, setOfferPreviewOpen] = useState(false);
@@ -132,12 +166,27 @@ export function SalonInviteComposer({ salonName, analysisId }: Props) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!prefillOpportunity) return;
+    const nextReason = salonInviteReasonForOpportunity(prefillOpportunity);
+    const nextClient = clientNameFromInviteOpportunity(prefillOpportunity);
+    if (nextReason) {
+      onSelectedReasonChange(nextReason);
+    }
+    if (nextClient) {
+      setClientName(nextClient);
+    }
+    setTitle(defaultTitle(nextReason ?? selectedReason, nextClient));
+    setMessage(prefillOpportunity.recommendation || defaultMessage(nextReason ?? selectedReason, salonName));
+    setStatus(null);
+  }, [prefillKey]);
+
   const selectedService = services.find((service) => service.id === selectedServiceId);
   const selectedOption = options.find((option) => option.id === selectedOptionId);
   const canSend = clientName.trim().length > 0 && title.trim().length > 0 && message.trim().length > 0;
 
-  function selectReason(nextReason: ReasonId) {
-    setReason(nextReason);
+  function selectReason(nextReason: SalonInviteReasonId) {
+    onSelectedReasonChange(nextReason);
     setTitle(defaultTitle(nextReason, clientName));
     setMessage(defaultMessage(nextReason, salonName));
     setStatus(null);
@@ -156,8 +205,8 @@ export function SalonInviteComposer({ salonName, analysisId }: Props) {
           eventType: "invite_created",
           payload: {
             clientName: clientName.trim(),
-            inviteCategory: reason,
-            templateType: REASON_LABELS[reason],
+            inviteCategory: selectedReason,
+            templateType: SALON_INVITE_REASON_LABELS[selectedReason],
             analysisId,
             sourcePage: "vmb-today-salon-invite-composer",
             salonDisplayName: salonName,
@@ -210,8 +259,8 @@ export function SalonInviteComposer({ salonName, analysisId }: Props) {
 
       <label className="vmb-today-invite-composer__field">
         <span>Choose offer</span>
-        <select value={reason} onChange={(event) => selectReason(event.target.value as ReasonId)}>
-          {Object.entries(REASON_LABELS).map(([value, label]) => (
+        <select value={selectedReason} onChange={(event) => selectReason(event.target.value as SalonInviteReasonId)}>
+          {Object.entries(SALON_INVITE_REASON_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
               {label}
             </option>
@@ -260,7 +309,7 @@ export function SalonInviteComposer({ salonName, analysisId }: Props) {
           <div className="vmb-today-offer-modal__panel">
             <div className="vmb-today-offer-modal__head">
               <div>
-                <p>{REASON_LABELS[reason]}</p>
+                <p>{SALON_INVITE_REASON_LABELS[selectedReason]}</p>
                 <h3>{title || "Invite title"}</h3>
               </div>
               <button type="button" onClick={() => setOfferPreviewOpen(false)}>
