@@ -30,7 +30,7 @@ export function clientNameFromOpportunity(opportunity: TaikosOpportunity): strin
     case "Open Slot":
       return "Open calendar";
     case "PCN Invite":
-      return "PCN prospects";
+      return "Private Client Invite";
     case "Birthday":
       return "Birthday client";
     case "Retention":

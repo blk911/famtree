@@ -40,6 +40,10 @@ function actionButtonStyle(variant: "primary" | "default" = "default"): CSSPrope
   };
 }
 
+function displayTouchPointName(name: string): string {
+  return name === "Private Client Network" ? "Private Client Invite" : name;
+}
+
 export function PublishedInvitationInventoryCard({
   copy,
   tokenContext,
@@ -54,6 +58,7 @@ export function PublishedInvitationInventoryCard({
   const pricing = resolveInvitationPricing(copy.snapshot);
   const status = getSalonInviteInventoryStatus(copy);
   const isPaused = status === "paused";
+  const templateName = displayTouchPointName(copy.snapshot.templateName);
 
   return (
     <article
@@ -63,18 +68,19 @@ export function PublishedInvitationInventoryCard({
         border: `1px solid ${isPaused ? "#fcd34d" : VMB_THEME.line}`,
         background: "#fff",
         display: "grid",
-        gap: 14,
+        gridTemplateColumns: "minmax(180px, 0.8fr) minmax(0, 1.2fr)",
+        gap: 16,
         padding: 16,
         minWidth: 0,
       }}
     >
       <SalonInvitationThumbnail snapshot={copy.snapshot} tokenContext={tokenContext} />
 
-      <div style={{ display: "grid", gap: 8 }}>
+      <div style={{ display: "grid", gap: 10, alignContent: "start" }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
           <div style={{ minWidth: 0 }}>
             <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, lineHeight: 1.25 }}>
-              {copy.snapshot.templateName}
+              {templateName}
             </h3>
             <p style={{ margin: "6px 0 0", fontSize: 13, color: VMB_THEME.muted }}>
               v{copy.publishedVersion} · Updated {formatSnapshotUpdatedAt(copy.snapshot)}
@@ -97,44 +103,46 @@ export function PublishedInvitationInventoryCard({
           </span>
         </div>
 
-        {services.length > 0 ? (
-          <InventoryRow label="Target Services" value={services.join(", ")} />
-        ) : null}
-        {rewards.length > 0 ? (
-          <InventoryRow label="Included Rewards" value={rewards.join(", ")} />
-        ) : null}
-        {copy.snapshot.expirationLabel ? (
-          <InventoryRow label="Expiration" value={copy.snapshot.expirationLabel} />
-        ) : null}
-        <InventoryRow label="Value" value={pricing.valueLabel} />
-        {pricing.savingsAmount > 0 ? (
-          <InventoryRow label="Savings" value={formatInvitationPrice(pricing.savingsAmount)} />
-        ) : null}
-        <InventoryRow label="Offer" value={pricing.priceLabel} />
-      </div>
+        <div className="vmb-published-invite-card__detail-grid">
+          {services.length > 0 ? (
+            <InventoryRow label="Services" value={services.join(", ")} />
+          ) : null}
+          {rewards.length > 0 ? (
+            <InventoryRow label="Rewards" value={rewards.join(", ")} />
+          ) : null}
+          {copy.snapshot.expirationLabel ? (
+            <InventoryRow label="Expiration" value={copy.snapshot.expirationLabel} />
+          ) : null}
+          <InventoryRow label="Value" value={pricing.valueLabel} />
+          {pricing.savingsAmount > 0 ? (
+            <InventoryRow label="Savings" value={formatInvitationPrice(pricing.savingsAmount)} />
+          ) : null}
+          <InventoryRow label="Offer" value={pricing.priceLabel} />
+        </div>
 
-      <footer
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 8,
-          paddingTop: 4,
-          borderTop: `1px solid ${VMB_THEME.line}`,
-        }}
-      >
-        <button type="button" disabled={busy} onClick={onPreview} style={actionButtonStyle()}>
-          Preview
-        </button>
-        <button type="button" disabled={busy} onClick={onEditCopy} style={actionButtonStyle()}>
-          Edit Copy
-        </button>
-        <button type="button" disabled={busy} onClick={onPause} style={actionButtonStyle()}>
-          {isPaused ? "Resume" : "Pause"}
-        </button>
-        <button type="button" disabled={busy} onClick={onDuplicate} style={actionButtonStyle()}>
-          Duplicate
-        </button>
-      </footer>
+        <footer
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8,
+            paddingTop: 8,
+            borderTop: `1px solid ${VMB_THEME.line}`,
+          }}
+        >
+          <button type="button" disabled={busy} onClick={onPreview} style={actionButtonStyle()}>
+            Preview
+          </button>
+          <button type="button" disabled={busy} onClick={onEditCopy} style={actionButtonStyle()}>
+            Edit Copy
+          </button>
+          <button type="button" disabled={busy} onClick={onPause} style={actionButtonStyle()}>
+            {isPaused ? "Resume" : "Pause"}
+          </button>
+          <button type="button" disabled={busy} onClick={onDuplicate} style={actionButtonStyle()}>
+            Duplicate
+          </button>
+        </footer>
+      </div>
     </article>
   );
 }

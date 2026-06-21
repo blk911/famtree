@@ -110,7 +110,7 @@ export function opportunityReasonHeadline(opportunity: TaikosOpportunity): strin
   }
 
   if (opportunity.category === "PCN Invite") {
-    return "PCN invite candidate";
+    return "Private client invite candidate";
   }
 
   if (opportunity.category === "Referral" || lower.includes("referral")) {

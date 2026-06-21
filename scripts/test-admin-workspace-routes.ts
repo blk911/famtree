@@ -318,8 +318,8 @@ function run(): void {
   );
 
   assert(librarySource.includes("Publish verification"), "library shows publish verification note");
-  assert(librarySource.includes("Salon copy ID"), "library publish note includes copy id");
-  assert(librarySource.includes("Target salon"), "library publish note includes target salon");
+  assert(librarySource.includes("<dt>Copy</dt>"), "library publish note includes copy id");
+  assert(librarySource.includes("<dt>Salon</dt>"), "library publish note includes target salon");
 
   const serviceCatalogSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/PlatformServiceCatalogClient.tsx"),

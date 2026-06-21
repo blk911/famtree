@@ -776,7 +776,7 @@ async function run(): Promise<void> {
   const pcnSnapshot = {
     ...savedOffer.inviteSnapshot!,
     sourceTemplateId: "nails-private-client-network",
-    templateName: "Private Client Network",
+    templateName: "Private Client Invite",
     version: 2,
   };
   const pcnCopy = createSalonLocalCopy(pcnSnapshot, "salon-123");
@@ -881,7 +881,7 @@ async function run(): Promise<void> {
   const templateId = "nails-private-client-network";
   const pcnDraft = {
     templateId,
-    displayName: "Private Client Network",
+    displayName: "Private Client Invite",
     headline: "Join my network",
     body: "Exclusive access for you",
     ctaLabel: "Join now",
@@ -1000,8 +1000,8 @@ async function run(): Promise<void> {
     opportunityType: "PCN",
     sourceCopyId: "copy-pcn-v1",
     sourceTemplateId: "nails-private-client-network",
-    snapshot: { ...approvalSnapshot, templateName: "Private Client Network", status: "published", version: 2 },
-    reasonText: "PCN invite candidate",
+    snapshot: { ...approvalSnapshot, templateName: "Private Client Invite", status: "published", version: 2 },
+    reasonText: "Private client invite candidate",
     estimatedValue: 120,
     status: "paused",
   });
@@ -1054,8 +1054,8 @@ async function run(): Promise<void> {
     opportunityType: "PCN",
     sourceCopyId: "copy-pcn-v1",
     sourceTemplateId: "nails-private-client-network",
-    snapshot: { ...approvalSnapshot, ownerName: "Jenny Nguyen", templateName: "Private Client Network", status: "published", version: 2 },
-    reasonText: "PCN invite candidate",
+    snapshot: { ...approvalSnapshot, ownerName: "Jenny Nguyen", templateName: "Private Client Invite", status: "published", version: 2 },
+    reasonText: "Private client invite candidate",
     status: "approved",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

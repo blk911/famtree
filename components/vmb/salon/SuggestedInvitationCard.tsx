@@ -38,6 +38,10 @@ type Props = {
 
 const APPROVE_DISABLED_HINT = "Publish this invitation from Admin Library before approving.";
 
+function displayTouchPointName(name: string): string {
+  return name === "Private Client Network" ? "Private Client Invite" : name;
+}
+
 
 
 export function SuggestedInvitationCard({
@@ -63,6 +67,7 @@ export function SuggestedInvitationCard({
   const hasPublishedTemplate = Boolean(recommendation.publishedCopy);
 
   const canApprove = hasPublishedTemplate && !approveSuccess;
+  const templateName = displayTouchPointName(recommendation.templateName);
 
 
 
@@ -101,7 +106,7 @@ export function SuggestedInvitationCard({
         </div>
 
         <div className="vmb-suggested-invite-card__compact-lines">
-          <span>{recommendation.templateName}</span>
+          <span>{templateName}</span>
           {recommendation.services.length > 0 ? <span>{recommendation.services.slice(0, 2).join(", ")}</span> : null}
           {recommendation.pricing ? (
             <span>{recommendation.pricing.priceLabel} offer</span>
@@ -157,7 +162,7 @@ export function SuggestedInvitationCard({
 
         <dl className="vmb-suggested-invite-card__details">
 
-          <DetailRow label="Suggested Invitation" value={recommendation.templateName} />
+          <DetailRow label="Suggested Invitation" value={templateName} />
 
           {recommendation.services.length > 0 ? (
 

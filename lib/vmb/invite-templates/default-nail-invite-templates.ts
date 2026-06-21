@@ -32,7 +32,7 @@ function template(
 
 export const DEFAULT_NAIL_INVITE_TEMPLATES: VmbInviteTemplate[] = [
   template("private_client_network", {
-    displayName: "Private Client Network",
+    displayName: "Private Client Invite",
     intent: "Invite a trusted client into the salon's private client network.",
     subject: "You're invited to {salonName}'s private client network",
     eyebrow: "Private Client Network",

@@ -33,6 +33,10 @@ type PublishVerification = {
   salonId: string;
 };
 
+function displayTouchPointName(name: string): string {
+  return name === "Private Client Network" ? "Private Client Invite" : name;
+}
+
 export function NailsLibraryAdminClient({
   salonId,
   salonName,
@@ -148,6 +152,9 @@ export function NailsLibraryAdminClient({
             <ul>
               {savedDrafts.map((row) => {
                 const assetPricing = resolveAdminDefaultInvitationPackageWithPricing(row.templateId)?.pricing;
+                const isPublishedSelected =
+                  publishVerification?.copy.sourceTemplateId === row.templateId &&
+                  selected?.templateId === row.templateId;
                 return (
                 <li key={row.templateId}>
                   <button
@@ -155,7 +162,12 @@ export function NailsLibraryAdminClient({
                     className={`vmb-admin-builder-grid__type${selected?.templateId === row.templateId ? " vmb-admin-builder-grid__type--active" : ""}`}
                     onClick={() => setSelectedTemplateId(row.templateId)}
                   >
-                    {row.displayName}
+                    <span className="vmb-nails-library__asset-title">
+                      {displayTouchPointName(row.displayName)}
+                      {isPublishedSelected ? (
+                        <span className="vmb-nails-library__published-indicator">Published</span>
+                      ) : null}
+                    </span>
                     {assetPricing ? (
                       <span className="vmb-nails-library__asset-pricing">
                         Value {assetPricing.valueLabel} · Offer {assetPricing.priceLabel}
@@ -173,13 +185,13 @@ export function NailsLibraryAdminClient({
         <section className="vmb-admin-builder-grid__editor vmb-nails-library__detail">
           {selected && librarySnapshot ? (
             <>
-              <h2 className="vmb-admin-builder__panel-title">{librarySnapshot.templateName}</h2>
+              <h2 className="vmb-admin-builder__panel-title">{displayTouchPointName(librarySnapshot.templateName)}</h2>
               <p className="vmb-nails-library__status">Finished asset in master inventory.</p>
 
               <dl className="vmb-nails-library__meta vmb-nails-library__meta--compact">
                 <div>
                   <dt>Template name</dt>
-                  <dd>{librarySnapshot.templateName}</dd>
+                  <dd>{displayTouchPointName(librarySnapshot.templateName)}</dd>
                 </div>
                 <div>
                   <dt>Status</dt>
@@ -243,6 +255,11 @@ export function NailsLibraryAdminClient({
                 >
                   {publishBusy ? "Publishing…" : "Publish To Salons"}
                 </button>
+                {publishVerification?.copy.sourceTemplateId === selected.templateId ? (
+                  <span className="vmb-nails-library__published-indicator vmb-nails-library__published-indicator--inline">
+                    Published
+                  </span>
+                ) : null}
               </div>
               {publishVerification ? (
                 <div className="vmb-nails-library__publish-verify" aria-live="polite">
