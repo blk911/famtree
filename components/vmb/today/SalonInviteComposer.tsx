@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { TaikosOpportunity, TaikosOpportunityCategory } from "@/lib/taikos/opportunities/types";
+import { useEffect, useState } from "react";
+import type { TaikosOpportunity } from "@/lib/taikos/opportunities/types";
 import type { VmbService } from "@/lib/vmb/services/service-types";
 import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
 
@@ -22,8 +22,6 @@ type ReasonId =
   | "open-chair"
   | "custom";
 
-type PresetKind = "events" | "launch" | "referral";
-
 const REASON_LABELS: Record<ReasonId, string> = {
   "new-client": "New Client Offer",
   birthday: "Birthday / Event",
@@ -35,29 +33,6 @@ const REASON_LABELS: Record<ReasonId, string> = {
   "open-chair": "Open Chair",
   custom: "Custom",
 };
-
-const CATEGORY_TO_REASON: Partial<Record<TaikosOpportunityCategory, ReasonId>> = {
-  Birthday: "birthday",
-  "PCN Invite": "pcn",
-  Referral: "referral",
-  Reactivation: "reactivation",
-  Retention: "refresh",
-  "Open Slot": "open-chair",
-};
-
-function opportunityClientName(opportunity: TaikosOpportunity | undefined): string {
-  if (!opportunity) return "";
-  const rec = opportunity.recommendation.trim();
-  const singleMatch = rec.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:is|has)\b/);
-  if (singleMatch?.[1]) return singleMatch[1];
-  const pairMatch = rec.match(/^([A-Z][a-z]+)\s+and\s+([A-Z][a-z]+)\b/);
-  if (pairMatch) return `${pairMatch[1]} & ${pairMatch[2]}`;
-  return "";
-}
-
-function findOpportunity(opportunities: TaikosOpportunity[], categories: TaikosOpportunityCategory[]) {
-  return opportunities.find((opportunity) => categories.includes(opportunity.category));
-}
 
 function defaultTitle(reason: ReasonId, clientName: string): string {
   const who = clientName.trim() || "your client";
@@ -111,7 +86,7 @@ function contactSummary(email: string, phone: string): string {
   return parts.length > 0 ? parts.join(" / ") : "No contact yet";
 }
 
-export function SalonInviteComposer({ salonName, analysisId, opportunities }: Props) {
+export function SalonInviteComposer({ salonName, analysisId }: Props) {
   const [services, setServices] = useState<VmbService[]>([]);
   const [options, setOptions] = useState<VmbServiceOption[]>([]);
   const [clientName, setClientName] = useState("");
@@ -157,32 +132,9 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
     };
   }, []);
 
-  const presets = useMemo(() => {
-    const eventOpportunity = findOpportunity(opportunities, ["Birthday", "Reactivation", "Retention", "Open Slot"]);
-    const launchOpportunity = findOpportunity(opportunities, ["PCN Invite"]);
-    const referralOpportunity = findOpportunity(opportunities, ["Referral"]);
-    return [
-      { kind: "events" as const, label: "Events", opportunity: eventOpportunity },
-      { kind: "launch" as const, label: "Launch", opportunity: launchOpportunity },
-      { kind: "referral" as const, label: "Referral", opportunity: referralOpportunity },
-    ];
-  }, [opportunities]);
-
   const selectedService = services.find((service) => service.id === selectedServiceId);
   const selectedOption = options.find((option) => option.id === selectedOptionId);
   const canSend = clientName.trim().length > 0 && title.trim().length > 0 && message.trim().length > 0;
-
-  function applyPreset(kind: PresetKind) {
-    const preset = presets.find((item) => item.kind === kind);
-    const opportunity = preset?.opportunity;
-    const nextReason = CATEGORY_TO_REASON[opportunity?.category ?? "PCN Invite"] ?? "pcn";
-    const nextClient = opportunityClientName(opportunity);
-    setReason(nextReason);
-    if (nextClient) setClientName(nextClient);
-    setTitle(defaultTitle(nextReason, nextClient));
-    setMessage(opportunity?.recommendation || defaultMessage(nextReason, salonName));
-    setStatus(null);
-  }
 
   function selectReason(nextReason: ReasonId) {
     setReason(nextReason);
@@ -266,15 +218,6 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
           ))}
         </select>
       </label>
-
-      <div className="vmb-today-invite-composer__presets" aria-label="TAIKOS priority fill">
-        {presets.map((preset) => (
-          <button key={preset.kind} type="button" onClick={() => applyPreset(preset.kind)}>
-            <strong>{preset.label}</strong>
-            <span>{preset.opportunity ? preset.opportunity.title : "No priority found"}</span>
-          </button>
-        ))}
-      </div>
 
       <div className="vmb-today-invite-composer__grid vmb-today-invite-composer__grid--contact">
         <label>
