@@ -362,7 +362,7 @@ export function VmbTodayClient({
   }, [data?.opportunitySummary.opportunities, selectedOfferReason]);
 
   return (
-    <VmbPageFrame width="wide" headerless>
+    <VmbPageFrame width="full" headerless>
       <header className="vmb-page-frame__header">
         {!todayUnlocked ? (
           <>

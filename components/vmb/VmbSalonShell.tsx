@@ -64,6 +64,7 @@ export function VmbSalonShell({ children }: Props) {
   const mobileNav = VMB_SALON_NAV.filter((item) =>
     (VMB_SALON_MOBILE_NAV_IDS as readonly string[]).includes(item.id),
   );
+  const hideSummaryRail = pathname === "/vmb/today" || pathname.startsWith("/vmb/today/");
 
   return (
     <div
@@ -170,7 +171,7 @@ export function VmbSalonShell({ children }: Props) {
           <main className={`vmb-salon-content${railOpen ? "" : ""}`}>
             <div className="vmb-salon-page-body">{children}</div>
           </main>
-          <VmbSummaryRail />
+          {hideSummaryRail ? null : <VmbSummaryRail />}
         </div>
 
         <nav className="vmb-salon-mobile-nav" aria-label="Quick salon navigation">
