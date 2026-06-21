@@ -68,6 +68,10 @@ export function AdminDefaultPackageSummary({
 
   const rewards = resolveNailOfferAddonLabels(pkg.serviceOptionIds, rewardFallbackById);
 
+  const serviceLabel = services.length > 0 ? services.join(", ") : "—";
+
+  const rewardLabel = rewards.length > 0 ? rewards.join(", ") : "";
+
 
 
   return (
@@ -78,27 +82,11 @@ export function AdminDefaultPackageSummary({
 
       <dl className="vmb-admin-default-package__list">
 
-        <div>
+        <div className="vmb-admin-default-package__service-stack">
 
-          <dt>Services</dt>
+          <dd className="vmb-admin-default-package__service">{serviceLabel}</dd>
 
-          <dd>{services.length > 0 ? services.join(", ") : "—"}</dd>
-
-        </div>
-
-        <div>
-
-          <dt>Add-ons</dt>
-
-          <dd>{rewards.length > 0 ? rewards.join(", ") : "—"}</dd>
-
-        </div>
-
-        <div>
-
-          <dt>Expiration</dt>
-
-          <dd>{pkg.expirationLabel}</dd>
+          {rewardLabel ? <dd className="vmb-admin-default-package__reward">{rewardLabel}</dd> : null}
 
         </div>
 
@@ -133,6 +121,14 @@ export function AdminDefaultPackageSummary({
           </>
 
         ) : null}
+
+        <div className="vmb-admin-default-package__expiration">
+
+          <dt>Expiration</dt>
+
+          <dd>{pkg.expirationLabel}</dd>
+
+        </div>
 
         {pkg.priceLabel?.trim() ? (
 

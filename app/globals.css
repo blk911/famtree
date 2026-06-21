@@ -10072,7 +10072,7 @@
 
 .vmb-admin-default-package__title {
   margin: 0 0 8px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -10081,18 +10081,24 @@
 
 .vmb-admin-default-package__list {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(64px, 0.5fr));
-  gap: 8px 14px;
+  grid-template-columns: minmax(160px, 210px) repeat(3, 84px) minmax(0, 1fr);
+  gap: 8px 16px;
   align-items: start;
   margin: 0;
 }
 
-.vmb-admin-default-package__list > div:not(.vmb-admin-default-package__price):not(.vmb-admin-default-package__caption) {
+.vmb-admin-default-package__service-stack {
   grid-column: 1;
+  grid-row: 1;
 }
 
 .vmb-admin-default-package__price {
   grid-row: 1;
+}
+
+.vmb-admin-default-package__expiration {
+  grid-column: 2 / 5;
+  grid-row: 2;
 }
 
 .vmb-admin-default-package__caption {
@@ -10103,16 +10109,25 @@
 
 .vmb-admin-default-package__list dt {
   margin: 0 0 2px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: #78716c;
 }
 
 .vmb-admin-default-package__list dd {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: #1c1917;
   line-height: 1.35;
+}
+
+.vmb-admin-default-package__service {
+  font-weight: 700;
+}
+
+.vmb-admin-default-package__reward {
+  margin-top: 6px !important;
+  font-weight: 600;
 }
 
 @media (max-width: 767px) {
@@ -10120,8 +10135,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .vmb-admin-default-package__list > div:not(.vmb-admin-default-package__price):not(.vmb-admin-default-package__caption) {
+  .vmb-admin-default-package__service-stack,
+  .vmb-admin-default-package__expiration {
     grid-column: auto;
+    grid-row: auto;
   }
 
   .vmb-admin-default-package__price {

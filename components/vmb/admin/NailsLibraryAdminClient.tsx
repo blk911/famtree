@@ -13,6 +13,10 @@ import {
 } from "@/lib/vmb/admin/nail-template-routes";
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
+import {
+  normalizeSourceTemplateId,
+  templateKeysForPublishedCopy,
+} from "@/lib/vmb/invites/published-copy-matching";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 import type { SalonInviteCopyBackend } from "@/lib/vmb/invites/salon-invite-local-copy-store";
 import {
@@ -40,6 +44,31 @@ function formatPublishedDate(value: string): string {
   }).format(date);
 }
 
+function publishedCopyForTemplate(
+  copies: SalonInviteLocalCopy[],
+  templateId: string | undefined,
+): SalonInviteLocalCopy | null {
+  const normalizedTemplateId = normalizeSourceTemplateId(templateId) ?? templateId;
+  if (!normalizedTemplateId) return null;
+  return (
+    copies.find((copy) => templateKeysForPublishedCopy(copy).includes(normalizedTemplateId)) ?? null
+  );
+}
+
+function mergePublishedCopy(
+  copies: SalonInviteLocalCopy[],
+  nextCopy: SalonInviteLocalCopy,
+): SalonInviteLocalCopy[] {
+  const nextKeys = templateKeysForPublishedCopy(nextCopy);
+  return [
+    nextCopy,
+    ...copies.filter((copy) => {
+      const keys = templateKeysForPublishedCopy(copy);
+      return !keys.some((key) => nextKeys.includes(key));
+    }),
+  ];
+}
+
 export function NailsLibraryAdminClient({
   salonId,
   salonName,
@@ -52,7 +81,7 @@ export function NailsLibraryAdminClient({
   );
   const [reviewOpen, setReviewOpen] = useState(false);
   const [publishStatus, setPublishStatus] = useState<string | null>(null);
-  const [publishedCopy, setPublishedCopy] = useState<SalonInviteLocalCopy | null>(null);
+  const [publishedCopies, setPublishedCopies] = useState<SalonInviteLocalCopy[]>([]);
   const [publishBusy, setPublishBusy] = useState(false);
 
   const savedDrafts = useMemo(() => drafts.filter((row) => row.saved), [drafts]);
@@ -69,10 +98,30 @@ export function NailsLibraryAdminClient({
     [selectedTemplateId],
   );
 
+  const selectedPublishedCopy = useMemo(
+    () => publishedCopyForTemplate(publishedCopies, selected?.templateId),
+    [publishedCopies, selected?.templateId],
+  );
+
   useEffect(() => {
-    setPublishedCopy(null);
     setPublishStatus(null);
   }, [selectedTemplateId]);
+
+  useEffect(() => {
+    if (!salonId) return;
+    let cancelled = false;
+    async function loadPublishedCopies() {
+      const res = await fetch("/api/vmb/salon-invites", { cache: "no-store", credentials: "include" });
+      const data = (await res.json()) as { ok?: boolean; copies?: SalonInviteLocalCopy[] };
+      if (!cancelled && data.ok && Array.isArray(data.copies)) {
+        setPublishedCopies(data.copies);
+      }
+    }
+    void loadPublishedCopies();
+    return () => {
+      cancelled = true;
+    };
+  }, [salonId]);
 
   const tokenContext = useMemo(
     () => ({
@@ -87,7 +136,6 @@ export function NailsLibraryAdminClient({
     if (!librarySnapshot || !salonId || !selected) return;
     setPublishBusy(true);
     setPublishStatus(null);
-    setPublishedCopy(null);
     const res = await fetch("/api/vmb/invite-library/publish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -105,7 +153,7 @@ export function NailsLibraryAdminClient({
     };
     setPublishBusy(false);
     if (data.ok && data.copy && data.backend && data.salonId) {
-      setPublishedCopy(data.copy);
+      setPublishedCopies((copies) => mergePublishedCopy(copies, data.copy!));
       setPublishStatus(null);
     } else {
       setPublishStatus(data.error ?? "Publish failed.");
@@ -151,7 +199,8 @@ export function NailsLibraryAdminClient({
             <ul>
               {savedDrafts.map((row) => {
                 const assetPricing = resolveAdminDefaultInvitationPackageWithPricing(row.templateId)?.pricing;
-                const isPublished = publishedCopy?.sourceTemplateId === row.templateId;
+                const rowPublishedCopy = publishedCopyForTemplate(publishedCopies, row.templateId);
+                const isPublished = Boolean(rowPublishedCopy);
                 return (
                 <li key={row.templateId}>
                   <button
@@ -193,8 +242,8 @@ export function NailsLibraryAdminClient({
                 <div>
                   <dt>Status</dt>
                   <dd>
-                    {publishedCopy?.sourceTemplateId === selected.templateId
-                      ? `Published ${formatPublishedDate(publishedCopy.createdAt)}`
+                    {selectedPublishedCopy
+                      ? `Published ${formatPublishedDate(selectedPublishedCopy.createdAt)}`
                       : "Unpublished"}
                   </dd>
                 </div>
