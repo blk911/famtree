@@ -234,7 +234,24 @@ export function buildSuggestedInvitationsFromOpportunities(
     });
   }
 
-  return rows.sort((a, b) => {
+  const dedupedRows = rows.filter((row, index, allRows) => {
+    const key = [
+      row.templateId,
+      normalizeClientName(row.clientName),
+      row.reasonHeadline.trim().toLowerCase(),
+      row.pricing?.priceLabel ?? "",
+    ].join("|");
+    return (
+      allRows.findIndex((candidate) => [
+        candidate.templateId,
+        normalizeClientName(candidate.clientName),
+        candidate.reasonHeadline.trim().toLowerCase(),
+        candidate.pricing?.priceLabel ?? "",
+      ].join("|") === key) === index
+    );
+  });
+
+  return dedupedRows.sort((a, b) => {
     const priorityDelta = PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority];
     if (priorityDelta !== 0) return priorityDelta;
     return b.estimatedValue - a.estimatedValue;

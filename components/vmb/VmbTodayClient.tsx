@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
 import { TodayCommandCenter } from "@/components/vmb/today/TodayCommandCenter";
+import { SalonInviteComposer } from "@/components/vmb/today/SalonInviteComposer";
 import { ActivityTimeline } from "@/components/taikos/activity/ActivityTimeline";
 import { InlineAiosPanel } from "@/components/taikos/InlineAiosPanel";
 import { TaikosInsightList } from "@/components/taikos/coda/TaikosInsightList";
@@ -430,17 +431,24 @@ export function VmbTodayClient({
           </div>
 
           <section className="today-greeting-card today-greeting-card--brief" aria-label="Suggested next move">
-            <TodayCodaBanner
-              coda={codaSummary}
-              operatorName={operatorName}
-              salonName={salonName}
-              analysisId={activeAnalysisId}
-              showAskReminder={showTaikosReminder}
-              onQuestionAnswer={setActiveQuestionResult}
-              onPreviewFirstCard={() => setPreviewFirstCardSignal((n) => n + 1)}
-              onPreviewSuggestedCard={setQaPreviewAction}
-              onAnswerActiveChange={setHasActiveTaikosAnswer}
-            />
+            <div className="vmb-today-action-layout">
+              <TodayCodaBanner
+                coda={codaSummary}
+                operatorName={operatorName}
+                salonName={salonName}
+                analysisId={activeAnalysisId}
+                showAskReminder={showTaikosReminder}
+                onQuestionAnswer={setActiveQuestionResult}
+                onPreviewFirstCard={() => setPreviewFirstCardSignal((n) => n + 1)}
+                onPreviewSuggestedCard={setQaPreviewAction}
+                onAnswerActiveChange={setHasActiveTaikosAnswer}
+              />
+              <SalonInviteComposer
+                salonName={salonName}
+                analysisId={resolvedAnalysisId}
+                opportunities={data?.opportunitySummary.opportunities ?? []}
+              />
+            </div>
           </section>
 
           {commandCenter ? <TodayCommandCenter snapshot={commandCenter} /> : null}

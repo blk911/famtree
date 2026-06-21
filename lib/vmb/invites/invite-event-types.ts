@@ -26,6 +26,13 @@ export type InviteEventPayload = {
   salonDisplayName?: string;
   recipientContactSummary?: string;
   recipientContactHash?: string;
+  recipientEmail?: string;
+  recipientPhone?: string;
+  inviteTitle?: string;
+  inviteMessage?: string;
+  selectedService?: string;
+  selectedReward?: string;
+  deliveryStatus?: string;
 };
 
 export type VmbInviteEvent = {
@@ -59,6 +66,13 @@ export function isInviteEventPayload(value: unknown): value is InviteEventPayloa
     "salonDisplayName",
     "recipientContactSummary",
     "recipientContactHash",
+    "recipientEmail",
+    "recipientPhone",
+    "inviteTitle",
+    "inviteMessage",
+    "selectedService",
+    "selectedReward",
+    "deliveryStatus",
   ];
   return stringFields.every((field) => payload[field] === undefined || typeof payload[field] === "string");
 }

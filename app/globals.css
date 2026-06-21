@@ -1430,10 +1430,186 @@
   min-height: 220px;
 }
 
+.vmb-today-action-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.78fr);
+  gap: 18px;
+  align-items: start;
+}
+
 .vmb-today-coda-banner__content {
   flex: 1 1 auto;
   display: grid;
   gap: 8px;
+}
+
+.vmb-today-invite-composer {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #f0d5df;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(253, 242, 248, 0.72), rgba(255, 255, 255, 0.94)),
+    #fff;
+  padding: 16px;
+  box-shadow: 0 16px 34px rgba(131, 24, 67, 0.08);
+}
+
+.vmb-today-invite-composer__head {
+  display: grid;
+  gap: 4px;
+}
+
+.vmb-today-invite-composer__kicker {
+  margin: 0;
+  color: #9d174d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vmb-today-invite-composer__head h2 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.vmb-today-invite-composer__head p {
+  margin: 0;
+  color: #78716c;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.vmb-today-invite-composer__presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.vmb-today-invite-composer__presets button {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  border: 1px solid #f3d0dd;
+  border-radius: 12px;
+  background: #fff;
+  padding: 9px 10px;
+  color: #44403c;
+  cursor: pointer;
+  text-align: left;
+}
+
+.vmb-today-invite-composer__presets strong {
+  color: #831843;
+  font-size: 12px;
+}
+
+.vmb-today-invite-composer__presets span {
+  overflow: hidden;
+  color: #78716c;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vmb-today-invite-composer__grid,
+.vmb-today-invite-composer__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.vmb-today-invite-composer__grid label,
+.vmb-today-invite-composer__options label,
+.vmb-today-invite-composer__field {
+  display: grid;
+  gap: 5px;
+}
+
+.vmb-today-invite-composer__grid span,
+.vmb-today-invite-composer__options span,
+.vmb-today-invite-composer__field span {
+  color: #78716c;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.vmb-today-invite-composer input,
+.vmb-today-invite-composer select,
+.vmb-today-invite-composer textarea {
+  min-width: 0;
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  background: #fff;
+  padding: 9px 10px;
+  color: #292524;
+  font: inherit;
+  font-size: 13px;
+}
+
+.vmb-today-invite-composer textarea {
+  resize: vertical;
+}
+
+.vmb-today-invite-composer__preview {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
+  background: #fff7ed;
+  padding: 11px 12px;
+}
+
+.vmb-today-invite-composer__preview p,
+.vmb-today-invite-composer__preview span {
+  margin: 0;
+  color: #9a3412;
+  font-size: 12px;
+}
+
+.vmb-today-invite-composer__preview strong {
+  color: #292524;
+  font-size: 14px;
+}
+
+.vmb-today-invite-composer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vmb-today-invite-composer__actions button {
+  border: 1px solid #9d174d;
+  border-radius: 10px;
+  background: #9d174d;
+  padding: 9px 12px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.vmb-today-invite-composer__actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.vmb-today-invite-composer__actions .vmb-today-invite-composer__ghost {
+  border-color: #e7e5e4;
+  background: #fff;
+  color: #57534e;
+}
+
+.vmb-today-invite-composer__status {
+  margin: 0;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .vmb-today-coda-banner__hello {
@@ -10139,6 +10315,16 @@
 }
 
 @media (max-width: 767px) {
+  .vmb-today-action-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .vmb-today-invite-composer__presets,
+  .vmb-today-invite-composer__grid,
+  .vmb-today-invite-composer__options {
+    grid-template-columns: 1fr;
+  }
+
   .vmb-admin-default-package__list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
