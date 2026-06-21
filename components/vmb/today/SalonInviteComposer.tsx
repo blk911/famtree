@@ -12,6 +12,7 @@ type Props = {
 };
 
 type ReasonId =
+  | "new-client"
   | "birthday"
   | "pcn"
   | "referral"
@@ -24,6 +25,7 @@ type ReasonId =
 type PresetKind = "events" | "launch" | "referral";
 
 const REASON_LABELS: Record<ReasonId, string> = {
+  "new-client": "New Client Offer",
   birthday: "Birthday / Event",
   pcn: "Private Client Invite",
   referral: "Referral Invite",
@@ -60,6 +62,8 @@ function findOpportunity(opportunities: TaikosOpportunity[], categories: TaikosO
 function defaultTitle(reason: ReasonId, clientName: string): string {
   const who = clientName.trim() || "your client";
   switch (reason) {
+    case "new-client":
+      return `New client offer for ${who}`;
     case "birthday":
       return `A birthday nail treat for ${who}`;
     case "pcn":
@@ -81,6 +85,8 @@ function defaultTitle(reason: ReasonId, clientName: string): string {
 
 function defaultMessage(reason: ReasonId, salonName: string): string {
   switch (reason) {
+    case "new-client":
+      return `I put together a new client offer from ${salonName} so your first visit is easy to book.`;
     case "birthday":
       return `I put together a birthday-ready nail offer from ${salonName}.`;
     case "pcn":
@@ -111,11 +117,12 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
   const [clientName, setClientName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [reason, setReason] = useState<ReasonId>("pcn");
-  const [title, setTitle] = useState(defaultTitle("pcn", ""));
-  const [message, setMessage] = useState(defaultMessage("pcn", salonName));
+  const [reason, setReason] = useState<ReasonId>("new-client");
+  const [title, setTitle] = useState(defaultTitle("new-client", ""));
+  const [message, setMessage] = useState(defaultMessage("new-client", salonName));
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [selectedOptionId, setSelectedOptionId] = useState("");
+  const [offerPreviewOpen, setOfferPreviewOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -177,6 +184,13 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
     setStatus(null);
   }
 
+  function selectReason(nextReason: ReasonId) {
+    setReason(nextReason);
+    setTitle(defaultTitle(nextReason, clientName));
+    setMessage(defaultMessage(nextReason, salonName));
+    setStatus(null);
+  }
+
   async function handleStubSend() {
     if (!canSend) return;
     setSaving(true);
@@ -212,6 +226,7 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
         return;
       }
       setStatus("Invite stub saved internally. Delivery is not live yet.");
+      setOfferPreviewOpen(false);
     } catch {
       setStatus("Could not save invite stub.");
     } finally {
@@ -222,12 +237,37 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
   return (
     <aside className="vmb-today-invite-composer" aria-label="Salon invite composer">
       <div className="vmb-today-invite-composer__head">
-        <p className="vmb-today-invite-composer__kicker">Salon invite</p>
-        <h2>Send your next invite</h2>
-        <p>Stubbed for now: saves the invite internally and activates the client/contact trail.</p>
+        <p className="vmb-today-invite-composer__kicker">Instant conversion link</p>
+        <h2>New Client Offer</h2>
+        <p>Create a claim-ready invite for a client in seconds.</p>
       </div>
 
-      <div className="vmb-today-invite-composer__presets" aria-label="Priority invite actions">
+      <div className="vmb-today-invite-composer__instant">
+        <button
+          type="button"
+          className="vmb-today-invite-composer__primary"
+          onClick={() => {
+            selectReason("new-client");
+            setOfferPreviewOpen(true);
+          }}
+        >
+          New Client Offer
+        </button>
+        <p>Opens the complete offer preview before saving the internal invite.</p>
+      </div>
+
+      <label className="vmb-today-invite-composer__field">
+        <span>Choose offer</span>
+        <select value={reason} onChange={(event) => selectReason(event.target.value as ReasonId)}>
+          {Object.entries(REASON_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="vmb-today-invite-composer__presets" aria-label="TAIKOS priority fill">
         {presets.map((preset) => (
           <button key={preset.kind} type="button" onClick={() => applyPreset(preset.kind)}>
             <strong>{preset.label}</strong>
@@ -236,56 +276,11 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
         ))}
       </div>
 
-      <div className="vmb-today-invite-composer__grid">
+      <div className="vmb-today-invite-composer__grid vmb-today-invite-composer__grid--contact">
         <label>
           <span>Client name</span>
           <input value={clientName} onChange={(event) => setClientName(event.target.value)} />
         </label>
-      </div>
-
-      <section className="vmb-today-invite-composer__feature" aria-label="Invite options and send">
-        <div className="vmb-today-invite-composer__options">
-          <label>
-            <span>Active service</span>
-            <select value={selectedServiceId} onChange={(event) => setSelectedServiceId(event.target.value)}>
-              {services.length === 0 ? <option value="">No active services</option> : null}
-              {services.map((service) => (
-                <option key={service.id} value={service.id}>
-                  {service.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>Reward / option</span>
-            <select value={selectedOptionId} onChange={(event) => setSelectedOptionId(event.target.value)}>
-              {options.length === 0 ? <option value="">No active rewards</option> : null}
-              {options.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div className="vmb-today-invite-composer__preview">
-          <p>{REASON_LABELS[reason]}</p>
-          <strong>{title || "Invite title"}</strong>
-          <span>{clientName || "Client name"} · {selectedService?.name || "Service"} · {selectedOption?.name || "Reward"}</span>
-        </div>
-
-        <div className="vmb-today-invite-composer__actions">
-          <button type="button" className="vmb-today-invite-composer__ghost">
-            Preview invite
-          </button>
-          <button type="button" disabled={!canSend || saving} onClick={() => void handleStubSend()}>
-            {saving ? "Saving..." : "Send (stub)"}
-          </button>
-        </div>
-      </section>
-
-      <div className="vmb-today-invite-composer__grid vmb-today-invite-composer__grid--contact">
         <label>
           <span>Email</span>
           <input value={email} onChange={(event) => setEmail(event.target.value)} />
@@ -296,26 +291,16 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
         </label>
       </div>
 
+      <button
+        type="button"
+        className="vmb-today-invite-composer__ghost vmb-today-invite-composer__preview-launch"
+        onClick={() => setOfferPreviewOpen(true)}
+      >
+        Preview selected offer
+      </button>
+
       <details className="vmb-today-invite-composer__message-drawer">
         <summary>Edit reason and message</summary>
-        <label className="vmb-today-invite-composer__field">
-          <span>Reason</span>
-          <select
-            value={reason}
-            onChange={(event) => {
-              const nextReason = event.target.value as ReasonId;
-              setReason(nextReason);
-              setTitle(defaultTitle(nextReason, clientName));
-              setMessage(defaultMessage(nextReason, salonName));
-            }}
-          >
-            {Object.entries(REASON_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
         <label className="vmb-today-invite-composer__field">
           <span>Title</span>
           <input value={title} onChange={(event) => setTitle(event.target.value)} />
@@ -326,6 +311,65 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
         </label>
       </details>
       {status ? <p className="vmb-today-invite-composer__status">{status}</p> : null}
+
+      {offerPreviewOpen ? (
+        <div className="vmb-today-offer-modal" role="dialog" aria-modal="true" aria-label="Offer preview">
+          <div className="vmb-today-offer-modal__panel">
+            <div className="vmb-today-offer-modal__head">
+              <div>
+                <p>{REASON_LABELS[reason]}</p>
+                <h3>{title || "Invite title"}</h3>
+              </div>
+              <button type="button" onClick={() => setOfferPreviewOpen(false)}>
+                Close
+              </button>
+            </div>
+
+            <div className="vmb-today-invite-composer__feature vmb-today-invite-composer__feature--modal">
+              <div className="vmb-today-invite-composer__options">
+                <label>
+                  <span>Active service</span>
+                  <select value={selectedServiceId} onChange={(event) => setSelectedServiceId(event.target.value)}>
+                    {services.length === 0 ? <option value="">No active services</option> : null}
+                    {services.map((service) => (
+                      <option key={service.id} value={service.id}>
+                        {service.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Reward / option</span>
+                  <select value={selectedOptionId} onChange={(event) => setSelectedOptionId(event.target.value)}>
+                    {options.length === 0 ? <option value="">No active rewards</option> : null}
+                    {options.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="vmb-today-invite-composer__preview">
+                <p>{contactSummary(email, phone)}</p>
+                <strong>{clientName || "Client name needed"}</strong>
+                <span>{message}</span>
+                <span>{selectedService?.name || "Service"} · {selectedOption?.name || "Reward"}</span>
+              </div>
+
+              <div className="vmb-today-invite-composer__actions">
+                <button type="button" className="vmb-today-invite-composer__ghost">
+                  Preview invite
+                </button>
+                <button type="button" disabled={!canSend || saving} onClick={() => void handleStubSend()}>
+                  {saving ? "Saving..." : "Send (stub)"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </aside>
   );
 }
