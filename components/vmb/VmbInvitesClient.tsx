@@ -236,6 +236,8 @@ export function VmbInvitesClient({
     [publishedCopies],
   );
 
+  const activeInventoryCopies = matchingPublishedCopies;
+
   const suggestedRecommendations = useMemo(() => {
     const opportunities = opportunitySummary?.opportunities ?? [];
     return buildSuggestedInvitationsFromOpportunities(opportunities, matchingPublishedCopies, {
@@ -531,22 +533,6 @@ export function VmbInvitesClient({
     }
   }
 
-  async function handleInventoryDuplicate(copy: SalonInviteLocalCopy) {
-    setActionBusyId(copy.id);
-    try {
-      const res = await fetch(`/api/vmb/salon-invites/${encodeURIComponent(copy.id)}`, {
-        method: "POST",
-        credentials: "include",
-      });
-      const json = (await res.json()) as { ok?: boolean; copy?: SalonInviteLocalCopy };
-      if (res.ok && json.ok && json.copy) {
-        replacePublishedCopy(json.copy);
-      }
-    } finally {
-      setActionBusyId(null);
-    }
-  }
-
   function handleInventoryEditCopy(copy: SalonInviteLocalCopy) {
     setEditPublishedCopy(copy);
   }
@@ -638,16 +624,27 @@ export function VmbInvitesClient({
             publishedCopies={publishedCopyDebugEntries}
             recommendations={suggestedRecommendations}
           />
-          {publishedCopies.length > 0 ? (
+          {activeInventoryCopies.length > 0 ? (
             <PublishedInvitationsSection
-              copies={publishedCopies}
+              copies={activeInventoryCopies}
               tokenContext={tokenContext}
               actionBusyId={actionBusyId}
               emptyMessage={SUGGESTED_PUBLISHED_EMPTY_MESSAGE}
               onPreview={(copy) => setActivePublishedCopy(copy)}
               onEditCopy={handleInventoryEditCopy}
               onPause={(copy) => void handleInventoryPause(copy)}
-              onDuplicate={(copy) => void handleInventoryDuplicate(copy)}
+            />
+          ) : null}
+          {pausedInventoryCopies.length > 0 ? (
+            <PublishedInvitationsSection
+              title="Paused Invitations"
+              description="Published invitations currently hidden from matching and outreach. Resume when ready."
+              copies={pausedInventoryCopies}
+              tokenContext={tokenContext}
+              actionBusyId={actionBusyId}
+              onPreview={(copy) => setActivePublishedCopy(copy)}
+              onEditCopy={handleInventoryEditCopy}
+              onPause={(copy) => void handleInventoryPause(copy)}
             />
           ) : null}
           <SuggestedMatchesSection
@@ -676,7 +673,9 @@ export function VmbInvitesClient({
           actionBusyId={actionBusyId}
           onPreviewApproval={(approval) => setPreviewApprovalSnapshot(approval.snapshot)}
           onPreviewInventory={(copy) => setActivePublishedCopy(copy)}
+          onEditInventory={handleInventoryEditCopy}
           onResumeApproval={(approval) => void patchApprovalStatus(approval, "resume")}
+          onResumeInventory={(copy) => void handleInventoryPause(copy)}
         />
       ) : tab === "sent" && sentApprovals.length === 0 && filteredDrafts.length === 0 ? (
         <EmptyPanel message={emptyMessage()} />
@@ -849,14 +848,18 @@ function PausedInvitationsSection({
   actionBusyId,
   onPreviewApproval,
   onPreviewInventory,
+  onEditInventory,
   onResumeApproval,
+  onResumeInventory,
 }: {
   pausedApprovals: SalonInvitationApproval[];
   pausedInventoryCopies: SalonInviteLocalCopy[];
   actionBusyId: string | null;
   onPreviewApproval: (approval: SalonInvitationApproval) => void;
   onPreviewInventory: (copy: SalonInviteLocalCopy) => void;
+  onEditInventory: (copy: SalonInviteLocalCopy) => void;
   onResumeApproval: (approval: SalonInvitationApproval) => void;
+  onResumeInventory: (copy: SalonInviteLocalCopy) => void;
 }) {
   const hasItems = pausedApprovals.length > 0 || pausedInventoryCopies.length > 0;
 
@@ -865,7 +868,7 @@ function PausedInvitationsSection({
       <header>
         <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Paused Invitations</h2>
         <p style={{ margin: "6px 0 0", fontSize: 14, color: VMB_THEME.muted }}>
-          Paused suggestions and inventory templates excluded from active matching.
+          Published invitations currently hidden from matching and outreach. Resume when ready.
         </p>
       </header>
       {!hasItems ? (
@@ -886,43 +889,15 @@ function PausedInvitationsSection({
             </div>
           ) : null}
           {pausedInventoryCopies.length > 0 ? (
-            <div style={{ display: "grid", gap: 12 }}>
-              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Paused inventory templates</h3>
-              <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
-                {pausedInventoryCopies.map((copy) => (
-                  <li
-                    key={copy.id}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: 12,
-                      alignItems: "center",
-                      padding: "12px 14px",
-                      borderRadius: 10,
-                      border: `1px solid ${VMB_THEME.line}`,
-                      background: "#fff",
-                    }}
-                  >
-                    <span style={{ fontSize: 14, fontWeight: 600 }}>{copy.snapshot.templateName}</span>
-                    <button
-                      type="button"
-                      onClick={() => onPreviewInventory(copy)}
-                      style={{
-                        padding: "6px 10px",
-                        borderRadius: 8,
-                        border: `1px solid ${VMB_THEME.line}`,
-                        background: "#fff",
-                        fontSize: 12,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Preview
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <PublishedInvitationsSection
+              title="Paused Inventory"
+              description="Published to the salon, but inactive for TAIKOS matching and outreach."
+              copies={pausedInventoryCopies}
+              actionBusyId={actionBusyId}
+              onPreview={onPreviewInventory}
+              onEditCopy={onEditInventory}
+              onPause={onResumeInventory}
+            />
           ) : null}
         </>
       )}

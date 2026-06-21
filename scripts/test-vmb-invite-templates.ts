@@ -656,11 +656,11 @@ async function run(): Promise<void> {
     "utf8",
   );
   assert(
-    publishedSectionSource.includes("Published Invitations ("),
+    publishedSectionSource.includes("{title} ({copies.length})"),
     "published invitations header shows inventory count",
   );
   assert(
-    publishedSectionSource.includes("TAIKOS matching and salon outreach"),
+    publishedSectionSource.includes("Active invitations available for TAIKOS matching and salon outreach."),
     "published invitations header explains inventory purpose",
   );
   assert(

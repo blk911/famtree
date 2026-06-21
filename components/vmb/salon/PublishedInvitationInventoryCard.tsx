@@ -24,7 +24,6 @@ type Props = {
   onPreview: () => void;
   onEditCopy: () => void;
   onPause: () => void;
-  onDuplicate: () => void;
 };
 
 function actionButtonStyle(variant: "primary" | "default" = "default"): CSSProperties {
@@ -51,7 +50,6 @@ export function PublishedInvitationInventoryCard({
   onPreview,
   onEditCopy,
   onPause,
-  onDuplicate,
 }: Props) {
   const services = resolveSnapshotServiceLabels(copy.snapshot);
   const rewards = resolveSnapshotRewardLabels(copy.snapshot);
@@ -137,9 +135,6 @@ export function PublishedInvitationInventoryCard({
           </button>
           <button type="button" disabled={busy} onClick={onPause} style={actionButtonStyle()}>
             {isPaused ? "Resume" : "Pause"}
-          </button>
-          <button type="button" disabled={busy} onClick={onDuplicate} style={actionButtonStyle()}>
-            Duplicate
           </button>
         </footer>
       </div>

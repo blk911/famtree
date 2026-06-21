@@ -86,7 +86,7 @@ function run(): void {
 
   const inventoryCard = read("components/vmb/salon/PublishedInvitationInventoryCard.tsx");
   assert(inventoryCard.includes("SalonInvitationThumbnail"), "inventory card renders invitation thumbnail");
-  assert(inventoryCard.includes("Duplicate"), "inventory card supports duplicate action");
+  assert(!inventoryCard.includes("Duplicate"), "inventory card omits duplicate action");
 
   const publishRoute = read("app/api/vmb/invite-library/publish/route.ts");
   assert(publishRoute.includes("backend"), "publish API returns backend diagnostic");

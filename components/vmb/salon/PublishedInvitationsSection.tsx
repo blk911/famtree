@@ -9,31 +9,33 @@ type Props = {
   copies: SalonInviteLocalCopy[];
   tokenContext?: InviteTemplateTokenContext;
   actionBusyId: string | null;
+  title?: string;
+  description?: string;
   emptyMessage?: string;
   onPreview: (copy: SalonInviteLocalCopy) => void;
   onEditCopy: (copy: SalonInviteLocalCopy) => void;
   onPause: (copy: SalonInviteLocalCopy) => void;
-  onDuplicate: (copy: SalonInviteLocalCopy) => void;
 };
 
 export function PublishedInvitationsSection({
   copies,
   tokenContext,
   actionBusyId,
+  title = "Published Invitations",
+  description = "Active invitations available for TAIKOS matching and salon outreach.",
   emptyMessage = "No invitations have been published to your salon yet.",
   onPreview,
   onEditCopy,
   onPause,
-  onDuplicate,
 }: Props) {
   return (
     <section>
       <header style={{ marginBottom: 14 }}>
         <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>
-          Published Invitations ({copies.length})
+          {title} ({copies.length})
         </h2>
         <p style={{ margin: "6px 0 0", fontSize: 14, color: VMB_THEME.muted }}>
-          Invitations currently available for TAIKOS matching and salon outreach.
+          {description}
         </p>
       </header>
       {copies.length === 0 ? (
@@ -49,7 +51,6 @@ export function PublishedInvitationsSection({
               onPreview={() => onPreview(copy)}
               onEditCopy={() => onEditCopy(copy)}
               onPause={() => onPause(copy)}
-              onDuplicate={() => onDuplicate(copy)}
             />
           ))}
         </div>
