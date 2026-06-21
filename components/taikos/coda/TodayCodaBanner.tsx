@@ -174,6 +174,50 @@ export function TodayCodaBanner({
           ))}
         </ul>
 
+      </div>
+
+      <form className="vmb-today-coda-banner__search" onSubmit={(e) => void handleSubmit(e)}>
+        <div className="vmb-today-coda-banner__search-head">
+          <label className="vmb-today-coda-banner__search-label" htmlFor="today-coda-search">
+            What else are you thinking about?
+          </label>
+          {showAskReminder ? (
+            <button
+              type="button"
+              className="vmb-taikos-ask-reminder vmb-taikos-ask-reminder--inline"
+              onClick={() => document.getElementById(TODAY_CODA_SEARCH_INPUT_ID)?.focus()}
+            >
+              ✨ Ask TAIKOS about your business
+            </button>
+          ) : null}
+        </div>
+        <div className="vmb-today-coda-banner__chips vmb-today-coda-banner__chips--scroll">
+          {SALON_QA_SUGGESTED_CHIPS.map((chip) => (
+            <button
+              key={chip.id}
+              type="button"
+              className="vmb-salon-qa-chip"
+              disabled={searching}
+              onClick={() => handleChipClick(chip.example)}
+            >
+              {chip.example}
+            </button>
+          ))}
+        </div>
+        <div className="vmb-today-coda-banner__search-row">
+          <input
+            id={TODAY_CODA_SEARCH_INPUT_ID}
+            type="search"
+            data-launch-target="taikos-input"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Who should join my PCN? Who gets Gel-X? Who is overdue?"
+            className="vmb-today-coda-banner__input"
+          />
+          <button type="submit" className="taikos-opp-card__cta" disabled={searching || !query.trim()}>
+            {searching ? "Thinking…" : "Ask"}
+          </button>
+        </div>
         {error ? <p className="taikos-inline-workflow__error">{error}</p> : null}
 
         {qaAnswer ? (
@@ -303,50 +347,6 @@ export function TodayCodaBanner({
         {legacyResults && legacyResults.matches.length === 0 && !qaAnswer ? (
           <p className="vmb-today-coda-banner__no-results">No matches in your book for that question.</p>
         ) : null}
-      </div>
-
-      <form className="vmb-today-coda-banner__search" onSubmit={(e) => void handleSubmit(e)}>
-        <div className="vmb-today-coda-banner__search-head">
-          <label className="vmb-today-coda-banner__search-label" htmlFor="today-coda-search">
-            What else are you thinking about?
-          </label>
-          {showAskReminder ? (
-            <button
-              type="button"
-              className="vmb-taikos-ask-reminder vmb-taikos-ask-reminder--inline"
-              onClick={() => document.getElementById(TODAY_CODA_SEARCH_INPUT_ID)?.focus()}
-            >
-              ✨ Ask TAIKOS about your business
-            </button>
-          ) : null}
-        </div>
-        <div className="vmb-today-coda-banner__chips vmb-today-coda-banner__chips--scroll">
-          {SALON_QA_SUGGESTED_CHIPS.map((chip) => (
-            <button
-              key={chip.id}
-              type="button"
-              className="vmb-salon-qa-chip"
-              disabled={searching}
-              onClick={() => handleChipClick(chip.example)}
-            >
-              {chip.example}
-            </button>
-          ))}
-        </div>
-        <div className="vmb-today-coda-banner__search-row">
-          <input
-            id={TODAY_CODA_SEARCH_INPUT_ID}
-            type="search"
-            data-launch-target="taikos-input"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Who should join my PCN? Who gets Gel-X? Who is overdue?"
-            className="vmb-today-coda-banner__input"
-          />
-          <button type="submit" className="taikos-opp-card__cta" disabled={searching || !query.trim()}>
-            {searching ? "Thinking…" : "Ask"}
-          </button>
-        </div>
       </form>
     </section>
   );

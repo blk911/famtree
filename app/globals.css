@@ -1432,9 +1432,40 @@
 
 .vmb-today-action-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.78fr);
-  gap: 18px;
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, 0.8fr) minmax(280px, 0.95fr);
+  gap: 14px;
   align-items: start;
+}
+
+.vmb-today-action-layout .vmb-today-coda-banner {
+  display: contents;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  margin: 0;
+  min-height: 0;
+  box-shadow: none;
+}
+
+.vmb-today-action-layout .vmb-today-coda-banner__content,
+.vmb-today-action-layout .vmb-today-coda-banner__search {
+  min-height: 100%;
+  border: 1px solid #fbcfe8;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #fff 0%, #fdf2f8 100%);
+  padding: 18px;
+  box-shadow: 0 16px 34px rgba(131, 24, 67, 0.06);
+}
+
+.vmb-today-action-layout .vmb-today-coda-banner__content {
+  grid-column: 1;
+}
+
+.vmb-today-action-layout .vmb-today-coda-banner__search {
+  grid-column: 3;
+  display: grid;
+  align-content: start;
+  gap: 12px;
 }
 
 .vmb-today-coda-banner__content {
@@ -1445,13 +1476,14 @@
 
 .vmb-today-invite-composer {
   display: grid;
-  gap: 12px;
+  grid-column: 2;
+  gap: 10px;
   border: 1px solid #f0d5df;
   border-radius: 18px;
   background:
     linear-gradient(180deg, rgba(253, 242, 248, 0.72), rgba(255, 255, 255, 0.94)),
     #fff;
-  padding: 16px;
+  padding: 14px;
   box-shadow: 0 16px 34px rgba(131, 24, 67, 0.08);
 }
 
@@ -1496,7 +1528,7 @@
   border: 1px solid #f3d0dd;
   border-radius: 12px;
   background: #fff;
-  padding: 9px 10px;
+  padding: 8px 9px;
   color: #44403c;
   cursor: pointer;
   text-align: left;
@@ -1519,7 +1551,15 @@
 .vmb-today-invite-composer__options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
+}
+
+.vmb-today-invite-composer__grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.vmb-today-invite-composer__grid label:first-child {
+  grid-column: 1 / -1;
 }
 
 .vmb-today-invite-composer__grid label,
@@ -1546,7 +1586,7 @@
   border: 1px solid #e7e5e4;
   border-radius: 10px;
   background: #fff;
-  padding: 9px 10px;
+  padding: 8px 9px;
   color: #292524;
   font: inherit;
   font-size: 13px;
@@ -1556,13 +1596,22 @@
   resize: vertical;
 }
 
+.vmb-today-invite-composer__feature {
+  display: grid;
+  gap: 9px;
+  border: 1px solid #fed7aa;
+  border-radius: 16px;
+  background: #fff7ed;
+  padding: 10px;
+}
+
 .vmb-today-invite-composer__preview {
   display: grid;
   gap: 4px;
-  border: 1px solid #fed7aa;
-  border-radius: 14px;
-  background: #fff7ed;
-  padding: 11px 12px;
+  border: 1px solid rgba(251, 146, 60, 0.42);
+  border-radius: 12px;
+  background: #fff;
+  padding: 9px 10px;
 }
 
 .vmb-today-invite-composer__preview p,
@@ -1587,7 +1636,7 @@
   border: 1px solid #9d174d;
   border-radius: 10px;
   background: #9d174d;
-  padding: 9px 12px;
+  padding: 8px 11px;
   color: #fff;
   font-size: 13px;
   font-weight: 800;
@@ -1610,6 +1659,41 @@
   color: #15803d;
   font-size: 12px;
   font-weight: 700;
+}
+
+.vmb-today-invite-composer__message-drawer {
+  border-top: 1px solid #f5e7ee;
+  padding-top: 2px;
+}
+
+.vmb-today-invite-composer__message-drawer summary {
+  color: #9d174d;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.vmb-today-invite-composer__message-drawer[open] {
+  display: grid;
+  gap: 9px;
+}
+
+@media (max-width: 1120px) {
+  .vmb-today-action-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.9fr);
+  }
+
+  .vmb-today-action-layout .vmb-today-coda-banner__content {
+    grid-column: 1;
+  }
+
+  .vmb-today-invite-composer {
+    grid-column: 2;
+  }
+
+  .vmb-today-action-layout .vmb-today-coda-banner__search {
+    grid-column: 1 / -1;
+  }
 }
 
 .vmb-today-coda-banner__hello {
@@ -3812,7 +3896,7 @@
 .vmb-today--daily-brief {
   display: grid;
   gap: 18px;
-  max-width: 900px;
+  max-width: 1240px;
 }
 
 .vmb-today--daily-brief .today-page-title {
@@ -10317,6 +10401,12 @@
 @media (max-width: 767px) {
   .vmb-today-action-layout {
     grid-template-columns: 1fr;
+  }
+
+  .vmb-today-action-layout .vmb-today-coda-banner__content,
+  .vmb-today-action-layout .vmb-today-coda-banner__search,
+  .vmb-today-invite-composer {
+    grid-column: 1;
   }
 
   .vmb-today-invite-composer__presets,

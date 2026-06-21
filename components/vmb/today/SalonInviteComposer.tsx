@@ -249,7 +249,53 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
           <span>Phone</span>
           <input value={phone} onChange={(event) => setPhone(event.target.value)} />
         </label>
-        <label>
+      </div>
+
+      <section className="vmb-today-invite-composer__feature" aria-label="Invite options and send">
+        <div className="vmb-today-invite-composer__options">
+          <label>
+            <span>Active service</span>
+            <select value={selectedServiceId} onChange={(event) => setSelectedServiceId(event.target.value)}>
+              {services.length === 0 ? <option value="">No active services</option> : null}
+              {services.map((service) => (
+                <option key={service.id} value={service.id}>
+                  {service.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Reward / option</span>
+            <select value={selectedOptionId} onChange={(event) => setSelectedOptionId(event.target.value)}>
+              {options.length === 0 ? <option value="">No active rewards</option> : null}
+              {options.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="vmb-today-invite-composer__preview">
+          <p>{REASON_LABELS[reason]}</p>
+          <strong>{title || "Invite title"}</strong>
+          <span>{clientName || "Client name"} · {selectedService?.name || "Service"} · {selectedOption?.name || "Reward"}</span>
+        </div>
+
+        <div className="vmb-today-invite-composer__actions">
+          <button type="button" className="vmb-today-invite-composer__ghost">
+            Preview invite
+          </button>
+          <button type="button" disabled={!canSend || saving} onClick={() => void handleStubSend()}>
+            {saving ? "Saving..." : "Send (stub)"}
+          </button>
+        </div>
+      </section>
+
+      <details className="vmb-today-invite-composer__message-drawer">
+        <summary>Edit reason and message</summary>
+        <label className="vmb-today-invite-composer__field">
           <span>Reason</span>
           <select
             value={reason}
@@ -267,56 +313,15 @@ export function SalonInviteComposer({ salonName, analysisId, opportunities }: Pr
             ))}
           </select>
         </label>
-      </div>
-
-      <label className="vmb-today-invite-composer__field">
-        <span>Title</span>
-        <input value={title} onChange={(event) => setTitle(event.target.value)} />
-      </label>
-      <label className="vmb-today-invite-composer__field">
-        <span>Message</span>
-        <textarea rows={3} value={message} onChange={(event) => setMessage(event.target.value)} />
-      </label>
-
-      <div className="vmb-today-invite-composer__options">
-        <label>
-          <span>Active service</span>
-          <select value={selectedServiceId} onChange={(event) => setSelectedServiceId(event.target.value)}>
-            {services.length === 0 ? <option value="">No active services</option> : null}
-            {services.map((service) => (
-              <option key={service.id} value={service.id}>
-                {service.name}
-              </option>
-            ))}
-          </select>
+        <label className="vmb-today-invite-composer__field">
+          <span>Title</span>
+          <input value={title} onChange={(event) => setTitle(event.target.value)} />
         </label>
-        <label>
-          <span>Reward / option</span>
-          <select value={selectedOptionId} onChange={(event) => setSelectedOptionId(event.target.value)}>
-            {options.length === 0 ? <option value="">No active rewards</option> : null}
-            {options.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.name}
-              </option>
-            ))}
-          </select>
+        <label className="vmb-today-invite-composer__field">
+          <span>Message</span>
+          <textarea rows={3} value={message} onChange={(event) => setMessage(event.target.value)} />
         </label>
-      </div>
-
-      <div className="vmb-today-invite-composer__preview">
-        <p>{REASON_LABELS[reason]}</p>
-        <strong>{title || "Invite title"}</strong>
-        <span>{clientName || "Client name"} · {selectedService?.name || "Service"} · {selectedOption?.name || "Reward"}</span>
-      </div>
-
-      <div className="vmb-today-invite-composer__actions">
-        <button type="button" className="vmb-today-invite-composer__ghost">
-          Preview invite
-        </button>
-        <button type="button" disabled={!canSend || saving} onClick={() => void handleStubSend()}>
-          {saving ? "Saving..." : "Send (stub)"}
-        </button>
-      </div>
+      </details>
       {status ? <p className="vmb-today-invite-composer__status">{status}</p> : null}
     </aside>
   );

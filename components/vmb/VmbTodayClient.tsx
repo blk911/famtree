@@ -348,7 +348,7 @@ export function VmbTodayClient({
   ]);
 
   return (
-    <VmbPageFrame width="standard" headerless>
+    <VmbPageFrame width="wide" headerless>
       <header className="vmb-page-frame__header">
         {!todayUnlocked ? (
           <>
