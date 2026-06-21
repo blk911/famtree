@@ -1541,6 +1541,10 @@
   line-height: 1.35;
 }
 
+.vmb-today-coda-banner__new-client {
+  margin-top: 12px;
+}
+
 .vmb-today-invite-composer__primary {
   border: 1px solid #9d174d;
   border-radius: 12px;
@@ -2197,6 +2201,10 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.vmb-today-offer-finds--workbench {
+  margin-top: 0;
 }
 
 .vmb-today-coda-banner__results {
@@ -4175,6 +4183,41 @@
 
 .vmb-today--daily-brief .vmb-today-command__cta {
   margin-top: 10px;
+}
+
+.vmb-today-command__send-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.vmb-today-command__send-card {
+  display: grid;
+  gap: 5px;
+  padding: 12px 13px;
+  border: 1px solid #f1e7ee;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.vmb-today-command__send-card span {
+  color: #9d174d;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.vmb-today-command__send-card strong {
+  color: #1c1917;
+  font-size: 18px;
+}
+
+.vmb-today-command__send-card p {
+  margin: 0;
+  color: #5f5551;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .vmb-today--daily-brief .vmb-today-command__grid {

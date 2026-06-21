@@ -9,9 +9,12 @@ type Props = {
   salonName: string;
   analysisId?: string;
   selectedReason: SalonInviteReasonId;
+  offerRecommendations?: TaikosOpportunity[];
   prefillOpportunity?: TaikosOpportunity | null;
   prefillKey?: number;
+  newClientLaunchSignal?: number;
   onSelectedReasonChange: (reason: SalonInviteReasonId) => void;
+  onUseOfferOpportunity?: (opportunity: TaikosOpportunity) => void;
 };
 
 export type SalonInviteReasonId =
@@ -60,6 +63,10 @@ export function clientNameFromInviteOpportunity(opportunity: TaikosOpportunity |
   const pairMatch = rec.match(/^([A-Z][a-z]+)\s+and\s+([A-Z][a-z]+)\b/);
   if (pairMatch) return `${pairMatch[1]} & ${pairMatch[2]}`;
   return "";
+}
+
+export function inviteOpportunityClientLabel(opportunity: TaikosOpportunity): string {
+  return clientNameFromInviteOpportunity(opportunity) || opportunity.title;
 }
 
 function defaultTitle(reason: SalonInviteReasonId, clientName: string): string {
@@ -118,9 +125,12 @@ export function SalonInviteComposer({
   salonName,
   analysisId,
   selectedReason,
+  offerRecommendations = [],
   prefillOpportunity,
   prefillKey,
+  newClientLaunchSignal,
   onSelectedReasonChange,
+  onUseOfferOpportunity,
 }: Props) {
   const [services, setServices] = useState<VmbService[]>([]);
   const [options, setOptions] = useState<VmbServiceOption[]>([]);
@@ -181,6 +191,12 @@ export function SalonInviteComposer({
     setStatus(null);
   }, [prefillKey]);
 
+  useEffect(() => {
+    if (!newClientLaunchSignal) return;
+    selectReason("new-client");
+    setOfferPreviewOpen(true);
+  }, [newClientLaunchSignal]);
+
   const selectedService = services.find((service) => service.id === selectedServiceId);
   const selectedOption = options.find((option) => option.id === selectedOptionId);
   const canSend = clientName.trim().length > 0 && title.trim().length > 0 && message.trim().length > 0;
@@ -238,27 +254,39 @@ export function SalonInviteComposer({
   return (
     <aside className="vmb-today-invite-composer" aria-label="Salon invite composer">
       <div className="vmb-today-invite-composer__head">
-        <p className="vmb-today-invite-composer__kicker">Instant conversion link</p>
-        <h2>New Client Offer</h2>
-        <p>Create a claim-ready invite for a client in seconds.</p>
+        <p className="vmb-today-invite-composer__kicker">Focus workbench</p>
+        <h2>{SALON_INVITE_REASON_LABELS[selectedReason]}</h2>
+        <p>Pick the TAIKOS find, confirm the touch point, then review and send.</p>
       </div>
 
-      <div className="vmb-today-invite-composer__instant">
-        <button
-          type="button"
-          className="vmb-today-invite-composer__primary"
-          onClick={() => {
-            selectReason("new-client");
-            setOfferPreviewOpen(true);
-          }}
-        >
-          New Client Offer
-        </button>
-        <p>Opens the complete offer preview before saving the internal invite.</p>
+      <div className="vmb-today-offer-finds vmb-today-offer-finds--workbench" aria-label={`TAIKOS finds for ${SALON_INVITE_REASON_LABELS[selectedReason]}`}>
+        <div className="vmb-today-offer-finds__head">
+          <p>TAIKOS found opportunities</p>
+          <strong>{SALON_INVITE_REASON_LABELS[selectedReason]}</strong>
+        </div>
+        {offerRecommendations.length > 0 ? (
+          <ul className="vmb-today-offer-finds__list">
+            {offerRecommendations.map((opportunity) => (
+              <li key={opportunity.opportunityId} className="vmb-today-offer-finds__item">
+                <div>
+                  <strong>{inviteOpportunityClientLabel(opportunity)}</strong>
+                  <span>{opportunity.recommendation}</span>
+                </div>
+                <button type="button" onClick={() => onUseOfferOpportunity?.(opportunity)}>
+                  Use
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="vmb-today-offer-finds__empty">
+            No matching TAIKOS finds yet for this touch point.
+          </p>
+        )}
       </div>
 
       <label className="vmb-today-invite-composer__field">
-        <span>Choose offer</span>
+        <span>Touch point</span>
         <select value={selectedReason} onChange={(event) => selectReason(event.target.value as SalonInviteReasonId)}>
           {Object.entries(SALON_INVITE_REASON_LABELS).map(([value, label]) => (
             <option key={value} value={value}>

@@ -132,6 +132,7 @@ export function VmbTodayClient({
   const [vmbInviteDrafts, setVmbInviteDrafts] = useState<VmbInviteDraft[]>([]);
   const [selectedOfferReason, setSelectedOfferReason] = useState<SalonInviteReasonId>("new-client");
   const [offerPrefill, setOfferPrefill] = useState<{ opportunity: TaikosOpportunity; key: number } | null>(null);
+  const [newClientLaunchSignal, setNewClientLaunchSignal] = useState(0);
 
   useEffect(() => {
     console.error("[TODAY-MOUNT]", {
@@ -456,25 +457,35 @@ export function VmbTodayClient({
                 onPreviewFirstCard={() => setPreviewFirstCardSignal((n) => n + 1)}
                 onPreviewSuggestedCard={setQaPreviewAction}
                 onAnswerActiveChange={setHasActiveTaikosAnswer}
-                selectedOfferLabel={SALON_INVITE_REASON_LABELS[selectedOfferReason]}
-                offerRecommendations={selectedOfferRecommendations}
-                onUseOfferOpportunity={(opportunity) => {
-                  setSelectedOfferReason(salonInviteReasonForOpportunity(opportunity) ?? selectedOfferReason);
-                  setOfferPrefill({ opportunity, key: Date.now() });
+                onLaunchNewClientOffer={() => {
+                  setSelectedOfferReason("new-client");
+                  setNewClientLaunchSignal((signal) => signal + 1);
                 }}
               />
               <SalonInviteComposer
                 salonName={salonName}
                 analysisId={resolvedAnalysisId}
                 selectedReason={selectedOfferReason}
+                offerRecommendations={selectedOfferRecommendations}
                 prefillOpportunity={offerPrefill?.opportunity ?? null}
                 prefillKey={offerPrefill?.key}
+                newClientLaunchSignal={newClientLaunchSignal}
                 onSelectedReasonChange={setSelectedOfferReason}
+                onUseOfferOpportunity={(opportunity) => {
+                  setSelectedOfferReason(salonInviteReasonForOpportunity(opportunity) ?? selectedOfferReason);
+                  setOfferPrefill({ opportunity, key: Date.now() });
+                }}
               />
             </div>
           </section>
 
-          {commandCenter ? <TodayCommandCenter snapshot={commandCenter} /> : null}
+          {commandCenter ? (
+            <TodayCommandCenter
+              snapshot={commandCenter}
+              selectedOfferLabel={SALON_INVITE_REASON_LABELS[selectedOfferReason]}
+              selectedOfferRecommendations={selectedOfferRecommendations}
+            />
+          ) : null}
 
           {launchGuide.showBubble ? (
             <LaunchGuideOverlay target={LAUNCH_GUIDE_STEPS[launchGuide.currentStep - 1]?.target ?? null}>
