@@ -10023,10 +10023,24 @@
 }
 
 .vmb-salon-invite-card__body {
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   font-size: 14px;
   line-height: 1.55;
   color: #44403c;
+}
+
+.vmb-salon-invite-card__service-feature {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 8px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #7c2d12;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .vmb-salon-invite-card__rewards {
@@ -10049,14 +10063,8 @@
   color: #9d174d;
 }
 
-.vmb-salon-invite-card__services {
-  margin: 0 0 16px;
-  font-size: 12px;
-  color: #78716c;
-}
-
 .vmb-salon-invite-card__expiration {
-  margin: -8px 0 16px;
+  margin: -2px 0 16px;
   font-size: 12px;
   font-weight: 600;
   color: #9d174d;

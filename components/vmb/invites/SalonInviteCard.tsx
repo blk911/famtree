@@ -121,6 +121,12 @@ export function SalonInviteCard({
         ) : null}
         <p className="vmb-salon-invite-card__body">{resolvedBody}</p>
 
+        {services.length > 0 ? (
+          <div className="vmb-salon-invite-card__service-feature" aria-label="Selected service">
+            {services.join(" · ")}
+          </div>
+        ) : null}
+
         {rewards.length > 0 ? (
           <ul className="vmb-salon-invite-card__rewards" aria-label="Rewards included">
             {rewards.map((label) => (
@@ -129,10 +135,6 @@ export function SalonInviteCard({
               </li>
             ))}
           </ul>
-        ) : null}
-
-        {services.length > 0 ? (
-          <p className="vmb-salon-invite-card__services">{services.join(" · ")}</p>
         ) : null}
 
         {expirationLabel?.trim() ? (
