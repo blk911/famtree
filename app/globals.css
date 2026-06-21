@@ -5041,6 +5041,11 @@
   flex-shrink: 0;
 }
 
+.vmb-admin-builder-grid__override-dot--published {
+  background: #16a34a;
+  box-shadow: 0 0 0 3px #dcfce7;
+}
+
 .vmb-admin-builder-grid__editor,
 .vmb-admin-builder-grid__preview,
 .vmb-template-admin__editor,
@@ -5143,25 +5148,6 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-}
-
-.vmb-nails-library__published-indicator {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: #dcfce7;
-  color: #047857;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.vmb-nails-library__published-indicator--inline {
-  align-self: center;
-  padding: 6px 10px;
-  font-size: 11px;
 }
 
 .vmb-card-preview-modal__template-indicator,

@@ -867,8 +867,8 @@ async function run(): Promise<void> {
     path.join(process.cwd(), "components/vmb/admin/NailsLibraryAdminClient.tsx"),
     "utf8",
   );
-  assert(libraryClient.includes("Published to salon inventory — v"), "library shows published version status");
-  assert(libraryClient.includes("Backend"), "library publish verification shows backend");
+  assert(libraryClient.includes("override-dot--published"), "library shows published status on the inventory dot");
+  assert(!libraryClient.includes("Publish verification"), "library hides publish verification diagnostics");
 
   const { resetVmbStorageBackendCache } = await import("../lib/vmb/db");
   const { upsertOffer } = await import("../lib/vmb/offers/offer-store");

@@ -284,7 +284,7 @@ function run(): void {
   assert(librarySource.includes("Review Final Card"), "library opens final card review");
   assert(librarySource.includes("AdminSalonInviteReviewModal"), "library uses salon invite review modal");
   assert(librarySource.includes("vmb-admin-builder-grid--two-col"), "library uses two-column layout without preview");
-  assert(librarySource.includes("formatSnapshotStatus"), "library displays snapshot status");
+  assert(librarySource.includes("formatPublishedDate"), "library displays published date status");
   assert(librarySource.includes("/api/vmb/invite-library/publish"), "library publish persists via API");
   assert(!librarySource.includes("AdminTemplatePreviewCard"), "library removes permanent preview column");
   assert(!librarySource.includes("OfferNailSelectionFields"), "library is read-only — no service checkboxes");
@@ -317,9 +317,9 @@ function run(): void {
     "builder services and rewards use two-column layout",
   );
 
-  assert(librarySource.includes("Publish verification"), "library shows publish verification note");
-  assert(librarySource.includes("<dt>Copy</dt>"), "library publish note includes copy id");
-  assert(librarySource.includes("<dt>Salon</dt>"), "library publish note includes target salon");
+  assert(librarySource.includes("override-dot--published"), "library turns the inventory dot green after publish");
+  assert(librarySource.includes("Published ${formatPublishedDate"), "library shows one published status line");
+  assert(!librarySource.includes("Publish verification"), "library omits publish verification diagnostics");
 
   const serviceCatalogSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/PlatformServiceCatalogClient.tsx"),

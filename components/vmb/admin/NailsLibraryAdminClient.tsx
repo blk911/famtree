@@ -16,7 +16,6 @@ import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invi
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 import type { SalonInviteCopyBackend } from "@/lib/vmb/invites/salon-invite-local-copy-store";
 import {
-  formatSnapshotStatus,
   formatSnapshotUpdatedAt,
 } from "@/lib/vmb/invites/invite-template-snapshot";
 
@@ -27,14 +26,18 @@ type Props = {
   initialTemplateId?: string;
 };
 
-type PublishVerification = {
-  copy: SalonInviteLocalCopy;
-  backend: SalonInviteCopyBackend;
-  salonId: string;
-};
-
 function displayTouchPointName(name: string): string {
   return name === "Private Client Network" ? "Private Client Invite" : name;
+}
+
+function formatPublishedDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "2-digit",
+  }).format(date);
 }
 
 export function NailsLibraryAdminClient({
@@ -49,7 +52,7 @@ export function NailsLibraryAdminClient({
   );
   const [reviewOpen, setReviewOpen] = useState(false);
   const [publishStatus, setPublishStatus] = useState<string | null>(null);
-  const [publishVerification, setPublishVerification] = useState<PublishVerification | null>(null);
+  const [publishedCopy, setPublishedCopy] = useState<SalonInviteLocalCopy | null>(null);
   const [publishBusy, setPublishBusy] = useState(false);
 
   const savedDrafts = useMemo(() => drafts.filter((row) => row.saved), [drafts]);
@@ -67,7 +70,7 @@ export function NailsLibraryAdminClient({
   );
 
   useEffect(() => {
-    setPublishVerification(null);
+    setPublishedCopy(null);
     setPublishStatus(null);
   }, [selectedTemplateId]);
 
@@ -84,7 +87,7 @@ export function NailsLibraryAdminClient({
     if (!librarySnapshot || !salonId || !selected) return;
     setPublishBusy(true);
     setPublishStatus(null);
-    setPublishVerification(null);
+    setPublishedCopy(null);
     const res = await fetch("/api/vmb/invite-library/publish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -102,12 +105,8 @@ export function NailsLibraryAdminClient({
     };
     setPublishBusy(false);
     if (data.ok && data.copy && data.backend && data.salonId) {
-      setPublishVerification({
-        copy: data.copy,
-        backend: data.backend,
-        salonId: data.salonId,
-      });
-      setPublishStatus(`Published to salon inventory — v${data.copy.publishedVersion}`);
+      setPublishedCopy(data.copy);
+      setPublishStatus(null);
     } else {
       setPublishStatus(data.error ?? "Publish failed.");
     }
@@ -152,9 +151,7 @@ export function NailsLibraryAdminClient({
             <ul>
               {savedDrafts.map((row) => {
                 const assetPricing = resolveAdminDefaultInvitationPackageWithPricing(row.templateId)?.pricing;
-                const isPublishedSelected =
-                  publishVerification?.copy.sourceTemplateId === row.templateId &&
-                  selected?.templateId === row.templateId;
+                const isPublished = publishedCopy?.sourceTemplateId === row.templateId;
                 return (
                 <li key={row.templateId}>
                   <button
@@ -164,16 +161,16 @@ export function NailsLibraryAdminClient({
                   >
                     <span className="vmb-nails-library__asset-title">
                       {displayTouchPointName(row.displayName)}
-                      {isPublishedSelected ? (
-                        <span className="vmb-nails-library__published-indicator">Published</span>
-                      ) : null}
                     </span>
                     {assetPricing ? (
                       <span className="vmb-nails-library__asset-pricing">
                         Value {assetPricing.valueLabel} · Offer {assetPricing.priceLabel}
                       </span>
                     ) : null}
-                    <span className="vmb-admin-builder-grid__override-dot" aria-label="In library" />
+                    <span
+                      className={`vmb-admin-builder-grid__override-dot${isPublished ? " vmb-admin-builder-grid__override-dot--published" : ""}`}
+                      aria-label={isPublished ? "Published" : "In library"}
+                    />
                   </button>
                 </li>
               );
@@ -195,7 +192,11 @@ export function NailsLibraryAdminClient({
                 </div>
                 <div>
                   <dt>Status</dt>
-                  <dd>{formatSnapshotStatus(librarySnapshot)}</dd>
+                  <dd>
+                    {publishedCopy?.sourceTemplateId === selected.templateId
+                      ? `Published ${formatPublishedDate(publishedCopy.createdAt)}`
+                      : "Unpublished"}
+                  </dd>
                 </div>
                 <div>
                   <dt>Version</dt>
@@ -255,41 +256,7 @@ export function NailsLibraryAdminClient({
                 >
                   {publishBusy ? "Publishing…" : "Publish To Salons"}
                 </button>
-                {publishVerification?.copy.sourceTemplateId === selected.templateId ? (
-                  <span className="vmb-nails-library__published-indicator vmb-nails-library__published-indicator--inline">
-                    Published
-                  </span>
-                ) : null}
               </div>
-              {publishVerification ? (
-                <div className="vmb-nails-library__publish-verify" aria-live="polite">
-                  <p className="vmb-nails-library__publish-verify-title">Publish verification</p>
-                  <dl>
-                    <div>
-                      <dt>Salon</dt>
-                      <dd>
-                        {salonName || publishVerification.salonId} ({publishVerification.salonId})
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Copy</dt>
-                      <dd>{publishVerification.copy.id}</dd>
-                    </div>
-                    <div>
-                      <dt>Source template</dt>
-                      <dd>{publishVerification.copy.sourceTemplateId}</dd>
-                    </div>
-                    <div>
-                      <dt>Published version</dt>
-                      <dd>v{publishVerification.copy.publishedVersion}</dd>
-                    </div>
-                    <div>
-                      <dt>Backend</dt>
-                      <dd>{publishVerification.backend}</dd>
-                    </div>
-                  </dl>
-                </div>
-              ) : null}
               {publishStatus ? <p className="vmb-admin-builder-grid__status">{publishStatus}</p> : null}
             </>
           ) : null}
