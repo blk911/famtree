@@ -68,9 +68,9 @@ export function SuggestedInvitationCard({
 
   return (
 
-    <article className="vmb-suggested-invite-card">
+    <details className="vmb-suggested-invite-card">
 
-      <div className="vmb-suggested-invite-card__body">
+      <summary className="vmb-suggested-invite-card__summary">
 
         <div className="vmb-suggested-invite-card__client">
 
@@ -99,6 +99,59 @@ export function SuggestedInvitationCard({
           <p className="vmb-suggested-invite-card__reason">{recommendation.reasonHeadline}</p>
 
         </div>
+
+        <div className="vmb-suggested-invite-card__compact-lines">
+          <span>{recommendation.templateName}</span>
+          {recommendation.services.length > 0 ? <span>{recommendation.services.slice(0, 2).join(", ")}</span> : null}
+          {recommendation.pricing ? (
+            <span>{recommendation.pricing.priceLabel} offer</span>
+          ) : (
+            <span>${recommendation.estimatedValue.toLocaleString()} value</span>
+          )}
+        </div>
+
+        <div className="vmb-suggested-invite-card__summary-actions">
+          <button
+            type="button"
+            className="vmb-suggested-invite-card__action"
+            disabled={busy}
+            onClick={(event) => {
+              event.preventDefault();
+              onPreview();
+            }}
+          >
+            Preview
+          </button>
+          <span className="vmb-suggested-invite-card__approve-wrap" title={!canApprove ? APPROVE_DISABLED_HINT : undefined}>
+            <button
+              type="button"
+              className="vmb-suggested-invite-card__action vmb-suggested-invite-card__action--primary"
+              disabled={busy || !canApprove}
+              aria-describedby={!canApprove ? `approve-hint-${recommendation.id}` : undefined}
+              onClick={(event) => {
+                event.preventDefault();
+                onApprove();
+              }}
+            >
+              Approve
+            </button>
+          </span>
+          <button
+            type="button"
+            className="vmb-suggested-invite-card__action"
+            disabled={busy || approveSuccess}
+            onClick={(event) => {
+              event.preventDefault();
+              onPause();
+            }}
+          >
+            Pause
+          </button>
+        </div>
+
+      </summary>
+
+      <div className="vmb-suggested-invite-card__body">
 
 
 
@@ -194,50 +247,6 @@ export function SuggestedInvitationCard({
 
       <footer className="vmb-suggested-invite-card__footer">
 
-        <button type="button" className="vmb-suggested-invite-card__action" disabled={busy} onClick={onPreview}>
-
-          Preview
-
-        </button>
-
-        <span className="vmb-suggested-invite-card__approve-wrap" title={!canApprove ? APPROVE_DISABLED_HINT : undefined}>
-
-          <button
-
-            type="button"
-
-            className="vmb-suggested-invite-card__action vmb-suggested-invite-card__action--primary"
-
-            disabled={busy || !canApprove}
-
-            aria-describedby={!canApprove ? `approve-hint-${recommendation.id}` : undefined}
-
-            onClick={onApprove}
-
-          >
-
-            Approve
-
-          </button>
-
-        </span>
-
-        <button
-
-          type="button"
-
-          className="vmb-suggested-invite-card__action"
-
-          disabled={busy || approveSuccess}
-
-          onClick={onPause}
-
-        >
-
-          Pause
-
-        </button>
-
         {!canApprove && !approveSuccess ? (
 
           <p id={`approve-hint-${recommendation.id}`} className="vmb-suggested-invite-card__approve-hint">
@@ -250,7 +259,7 @@ export function SuggestedInvitationCard({
 
       </footer>
 
-    </article>
+    </details>
 
   );
 

@@ -614,9 +614,9 @@ async function run(): Promise<void> {
     path.join(process.cwd(), "components/vmb/VmbInvitesClient.tsx"),
     "utf8",
   );
-  assert(invitesClientSource.includes("Opportunity Center"), "invitations page title");
+  assert(invitesClientSource.includes("Touch Points"), "invitations page title");
   assert(
-    invitesClientSource.includes("appear on your salon page"),
+    invitesClientSource.includes("on your salon page"),
     "invitations page subhead references salon page destination",
   );
   assert(invitesClientSource.includes("/api/vmb/salon-invites"), "invitations loads published copies");
@@ -630,8 +630,8 @@ async function run(): Promise<void> {
   assert(invitesClientSource.includes("PublishedInvitationsSection"), "invitations suggested tab has published section");
   assert(invitesClientSource.includes("publishedCopiesForMatching"), "suggested matching uses active inventory only");
   assert(
-    invitesClientSource.includes("Review client opportunities"),
-    "invitations opportunity center subtitle",
+    invitesClientSource.includes("Review client touch points"),
+    "invitations touch points subtitle",
   );
   assert(invitesClientSource.includes("SalonInvitationPreviewModal"), "invitations previews via salon card");
   assert(invitesClientSource.includes("previewOnly"), "invitations draft preview is read-only");

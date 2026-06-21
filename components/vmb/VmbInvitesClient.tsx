@@ -571,10 +571,10 @@ export function VmbInvitesClient({
         <div className="vmb-page-frame__header-main">
           <div className="vmb-page-frame__header-copy">
             <p className="vmb-page-frame__eyebrow">{typeof salonName === "string" ? salonName : undefined}</p>
-            <h1 className="vmb-page-frame__title">Opportunity Center</h1>
+            <h1 className="vmb-page-frame__title">Touch Points</h1>
             <p className="vmb-page-frame__subtitle">
-              Review client opportunities and choose which invitations should appear on your salon page
-              and future outreach.
+              Review client touch points, approve what is ready, and choose which invitations should appear
+              on your salon page and future outreach.
             </p>
           </div>
           <div className="vmb-page-frame__header-action">
@@ -638,16 +638,18 @@ export function VmbInvitesClient({
             publishedCopies={publishedCopyDebugEntries}
             recommendations={suggestedRecommendations}
           />
-          <PublishedInvitationsSection
-            copies={publishedCopies}
-            tokenContext={tokenContext}
-            actionBusyId={actionBusyId}
-            emptyMessage={SUGGESTED_PUBLISHED_EMPTY_MESSAGE}
-            onPreview={(copy) => setActivePublishedCopy(copy)}
-            onEditCopy={handleInventoryEditCopy}
-            onPause={(copy) => void handleInventoryPause(copy)}
-            onDuplicate={(copy) => void handleInventoryDuplicate(copy)}
-          />
+          {publishedCopies.length > 0 ? (
+            <PublishedInvitationsSection
+              copies={publishedCopies}
+              tokenContext={tokenContext}
+              actionBusyId={actionBusyId}
+              emptyMessage={SUGGESTED_PUBLISHED_EMPTY_MESSAGE}
+              onPreview={(copy) => setActivePublishedCopy(copy)}
+              onEditCopy={handleInventoryEditCopy}
+              onPause={(copy) => void handleInventoryPause(copy)}
+              onDuplicate={(copy) => void handleInventoryDuplicate(copy)}
+            />
+          ) : null}
           <SuggestedMatchesSection
             recommendations={visibleSuggestedRecommendations}
             actionBusyId={actionBusyId}
@@ -806,9 +808,9 @@ function SuggestedMatchesSection({
   return (
     <section>
       <header style={{ marginBottom: 14 }}>
-        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Suggested Matches</h2>
+        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Ready Touch Point Ideas</h2>
         <p style={{ margin: "6px 0 0", fontSize: 14, color: VMB_THEME.muted }}>
-          TAIKOS recommendations mapped to your published salon invitation inventory.
+          TAIKOS recommendations from the loaded book. Open a row when you want template, service, or offer details.
         </p>
       </header>
       {recommendations.length === 0 ? (

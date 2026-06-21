@@ -142,7 +142,7 @@ function run(): void {
   assert(salonPageClient.includes("resolveInvitationPricing"), "salon page shows offer pricing on cards");
   assert(salonPageClient.includes("Join My Private Client Network"), "salon page includes PCN section");
   assert(salonPageClient.includes("Favorite Providers"), "salon page includes favorite providers section");
-  assert(salonPageClient.includes("Join My Network"), "salon page includes PCN CTA placeholder");
+  assert(salonPageClient.includes("Join for Updates"), "salon page includes PCN CTA placeholder");
   assert(!salonPageClient.includes("Client preview"), "salon page removes admin preview badge");
   assert(!salonPageClient.includes("Client destination preview"), "salon page removes internal preview banner");
   assert(!salonPageClient.includes("salonServiceStatusLabel"), "salon page hides lifecycle status badges");
@@ -166,12 +166,12 @@ function run(): void {
   assert(servicesClient.includes("ViewSalonPageLink"), "services page links to salon landing preview");
 
   const invitesClientLanding = read("components/vmb/VmbInvitesClient.tsx");
-  assert(invitesClientLanding.includes("Opportunity Center"), "invites reframed as opportunity center");
+  assert(invitesClientLanding.includes("Touch Points"), "invites reframed as touch points");
   assert(
-    invitesClientLanding.includes("appear on your salon page"),
+    invitesClientLanding.includes("on your salon page"),
     "invites subhead aligns with salon landing destination",
   );
-  assert(invitesClientLanding.includes("ViewSalonPageLink"), "opportunity center links to salon landing preview");
+  assert(invitesClientLanding.includes("ViewSalonPageLink"), "touch points links to salon landing preview");
   assert(invitesClientLanding.includes("SendPackagePreviewModal"), "invites client wires send package preview");
 
   const approvedSection = read("components/vmb/salon/ApprovedInvitationsSection.tsx");
