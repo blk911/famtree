@@ -125,12 +125,10 @@ export function SalonInviteComposer({
   salonName,
   analysisId,
   selectedReason,
-  offerRecommendations = [],
   prefillOpportunity,
   prefillKey,
   newClientLaunchSignal,
   onSelectedReasonChange,
-  onUseOfferOpportunity,
 }: Props) {
   const [services, setServices] = useState<VmbService[]>([]);
   const [options, setOptions] = useState<VmbServiceOption[]>([]);
@@ -253,38 +251,6 @@ export function SalonInviteComposer({
 
   return (
     <aside className="vmb-today-invite-composer" aria-label="Salon invite composer">
-      <div className="vmb-today-invite-composer__head">
-        <p className="vmb-today-invite-composer__kicker">Focus workbench</p>
-        <h2>{SALON_INVITE_REASON_LABELS[selectedReason]}</h2>
-        <p>Pick the TAIKOS find, confirm the touch point, then review and send.</p>
-      </div>
-
-      <div className="vmb-today-offer-finds vmb-today-offer-finds--workbench" aria-label={`TAIKOS finds for ${SALON_INVITE_REASON_LABELS[selectedReason]}`}>
-        <div className="vmb-today-offer-finds__head">
-          <p>TAIKOS found opportunities</p>
-          <strong>{SALON_INVITE_REASON_LABELS[selectedReason]}</strong>
-        </div>
-        {offerRecommendations.length > 0 ? (
-          <ul className="vmb-today-offer-finds__list">
-            {offerRecommendations.map((opportunity) => (
-              <li key={opportunity.opportunityId} className="vmb-today-offer-finds__item">
-                <div>
-                  <strong>{inviteOpportunityClientLabel(opportunity)}</strong>
-                  <span>{opportunity.recommendation}</span>
-                </div>
-                <button type="button" onClick={() => onUseOfferOpportunity?.(opportunity)}>
-                  Use
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="vmb-today-offer-finds__empty">
-            No matching TAIKOS finds yet for this touch point.
-          </p>
-        )}
-      </div>
-
       <label className="vmb-today-invite-composer__field">
         <span>Touch point</span>
         <select value={selectedReason} onChange={(event) => selectReason(event.target.value as SalonInviteReasonId)}>
