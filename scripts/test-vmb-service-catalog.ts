@@ -53,7 +53,7 @@ async function run(): Promise<void> {
 
   const gelX = getCatalogServiceOffer("default-nails-gel-x");
   assert(gelX?.name === "Gel-X Extensions", "stable Gel-X service id preserved");
-  assert(gelX?.basePriceCents === 8000, "Gel-X base price seeded");
+  assert(gelX?.basePriceCents === 9000, "Gel-X base price seeded");
 
   const addons = listAddonsForServiceOffer("default-nails-gel-x");
   assert(addons.some((addon) => addon.name === "French"), "Gel-X includes French addon");
@@ -124,7 +124,7 @@ async function run(): Promise<void> {
     nailsPresets.find((preset) => preset.serviceOfferId === "default-nails-gel-manicure")!,
     undefined,
   );
-  assert(gelMerged.priceCents === 5500, "merge uses preset base price when no salon config saved");
+  assert(gelMerged.priceCents === 6000, "merge uses preset base price when no salon config saved");
 
   const builderFacingBase = facing.find((service) => service.serviceOfferId === "default-nails-builder-gel")!;
   const activeDraft = {

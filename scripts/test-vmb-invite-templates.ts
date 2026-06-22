@@ -154,19 +154,19 @@ async function run(): Promise<void> {
     "admin default snapshot carries expiration",
   );
   assert(adminSnapshot!.serviceIds.length > 0, "admin default snapshot carries service ids");
-  assert(adminSnapshot!.totalValue === 110, "birthday admin snapshot freezes total value");
+  assert(adminSnapshot!.totalValue === 105, "birthday admin snapshot freezes total value");
   assert(adminSnapshot!.savingsAmount === 15, "birthday admin snapshot freezes savings");
-  assert(adminSnapshot!.offerPrice === 95, "birthday admin snapshot freezes offer price");
-  assert(adminSnapshot!.valueLabel === "$110", "birthday admin snapshot carries value label");
-  assert(adminSnapshot!.priceLabel === "$95", "birthday admin snapshot carries offer label");
+  assert(adminSnapshot!.offerPrice === 90, "birthday admin snapshot freezes offer price");
+  assert(adminSnapshot!.valueLabel === "$105", "birthday admin snapshot carries value label");
+  assert(adminSnapshot!.priceLabel === "$90", "birthday admin snapshot carries offer label");
 
   const gelManicurePricing = calculateInvitationPackagePricing({
     serviceIds: ["default-nails-gel-manicure"],
     serviceOptionIds: ["addon-chrome"],
   });
-  assert(gelManicurePricing.serviceTotal === 55, "pricing sums service defaults");
+  assert(gelManicurePricing.serviceTotal === 60, "pricing sums service defaults");
   assert(gelManicurePricing.addOnTotal === 15, "pricing sums add-on defaults");
-  assert(gelManicurePricing.totalValue === 70, "pricing totals service and add-ons");
+  assert(gelManicurePricing.totalValue === 75, "pricing totals service and add-ons");
 
   const presetOverridePricing = calculateInvitationPackagePricing({
     serviceIds: ["default-nails-builder-gel"],
@@ -182,12 +182,12 @@ async function run(): Promise<void> {
     serviceOptionIds: [],
     savingsAmount: 100,
   });
-  assert(cappedSavingsPricing.savingsAmount === 55, "offer savings cannot exceed package value");
+  assert(cappedSavingsPricing.savingsAmount === 60, "offer savings cannot exceed package value");
   assert(cappedSavingsPricing.offerPrice === 0, "capped savings cannot create a negative offer price");
 
   const birthdayResolved = resolveAdminDefaultInvitationPackageWithPricing("nails-birthday-celebration");
   assert((birthdayResolved?.pricing.savingsAmount ?? 0) > 0, "birthday default package has nonzero savings");
-  assert(birthdayResolved?.pricing.totalValue === 110, "birthday package value is gel-x plus chrome");
+  assert(birthdayResolved?.pricing.totalValue === 105, "birthday package value is gel-x plus chrome");
 
   const pcnResolved = resolveAdminDefaultInvitationPackageWithPricing("nails-private-client-network");
   assert(pcnResolved?.pricing.savingsAmount === 0, "PCN default package has zero savings");
@@ -519,6 +519,7 @@ async function run(): Promise<void> {
   assert(builderSource.includes("serviceIds: selectedBaseline.serviceIds.slice(0, 1)"), "builder normalizes legacy drafts to one service");
   assert(!builderSource.includes("AdminTemplatePreviewCard"), "builder removes live draft preview card");
   assert(builderSource.includes("✓ Saved to Library"), "builder shows inline save confirmation");
+  assert(builderSource.includes('/api/vmb/invite-library/publish'), "builder save creates the salon review copy");
   assert(builderSource.includes("View in Library"), "builder links to library after save");
 
   const salonInviteCardSource = fs.readFileSync(
@@ -768,7 +769,7 @@ async function run(): Promise<void> {
   assert(suggested[0]!.publishedCopy?.id === participationCopy.id, "suggested invitation links published copy");
   assert(suggested[0]!.matchSource !== "none", "suggested invitation records match source");
   assert(!!suggested[0]!.pricing, "suggested card receives pricing summary");
-  assert(suggested[0]!.pricing!.totalValue === 70, "suggested pricing uses snapshot services when published");
+  assert(suggested[0]!.pricing!.totalValue === 75, "suggested pricing uses snapshot services when published");
   assert(suggested[0]!.estimatedValue === suggested[0]!.pricing!.offerPrice, "suggested estimated value uses offer price");
 
   const unpublishedSuggested = buildSuggestedInvitationsFromOpportunities(
@@ -919,6 +920,7 @@ async function run(): Promise<void> {
   );
   assert(publishRoute.includes("backend"), "publish API returns backend diagnostic");
   assert(publishRoute.includes("copyId"), "publish API returns copyId diagnostic");
+  assert(publishRoute.includes("upsertOffer"), "publish API saves the library snapshot before creating salon copy");
 
   const libraryClient = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/NailsLibraryAdminClient.tsx"),
@@ -1024,8 +1026,8 @@ async function run(): Promise<void> {
     },
     { ownerName: "Alex", salonName: "Glow Nails" },
   );
-  assert(approvalSnapshot.totalValue === 110, "approval snapshot freezes total value at build time");
-  assert(approvalSnapshot.offerPrice === 95, "approval snapshot freezes offer price at build time");
+  assert(approvalSnapshot.totalValue === 105, "approval snapshot freezes total value at build time");
+  assert(approvalSnapshot.offerPrice === 90, "approval snapshot freezes offer price at build time");
 
   const approved = await approveSalonInvitation(approvalSalonId, {
     clientName: "Grace Garcia",
@@ -1058,11 +1060,11 @@ async function run(): Promise<void> {
     "approved snapshot stays frozen when approve is retried",
   );
   assert(
-    duplicate.approval.snapshot.totalValue === 110,
+    duplicate.approval.snapshot.totalValue === 105,
     "approved snapshot keeps frozen pricing when approve is retried",
   );
   assert(
-    duplicate.approval.snapshot.offerPrice === 95,
+    duplicate.approval.snapshot.offerPrice === 90,
     "approved snapshot keeps frozen offer price when approve is retried",
   );
   const approvalRows = await listSalonInvitationApprovals(approvalSalonId);

@@ -1,10 +1,10 @@
 /** Admin default nail service prices (USD). No salon override yet. */
 export const DEFAULT_NAIL_SERVICE_PRICES: Record<string, number> = {
-  "default-nails-gel-manicure": 55,
+  "default-nails-gel-manicure": 60,
   "default-nails-builder-gel": 75,
-  "default-nails-structured-gel": 85,
-  "default-nails-gel-x": 95,
-  "default-nails-acrylic-extensions": 90,
+  "default-nails-structured-gel": 80,
+  "default-nails-gel-x": 90,
+  "default-nails-acrylic-extensions": 95,
   "default-nails-smart-pedicure": 75,
   "default-nails-fill-refresh": 65,
 };

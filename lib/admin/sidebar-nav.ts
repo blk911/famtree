@@ -49,9 +49,9 @@ export const SIDEBAR_ACCORDION_GROUPS = {
   },
 } as const;
 
-export const PLATFORM_ADMIN_SIDEBAR_ITEMS: SidebarNavItem[] = ADMIN_WORKSPACE_NAV.map(
-  ({ label, href }) => ({ href, label }),
-);
+export const PLATFORM_ADMIN_SIDEBAR_ITEMS: SidebarNavItem[] = ADMIN_WORKSPACE_NAV
+  .filter(({ id }) => id !== "invites")
+  .map(({ label, href }) => ({ href, label }));
 
 export const MARKET_INTEL_SIDEBAR_ITEMS: SidebarNavItem[] = [
   { href: MARKET_INTEL_ROUTES.creatorDiscovery, label: "Creator Discovery" },

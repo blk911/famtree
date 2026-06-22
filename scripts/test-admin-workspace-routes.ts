@@ -60,11 +60,7 @@ function routePageExists(routePath: string): boolean {
 
 function run(): void {
   assert(ADMIN_WORKSPACE_NAV.length === 7, "seven platform workspaces defined");
-  assert(
-    ADMIN_WORKSPACE_NAV.findIndex((item) => item.id === "service-catalog")
-      < ADMIN_WORKSPACE_NAV.findIndex((item) => item.id === "invites"),
-    "service catalog precedes invites in platform navigation",
-  );
+  assert(!PLATFORM_ADMIN_SIDEBAR_ITEMS.some((item) => item.label === "Invites"), "invite builder is not duplicated in admin sidebar");
 
   for (const { href, label } of ADMIN_WORKSPACE_NAV) {
     assert(href.startsWith("/admin/"), `${label} href is under /admin`);

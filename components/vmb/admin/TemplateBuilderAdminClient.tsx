@@ -152,12 +152,15 @@ export function TemplateBuilderAdminClient({
       status: "library" as const,
       version: previewSnapshot.version > 0 ? previewSnapshot.version : 1,
     };
-    const res = await fetch("/api/vmb/offers", {
-      method: "PUT",
+    const res = await fetch("/api/vmb/invite-library/publish", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ offer: nailTemplateDraftToOffer(draft, salonId, snapshot) }),
+      body: JSON.stringify({
+        templateId: draft.templateId,
+        offer: nailTemplateDraftToOffer(draft, salonId, snapshot),
+      }),
     });
-    const data = (await res.json()) as { ok?: boolean; error?: string };
+    const data = (await res.json()) as { ok?: boolean; error?: string; copyId?: string };
     setBusy(false);
     if (data.ok) {
       setReviewOpen(false);
@@ -299,7 +302,7 @@ export function TemplateBuilderAdminClient({
               {saveSuccess ? (
                 <div className="vmb-admin-builder-grid__save-success">
                   <p className="vmb-admin-builder-grid__status vmb-admin-builder-grid__status--success">
-                    ✓ Saved to Library
+                    ✓ Saved to Library and sent to Salon Review
                   </p>
                   <Link
                     href={libraryRouteForTemplate(draft.templateId)}

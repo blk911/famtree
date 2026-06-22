@@ -59,7 +59,7 @@ export const DEFAULT_NAILS_SERVICE_PRESETS: ServicePresetCard[] = [
   card("default-nails-gel-manicure", {
     displayName: "Gel Manicure",
     shortDescription: "A clean gel polish manicure for natural nails with lasting shine.",
-    basePriceCents: 5500,
+    basePriceCents: 6000,
     durationMinutes: 45,
     includedText: "Nail prep, shaping, cuticle care, gel polish, finish.",
     defaultEnabled: false,
@@ -69,7 +69,7 @@ export const DEFAULT_NAILS_SERVICE_PRESETS: ServicePresetCard[] = [
   card("default-nails-builder-gel", {
     displayName: "Builder Gel",
     shortDescription: "Added strength for natural nails using builder gel overlay.",
-    basePriceCents: 7000,
+    basePriceCents: 7500,
     durationMinutes: 60,
     includedText: "Nail prep, structure layer, shaping, gel color, finish.",
     defaultEnabled: false,
@@ -80,7 +80,7 @@ export const DEFAULT_NAILS_SERVICE_PRESETS: ServicePresetCard[] = [
   card("default-nails-structured-gel", {
     displayName: "Structured Gel",
     shortDescription: "A premium structured manicure for stronger, smoother natural nails.",
-    basePriceCents: 7500,
+    basePriceCents: 8000,
     durationMinutes: 75,
     includedText: "Detailed prep, structured base, shaping, gel color, finish.",
     defaultEnabled: false,
@@ -91,7 +91,7 @@ export const DEFAULT_NAILS_SERVICE_PRESETS: ServicePresetCard[] = [
   card("default-nails-gel-x", {
     displayName: "Gel-X Extensions",
     shortDescription: "Soft gel extensions with shape, length, and polish.",
-    basePriceCents: 8000,
+    basePriceCents: 9000,
     durationMinutes: 90,
     includedText: "Nail prep, short extensions, standard shape, gel color, finish.",
     defaultEnabled: false,
@@ -102,7 +102,7 @@ export const DEFAULT_NAILS_SERVICE_PRESETS: ServicePresetCard[] = [
   card("default-nails-acrylic-extensions", {
     displayName: "Acrylic Extensions",
     shortDescription: "Classic acrylic extensions with strength, shape, and polish.",
-    basePriceCents: 8500,
+    basePriceCents: 9500,
     durationMinutes: 120,
     includedText: "Nail prep, short acrylic extensions, standard shape, polish, finish.",
     defaultEnabled: false,
