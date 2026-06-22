@@ -124,6 +124,13 @@ function run(): void {
     "new member branch reviews and revises the salon offer",
   );
   assert(
+    commandCenterSource.includes("revisionAddonIds")
+      && commandCenterSource.includes("toggleRevisionAddon")
+      && commandCenterSource.includes("Use this offer")
+      && commandCenterSource.includes(">Cancel<"),
+    "offer revision uses a temporary multi-add-on draft with commit and cancel actions",
+  );
+  assert(
     commandCenterSource.includes('fetch("/api/vmb/salon-services"')
       && commandCenterSource.includes('fetch("/api/vmb/salon-invites"'),
     "new member My Style loads salon-facing services and published invitations",

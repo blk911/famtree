@@ -4634,6 +4634,60 @@
   cursor: pointer;
 }
 
+.vmb-today-command__revision-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vmb-today-command__revision-pills button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  border: 1px solid #e7e5e4;
+  border-radius: 999px;
+  background: #fff;
+  padding: 7px 11px;
+  color: #44403c;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.vmb-today-command__revision-pills button.is-selected {
+  border-color: #db2777;
+  background: #fdf2f8;
+  color: #9d174d;
+  box-shadow: inset 0 0 0 1px #db2777;
+}
+
+.vmb-today-command__revision-pills strong,
+.vmb-today-command__revision-pills small {
+  font-size: 12px;
+}
+
+.vmb-today-command__revision-pills small {
+  color: #78716c;
+}
+
+.vmb-today-command__style-builder > .vmb-today-command__revision-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.vmb-today-command__revision-cancel {
+  border: 0;
+  background: transparent;
+  padding: 7px 10px;
+  color: #57534e;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .vmb-today-command__copy-details summary {
   color: #9d174d;
   cursor: pointer;

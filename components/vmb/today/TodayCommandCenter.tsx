@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { SalonFacingServiceOffer } from "@/lib/vmb/services/service-preset-types";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
@@ -55,6 +55,10 @@ export function TodayCommandCenter({
   const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
   const [offerPrice, setOfferPrice] = useState("");
   const [revisingOffer, setRevisingOffer] = useState(false);
+  const [revisionServiceId, setRevisionServiceId] = useState("");
+  const [revisionAddonIds, setRevisionAddonIds] = useState<string[]>([]);
+  const [revisionOfferPrice, setRevisionOfferPrice] = useState("");
+  const skipNextServiceDefaults = useRef(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -118,17 +122,23 @@ export function TodayCommandCenter({
     (addon) => addon.enabled && selectedAddonIds.includes(addon.addonId),
   ) ?? [];
   const serviceOptions = selectedService?.addons.filter((addon) => addon.enabled) ?? [];
+  const revisionService = services.find((service) => service.serviceOfferId === revisionServiceId);
+  const revisionOptions = revisionService?.addons.filter((addon) => addon.enabled) ?? [];
   const hasRecipientContact = Boolean(email.trim() || phone.trim());
   const hasRecipient = isNewMemberInvite
     ? Boolean(clientName.trim() && hasRecipientContact)
     : Boolean(selectedOpportunity && clientName.trim());
   const canSend = isNewMemberInvite
-    ? Boolean(hasRecipient && email.trim() && title.trim() && message.trim() && selectedService && newMemberCopy)
+    ? Boolean(hasRecipient && email.trim() && title.trim() && message.trim() && selectedService && newMemberCopy && !revisingOffer)
     : Boolean(hasRecipient && title.trim() && message.trim() && selectedService);
 
   useEffect(() => {
     if (!selectedService) {
       setOfferPrice("");
+      return;
+    }
+    if (skipNextServiceDefaults.current) {
+      skipNextServiceDefaults.current = false;
       return;
     }
     const enabledAddons = selectedService.addons.filter((addon) => addon.enabled);
@@ -137,16 +147,42 @@ export function TodayCommandCenter({
     setOfferPrice((totalCents / 100).toFixed(2));
   }, [selectedService]);
 
-  function toggleAddon(addonId: string) {
-    if (!selectedService) return;
-    const next = selectedAddonIds.includes(addonId)
-      ? selectedAddonIds.filter((id) => id !== addonId)
-      : [...selectedAddonIds, addonId];
-    setSelectedAddonIds(next);
-    const addonTotal = selectedService.addons
+  function beginRevision() {
+    setRevisionServiceId(selectedServiceId);
+    setRevisionAddonIds([...selectedAddonIds]);
+    setRevisionOfferPrice(offerPrice);
+    setRevisingOffer(true);
+  }
+
+  function selectRevisionService(serviceId: string) {
+    const service = services.find((row) => row.serviceOfferId === serviceId);
+    setRevisionServiceId(serviceId);
+    const addonIds = service?.addons.filter((addon) => addon.enabled).map((addon) => addon.addonId) ?? [];
+    setRevisionAddonIds(addonIds);
+    const totalCents = (service?.priceCents ?? 0) + (service?.addons ?? [])
+      .filter((addon) => addon.enabled && addonIds.includes(addon.addonId))
+      .reduce((sum, addon) => sum + addon.priceCents, 0);
+    setRevisionOfferPrice((totalCents / 100).toFixed(2));
+  }
+
+  function toggleRevisionAddon(addonId: string) {
+    if (!revisionService) return;
+    const next = revisionAddonIds.includes(addonId)
+      ? revisionAddonIds.filter((id) => id !== addonId)
+      : [...revisionAddonIds, addonId];
+    setRevisionAddonIds(next);
+    const totalCents = revisionService.priceCents + revisionService.addons
       .filter((addon) => addon.enabled && next.includes(addon.addonId))
       .reduce((sum, addon) => sum + addon.priceCents, 0);
-    setOfferPrice(((selectedService.priceCents + addonTotal) / 100).toFixed(2));
+    setRevisionOfferPrice((totalCents / 100).toFixed(2));
+  }
+
+  function useRevision() {
+    skipNextServiceDefaults.current = revisionServiceId !== selectedServiceId;
+    setSelectedServiceId(revisionServiceId);
+    setSelectedAddonIds([...revisionAddonIds]);
+    setOfferPrice(revisionOfferPrice);
+    setRevisingOffer(false);
   }
 
   async function saveInviteStub() {
@@ -360,14 +396,14 @@ export function TodayCommandCenter({
                       <div className="vmb-today-command__style-summary-total">
                         <span>Offer total</span><strong>${Number(offerPrice || 0).toFixed(2)}</strong>
                       </div>
-                      <button type="button" onClick={() => setRevisingOffer(true)}>Revise this offer</button>
+                      <button type="button" onClick={beginRevision}>Revise this offer</button>
                     </div>
                   ) : (
                     <>
                       <div className="vmb-today-command__style-controls">
                         <label>
                           <span>Active service</span>
-                          <select value={selectedServiceId} onChange={(event) => setSelectedServiceId(event.target.value)}>
+                          <select value={revisionServiceId} onChange={(event) => selectRevisionService(event.target.value)}>
                             {services.length === 0 ? <option value="">No active services</option> : null}
                             {services.map((service) => (
                               <option key={service.serviceOfferId} value={service.serviceOfferId}>
@@ -377,24 +413,25 @@ export function TodayCommandCenter({
                           </select>
                         </label>
                         <label className="vmb-today-command__price-field">
-                          <span>Offer price</span>
-                          <div><b>$</b><input type="number" min="0" step="0.01" value={offerPrice} onChange={(event) => setOfferPrice(event.target.value)} /></div>
+                          <span>Adjust offer price</span>
+                          <div><b>$</b><input type="number" min="0" step="0.01" value={revisionOfferPrice} onChange={(event) => setRevisionOfferPrice(event.target.value)} /></div>
                         </label>
                       </div>
-                      {serviceOptions.length > 0 ? (
+                      {revisionOptions.length > 0 ? (
                         <div>
                           <span>Custom add-ons</span>
-                          <div className="vmb-today-command__pick-grid">
-                            {serviceOptions.map((option) => {
-                              const selected = selectedAddonIds.includes(option.addonId);
+                          <div className="vmb-today-command__revision-pills">
+                            {revisionOptions.map((option) => {
+                              const selected = revisionAddonIds.includes(option.addonId);
                               return (
                                 <button
                                   key={option.addonId}
                                   type="button"
                                   className={selected ? "is-selected" : undefined}
                                   aria-pressed={selected}
-                                  onClick={() => toggleAddon(option.addonId)}
+                                  onClick={() => toggleRevisionAddon(option.addonId)}
                                 >
+                                  {selected ? <span aria-hidden="true">✓</span> : null}
                                   <strong>{option.label}</strong>
                                   <small>+${(option.priceCents / 100).toFixed(2)}</small>
                                 </button>
@@ -402,8 +439,11 @@ export function TodayCommandCenter({
                             })}
                           </div>
                         </div>
-                      ) : <p className="vmb-today-command__style-note">This service uses the salon&apos;s base style with no add-on selected.</p>}
-                      <button type="button" className="vmb-today-command__revision-done" onClick={() => setRevisingOffer(false)}>Use this offer</button>
+                      ) : <p className="vmb-today-command__style-note">No custom add-ons are available for this service.</p>}
+                      <div className="vmb-today-command__revision-actions">
+                        <button type="button" className="vmb-today-command__revision-done" onClick={useRevision}>Use this offer</button>
+                        <button type="button" className="vmb-today-command__revision-cancel" onClick={() => setRevisingOffer(false)}>Cancel</button>
+                      </div>
                     </>
                   )}
                 </div>
