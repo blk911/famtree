@@ -5940,6 +5940,10 @@
   margin-bottom: 0;
 }
 
+.vmb-admin-service-category-nav {
+  margin: 10px 0;
+}
+
 .vmb-admin-builder__flow-actions {
   flex-shrink: 0;
 }
@@ -6198,6 +6202,10 @@
   margin: 0 0 10px;
   font-size: 13px;
   color: #78716c;
+}
+
+.vmb-service-catalog-admin {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
 }
 
 .vmb-service-catalog-admin .vmb-service-catalog__service-list {
@@ -7397,6 +7405,7 @@
   font-size: 14px;
   color: #44403c;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .vmb-service-catalog__nav-item--active {

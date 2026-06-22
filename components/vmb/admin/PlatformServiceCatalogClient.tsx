@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import type { CatalogServiceOffer, ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
 import {
@@ -14,7 +15,11 @@ import {
 
 export function PlatformServiceCatalogClient() {
   const categories = useMemo(() => listServiceCategories(), []);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<ServiceCategoryId>("nails");
+  const searchParams = useSearchParams();
+  const requestedCategoryId = searchParams.get("categoryId");
+  const selectedCategoryId: ServiceCategoryId = categories.some((category) => category.id === requestedCategoryId)
+    ? requestedCategoryId as ServiceCategoryId
+    : "nails";
   const [selectedServiceId, setSelectedServiceId] = useState<string>("");
 
   const services = useMemo(
@@ -22,7 +27,9 @@ export function PlatformServiceCatalogClient() {
     [selectedCategoryId],
   );
 
-  const activeServiceId = selectedServiceId || services[0]?.id || "";
+  const activeServiceId = services.some((service) => service.id === selectedServiceId)
+    ? selectedServiceId
+    : services[0]?.id || "";
   const selectedService = useMemo(
     () => (activeServiceId ? getCatalogServiceOfferWithAddons(activeServiceId) : undefined),
     [activeServiceId],
@@ -40,26 +47,6 @@ export function PlatformServiceCatalogClient() {
       activeStep="services"
     >
       <div className="vmb-admin-builder-grid vmb-service-catalog-admin">
-        <aside className="vmb-admin-builder-grid__list">
-          <p className="vmb-admin-builder-grid__list-label">Categories</p>
-          <ul>
-            {categories.map((category) => (
-              <li key={category.id}>
-                <button
-                  type="button"
-                  className={`vmb-admin-builder-grid__type${selectedCategoryId === category.id ? " vmb-admin-builder-grid__type--active" : ""}`}
-                  onClick={() => {
-                    setSelectedCategoryId(category.id);
-                    setSelectedServiceId("");
-                  }}
-                >
-                  {category.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </aside>
-
         <section className="vmb-admin-builder-grid__editor" aria-label={`${categoryLabel} services`}>
           <h2 className="vmb-admin-builder__panel-title">{categoryLabel}</h2>
           <ul className="vmb-service-catalog__service-list">

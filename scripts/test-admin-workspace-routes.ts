@@ -301,7 +301,7 @@ function run(): void {
     path.join(process.cwd(), "components/vmb/admin/AdminBuilderFlowNav.tsx"),
     "utf8",
   );
-  assert(flowNavSource.includes("Builder"), "flow nav shows builder step");
+  assert(flowNavSource.includes("Invite Builder"), "flow nav shows invite builder step");
   assert(flowNavSource.includes("Library"), "flow nav shows library step");
   assert(flowNavSource.includes("Manage Presets"), "flow nav shows manage presets first");
   assert(flowNavSource.includes("Service Offers"), "flow nav names the service offers step");
@@ -312,7 +312,15 @@ function run(): void {
   assert(!flowNavSource.includes("Template Builder"), "flow nav uses builder label");
   assert(flowNavSource.includes("/admin/invites/builder"), "flow nav links to builder route");
   assert(flowNavSource.includes("/admin/invites/library"), "flow nav links to library route");
+  assert(flowNavSource.includes('searchParams.get("categoryId")'), "flow nav preserves selected service category");
   assert(!flowNavSource.includes("Preview"), "flow nav removes preview hint");
+
+  const categoryNavSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/AdminServiceCategoryNav.tsx"),
+    "utf8",
+  );
+  assert(categoryNavSource.includes("listServiceCategories"), "shared builder shell renders canonical category pills");
+  assert(categoryNavSource.includes("categoryId="), "category pills persist category in the URL");
 
   const offerSelectionSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/OfferNailSelectionFields.tsx"),

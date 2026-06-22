@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 
 
@@ -12,7 +15,7 @@ const STEPS: { id: AdminBuilderStep; label: string; href: string }[] = [
 
   { id: "services", label: "Service Offers", href: "/admin/service-catalog" },
 
-  { id: "builder", label: "Builder", href: "/admin/invites/builder" },
+  { id: "builder", label: "Invite Builder", href: "/admin/invites/builder" },
 
   { id: "library", label: "Library", href: "/admin/invites/library" },
 
@@ -29,6 +32,9 @@ type Props = {
 
 
 export function AdminBuilderFlowNav({ active }: Props) {
+
+  const searchParams = useSearchParams();
+  const categoryId = searchParams.get("categoryId") ?? "nails";
 
   return (
 
@@ -54,7 +60,7 @@ export function AdminBuilderFlowNav({ active }: Props) {
 
           ) : (
 
-            <Link href={step.href} className="vmb-admin-builder-flow-nav__link">
+            <Link href={`${step.href}?categoryId=${encodeURIComponent(categoryId)}`} className="vmb-admin-builder-flow-nav__link">
 
               {step.label}
 

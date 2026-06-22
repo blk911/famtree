@@ -4,6 +4,7 @@ import {
   AdminBuilderFlowNav,
   type AdminBuilderStep,
 } from "@/components/vmb/admin/AdminBuilderFlowNav";
+import { AdminServiceCategoryNav } from "@/components/vmb/admin/AdminServiceCategoryNav";
 
 type Props = {
   title: string;
@@ -30,6 +31,7 @@ export function AdminBuilderShell({
       <header className="vmb-admin-builder__header">
         <h1 className="vmb-admin-builder__title">{title}</h1>
         {subtitle ? <p className="vmb-admin-builder__subtitle">{subtitle}</p> : null}
+        <AdminServiceCategoryNav />
         <div className="vmb-admin-builder__header-flow">
           <AdminBuilderFlowNav active={activeStep} />
           {flowActions ? <div className="vmb-admin-builder__flow-actions">{flowActions}</div> : null}

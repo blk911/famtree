@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { ServicePresetCard } from "@/components/vmb/services/ServicePresetCard";
 import type { ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
@@ -19,7 +20,11 @@ const ADDON_OFFER_TITLES: Record<string, string> = {
 
 export function ServicePresetAdminClient() {
   const categories = listServiceCategories();
-  const [categoryId, setCategoryId] = useState<ServiceCategoryId>("nails");
+  const searchParams = useSearchParams();
+  const requestedCategoryId = searchParams.get("categoryId");
+  const categoryId: ServiceCategoryId = categories.some((category) => category.id === requestedCategoryId)
+    ? requestedCategoryId as ServiceCategoryId
+    : "nails";
   const [presets, setPresets] = useState<ServicePresetCardModel[]>([]);
   const [drafts, setDrafts] = useState<Record<string, ServicePresetCardModel>>({});
   const [selectedId, setSelectedId] = useState<string>("");
@@ -43,7 +48,7 @@ export function ServicePresetAdminClient() {
         nextDrafts[preset.id] = preset;
       }
       setDrafts(nextDrafts);
-      setSelectedId((current) => current || json.presets[0]?.id || "");
+      setSelectedId(json.presets[0]?.id || "");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Load failed");
     } finally {
@@ -113,26 +118,6 @@ export function ServicePresetAdminClient() {
     >
     <div className="vmb-service-catalog">
       <div className="vmb-service-catalog__layout">
-        <nav className="vmb-service-catalog__nav" aria-label="Service categories">
-          <p className="vmb-service-catalog__nav-label">Categories</p>
-          <ul className="vmb-service-catalog__nav-list">
-            {categories.map((category) => (
-              <li key={category.id}>
-                <button
-                  type="button"
-                  className={`vmb-service-catalog__nav-item${categoryId === category.id ? " vmb-service-catalog__nav-item--active" : ""}`}
-                  onClick={() => {
-                    setCategoryId(category.id);
-                    setSelectedId("");
-                  }}
-                >
-                  {category.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
         <section className="vmb-service-catalog__main" aria-label={`${categoryLabel} preset cards`}>
           <h2 className="vmb-service-catalog__category-title">{categoryLabel.toUpperCase()}</h2>
           {loading ? (
