@@ -37,7 +37,14 @@ export function TemplateBuilderAdminClient({
   ownerName,
   initialTemplateId,
 }: Props) {
-  const { drafts, reload, serviceFallbackById, optionFallbackById } = useNailTemplateInventory(salonId);
+  const {
+    drafts,
+    reload,
+    serviceFallbackById,
+    optionFallbackById,
+    servicePriceById,
+    addonPriceByServiceId,
+  } = useNailTemplateInventory(salonId);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
     initialTemplateId ?? DEFAULT_NAIL_INVITE_TEMPLATES[0]!.id,
   );
@@ -92,25 +99,33 @@ export function TemplateBuilderAdminClient({
     [ownerName, salonName],
   );
 
-  const previewSnapshot = useMemo(() => {
+  const livePricing = useMemo(() => {
     if (!draft) return null;
+    const addonPriceById = addonPriceByServiceId[draft.serviceIds[0] ?? ""];
+    return calculateInvitationPackagePricing({
+      serviceIds: draft.serviceIds,
+      serviceOptionIds: draft.serviceOptionIds,
+      servicePriceById,
+      addonPriceById,
+      inviteType: selectedTemplate?.inviteType,
+    });
+  }, [addonPriceByServiceId, draft, selectedTemplate, servicePriceById]);
+
+  const previewSnapshot = useMemo(() => {
+    if (!draft || !livePricing) return null;
     return buildDraftInviteSnapshot(draft, {
       ownerName: ownerName || INVITE_TEMPLATE_PREVIEW_CONTEXT.providerName,
       salonName,
       ownerPhotoUrl: imageInserts.ownerPhotoUrl,
       salonLogoUrl: imageInserts.salonLogoUrl,
       serviceImageUrl: imageInserts.serviceImageUrl,
+      totalValue: livePricing.totalValue,
+      savingsAmount: livePricing.savingsAmount,
+      offerPrice: livePricing.offerPrice,
+      valueLabel: livePricing.valueLabel,
+      priceLabel: livePricing.priceLabel,
     });
-  }, [draft, imageInserts, ownerName, salonName]);
-
-  const livePricing = useMemo(() => {
-    if (!draft) return null;
-    return calculateInvitationPackagePricing({
-      serviceIds: draft.serviceIds,
-      serviceOptionIds: draft.serviceOptionIds,
-      inviteType: selectedTemplate?.inviteType,
-    });
-  }, [draft, selectedTemplate]);
+  }, [draft, imageInserts, livePricing, ownerName, salonName]);
 
   function patchDraft(patch: Partial<NailTemplateDraft>) {
     setSaveSuccess(false);
@@ -249,6 +264,8 @@ export function TemplateBuilderAdminClient({
                   pricing={livePricing}
                   serviceFallbackById={serviceFallbackById}
                   rewardFallbackById={optionFallbackById}
+                  servicePriceById={servicePriceById}
+                  addonPriceById={addonPriceByServiceId[draft.serviceIds[0] ?? ""]}
                 />
               ) : null}
 

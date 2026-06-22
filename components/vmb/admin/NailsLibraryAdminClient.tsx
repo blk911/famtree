@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { AdminDefaultPackageSummary } from "@/components/vmb/admin/AdminDefaultPackageSummary";
-import { resolveAdminDefaultInvitationPackageWithPricing } from "@/lib/vmb/invite-templates/admin-default-invitation-package";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminSalonInviteReviewModal } from "@/components/vmb/admin/AdminSalonInviteReviewModal";
 import { useNailTemplateInventory } from "@/components/vmb/admin/useNailTemplateInventory";
@@ -92,11 +90,6 @@ export function NailsLibraryAdminClient({
   );
 
   const librarySnapshot = selected?.librarySnapshot ?? null;
-
-  const selectedTemplate = useMemo(
-    () => DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === selectedTemplateId),
-    [selectedTemplateId],
-  );
 
   const selectedPublishedCopy = useMemo(
     () => publishedCopyForTemplate(publishedCopies, selected?.templateId),
@@ -198,7 +191,7 @@ export function NailsLibraryAdminClient({
           ) : (
             <ul>
               {savedDrafts.map((row) => {
-                const assetPricing = resolveAdminDefaultInvitationPackageWithPricing(row.templateId)?.pricing;
+                const assetPricing = row.librarySnapshot;
                 const rowPublishedCopy = publishedCopyForTemplate(publishedCopies, row.templateId);
                 const isPublished = Boolean(rowPublishedCopy);
                 return (
@@ -211,7 +204,7 @@ export function NailsLibraryAdminClient({
                     <span className="vmb-nails-library__asset-title">
                       {displayTouchPointName(row.displayName)}
                     </span>
-                    {assetPricing ? (
+                    {assetPricing?.valueLabel && assetPricing.priceLabel ? (
                       <span className="vmb-nails-library__asset-pricing">
                         Value {assetPricing.valueLabel} · Offer {assetPricing.priceLabel}
                       </span>
@@ -256,16 +249,6 @@ export function NailsLibraryAdminClient({
                   <dd>{formatSnapshotUpdatedAt(librarySnapshot)}</dd>
                 </div>
               </dl>
-
-              {selectedTemplate ? (
-                <AdminDefaultPackageSummary
-                  pkg={selectedTemplate.defaultPackage}
-                  templateId={selectedTemplate.id}
-                  serviceFallbackById={serviceFallbackById}
-                  rewardFallbackById={optionFallbackById}
-                  title="Admin default package (source)"
-                />
-              ) : null}
 
               {librarySnapshot?.valueLabel && librarySnapshot?.priceLabel ? (
                 <dl className="vmb-nails-library__meta vmb-nails-library__meta--compact">

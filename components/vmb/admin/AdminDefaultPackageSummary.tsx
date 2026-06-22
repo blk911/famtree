@@ -47,6 +47,8 @@ type OfferPricingSummaryProps = {
   pricing: InvitationPackagePricing;
   serviceFallbackById?: Record<string, string | undefined>;
   rewardFallbackById?: Record<string, string | undefined>;
+  servicePriceById?: Record<string, number>;
+  addonPriceById?: Record<string, number>;
 };
 
 export function OfferPricingSummary({
@@ -56,16 +58,18 @@ export function OfferPricingSummary({
   pricing,
   serviceFallbackById,
   rewardFallbackById,
+  servicePriceById,
+  addonPriceById,
 }: OfferPricingSummaryProps) {
   const services = serviceIds.map((id) => ({
     id,
     label: resolveNailOfferServiceLabels([id], serviceFallbackById)[0] ?? id,
-    price: defaultNailServicePrice(id),
+    price: servicePriceById?.[id] ?? defaultNailServicePrice(id),
   }));
   const options = serviceOptionIds.map((id) => ({
     id,
     label: resolveNailOfferAddonLabels([id], rewardFallbackById)[0] ?? id,
-    price: defaultNailAddonPrice(id),
+    price: addonPriceById?.[id] ?? defaultNailAddonPrice(id),
   }));
 
   return (
@@ -272,4 +276,3 @@ function PricingRow({ label, value }: { label: string; value: string }) {
   );
 
 }
-

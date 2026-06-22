@@ -38,16 +38,18 @@ export function formatInvitationPrice(amount: number): string {
 export function calculateInvitationPackagePricing(input: {
   serviceIds: string[];
   serviceOptionIds: string[];
+  servicePriceById?: Record<string, number>;
+  addonPriceById?: Record<string, number>;
   savingsAmount?: number;
   offerPriceOverride?: number;
   inviteType?: VmbInviteType;
 }): InvitationPackagePricing {
   const serviceTotal = input.serviceIds.reduce(
-    (sum, id) => sum + defaultNailServicePrice(id),
+    (sum, id) => sum + (input.servicePriceById?.[id] ?? defaultNailServicePrice(id)),
     0,
   );
   const addOnTotal = input.serviceOptionIds.reduce(
-    (sum, id) => sum + defaultNailAddonPrice(id),
+    (sum, id) => sum + (input.addonPriceById?.[id] ?? defaultNailAddonPrice(id)),
     0,
   );
   const totalValue = serviceTotal + addOnTotal;

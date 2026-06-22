@@ -43,7 +43,7 @@ export function labelForNailOfferServiceId(
   fallbackName?: string,
 ): string | undefined {
   const normalized = normalizeCatalogId(id);
-  return SERVICE_LABEL_BY_ID.get(id) ?? SERVICE_LABEL_BY_ID.get(normalized) ?? fallbackName;
+  return fallbackName ?? SERVICE_LABEL_BY_ID.get(id) ?? SERVICE_LABEL_BY_ID.get(normalized);
 }
 
 export function labelForNailOfferAddonId(
@@ -51,7 +51,7 @@ export function labelForNailOfferAddonId(
   fallbackName?: string,
 ): string | undefined {
   const normalized = normalizeCatalogId(id);
-  return ADDON_LABEL_BY_ID.get(id) ?? ADDON_LABEL_BY_ID.get(normalized) ?? fallbackName;
+  return fallbackName ?? ADDON_LABEL_BY_ID.get(id) ?? ADDON_LABEL_BY_ID.get(normalized);
 }
 
 export function resolveNailOfferServiceLabels(

@@ -168,6 +168,16 @@ async function run(): Promise<void> {
   assert(gelManicurePricing.addOnTotal === 15, "pricing sums add-on defaults");
   assert(gelManicurePricing.totalValue === 70, "pricing totals service and add-ons");
 
+  const presetOverridePricing = calculateInvitationPackagePricing({
+    serviceIds: ["default-nails-builder-gel"],
+    serviceOptionIds: ["addon-chrome"],
+    servicePriceById: { "default-nails-builder-gel": 70 },
+    addonPriceById: { "addon-chrome": 18 },
+  });
+  assert(presetOverridePricing.serviceTotal === 70, "pricing honors saved offer preset service price");
+  assert(presetOverridePricing.addOnTotal === 18, "pricing honors saved offer preset add-on price");
+  assert(presetOverridePricing.totalValue === 88, "preset prices drive package total");
+
   const birthdayResolved = resolveAdminDefaultInvitationPackageWithPricing("nails-birthday-celebration");
   assert((birthdayResolved?.pricing.savingsAmount ?? 0) > 0, "birthday default package has nonzero savings");
   assert(birthdayResolved?.pricing.totalValue === 110, "birthday package value is gel-x plus chrome");
@@ -496,6 +506,9 @@ async function run(): Promise<void> {
   assert(builderSource.includes("OfferPricingSummary"), "builder shows live offer pricing");
   assert(builderSource.includes("draft.serviceIds"), "builder pricing follows selected services");
   assert(builderSource.includes("draft.serviceOptionIds"), "builder pricing follows selected options");
+  assert(builderSource.includes("servicePriceById"), "builder pricing uses offer preset service prices");
+  assert(builderSource.includes("addonPriceByServiceId"), "builder pricing uses offer preset add-on prices");
+  assert(builderSource.includes("totalValue: livePricing.totalValue"), "preview snapshot uses live preset pricing");
   assert(!builderSource.includes("AdminTemplatePreviewCard"), "builder removes live draft preview card");
   assert(builderSource.includes("✓ Saved to Library"), "builder shows inline save confirmation");
   assert(builderSource.includes("View in Library"), "builder links to library after save");
@@ -838,6 +851,13 @@ async function run(): Promise<void> {
     "offer service labels resolve from curated choices",
   );
   assert(
+    resolveNailOfferServiceLabels(
+      ["default-nails-gel-manicure"],
+      { "default-nails-gel-manicure": "Signature Gel Manicure" },
+    )[0] === "Signature Gel Manicure",
+    "saved offer preset label overrides the static builder label",
+  );
+  assert(
     resolveNailOfferAddonLabels(["addon-chrome"])[0] === "Chrome Upgrade",
     "offer add-on labels use salon-friendly names",
   );
@@ -871,6 +891,8 @@ async function run(): Promise<void> {
   );
   assert(libraryClient.includes("override-dot--published"), "library shows published status on the inventory dot");
   assert(!libraryClient.includes("Publish verification"), "library hides publish verification diagnostics");
+  assert(libraryClient.includes("row.librarySnapshot"), "library pricing comes from the saved snapshot");
+  assert(!libraryClient.includes("Admin default package (source)"), "library removes duplicate static package pricing");
 
   const { resetVmbStorageBackendCache } = await import("../lib/vmb/db");
   const { upsertOffer } = await import("../lib/vmb/offers/offer-store");
