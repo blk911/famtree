@@ -9815,13 +9815,14 @@
 
 .vmb-service-preset-admin__editor-wrap {
   display: grid;
-  grid-template-columns: minmax(260px, 320px) 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
   gap: 24px;
   align-items: start;
   margin-top: 20px;
 }
 
 .vmb-service-preset-admin__preview {
+  order: 2;
   position: sticky;
   top: 16px;
 }
@@ -9884,6 +9885,7 @@
 }
 
 .vmb-service-preset-admin__editor {
+  order: 1;
   padding-top: 8px;
 }
 
