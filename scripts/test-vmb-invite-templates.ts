@@ -177,6 +177,13 @@ async function run(): Promise<void> {
   assert(presetOverridePricing.serviceTotal === 70, "pricing honors saved offer preset service price");
   assert(presetOverridePricing.addOnTotal === 18, "pricing honors saved offer preset add-on price");
   assert(presetOverridePricing.totalValue === 88, "preset prices drive package total");
+  const cappedSavingsPricing = calculateInvitationPackagePricing({
+    serviceIds: ["default-nails-gel-manicure"],
+    serviceOptionIds: [],
+    savingsAmount: 100,
+  });
+  assert(cappedSavingsPricing.savingsAmount === 55, "offer savings cannot exceed package value");
+  assert(cappedSavingsPricing.offerPrice === 0, "capped savings cannot create a negative offer price");
 
   const birthdayResolved = resolveAdminDefaultInvitationPackageWithPricing("nails-birthday-celebration");
   assert((birthdayResolved?.pricing.savingsAmount ?? 0) > 0, "birthday default package has nonzero savings");
@@ -854,6 +861,8 @@ async function run(): Promise<void> {
   assert(selectionFieldsSource.includes('type="radio"'), "nail service uses mutually exclusive radio inputs");
   assert(selectionFieldsSource.includes('onServiceIdsChange([choice.id])'), "service selection stores exactly one service");
   assert(selectionFieldsSource.includes("Custom Add-ons"), "builder labels multi-select rewards as custom add-ons");
+  assert(selectionFieldsSource.includes("Offer Savings"), "builder exposes salon-controlled offer savings");
+  assert(selectionFieldsSource.includes("Offer savings amount"), "discount reveals a numeric savings counter");
   assert(
     resolveNailOfferServiceLabels(["default-nails-gel-manicure"])[0] === "Gel Manicure",
     "offer service labels resolve from curated choices",

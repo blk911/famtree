@@ -20,6 +20,7 @@ export type NailTemplateDraft = {
   ctaLabel: string;
   serviceIds: string[];
   serviceOptionIds: string[];
+  savingsAmount?: number;
   active: boolean;
   saved: boolean;
   offerCategory: VmbOfferCategory;
@@ -62,6 +63,9 @@ export function buildNailTemplateDraft(
 ): NailTemplateDraft {
   const adminPackage = template.defaultPackage;
   const useSavedOffer = Boolean(savedOffer && !savedOffer.isDefault);
+  const savedSnapshot = savedOffer?.inviteSnapshot
+    ? parseInviteTemplateSnapshot(savedOffer.inviteSnapshot)
+    : null;
   return {
     templateId: template.id,
     displayName: template.displayName,
@@ -74,12 +78,11 @@ export function buildNailTemplateDraft(
     serviceOptionIds: useSavedOffer
       ? [...(savedOffer?.serviceOptionIds ?? [])]
       : [...adminPackage.serviceOptionIds],
+    savingsAmount: useSavedOffer ? Math.max(0, savedSnapshot?.savingsAmount ?? 0) : 0,
     active: savedOffer?.active ?? template.active,
     saved: Boolean(savedOffer && !savedOffer.isDefault),
     offerCategory: offerCategoryForInviteTemplate(template),
-    librarySnapshot: savedOffer?.inviteSnapshot
-      ? parseInviteTemplateSnapshot(savedOffer.inviteSnapshot)
-      : null,
+    librarySnapshot: savedSnapshot,
   };
 }
 

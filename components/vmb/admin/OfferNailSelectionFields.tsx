@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   NAIL_OFFER_ADDON_CHOICES,
   NAIL_OFFER_SERVICE_CHOICES,
@@ -9,6 +10,8 @@ type Props = {
   serviceOptionIds: string[] | undefined;
   onServiceIdsChange: (serviceIds: string[]) => void;
   onServiceOptionIdsChange: (serviceOptionIds: string[]) => void;
+  savingsAmount: number;
+  onSavingsAmountChange: (savingsAmount: number) => void;
 };
 
 export function OfferNailSelectionFields({
@@ -16,7 +19,15 @@ export function OfferNailSelectionFields({
   serviceOptionIds,
   onServiceIdsChange,
   onServiceOptionIdsChange,
+  savingsAmount,
+  onSavingsAmountChange,
 }: Props) {
+  const [discountEnabled, setDiscountEnabled] = useState(savingsAmount > 0);
+
+  useEffect(() => {
+    setDiscountEnabled(savingsAmount > 0);
+  }, [savingsAmount]);
+
   return (
     <div className="vmb-offer-builder-selections">
       <section className="vmb-offer-builder-selections__group" aria-labelledby="offer-nail-services-heading">
@@ -66,6 +77,41 @@ export function OfferNailSelectionFields({
             );
           })}
         </ul>
+      </section>
+
+      <section className="vmb-offer-builder-savings" aria-labelledby="offer-savings-heading">
+        <h3 id="offer-savings-heading" className="vmb-offer-builder-selections__heading">
+          Offer Savings
+        </h3>
+        <div className="vmb-offer-builder-savings__controls">
+          <label className="vmb-offer-builder-selections__choice">
+            <input
+              type="checkbox"
+              checked={discountEnabled}
+              onChange={(event) => {
+                const enabled = event.target.checked;
+                setDiscountEnabled(enabled);
+                if (!enabled) onSavingsAmountChange(0);
+              }}
+            />
+            <span>Discount</span>
+          </label>
+          {discountEnabled ? (
+            <label className="vmb-offer-builder-savings__amount">
+              <span>$</span>
+              <input
+                type="number"
+                min={0}
+                step={5}
+                value={savingsAmount}
+                aria-label="Offer savings amount"
+                onChange={(event) =>
+                  onSavingsAmountChange(Math.max(0, Math.round(Number(event.target.value) || 0)))
+                }
+              />
+            </label>
+          ) : null}
+        </div>
       </section>
     </div>
   );

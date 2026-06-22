@@ -53,9 +53,10 @@ export function calculateInvitationPackagePricing(input: {
     0,
   );
   const totalValue = serviceTotal + addOnTotal;
-  const savingsAmount =
+  const requestedSavings =
     input.savingsAmount ??
     (input.inviteType != null ? DEFAULT_INVITE_TYPE_SAVINGS[input.inviteType] : 0);
+  const savingsAmount = Math.min(totalValue, Math.max(0, requestedSavings));
   const offerPrice =
     input.offerPriceOverride ?? Math.max(0, totalValue - savingsAmount);
 

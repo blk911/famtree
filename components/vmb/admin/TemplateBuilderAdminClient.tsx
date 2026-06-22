@@ -110,6 +110,7 @@ export function TemplateBuilderAdminClient({
       serviceOptionIds: draft.serviceOptionIds,
       servicePriceById,
       addonPriceById,
+      savingsAmount: draft.savingsAmount ?? 0,
       inviteType: selectedTemplate?.inviteType,
     });
   }, [addonPriceByServiceId, draft, selectedTemplate, servicePriceById]);
@@ -253,10 +254,13 @@ export function TemplateBuilderAdminClient({
               </label>
 
               <OfferNailSelectionFields
+                key={draft.templateId}
                 serviceIds={draft.serviceIds}
                 serviceOptionIds={draft.serviceOptionIds}
+                savingsAmount={draft.savingsAmount ?? 0}
                 onServiceIdsChange={(serviceIds) => patchDraft({ serviceIds })}
                 onServiceOptionIdsChange={(serviceOptionIds) => patchDraft({ serviceOptionIds })}
+                onSavingsAmountChange={(savingsAmount) => patchDraft({ savingsAmount })}
               />
 
               {selectedTemplate && livePricing ? (
