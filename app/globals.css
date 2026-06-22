@@ -10008,10 +10008,10 @@
   }
 }
 
-.vmb-service-preset-admin__addon-id {
-  font-family: ui-monospace, monospace;
-  font-size: 11px;
-  color: #78716c;
+.vmb-service-preset-admin__addon-title {
+  color: #292524;
+  font-size: 12px;
+  font-weight: 800;
   align-self: center;
 }
 

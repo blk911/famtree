@@ -10,6 +10,13 @@ import type {
   ServicePresetCard as ServicePresetCardModel,
 } from "@/lib/vmb/services/service-preset-types";
 
+const ADDON_OFFER_TITLES: Record<string, string> = {
+  "addon-french": "FRENCH TIPS",
+  "addon-chrome": "CHROME",
+  "addon-crystals": "CRYSTALS",
+  "addon-freestyle-art": "FREESTYLE ART",
+};
+
 export function ServicePresetAdminClient() {
   const categories = listServiceCategories();
   const [categoryId, setCategoryId] = useState<ServiceCategoryId>("nails");
@@ -249,7 +256,9 @@ export function ServicePresetAdminClient() {
                       <ul className="vmb-service-preset-admin__addon-list">
                         {selected.addonPresets.map((addon) => (
                           <li key={addon.addonId} className="vmb-service-preset-admin__addon-row">
-                            <span className="vmb-service-preset-admin__addon-id">{addon.addonId}</span>
+                            <strong className="vmb-service-preset-admin__addon-title">
+                              {ADDON_OFFER_TITLES[addon.addonId] ?? addon.label.toUpperCase()}
+                            </strong>
                             <label>
                               Label
                               <input

@@ -192,6 +192,11 @@ async function run(): Promise<void> {
       && !servicePresetAdmin.includes("onToggleActive"),
     "service preset review omits legacy default and active controls",
   );
+  assert(
+    servicePresetAdmin.includes('"addon-french": "FRENCH TIPS"')
+      && servicePresetAdmin.includes('"addon-freestyle-art": "FREESTYLE ART"'),
+    "service preset review displays readable add-on offer titles",
+  );
 
   const inviteModal = read("components/vmb/dashboard/InviteDraftPreviewModal.tsx");
   assert(inviteModal.includes("outreach-message-presets"), "send modal uses canonical outreach footer helper");
