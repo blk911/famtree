@@ -64,12 +64,17 @@ export function TodayCommandCenter({
         const response = await fetch("/api/vmb/services", { cache: "no-store", credentials: "include" });
         const json = (await response.json()) as { ok?: boolean; services?: VmbService[]; options?: VmbServiceOption[] };
         if (!cancelled && response.ok && json.ok) {
-          const activeServices = (json.services ?? []).filter((service) => service.active !== false);
-          const activeOptions = (json.options ?? []).filter((option) => option.active !== false);
+          const activeServices = (json.services ?? []).filter(
+            (service) => service.active !== false && service.category === "nails",
+          );
+          const activeServiceIds = new Set(activeServices.map((service) => service.id));
+          const activeOptions = (json.options ?? []).filter(
+            (option) => option.active !== false && activeServiceIds.has(option.serviceId),
+          );
           setServices(activeServices);
           setOptions(activeOptions);
-          setSelectedServiceId((current) => current || activeServices[0]?.id || "");
-          setSelectedOptionId((current) => current || activeOptions[0]?.id || "");
+          setSelectedServiceId((current) => activeServiceIds.has(current) ? current : activeServices[0]?.id || "");
+          setSelectedOptionId((current) => activeOptions.some((option) => option.id === current) ? current : "");
         }
       } catch {
         if (!cancelled) {

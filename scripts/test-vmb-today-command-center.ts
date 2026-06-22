@@ -123,6 +123,11 @@ function run(): void {
       && commandCenterSource.includes("serviceOptions"),
     "new member branch confirms service options and snapshots the send price",
   );
+  assert(
+    commandCenterSource.includes('service.category === "nails"')
+      && commandCenterSource.includes("activeServiceIds.has(option.serviceId)"),
+    "new member My Style limits services and options to the Nails catalog",
+  );
 
   assert(
     buildTodayCommandCenterSnapshot({
