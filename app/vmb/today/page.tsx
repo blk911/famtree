@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { VmbTodayClient } from "@/components/vmb/VmbTodayClient";
 import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
+import { buildClientOpportunities } from "@/lib/vmb/client-opportunities";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,9 @@ type Props = {
 export default async function VmbTodayPage({ searchParams }: Props) {
   const params = await searchParams;
   const ctx = await loadVmbPageContext({ analysisId: params.analysis?.trim() });
+  const clientOpportunities = ctx.activeAnalysis
+    ? buildClientOpportunities(ctx.activeAnalysis).rows
+    : [];
   return (
     <VmbTodayClient
       salonName={ctx.salonName}
@@ -34,6 +38,7 @@ export default async function VmbTodayPage({ searchParams }: Props) {
         activeAnalysisId: ctx.activeAnalysisId,
         recordCount: ctx.activeAnalysis?.recordCount ?? 0,
       }}
+      clientOpportunities={clientOpportunities}
     />
   );
 }

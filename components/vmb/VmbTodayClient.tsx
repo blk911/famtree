@@ -6,8 +6,7 @@ import { LoadYourBookCta } from "@/components/vmb/LoadYourBookCta";
 import { TodayCommandCenter } from "@/components/vmb/today/TodayCommandCenter";
 import {
   SalonInviteComposer,
-  SALON_INVITE_REASON_LABELS,
-  salonInviteReasonForOpportunity,
+  type InviteClientCandidate,
   type SalonInviteReasonId,
 } from "@/components/vmb/today/SalonInviteComposer";
 import { ActivityTimeline } from "@/components/taikos/activity/ActivityTimeline";
@@ -30,7 +29,7 @@ import type { CodaSummary } from "@/lib/taikos/coda/types";
 import type { SalonQaPreviewCardAction, TodayActiveQuestionResult } from "@/lib/taikos/salon-qa/types";
 import type { TaikosDraftSummary } from "@/lib/taikos/drafts/types";
 import type { TaikosGoalSummary } from "@/lib/taikos/goals/types";
-import type { TaikosOpportunity, TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
+import type { TaikosOpportunitySummary } from "@/lib/taikos/opportunities/types";
 import type { TaikosQueueSummary } from "@/lib/taikos/queue/types";
 import { buildTodayGreeting } from "@/lib/taikos/context/today-conversation";
 import type { AiosContextPacket } from "@/lib/taikos/types";
@@ -46,6 +45,7 @@ import { logTodayLockBranch, logTodayLockRendered } from "@/lib/vmb/today-lock-d
 import { VMB_BOOK_LOAD_HELPER, VMB_BOOK_LOCKED_MESSAGE } from "@/lib/vmb/book-load-cta";
 import { buildTodayCommandCenterSnapshot } from "@/lib/vmb/today-command-center";
 import type { VmbInviteDraft } from "@/types/vmb/invite-draft";
+import type { ClientOpportunityRow } from "@/lib/vmb/client-opportunities";
 
 type TodayData = {
   greeting: string;
@@ -106,7 +106,21 @@ type Props = {
   recordCount?: number;
   clientCount?: number;
   pageContext?: Record<string, unknown>;
+  clientOpportunities?: ClientOpportunityRow[];
 };
+
+function reasonForClientOpportunity(row: ClientOpportunityRow): SalonInviteReasonId {
+  switch (row.action) {
+    case "Birthday Offer": return "birthday";
+    case "Private Client Invite": return "pcn";
+    case "Bring A Friend": return "referral";
+    case "Ask For Intro": return "pcn";
+    case "We Miss You": return "reactivation";
+    case "Event Follow-Up":
+    case "Bridal Anniversary": return "new-client";
+    default: return "custom";
+  }
+}
 
 export function VmbTodayClient({
   salonName = "Your Salon",
@@ -118,6 +132,7 @@ export function VmbTodayClient({
   recordCount = 0,
   clientCount = 0,
   pageContext,
+  clientOpportunities = [],
 }: Props) {
   const [data, setData] = useState<TodayData | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
@@ -131,8 +146,8 @@ export function VmbTodayClient({
   const [hasActiveTaikosAnswer, setHasActiveTaikosAnswer] = useState(false);
   const [vmbInviteDrafts, setVmbInviteDrafts] = useState<VmbInviteDraft[]>([]);
   const [selectedOfferReason, setSelectedOfferReason] = useState<SalonInviteReasonId>("new-client");
-  const [offerPrefill, setOfferPrefill] = useState<{ opportunity: TaikosOpportunity; key: number } | null>(null);
-  const [newClientLaunchSignal, setNewClientLaunchSignal] = useState(0);
+  const [clientSearch, setClientSearch] = useState("");
+  const [selectedInviteOpportunity, setSelectedInviteOpportunity] = useState<InviteClientCandidate | null>(null);
 
   useEffect(() => {
     console.error("[TODAY-MOUNT]", {
@@ -356,11 +371,24 @@ export function VmbTodayClient({
   ]);
 
   const selectedOfferRecommendations = useMemo(() => {
-    const opportunities = data?.opportunitySummary.opportunities ?? [];
-    return opportunities
-      .filter((opportunity) => salonInviteReasonForOpportunity(opportunity) === selectedOfferReason)
-      .slice(0, 5);
-  }, [data?.opportunitySummary.opportunities, selectedOfferReason]);
+    const query = clientSearch.trim().toLowerCase();
+    return clientOpportunities
+      .map((row): InviteClientCandidate => ({
+        id: row.id,
+        clientName: row.clientName,
+        reason: row.trigger,
+        suggestedMessage: row.suggestedMessage,
+        estimatedValue: row.potentialRevenue,
+        reasonId: reasonForClientOpportunity(row),
+      }))
+      .filter((candidate) => candidate.reasonId === selectedOfferReason)
+      .filter((candidate) => {
+        if (!query) return true;
+        return [candidate.clientName, candidate.reason, candidate.suggestedMessage]
+          .some((value) => value.toLowerCase().includes(query));
+      })
+      .slice(0, 8);
+  }, [clientOpportunities, clientSearch, selectedOfferReason]);
 
   return (
     <VmbPageFrame width="full" headerless>
@@ -459,21 +487,18 @@ export function VmbTodayClient({
                 onAnswerActiveChange={setHasActiveTaikosAnswer}
                 onLaunchNewClientOffer={() => {
                   setSelectedOfferReason("new-client");
-                  setNewClientLaunchSignal((signal) => signal + 1);
+                  setClientSearch("");
+                  setSelectedInviteOpportunity(null);
                 }}
               />
               <SalonInviteComposer
-                salonName={salonName}
-                analysisId={resolvedAnalysisId}
                 selectedReason={selectedOfferReason}
-                offerRecommendations={selectedOfferRecommendations}
-                prefillOpportunity={offerPrefill?.opportunity ?? null}
-                prefillKey={offerPrefill?.key}
-                newClientLaunchSignal={newClientLaunchSignal}
-                onSelectedReasonChange={setSelectedOfferReason}
-                onUseOfferOpportunity={(opportunity) => {
-                  setSelectedOfferReason(salonInviteReasonForOpportunity(opportunity) ?? selectedOfferReason);
-                  setOfferPrefill({ opportunity, key: Date.now() });
+                clientSearch={clientSearch}
+                matchingCount={selectedOfferRecommendations.length}
+                onClientSearchChange={setClientSearch}
+                onSelectedReasonChange={(reason) => {
+                  setSelectedOfferReason(reason);
+                  setSelectedInviteOpportunity(null);
                 }}
               />
             </div>
@@ -482,8 +507,12 @@ export function VmbTodayClient({
           {commandCenter ? (
             <TodayCommandCenter
               snapshot={commandCenter}
-              selectedOfferLabel={SALON_INVITE_REASON_LABELS[selectedOfferReason]}
+              salonName={salonName}
+              analysisId={resolvedAnalysisId}
+              selectedReason={selectedOfferReason}
               selectedOfferRecommendations={selectedOfferRecommendations}
+              selectedOpportunity={selectedInviteOpportunity}
+              onSelectOpportunity={setSelectedInviteOpportunity}
             />
           ) : null}
 

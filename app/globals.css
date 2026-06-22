@@ -4191,6 +4191,270 @@
   gap: 10px;
 }
 
+.vmb-today-command__sequence {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.45fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.vmb-today-command__matches,
+.vmb-today-command__review {
+  min-width: 0;
+  border: 1px solid #f1e7ee;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 14px;
+}
+
+.vmb-today-command__section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.vmb-today-command__section-head span,
+.vmb-today-command__editor label > span {
+  color: #9d174d;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.vmb-today-command__section-head h3 {
+  margin: 3px 0 0;
+  color: #1c1917;
+  font-size: 18px;
+}
+
+.vmb-today-command__section-head > strong {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #fce7f3;
+  color: #9d174d;
+  font-size: 13px;
+}
+
+.vmb-today-command__client-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vmb-today-command__client-list button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  border: 1px solid #eadfd6;
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px;
+  color: #292524;
+  cursor: pointer;
+  text-align: left;
+}
+
+.vmb-today-command__client-list button:hover,
+.vmb-today-command__client-list button.is-selected {
+  border-color: #be185d;
+  background: #fdf2f8;
+}
+
+.vmb-today-command__client-list button > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.vmb-today-command__client-list small {
+  overflow: hidden;
+  color: #78716c;
+  font-size: 11px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vmb-today-command__client-list em {
+  color: #15803d;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.vmb-today-command__library-link {
+  display: inline-flex;
+  margin-top: 12px;
+  color: #9d174d;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.vmb-today-command__review-empty {
+  display: grid;
+  min-height: 230px;
+  place-content: center;
+  gap: 7px;
+  border: 1px dashed #e7d6de;
+  border-radius: 14px;
+  background: rgba(253, 242, 248, 0.38);
+  padding: 22px;
+  text-align: center;
+}
+
+.vmb-today-command__review-empty p {
+  max-width: 28rem;
+  margin: 0;
+  color: #78716c;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.vmb-today-command__editor {
+  display: grid;
+  gap: 12px;
+}
+
+.vmb-today-command__selected-client {
+  display: grid;
+  gap: 4px;
+  border-left: 3px solid #be185d;
+  padding-left: 11px;
+}
+
+.vmb-today-command__selected-client span {
+  color: #9d174d;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vmb-today-command__selected-client strong {
+  font-size: 18px;
+}
+
+.vmb-today-command__selected-client p {
+  margin: 0;
+  color: #6f625d;
+  font-size: 12px;
+}
+
+.vmb-today-command__contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.vmb-today-command__contact-grid + .vmb-today-command__contact-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.vmb-today-command__editor label,
+.vmb-today-command__field {
+  display: grid;
+  gap: 5px;
+}
+
+.vmb-today-command__editor input,
+.vmb-today-command__editor select,
+.vmb-today-command__editor textarea {
+  min-width: 0;
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  background: #fff;
+  padding: 8px 9px;
+  color: #292524;
+  font: inherit;
+  font-size: 13px;
+}
+
+.vmb-today-command__invite-preview {
+  display: grid;
+  gap: 5px;
+  border: 1px solid #f0d5df;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fff, #fdf2f8);
+  padding: 13px;
+}
+
+.vmb-today-command__invite-preview > span,
+.vmb-today-command__invite-preview > small {
+  color: #78716c;
+  font-size: 11px;
+}
+
+.vmb-today-command__invite-preview > strong {
+  color: #831843;
+  font-size: 17px;
+}
+
+.vmb-today-command__invite-preview > p {
+  margin: 0;
+  color: #44403c;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.vmb-today-command__send-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.vmb-today-command__send-actions button {
+  border: 1px solid #9d174d;
+  border-radius: 10px;
+  background: #9d174d;
+  padding: 9px 12px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.vmb-today-command__send-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.vmb-today-command__send-actions p {
+  margin: 0;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.vmb-today-invite-composer__search-note {
+  margin: 0;
+  color: #78716c;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .vmb-today-command__sequence {
+    grid-template-columns: 1fr;
+  }
+
+  .vmb-today-command__contact-grid,
+  .vmb-today-command__contact-grid + .vmb-today-command__contact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .vmb-today-command__send-card {
   display: grid;
   gap: 5px;
@@ -11038,4 +11302,3 @@
 .vmb-nails-library__meta--compact .vmb-nails-library__meta-wide {
   display: none;
 }
-
