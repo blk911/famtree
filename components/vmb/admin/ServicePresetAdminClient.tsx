@@ -182,8 +182,7 @@ export function ServicePresetAdminClient() {
                     </label>
                     <label>
                       Short description
-                      <textarea
-                        rows={2}
+                      <input
                         value={selected.shortDescription}
                         onChange={(e) => updateDraft(selected.id, { shortDescription: e.target.value })}
                       />
@@ -217,8 +216,7 @@ export function ServicePresetAdminClient() {
                     </label>
                     <label>
                       Included text
-                      <textarea
-                        rows={2}
+                      <input
                         value={selected.includedText}
                         onChange={(e) => updateDraft(selected.id, { includedText: e.target.value })}
                       />
@@ -238,46 +236,49 @@ export function ServicePresetAdminClient() {
                   {selected.addonPresets.length > 0 ? (
                     <>
                       <p className="vmb-service-catalog__section-label">Add-on presets</p>
+                      <div className="vmb-service-preset-admin__addon-head" aria-hidden="true">
+                        <span>Offer</span>
+                        <span>Label</span>
+                        <span>Price ($)</span>
+                        <span>Sort</span>
+                      </div>
                       <ul className="vmb-service-preset-admin__addon-list">
                         {selected.addonPresets.map((addon) => (
                           <li key={addon.addonId} className="vmb-service-preset-admin__addon-row">
                             <strong className="vmb-service-preset-admin__addon-title">
                               {ADDON_OFFER_TITLES[addon.addonId] ?? addon.label.toUpperCase()}
                             </strong>
-                            <label>
-                              Label
-                              <input
-                                value={addon.label}
-                                onChange={(e) =>
-                                  updateAddonDraft(selected.id, addon.addonId, { label: e.target.value })
-                                }
-                              />
-                            </label>
-                            <label>
-                              Price ($)
-                              <input
-                                type="number"
-                                min={0}
-                                value={Math.round(addon.priceCents / 100)}
-                                onChange={(e) =>
-                                  updateAddonDraft(selected.id, addon.addonId, {
-                                    priceCents: Math.max(0, Math.round(Number(e.target.value) * 100)),
-                                  })
-                                }
-                              />
-                            </label>
-                            <label>
-                              Sort
-                              <input
-                                type="number"
-                                value={addon.sortOrder}
-                                onChange={(e) =>
-                                  updateAddonDraft(selected.id, addon.addonId, {
-                                    sortOrder: Number(e.target.value) || 0,
-                                  })
-                                }
-                              />
-                            </label>
+                            <input
+                              aria-label={`${addon.label} label`}
+                              placeholder="Label"
+                              value={addon.label}
+                              onChange={(e) =>
+                                updateAddonDraft(selected.id, addon.addonId, { label: e.target.value })
+                              }
+                            />
+                            <input
+                              aria-label={`${addon.label} price`}
+                              placeholder="Price"
+                              type="number"
+                              min={0}
+                              value={Math.round(addon.priceCents / 100)}
+                              onChange={(e) =>
+                                updateAddonDraft(selected.id, addon.addonId, {
+                                  priceCents: Math.max(0, Math.round(Number(e.target.value) * 100)),
+                                })
+                              }
+                            />
+                            <input
+                              aria-label={`${addon.label} sort order`}
+                              placeholder="Sort"
+                              type="number"
+                              value={addon.sortOrder}
+                              onChange={(e) =>
+                                updateAddonDraft(selected.id, addon.addonId, {
+                                  sortOrder: Number(e.target.value) || 0,
+                                })
+                              }
+                            />
                           </li>
                         ))}
                       </ul>

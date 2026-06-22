@@ -197,6 +197,18 @@ async function run(): Promise<void> {
       && servicePresetAdmin.includes('"addon-freestyle-art": "FREESTYLE ART"'),
     "service preset review displays readable add-on offer titles",
   );
+  assert(
+    servicePresetAdmin.includes("vmb-service-preset-admin__addon-head")
+      && servicePresetAdmin.includes("aria-label={`${addon.label} price`}"),
+    "service preset add-ons use a compact shared-header row",
+  );
+
+  const globalCss = read("app/globals.css");
+  assert(
+    globalCss.includes(".vmb-service-preset-admin__editor-wrap")
+      && globalCss.includes("grid-template-columns: repeat(2, minmax(0, 1fr))"),
+    "service preset details and preview use an even two-column split",
+  );
 
   const inviteModal = read("components/vmb/dashboard/InviteDraftPreviewModal.tsx");
   assert(inviteModal.includes("outreach-message-presets"), "send modal uses canonical outreach footer helper");

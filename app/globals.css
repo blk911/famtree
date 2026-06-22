@@ -9850,7 +9850,7 @@
 
 .vmb-service-preset-admin__editor-wrap {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
   align-items: start;
   margin-top: 20px;
@@ -9865,6 +9865,12 @@
   order: 2;
   position: sticky;
   top: 16px;
+}
+
+.vmb-service-preset-admin__preview .vmb-service-preset-card {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
 }
 
 @media (max-width: 900px) {
@@ -9941,16 +9947,17 @@
 
 .vmb-service-preset-admin__fields {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px 16px;
   margin-bottom: 16px;
 }
 
 .vmb-service-preset-admin__fields label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
 }
 
 .vmb-service-preset-admin__fields input,
@@ -9958,8 +9965,8 @@
   border: 1px solid #e7e5e4;
   border-radius: 8px;
   background: #fafaf9;
-  padding: 8px 9px;
-  font-size: 14px;
+  padding: 7px 8px;
+  font-size: 13px;
 }
 
 .vmb-service-preset-admin__checkbox {
@@ -9974,24 +9981,29 @@
   padding: 0;
 }
 
+.vmb-service-preset-admin__addon-head {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.75fr) minmax(150px, 1.5fr) 90px 70px;
+  gap: 10px;
+  padding: 0 10px 5px;
+  color: #78716c;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .vmb-service-preset-admin__addon-row {
   display: grid;
-  grid-template-columns: minmax(110px, 0.75fr) minmax(180px, 1.5fr) repeat(2, minmax(100px, 0.7fr));
-  gap: 12px;
-  align-items: end;
-  margin-bottom: 8px;
+  grid-template-columns: minmax(110px, 0.75fr) minmax(150px, 1.5fr) 90px 70px;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 6px;
   border: 1px solid #f1e7ee;
   border-radius: 12px;
   background: #fafaf9;
-  padding: 12px;
+  padding: 8px 10px;
   font-size: 13px;
-}
-
-.vmb-service-preset-admin__addon-row label {
-  display: grid;
-  gap: 5px;
-  color: #57534e;
-  font-size: 12px;
 }
 
 .vmb-service-preset-admin__addon-row input {
@@ -9999,7 +10011,7 @@
   border: 1px solid #e7e5e4;
   border-radius: 8px;
   background: #fff;
-  padding: 7px 8px;
+  padding: 6px 7px;
   font: inherit;
 }
 
@@ -10013,6 +10025,14 @@
   }
 
   .vmb-service-preset-admin__addon-row {
+    grid-template-columns: 1fr;
+  }
+
+  .vmb-service-preset-admin__addon-head {
+    display: none;
+  }
+
+  .vmb-service-preset-admin__fields {
     grid-template-columns: 1fr;
   }
 }
