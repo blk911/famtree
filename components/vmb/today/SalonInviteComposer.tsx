@@ -4,10 +4,14 @@ import type { TaikosOpportunity, TaikosOpportunityCategory } from "@/lib/taikos/
 
 type Props = {
   selectedReason: SalonInviteReasonId;
-  clientSearch: string;
+  clientNameSearch: string;
+  clientEmailSearch: string;
+  clientPhoneSearch: string;
   matchingCount: number;
   onSelectedReasonChange: (reason: SalonInviteReasonId) => void;
-  onClientSearchChange: (value: string) => void;
+  onClientNameSearchChange: (value: string) => void;
+  onClientEmailSearchChange: (value: string) => void;
+  onClientPhoneSearchChange: (value: string) => void;
 };
 
 export type SalonInviteReasonId =
@@ -102,16 +106,25 @@ export function defaultInviteMessage(reason: SalonInviteReasonId, salonName: str
 
 export function SalonInviteComposer({
   selectedReason,
-  clientSearch,
+  clientNameSearch,
+  clientEmailSearch,
+  clientPhoneSearch,
   matchingCount,
   onSelectedReasonChange,
-  onClientSearchChange,
+  onClientNameSearchChange,
+  onClientEmailSearchChange,
+  onClientPhoneSearchChange,
 }: Props) {
   return (
     <aside className="vmb-today-invite-composer" aria-label="Touch point and client search">
+      <header className="vmb-today-invite-composer__control-head">
+        <h2>Touch Point</h2>
+        <p>Choose the invitation you want to send.</p>
+      </header>
       <label className="vmb-today-invite-composer__field">
-        <span>1. Touch point</span>
+        <span className="vmb-today-invite-composer__visually-hidden">Touch point</span>
         <select
+          aria-label="Touch point"
           value={selectedReason}
           onChange={(event) => onSelectedReasonChange(event.target.value as SalonInviteReasonId)}
         >
@@ -121,15 +134,23 @@ export function SalonInviteComposer({
         </select>
       </label>
 
-      <label className="vmb-today-invite-composer__field">
-        <span>2. Find a client</span>
-        <input
-          type="search"
-          value={clientSearch}
-          onChange={(event) => onClientSearchChange(event.target.value)}
-          placeholder="Search name, phone, or email"
-        />
-      </label>
+      <fieldset className="vmb-today-invite-composer__client-search">
+        <legend>Find a client</legend>
+        <div>
+          <label>
+            <span>Name</span>
+            <input type="search" value={clientNameSearch} onChange={(event) => onClientNameSearchChange(event.target.value)} />
+          </label>
+          <label>
+            <span>Email</span>
+            <input type="email" value={clientEmailSearch} onChange={(event) => onClientEmailSearchChange(event.target.value)} />
+          </label>
+          <label>
+            <span>Phone</span>
+            <input type="tel" value={clientPhoneSearch} onChange={(event) => onClientPhoneSearchChange(event.target.value)} />
+          </label>
+        </div>
+      </fieldset>
 
       <p className="vmb-today-invite-composer__search-note">
         {matchingCount === 1 ? "1 matching TAIKOS client" : `${matchingCount} matching TAIKOS clients`} shown below.

@@ -21,6 +21,8 @@ type Props = {
   selectedReason: SalonInviteReasonId;
   selectedOfferRecommendations: InviteClientCandidate[];
   selectedOpportunity: InviteClientCandidate | null;
+  clientEmailPrefill: string;
+  clientPhonePrefill: string;
   onSelectOpportunity: (opportunity: InviteClientCandidate) => void;
 };
 
@@ -36,6 +38,8 @@ export function TodayCommandCenter({
   selectedReason,
   selectedOfferRecommendations,
   selectedOpportunity,
+  clientEmailPrefill,
+  clientPhonePrefill,
   onSelectOpportunity,
 }: Props) {
   const [services, setServices] = useState<VmbService[]>([]);
@@ -84,6 +88,8 @@ export function TodayCommandCenter({
     }
     const nextClientName = selectedOpportunity.clientName;
     setClientName(nextClientName);
+    setEmail(clientEmailPrefill);
+    setPhone(clientPhonePrefill);
     setTitle(defaultInviteTitle(selectedReason, nextClientName));
     setMessage(selectedOpportunity.suggestedMessage || defaultInviteMessage(selectedReason, salonName));
     setStatus(null);
@@ -134,10 +140,10 @@ export function TodayCommandCenter({
   return (
     <section className="vmb-today-command" aria-label="Client selection and invite review workspace">
       <div className="vmb-today-command__head">
-        <p className="vmb-today-command__kicker">Invite render + send details</p>
-        <h2 className="vmb-today-command__title">Choose a client, then review the invite</h2>
+        <p className="vmb-today-command__kicker">Action items</p>
+        <h2 className="vmb-today-command__title">Client outreach</h2>
         <p className="vmb-today-command__lead">
-          TAIKOS matches the selected touch point to clients in your book. Select one to prepare the invite.
+          Choose a matching client, review the invite, then send.
         </p>
       </div>
 
@@ -186,9 +192,14 @@ export function TodayCommandCenter({
           </div>
 
           {!selectedOpportunity ? (
-            <div className="vmb-today-command__review-empty">
-              <strong>Select a client to build this invite.</strong>
-              <p>The selected touch point, client details, editable copy, and send action will appear here.</p>
+            <div className="vmb-today-command__loaded-invite">
+              <span>{SALON_INVITE_REASON_LABELS[selectedReason]}</span>
+              <strong>{defaultInviteTitle(selectedReason, "")}</strong>
+              <p>{defaultInviteMessage(selectedReason, salonName)}</p>
+              <div className="vmb-today-command__review-empty">
+                <strong>Select a client from A to personalize this invite.</strong>
+                <p>The selected client&apos;s details and editable send controls will appear here.</p>
+              </div>
             </div>
           ) : (
             <div className="vmb-today-command__editor">

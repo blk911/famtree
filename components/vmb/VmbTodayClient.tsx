@@ -39,7 +39,6 @@ import { performLaunchGuideCta } from "@/lib/vmb/onboarding/launch-guide-targets
 import {
   LAUNCH_GUIDE_STEPS,
   LAUNCH_GUIDE_TOTAL_STEPS,
-  shouldShowTaikosReminder,
 } from "@/lib/vmb/onboarding/vmb-launch-guide";
 import { logTodayLockBranch, logTodayLockRendered } from "@/lib/vmb/today-lock-debug";
 import { VMB_BOOK_LOAD_HELPER, VMB_BOOK_LOCKED_MESSAGE } from "@/lib/vmb/book-load-cta";
@@ -143,10 +142,11 @@ export function VmbTodayClient({
   );
   const [previewFirstCardSignal, setPreviewFirstCardSignal] = useState(0);
   const [qaPreviewAction, setQaPreviewAction] = useState<SalonQaPreviewCardAction | null>(null);
-  const [hasActiveTaikosAnswer, setHasActiveTaikosAnswer] = useState(false);
   const [vmbInviteDrafts, setVmbInviteDrafts] = useState<VmbInviteDraft[]>([]);
   const [selectedOfferReason, setSelectedOfferReason] = useState<SalonInviteReasonId>("new-client");
-  const [clientSearch, setClientSearch] = useState("");
+  const [clientNameSearch, setClientNameSearch] = useState("");
+  const [clientEmailSearch, setClientEmailSearch] = useState("");
+  const [clientPhoneSearch, setClientPhoneSearch] = useState("");
   const [selectedInviteOpportunity, setSelectedInviteOpportunity] = useState<InviteClientCandidate | null>(null);
 
   useEffect(() => {
@@ -280,11 +280,6 @@ export function VmbTodayClient({
 
   const todayUnlocked = hasCompletedFirstIngest;
   const launchGuide = useVmbLaunchGuide(todayUnlocked);
-  const showTaikosReminder = shouldShowTaikosReminder({
-    hasActiveBook: todayUnlocked,
-    hasActiveAnswer: hasActiveTaikosAnswer,
-    guideVisible: launchGuide.visible,
-  });
   const debugWouldUnlock = flowDebug?.todayLoader.wouldUnlockToday ?? wouldUnlockToday;
   const debugLockReason = flowDebug?.todayLoader.lockReason ?? lockReason;
   const debugAnalysisId =
@@ -371,7 +366,7 @@ export function VmbTodayClient({
   ]);
 
   const selectedOfferRecommendations = useMemo(() => {
-    const query = clientSearch.trim().toLowerCase();
+    const query = clientNameSearch.trim().toLowerCase();
     return clientOpportunities
       .map((row): InviteClientCandidate => ({
         id: row.id,
@@ -388,7 +383,7 @@ export function VmbTodayClient({
           .some((value) => value.toLowerCase().includes(query));
       })
       .slice(0, 8);
-  }, [clientOpportunities, clientSearch, selectedOfferReason]);
+  }, [clientOpportunities, clientNameSearch, selectedOfferReason]);
 
   return (
     <VmbPageFrame width="full" headerless>
@@ -480,22 +475,26 @@ export function VmbTodayClient({
                 operatorName={operatorName}
                 salonName={salonName}
                 analysisId={activeAnalysisId}
-                showAskReminder={showTaikosReminder}
                 onQuestionAnswer={setActiveQuestionResult}
                 onPreviewFirstCard={() => setPreviewFirstCardSignal((n) => n + 1)}
                 onPreviewSuggestedCard={setQaPreviewAction}
-                onAnswerActiveChange={setHasActiveTaikosAnswer}
                 onLaunchNewClientOffer={() => {
                   setSelectedOfferReason("new-client");
-                  setClientSearch("");
+                  setClientNameSearch("");
+                  setClientEmailSearch("");
+                  setClientPhoneSearch("");
                   setSelectedInviteOpportunity(null);
                 }}
               />
               <SalonInviteComposer
                 selectedReason={selectedOfferReason}
-                clientSearch={clientSearch}
+                clientNameSearch={clientNameSearch}
+                clientEmailSearch={clientEmailSearch}
+                clientPhoneSearch={clientPhoneSearch}
                 matchingCount={selectedOfferRecommendations.length}
-                onClientSearchChange={setClientSearch}
+                onClientNameSearchChange={setClientNameSearch}
+                onClientEmailSearchChange={setClientEmailSearch}
+                onClientPhoneSearchChange={setClientPhoneSearch}
                 onSelectedReasonChange={(reason) => {
                   setSelectedOfferReason(reason);
                   setSelectedInviteOpportunity(null);
@@ -512,6 +511,8 @@ export function VmbTodayClient({
               selectedReason={selectedOfferReason}
               selectedOfferRecommendations={selectedOfferRecommendations}
               selectedOpportunity={selectedInviteOpportunity}
+              clientEmailPrefill={clientEmailSearch}
+              clientPhonePrefill={clientPhoneSearch}
               onSelectOpportunity={setSelectedInviteOpportunity}
             />
           ) : null}

@@ -1491,6 +1491,72 @@
   box-shadow: 0 16px 34px rgba(131, 24, 67, 0.08);
 }
 
+.vmb-today-invite-composer__control-head {
+  display: grid;
+  gap: 3px;
+}
+
+.vmb-today-invite-composer__control-head h2 {
+  margin: 0;
+  color: #831843;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.vmb-today-invite-composer__control-head p {
+  margin: 0;
+  color: #78716c;
+  font-size: 11px;
+}
+
+.vmb-today-invite-composer__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.vmb-today-invite-composer__client-search {
+  min-width: 0;
+  margin: 3px 0 0;
+  border: 0;
+  border-top: 1px solid #f5e7ee;
+  padding: 9px 0 0;
+}
+
+.vmb-today-invite-composer__client-search legend {
+  padding: 0 7px 0 0;
+  color: #9d174d;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.vmb-today-invite-composer__client-search > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.vmb-today-invite-composer__client-search label {
+  display: grid;
+  gap: 4px;
+}
+
+.vmb-today-invite-composer__client-search label:first-child {
+  grid-column: 1 / -1;
+}
+
+.vmb-today-invite-composer__client-search span {
+  color: #78716c;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .vmb-today-invite-composer__head {
   display: grid;
   gap: 3px;
@@ -2101,6 +2167,19 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px 14px;
+}
+
+.vmb-today-coda-banner__search-head h2 {
+  margin: 0;
+  color: #831843;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.vmb-today-coda-banner__search-head p {
+  margin: 3px 0 0;
+  color: #78716c;
+  font-size: 12px;
 }
 
 .vmb-today-coda-banner__search-label {
@@ -4311,6 +4390,39 @@
   background: rgba(253, 242, 248, 0.38);
   padding: 22px;
   text-align: center;
+}
+
+.vmb-today-command__loaded-invite {
+  display: grid;
+  gap: 7px;
+  border: 1px solid #f0d5df;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fff, #fdf2f8);
+  padding: 14px;
+}
+
+.vmb-today-command__loaded-invite > span {
+  color: #9d174d;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vmb-today-command__loaded-invite > strong {
+  color: #831843;
+  font-size: 18px;
+}
+
+.vmb-today-command__loaded-invite > p {
+  margin: 0 0 4px;
+  color: #5f5551;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.vmb-today-command__loaded-invite .vmb-today-command__review-empty {
+  min-height: 150px;
 }
 
 .vmb-today-command__review-empty p {

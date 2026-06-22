@@ -27,7 +27,6 @@ type Props = {
   operatorName?: string;
   salonName?: string;
   analysisId?: string;
-  showAskReminder?: boolean;
   onQuestionAnswer?: (answer: TodayActiveQuestionResult) => void;
   onPreviewFirstCard?: () => void;
   onPreviewSuggestedCard?: (action: SalonQaPreviewCardAction) => void;
@@ -41,7 +40,6 @@ export function TodayCodaBanner({
   operatorName,
   salonName,
   analysisId,
-  showAskReminder = false,
   onQuestionAnswer,
   onPreviewFirstCard,
   onPreviewSuggestedCard,
@@ -190,18 +188,10 @@ export function TodayCodaBanner({
 
       <form className="vmb-today-coda-banner__search" onSubmit={(e) => void handleSubmit(e)}>
         <div className="vmb-today-coda-banner__search-head">
-          <label className="vmb-today-coda-banner__search-label" htmlFor="today-coda-search">
-            What else are you thinking about?
-          </label>
-          {showAskReminder ? (
-            <button
-              type="button"
-              className="vmb-taikos-ask-reminder vmb-taikos-ask-reminder--inline"
-              onClick={() => document.getElementById(TODAY_CODA_SEARCH_INPUT_ID)?.focus()}
-            >
-              ✨ Ask TAIKOS about your business
-            </button>
-          ) : null}
+          <div>
+            <h2>Ask TAIKOS</h2>
+            <p>What else are you thinking about?</p>
+          </div>
         </div>
         <div className="vmb-today-coda-banner__chips vmb-today-coda-banner__chips--scroll">
           {SALON_QA_SUGGESTED_CHIPS.map((chip) => (
