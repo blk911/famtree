@@ -1,12 +1,7 @@
-import type { Metadata } from "next";
-import { ServicePresetAdminClient } from "@/components/vmb/admin/ServicePresetAdminClient";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Service Preset Cards",
-};
-
 export default function AdminServicePresetCardsPage() {
-  return <ServicePresetAdminClient />;
+  redirect("/admin/service-catalog");
 }

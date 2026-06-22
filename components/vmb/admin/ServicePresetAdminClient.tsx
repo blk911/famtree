@@ -48,7 +48,7 @@ export function ServicePresetAdminClient() {
         nextDrafts[preset.id] = preset;
       }
       setDrafts(nextDrafts);
-      setSelectedId(json.presets[0]?.id || "");
+      setSelectedId("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Load failed");
     } finally {
@@ -101,6 +101,7 @@ export function ServicePresetAdminClient() {
       if (!res.ok) throw new Error(json.error ?? "Save failed");
       setStatus(`Saved ${draft.displayName}`);
       await load();
+      setSelectedId(id);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Save failed");
     } finally {
@@ -109,12 +110,13 @@ export function ServicePresetAdminClient() {
   }
 
   const categoryLabel = categories.find((category) => category.id === categoryId)?.name ?? "";
+  const selectedIndex = presets.findIndex((preset) => preset.id === selectedId);
 
   return (
     <AdminBuilderShell
-      title="Manage Presets"
-      subtitle="Salon-facing offer cards built from the canonical catalog."
-      activeStep="presets"
+      title="Offer Presets"
+      subtitle="Edit canonical salon offers and review the client-facing card."
+      activeStep="services"
     >
     <div className="vmb-service-catalog">
       <div className="vmb-service-catalog__layout">
@@ -126,14 +128,14 @@ export function ServicePresetAdminClient() {
             <p className="vmb-service-preset-admin__state vmb-service-preset-admin__state--error">{error}</p>
           ) : (
             <>
-              <ul className="vmb-service-preset-admin__list">
-                {presets.map((preset) => (
-                  <li key={preset.id}>
+              <div className="vmb-service-preset-admin__list">
+                {presets.map((preset, index) => (
+                  <div key={preset.id} style={{ order: index * 2 }}>
                     <button
                       type="button"
                       className={`vmb-service-preset-admin__row${selectedId === preset.id ? " vmb-service-preset-admin__row--active" : ""}`}
                       aria-expanded={selectedId === preset.id}
-                      onClick={() => setSelectedId(preset.id)}
+                      onClick={() => setSelectedId((current) => current === preset.id ? "" : preset.id)}
                     >
                       <span>{drafts[preset.id]?.displayName ?? preset.displayName}</span>
                       <span className="vmb-service-preset-admin__row-meta">
@@ -142,12 +144,14 @@ export function ServicePresetAdminClient() {
                         {!drafts[preset.id]?.active ? " · inactive" : ""}
                       </span>
                     </button>
-                  </li>
+                  </div>
                 ))}
-              </ul>
 
               {selected ? (
-                <div className="vmb-service-preset-admin__editor-wrap">
+                <div
+                  className="vmb-service-preset-admin__editor-wrap"
+                  style={{ order: selectedIndex * 2 + 1 }}
+                >
                   <aside className="vmb-service-preset-admin__preview" aria-label="Card preview">
                     <p className="vmb-service-catalog__section-label">Card preview</p>
                     <ServicePresetCard
@@ -297,6 +301,7 @@ export function ServicePresetAdminClient() {
                   </div>
                 </div>
               ) : null}
+              </div>
             </>
           )}
         </section>

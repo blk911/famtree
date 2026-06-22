@@ -6204,125 +6204,6 @@
   color: #78716c;
 }
 
-.vmb-service-catalog-admin {
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__service-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border-top: 1px solid #e7e5e4;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__service-row {
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  padding: 10px 0;
-  border: none;
-  border-bottom: 1px solid #e7e5e4;
-  background: transparent;
-  text-align: left;
-  font-size: 14px;
-  color: #292524;
-  cursor: pointer;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__service-name {
-  min-width: 0;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__service-row--active {
-  color: #9d174d;
-  font-weight: 600;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__service-meta {
-  color: #78716c;
-  font-size: 13px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__detail {
-  padding: 0;
-  border-top: none;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__detail-title {
-  margin: 0 0 12px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1c1917;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__meta {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 0 16px;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__section-label {
-  margin: 0 0 8px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #78716c;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__addon-list {
-  list-style: none;
-  margin: 0 0 16px;
-  padding: 0;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__addon-item {
-  padding: 4px 0;
-  font-size: 14px;
-  color: #44403c;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__detail-empty {
-  margin: 0;
-  font-size: 13px;
-  color: #78716c;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__id-row {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e7e5e4;
-  font-size: 12px;
-  color: #78716c;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__id-row summary {
-  cursor: pointer;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.vmb-service-catalog-admin .vmb-service-catalog__id {
-  display: block;
-  margin-top: 6px;
-  font-family: ui-monospace, monospace;
-  font-size: 11px;
-  color: #57534e;
-  overflow-x: auto;
-  white-space: nowrap;
-}
-
-@media (max-width: 1024px) {
-  .vmb-service-catalog-admin .vmb-service-catalog__meta {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 1024px) {
   .vmb-admin-builder-grid,
   .vmb-template-admin {
@@ -9900,6 +9781,8 @@
 }
 
 .vmb-service-preset-admin__list {
+  display: flex;
+  flex-direction: column;
   list-style: none;
   margin: 0 0 20px;
   padding: 0;
@@ -10020,7 +9903,7 @@
 }
 
 @media (max-width: 760px) {
-  .vmb-service-preset-admin__editor-wrap {
+.vmb-service-preset-admin__editor-wrap {
     padding: 14px;
   }
 
@@ -10254,7 +10137,7 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 20px;
+  margin: 8px 0 16px;
 }
 
 .vmb-salon-offers__preview-modal {

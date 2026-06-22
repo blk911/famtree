@@ -303,12 +303,9 @@ function run(): void {
   );
   assert(flowNavSource.includes("Invite Builder"), "flow nav shows invite builder step");
   assert(flowNavSource.includes("Library"), "flow nav shows library step");
-  assert(flowNavSource.includes("Manage Presets"), "flow nav shows manage presets first");
-  assert(flowNavSource.includes("Service Offers"), "flow nav names the service offers step");
-  assert(
-    flowNavSource.indexOf("Manage Presets") < flowNavSource.indexOf("Service Offers"),
-    "manage presets precedes service offers",
-  );
+  assert(flowNavSource.includes("Offer Presets"), "flow nav starts with consolidated offer presets");
+  assert(!flowNavSource.includes("Manage Presets"), "flow nav removes duplicate manage presets step");
+  assert(!flowNavSource.includes("Service Offers"), "flow nav removes duplicate service offers step");
   assert(!flowNavSource.includes("Template Builder"), "flow nav uses builder label");
   assert(flowNavSource.includes("/admin/invites/builder"), "flow nav links to builder route");
   assert(flowNavSource.includes("/admin/invites/library"), "flow nav links to library route");
@@ -341,11 +338,12 @@ function run(): void {
   assert(!librarySource.includes("Publish verification"), "library omits publish verification diagnostics");
 
   const serviceCatalogSource = fs.readFileSync(
-    path.join(process.cwd(), "components/vmb/admin/PlatformServiceCatalogClient.tsx"),
+    path.join(process.cwd(), "components/vmb/admin/ServicePresetAdminClient.tsx"),
     "utf8",
   );
   assert(serviceCatalogSource.includes("AdminBuilderShell"), "service catalog uses shared builder shell");
-  assert(serviceCatalogSource.includes("vmb-admin-builder-grid"), "service catalog uses standard three-column grid");
+  assert(serviceCatalogSource.includes("aria-expanded"), "offer presets open as an accordion");
+  assert(serviceCatalogSource.includes("vmb-service-preset-admin__editor-wrap"), "offer preset accordion uses details and preview");
 
   const appShellSource = fs.readFileSync(path.join(process.cwd(), "components/AppShell.tsx"), "utf8");
   assert(appShellSource.includes("/admin/service-catalog"), "service catalog uses full-bleed admin layout without page hero");

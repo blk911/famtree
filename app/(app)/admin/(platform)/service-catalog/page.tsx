@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { PlatformServiceCatalogClient } from "@/components/vmb/admin/PlatformServiceCatalogClient";
+import { ServicePresetAdminClient } from "@/components/vmb/admin/ServicePresetAdminClient";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Service Catalog",
+  title: "Offer Presets",
 };
 
 export default function AdminServiceCatalogPage() {
-  return <PlatformServiceCatalogClient />;
+  return <ServicePresetAdminClient />;
 }

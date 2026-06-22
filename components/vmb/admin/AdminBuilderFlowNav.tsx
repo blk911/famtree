@@ -5,15 +5,13 @@ import { useSearchParams } from "next/navigation";
 
 
 
-export type AdminBuilderStep = "presets" | "services" | "builder" | "library";
+export type AdminBuilderStep = "services" | "builder" | "library";
 
 
 
 const STEPS: { id: AdminBuilderStep; label: string; href: string }[] = [
 
-  { id: "presets", label: "Manage Presets", href: "/admin/service-catalog/presets" },
-
-  { id: "services", label: "Service Offers", href: "/admin/service-catalog" },
+  { id: "services", label: "Offer Presets", href: "/admin/service-catalog" },
 
   { id: "builder", label: "Invite Builder", href: "/admin/invites/builder" },
 

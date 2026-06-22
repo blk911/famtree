@@ -339,13 +339,13 @@ async function run(): Promise<void> {
 
   const serviceCatalogClient = path.join(
     process.cwd(),
-    "components/vmb/admin/PlatformServiceCatalogClient.tsx",
+    "components/vmb/admin/ServicePresetAdminClient.tsx",
   );
   const serviceCatalogSource = fs.readFileSync(serviceCatalogClient, "utf8");
   assert(serviceCatalogSource.includes("AdminBuilderShell"), "service catalog uses builder shell");
-  assert(serviceCatalogSource.includes("vmb-admin-builder-grid"), "service catalog uses three-column builder grid");
-  assert(serviceCatalogSource.includes("vmb-admin-builder-grid__preview"), "service detail uses preview column");
-  assert(serviceCatalogSource.includes("flowActions"), "service catalog preset link uses flow action area");
+  assert(serviceCatalogSource.includes("aria-expanded"), "service catalog offers expand and collapse");
+  assert(serviceCatalogSource.includes("ServicePresetCard"), "expanded offer includes client-facing preview");
+  assert(serviceCatalogSource.includes("Save preset card"), "expanded offer saves the canonical preset");
 
   const salonServicesClient = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/salon/SalonServicesClient.tsx"),
