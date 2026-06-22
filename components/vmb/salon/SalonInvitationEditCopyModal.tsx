@@ -3,24 +3,78 @@
 import { useEffect, useState } from "react";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 import { VMB_THEME } from "@/lib/vmb/theme";
+import { InviteOfferRevisionPanel, type ConfirmedInviteOffer } from "@/components/vmb/today/InviteOfferRevisionPanel";
+import type { SalonFacingServiceOffer } from "@/lib/vmb/services/service-preset-types";
 
 type Props = {
   copy: SalonInviteLocalCopy;
   saving?: boolean;
   onClose: () => void;
-  onSave: (patch: { headline: string; body: string; ctaLabel: string }) => void;
+  onSave: (patch: {
+    headline: string;
+    body: string;
+    ctaLabel: string;
+    serviceIds: string[];
+    rewardIds: string[];
+    totalValue: number;
+    savingsAmount: number;
+    offerPrice: number;
+    valueLabel: string;
+    priceLabel: string;
+  }) => void;
 };
 
 export function SalonInvitationEditCopyModal({ copy, saving = false, onClose, onSave }: Props) {
   const [headline, setHeadline] = useState(copy.snapshot.headline);
   const [body, setBody] = useState(copy.snapshot.body);
   const [ctaLabel, setCtaLabel] = useState(copy.snapshot.ctaLabel);
+  const [services, setServices] = useState<SalonFacingServiceOffer[]>([]);
+  const [offer, setOffer] = useState<ConfirmedInviteOffer>({
+    serviceId: copy.snapshot.serviceIds[0] ?? "",
+    addonIds: [...copy.snapshot.rewardIds],
+    offerPrice: String(copy.snapshot.offerPrice ?? 0),
+  });
 
   useEffect(() => {
     setHeadline(copy.snapshot.headline);
     setBody(copy.snapshot.body);
     setCtaLabel(copy.snapshot.ctaLabel);
+    setOffer({
+      serviceId: copy.snapshot.serviceIds[0] ?? "",
+      addonIds: [...copy.snapshot.rewardIds],
+      offerPrice: String(copy.snapshot.offerPrice ?? 0),
+    });
   }, [copy]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/vmb/salon-services", { cache: "no-store", credentials: "include" })
+      .then((response) => response.json())
+      .then((json: { ok?: boolean; services?: SalonFacingServiceOffer[] }) => {
+        if (!cancelled) setServices(json.ok ? (json.services ?? []).filter((service) => service.status === "active") : []);
+      })
+      .catch(() => { if (!cancelled) setServices([]); });
+    return () => { cancelled = true; };
+  }, []);
+
+  function save() {
+    const service = services.find((row) => row.serviceOfferId === offer.serviceId);
+    const addons = service?.addons.filter((addon) => addon.enabled && offer.addonIds.includes(addon.addonId)) ?? [];
+    const totalValue = ((service?.priceCents ?? 0) + addons.reduce((sum, addon) => sum + addon.priceCents, 0)) / 100;
+    const offerPrice = Math.max(0, Number(offer.offerPrice) || 0);
+    onSave({
+      headline,
+      body,
+      ctaLabel,
+      serviceIds: offer.serviceId ? [offer.serviceId] : [],
+      rewardIds: [...offer.addonIds],
+      totalValue,
+      savingsAmount: Math.max(0, totalValue - offerPrice),
+      offerPrice,
+      valueLabel: `$${totalValue.toLocaleString()}`,
+      priceLabel: `$${offerPrice.toLocaleString()}`,
+    });
+  }
 
   return (
     <div className="vmb-admin-salon-invite-review-modal" role="presentation" onClick={onClose}>
@@ -51,6 +105,12 @@ export function SalonInvitationEditCopyModal({ copy, saving = false, onClose, on
               style={fieldStyle}
             />
           </label>
+          <InviteOfferRevisionPanel
+            services={services}
+            value={offer}
+            onUse={setOffer}
+            onEditingChange={() => undefined}
+          />
           <label style={{ display: "grid", gap: 6 }}>
             <span style={{ fontSize: 12, fontWeight: 600, color: VMB_THEME.muted }}>Body</span>
             <textarea
@@ -76,7 +136,7 @@ export function SalonInvitationEditCopyModal({ copy, saving = false, onClose, on
             <button
               type="button"
               disabled={saving}
-              onClick={() => onSave({ headline, body, ctaLabel })}
+              onClick={save}
               style={buttonStyle("primary")}
             >
               {saving ? "Saving…" : "Save Copy"}

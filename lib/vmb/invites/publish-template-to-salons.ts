@@ -30,7 +30,7 @@ export function createSalonLocalCopy(
     salonId,
     sourceTemplateId: snapshot.sourceTemplateId,
     publishedVersion: snapshot.version,
-    inventoryStatus: "published",
+    inventoryStatus: "needs_review",
     snapshot: {
       ...snapshot,
       id: copyId,

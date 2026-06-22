@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { SalonFacingServiceOffer } from "@/lib/vmb/services/service-preset-types";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
+import { isSalonInviteMatchingActive } from "@/lib/vmb/invites/salon-invite-inventory";
 import type { TodayCommandCenterSnapshot } from "@/lib/vmb/today-command-center";
 import { formatTodayMoney } from "@/lib/vmb/today-command-center";
 import {
@@ -79,7 +80,7 @@ export function TodayCommandCenter({
         if (!cancelled && inviteResponse.ok && inviteJson.ok) {
           setNewMemberCopy(
             (inviteJson.copies ?? []).find(
-              (copy) => copy.sourceTemplateId === "nails-new-client-welcome" && copy.inventoryStatus !== "paused",
+              (copy) => copy.sourceTemplateId === "nails-new-client-welcome" && isSalonInviteMatchingActive(copy),
             ) ?? null,
           );
         }

@@ -24,6 +24,7 @@ type Props = {
   onPreview: () => void;
   onEditCopy: () => void;
   onPause: () => void;
+  onApprove?: () => void;
 };
 
 function actionButtonStyle(variant: "primary" | "default" = "default"): CSSProperties {
@@ -50,12 +51,14 @@ export function PublishedInvitationInventoryCard({
   onPreview,
   onEditCopy,
   onPause,
+  onApprove,
 }: Props) {
   const services = resolveSnapshotServiceLabels(copy.snapshot);
   const rewards = resolveSnapshotRewardLabels(copy.snapshot);
   const pricing = resolveInvitationPricing(copy.snapshot);
   const status = getSalonInviteInventoryStatus(copy);
   const isPaused = status === "paused";
+  const needsReview = status === "needs_review";
   const templateName = displayTouchPointName(copy.snapshot.templateName);
 
   return (
@@ -63,7 +66,7 @@ export function PublishedInvitationInventoryCard({
       className="vmb-published-invite-card"
       style={{
         borderRadius: 14,
-        border: `1px solid ${isPaused ? "#fcd34d" : VMB_THEME.line}`,
+        border: `1px solid ${isPaused ? "#fcd34d" : needsReview ? "#f9a8d4" : VMB_THEME.line}`,
         background: "#fff",
         display: "grid",
         gridTemplateColumns: "minmax(180px, 0.8fr) minmax(0, 1.2fr)",
@@ -93,8 +96,8 @@ export function PublishedInvitationInventoryCard({
               textTransform: "uppercase",
               padding: "4px 8px",
               borderRadius: 999,
-              background: isPaused ? "#fef3c7" : VMB_THEME.accentSoft,
-              color: isPaused ? "#92400e" : VMB_THEME.ink,
+              background: isPaused ? "#fef3c7" : needsReview ? "#fdf2f8" : VMB_THEME.accentSoft,
+              color: isPaused ? "#92400e" : needsReview ? "#9d174d" : VMB_THEME.ink,
             }}
           >
             {salonInviteInventoryStatusLabel(copy)}
@@ -133,9 +136,16 @@ export function PublishedInvitationInventoryCard({
           <button type="button" disabled={busy} onClick={onEditCopy} style={actionButtonStyle()}>
             Edit Copy
           </button>
-          <button type="button" disabled={busy} onClick={onPause} style={actionButtonStyle()}>
-            {isPaused ? "Resume" : "Pause"}
-          </button>
+          {needsReview && onApprove ? (
+            <button type="button" disabled={busy} onClick={onApprove} style={actionButtonStyle("primary")}>
+              Approve for Salon
+            </button>
+          ) : null}
+          {!needsReview ? (
+            <button type="button" disabled={busy} onClick={onPause} style={actionButtonStyle()}>
+              {isPaused ? "Resume" : "Pause"}
+            </button>
+          ) : null}
         </footer>
       </div>
     </article>

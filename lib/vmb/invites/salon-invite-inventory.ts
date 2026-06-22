@@ -1,17 +1,23 @@
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 
-export type SalonInviteInventoryStatus = "published" | "paused";
+export type SalonInviteInventoryStatus = "needs_review" | "approved" | "paused" | "archived" | "published";
+export type CanonicalSalonInviteInventoryStatus = Exclude<SalonInviteInventoryStatus, "published">;
 
-export function getSalonInviteInventoryStatus(copy: SalonInviteLocalCopy): SalonInviteInventoryStatus {
-  return copy.inventoryStatus ?? "published";
+export function getSalonInviteInventoryStatus(copy: SalonInviteLocalCopy): CanonicalSalonInviteInventoryStatus {
+  const status = copy.inventoryStatus ?? "published";
+  return status === "published" ? "approved" : status;
 }
 
 export function isSalonInviteMatchingActive(copy: SalonInviteLocalCopy): boolean {
-  return getSalonInviteInventoryStatus(copy) === "published";
+  return getSalonInviteInventoryStatus(copy) === "approved";
 }
 
 export function salonInviteInventoryStatusLabel(copy: SalonInviteLocalCopy): string {
-  return getSalonInviteInventoryStatus(copy) === "paused" ? "Paused" : "Published";
+  const status = getSalonInviteInventoryStatus(copy);
+  if (status === "needs_review") return "Needs Review";
+  if (status === "paused") return "Paused";
+  if (status === "archived") return "Archived";
+  return "Approved";
 }
 
 /** Copies eligible for TAIKOS suggested matching and service participation. */
@@ -28,7 +34,7 @@ export function duplicateSalonInviteLocalCopy(copy: SalonInviteLocalCopy): Salon
     ...copy,
     id: duplicateId,
     publishedVersion: nextVersion,
-    inventoryStatus: "published",
+    inventoryStatus: "needs_review",
     snapshot: {
       ...copy.snapshot,
       id: duplicateId,
@@ -48,6 +54,13 @@ export type SalonInviteLocalCopyPatch = {
   headline?: string;
   body?: string;
   ctaLabel?: string;
+  serviceIds?: string[];
+  rewardIds?: string[];
+  totalValue?: number;
+  savingsAmount?: number;
+  offerPrice?: number;
+  valueLabel?: string;
+  priceLabel?: string;
 };
 
 export function applySalonInviteLocalCopyPatch(
@@ -57,13 +70,20 @@ export function applySalonInviteLocalCopyPatch(
   const now = new Date().toISOString();
   return {
     ...copy,
-    inventoryStatus: patch.inventoryStatus ?? copy.inventoryStatus ?? "published",
+    inventoryStatus: patch.inventoryStatus ?? copy.inventoryStatus ?? "approved",
     updatedAt: now,
     snapshot: {
       ...copy.snapshot,
       headline: patch.headline ?? copy.snapshot.headline,
       body: patch.body ?? copy.snapshot.body,
       ctaLabel: patch.ctaLabel ?? copy.snapshot.ctaLabel,
+      serviceIds: patch.serviceIds ? [...patch.serviceIds] : copy.snapshot.serviceIds,
+      rewardIds: patch.rewardIds ? [...patch.rewardIds] : copy.snapshot.rewardIds,
+      totalValue: patch.totalValue ?? copy.snapshot.totalValue,
+      savingsAmount: patch.savingsAmount ?? copy.snapshot.savingsAmount,
+      offerPrice: patch.offerPrice ?? copy.snapshot.offerPrice,
+      valueLabel: patch.valueLabel ?? copy.snapshot.valueLabel,
+      priceLabel: patch.priceLabel ?? copy.snapshot.priceLabel,
       updatedAt: now,
     },
   };

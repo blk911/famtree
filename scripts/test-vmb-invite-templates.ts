@@ -627,6 +627,7 @@ async function run(): Promise<void> {
   assert(salonCopy.sourceTemplateId === "nails-birthday-celebration", "salon copy tracks source template");
   assert(salonCopy.publishedVersion === 1, "salon copy tracks published version");
   assert(salonCopy.snapshot.headline === "Happy Birthday", "salon copy snapshot is independent payload");
+  assert(salonCopy.inventoryStatus === "needs_review", "new admin copy requires salon review");
 
   const salonNavSource = fs.readFileSync(path.join(process.cwd(), "lib/vmb/salon-nav.ts"), "utf8");
   assert(salonNavSource.includes('label: "Invitations"'), "salon nav labels invitations");
@@ -650,7 +651,19 @@ async function run(): Promise<void> {
     "invites preview uses admin default snapshot when unpublished",
   );
   assert(invitesClientSource.includes("SuggestedMatchesSection"), "invitations suggested tab has matches section");
-  assert(invitesClientSource.includes("PublishedInvitationsSection"), "invitations suggested tab has published section");
+  assert(invitesClientSource.includes('label: "Invite Types"'), "invitations has salon-owned invite types tab");
+  assert(invitesClientSource.includes("handleInventoryApprove"), "salon can approve an invite type");
+  const salonTypeEditorSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/salon/SalonInvitationEditCopyModal.tsx"),
+    "utf8",
+  );
+  assert(salonTypeEditorSource.includes("InviteOfferRevisionPanel"), "salon invite type editor owns offer revision");
+  assert(salonTypeEditorSource.includes("/api/vmb/salon-services"), "salon invite type editor uses salon service collection");
+  const salonInvitePatchRouteSource = fs.readFileSync(
+    path.join(process.cwd(), "app/api/vmb/salon-invites/[copyId]/route.ts"),
+    "utf8",
+  );
+  assert(salonInvitePatchRouteSource.includes("getActiveSalonServiceIds"), "salon approval validates active linked services");
   assert(invitesClientSource.includes("publishedCopiesForMatching"), "suggested matching uses active inventory only");
   assert(
     invitesClientSource.includes("Review client touch points"),
@@ -667,10 +680,6 @@ async function run(): Promise<void> {
       "No invitations have been published to your salon yet.",
     ),
     "invitations published empty state",
-  );
-  assert(
-    invitesClientSource.includes("Suggested matches below are previews only"),
-    "invitations suggested tab explains unpublished preview state",
   );
   assert(invitesClientSource.includes("SuggestedInviteMatchingDebug"), "invites suggested tab shows match debug");
 
@@ -733,6 +742,7 @@ async function run(): Promise<void> {
     },
     "salon-123",
   );
+  participationCopy.inventoryStatus = "approved";
   const participation = buildServiceTemplateParticipation([participationCopy]);
   assert(
     participatingTemplatesForService(participation, "default-nails-gel-manicure").length === 1,
@@ -803,6 +813,7 @@ async function run(): Promise<void> {
     version: 2,
   };
   const pcnCopy = createSalonLocalCopy(pcnSnapshot, "salon-123");
+  pcnCopy.inventoryStatus = "approved";
   pcnCopy.sourceTemplateId = `${pcnCopy.salonId}-nails-private-client-network`;
   const pcnSuggested = buildSuggestedInvitationsFromOpportunities([pcnOpportunity], [pcnCopy], {
     drafts: [],
@@ -835,6 +846,7 @@ async function run(): Promise<void> {
   const duplicated = duplicateSalonInviteLocalCopy(pcnCopy);
   assert(duplicated.id !== pcnCopy.id, "duplicate creates a new inventory copy id");
   assert(duplicated.snapshot.templateName.includes("(Copy)"), "duplicate labels copied template");
+  assert(duplicated.inventoryStatus === "needs_review", "duplicated type requires salon approval");
 
   const globalsCss = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
   assert(globalsCss.includes("vmb-published-invite-grid"), "published invite inventory uses responsive grid");
@@ -916,6 +928,7 @@ async function run(): Promise<void> {
   const {
     listSalonInviteLocalCopies,
     publishLibraryTemplateToSalon,
+    updateSalonInviteLocalCopy,
   } = await import("../lib/vmb/invites/salon-invite-local-copy-store");
 
   const salonId = `invite-copy-test-${Date.now()}`;
@@ -960,6 +973,20 @@ async function run(): Promise<void> {
       published.backend === "json" || published.backend === "postgres",
       "publish reports storage backend",
     );
+    assert(published.copy.inventoryStatus === "needs_review", "published master starts in salon review");
+
+    const salonEdited = await updateSalonInviteLocalCopy(salonId, published.copy.id, {
+      inventoryStatus: "approved",
+      headline: "Salon-owned headline",
+    });
+    assert(!("error" in salonEdited), "salon can approve and edit its local copy");
+    const republished = await publishLibraryTemplateToSalon(salonId, templateId);
+    assert(!("error" in republished), "admin republish returns existing salon copy");
+    if (!("error" in republished)) {
+      assert(republished.copy.id === published.copy.id, "admin republish does not replace salon copy");
+      assert(republished.copy.snapshot.headline === "Salon-owned headline", "admin republish preserves salon edits");
+      assert(getSalonInviteInventoryStatus(republished.copy) === "approved", "admin republish preserves salon approval");
+    }
 
     const listed = await listSalonInviteLocalCopies(salonId);
     assert(

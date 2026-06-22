@@ -51,17 +51,15 @@ import type { SalonInvitationApproval } from "@/types/vmb/salon-invitation-appro
 import { friendlyInviteDraftError } from "@/lib/vmb/invite-drafts/invite-draft-storage-errors";
 import { ViewSalonPageLink } from "@/components/vmb/salon/ViewSalonPageLink";
 
-type TabId = "suggested" | "approved" | "sent" | "paused";
+type TabId = "invite-types" | "suggested" | "approved" | "sent" | "paused";
 
 const TABS: { id: TabId; label: string }[] = [
+  { id: "invite-types", label: "Invite Types" },
   { id: "suggested", label: "Suggested" },
   { id: "approved", label: "Approved" },
   { id: "sent", label: "Sent" },
   { id: "paused", label: "Paused" },
 ];
-
-const SUGGESTED_PUBLISHED_EMPTY_MESSAGE =
-  "No invitations have been published to your salon yet. Suggested matches below are previews only until Admin publishes matching invitations.";
 
 const DEFAULT_PACKAGE_PREVIEW_NOTICE =
   "Template status: Not published. This preview uses the default package until an admin publishes the salon invitation template.";
@@ -80,7 +78,7 @@ export function VmbInvitesClient({
   salonId: salonIdProp,
 }: Props) {
   const resolved = useVmbActiveAnalysisState(initialAnalysisId);
-  const [tab, setTab] = useState<TabId>("suggested");
+  const [tab, setTab] = useState<TabId>("invite-types");
   const [focusSection, setFocusSection] = useState<InviteSectionId | undefined>(
     () => parseInviteSection(initialSection),
   );
@@ -221,6 +219,11 @@ export function VmbInvitesClient({
   }, [loadApprovals, loadDrafts, loadPublished]);
 
   useEffect(() => {
+    if (tab === "invite-types") {
+      setLoadingDrafts(true);
+      void loadPublished().finally(() => setLoadingDrafts(false));
+      return;
+    }
     if (tab === "suggested") {
       void loadSuggested();
       return;
@@ -294,6 +297,11 @@ export function VmbInvitesClient({
     [publishedCopies],
   );
 
+  const needsReviewInventoryCopies = useMemo(
+    () => publishedCopies.filter((copy) => getSalonInviteInventoryStatus(copy) === "needs_review"),
+    [publishedCopies],
+  );
+
   const filteredDrafts = useMemo(() => {
     if (tab === "sent") return drafts.filter((d) => d.status === "sent");
     return [];
@@ -332,7 +340,11 @@ export function VmbInvitesClient({
     [salonName],
   );
 
-  const loading = tab === "suggested" ? loadingSuggested : loadingDrafts || resolved.resolving;
+  const loading = tab === "suggested"
+    ? loadingSuggested
+    : tab === "invite-types"
+      ? loadingDrafts
+      : loadingDrafts || resolved.resolving;
 
   async function ensureDraftForRecommendation(
     recommendation: SuggestedInvitationRecommendation,
@@ -499,10 +511,17 @@ export function VmbInvitesClient({
   async function patchPublishedCopy(
     copy: SalonInviteLocalCopy,
     patch: {
-      inventoryStatus?: "published" | "paused";
+      inventoryStatus?: "needs_review" | "approved" | "paused" | "archived";
       headline?: string;
       body?: string;
       ctaLabel?: string;
+      serviceIds?: string[];
+      rewardIds?: string[];
+      totalValue?: number;
+      savingsAmount?: number;
+      offerPrice?: number;
+      valueLabel?: string;
+      priceLabel?: string;
     },
   ): Promise<boolean> {
     setSavingInventory(true);
@@ -527,8 +546,17 @@ export function VmbInvitesClient({
   async function handleInventoryPause(copy: SalonInviteLocalCopy) {
     setActionBusyId(copy.id);
     try {
-      const nextStatus = getSalonInviteInventoryStatus(copy) === "paused" ? "published" : "paused";
+      const nextStatus = getSalonInviteInventoryStatus(copy) === "paused" ? "approved" : "paused";
       await patchPublishedCopy(copy, { inventoryStatus: nextStatus });
+    } finally {
+      setActionBusyId(null);
+    }
+  }
+
+  async function handleInventoryApprove(copy: SalonInviteLocalCopy) {
+    setActionBusyId(copy.id);
+    try {
+      await patchPublishedCopy(copy, { inventoryStatus: "approved" });
     } finally {
       setActionBusyId(null);
     }
@@ -604,7 +632,7 @@ export function VmbInvitesClient({
         })}
       </div>
 
-      {draftError && tab !== "suggested" ? (
+      {draftError && tab !== "suggested" && tab !== "invite-types" ? (
         <p style={{ margin: "0 0 16px", fontSize: 14, color: "#b91c1c" }}>{draftError}</p>
       ) : null}
 
@@ -617,6 +645,32 @@ export function VmbInvitesClient({
 
       {loading ? (
         <p style={{ fontSize: 14, color: VMB_THEME.muted }}>Loading invitations…</p>
+      ) : tab === "invite-types" ? (
+        <div style={{ display: "grid", gap: 28 }}>
+          <PublishedInvitationsSection
+            title="Needs Review"
+            description={`Review the invitation types assigned to ${typeof salonName === "string" ? salonName : "this salon"}. Edit the local copy, preview it, then approve it for salon use.`}
+            copies={needsReviewInventoryCopies}
+            tokenContext={tokenContext}
+            actionBusyId={actionBusyId}
+            emptyMessage="No invitation types are waiting for salon review."
+            onPreview={(copy) => setActivePublishedCopy(copy)}
+            onEditCopy={handleInventoryEditCopy}
+            onApprove={(copy) => void handleInventoryApprove(copy)}
+            onPause={(copy) => void handleInventoryPause(copy)}
+          />
+          <PublishedInvitationsSection
+            title="Approved Invite Types"
+            description="Salon-owned invitation types available for TAIKOS matching, Today, and client outreach."
+            copies={activeInventoryCopies}
+            tokenContext={tokenContext}
+            actionBusyId={actionBusyId}
+            emptyMessage="Approve an invitation type above to make it available for client outreach."
+            onPreview={(copy) => setActivePublishedCopy(copy)}
+            onEditCopy={handleInventoryEditCopy}
+            onPause={(copy) => void handleInventoryPause(copy)}
+          />
+        </div>
       ) : tab === "suggested" ? (
         <div style={{ display: "grid", gap: 28 }}>
           <SuggestedInviteMatchingDebug
@@ -625,29 +679,6 @@ export function VmbInvitesClient({
             publishedCopies={publishedCopyDebugEntries}
             recommendations={suggestedRecommendations}
           />
-          {activeInventoryCopies.length > 0 ? (
-            <PublishedInvitationsSection
-              copies={activeInventoryCopies}
-              tokenContext={tokenContext}
-              actionBusyId={actionBusyId}
-              emptyMessage={SUGGESTED_PUBLISHED_EMPTY_MESSAGE}
-              onPreview={(copy) => setActivePublishedCopy(copy)}
-              onEditCopy={handleInventoryEditCopy}
-              onPause={(copy) => void handleInventoryPause(copy)}
-            />
-          ) : null}
-          {pausedInventoryCopies.length > 0 ? (
-            <PublishedInvitationsSection
-              title="Paused Invitations"
-              description="Published invitations currently hidden from matching and outreach. Resume when ready."
-              copies={pausedInventoryCopies}
-              tokenContext={tokenContext}
-              actionBusyId={actionBusyId}
-              onPreview={(copy) => setActivePublishedCopy(copy)}
-              onEditCopy={handleInventoryEditCopy}
-              onPause={(copy) => void handleInventoryPause(copy)}
-            />
-          ) : null}
           <SuggestedMatchesSection
             recommendations={visibleSuggestedRecommendations}
             actionBusyId={actionBusyId}

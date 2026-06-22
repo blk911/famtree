@@ -15,6 +15,7 @@ type Props = {
   onPreview: (copy: SalonInviteLocalCopy) => void;
   onEditCopy: (copy: SalonInviteLocalCopy) => void;
   onPause: (copy: SalonInviteLocalCopy) => void;
+  onApprove?: (copy: SalonInviteLocalCopy) => void;
 };
 
 export function PublishedInvitationsSection({
@@ -27,6 +28,7 @@ export function PublishedInvitationsSection({
   onPreview,
   onEditCopy,
   onPause,
+  onApprove,
 }: Props) {
   return (
     <section>
@@ -51,6 +53,7 @@ export function PublishedInvitationsSection({
               onPreview={() => onPreview(copy)}
               onEditCopy={() => onEditCopy(copy)}
               onPause={() => onPause(copy)}
+              onApprove={onApprove ? () => onApprove(copy) : undefined}
             />
           ))}
         </div>

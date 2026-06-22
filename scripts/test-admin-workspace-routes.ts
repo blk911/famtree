@@ -324,7 +324,7 @@ function run(): void {
     "utf8",
   );
   assert(offerSelectionSource.includes("Nail Services"), "template selection shows nail services section");
-  assert(offerSelectionSource.includes("Rewards Included"), "template selection shows rewards included section");
+  assert(offerSelectionSource.includes("Custom Add-ons"), "template selection shows custom add-ons section");
 
   const offerSelectionCss = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
   assert(

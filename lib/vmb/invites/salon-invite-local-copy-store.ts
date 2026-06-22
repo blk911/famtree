@@ -144,6 +144,12 @@ export async function publishLibraryTemplateToSalon(
   if ("error" in writable) return writable;
 
   const canonicalTemplateId = normalizeSourceTemplateId(templateId) ?? templateId;
+  const existingCopy = (await listSalonInviteLocalCopies(salonId)).find((copy) =>
+    templateKeysForPublishedCopy(copy).includes(canonicalTemplateId),
+  );
+  if (existingCopy) {
+    return { copy: existingCopy, backend: writable.backend };
+  }
   const storageId = templateStorageId(salonId, canonicalTemplateId);
   const offers = await getOffersForSalon(salonId);
   const saved = offers.find((offer) => offer.id === storageId && !offer.isDefault);
