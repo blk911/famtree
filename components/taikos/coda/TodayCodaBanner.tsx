@@ -32,7 +32,6 @@ type Props = {
   onPreviewSuggestedCard?: (action: SalonQaPreviewCardAction) => void;
   onSubmitFollowUp?: (question: string) => void;
   onAnswerActiveChange?: (active: boolean) => void;
-  onLaunchNewClientOffer?: () => void;
 };
 
 export function TodayCodaBanner({
@@ -45,7 +44,6 @@ export function TodayCodaBanner({
   onPreviewSuggestedCard,
   onSubmitFollowUp,
   onAnswerActiveChange,
-  onLaunchNewClientOffer,
 }: Props) {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -173,17 +171,6 @@ export function TodayCodaBanner({
             <li key={line}>{line}</li>
           ))}
         </ul>
-
-        <div className="vmb-today-invite-composer__instant vmb-today-coda-banner__new-client">
-          <button
-            type="button"
-            className="vmb-today-invite-composer__primary"
-            onClick={() => onLaunchNewClientOffer?.()}
-          >
-            New Client Offer
-          </button>
-          <p>Open the complete offer preview before saving the internal invite.</p>
-        </div>
       </div>
 
       <form className="vmb-today-coda-banner__search" onSubmit={(e) => void handleSubmit(e)}>

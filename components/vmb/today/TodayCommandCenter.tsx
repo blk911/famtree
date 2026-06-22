@@ -141,7 +141,7 @@ export function TodayCommandCenter({
     <section className="vmb-today-command" aria-label="Client selection and invite review workspace">
       <div className="vmb-today-command__head">
         <p className="vmb-today-command__kicker">Action items</p>
-        <h2 className="vmb-today-command__title">Client outreach</h2>
+        <h2 className="vmb-today-command__title">{SALON_INVITE_REASON_LABELS[selectedReason]}</h2>
         <p className="vmb-today-command__lead">
           Choose a matching client, review the invite, then send.
         </p>

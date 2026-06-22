@@ -478,13 +478,6 @@ export function VmbTodayClient({
                 onQuestionAnswer={setActiveQuestionResult}
                 onPreviewFirstCard={() => setPreviewFirstCardSignal((n) => n + 1)}
                 onPreviewSuggestedCard={setQaPreviewAction}
-                onLaunchNewClientOffer={() => {
-                  setSelectedOfferReason("new-client");
-                  setClientNameSearch("");
-                  setClientEmailSearch("");
-                  setClientPhoneSearch("");
-                  setSelectedInviteOpportunity(null);
-                }}
               />
               <SalonInviteComposer
                 selectedReason={selectedOfferReason}

@@ -35,7 +35,7 @@ export type InviteClientCandidate = {
 };
 
 export const SALON_INVITE_REASON_LABELS: Record<SalonInviteReasonId, string> = {
-  "new-client": "New Client Offer",
+  "new-client": "New Member Invite",
   birthday: "Birthday / Event",
   pcn: "Private Client Invite",
   referral: "Referral Invite",
@@ -78,7 +78,7 @@ export function inviteOpportunityClientLabel(opportunity: TaikosOpportunity): st
 export function defaultInviteTitle(reason: SalonInviteReasonId, clientName: string): string {
   const who = clientName.trim() || "your client";
   switch (reason) {
-    case "new-client": return `New client offer for ${who}`;
+    case "new-client": return `New member invite for ${who}`;
     case "birthday": return `A birthday nail treat for ${who}`;
     case "pcn": return `Private client invite for ${who}`;
     case "referral": return `A referral thank-you for ${who}`;
@@ -92,7 +92,7 @@ export function defaultInviteTitle(reason: SalonInviteReasonId, clientName: stri
 
 export function defaultInviteMessage(reason: SalonInviteReasonId, salonName: string): string {
   switch (reason) {
-    case "new-client": return `I put together a new client offer from ${salonName} so your first visit is easy to book.`;
+    case "new-client": return `I put together a new member invite from ${salonName} so your first visit is easy to book.`;
     case "birthday": return `I put together a birthday-ready nail offer from ${salonName}.`;
     case "pcn": return "I would like to invite you into my private client list for early openings, client-only offers, and little surprises.";
     case "referral": return "Thank you for sending good people my way. I put together a small referral thank-you.";
