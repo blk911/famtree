@@ -7340,9 +7340,20 @@
 
 .vmb-service-catalog__layout {
   display: grid;
-  grid-template-columns: 180px minmax(0, 1fr);
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
   align-items: start;
+}
+
+.vmb-service-catalog__nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e7e5e4;
+  border-radius: 12px;
+  background: #fff;
+  padding: 7px 8px;
 }
 
 .vmb-service-catalog__nav-label,
@@ -7356,18 +7367,32 @@
 }
 
 .vmb-service-catalog__nav-list {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 5px;
+  overflow-x: auto;
   list-style: none;
   margin: 0;
   padding: 0;
+  scrollbar-width: thin;
+  white-space: nowrap;
+}
+
+.vmb-service-catalog__nav > .vmb-service-catalog__nav-label {
+  flex: 0 0 auto;
+  margin: 0 4px 0 2px;
 }
 
 .vmb-service-catalog__nav-item {
-  display: block;
-  width: 100%;
-  padding: 8px 10px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
+  display: inline-flex;
+  width: auto;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 13px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #fafaf9;
   text-align: left;
   font-size: 14px;
   color: #44403c;
@@ -7375,6 +7400,7 @@
 }
 
 .vmb-service-catalog__nav-item--active {
+  border-color: #f9a8d4;
   background: #fdf2f8;
   color: #9d174d;
   font-weight: 600;
