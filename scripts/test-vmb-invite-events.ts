@@ -304,8 +304,12 @@ async function run(): Promise<void> {
     );
   });
 
-  await testRecipientInviteLanding();
-  await testInviteClaimFlow();
+  const legacyDraft = await seedApprovedInviteDraft({
+    draftId: `legacy-public-${Date.now()}`,
+    salonName: "Legacy Draft Salon",
+  });
+  const legacyResolved = await resolveRecipientInvite(legacyDraft.draftId);
+  assert(legacyResolved.status === "not_found", "approved draft ids are not public invite identities");
 
   console.log("OK: vmb invite event tests passed");
 }

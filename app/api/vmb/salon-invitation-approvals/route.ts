@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
     opportunityType?: string;
     sourceCopyId?: string;
     sourceTemplateId?: string;
+    salonOfferCatalogId?: string;
     snapshot?: CreateSalonInvitationApprovalInput["snapshot"];
     reasonText?: string;
     estimatedValue?: number;
@@ -67,6 +68,7 @@ export async function POST(req: NextRequest) {
     opportunityType,
     sourceCopyId,
     sourceTemplateId,
+    salonOfferCatalogId: body.salonOfferCatalogId?.trim(),
     snapshot,
     reasonText,
     estimatedValue: body.estimatedValue,

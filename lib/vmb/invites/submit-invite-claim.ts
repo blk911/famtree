@@ -1,15 +1,14 @@
 import { appendInviteEvent } from "./append-invite-event";
-import { hasInviteClaimForContact } from "./invite-event-store";
 import {
   hashInviteClaimContact,
   maskRecipientContactSummary,
   normalizeRecipientContact,
   normalizeRecipientName,
 } from "./recipient-contact";
-import { buildRecipientInviteClaimPath } from "./recipient-invite-url";
 import type { RecipientInviteClientView } from "./recipient-invite-view";
 import { assertNoAdminFieldsInRecipientPayload } from "./recipient-invite-view";
 import { resolveRecipientInvite } from "./resolve-recipient-invite";
+import { claimSentInvite } from "./sent-invite-store";
 
 export type RecipientInviteClaimView = {
   inviteId: string;
@@ -28,7 +27,7 @@ export type SubmitInviteClaimInput = {
 
 export type SubmitInviteClaimResult =
   | { ok: true; alreadyClaimed: boolean }
-  | { ok: false; error: string; status: 400 | 404 | 410 | 500 };
+  | { ok: false; error: string; status: 400 | 404 | 409 | 410 | 500 | 503 };
 
 export function toRecipientInviteClaimView(view: RecipientInviteClientView): RecipientInviteClaimView {
   const knownRecipientName = view.previewModel.metadata.recipientName?.trim() || undefined;
@@ -64,7 +63,7 @@ export async function submitInviteClaim(
   if (resolved.status === "expired") {
     return { ok: false, error: resolved.message, status: 410 };
   }
-  if (!resolved.salonId) {
+  if (!resolved.sentInvite) {
     return { ok: false, error: "Invite unavailable", status: 404 };
   }
 
@@ -73,37 +72,34 @@ export async function submitInviteClaim(
     return { ok: false, error: "Enter a valid mobile number or email", status: 400 };
   }
 
-  const knownName = resolved.clientName?.trim() || resolved.view.previewModel.metadata.recipientName?.trim();
+  const knownName = resolved.sentInvite.snapshot.recipientName.trim();
   const submittedName = input.name?.trim();
   const clientName = knownName || (submittedName ? normalizeRecipientName(submittedName) : null);
   if (!clientName) {
     return { ok: false, error: "Name is required", status: 400 };
   }
 
-  const contactHash = hashInviteClaimContact(inviteId, contact);
-  const alreadyClaimed = await hasInviteClaimForContact(resolved.salonId, inviteId, contactHash);
-  if (alreadyClaimed) {
-    return { ok: true, alreadyClaimed: true };
+  const contactHash = hashInviteClaimContact(resolved.sentInvite.id, contact);
+  const result = await claimSentInvite({
+    token: inviteId,
+    clientName,
+    recipientContactSummary: maskRecipientContactSummary(contact),
+    recipientContactHash: contactHash,
+  });
+  if (!result.ok) {
+    return { ok: false, error: result.error, status: result.status };
   }
-
-  const appendResult = await appendInviteEvent({
+  if (!result.existing) void appendInviteEvent({
     eventType: "invite_claimed",
-    salonId: resolved.salonId,
+    salonId: resolved.sentInvite.salonId,
     payload: {
       inviteId,
-      draftId: resolved.view.draftId,
       clientName,
       salonDisplayName: resolved.view.salonDisplayName,
       recipientContactSummary: maskRecipientContactSummary(contact),
       recipientContactHash: contactHash,
-      sourcePage: buildRecipientInviteClaimPath(inviteId),
       channel: "recipient_claim",
     },
   });
-
-  if (!appendResult.ok) {
-    return { ok: false, error: "Could not record claim", status: 500 };
-  }
-
-  return { ok: true, alreadyClaimed: false };
+  return { ok: true, alreadyClaimed: result.existing };
 }

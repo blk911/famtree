@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { SalonInviteCard } from "@/components/vmb/invites/SalonInviteCard";
 import { ViewSalonPageLink } from "@/components/vmb/salon/ViewSalonPageLink";
 import { resolveInvitationPricing } from "@/lib/vmb/invites/invitation-pricing-display";
@@ -20,6 +21,7 @@ type Props = {
   tokenContext: InviteTemplateTokenContext;
   salonName: string;
   onClose: () => void;
+  onSent?: () => void;
 };
 
 export function SendPackagePreviewModal({
@@ -28,8 +30,36 @@ export function SendPackagePreviewModal({
   tokenContext,
   salonName,
   onClose,
+  onSent,
 }: Props) {
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [recipientUrl, setRecipientUrl] = useState<string | null>(null);
   if (!open) return null;
+
+  async function sendInvite() {
+    setSending(true);
+    setSendError(null);
+    try {
+      const response = await fetch("/api/vmb/sent-invites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ approvalId: approval.id }),
+      });
+      const json = (await response.json()) as { ok?: boolean; error?: string; recipientUrl?: string };
+      if (!response.ok || !json.ok || !json.recipientUrl) {
+        setSendError(json.error ?? "Could not send invitation.");
+        return;
+      }
+      setRecipientUrl(json.recipientUrl);
+      onSent?.();
+    } catch {
+      setSendError("Could not send invitation.");
+    } finally {
+      setSending(false);
+    }
+  }
 
   const copy = buildSendPackageCopy(approval);
   const pricing = resolveInvitationPricing(approval.snapshot);
@@ -122,9 +152,17 @@ export function SendPackagePreviewModal({
         </div>
 
         <footer className="vmb-send-package-modal__footer">
-          <button type="button" className="vmb-send-package-modal__send-stub" disabled>
-            Send Email — Coming Next
-          </button>
+          {recipientUrl ? (
+            <div>
+              <p style={{ margin: "0 0 4px", fontSize: 12, fontWeight: 700 }}>Secure recipient URL</p>
+              <input readOnly value={recipientUrl} onFocus={(event) => event.currentTarget.select()} style={{ width: "min(520px, 70vw)" }} />
+            </div>
+          ) : (
+            <button type="button" className="vmb-send-package-modal__send-stub" disabled={sending} onClick={() => void sendInvite()}>
+              {sending ? "Sending…" : "Send Invitation"}
+            </button>
+          )}
+          {sendError ? <p role="alert" style={{ color: "#92400e", margin: 0 }}>{sendError}</p> : null}
           <button
             type="button"
             className="vmb-send-package-modal__close"

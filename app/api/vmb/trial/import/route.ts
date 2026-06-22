@@ -5,6 +5,7 @@ import { analyzeSalonBackOfficeUpload } from "@/lib/intelligence/salon/backoffic
 import { bridgeGgenImportToVmbAnalysis } from "@/lib/vmb/ggen-conversion-bridge";
 import { logVmbFlow } from "@/lib/vmb/flow-log";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
+import { createVmbSalonSession } from "@/lib/vmb/salon-authority";
 import { getVmbTrialLead } from "@/lib/vmb/trial-store";
 import { appendTrialImportRun } from "@/lib/vmb/trial-import-store";
 
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
           }
         : { error: bridge.reason },
     });
-    res.cookies.set(VMB_TRIAL_COOKIE, trialId, {
+    res.cookies.set(VMB_TRIAL_COOKIE, createVmbSalonSession(trialId), {
       httpOnly: true,
       sameSite: "lax",
       path: "/",

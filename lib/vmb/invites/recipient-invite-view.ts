@@ -3,7 +3,6 @@ import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
 /** Serializable payload safe for recipient browsers — no salon trial ids or operator fields. */
 export type RecipientInviteClientView = {
   inviteId: string;
-  draftId: string;
   salonDisplayName: string;
   techName?: string;
   previewModel: CardPreviewModel;
@@ -50,7 +49,6 @@ export function assertNoAdminFieldsInRecipientPayload(value: unknown, path = "ro
 
 export function toRecipientInvitePageState(input: {
   inviteId: string;
-  draftId: string;
   salonDisplayName: string;
   techName?: string;
   previewModel: CardPreviewModel;
@@ -58,7 +56,6 @@ export function toRecipientInvitePageState(input: {
 }): RecipientInvitePageState {
   const view: RecipientInviteClientView = {
     inviteId: input.inviteId,
-    draftId: input.draftId,
     salonDisplayName: input.salonDisplayName,
     techName: input.techName,
     previewModel: input.previewModel,

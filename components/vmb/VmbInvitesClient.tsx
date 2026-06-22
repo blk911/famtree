@@ -6,6 +6,7 @@ import { BookLoadedStatusNote } from "@/components/vmb/BookLoadedStatusNote";
 import { SalonInvitationPreviewModal } from "@/components/vmb/salon/SalonInvitationPreviewModal";
 import { SalonInvitationEditCopyModal } from "@/components/vmb/salon/SalonInvitationEditCopyModal";
 import { SendPackagePreviewModal } from "@/components/vmb/salon/SendPackagePreviewModal";
+import { SalonClaimsTimeline } from "@/components/vmb/salon/SalonClaimsTimeline";
 import { ApprovedInvitationsSection } from "@/components/vmb/salon/ApprovedInvitationsSection";
 import { ApprovedInvitationCard } from "@/components/vmb/salon/ApprovedInvitationCard";
 import { PublishedInvitationsSection } from "@/components/vmb/salon/PublishedInvitationsSection";
@@ -681,6 +682,7 @@ export function VmbInvitesClient({
         <EmptyPanel message={emptyMessage()} />
       ) : tab === "sent" ? (
         <div style={{ display: "grid", gap: 28 }}>
+          <SalonClaimsTimeline />
           {sentApprovals.length > 0 ? (
             <section>
               <header style={{ marginBottom: 14 }}>
@@ -766,6 +768,10 @@ export function VmbInvitesClient({
           tokenContext={tokenContext}
           salonName={typeof salonName === "string" ? salonName : "Your Salon"}
           onClose={() => setSendPackageApproval(null)}
+          onSent={() => {
+            void loadApprovals();
+            setTab("sent");
+          }}
         />
       ) : null}
 

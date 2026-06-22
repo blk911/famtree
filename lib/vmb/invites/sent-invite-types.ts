@@ -1,0 +1,59 @@
+export type SentInviteStatus =
+  | "sent"
+  | "opened"
+  | "claimed"
+  | "redeemed"
+  | "expired"
+  | "cancelled";
+
+export type SentInvitePublicSnapshot = {
+  salonDisplayName: string;
+  providerName?: string;
+  recipientName: string;
+  inviteTypeLabel: string;
+  headline: string;
+  body: string;
+  ctaLabel: string;
+  services: string[];
+  rewards: string[];
+  expirationLabel?: string;
+  termsText?: string;
+  priceLabel?: string;
+  ownerPhotoUrl?: string;
+  salonLogoUrl?: string;
+  serviceImageUrl?: string;
+  inviteArtImageUrl?: string;
+};
+
+export type SentInvite = {
+  id: string;
+  salonId: string;
+  sourceApprovalId: string;
+  sourceCopyId: string;
+  status: SentInviteStatus;
+  tokenHash: string;
+  snapshot: SentInvitePublicSnapshot;
+  sentAt: string;
+  openedAt?: string;
+  claimedAt?: string;
+  redeemedAt?: string;
+  expiresAt: string;
+  cancelledAt?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type InviteClaim = {
+  id: string;
+  sentInviteId: string;
+  salonId: string;
+  clientName: string;
+  recipientContactSummary: string;
+  recipientContactHash: string;
+  claimedAt: string;
+};
+
+export type SalonClaimTimelineItem = {
+  sentInvite: SentInvite;
+  claim?: InviteClaim;
+};

@@ -33,3 +33,18 @@ export async function assertVmbWritableBackend(): Promise<
   }
   return { ok: true, backend: "json" };
 }
+
+export async function assertVmbMoneyWritableBackend(): Promise<
+  { ok: true; backend: "postgres" | "memory" } | { ok: false; error: string }
+> {
+  if (
+    process.env.VMB_MONEY_TEST_MEMORY === "1" &&
+    process.env.NODE_ENV !== "production" &&
+    !process.env.VERCEL
+  ) {
+    return { ok: true, backend: "memory" };
+  }
+  const backend = await resolveVmbStorageBackend();
+  if (backend === "postgres") return { ok: true, backend };
+  return { ok: false, error: "Postgres is required for VMB money state" };
+}

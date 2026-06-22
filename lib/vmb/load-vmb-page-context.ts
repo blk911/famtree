@@ -4,6 +4,7 @@ import { logVmbFlow } from "@/lib/vmb/flow-log";
 import { isVmbProcessComplete } from "@/lib/vmb/process-complete";
 import { getVmbBookAnalysis } from "@/lib/vmb/book-analysis/analysis-store";
 import { VMB_TRIAL_COOKIE } from "@/lib/vmb/paths";
+import { verifyVmbSalonSession } from "@/lib/vmb/salon-authority";
 import { isRefreshDue } from "@/lib/vmb/workspace-lifecycle";
 import { getWorkspaceForTrial } from "@/lib/vmb/workspace-store";
 import { getActiveBookPointer } from "@/lib/vmb/active-book-pointer";
@@ -79,7 +80,7 @@ export async function loadVmbPageContext(
 ): Promise<VmbPageContext> {
   const cookieStore = await cookies();
   const queryAnalysisId = input.analysisId?.trim();
-  let trialId = cookieStore.get(VMB_TRIAL_COOKIE)?.value?.trim();
+  let trialId = verifyVmbSalonSession(cookieStore.get(VMB_TRIAL_COOKIE)?.value);
 
   if (queryAnalysisId) {
     const queryAnalysis = await getVmbBookAnalysis(queryAnalysisId);

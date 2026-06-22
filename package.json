@@ -72,6 +72,7 @@
     "debug:nail-invite-templates": "tsx scripts/debug-nail-invite-templates.ts",
     "repair:nail-invite-templates": "tsx scripts/repair-nail-invite-template-content.ts",
     "test:vmb:invite-events": "tsx scripts/test-vmb-invite-events.ts",
+    "test:vmb:sent-invites": "tsx scripts/test-vmb-sent-invites.ts",
     "test:vmb:operator-flow": "tsx scripts/test-vmb-operator-flow-wiring.ts",
     "test:vmb:salon-read-only-load": "tsx scripts/test-vmb-salon-read-only-load.ts",
     "test:vmb:today-command-center": "tsx scripts/test-vmb-today-command-center.ts",

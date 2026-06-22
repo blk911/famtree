@@ -5,6 +5,7 @@ import {
   cloneInviteTemplateSnapshot,
 } from "@/lib/vmb/invites/salon-invitation-approval-workflow";
 import { getVmbSalonInvitationApprovalsFile } from "@/lib/vmb/paths";
+import { prisma, resolveVmbStorageBackend } from "@/lib/vmb/db";
 import { readJsonArray, writeJsonArray } from "@/lib/vmb/runtime-json-store";
 import { assertVmbWritableBackend } from "@/lib/vmb/storage-policy";
 import type {
@@ -54,6 +55,45 @@ async function listStoredJson(): Promise<StoredSalonInvitationApproval[]> {
   return readJsonArray(getVmbSalonInvitationApprovalsFile(), isStoredSalonInvitationApproval);
 }
 
+async function listStored(): Promise<StoredSalonInvitationApproval[]> {
+  if ((await resolveVmbStorageBackend()) === "postgres") {
+    try {
+      const rows = await prisma.$queryRaw<Array<{ salon_id: string; payload: unknown }>>`
+        SELECT salon_id, payload FROM vmb_salon_invitation_approval ORDER BY updated_at DESC
+      `;
+      return rows
+        .map((row) => ({ salonId: row.salon_id, approval: row.payload as SalonInvitationApproval }))
+        .filter(isStoredSalonInvitationApproval);
+    } catch {
+      return [];
+    }
+  }
+  return listStoredJson();
+}
+
+async function persistApproval(
+  row: StoredSalonInvitationApproval,
+  all: StoredSalonInvitationApproval[],
+): Promise<string | null> {
+  if ((await resolveVmbStorageBackend()) === "postgres") {
+    try {
+      await prisma.$executeRaw`
+        INSERT INTO vmb_salon_invitation_approval (approval_id, salon_id, payload, updated_at)
+        VALUES (${row.approval.id}, ${row.salonId}, ${JSON.stringify(row.approval)}::jsonb, now())
+        ON CONFLICT (approval_id) DO UPDATE SET
+          salon_id = EXCLUDED.salon_id, payload = EXCLUDED.payload, updated_at = now()
+      `;
+      return null;
+    } catch (error) {
+      return error instanceof Error ? error.message : "Approval persistence failed";
+    }
+  }
+  return writeJsonArray(getVmbSalonInvitationApprovalsFile(), [
+    ...all.filter((existing) => existing.approval.id !== row.approval.id),
+    row,
+  ]);
+}
+
 function createApprovalId(salonId: string): string {
   return `${salonId}-approval-${Date.now()}`;
 }
@@ -75,7 +115,7 @@ function findByDedupeKey(
 export async function listSalonInvitationApprovals(
   salonId: string,
 ): Promise<SalonInvitationApproval[]> {
-  const all = await listStoredJson();
+  const all = await listStored();
   return all
     .filter((row) => row.salonId === salonId)
     .map((row) => normalizeApproval(row.approval))
@@ -109,7 +149,7 @@ export async function createSalonInvitationApproval(
     sourceCopyId: input.sourceCopyId,
   });
 
-  const all = await listStoredJson();
+  const all = await listStored();
   const existing = findByDedupeKey(all, salonId, dedupeKey);
   if (existing) {
     return { approval: existing, created: false };
@@ -125,6 +165,7 @@ export async function createSalonInvitationApproval(
     opportunityType: input.opportunityType,
     sourceCopyId: input.sourceCopyId,
     sourceTemplateId: input.sourceTemplateId,
+    salonOfferCatalogId: input.salonOfferCatalogId,
     snapshot: cloneInviteTemplateSnapshot(snapshot),
     reasonText: input.reasonText,
     estimatedValue: input.estimatedValue,
@@ -138,10 +179,7 @@ export async function createSalonInvitationApproval(
     return { error: "Could not create approval record." };
   }
 
-  const err = await writeJsonArray(getVmbSalonInvitationApprovalsFile(), [
-    ...all.filter((row) => row.approval.id !== approval.id),
-    { salonId, approval },
-  ]);
+  const err = await persistApproval({ salonId, approval }, all);
   if (err) return { error: err };
 
   return { approval, created: true };
@@ -159,7 +197,7 @@ export async function approveSalonInvitation(
     sourceCopyId: input.sourceCopyId,
   });
 
-  const all = await listStoredJson();
+  const all = await listStored();
   const existing = findByDedupeKey(all, salonId, dedupeKey);
   if (existing) {
     if (existing.status === "approved" || existing.status === "sent") {
@@ -183,7 +221,7 @@ export async function pauseSalonInvitationApproval(
     sourceCopyId: input.sourceCopyId,
   });
 
-  const all = await listStoredJson();
+  const all = await listStored();
   const existing = findByDedupeKey(all, salonId, dedupeKey);
   if (existing) {
     return updateSalonInvitationApprovalStatus(salonId, existing.id, "paused");
@@ -200,7 +238,7 @@ export async function updateSalonInvitationApprovalStatus(
   const writable = await assertVmbWritableBackend();
   if (!writable.ok) return { error: writable.error };
 
-  const all = await listStoredJson();
+  const all = await listStored();
   const index = all.findIndex((row) => row.salonId === salonId && row.approval.id === approvalId);
   if (index < 0) return { error: "Approval record not found." };
 
@@ -215,9 +253,7 @@ export async function updateSalonInvitationApprovalStatus(
     updatedAt: now,
   };
 
-  const next = [...all];
-  next[index] = { salonId, approval: updated };
-  const err = await writeJsonArray(getVmbSalonInvitationApprovalsFile(), next);
+  const err = await persistApproval({ salonId, approval: updated }, all);
   if (err) return { error: err };
 
   return { approval: updated, created: false };
@@ -234,7 +270,7 @@ export async function patchSalonInvitationApprovalSnapshot(
   const parsed = parseInviteTemplateSnapshot(nextSnapshot);
   if (!parsed) return { error: "Invalid invitation snapshot." };
 
-  const all = await listStoredJson();
+  const all = await listStored();
   const index = all.findIndex((row) => row.salonId === salonId && row.approval.id === approvalId);
   if (index < 0) return { error: "Approval record not found." };
 
@@ -247,9 +283,7 @@ export async function patchSalonInvitationApprovalSnapshot(
     updatedAt: new Date().toISOString(),
   };
 
-  const next = [...all];
-  next[index] = { salonId, approval: updated };
-  const err = await writeJsonArray(getVmbSalonInvitationApprovalsFile(), next);
+  const err = await persistApproval({ salonId, approval: updated }, all);
   if (err) return { error: err };
 
   return { approval: updated };

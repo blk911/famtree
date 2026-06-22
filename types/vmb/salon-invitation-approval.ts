@@ -11,6 +11,7 @@ export type SalonInvitationApproval = {
   opportunityType: string;
   sourceCopyId: string;
   sourceTemplateId: string;
+  salonOfferCatalogId?: string;
   snapshot: InviteTemplateSnapshot;
   reasonText: string;
   estimatedValue?: number;
@@ -27,6 +28,7 @@ export type CreateSalonInvitationApprovalInput = {
   opportunityType: string;
   sourceCopyId: string;
   sourceTemplateId: string;
+  salonOfferCatalogId?: string;
   snapshot: InviteTemplateSnapshot;
   reasonText: string;
   estimatedValue?: number;

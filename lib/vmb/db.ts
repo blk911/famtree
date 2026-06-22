@@ -162,6 +162,57 @@ const DDL_STATEMENTS: string[] = [
     ON vmb_salon_invite_copy (salon_id)`,
   `CREATE INDEX IF NOT EXISTS vmb_salon_invite_copy_salon_source
     ON vmb_salon_invite_copy (salon_id, source_template_id)`,
+  `CREATE TABLE IF NOT EXISTS vmb_invite_event (
+    event_id text PRIMARY KEY,
+    event_type text NOT NULL,
+    salon_id text NOT NULL,
+    occurred_at timestamptz NOT NULL,
+    payload jsonb NOT NULL,
+    created_at timestamptz DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS vmb_invite_event_salon_occurred
+    ON vmb_invite_event (salon_id, occurred_at DESC)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS vmb_invite_event_unique_claim_contact
+    ON vmb_invite_event (
+      salon_id,
+      (payload->>'inviteId'),
+      (payload->>'recipientContactHash')
+    )
+    WHERE event_type = 'invite_claimed'
+      AND payload->>'inviteId' IS NOT NULL
+      AND payload->>'recipientContactHash' IS NOT NULL`,
+  `CREATE TABLE IF NOT EXISTS vmb_sent_invite (
+    sent_invite_id text PRIMARY KEY,
+    salon_id text NOT NULL,
+    source_approval_id text NOT NULL,
+    token_hash text NOT NULL UNIQUE,
+    status text NOT NULL,
+    expires_at timestamptz NOT NULL,
+    payload jsonb NOT NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now(),
+    UNIQUE (salon_id, source_approval_id)
+  )`,
+  `CREATE INDEX IF NOT EXISTS vmb_sent_invite_salon_status
+    ON vmb_sent_invite (salon_id, status, updated_at DESC)`,
+  `CREATE TABLE IF NOT EXISTS vmb_invite_claim (
+    claim_id text PRIMARY KEY,
+    sent_invite_id text NOT NULL UNIQUE REFERENCES vmb_sent_invite(sent_invite_id),
+    salon_id text NOT NULL,
+    payload jsonb NOT NULL,
+    claimed_at timestamptz NOT NULL,
+    created_at timestamptz DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS vmb_invite_claim_salon_claimed
+    ON vmb_invite_claim (salon_id, claimed_at DESC)`,
+  `CREATE TABLE IF NOT EXISTS vmb_salon_invitation_approval (
+    approval_id text PRIMARY KEY,
+    salon_id text NOT NULL,
+    payload jsonb NOT NULL,
+    updated_at timestamptz DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS vmb_salon_invitation_approval_salon
+    ON vmb_salon_invitation_approval (salon_id, updated_at DESC)`,
 ];
 
 const MIGRATION_STATEMENTS: string[] = [
