@@ -134,27 +134,36 @@ export function SalonInviteComposer({
         </select>
       </label>
 
-      <fieldset className="vmb-today-invite-composer__client-search">
-        <legend>Find a client</legend>
-        <div>
-          <label>
-            <span>Name</span>
-            <input type="search" value={clientNameSearch} onChange={(event) => onClientNameSearchChange(event.target.value)} />
-          </label>
-          <label>
-            <span>Email</span>
-            <input type="email" value={clientEmailSearch} onChange={(event) => onClientEmailSearchChange(event.target.value)} />
-          </label>
-          <label>
-            <span>Phone</span>
-            <input type="tel" value={clientPhoneSearch} onChange={(event) => onClientPhoneSearchChange(event.target.value)} />
-          </label>
+      {selectedReason === "new-client" ? (
+        <div className="vmb-today-invite-composer__quick-note">
+          <strong>Quick add</strong>
+          <p>Enter the new member and confirm your My Style offer below.</p>
         </div>
-      </fieldset>
+      ) : (
+        <>
+          <fieldset className="vmb-today-invite-composer__client-search">
+            <legend>Find a client</legend>
+            <div>
+              <label>
+                <span>Name</span>
+                <input type="search" value={clientNameSearch} onChange={(event) => onClientNameSearchChange(event.target.value)} />
+              </label>
+              <label>
+                <span>Email</span>
+                <input type="email" value={clientEmailSearch} onChange={(event) => onClientEmailSearchChange(event.target.value)} />
+              </label>
+              <label>
+                <span>Phone</span>
+                <input type="tel" value={clientPhoneSearch} onChange={(event) => onClientPhoneSearchChange(event.target.value)} />
+              </label>
+            </div>
+          </fieldset>
 
-      <p className="vmb-today-invite-composer__search-note">
-        {matchingCount === 1 ? "1 matching TAIKOS client" : `${matchingCount} matching TAIKOS clients`} shown below.
-      </p>
+          <p className="vmb-today-invite-composer__search-note">
+            {matchingCount === 1 ? "1 matching TAIKOS client" : `${matchingCount} matching TAIKOS clients`} shown below.
+          </p>
+        </>
+      )}
     </aside>
   );
 }

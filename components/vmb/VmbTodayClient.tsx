@@ -491,6 +491,9 @@ export function VmbTodayClient({
                 onSelectedReasonChange={(reason) => {
                   setSelectedOfferReason(reason);
                   setSelectedInviteOpportunity(null);
+                  setClientNameSearch("");
+                  setClientEmailSearch("");
+                  setClientPhoneSearch("");
                 }}
               />
             </div>
@@ -504,6 +507,7 @@ export function VmbTodayClient({
               selectedReason={selectedOfferReason}
               selectedOfferRecommendations={selectedOfferRecommendations}
               selectedOpportunity={selectedInviteOpportunity}
+              clientNamePrefill={clientNameSearch}
               clientEmailPrefill={clientEmailSearch}
               clientPhonePrefill={clientPhoneSearch}
               onSelectOpportunity={setSelectedInviteOpportunity}

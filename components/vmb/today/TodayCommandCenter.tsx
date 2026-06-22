@@ -21,6 +21,7 @@ type Props = {
   selectedReason: SalonInviteReasonId;
   selectedOfferRecommendations: InviteClientCandidate[];
   selectedOpportunity: InviteClientCandidate | null;
+  clientNamePrefill: string;
   clientEmailPrefill: string;
   clientPhonePrefill: string;
   onSelectOpportunity: (opportunity: InviteClientCandidate) => void;
@@ -38,6 +39,7 @@ export function TodayCommandCenter({
   selectedReason,
   selectedOfferRecommendations,
   selectedOpportunity,
+  clientNamePrefill,
   clientEmailPrefill,
   clientPhonePrefill,
   onSelectOpportunity,
@@ -51,6 +53,7 @@ export function TodayCommandCenter({
   const [message, setMessage] = useState(defaultInviteMessage(selectedReason, salonName));
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [selectedOptionId, setSelectedOptionId] = useState("");
+  const [offerPrice, setOfferPrice] = useState("");
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -78,10 +81,15 @@ export function TodayCommandCenter({
     return () => { cancelled = true; };
   }, []);
 
+  const isNewMemberInvite = selectedReason === "new-client";
+
   useEffect(() => {
     if (!selectedOpportunity) {
-      setClientName("");
-      setTitle(defaultInviteTitle(selectedReason, ""));
+      const directName = isNewMemberInvite ? clientNamePrefill : "";
+      setClientName(directName);
+      setEmail(isNewMemberInvite ? clientEmailPrefill : "");
+      setPhone(isNewMemberInvite ? clientPhonePrefill : "");
+      setTitle(defaultInviteTitle(selectedReason, directName));
       setMessage(defaultInviteMessage(selectedReason, salonName));
       setStatus(null);
       return;
@@ -93,11 +101,31 @@ export function TodayCommandCenter({
     setTitle(defaultInviteTitle(selectedReason, nextClientName));
     setMessage(selectedOpportunity.suggestedMessage || defaultInviteMessage(selectedReason, salonName));
     setStatus(null);
-  }, [salonName, selectedOpportunity, selectedReason]);
+  }, [clientEmailPrefill, clientNamePrefill, clientPhonePrefill, isNewMemberInvite, salonName, selectedOpportunity, selectedReason]);
 
   const selectedService = services.find((service) => service.id === selectedServiceId);
   const selectedOption = options.find((option) => option.id === selectedOptionId);
-  const canSend = Boolean(selectedOpportunity && clientName.trim() && title.trim() && message.trim());
+  const serviceOptions = options.filter((option) => option.serviceId === selectedServiceId);
+  const hasRecipientContact = Boolean(email.trim() || phone.trim());
+  const hasRecipient = isNewMemberInvite
+    ? Boolean(clientName.trim() && hasRecipientContact)
+    : Boolean(selectedOpportunity && clientName.trim());
+  const canSend = Boolean(hasRecipient && title.trim() && message.trim() && selectedService);
+
+  useEffect(() => {
+    if (!selectedService) {
+      setOfferPrice("");
+      return;
+    }
+    setOfferPrice(((selectedService.basePriceCents ?? 0) / 100).toFixed(2));
+  }, [selectedService]);
+
+  useEffect(() => {
+    setSelectedOptionId((current) => {
+      if (serviceOptions.some((option) => option.id === current)) return current;
+      return serviceOptions.find((option) => option.isDefault)?.id ?? serviceOptions[0]?.id ?? "";
+    });
+  }, [selectedServiceId, options]);
 
   async function saveInviteStub() {
     if (!canSend) return;
@@ -124,6 +152,7 @@ export function TodayCommandCenter({
             inviteMessage: message.trim(),
             selectedService: selectedService?.name ?? "",
             selectedReward: selectedOption?.name ?? "",
+            selectedPriceCents: Math.max(0, Math.round(Number(offerPrice || 0) * 100)),
             deliveryStatus: "stubbed_internal",
           },
         }),
@@ -143,20 +172,42 @@ export function TodayCommandCenter({
         <p className="vmb-today-command__kicker">Action items</p>
         <h2 className="vmb-today-command__title">{SALON_INVITE_REASON_LABELS[selectedReason]}</h2>
         <p className="vmb-today-command__lead">
-          Choose a matching client, review the invite, then send.
+          {isNewMemberInvite
+            ? "Add the new member, confirm your style, then send."
+            : "Choose a matching client, review the invite, then send."}
         </p>
       </div>
 
       <div className="vmb-today-command__sequence">
-        <section className="vmb-today-command__matches" aria-label="Matching clients">
+        <section className="vmb-today-command__matches" aria-label={isNewMemberInvite ? "New member details" : "Matching clients"}>
           <div className="vmb-today-command__section-head">
             <div>
               <span>Step A</span>
-              <h3>Matching clients</h3>
+              <h3>{isNewMemberInvite ? "New member details" : "Matching clients"}</h3>
             </div>
-            <strong>{selectedOfferRecommendations.length}</strong>
+            {!isNewMemberInvite ? <strong>{selectedOfferRecommendations.length}</strong> : null}
           </div>
-          {selectedOfferRecommendations.length > 0 ? (
+          {isNewMemberInvite ? (
+            <div className="vmb-today-command__recipient-form">
+              <label>
+                <span>Name</span>
+                <input
+                  value={clientName}
+                  onChange={(event) => {
+                    const nextName = event.target.value;
+                    setTitle((current) => current === defaultInviteTitle(selectedReason, clientName)
+                      ? defaultInviteTitle(selectedReason, nextName)
+                      : current);
+                    setClientName(nextName);
+                  }}
+                  placeholder="New member name"
+                />
+              </label>
+              <label><span>Email</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email address" /></label>
+              <label><span>Phone</span><input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Mobile number" /></label>
+              <p>Email or phone is required to send.</p>
+            </div>
+          ) : selectedOfferRecommendations.length > 0 ? (
             <ul className="vmb-today-command__client-list">
               {selectedOfferRecommendations.map((opportunity) => {
                 const selected = selectedOpportunity?.id === opportunity.id;
@@ -180,18 +231,18 @@ export function TodayCommandCenter({
           ) : (
             <p className="vmb-today-command__empty">No matching clients for this touch point and search.</p>
           )}
-          <Link href={snapshot.primaryCtaHref} className="vmb-today-command__library-link">Open invite library</Link>
+          {!isNewMemberInvite ? <Link href={snapshot.primaryCtaHref} className="vmb-today-command__library-link">Open invite library</Link> : null}
         </section>
 
         <section className="vmb-today-command__review" aria-label="Selected client invite review">
           <div className="vmb-today-command__section-head">
             <div>
               <span>Step B</span>
-              <h3>Review and send</h3>
+              <h3>{isNewMemberInvite ? "Confirm My Style and send" : "Review and send"}</h3>
             </div>
           </div>
 
-          {!selectedOpportunity ? (
+          {!isNewMemberInvite && !selectedOpportunity ? (
             <div className="vmb-today-command__loaded-invite">
               <span>{SALON_INVITE_REASON_LABELS[selectedReason]}</span>
               <strong>{defaultInviteTitle(selectedReason, "")}</strong>
@@ -205,17 +256,56 @@ export function TodayCommandCenter({
             <div className="vmb-today-command__editor">
               <div className="vmb-today-command__selected-client">
                 <span>{SALON_INVITE_REASON_LABELS[selectedReason]}</span>
-                <strong>{selectedOpportunity.clientName}</strong>
-                <p>{selectedOpportunity.reason}</p>
+                <strong>{isNewMemberInvite ? "My Style" : selectedOpportunity?.clientName}</strong>
+                <p>{isNewMemberInvite ? "Confirm the salon setup for this invitation." : selectedOpportunity?.reason}</p>
               </div>
 
-              <div className="vmb-today-command__contact-grid">
+              {!isNewMemberInvite ? <div className="vmb-today-command__contact-grid">
                 <label><span>Client name</span><input value={clientName} onChange={(event) => setClientName(event.target.value)} /></label>
                 <label><span>Email</span><input value={email} onChange={(event) => setEmail(event.target.value)} /></label>
                 <label><span>Phone</span><input value={phone} onChange={(event) => setPhone(event.target.value)} /></label>
-              </div>
+              </div> : null}
 
-              <div className="vmb-today-command__contact-grid">
+              {isNewMemberInvite ? (
+                <div className="vmb-today-command__style-builder">
+                  <div className="vmb-today-command__style-controls">
+                    <label>
+                      <span>Active service</span>
+                      <select value={selectedServiceId} onChange={(event) => setSelectedServiceId(event.target.value)}>
+                        {services.length === 0 ? <option value="">No active services</option> : null}
+                        {services.map((service) => (
+                          <option key={service.id} value={service.id}>
+                            {service.name} · {((service.basePriceCents ?? 0) / 100).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="vmb-today-command__price-field">
+                      <span>Offer price</span>
+                      <div><b>$</b><input type="number" min="0" step="0.01" value={offerPrice} onChange={(event) => setOfferPrice(event.target.value)} /></div>
+                    </label>
+                  </div>
+                  {serviceOptions.length > 0 ? (
+                    <div>
+                      <span>Style / option</span>
+                      <div className="vmb-today-command__pick-grid">
+                        {serviceOptions.map((option) => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            className={option.id === selectedOptionId ? "is-selected" : undefined}
+                            aria-pressed={option.id === selectedOptionId}
+                            onClick={() => setSelectedOptionId(option.id)}
+                          >
+                            <strong>{option.name}</strong>
+                            {option.valueLabel ? <small>{option.valueLabel}</small> : null}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : <p className="vmb-today-command__style-note">This service uses the salon&apos;s base style with no add-on selected.</p>}
+                </div>
+              ) : <div className="vmb-today-command__contact-grid">
                 <label>
                   <span>Active service</span>
                   <select value={selectedServiceId} onChange={(event) => setSelectedServiceId(event.target.value)}>
@@ -230,21 +320,35 @@ export function TodayCommandCenter({
                     {options.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
                   </select>
                 </label>
-              </div>
+              </div>}
 
-              <label className="vmb-today-command__field"><span>Invite title</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-              <label className="vmb-today-command__field"><span>Message</span><textarea rows={3} value={message} onChange={(event) => setMessage(event.target.value)} /></label>
+              {isNewMemberInvite ? (
+                <details className="vmb-today-command__copy-details">
+                  <summary>Edit invite copy</summary>
+                  <label className="vmb-today-command__field"><span>Invite title</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+                  <label className="vmb-today-command__field"><span>Message</span><textarea rows={3} value={message} onChange={(event) => setMessage(event.target.value)} /></label>
+                </details>
+              ) : (
+                <>
+                  <label className="vmb-today-command__field"><span>Invite title</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+                  <label className="vmb-today-command__field"><span>Message</span><textarea rows={3} value={message} onChange={(event) => setMessage(event.target.value)} /></label>
+                </>
+              )}
 
               <div className="vmb-today-command__invite-preview">
                 <span>{contactSummary(email, phone)}</span>
                 <strong>{title}</strong>
                 <p>{message}</p>
-                <small>{selectedService?.name || "Service"} · {selectedOption?.name || "Reward"}</small>
+                <small>
+                  {selectedService?.name || "Service"}
+                  {selectedOption?.name ? ` · ${selectedOption.name}` : ""}
+                  {offerPrice ? ` · $${Number(offerPrice).toFixed(2)}` : ""}
+                </small>
               </div>
 
               <div className="vmb-today-command__send-actions">
                 <button type="button" disabled={!canSend || saving} onClick={() => void saveInviteStub()}>
-                  {saving ? "Saving..." : "Send invite (stub)"}
+                  {saving ? "Saving..." : isNewMemberInvite ? "Send new member invite" : "Send invite (stub)"}
                 </button>
                 {status ? <p>{status}</p> : null}
               </div>

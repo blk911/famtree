@@ -1491,6 +1491,25 @@
   box-shadow: 0 16px 34px rgba(131, 24, 67, 0.08);
 }
 
+.vmb-today-invite-composer__quick-note {
+  display: grid;
+  gap: 4px;
+  border-top: 3px solid #be185d;
+  padding-top: 10px;
+}
+
+.vmb-today-invite-composer__quick-note strong {
+  color: #9d174d;
+  font-size: 13px;
+}
+
+.vmb-today-invite-composer__quick-note p {
+  margin: 0;
+  color: #78716c;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .vmb-today-invite-composer__control-head {
   display: grid;
   gap: 3px;
@@ -4438,6 +4457,155 @@
   gap: 12px;
 }
 
+.vmb-today-command__recipient-form {
+  display: grid;
+  gap: 10px;
+}
+
+.vmb-today-command__recipient-form label,
+.vmb-today-command__style-builder label {
+  display: grid;
+  gap: 5px;
+}
+
+.vmb-today-command__recipient-form label > span,
+.vmb-today-command__style-builder > div > span,
+.vmb-today-command__style-builder label > span {
+  color: #9d174d;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.vmb-today-command__recipient-form input,
+.vmb-today-command__price-field input {
+  min-width: 0;
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  background: #fff;
+  padding: 9px 10px;
+  color: #292524;
+  font: inherit;
+  font-size: 13px;
+}
+
+.vmb-today-command__recipient-form > p {
+  margin: 0;
+  color: #78716c;
+  font-size: 11px;
+}
+
+.vmb-today-command__style-builder {
+  display: grid;
+  gap: 12px;
+}
+
+.vmb-today-command__style-builder > div {
+  display: grid;
+  gap: 6px;
+}
+
+.vmb-today-command__style-controls {
+  grid-template-columns: minmax(0, 1fr) 140px;
+  align-items: end;
+}
+
+.vmb-today-command__style-controls select {
+  min-width: 0;
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  background: #fff;
+  padding: 9px 10px;
+  color: #292524;
+  font: inherit;
+  font-size: 13px;
+}
+
+.vmb-today-command__pick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.vmb-today-command__pick-grid button {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  border: 1px solid #e7e5e4;
+  border-radius: 11px;
+  background: #fff;
+  padding: 9px 10px;
+  color: #292524;
+  cursor: pointer;
+  text-align: left;
+}
+
+.vmb-today-command__pick-grid button.is-selected {
+  border-color: #db2777;
+  background: #fdf2f8;
+  box-shadow: inset 0 0 0 1px #db2777;
+}
+
+.vmb-today-command__pick-grid strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vmb-today-command__pick-grid small {
+  color: #78716c;
+  font-size: 10px;
+}
+
+.vmb-today-command__price-field {
+  max-width: 140px;
+}
+
+.vmb-today-command__price-field > div {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  background: #fff;
+  padding-left: 10px;
+}
+
+.vmb-today-command__price-field b {
+  color: #78716c;
+  font-size: 13px;
+}
+
+.vmb-today-command__price-field input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+}
+
+.vmb-today-command__copy-details {
+  border-top: 1px solid #f1e7ee;
+  padding-top: 9px;
+}
+
+.vmb-today-command__style-note {
+  margin: 0;
+  color: #78716c;
+  font-size: 11px;
+}
+
+.vmb-today-command__copy-details summary {
+  color: #9d174d;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.vmb-today-command__copy-details[open] {
+  display: grid;
+  gap: 10px;
+}
+
 .vmb-today-command__selected-client {
   display: grid;
   gap: 4px;
@@ -4563,6 +4731,14 @@
 
   .vmb-today-command__contact-grid,
   .vmb-today-command__contact-grid + .vmb-today-command__contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vmb-today-command__pick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .vmb-today-command__style-controls {
     grid-template-columns: 1fr;
   }
 }

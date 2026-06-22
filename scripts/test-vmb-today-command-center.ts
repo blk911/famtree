@@ -101,6 +101,29 @@ function run(): void {
   assert(todaySource.includes("TodayCommandCenter"), "loaded Today state renders command center");
   assert(todaySource.includes("/api/vmb/invite-drafts"), "Today loads VMB invite drafts for unified summary");
 
+  const composerSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/today/SalonInviteComposer.tsx"),
+    "utf8",
+  );
+  const commandCenterSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/today/TodayCommandCenter.tsx"),
+    "utf8",
+  );
+  assert(
+    composerSource.includes('selectedReason === "new-client"') && composerSource.includes("Quick add"),
+    "new member touchpoint bypasses the matching-client search",
+  );
+  assert(
+    commandCenterSource.includes('const isNewMemberInvite = selectedReason === "new-client"'),
+    "command center owns a dedicated new member branch",
+  );
+  assert(
+    commandCenterSource.includes("Confirm My Style and send")
+      && commandCenterSource.includes("selectedPriceCents")
+      && commandCenterSource.includes("serviceOptions"),
+    "new member branch confirms service options and snapshots the send price",
+  );
+
   assert(
     buildTodayCommandCenterSnapshot({
       hasBook: false,
