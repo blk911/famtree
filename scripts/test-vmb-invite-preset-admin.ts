@@ -181,6 +181,18 @@ async function run(): Promise<void> {
   assert(adminClient.includes("Reset to default"), "outreach admin renders reset control");
   assert(!adminClient.includes("OUTREACH_MESSAGE_PRESETS"), "admin UI does not embed preset arrays");
 
+  const servicePresetAdmin = read("components/vmb/admin/ServicePresetAdminClient.tsx");
+  assert(
+    servicePresetAdmin.includes("Offer details") && servicePresetAdmin.includes("aria-expanded"),
+    "selected service preset opens the offer details review",
+  );
+  assert(
+    !servicePresetAdmin.includes("Default enabled for new salons")
+      && !servicePresetAdmin.includes("Default selected")
+      && !servicePresetAdmin.includes("onToggleActive"),
+    "service preset review omits legacy default and active controls",
+  );
+
   const inviteModal = read("components/vmb/dashboard/InviteDraftPreviewModal.tsx");
   assert(inviteModal.includes("outreach-message-presets"), "send modal uses canonical outreach footer helper");
 

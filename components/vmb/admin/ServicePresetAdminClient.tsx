@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ServicePresetCard } from "@/components/vmb/services/ServicePresetCard";
 import type { ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
 import { listServiceCategories } from "@/lib/vmb/services/canonical-service-catalog";
@@ -20,7 +20,6 @@ export function ServicePresetAdminClient() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  const editorRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -150,6 +149,7 @@ export function ServicePresetAdminClient() {
                     <button
                       type="button"
                       className={`vmb-service-preset-admin__row${selectedId === preset.id ? " vmb-service-preset-admin__row--active" : ""}`}
+                      aria-expanded={selectedId === preset.id}
                       onClick={() => setSelectedId(preset.id)}
                     >
                       <span>{drafts[preset.id]?.displayName ?? preset.displayName}</span>
@@ -174,22 +174,18 @@ export function ServicePresetAdminClient() {
                       price={selected.basePriceCents}
                       durationMinutes={selected.durationMinutes}
                       includedText={selected.includedText}
-                      active={selected.active}
-                      enabled={selected.defaultEnabled}
                       addons={selected.addonPresets.map((addon) => ({
                         id: addon.addonId,
                         label: addon.label,
                         price: addon.priceCents,
-                        selected: addon.defaultSelected,
-                        active: addon.active,
+                        selected: false,
+                        active: true,
                       }))}
-                      onEditPreset={() => editorRef.current?.scrollIntoView({ behavior: "smooth" })}
-                      onToggleActive={() => updateDraft(selected.id, { active: !selected.active })}
                     />
                   </aside>
 
-                  <div ref={editorRef} className="vmb-service-preset-admin__editor">
-                  <p className="vmb-service-catalog__section-label">Preset fields</p>
+                  <div className="vmb-service-preset-admin__editor">
+                  <p className="vmb-service-catalog__section-label">Offer details</p>
                   <p className="vmb-service-preset-admin__linked">
                     Linked offer: <code>{selected.serviceOfferId}</code>
                   </p>
@@ -254,22 +250,6 @@ export function ServicePresetAdminClient() {
                         }
                       />
                     </label>
-                    <label className="vmb-service-preset-admin__checkbox">
-                      <input
-                        type="checkbox"
-                        checked={selected.defaultEnabled}
-                        onChange={(e) => updateDraft(selected.id, { defaultEnabled: e.target.checked })}
-                      />
-                      Default enabled for new salons
-                    </label>
-                    <label className="vmb-service-preset-admin__checkbox">
-                      <input
-                        type="checkbox"
-                        checked={selected.active}
-                        onChange={(e) => updateDraft(selected.id, { active: e.target.checked })}
-                      />
-                      Active
-                    </label>
                   </div>
 
                   {selected.addonPresets.length > 0 ? (
@@ -312,28 +292,6 @@ export function ServicePresetAdminClient() {
                                   })
                                 }
                               />
-                            </label>
-                            <label className="vmb-service-preset-admin__checkbox">
-                              <input
-                                type="checkbox"
-                                checked={addon.active}
-                                onChange={(e) =>
-                                  updateAddonDraft(selected.id, addon.addonId, { active: e.target.checked })
-                                }
-                              />
-                              Active
-                            </label>
-                            <label className="vmb-service-preset-admin__checkbox">
-                              <input
-                                type="checkbox"
-                                checked={addon.defaultSelected}
-                                onChange={(e) =>
-                                  updateAddonDraft(selected.id, addon.addonId, {
-                                    defaultSelected: e.target.checked,
-                                  })
-                                }
-                              />
-                              Default selected
                             </label>
                           </li>
                         ))}

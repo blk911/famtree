@@ -9845,6 +9845,11 @@
   gap: 24px;
   align-items: start;
   margin-top: 20px;
+  border: 1px solid #e7e5e4;
+  border-radius: 18px;
+  background: #fff;
+  padding: 20px;
+  box-shadow: 0 8px 28px rgba(41, 37, 36, 0.05);
 }
 
 .vmb-service-preset-admin__preview {
@@ -9893,6 +9898,7 @@
   width: 100%;
   padding: 12px 4px;
   border: none;
+  border-left: 3px solid transparent;
   border-bottom: 1px solid #e7e5e4;
   background: transparent;
   text-align: left;
@@ -9902,7 +9908,10 @@
 }
 
 .vmb-service-preset-admin__row--active {
-  background: #fafaf9;
+  border-left-color: #db2777;
+  background: #fdf2f8;
+  color: #9d174d;
+  font-weight: 650;
 }
 
 .vmb-service-preset-admin__row-meta {
@@ -9912,7 +9921,7 @@
 
 .vmb-service-preset-admin__editor {
   order: 1;
-  padding-top: 8px;
+  min-width: 0;
 }
 
 .vmb-service-preset-admin__linked {
@@ -9937,6 +9946,10 @@
 
 .vmb-service-preset-admin__fields input,
 .vmb-service-preset-admin__fields textarea {
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  background: #fafaf9;
+  padding: 8px 9px;
   font-size: 14px;
 }
 
@@ -9954,12 +9967,45 @@
 
 .vmb-service-preset-admin__addon-row {
   display: grid;
-  grid-template-columns: 1fr repeat(4, minmax(100px, auto));
-  gap: 10px;
+  grid-template-columns: minmax(110px, 0.75fr) minmax(180px, 1.5fr) repeat(2, minmax(100px, 0.7fr));
+  gap: 12px;
   align-items: end;
-  padding: 10px 0;
-  border-bottom: 1px solid #f5f5f4;
+  margin-bottom: 8px;
+  border: 1px solid #f1e7ee;
+  border-radius: 12px;
+  background: #fafaf9;
+  padding: 12px;
   font-size: 13px;
+}
+
+.vmb-service-preset-admin__addon-row label {
+  display: grid;
+  gap: 5px;
+  color: #57534e;
+  font-size: 12px;
+}
+
+.vmb-service-preset-admin__addon-row input {
+  min-width: 0;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  background: #fff;
+  padding: 7px 8px;
+  font: inherit;
+}
+
+.vmb-service-preset-card__footer:empty {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .vmb-service-preset-admin__editor-wrap {
+    padding: 14px;
+  }
+
+  .vmb-service-preset-admin__addon-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .vmb-service-preset-admin__addon-id {
