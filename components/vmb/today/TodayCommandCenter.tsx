@@ -5,12 +5,14 @@ import Link from "next/link";
 import type { SalonFacingServiceOffer } from "@/lib/vmb/services/service-preset-types";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 import { isSalonInviteMatchingActive } from "@/lib/vmb/invites/salon-invite-inventory";
+import { findPublishedCopyForTemplateId } from "@/lib/vmb/invites/published-copy-matching";
 import type { TodayCommandCenterSnapshot } from "@/lib/vmb/today-command-center";
 import { formatTodayMoney } from "@/lib/vmb/today-command-center";
 import {
   defaultInviteMessage,
   defaultInviteTitle,
   SALON_INVITE_REASON_LABELS,
+  inviteTemplateIdForSalonReason,
   type InviteClientCandidate,
   type SalonInviteReasonId,
 } from "./SalonInviteComposer";
@@ -34,6 +36,12 @@ function contactSummary(email: string, phone: string): string {
   return parts.length > 0 ? parts.join(" / ") : "Contact details needed";
 }
 
+function personalizeInviteCopy(value: string, clientName: string, salonName: string): string {
+  return value
+    .replaceAll("{clientName}", clientName || "your client")
+    .replaceAll("{salonName}", salonName);
+}
+
 export function TodayCommandCenter({
   snapshot,
   salonName,
@@ -47,7 +55,7 @@ export function TodayCommandCenter({
   onSelectOpportunity,
 }: Props) {
   const [services, setServices] = useState<SalonFacingServiceOffer[]>([]);
-  const [newMemberCopy, setNewMemberCopy] = useState<SalonInviteLocalCopy | null>(null);
+  const [salonInviteCopies, setSalonInviteCopies] = useState<SalonInviteLocalCopy[]>([]);
   const [clientName, setClientName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -78,16 +86,12 @@ export function TodayCommandCenter({
           setSelectedServiceId((current) => activeServiceIds.has(current) ? current : activeServices[0]?.serviceOfferId || "");
         }
         if (!cancelled && inviteResponse.ok && inviteJson.ok) {
-          setNewMemberCopy(
-            (inviteJson.copies ?? []).find(
-              (copy) => copy.sourceTemplateId === "nails-new-client-welcome" && isSalonInviteMatchingActive(copy),
-            ) ?? null,
-          );
+          setSalonInviteCopies((inviteJson.copies ?? []).filter(isSalonInviteMatchingActive));
         }
       } catch {
         if (!cancelled) {
           setServices([]);
-          setNewMemberCopy(null);
+          setSalonInviteCopies([]);
         }
       }
     })();
@@ -95,6 +99,10 @@ export function TodayCommandCenter({
   }, []);
 
   const isNewMemberInvite = selectedReason === "new-client";
+  const selectedInviteCopy = findPublishedCopyForTemplateId(
+    salonInviteCopies,
+    inviteTemplateIdForSalonReason(selectedReason),
+  ).copy;
 
   useEffect(() => {
     if (!selectedOpportunity) {
@@ -102,8 +110,12 @@ export function TodayCommandCenter({
       setClientName(directName);
       setEmail(isNewMemberInvite ? clientEmailPrefill : "");
       setPhone(isNewMemberInvite ? clientPhonePrefill : "");
-      setTitle(defaultInviteTitle(selectedReason, directName));
-      setMessage(defaultInviteMessage(selectedReason, salonName));
+      setTitle(selectedInviteCopy
+        ? personalizeInviteCopy(selectedInviteCopy.snapshot.headline, directName, salonName)
+        : defaultInviteTitle(selectedReason, directName));
+      setMessage(selectedInviteCopy
+        ? personalizeInviteCopy(selectedInviteCopy.snapshot.body, directName, salonName)
+        : defaultInviteMessage(selectedReason, salonName));
       setStatus(null);
       return;
     }
@@ -111,10 +123,14 @@ export function TodayCommandCenter({
     setClientName(nextClientName);
     setEmail(clientEmailPrefill);
     setPhone(clientPhonePrefill);
-    setTitle(defaultInviteTitle(selectedReason, nextClientName));
-    setMessage(selectedOpportunity.suggestedMessage || defaultInviteMessage(selectedReason, salonName));
+    setTitle(selectedInviteCopy
+      ? personalizeInviteCopy(selectedInviteCopy.snapshot.headline, nextClientName, salonName)
+      : defaultInviteTitle(selectedReason, nextClientName));
+    setMessage(selectedInviteCopy
+      ? personalizeInviteCopy(selectedInviteCopy.snapshot.body, nextClientName, salonName)
+      : selectedOpportunity.suggestedMessage || defaultInviteMessage(selectedReason, salonName));
     setStatus(null);
-  }, [clientEmailPrefill, clientNamePrefill, clientPhonePrefill, isNewMemberInvite, salonName, selectedOpportunity, selectedReason]);
+  }, [clientEmailPrefill, clientNamePrefill, clientPhonePrefill, isNewMemberInvite, salonName, selectedInviteCopy, selectedOpportunity, selectedReason]);
 
   const selectedService = services.find((service) => service.serviceOfferId === selectedServiceId);
   const selectedAddons = selectedService?.addons.filter(
@@ -125,7 +141,7 @@ export function TodayCommandCenter({
     ? Boolean(clientName.trim() && hasRecipientContact)
     : Boolean(selectedOpportunity && clientName.trim());
   const canSend = isNewMemberInvite
-    ? Boolean(hasRecipient && email.trim() && title.trim() && message.trim() && selectedService && newMemberCopy && !revisingOffer)
+    ? Boolean(hasRecipient && email.trim() && title.trim() && message.trim() && selectedService && selectedInviteCopy && !revisingOffer)
     : Boolean(hasRecipient && title.trim() && message.trim() && selectedService && !revisingOffer);
 
   useEffect(() => {
@@ -144,15 +160,20 @@ export function TodayCommandCenter({
   }, [selectedService]);
 
   useEffect(() => {
-    const salonDefault = services[0];
+    const preferredServiceId = selectedInviteCopy?.snapshot.serviceIds[0];
+    const salonDefault = services.find((service) => service.serviceOfferId === preferredServiceId) ?? services[0];
     if (!salonDefault) return;
-    const defaultAddons = salonDefault.addons.filter((addon) => addon.enabled);
+    const approvedAddonIds = new Set(selectedInviteCopy?.snapshot.rewardIds ?? []);
+    const defaultAddons = salonDefault.addons.filter(
+      (addon) => addon.enabled && approvedAddonIds.has(addon.addonId),
+    );
     const totalCents = salonDefault.priceCents + defaultAddons.reduce((sum, addon) => sum + addon.priceCents, 0);
+    skipNextServiceDefaults.current = salonDefault.serviceOfferId !== selectedServiceId;
     setSelectedServiceId(salonDefault.serviceOfferId);
     setSelectedAddonIds(defaultAddons.map((addon) => addon.addonId));
-    setOfferPrice((totalCents / 100).toFixed(2));
+    setOfferPrice(String(selectedInviteCopy?.snapshot.offerPrice ?? (totalCents / 100).toFixed(2)));
     setRevisingOffer(false);
-  }, [selectedOpportunity?.id, selectedReason, services]);
+  }, [selectedInviteCopy, selectedOpportunity?.id, selectedReason, services]);
 
   function useOfferRevision(next: ConfirmedInviteOffer) {
     skipNextServiceDefaults.current = next.serviceId !== selectedServiceId;
@@ -208,7 +229,7 @@ export function TodayCommandCenter({
       const totalValueCents = selectedService!.priceCents + selectedAddons.reduce((sum, addon) => sum + addon.priceCents, 0);
       const offerPriceCents = Math.max(0, Math.round(Number(offerPrice || 0) * 100));
       const snapshot = {
-        ...newMemberCopy!.snapshot,
+        ...selectedInviteCopy!.snapshot,
         headline: title.trim(),
         body: message.trim(),
         serviceIds: [selectedService!.serviceOfferId],
@@ -230,8 +251,8 @@ export function TodayCommandCenter({
           clientEmail: email.trim(),
           opportunityId: `new-member-${Date.now()}`,
           opportunityType: SALON_INVITE_REASON_LABELS[selectedReason],
-          sourceCopyId: newMemberCopy!.id,
-          sourceTemplateId: newMemberCopy!.sourceTemplateId,
+          sourceCopyId: selectedInviteCopy!.id,
+          sourceTemplateId: selectedInviteCopy!.sourceTemplateId,
           snapshot,
           reasonText: `New member offer from ${salonName}`,
           estimatedValue: offerPriceCents / 100,
@@ -391,8 +412,8 @@ export function TodayCommandCenter({
               </div>
 
               <div className="vmb-today-command__send-actions">
-                {isNewMemberInvite && !newMemberCopy ? (
-                  <p>Publish the New Client Welcome template to this salon before sending.</p>
+                {isNewMemberInvite && !selectedInviteCopy ? (
+                  <p>Approve this invite type for the salon before sending.</p>
                 ) : null}
                 <button type="button" disabled={!canSend || saving} onClick={() => void (isNewMemberInvite ? sendInvite() : saveInviteStub())}>
                   {saving ? "Saving..." : isNewMemberInvite ? "Send new member invite" : "Send invite (stub)"}

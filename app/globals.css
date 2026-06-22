@@ -4818,7 +4818,7 @@
   line-height: 1.4;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
   .vmb-today-command__sequence {
     grid-template-columns: 1fr;
   }
@@ -11405,7 +11405,7 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1400px) {
   .vmb-published-invite-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -11413,7 +11413,7 @@
 
 .vmb-published-invite-card__detail-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(90px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 8px 14px;
   align-items: start;
 }

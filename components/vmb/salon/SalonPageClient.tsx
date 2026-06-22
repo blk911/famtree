@@ -251,6 +251,12 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
     void load();
 
+    const refreshOnFocus = () => void load();
+
+    window.addEventListener("focus", refreshOnFocus);
+
+    return () => window.removeEventListener("focus", refreshOnFocus);
+
   }, [load]);
 
 
@@ -651,4 +657,3 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
   );
 
 }
-

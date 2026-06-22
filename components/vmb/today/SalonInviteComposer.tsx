@@ -1,6 +1,7 @@
 "use client";
 
 import type { TaikosOpportunity, TaikosOpportunityCategory } from "@/lib/taikos/opportunities/types";
+import { inviteTemplateIdForType } from "@/lib/vmb/invite-templates/card-type-invite-template-map";
 
 type Props = {
   selectedReason: SalonInviteReasonId;
@@ -45,6 +46,22 @@ export const SALON_INVITE_REASON_LABELS: Record<SalonInviteReasonId, string> = {
   vip: "VIP Thank You",
   custom: "Custom",
 };
+
+const REASON_TO_TEMPLATE_ID: Record<SalonInviteReasonId, string> = {
+  "new-client": inviteTemplateIdForType("new_client_welcome"),
+  birthday: inviteTemplateIdForType("birthday_celebration"),
+  pcn: inviteTemplateIdForType("private_client_network"),
+  referral: inviteTemplateIdForType("referral_invite"),
+  reactivation: inviteTemplateIdForType("we_miss_you"),
+  refresh: inviteTemplateIdForType("refresh_reminder"),
+  vip: inviteTemplateIdForType("vip_thank_you"),
+  "open-chair": inviteTemplateIdForType("open_chair"),
+  custom: inviteTemplateIdForType("new_client_welcome"),
+};
+
+export function inviteTemplateIdForSalonReason(reason: SalonInviteReasonId): string {
+  return REASON_TO_TEMPLATE_ID[reason];
+}
 
 const CATEGORY_TO_REASON: Partial<Record<TaikosOpportunityCategory, SalonInviteReasonId>> = {
   Birthday: "birthday",

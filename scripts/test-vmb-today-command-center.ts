@@ -140,6 +140,12 @@ function run(): void {
     "new member My Style loads salon-facing services and published invitations",
   );
   assert(
+    commandCenterSource.includes("inviteTemplateIdForSalonReason")
+      && commandCenterSource.includes("findPublishedCopyForTemplateId")
+      && commandCenterSource.includes("selectedInviteCopy?.snapshot.offerPrice"),
+    "Today resolves the approved salon invite type and carries its fixed offer",
+  );
+  assert(
     commandCenterSource.includes('fetch("/api/vmb/salon-invitation-approvals"')
       && commandCenterSource.includes('fetch("/api/vmb/sent-invites"'),
     "new member send uses approval and canonical SentInvite endpoints",

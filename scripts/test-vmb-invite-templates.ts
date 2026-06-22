@@ -653,6 +653,12 @@ async function run(): Promise<void> {
   assert(invitesClientSource.includes("SuggestedMatchesSection"), "invitations suggested tab has matches section");
   assert(invitesClientSource.includes('label: "Invite Types"'), "invitations has salon-owned invite types tab");
   assert(invitesClientSource.includes("handleInventoryApprove"), "salon can approve an invite type");
+  const salonPageSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/salon/SalonPageClient.tsx"),
+    "utf8",
+  );
+  assert(salonPageSource.includes("publishedCopiesForMatching"), "salon page shows only approved invite types");
+  assert(salonPageSource.includes('window.addEventListener("focus"'), "salon page refreshes approved types on focus");
   const salonTypeEditorSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/salon/SalonInvitationEditCopyModal.tsx"),
     "utf8",
