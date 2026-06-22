@@ -493,7 +493,9 @@ async function run(): Promise<void> {
   assert(builderSource.includes("Nails Template Builder"), "builder client uses factory naming");
   assert(builderSource.includes("useNailTemplateInventory"), "builder loads template drafts via shared inventory hook");
   assert(builderSource.includes("Review Template"), "builder uses review template workflow");
-  assert(builderSource.includes("AdminDefaultPackageSummary"), "builder shows admin default package");
+  assert(builderSource.includes("OfferPricingSummary"), "builder shows live offer pricing");
+  assert(builderSource.includes("draft.serviceIds"), "builder pricing follows selected services");
+  assert(builderSource.includes("draft.serviceOptionIds"), "builder pricing follows selected options");
   assert(!builderSource.includes("AdminTemplatePreviewCard"), "builder removes live draft preview card");
   assert(builderSource.includes("✓ Saved to Library"), "builder shows inline save confirmation");
   assert(builderSource.includes("View in Library"), "builder links to library after save");

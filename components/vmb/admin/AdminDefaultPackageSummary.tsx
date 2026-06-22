@@ -17,6 +17,10 @@ import type { VmbDefaultInvitationPackage } from "@/lib/vmb/invite-templates/inv
 import type { InvitationPackagePricing } from "@/lib/vmb/invites/invitation-package-pricing";
 
 import { formatInvitationPrice } from "@/lib/vmb/invites/invitation-package-pricing";
+import {
+  defaultNailAddonPrice,
+  defaultNailServicePrice,
+} from "@/lib/vmb/services/default-nail-pricing";
 
 
 
@@ -35,6 +39,75 @@ type Props = {
   title?: string;
 
 };
+
+type OfferPricingSummaryProps = {
+  serviceIds: string[];
+  serviceOptionIds: string[];
+  expirationLabel: string;
+  pricing: InvitationPackagePricing;
+  serviceFallbackById?: Record<string, string | undefined>;
+  rewardFallbackById?: Record<string, string | undefined>;
+};
+
+export function OfferPricingSummary({
+  serviceIds,
+  serviceOptionIds,
+  expirationLabel,
+  pricing,
+  serviceFallbackById,
+  rewardFallbackById,
+}: OfferPricingSummaryProps) {
+  const services = serviceIds.map((id) => ({
+    id,
+    label: resolveNailOfferServiceLabels([id], serviceFallbackById)[0] ?? id,
+    price: defaultNailServicePrice(id),
+  }));
+  const options = serviceOptionIds.map((id) => ({
+    id,
+    label: resolveNailOfferAddonLabels([id], rewardFallbackById)[0] ?? id,
+    price: defaultNailAddonPrice(id),
+  }));
+
+  return (
+    <section className="vmb-offer-pricing" aria-label="Offer pricing">
+      <p className="vmb-admin-default-package__title">Offer pricing</p>
+      <div className="vmb-offer-pricing__items">
+        {services.map((service) => (
+          <div className="vmb-offer-pricing__line" key={service.id}>
+            <span>{service.label}</span>
+            <strong>{formatInvitationPrice(service.price)}</strong>
+          </div>
+        ))}
+        {options.map((option) => (
+          <div className="vmb-offer-pricing__line" key={option.id}>
+            <span>{option.label}</span>
+            <strong>+{formatInvitationPrice(option.price)}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="vmb-offer-pricing__totals">
+        <div className="vmb-offer-pricing__line">
+          <span>Package value</span>
+          <strong>{pricing.valueLabel}</strong>
+        </div>
+        {pricing.savingsAmount > 0 ? (
+          <div className="vmb-offer-pricing__line">
+            <span>Offer savings</span>
+            <strong>-{formatInvitationPrice(pricing.savingsAmount)}</strong>
+          </div>
+        ) : null}
+        <div className="vmb-offer-pricing__line vmb-offer-pricing__line--total">
+          <span>Offer total</span>
+          <strong>{pricing.priceLabel}</strong>
+        </div>
+        <div className="vmb-offer-pricing__expiration">
+          <span>Expiration</span>
+          <strong>{expirationLabel}</strong>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 
 
@@ -199,5 +272,4 @@ function PricingRow({ label, value }: { label: string; value: string }) {
   );
 
 }
-
 

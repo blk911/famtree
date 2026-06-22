@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { AdminDefaultPackageSummary } from "@/components/vmb/admin/AdminDefaultPackageSummary";
+import { OfferPricingSummary } from "@/components/vmb/admin/AdminDefaultPackageSummary";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminTemplateReviewModal } from "@/components/vmb/admin/AdminTemplateReviewModal";
 import { BuilderImageInsertsSection } from "@/components/vmb/admin/BuilderImageInsertsSection";
@@ -18,6 +18,7 @@ import {
 import { libraryRouteForTemplate } from "@/lib/vmb/admin/nail-template-routes";
 import { DEFAULT_NAIL_INVITE_TEMPLATES } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
+import { calculateInvitationPackagePricing } from "@/lib/vmb/invites/invitation-package-pricing";
 import {
   EMPTY_SALON_INVITE_IMAGE_INSERTS,
   type SalonInviteImageInserts,
@@ -101,6 +102,15 @@ export function TemplateBuilderAdminClient({
       serviceImageUrl: imageInserts.serviceImageUrl,
     });
   }, [draft, imageInserts, ownerName, salonName]);
+
+  const livePricing = useMemo(() => {
+    if (!draft) return null;
+    return calculateInvitationPackagePricing({
+      serviceIds: draft.serviceIds,
+      serviceOptionIds: draft.serviceOptionIds,
+      inviteType: selectedTemplate?.inviteType,
+    });
+  }, [draft, selectedTemplate]);
 
   function patchDraft(patch: Partial<NailTemplateDraft>) {
     setSaveSuccess(false);
@@ -231,10 +241,12 @@ export function TemplateBuilderAdminClient({
                 onServiceOptionIdsChange={(serviceOptionIds) => patchDraft({ serviceOptionIds })}
               />
 
-              {selectedTemplate ? (
-                <AdminDefaultPackageSummary
-                  pkg={selectedTemplate.defaultPackage}
-                  templateId={selectedTemplate.id}
+              {selectedTemplate && livePricing ? (
+                <OfferPricingSummary
+                  serviceIds={draft.serviceIds}
+                  serviceOptionIds={draft.serviceOptionIds}
+                  expirationLabel={selectedTemplate.defaultPackage.expirationLabel}
+                  pricing={livePricing}
                   serviceFallbackById={serviceFallbackById}
                   rewardFallbackById={optionFallbackById}
                 />

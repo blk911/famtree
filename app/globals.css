@@ -11167,6 +11167,51 @@
   font-weight: 600;
 }
 
+.vmb-offer-pricing {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  background: #fafaf9;
+}
+
+.vmb-offer-pricing__items,
+.vmb-offer-pricing__totals {
+  display: grid;
+  gap: 6px;
+}
+
+.vmb-offer-pricing__totals {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e7e5e4;
+}
+
+.vmb-offer-pricing__line,
+.vmb-offer-pricing__expiration {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.vmb-offer-pricing__line strong,
+.vmb-offer-pricing__expiration strong {
+  text-align: right;
+}
+
+.vmb-offer-pricing__line--total {
+  font-size: 15px;
+  color: #9d174d;
+}
+
+.vmb-offer-pricing__expiration {
+  padding-top: 8px;
+  border-top: 1px solid #e7e5e4;
+  color: #57534e;
+}
+
 @media (max-width: 767px) {
   .vmb-today-action-layout {
     grid-template-columns: 1fr;
