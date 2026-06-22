@@ -36,13 +36,13 @@ export type InviteClientCandidate = {
 
 export const SALON_INVITE_REASON_LABELS: Record<SalonInviteReasonId, string> = {
   "new-client": "New Member Invite",
-  birthday: "Birthday / Event",
   pcn: "Private Client Invite",
+  refresh: "Refresh Reminder",
+  "open-chair": "Open Chair",
+  birthday: "Birthday / Event",
   referral: "Referral Invite",
   reactivation: "We Miss You",
-  refresh: "Refresh Reminder",
   vip: "VIP Thank You",
-  "open-chair": "Open Chair",
   custom: "Custom",
 };
 
