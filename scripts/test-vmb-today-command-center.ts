@@ -109,6 +109,10 @@ function run(): void {
     path.join(process.cwd(), "components/vmb/today/TodayCommandCenter.tsx"),
     "utf8",
   );
+  const offerRevisionSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/today/InviteOfferRevisionPanel.tsx"),
+    "utf8",
+  );
   assert(
     composerSource.includes('selectedReason === "new-client"') && composerSource.includes("Quick add"),
     "new member touchpoint bypasses the matching-client search",
@@ -120,14 +124,14 @@ function run(): void {
   assert(
     commandCenterSource.includes("Confirm My Style and send")
       && commandCenterSource.includes("selectedAddonIds")
-      && commandCenterSource.includes("Revise this offer"),
+      && commandCenterSource.includes("InviteOfferRevisionPanel"),
     "new member branch reviews and revises the salon offer",
   );
   assert(
-    commandCenterSource.includes("revisionAddonIds")
-      && commandCenterSource.includes("toggleRevisionAddon")
-      && commandCenterSource.includes("Use this offer")
-      && commandCenterSource.includes(">Cancel<"),
+    offerRevisionSource.includes("toggleAddon")
+      && offerRevisionSource.includes("Use this offer")
+      && offerRevisionSource.includes(">Cancel<")
+      && commandCenterSource.includes("onUse={useOfferRevision}"),
     "offer revision uses a temporary multi-add-on draft with commit and cancel actions",
   );
   assert(
