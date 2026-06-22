@@ -2,13 +2,15 @@ import Link from "next/link";
 
 
 
-export type AdminBuilderStep = "services" | "builder" | "library";
+export type AdminBuilderStep = "presets" | "services" | "builder" | "library";
 
 
 
 const STEPS: { id: AdminBuilderStep; label: string; href: string }[] = [
 
-  { id: "services", label: "Services", href: "/admin/service-catalog" },
+  { id: "presets", label: "Manage Presets", href: "/admin/service-catalog/presets" },
+
+  { id: "services", label: "Service Offers", href: "/admin/service-catalog" },
 
   { id: "builder", label: "Builder", href: "/admin/invites/builder" },
 

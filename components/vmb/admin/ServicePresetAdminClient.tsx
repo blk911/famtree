@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { ServicePresetCard } from "@/components/vmb/services/ServicePresetCard";
 import type { ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
 import { listServiceCategories } from "@/lib/vmb/services/canonical-service-catalog";
@@ -99,21 +99,12 @@ export function ServicePresetAdminClient() {
   const categoryLabel = categories.find((category) => category.id === categoryId)?.name ?? "";
 
   return (
+    <AdminBuilderShell
+      title="Manage Presets"
+      subtitle="Salon-facing offer cards built from the canonical catalog."
+      activeStep="presets"
+    >
     <div className="vmb-service-catalog">
-      <header className="vmb-service-catalog__header">
-        <div className="vmb-service-preset-admin__header-row">
-          <div>
-            <h1 className="vmb-service-catalog__title">Service Preset Cards</h1>
-            <p className="vmb-service-catalog__subtitle">
-              Salon-facing offer cards built from the canonical catalog. Linked to serviceOfferId — no custom services.
-            </p>
-          </div>
-          <Link href="/admin/service-catalog" className="vmb-service-preset-admin__back">
-            ← Service Catalog
-          </Link>
-        </div>
-      </header>
-
       <div className="vmb-service-catalog__layout">
         <nav className="vmb-service-catalog__nav" aria-label="Service categories">
           <p className="vmb-service-catalog__nav-label">Categories</p>
@@ -316,5 +307,6 @@ export function ServicePresetAdminClient() {
         </section>
       </div>
     </div>
+    </AdminBuilderShell>
   );
 }

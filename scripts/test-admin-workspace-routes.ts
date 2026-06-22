@@ -60,6 +60,11 @@ function routePageExists(routePath: string): boolean {
 
 function run(): void {
   assert(ADMIN_WORKSPACE_NAV.length === 7, "seven platform workspaces defined");
+  assert(
+    ADMIN_WORKSPACE_NAV.findIndex((item) => item.id === "service-catalog")
+      < ADMIN_WORKSPACE_NAV.findIndex((item) => item.id === "invites"),
+    "service catalog precedes invites in platform navigation",
+  );
 
   for (const { href, label } of ADMIN_WORKSPACE_NAV) {
     assert(href.startsWith("/admin/"), `${label} href is under /admin`);
@@ -298,6 +303,12 @@ function run(): void {
   );
   assert(flowNavSource.includes("Builder"), "flow nav shows builder step");
   assert(flowNavSource.includes("Library"), "flow nav shows library step");
+  assert(flowNavSource.includes("Manage Presets"), "flow nav shows manage presets first");
+  assert(flowNavSource.includes("Service Offers"), "flow nav names the service offers step");
+  assert(
+    flowNavSource.indexOf("Manage Presets") < flowNavSource.indexOf("Service Offers"),
+    "manage presets precedes service offers",
+  );
   assert(!flowNavSource.includes("Template Builder"), "flow nav uses builder label");
   assert(flowNavSource.includes("/admin/invites/builder"), "flow nav links to builder route");
   assert(flowNavSource.includes("/admin/invites/library"), "flow nav links to library route");

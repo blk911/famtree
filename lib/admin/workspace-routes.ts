@@ -45,8 +45,8 @@ export const ADMIN_WORKSPACE_NAV: Array<{
   { id: "social", label: "Social", href: ADMIN_WORKSPACE_ROUTES.social },
   { id: "operators", label: "Operators", href: ADMIN_WORKSPACE_ROUTES.operators },
   { id: "members", label: "Members", href: ADMIN_WORKSPACE_ROUTES.members },
-  { id: "invites", label: "Invites", href: ADMIN_WORKSPACE_ROUTES.invites },
   { id: "service-catalog", label: "Service Catalog", href: ADMIN_WORKSPACE_ROUTES.serviceCatalog },
+  { id: "invites", label: "Invites", href: ADMIN_WORKSPACE_ROUTES.invites },
   { id: "vmb-salons", label: "VMB Salons", href: ADMIN_WORKSPACE_ROUTES.vmbSalons, product: true },
 ];
 

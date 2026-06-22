@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import type { CatalogServiceOffer, ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
@@ -39,11 +38,6 @@ export function PlatformServiceCatalogClient() {
     <AdminBuilderShell
       title="Service Catalog"
       activeStep="services"
-      flowActions={
-        <Link href="/admin/service-catalog/presets" className="vmb-admin-builder__header-link">
-          Manage Preset Cards
-        </Link>
-      }
     >
       <div className="vmb-admin-builder-grid vmb-service-catalog-admin">
         <aside className="vmb-admin-builder-grid__list">
