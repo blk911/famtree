@@ -79,7 +79,10 @@ export function TemplateBuilderAdminClient({
     if (!selectedBaseline) return;
     if (loadedTemplateIdRef.current === selectedTemplateId) return;
     loadedTemplateIdRef.current = selectedTemplateId;
-    setDraft({ ...selectedBaseline });
+    setDraft({
+      ...selectedBaseline,
+      serviceIds: selectedBaseline.serviceIds.slice(0, 1),
+    });
     const snapshot = selectedBaseline.librarySnapshot;
     setImageInserts({
       ownerPhotoUrl: snapshot?.ownerPhotoUrl,

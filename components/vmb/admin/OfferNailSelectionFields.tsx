@@ -30,11 +30,10 @@ export function OfferNailSelectionFields({
               <li key={choice.id}>
                 <label className="vmb-offer-builder-selections__choice">
                   <input
-                    type="checkbox"
+                    type="radio"
+                    name="nail-service"
                     checked={checked}
-                    onChange={() =>
-                      onServiceIdsChange(toggleOfferIdSelection(serviceIds, choice.id))
-                    }
+                    onChange={() => onServiceIdsChange([choice.id])}
                   />
                   <span>{choice.label}</span>
                 </label>
@@ -46,7 +45,7 @@ export function OfferNailSelectionFields({
 
       <section className="vmb-offer-builder-selections__group" aria-labelledby="offer-rewards-heading">
         <h3 id="offer-rewards-heading" className="vmb-offer-builder-selections__heading">
-          Rewards Included
+          Custom Add-ons
         </h3>
         <ul className="vmb-offer-builder-selections__choices">
           {NAIL_OFFER_ADDON_CHOICES.map((choice) => {

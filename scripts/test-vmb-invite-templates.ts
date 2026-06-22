@@ -509,6 +509,7 @@ async function run(): Promise<void> {
   assert(builderSource.includes("servicePriceById"), "builder pricing uses offer preset service prices");
   assert(builderSource.includes("addonPriceByServiceId"), "builder pricing uses offer preset add-on prices");
   assert(builderSource.includes("totalValue: livePricing.totalValue"), "preview snapshot uses live preset pricing");
+  assert(builderSource.includes("serviceIds: selectedBaseline.serviceIds.slice(0, 1)"), "builder normalizes legacy drafts to one service");
   assert(!builderSource.includes("AdminTemplatePreviewCard"), "builder removes live draft preview card");
   assert(builderSource.includes("✓ Saved to Library"), "builder shows inline save confirmation");
   assert(builderSource.includes("View in Library"), "builder links to library after save");
@@ -846,6 +847,13 @@ async function run(): Promise<void> {
 
   assert(NAIL_OFFER_SERVICE_CHOICES.length === 7, "seven nail service choices for offer editor");
   assert(NAIL_OFFER_ADDON_CHOICES.length === 7, "seven nail add-on choices for offer editor");
+  const selectionFieldsSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/OfferNailSelectionFields.tsx"),
+    "utf8",
+  );
+  assert(selectionFieldsSource.includes('type="radio"'), "nail service uses mutually exclusive radio inputs");
+  assert(selectionFieldsSource.includes('onServiceIdsChange([choice.id])'), "service selection stores exactly one service");
+  assert(selectionFieldsSource.includes("Custom Add-ons"), "builder labels multi-select rewards as custom add-ons");
   assert(
     resolveNailOfferServiceLabels(["default-nails-gel-manicure"])[0] === "Gel Manicure",
     "offer service labels resolve from curated choices",
