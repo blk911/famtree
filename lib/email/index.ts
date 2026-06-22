@@ -28,6 +28,51 @@ function assertResendOk(
   throw new Error(msg);
 }
 
+function escapeEmailHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export async function sendVmbOfferInviteEmail(input: {
+  recipientEmail: string;
+  recipientName: string;
+  salonName: string;
+  headline: string;
+  recipientUrl: string;
+}): Promise<"sent" | "skipped"> {
+  const resend = getResend();
+  if (!resend) {
+    console.log(`[email:skip] vmb-offer-invite → ${input.recipientEmail}`);
+    return "skipped";
+  }
+  const recipientName = escapeEmailHtml(input.recipientName);
+  const salonName = escapeEmailHtml(input.salonName);
+  const headline = escapeEmailHtml(input.headline);
+  const recipientUrl = escapeEmailHtml(input.recipientUrl);
+  const out = await resend.emails.send({
+    from: FROM,
+    to: input.recipientEmail,
+    subject: `${input.salonName} sent you an offer`,
+    html: `<!doctype html>
+<html><body style="margin:0;padding:32px;background:#faf7f5;font-family:Arial,sans-serif;color:#292524">
+<table role="presentation" width="100%"><tr><td align="center">
+<table role="presentation" width="520" style="max-width:100%;background:#fff;border:1px solid #f1d9e5;border-radius:16px">
+<tr><td style="padding:32px">
+<p style="margin:0 0 8px;color:#9d174d;font-weight:700">${salonName}</p>
+<h1 style="margin:0 0 16px;font-size:24px">${headline}</h1>
+<p style="margin:0 0 24px;line-height:1.6">Hi ${recipientName}, your salon prepared a private offer for you.</p>
+<a href="${recipientUrl}" style="display:inline-block;padding:13px 22px;border-radius:10px;background:#be185d;color:#fff;text-decoration:none;font-weight:700">View my invitation</a>
+<p style="margin:24px 0 0;color:#78716c;font-size:12px">This secure link is intended only for you.</p>
+</td></tr></table></td></tr></table></body></html>`,
+  });
+  assertResendOk(out, "vmb-offer-invite");
+  return "sent";
+}
+
 // ─── Invite email ────────────────────────────────────────────
 export async function sendInviteEmail(
   invite: Invite,
@@ -257,4 +302,3 @@ export async function sendWelcomeEmail(user: User): Promise<void> {
   });
   assertResendOk(out, "welcome");
 }
-

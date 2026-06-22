@@ -119,14 +119,28 @@ function run(): void {
   );
   assert(
     commandCenterSource.includes("Confirm My Style and send")
-      && commandCenterSource.includes("selectedPriceCents")
-      && commandCenterSource.includes("serviceOptions"),
-    "new member branch confirms service options and snapshots the send price",
+      && commandCenterSource.includes("selectedAddonIds")
+      && commandCenterSource.includes("Revise this offer"),
+    "new member branch reviews and revises the salon offer",
   );
   assert(
-    commandCenterSource.includes('service.category === "nails"')
-      && commandCenterSource.includes("activeServiceIds.has(option.serviceId)"),
-    "new member My Style limits services and options to the Nails catalog",
+    commandCenterSource.includes('fetch("/api/vmb/salon-services"')
+      && commandCenterSource.includes('fetch("/api/vmb/salon-invites"'),
+    "new member My Style loads salon-facing services and published invitations",
+  );
+  assert(
+    commandCenterSource.includes('fetch("/api/vmb/salon-invitation-approvals"')
+      && commandCenterSource.includes('fetch("/api/vmb/sent-invites"'),
+    "new member send uses approval and canonical SentInvite endpoints",
+  );
+  const sentInviteRouteSource = fs.readFileSync(
+    path.join(process.cwd(), "app/api/vmb/sent-invites/route.ts"),
+    "utf8",
+  );
+  assert(
+    sentInviteRouteSource.includes("sendVmbOfferInviteEmail")
+      && sentInviteRouteSource.includes("deliveryStatus"),
+    "canonical SentInvite route dispatches recipient email after persistence",
   );
 
   assert(

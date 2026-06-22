@@ -4594,6 +4594,46 @@
   font-size: 11px;
 }
 
+.vmb-today-command__style-summary {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #f1d5e2;
+  border-radius: 12px;
+  background: #fffafb;
+}
+
+.vmb-today-command__style-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.vmb-today-command__style-summary > div > span {
+  color: #57534e;
+}
+
+.vmb-today-command__style-summary-total {
+  padding-top: 8px;
+  border-top: 1px solid #f1e7ee;
+  color: #9d174d;
+}
+
+.vmb-today-command__style-summary button,
+.vmb-today-command__revision-done {
+  justify-self: start;
+  border: 1px solid #db2777;
+  border-radius: 9px;
+  background: #fff;
+  padding: 7px 11px;
+  color: #9d174d;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .vmb-today-command__copy-details summary {
   color: #9d174d;
   cursor: pointer;

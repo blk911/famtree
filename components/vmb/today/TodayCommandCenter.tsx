@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import type { VmbService } from "@/lib/vmb/services/service-types";
-import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
+import type { SalonFacingServiceOffer } from "@/lib/vmb/services/service-preset-types";
+import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 import type { TodayCommandCenterSnapshot } from "@/lib/vmb/today-command-center";
 import { formatTodayMoney } from "@/lib/vmb/today-command-center";
 import {
@@ -44,16 +44,17 @@ export function TodayCommandCenter({
   clientPhonePrefill,
   onSelectOpportunity,
 }: Props) {
-  const [services, setServices] = useState<VmbService[]>([]);
-  const [options, setOptions] = useState<VmbServiceOption[]>([]);
+  const [services, setServices] = useState<SalonFacingServiceOffer[]>([]);
+  const [newMemberCopy, setNewMemberCopy] = useState<SalonInviteLocalCopy | null>(null);
   const [clientName, setClientName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [title, setTitle] = useState(defaultInviteTitle(selectedReason, ""));
   const [message, setMessage] = useState(defaultInviteMessage(selectedReason, salonName));
   const [selectedServiceId, setSelectedServiceId] = useState("");
-  const [selectedOptionId, setSelectedOptionId] = useState("");
+  const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
   const [offerPrice, setOfferPrice] = useState("");
+  const [revisingOffer, setRevisingOffer] = useState(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -61,25 +62,29 @@ export function TodayCommandCenter({
     let cancelled = false;
     void (async () => {
       try {
-        const response = await fetch("/api/vmb/services", { cache: "no-store", credentials: "include" });
-        const json = (await response.json()) as { ok?: boolean; services?: VmbService[]; options?: VmbServiceOption[] };
-        if (!cancelled && response.ok && json.ok) {
-          const activeServices = (json.services ?? []).filter(
-            (service) => service.active !== false && service.category === "nails",
-          );
-          const activeServiceIds = new Set(activeServices.map((service) => service.id));
-          const activeOptions = (json.options ?? []).filter(
-            (option) => option.active !== false && activeServiceIds.has(option.serviceId),
-          );
+        const [serviceResponse, inviteResponse] = await Promise.all([
+          fetch("/api/vmb/salon-services", { cache: "no-store", credentials: "include" }),
+          fetch("/api/vmb/salon-invites", { cache: "no-store", credentials: "include" }),
+        ]);
+        const json = (await serviceResponse.json()) as { ok?: boolean; services?: SalonFacingServiceOffer[] };
+        const inviteJson = (await inviteResponse.json()) as { ok?: boolean; copies?: SalonInviteLocalCopy[] };
+        if (!cancelled && serviceResponse.ok && json.ok) {
+          const activeServices = (json.services ?? []).filter((service) => service.status === "active");
+          const activeServiceIds = new Set(activeServices.map((service) => service.serviceOfferId));
           setServices(activeServices);
-          setOptions(activeOptions);
-          setSelectedServiceId((current) => activeServiceIds.has(current) ? current : activeServices[0]?.id || "");
-          setSelectedOptionId((current) => activeOptions.some((option) => option.id === current) ? current : "");
+          setSelectedServiceId((current) => activeServiceIds.has(current) ? current : activeServices[0]?.serviceOfferId || "");
+        }
+        if (!cancelled && inviteResponse.ok && inviteJson.ok) {
+          setNewMemberCopy(
+            (inviteJson.copies ?? []).find(
+              (copy) => copy.sourceTemplateId === "nails-new-client-welcome" && copy.inventoryStatus !== "paused",
+            ) ?? null,
+          );
         }
       } catch {
         if (!cancelled) {
           setServices([]);
-          setOptions([]);
+          setNewMemberCopy(null);
         }
       }
     })();
@@ -108,29 +113,41 @@ export function TodayCommandCenter({
     setStatus(null);
   }, [clientEmailPrefill, clientNamePrefill, clientPhonePrefill, isNewMemberInvite, salonName, selectedOpportunity, selectedReason]);
 
-  const selectedService = services.find((service) => service.id === selectedServiceId);
-  const selectedOption = options.find((option) => option.id === selectedOptionId);
-  const serviceOptions = options.filter((option) => option.serviceId === selectedServiceId);
+  const selectedService = services.find((service) => service.serviceOfferId === selectedServiceId);
+  const selectedAddons = selectedService?.addons.filter(
+    (addon) => addon.enabled && selectedAddonIds.includes(addon.addonId),
+  ) ?? [];
+  const serviceOptions = selectedService?.addons.filter((addon) => addon.enabled) ?? [];
   const hasRecipientContact = Boolean(email.trim() || phone.trim());
   const hasRecipient = isNewMemberInvite
     ? Boolean(clientName.trim() && hasRecipientContact)
     : Boolean(selectedOpportunity && clientName.trim());
-  const canSend = Boolean(hasRecipient && title.trim() && message.trim() && selectedService);
+  const canSend = isNewMemberInvite
+    ? Boolean(hasRecipient && email.trim() && title.trim() && message.trim() && selectedService && newMemberCopy)
+    : Boolean(hasRecipient && title.trim() && message.trim() && selectedService);
 
   useEffect(() => {
     if (!selectedService) {
       setOfferPrice("");
       return;
     }
-    setOfferPrice(((selectedService.basePriceCents ?? 0) / 100).toFixed(2));
+    const enabledAddons = selectedService.addons.filter((addon) => addon.enabled);
+    setSelectedAddonIds(enabledAddons.map((addon) => addon.addonId));
+    const totalCents = selectedService.priceCents + enabledAddons.reduce((sum, addon) => sum + addon.priceCents, 0);
+    setOfferPrice((totalCents / 100).toFixed(2));
   }, [selectedService]);
 
-  useEffect(() => {
-    setSelectedOptionId((current) => {
-      if (serviceOptions.some((option) => option.id === current)) return current;
-      return serviceOptions.find((option) => option.isDefault)?.id ?? serviceOptions[0]?.id ?? "";
-    });
-  }, [selectedServiceId, options]);
+  function toggleAddon(addonId: string) {
+    if (!selectedService) return;
+    const next = selectedAddonIds.includes(addonId)
+      ? selectedAddonIds.filter((id) => id !== addonId)
+      : [...selectedAddonIds, addonId];
+    setSelectedAddonIds(next);
+    const addonTotal = selectedService.addons
+      .filter((addon) => addon.enabled && next.includes(addon.addonId))
+      .reduce((sum, addon) => sum + addon.priceCents, 0);
+    setOfferPrice(((selectedService.priceCents + addonTotal) / 100).toFixed(2));
+  }
 
   async function saveInviteStub() {
     if (!canSend) return;
@@ -155,8 +172,8 @@ export function TodayCommandCenter({
             recipientPhone: phone.trim(),
             inviteTitle: title.trim(),
             inviteMessage: message.trim(),
-            selectedService: selectedService?.name ?? "",
-            selectedReward: selectedOption?.name ?? "",
+            selectedService: selectedService?.displayName ?? "",
+            selectedReward: selectedAddons.map((addon) => addon.label).join(" · "),
             selectedPriceCents: Math.max(0, Math.round(Number(offerPrice || 0) * 100)),
             deliveryStatus: "stubbed_internal",
           },
@@ -166,6 +183,64 @@ export function TodayCommandCenter({
       setStatus(response.ok && json.ok ? "Invite stub saved internally. Delivery is not live yet." : json.error ?? "Could not save invite stub.");
     } catch {
       setStatus("Could not save invite stub.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function sendInvite() {
+    if (!canSend) return;
+    setSaving(true);
+    setStatus(null);
+    try {
+      const totalValueCents = selectedService!.priceCents + selectedAddons.reduce((sum, addon) => sum + addon.priceCents, 0);
+      const offerPriceCents = Math.max(0, Math.round(Number(offerPrice || 0) * 100));
+      const snapshot = {
+        ...newMemberCopy!.snapshot,
+        headline: title.trim(),
+        body: message.trim(),
+        serviceIds: [selectedService!.serviceOfferId],
+        rewardIds: selectedAddons.map((addon) => addon.addonId),
+        totalValue: totalValueCents / 100,
+        savingsAmount: Math.max(0, totalValueCents - offerPriceCents) / 100,
+        offerPrice: offerPriceCents / 100,
+        valueLabel: `$${(totalValueCents / 100).toLocaleString()}`,
+        priceLabel: `$${(offerPriceCents / 100).toLocaleString()}`,
+        updatedAt: new Date().toISOString(),
+      };
+      const approvalResponse = await fetch("/api/vmb/salon-invitation-approvals", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "approve",
+          clientName: clientName.trim(),
+          clientEmail: email.trim(),
+          opportunityId: `new-member-${Date.now()}`,
+          opportunityType: SALON_INVITE_REASON_LABELS[selectedReason],
+          sourceCopyId: newMemberCopy!.id,
+          sourceTemplateId: newMemberCopy!.sourceTemplateId,
+          snapshot,
+          reasonText: `New member offer from ${salonName}`,
+          estimatedValue: offerPriceCents / 100,
+        }),
+      });
+      const approvalJson = (await approvalResponse.json()) as { ok?: boolean; error?: string; approval?: { id: string } };
+      if (!approvalResponse.ok || !approvalJson.ok || !approvalJson.approval?.id) {
+        throw new Error(approvalJson.error ?? "Could not prepare invitation.");
+      }
+      const response = await fetch("/api/vmb/sent-invites", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approvalId: approvalJson.approval.id }),
+      });
+      const json = (await response.json()) as { ok?: boolean; error?: string; deliveryStatus?: string };
+      if (!response.ok || !json.ok) throw new Error(json.error ?? "Could not send invitation.");
+      setStatus(json.deliveryStatus === "sent" ? "Invitation emailed and added to Invitations." : "Invitation added to Invitations. Email delivery is not configured.");
+      setRevisingOffer(false);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Could not send invitation.");
     } finally {
       setSaving(false);
     }
@@ -210,7 +285,7 @@ export function TodayCommandCenter({
               </label>
               <label><span>Email</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email address" /></label>
               <label><span>Phone</span><input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Mobile number" /></label>
-              <p>Email or phone is required to send.</p>
+              <p>Email is required to send. Phone is saved for future SMS delivery.</p>
             </div>
           ) : selectedOfferRecommendations.length > 0 ? (
             <ul className="vmb-today-command__client-list">
@@ -273,56 +348,78 @@ export function TodayCommandCenter({
 
               {isNewMemberInvite ? (
                 <div className="vmb-today-command__style-builder">
-                  <div className="vmb-today-command__style-controls">
-                    <label>
-                      <span>Active service</span>
-                      <select value={selectedServiceId} onChange={(event) => setSelectedServiceId(event.target.value)}>
-                        {services.length === 0 ? <option value="">No active services</option> : null}
-                        {services.map((service) => (
-                          <option key={service.id} value={service.id}>
-                            {service.name} · {((service.basePriceCents ?? 0) / 100).toLocaleString("en-US", { style: "currency", currency: "USD" })}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="vmb-today-command__price-field">
-                      <span>Offer price</span>
-                      <div><b>$</b><input type="number" min="0" step="0.01" value={offerPrice} onChange={(event) => setOfferPrice(event.target.value)} /></div>
-                    </label>
-                  </div>
-                  {serviceOptions.length > 0 ? (
-                    <div>
-                      <span>Style / option</span>
-                      <div className="vmb-today-command__pick-grid">
-                        {serviceOptions.map((option) => (
-                          <button
-                            key={option.id}
-                            type="button"
-                            className={option.id === selectedOptionId ? "is-selected" : undefined}
-                            aria-pressed={option.id === selectedOptionId}
-                            onClick={() => setSelectedOptionId(option.id)}
-                          >
-                            <strong>{option.name}</strong>
-                            {option.valueLabel ? <small>{option.valueLabel}</small> : null}
-                          </button>
-                        ))}
+                  {!revisingOffer ? (
+                    <div className="vmb-today-command__style-summary">
+                      <div><span>Salon default</span><strong>{selectedService?.displayName ?? "No active service"}</strong></div>
+                      {selectedAddons.map((addon) => (
+                        <div key={addon.addonId}>
+                          <span>{addon.label}</span>
+                          <strong>+${(addon.priceCents / 100).toFixed(2)}</strong>
+                        </div>
+                      ))}
+                      <div className="vmb-today-command__style-summary-total">
+                        <span>Offer total</span><strong>${Number(offerPrice || 0).toFixed(2)}</strong>
                       </div>
+                      <button type="button" onClick={() => setRevisingOffer(true)}>Revise this offer</button>
                     </div>
-                  ) : <p className="vmb-today-command__style-note">This service uses the salon&apos;s base style with no add-on selected.</p>}
+                  ) : (
+                    <>
+                      <div className="vmb-today-command__style-controls">
+                        <label>
+                          <span>Active service</span>
+                          <select value={selectedServiceId} onChange={(event) => setSelectedServiceId(event.target.value)}>
+                            {services.length === 0 ? <option value="">No active services</option> : null}
+                            {services.map((service) => (
+                              <option key={service.serviceOfferId} value={service.serviceOfferId}>
+                                {service.displayName} · ${(service.priceCents / 100).toFixed(2)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="vmb-today-command__price-field">
+                          <span>Offer price</span>
+                          <div><b>$</b><input type="number" min="0" step="0.01" value={offerPrice} onChange={(event) => setOfferPrice(event.target.value)} /></div>
+                        </label>
+                      </div>
+                      {serviceOptions.length > 0 ? (
+                        <div>
+                          <span>Custom add-ons</span>
+                          <div className="vmb-today-command__pick-grid">
+                            {serviceOptions.map((option) => {
+                              const selected = selectedAddonIds.includes(option.addonId);
+                              return (
+                                <button
+                                  key={option.addonId}
+                                  type="button"
+                                  className={selected ? "is-selected" : undefined}
+                                  aria-pressed={selected}
+                                  onClick={() => toggleAddon(option.addonId)}
+                                >
+                                  <strong>{option.label}</strong>
+                                  <small>+${(option.priceCents / 100).toFixed(2)}</small>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : <p className="vmb-today-command__style-note">This service uses the salon&apos;s base style with no add-on selected.</p>}
+                      <button type="button" className="vmb-today-command__revision-done" onClick={() => setRevisingOffer(false)}>Use this offer</button>
+                    </>
+                  )}
                 </div>
               ) : <div className="vmb-today-command__contact-grid">
                 <label>
                   <span>Active service</span>
                   <select value={selectedServiceId} onChange={(event) => setSelectedServiceId(event.target.value)}>
                     {services.length === 0 ? <option value="">No active services</option> : null}
-                    {services.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}
+                    {services.map((service) => <option key={service.serviceOfferId} value={service.serviceOfferId}>{service.displayName}</option>)}
                   </select>
                 </label>
                 <label>
                   <span>Reward / option</span>
-                  <select value={selectedOptionId} onChange={(event) => setSelectedOptionId(event.target.value)}>
-                    {options.length === 0 ? <option value="">No active rewards</option> : null}
-                    {options.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+                  <select value={selectedAddonIds[0] ?? ""} onChange={(event) => setSelectedAddonIds(event.target.value ? [event.target.value] : [])}>
+                    {serviceOptions.length === 0 ? <option value="">No active rewards</option> : null}
+                    {serviceOptions.map((option) => <option key={option.addonId} value={option.addonId}>{option.label}</option>)}
                   </select>
                 </label>
               </div>}
@@ -345,14 +442,17 @@ export function TodayCommandCenter({
                 <strong>{title}</strong>
                 <p>{message}</p>
                 <small>
-                  {selectedService?.name || "Service"}
-                  {selectedOption?.name ? ` · ${selectedOption.name}` : ""}
+                  {selectedService?.displayName || "Service"}
+                  {selectedAddons.length > 0 ? ` · ${selectedAddons.map((addon) => addon.label).join(" · ")}` : ""}
                   {offerPrice ? ` · $${Number(offerPrice).toFixed(2)}` : ""}
                 </small>
               </div>
 
               <div className="vmb-today-command__send-actions">
-                <button type="button" disabled={!canSend || saving} onClick={() => void saveInviteStub()}>
+                {isNewMemberInvite && !newMemberCopy ? (
+                  <p>Publish the New Client Welcome template to this salon before sending.</p>
+                ) : null}
+                <button type="button" disabled={!canSend || saving} onClick={() => void (isNewMemberInvite ? sendInvite() : saveInviteStub())}>
                   {saving ? "Saving..." : isNewMemberInvite ? "Send new member invite" : "Send invite (stub)"}
                 </button>
                 {status ? <p>{status}</p> : null}
