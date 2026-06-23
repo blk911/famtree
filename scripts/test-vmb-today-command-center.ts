@@ -140,6 +140,10 @@ function run(): void {
     "new member My Style loads salon-facing services and published invitations",
   );
   assert(
+    commandCenterSource.includes("/api/vmb/salon-invites/sync"),
+    "Today recovers missing salon invite inventory from saved Admin Library templates",
+  );
+  assert(
     commandCenterSource.includes("inviteTemplateIdForSalonReason")
       && commandCenterSource.includes("findPublishedCopyForTemplateId")
       && commandCenterSource.includes("selectedInviteCopy?.snapshot.offerPrice"),

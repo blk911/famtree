@@ -79,6 +79,17 @@ export function TodayCommandCenter({
         ]);
         const json = (await serviceResponse.json()) as { ok?: boolean; services?: SalonFacingServiceOffer[] };
         const inviteJson = (await inviteResponse.json()) as { ok?: boolean; copies?: SalonInviteLocalCopy[] };
+        let inviteCopies = inviteJson.ok && inviteJson.copies ? inviteJson.copies : [];
+        if (inviteResponse.ok && inviteJson.ok && inviteCopies.length === 0) {
+          const syncResponse = await fetch("/api/vmb/salon-invites/sync", {
+            method: "POST",
+            credentials: "include",
+          });
+          const syncJson = (await syncResponse.json()) as { ok?: boolean; copies?: SalonInviteLocalCopy[] };
+          if (syncResponse.ok && syncJson.ok && syncJson.copies) {
+            inviteCopies = syncJson.copies;
+          }
+        }
         if (!cancelled && serviceResponse.ok && json.ok) {
           const activeServices = (json.services ?? []).filter((service) => service.status === "active");
           const activeServiceIds = new Set(activeServices.map((service) => service.serviceOfferId));
@@ -86,7 +97,7 @@ export function TodayCommandCenter({
           setSelectedServiceId((current) => activeServiceIds.has(current) ? current : activeServices[0]?.serviceOfferId || "");
         }
         if (!cancelled && inviteResponse.ok && inviteJson.ok) {
-          setSalonInviteCopies((inviteJson.copies ?? []).filter(isSalonInviteMatchingActive));
+          setSalonInviteCopies(inviteCopies.filter(isSalonInviteMatchingActive));
         }
       } catch {
         if (!cancelled) {

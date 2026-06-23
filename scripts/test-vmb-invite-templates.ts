@@ -581,6 +581,10 @@ async function run(): Promise<void> {
   assert(publishStore.includes("publishLibraryTemplateToSalon"), "publish store persists salon copies");
   assert(publishStore.includes("syncLibraryTemplatesToSalon"), "publish store backfills missing salon review copies");
   assert(
+    publishStore.includes('status !== "needs_review"'),
+    "admin republish refreshes only copies still waiting for salon review",
+  );
+  assert(
     !publishStore.includes("SALON_INVITE_COPY_POSTGRES_REQUIRED"),
     "salon invite copy store does not hard-fail with postgres-only error",
   );
@@ -665,6 +669,7 @@ async function run(): Promise<void> {
     "utf8",
   );
   assert(salonPageSource.includes("publishedCopiesForMatching"), "salon page shows only approved invite types");
+  assert(salonPageSource.includes("/api/vmb/salon-invites/sync"), "salon page recovers missing library-published invite types");
   assert(salonPageSource.includes('window.addEventListener("focus"'), "salon page refreshes approved types on focus");
   const salonTypeEditorSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/salon/SalonInvitationEditCopyModal.tsx"),
@@ -1004,7 +1009,36 @@ async function run(): Promise<void> {
     );
     assert(published.copy.inventoryStatus === "needs_review", "published master starts in salon review");
 
-    const salonEdited = await updateSalonInviteLocalCopy(salonId, published.copy.id, {
+    const revisedSnapshot = buildDraftInviteSnapshot(
+      {
+        ...pcnDraft,
+        headline: "Updated library headline",
+      },
+      {
+        ...pcnLibrarySnapshot,
+        salonName: "Glow Nails",
+      },
+    );
+    const revisedOfferSaved = await upsertOffer(salonId, nailTemplateDraftToOffer(
+      { ...pcnDraft, headline: "Updated library headline" },
+      salonId,
+      {
+        ...revisedSnapshot,
+        status: "library",
+        version: published.copy.publishedVersion + 1,
+      },
+    ));
+    assert(!("error" in revisedOfferSaved), "revised library offer saved before review refresh");
+    const republishedReview = await publishLibraryTemplateToSalon(salonId, templateId);
+    assert(!("error" in republishedReview), "admin republish refreshes existing review copy");
+    const activeCopy = "error" in republishedReview ? published.copy : republishedReview.copy;
+    assert(
+      activeCopy.snapshot.headline === "Updated library headline",
+      "review copy receives current Admin Library snapshot",
+    );
+    assert(activeCopy.inventoryStatus === "needs_review", "refreshed admin copy still requires salon review");
+
+    const salonEdited = await updateSalonInviteLocalCopy(salonId, activeCopy.id, {
       inventoryStatus: "approved",
       headline: "Salon-owned headline",
     });
@@ -1012,17 +1046,17 @@ async function run(): Promise<void> {
     const republished = await publishLibraryTemplateToSalon(salonId, templateId);
     assert(!("error" in republished), "admin republish returns existing salon copy");
     if (!("error" in republished)) {
-      assert(republished.copy.id === published.copy.id, "admin republish does not replace salon copy");
+      assert(republished.copy.id === activeCopy.id, "admin republish does not replace salon copy");
       assert(republished.copy.snapshot.headline === "Salon-owned headline", "admin republish preserves salon edits");
       assert(getSalonInviteInventoryStatus(republished.copy) === "approved", "admin republish preserves salon approval");
     }
 
     const listed = await listSalonInviteLocalCopies(salonId);
     assert(
-      listed.some((row) => row.id === published.copy.id),
+      listed.some((row) => row.id === activeCopy.id),
       "listSalonInviteLocalCopies reads published copy from same backend",
     );
-    assert(listed[0]!.publishedVersion === published.copy.publishedVersion, "listed copy version matches publish");
+    assert(listed[0]!.publishedVersion === activeCopy.publishedVersion, "listed copy version matches publish");
   }
 
   const approvalSalonId = `approval-test-${Date.now()}`;

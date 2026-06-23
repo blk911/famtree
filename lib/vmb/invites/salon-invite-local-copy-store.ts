@@ -9,6 +9,7 @@ import { createSalonLocalCopy, type SalonInviteLocalCopy } from "@/lib/vmb/invit
 import {
   applySalonInviteLocalCopyPatch,
   duplicateSalonInviteLocalCopy,
+  getSalonInviteInventoryStatus,
   type SalonInviteLocalCopyPatch,
 } from "@/lib/vmb/invites/salon-invite-inventory";
 import {
@@ -149,18 +150,22 @@ export async function publishLibraryTemplateToSalon(
   if ("error" in writable) return writable;
 
   const canonicalTemplateId = normalizeSourceTemplateId(templateId) ?? templateId;
-  const existingCopy = (await listSalonInviteLocalCopies(salonId)).find((copy) =>
-    templateKeysForPublishedCopy(copy).includes(canonicalTemplateId),
-  );
-  if (existingCopy) {
-    return { copy: existingCopy, backend: writable.backend };
-  }
   const storageId = templateStorageId(salonId, canonicalTemplateId);
   const offers = await getOffersForSalon(salonId);
   const saved = offers.find((offer) => offer.id === storageId && !offer.isDefault);
   const snapshot = parseInviteTemplateSnapshot(saved?.inviteSnapshot);
   if (!snapshot) {
     return { error: "Template is not saved to library with a snapshot." };
+  }
+
+  const existingCopy = (await listSalonInviteLocalCopies(salonId)).find((copy) =>
+    templateKeysForPublishedCopy(copy).includes(canonicalTemplateId),
+  );
+  if (existingCopy) {
+    const status = getSalonInviteInventoryStatus(existingCopy);
+    if (status !== "needs_review") {
+      return { copy: existingCopy, backend: writable.backend };
+    }
   }
 
   const copy = createSalonLocalCopy(snapshot, salonId);

@@ -196,6 +196,20 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
         copies?: SalonInviteLocalCopy[];
 
       };
+      let inviteCopies = invitesJson.ok && invitesJson.copies ? invitesJson.copies : [];
+      if (invitesJson.ok && inviteCopies.length === 0) {
+        const syncRes = await fetch("/api/vmb/salon-invites/sync", {
+          method: "POST",
+          credentials: "include",
+        });
+        const syncJson = (await syncRes.json()) as {
+          ok?: boolean;
+          copies?: SalonInviteLocalCopy[];
+        };
+        if (syncRes.ok && syncJson.ok && syncJson.copies) {
+          inviteCopies = syncJson.copies;
+        }
+      }
 
 
 
@@ -211,7 +225,7 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
       setPublishedCopies(
 
-        publishedCopiesForMatching(invitesJson.ok && invitesJson.copies ? invitesJson.copies : []),
+        publishedCopiesForMatching(inviteCopies),
 
       );
 
