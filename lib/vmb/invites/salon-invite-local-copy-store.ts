@@ -1,5 +1,11 @@
-import { templateStorageId } from "@/lib/vmb/admin/nail-template-library";
+import {
+  buildDraftInviteSnapshot,
+  buildNailTemplateDraft,
+  templateStorageId,
+} from "@/lib/vmb/admin/nail-template-library";
 import { resolveVmbStorageBackend } from "@/lib/vmb/db";
+import { DEFAULT_NAIL_INVITE_TEMPLATES } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
+import { calculateInvitationPackagePricing } from "@/lib/vmb/invites/invitation-package-pricing";
 import { parseInviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
 import {
   normalizeSourceTemplateId,
@@ -20,6 +26,7 @@ import {
 import { getOffersForSalon } from "@/lib/vmb/offers/offer-store";
 import { getVmbSalonInviteCopiesFile } from "@/lib/vmb/paths";
 import { readJsonArray, writeJsonArray } from "@/lib/vmb/runtime-json-store";
+import { getAllOptionsForSalon, getServicesForSalon } from "@/lib/vmb/services/service-store";
 import { assertVmbWritableBackend, vmbJsonFallbackAllowed, vmbProductionRequiresPostgres } from "@/lib/vmb/storage-policy";
 
 export type SalonInviteCopyBackend = "postgres" | "json";
@@ -197,10 +204,84 @@ export async function publishLibraryTemplateToSalon(
   return { copy: jsonSaved.copy, backend: "json" };
 }
 
+function normalizeDefaultCatalogId(id: string): string {
+  const match = id.match(/^[a-z0-9-]+-(default-.+)$/i);
+  return match?.[1] ?? id;
+}
+
+async function buildDefaultTemplateCopyForSalon(
+  salonId: string,
+  templateId: string,
+): Promise<SalonInviteLocalCopy | null> {
+  const template = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === templateId);
+  if (!template?.active) return null;
+
+  const services = await getServicesForSalon(salonId);
+  const options = await getAllOptionsForSalon(salonId);
+  const servicePriceById: Record<string, number> = {};
+  const activeServiceIds = new Set<string>();
+  for (const service of services) {
+    const price = (service.basePriceCents ?? 0) / 100;
+    servicePriceById[service.id] = price;
+    servicePriceById[normalizeDefaultCatalogId(service.id)] = price;
+    activeServiceIds.add(service.id);
+    activeServiceIds.add(normalizeDefaultCatalogId(service.id));
+  }
+
+  const addonPriceById: Record<string, number> = {};
+  for (const option of options) {
+    const match = option.valueLabel?.match(/\$([0-9]+(?:\.[0-9]{1,2})?)/);
+    const price = match ? Number(match[1]) : 0;
+    addonPriceById[option.id] = price;
+    addonPriceById[normalizeDefaultCatalogId(option.id)] = price;
+  }
+
+  const draft = buildNailTemplateDraft(template, undefined);
+  const serviceIds = draft.serviceIds.filter((serviceId) => activeServiceIds.has(serviceId));
+  if (serviceIds.length === 0) return null;
+
+  const pricing = calculateInvitationPackagePricing({
+    serviceIds,
+    serviceOptionIds: draft.serviceOptionIds,
+    servicePriceById,
+    addonPriceById,
+    savingsAmount: draft.savingsAmount,
+    inviteType: template.inviteType,
+  });
+
+  const snapshot = buildDraftInviteSnapshot(
+    {
+      ...draft,
+      serviceIds,
+      saved: true,
+    },
+    {
+      salonName: "Your Salon",
+      totalValue: pricing.totalValue,
+      savingsAmount: pricing.savingsAmount,
+      offerPrice: pricing.offerPrice,
+      valueLabel: pricing.valueLabel,
+      priceLabel: pricing.priceLabel,
+    },
+  );
+
+  return createSalonLocalCopy(
+    {
+      ...snapshot,
+      status: "library",
+      version: snapshot.version > 0 ? snapshot.version : 1,
+    },
+    salonId,
+  );
+}
+
 /** Materialize missing salon-owned review copies from this salon's saved library snapshots. */
 export async function syncLibraryTemplatesToSalon(
   salonId: string,
 ): Promise<SyncSalonInviteCopiesResult | { error: string }> {
+  const writable = await assertCopyWritable();
+  if ("error" in writable) return writable;
+
   const offers = await getOffersForSalon(salonId);
   const templateIds = Array.from(new Set(
     offers
@@ -216,6 +297,16 @@ export async function syncLibraryTemplatesToSalon(
     if (beforeKeys.has(templateId)) continue;
     const published = await publishLibraryTemplateToSalon(salonId, templateId);
     if ("error" in published) return published;
+    beforeKeys.add(templateId);
+  }
+
+  for (const template of DEFAULT_NAIL_INVITE_TEMPLATES) {
+    if (beforeKeys.has(template.id)) continue;
+    const copy = await buildDefaultTemplateCopyForSalon(salonId, template.id);
+    if (!copy) continue;
+    const saved = await saveSalonInviteLocalCopy(salonId, copy, writable);
+    if ("error" in saved) return saved;
+    beforeKeys.add(template.id);
   }
 
   const copies = await listSalonInviteLocalCopies(salonId);

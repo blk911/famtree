@@ -993,6 +993,7 @@ async function run(): Promise<void> {
 
   const { resetVmbStorageBackendCache } = await import("../lib/vmb/db");
   const { upsertOffer } = await import("../lib/vmb/offers/offer-store");
+  const { upsertService, upsertServiceOption } = await import("../lib/vmb/services/service-store");
   const {
     listSalonInviteLocalCopies,
     publishLibraryTemplateToSalon,
@@ -1036,8 +1037,48 @@ async function run(): Promise<void> {
   const synced = await syncLibraryTemplatesToSalon(syncSalonId);
   assert(!("error" in synced), "empty salon inventory sync succeeds");
   if (!("error" in synced)) {
-    assert(synced.createdCount === 1, "inventory sync creates one missing review copy");
+    assert(synced.createdCount >= 1, "inventory sync creates missing review copies");
     assert(synced.copies[0]?.inventoryStatus === "needs_review", "recovered copy requires salon review");
+  }
+
+  const serviceOnlySalonId = `invite-service-only-sync-${Date.now()}`;
+  const serviceSaved = await upsertService(serviceOnlySalonId, {
+    id: "default-nails-gel-manicure",
+    category: "nails",
+    name: "Gel Manicure",
+    description: "Salon-priced gel manicure",
+    basePriceCents: 6000,
+    durationMinutes: 45,
+    active: true,
+    displayOrder: 1,
+    isDefault: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+  assert(!("error" in serviceSaved), "service-only sync fixture saves active service");
+  const optionSaved = await upsertServiceOption(serviceOnlySalonId, {
+    id: "addon-chrome",
+    serviceId: "default-nails-gel-manicure",
+    name: "Chrome",
+    valueLabel: "+$15",
+    active: true,
+    displayOrder: 1,
+    isDefault: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+  assert(!("error" in optionSaved), "service-only sync fixture saves active add-on");
+  const serviceOnlySynced = await syncLibraryTemplatesToSalon(serviceOnlySalonId);
+  assert(!("error" in serviceOnlySynced), "service-only salon inventory sync succeeds");
+  if (!("error" in serviceOnlySynced)) {
+    assert(
+      serviceOnlySynced.createdCount > 0,
+      "service-only salon sync creates invite types without saved library offers",
+    );
+    assert(
+      serviceOnlySynced.copies.some((copy) => copy.sourceTemplateId === "nails-new-client-welcome"),
+      "service-only salon sync includes default nail invite types",
+    );
   }
 
   resetVmbStorageBackendCache();
