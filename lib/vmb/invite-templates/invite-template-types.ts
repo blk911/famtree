@@ -1,4 +1,5 @@
 import type { ServiceCategoryId } from "@/lib/vmb/services/canonical-catalog-types";
+import type { InviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
 
 /** Lightweight offer categories for invite ↔ offer matching (Nails first). */
 export type VmbInviteOfferCategory =
@@ -82,6 +83,8 @@ export type VmbInviteTemplate = {
   allowedOfferCategories: VmbInviteOfferCategory[];
   /** Admin Default service / add-on / expiration package for this invite type. */
   defaultPackage: VmbDefaultInvitationPackage;
+  /** Frozen Admin Library asset. Salon-local copies are created from this, then disconnect. */
+  librarySnapshot?: InviteTemplateSnapshot | null;
   active: boolean;
   sortOrder: number;
   createdAt: string;

@@ -6,6 +6,7 @@ import {
   type NailTemplateDraft,
 } from "@/lib/vmb/admin/nail-template-library";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
+import type { VmbInviteTemplate } from "@/lib/vmb/invite-templates/invite-template-types";
 import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
 import type { VmbService } from "@/lib/vmb/services/service-types";
 import type { ServicePresetCard } from "@/lib/vmb/services/service-preset-types";
@@ -28,10 +29,11 @@ export function useNailTemplateInventory(salonId?: string, salonToken?: string) 
     }
     const scopedQuery = scopeParams.toString();
     const scopedPath = (path: string) => `${path}?${scopedQuery}`;
-    const [offerRes, serviceRes, presetRes] = await Promise.all([
+    const [offerRes, serviceRes, presetRes, templateRes] = await Promise.all([
       fetch(scopedPath("/api/vmb/offers")),
       fetch(scopedPath("/api/vmb/services")),
       fetch("/api/vmb/service-presets?categoryId=nails&includeInactive=1"),
+      fetch("/api/vmb/invite-templates?categoryId=nails&includeInactive=1"),
     ]);
     const offerData = (await offerRes.json()) as { ok?: boolean; offers?: VmbOffer[] };
     const serviceData = (await serviceRes.json()) as {
@@ -40,8 +42,12 @@ export function useNailTemplateInventory(salonId?: string, salonToken?: string) 
       options?: VmbServiceOption[];
     };
     const presetData = (await presetRes.json()) as { ok?: boolean; presets?: ServicePresetCard[] };
+    const templateData = (await templateRes.json()) as {
+      ok?: boolean;
+      templates?: VmbInviteTemplate[];
+    };
     if (offerData.ok && offerData.offers) {
-      setDrafts(buildNailTemplateDrafts(salonId, offerData.offers));
+      setDrafts(buildNailTemplateDrafts(salonId, offerData.offers, templateData.templates));
     }
     if (serviceData.ok && serviceData.services) {
       setServices(serviceData.services);

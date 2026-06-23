@@ -2,6 +2,9 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { templateStorageId } from "@/lib/vmb/admin/nail-template-library";
+import { getDefaultNailInviteTemplate } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
+import { upsertInviteTemplate } from "@/lib/vmb/invite-templates/invite-template-store";
+import { parseInviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
 import { publishLibraryTemplateToSalon } from "@/lib/vmb/invites/salon-invite-local-copy-store";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 import { upsertOffer } from "@/lib/vmb/offers/offer-store";
@@ -36,6 +39,49 @@ export async function POST(req: NextRequest) {
   if (body.offer) {
     if (body.offer.templateId !== templateId || body.offer.isDefault) {
       return NextResponse.json({ ok: false, error: "Invalid library offer" }, { status: 400 });
+    }
+
+    const baseline = getDefaultNailInviteTemplate(templateId);
+    const snapshot = parseInviteTemplateSnapshot(body.offer.inviteSnapshot);
+    if (!baseline || !snapshot) {
+      return NextResponse.json(
+        { ok: false, error: "Template is not saved to library with a snapshot." },
+        { status: 400 },
+      );
+    }
+
+    const savedTemplate = await upsertInviteTemplate({
+      ...baseline,
+      displayName: body.offer.name?.trim() || snapshot.templateName || baseline.displayName,
+      headline: body.offer.headline?.trim() || snapshot.headline || baseline.headline,
+      body: body.offer.body?.trim() || body.offer.offerText?.trim() || snapshot.body || baseline.body,
+      ctaLabel: body.offer.ctaLabel?.trim() || snapshot.ctaLabel || baseline.ctaLabel,
+      defaultPackage: {
+        ...baseline.defaultPackage,
+        serviceIds: body.offer.serviceIds?.length
+          ? [...body.offer.serviceIds]
+          : snapshot.serviceIds.length
+            ? [...snapshot.serviceIds]
+            : [...baseline.defaultPackage.serviceIds],
+        serviceOptionIds: body.offer.serviceOptionIds?.length
+          ? [...body.offer.serviceOptionIds]
+          : snapshot.rewardIds.length
+            ? [...snapshot.rewardIds]
+            : [...baseline.defaultPackage.serviceOptionIds],
+        savingsAmount: snapshot.savingsAmount ?? baseline.defaultPackage.savingsAmount,
+        priceLabel: snapshot.priceLabel ?? baseline.defaultPackage.priceLabel,
+        expirationLabel: snapshot.expirationLabel ?? baseline.defaultPackage.expirationLabel,
+        termsText: snapshot.termsText ?? baseline.defaultPackage.termsText,
+      },
+      librarySnapshot: {
+        ...snapshot,
+        status: "library",
+        sourceTemplateId: baseline.id,
+        templateName: snapshot.templateName || baseline.displayName,
+      },
+    });
+    if ("error" in savedTemplate) {
+      return NextResponse.json({ ok: false, error: savedTemplate.error }, { status: 503 });
     }
 
     const saved = await upsertOffer(salonId, {

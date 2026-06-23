@@ -53,7 +53,8 @@ function mergeTemplateLayers(
     id: baseline.id,
     categoryId: baseline.categoryId,
     inviteType: baseline.inviteType,
-    defaultPackage: baseline.defaultPackage,
+    defaultPackage: override.defaultPackage ?? baseline.defaultPackage,
+    librarySnapshot: override.librarySnapshot ?? baseline.librarySnapshot,
     allowedOfferCategories: override.allowedOfferCategories?.length
       ? override.allowedOfferCategories
       : baseline.allowedOfferCategories,
@@ -147,7 +148,8 @@ export async function upsertInviteTemplate(
     id: baseline.id,
     categoryId: baseline.categoryId,
     inviteType: baseline.inviteType as VmbInviteType,
-    defaultPackage: baseline.defaultPackage,
+    defaultPackage: input.defaultPackage ?? baseline.defaultPackage,
+    librarySnapshot: input.librarySnapshot ?? baseline.librarySnapshot,
     updatedAt: now,
     createdAt: baseline.createdAt,
   };

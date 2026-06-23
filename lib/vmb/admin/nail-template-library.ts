@@ -66,33 +66,41 @@ export function buildNailTemplateDraft(
   const savedSnapshot = savedOffer?.inviteSnapshot
     ? parseInviteTemplateSnapshot(savedOffer.inviteSnapshot)
     : null;
+  const masterSnapshot = savedSnapshot ?? parseInviteTemplateSnapshot(template.librarySnapshot);
   return {
     templateId: template.id,
     displayName: template.displayName,
-    headline: savedOffer?.headline?.trim() || template.headline,
-    body: savedOffer?.body?.trim() || template.body,
-    ctaLabel: savedOffer?.ctaLabel?.trim() || template.ctaLabel,
+    headline: savedOffer?.headline?.trim() || masterSnapshot?.headline || template.headline,
+    body: savedOffer?.body?.trim() || masterSnapshot?.body || template.body,
+    ctaLabel: savedOffer?.ctaLabel?.trim() || masterSnapshot?.ctaLabel || template.ctaLabel,
     serviceIds: useSavedOffer
       ? [...(savedOffer?.serviceIds ?? [])]
+      : masterSnapshot?.serviceIds.length
+        ? [...masterSnapshot.serviceIds]
       : [...adminPackage.serviceIds],
     serviceOptionIds: useSavedOffer
       ? [...(savedOffer?.serviceOptionIds ?? [])]
+      : masterSnapshot?.rewardIds.length
+        ? [...masterSnapshot.rewardIds]
       : [...adminPackage.serviceOptionIds],
     savingsAmount: useSavedOffer
       ? Math.max(0, savedSnapshot?.savingsAmount ?? 0)
+      : masterSnapshot?.savingsAmount != null
+        ? Math.max(0, masterSnapshot.savingsAmount)
       : Math.max(0, adminPackage.savingsAmount ?? 0),
     active: savedOffer?.active ?? template.active,
-    saved: Boolean(savedOffer && !savedOffer.isDefault),
+    saved: Boolean((savedOffer && !savedOffer.isDefault) || masterSnapshot),
     offerCategory: offerCategoryForInviteTemplate(template),
-    librarySnapshot: savedSnapshot,
+    librarySnapshot: masterSnapshot,
   };
 }
 
 export function buildNailTemplateDrafts(
   salonId: string,
   offers: readonly VmbOffer[],
+  templates: readonly VmbInviteTemplate[] = DEFAULT_NAIL_INVITE_TEMPLATES,
 ): NailTemplateDraft[] {
-  return DEFAULT_NAIL_INVITE_TEMPLATES.map((template) =>
+  return templates.map((template) =>
     buildNailTemplateDraft(template, findSavedOfferForTemplate(offers, salonId, template)),
   );
 }

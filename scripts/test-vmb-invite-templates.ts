@@ -36,6 +36,7 @@ import {
 } from "../lib/vmb/invite-templates/card-type-invite-template-map";
 import { repairNailInviteTemplateContent } from "../lib/vmb/invite-templates/repair-nail-invite-template-content";
 import {
+  getInviteTemplate,
   listInviteTemplates,
   upsertInviteTemplate,
   validateInviteTemplateInput,
@@ -594,6 +595,8 @@ async function run(): Promise<void> {
   );
   assert(publishStore.includes("publishLibraryTemplateToSalon"), "publish store persists salon copies");
   assert(publishStore.includes("syncLibraryTemplatesToSalon"), "publish store backfills missing salon review copies");
+  assert(publishStore.includes("listInviteTemplates"), "salon sync reads saved Admin Library templates");
+  assert(publishStore.includes("librarySnapshot"), "salon sync can materialize from Admin Library snapshots");
   assert(
     publishStore.includes('status !== "needs_review"'),
     "admin republish refreshes only copies still waiting for salon review",
@@ -966,6 +969,7 @@ async function run(): Promise<void> {
   assert(publishRoute.includes("backend"), "publish API returns backend diagnostic");
   assert(publishRoute.includes("copyId"), "publish API returns copyId diagnostic");
   assert(publishRoute.includes("upsertOffer"), "publish API saves the library snapshot before creating salon copy");
+  assert(publishRoute.includes("upsertInviteTemplate"), "publish API saves the Admin Library master snapshot");
   assert(publishRoute.includes("salonToken"), "publish API accepts signed target salon token");
   assert(
     publishRoute.includes("verifyVmbSalonSession"),
@@ -990,6 +994,19 @@ async function run(): Promise<void> {
     "library list reads salon-owned invitations for the selected salon",
   );
   assert(!libraryClient.includes("Admin default package (source)"), "library removes duplicate static package pricing");
+
+  const adminLibraryInventoryHookSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/useNailTemplateInventory.ts"),
+    "utf8",
+  );
+  assert(
+    adminLibraryInventoryHookSource.includes("/api/vmb/invite-templates?categoryId=nails&includeInactive=1"),
+    "admin inventory reload reads persistent Admin Library templates",
+  );
+  assert(
+    adminLibraryInventoryHookSource.includes("buildNailTemplateDrafts(salonId, offerData.offers, templateData.templates)"),
+    "admin inventory drafts are built from Admin Library snapshots",
+  );
 
   const { resetVmbStorageBackendCache } = await import("../lib/vmb/db");
   const { upsertOffer } = await import("../lib/vmb/offers/offer-store");
@@ -1078,6 +1095,81 @@ async function run(): Promise<void> {
     assert(
       serviceOnlySynced.copies.some((copy) => copy.sourceTemplateId === "nails-new-client-welcome"),
       "service-only salon sync includes default nail invite types",
+    );
+  }
+
+  const masterSalonId = `master-library-sync-${Date.now()}`;
+  const masterTemplateId = "nails-birthday-celebration";
+  const masterBaseline = DEFAULT_NAIL_INVITE_TEMPLATES.find((row) => row.id === masterTemplateId)!;
+  const masterDraft = {
+    templateId: masterTemplateId,
+    displayName: "Birthday Celebration",
+    headline: "Master birthday headline",
+    body: "Master birthday body for {clientName}",
+    ctaLabel: "Use Master Birthday",
+    serviceIds: ["default-nails-gel-x"],
+    serviceOptionIds: ["addon-chrome", "addon-crystals"],
+    active: true,
+    saved: true,
+    offerCategory: "birthday" as const,
+  };
+  const masterSnapshot = buildDraftInviteSnapshot(masterDraft, {
+    ownerName: "Admin",
+    salonName: "Nail Default",
+    totalValue: 120,
+    savingsAmount: 25,
+    offerPrice: 95,
+    valueLabel: "$120",
+    priceLabel: "$95",
+  });
+  const masterSaved = await upsertInviteTemplate({
+    ...masterBaseline,
+    displayName: masterDraft.displayName,
+    headline: masterDraft.headline,
+    body: masterDraft.body,
+    ctaLabel: masterDraft.ctaLabel,
+    defaultPackage: {
+      ...masterBaseline.defaultPackage,
+      serviceIds: [...masterDraft.serviceIds],
+      serviceOptionIds: [...masterDraft.serviceOptionIds],
+      savingsAmount: masterSnapshot.savingsAmount,
+      priceLabel: masterSnapshot.priceLabel,
+      expirationLabel: masterSnapshot.expirationLabel ?? masterBaseline.defaultPackage.expirationLabel,
+      termsText: masterSnapshot.termsText ?? masterBaseline.defaultPackage.termsText,
+    },
+    librarySnapshot: { ...masterSnapshot, status: "library", version: 5 },
+  });
+  assert(!("error" in masterSaved), "Admin Library master template snapshot saves");
+  if (!("error" in masterSaved)) {
+    const masterDrafts = buildNailTemplateDrafts(masterSalonId, [], [masterSaved.template]);
+    assert(masterDrafts[0]?.saved === true, "Admin reload treats saved librarySnapshot as saved");
+    assert(
+      masterDrafts[0]?.headline === "Master birthday headline",
+      "Admin reload uses persistent librarySnapshot headline",
+    );
+    assert(
+      masterDrafts[0]?.serviceOptionIds.includes("addon-crystals"),
+      "Admin reload carries persistent librarySnapshot add-ons",
+    );
+  }
+  const masterSynced = await syncLibraryTemplatesToSalon(masterSalonId);
+  assert(!("error" in masterSynced), "salon sync from Admin Library master succeeds");
+  if (!("error" in masterSynced)) {
+    const birthdayCopy = masterSynced.copies.find((copy) => copy.sourceTemplateId === masterTemplateId);
+    assert(!!birthdayCopy, "salon sync creates birthday copy from Admin Library master");
+    assert(
+      birthdayCopy?.snapshot.headline === "Master birthday headline",
+      "salon copy receives Admin Library master snapshot",
+    );
+    const salonApproved = await updateSalonInviteLocalCopy(masterSalonId, birthdayCopy!.id, {
+      inventoryStatus: "approved",
+      headline: "Salon local birthday headline",
+    });
+    assert(!("error" in salonApproved), "salon approval updates only local invite copy");
+    const reloadedMaster = await getInviteTemplate(masterTemplateId);
+    assert(
+      reloadedMaster?.librarySnapshot?.headline === "Master birthday headline",
+      "salon approval does not mutate Admin Library master snapshot",
     );
   }
 
