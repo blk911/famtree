@@ -12,9 +12,12 @@ import {
 } from "@/lib/vmb/services/service-store";
 import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
 import type { VmbService } from "@/lib/vmb/services/service-types";
+import { verifyVmbSalonSession } from "@/lib/vmb/salon-authority";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 
 function resolveSalonId(req: NextRequest): string | undefined {
+  const fromToken = req.nextUrl.searchParams.get("salonToken")?.trim();
+  if (fromToken) return verifyVmbSalonSession(fromToken);
   const fromQuery = req.nextUrl.searchParams.get("salonId")?.trim();
   if (fromQuery) return fromQuery;
   return getVmbTrialIdFromRequest(req) ?? undefined;

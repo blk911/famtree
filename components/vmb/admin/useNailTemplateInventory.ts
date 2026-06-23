@@ -10,7 +10,7 @@ import type { VmbServiceOption } from "@/lib/vmb/services/service-option-types";
 import type { VmbService } from "@/lib/vmb/services/service-types";
 import type { ServicePresetCard } from "@/lib/vmb/services/service-preset-types";
 
-export function useNailTemplateInventory(salonId?: string) {
+export function useNailTemplateInventory(salonId?: string, salonToken?: string) {
   const [drafts, setDrafts] = useState<NailTemplateDraft[]>([]);
   const [services, setServices] = useState<VmbService[]>([]);
   const [serviceOptions, setServiceOptions] = useState<VmbServiceOption[]>([]);
@@ -20,9 +20,17 @@ export function useNailTemplateInventory(salonId?: string) {
   const reload = useCallback(async () => {
     if (!salonId) return;
     setLoading(true);
+    const scopeParams = new URLSearchParams();
+    if (salonToken) {
+      scopeParams.set("salonToken", salonToken);
+    } else {
+      scopeParams.set("salonId", salonId);
+    }
+    const scopedQuery = scopeParams.toString();
+    const scopedPath = (path: string) => `${path}?${scopedQuery}`;
     const [offerRes, serviceRes, presetRes] = await Promise.all([
-      fetch("/api/vmb/offers"),
-      fetch("/api/vmb/services"),
+      fetch(scopedPath("/api/vmb/offers")),
+      fetch(scopedPath("/api/vmb/services")),
       fetch("/api/vmb/service-presets?categoryId=nails&includeInactive=1"),
     ]);
     const offerData = (await offerRes.json()) as { ok?: boolean; offers?: VmbOffer[] };
@@ -45,7 +53,7 @@ export function useNailTemplateInventory(salonId?: string) {
       setServicePresets(presetData.presets);
     }
     setLoading(false);
-  }, [salonId]);
+  }, [salonId, salonToken]);
 
   useEffect(() => {
     void reload();

@@ -524,7 +524,21 @@ async function run(): Promise<void> {
   assert(!builderSource.includes("AdminTemplatePreviewCard"), "builder removes live draft preview card");
   assert(builderSource.includes("✓ Saved to Library"), "builder shows inline save confirmation");
   assert(builderSource.includes('/api/vmb/invite-library/publish'), "builder save creates the salon review copy");
+  assert(builderSource.includes("targetSalonToken"), "builder carries signed salon target into admin API calls");
+  assert(builderSource.includes("salonToken: targetSalonToken"), "builder save posts signed salon target");
   assert(builderSource.includes("View in Library"), "builder links to library after save");
+
+  const inventoryHookSource = fs.readFileSync(
+    path.join(process.cwd(), "components/vmb/admin/useNailTemplateInventory.ts"),
+    "utf8",
+  );
+  assert(inventoryHookSource.includes("salonToken"), "admin inventory hook supports signed salon target");
+  assert(inventoryHookSource.includes("URLSearchParams"), "admin inventory hook scopes offer/service reads");
+  assert(
+    inventoryHookSource.includes('fetch(scopedPath("/api/vmb/offers"))') &&
+      inventoryHookSource.includes('fetch(scopedPath("/api/vmb/services"))'),
+    "admin inventory loads offers and services for the same target salon",
+  );
 
   const salonInviteCardSource = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/invites/SalonInviteCard.tsx"),
@@ -874,6 +888,11 @@ async function run(): Promise<void> {
     "utf8",
   );
   assert(salonInvitesRoute.includes("salonId"), "salon invites API returns salonId for debug");
+  assert(salonInvitesRoute.includes("salonToken"), "salon invites API can list a signed target salon");
+  assert(
+    salonInvitesRoute.includes("verifyVmbSalonSession"),
+    "salon invites API verifies signed salon target",
+  );
 
   const routesSource = fs.readFileSync(
     path.join(process.cwd(), "lib/vmb/admin/nail-template-routes.ts"),
@@ -932,6 +951,15 @@ async function run(): Promise<void> {
   assert(publishRoute.includes("backend"), "publish API returns backend diagnostic");
   assert(publishRoute.includes("copyId"), "publish API returns copyId diagnostic");
   assert(publishRoute.includes("upsertOffer"), "publish API saves the library snapshot before creating salon copy");
+  assert(publishRoute.includes("salonToken"), "publish API accepts signed target salon token");
+  assert(
+    publishRoute.includes("verifyVmbSalonSession"),
+    "publish API verifies target salon token before creating salon copy",
+  );
+  assert(
+    publishRoute.includes("if (body.salonToken?.trim()) return verifyVmbSalonSession(body.salonToken);"),
+    "publish API rejects an invalid supplied salon token instead of falling back to cookie scope",
+  );
 
   const libraryClient = fs.readFileSync(
     path.join(process.cwd(), "components/vmb/admin/NailsLibraryAdminClient.tsx"),
@@ -940,6 +968,12 @@ async function run(): Promise<void> {
   assert(libraryClient.includes("override-dot--published"), "library shows published status on the inventory dot");
   assert(!libraryClient.includes("Publish verification"), "library hides publish verification diagnostics");
   assert(libraryClient.includes("row.librarySnapshot"), "library pricing comes from the saved snapshot");
+  assert(libraryClient.includes("targetSalonToken"), "library carries signed salon target into list/publish calls");
+  assert(libraryClient.includes("salonToken: targetSalonToken"), "library publish posts signed salon target");
+  assert(
+    libraryClient.includes("/api/vmb/salon-invites${query}"),
+    "library list reads salon-owned invitations for the selected salon",
+  );
   assert(!libraryClient.includes("Admin default package (source)"), "library removes duplicate static package pricing");
 
   const { resetVmbStorageBackendCache } = await import("../lib/vmb/db");

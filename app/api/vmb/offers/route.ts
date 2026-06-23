@@ -10,9 +10,12 @@ import {
 } from "@/lib/vmb/offers/offer-store";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 import { VMB_OFFER_CATEGORIES } from "@/lib/vmb/offers/offer-types";
+import { verifyVmbSalonSession } from "@/lib/vmb/salon-authority";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 
 function resolveSalonId(req: NextRequest): string | undefined {
+  const fromToken = req.nextUrl.searchParams.get("salonToken")?.trim();
+  if (fromToken) return verifyVmbSalonSession(fromToken);
   const fromQuery = req.nextUrl.searchParams.get("salonId")?.trim();
   if (fromQuery) return fromQuery;
   return getVmbTrialIdFromRequest(req) ?? undefined;

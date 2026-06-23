@@ -4,6 +4,8 @@ import { LegacyAdminPathNotice } from "@/components/admin/workspaces/LegacyAdmin
 
 import { NailsLibraryAdminClient } from "@/components/vmb/admin/NailsLibraryAdminClient";
 
+import { createVmbSalonSession } from "@/lib/vmb/salon-authority";
+
 import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
 
 
@@ -48,6 +50,8 @@ export default async function VmbAdminOffersPage() {
 
         salonId={ctx.trialId}
 
+        targetSalonToken={ctx.trialId ? createVmbSalonSession(ctx.trialId) : undefined}
+
         salonName={ctx.salonName}
 
         ownerName={ctx.workspace?.ownerName}
@@ -59,4 +63,3 @@ export default async function VmbAdminOffersPage() {
   );
 
 }
-

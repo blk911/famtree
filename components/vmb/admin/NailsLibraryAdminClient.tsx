@@ -23,6 +23,7 @@ import {
 
 type Props = {
   salonId?: string;
+  targetSalonToken?: string;
   salonName: string;
   ownerName?: string;
   initialTemplateId?: string;
@@ -69,11 +70,15 @@ function mergePublishedCopy(
 
 export function NailsLibraryAdminClient({
   salonId,
+  targetSalonToken,
   salonName,
   ownerName,
   initialTemplateId,
 }: Props) {
-  const { drafts, serviceFallbackById, optionFallbackById } = useNailTemplateInventory(salonId);
+  const { drafts, serviceFallbackById, optionFallbackById } = useNailTemplateInventory(
+    salonId,
+    targetSalonToken,
+  );
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
     initialTemplateId ?? DEFAULT_NAIL_INVITE_TEMPLATES[0]!.id,
   );
@@ -104,7 +109,13 @@ export function NailsLibraryAdminClient({
     if (!salonId) return;
     let cancelled = false;
     async function loadPublishedCopies() {
-      const res = await fetch("/api/vmb/salon-invites", { cache: "no-store", credentials: "include" });
+      const query = targetSalonToken
+        ? `?salonToken=${encodeURIComponent(targetSalonToken)}`
+        : "";
+      const res = await fetch(`/api/vmb/salon-invites${query}`, {
+        cache: "no-store",
+        credentials: "include",
+      });
       const data = (await res.json()) as { ok?: boolean; copies?: SalonInviteLocalCopy[] };
       if (!cancelled && data.ok && Array.isArray(data.copies)) {
         setPublishedCopies(data.copies);
@@ -114,7 +125,7 @@ export function NailsLibraryAdminClient({
     return () => {
       cancelled = true;
     };
-  }, [salonId]);
+  }, [salonId, targetSalonToken]);
 
   const tokenContext = useMemo(
     () => ({
@@ -132,7 +143,7 @@ export function NailsLibraryAdminClient({
     const res = await fetch("/api/vmb/invite-library/publish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ templateId: selected.templateId }),
+      body: JSON.stringify({ templateId: selected.templateId, salonToken: targetSalonToken }),
     });
     const data = (await res.json()) as {
       ok?: boolean;

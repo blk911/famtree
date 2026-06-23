@@ -26,6 +26,7 @@ import {
 
 type Props = {
   salonId?: string;
+  targetSalonToken?: string;
   salonName: string;
   ownerName?: string;
   initialTemplateId?: string;
@@ -33,6 +34,7 @@ type Props = {
 
 export function TemplateBuilderAdminClient({
   salonId,
+  targetSalonToken,
   salonName,
   ownerName,
   initialTemplateId,
@@ -44,7 +46,7 @@ export function TemplateBuilderAdminClient({
     optionFallbackById,
     servicePriceById,
     addonPriceByServiceId,
-  } = useNailTemplateInventory(salonId);
+  } = useNailTemplateInventory(salonId, targetSalonToken);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
     initialTemplateId ?? DEFAULT_NAIL_INVITE_TEMPLATES[0]!.id,
   );
@@ -157,6 +159,7 @@ export function TemplateBuilderAdminClient({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         templateId: draft.templateId,
+        salonToken: targetSalonToken,
         offer: nailTemplateDraftToOffer(draft, salonId, snapshot),
       }),
     });
@@ -186,8 +189,9 @@ export function TemplateBuilderAdminClient({
     setImageInserts(EMPTY_SALON_INVITE_IMAGE_INSERTS);
 
     if (selectedBaseline?.saved) {
+      const scope = targetSalonToken ? `&salonToken=${encodeURIComponent(targetSalonToken)}` : "";
       await fetch(
-        `/api/vmb/offers?offerId=${encodeURIComponent(nailTemplateDraftToOffer(draft, salonId).id)}`,
+        `/api/vmb/offers?offerId=${encodeURIComponent(nailTemplateDraftToOffer(draft, salonId).id)}${scope}`,
         { method: "DELETE" },
       );
     }
