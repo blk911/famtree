@@ -4,6 +4,7 @@ import { VmbInvitesClient } from "@/components/vmb/VmbInvitesClient";
 import { VmbTaikosDraftWorkspace } from "@/components/vmb/VmbTaikosDraftWorkspace";
 import { VmbPageLoading } from "@/components/vmb/VmbPageFrame";
 import { loadVmbPageContext } from "@/lib/vmb/load-vmb-page-context";
+import { createVmbSalonSession } from "@/lib/vmb/salon-authority";
 
 export const metadata: Metadata = {
   title: "Invitations",
@@ -36,6 +37,7 @@ export default async function VmbInvitesPage({ searchParams }: Props) {
       initialSection={params.section?.trim()}
       salonName={ctx.salonName}
       salonId={ctx.trialId}
+      salonToken={ctx.trialId ? createVmbSalonSession(ctx.trialId) : undefined}
     />
   );
 }

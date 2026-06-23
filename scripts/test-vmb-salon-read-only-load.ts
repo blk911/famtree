@@ -154,7 +154,8 @@ function run(): void {
   const sendPackageModal = read("components/vmb/salon/SendPackagePreviewModal.tsx");
   assert(sendPackageModal.includes("Send Package Preview"), "send package modal has title");
   assert(sendPackageModal.includes("ViewSalonPageLink"), "send package modal links to salon page");
-  assert(sendPackageModal.includes("Send Email — Coming Next"), "send package modal stubs email send");
+  assert(sendPackageModal.includes("/api/vmb/sent-invites"), "send package modal creates a canonical sent invite");
+  assert(sendPackageModal.includes("Send Invitation"), "send package modal exposes live send action");
 
   const approvedCard = read("components/vmb/salon/ApprovedInvitationCard.tsx");
   assert(approvedCard.includes("Review Send Package"), "approved card exposes send package action");

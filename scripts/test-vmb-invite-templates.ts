@@ -662,6 +662,9 @@ async function run(): Promise<void> {
     path.join(process.cwd(), "components/vmb/VmbInvitesClient.tsx"),
     "utf8",
   );
+  const invitesPageSource = fs.readFileSync(path.join(process.cwd(), "app/vmb/invites/page.tsx"), "utf8");
+  assert(invitesPageSource.includes("createVmbSalonSession"), "invitations page signs server-resolved salon target");
+  assert(invitesPageSource.includes("salonToken="), "invitations page passes signed salon target to client");
   assert(invitesClientSource.includes("Touch Points"), "invitations page title");
   assert(
     invitesClientSource.includes("on your salon page"),
@@ -669,6 +672,18 @@ async function run(): Promise<void> {
   );
   assert(invitesClientSource.includes("/api/vmb/salon-invites"), "invitations loads published copies");
   assert(invitesClientSource.includes("/api/vmb/salon-invites/sync"), "empty invite inventory recovers saved library templates");
+  assert(
+    invitesClientSource.includes("salonToken ? `?salonToken=${encodeURIComponent(salonToken)}` : \"\""),
+    "invitations list uses signed salon token when server resolved one",
+  );
+  assert(
+    invitesClientSource.includes("body: JSON.stringify({ salonToken })"),
+    "invitations sync posts signed salon token",
+  );
+  assert(
+    invitesClientSource.includes("Invite types did not load"),
+    "invitations surfaces invite inventory load/sync failures",
+  );
   assert(invitesClientSource.includes("/api/taikos/opportunities"), "invitations loads opportunity intelligence");
   assert(invitesClientSource.includes("SuggestedInvitationCard"), "invitations suggested tab uses workflow cards");
   assert(

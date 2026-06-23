@@ -69,6 +69,7 @@ type Props = {
   initialSection?: string;
   salonName?: string;
   salonId?: string;
+  salonToken?: string;
 };
 
 export function VmbInvitesClient({
@@ -76,6 +77,7 @@ export function VmbInvitesClient({
   initialSection,
   salonName: salonNameProp,
   salonId: salonIdProp,
+  salonToken,
 }: Props) {
   const resolved = useVmbActiveAnalysisState(initialAnalysisId);
   const [tab, setTab] = useState<TabId>("invite-types");
@@ -86,6 +88,7 @@ export function VmbInvitesClient({
   const [publishedCopies, setPublishedCopies] = useState<SalonInviteLocalCopy[]>([]);
   const [approvals, setApprovals] = useState<SalonInvitationApproval[]>([]);
   const [publishedSalonId, setPublishedSalonId] = useState<string | null>(salonIdProp ?? null);
+  const [publishedLoadError, setPublishedLoadError] = useState<string | null>(null);
   const [opportunitySummary, setOpportunitySummary] = useState<TaikosOpportunitySummary | null>(null);
   const [loadingSuggested, setLoadingSuggested] = useState(true);
   const [loadingDrafts, setLoadingDrafts] = useState(false);
@@ -124,8 +127,10 @@ export function VmbInvitesClient({
   }, []);
 
   const loadPublished = useCallback(async () => {
+    const query = salonToken ? `?salonToken=${encodeURIComponent(salonToken)}` : "";
+    setPublishedLoadError(null);
     try {
-      const res = await fetch("/api/vmb/salon-invites", {
+      const res = await fetch(`/api/vmb/salon-invites${query}`, {
         cache: "no-store",
         credentials: "include",
       });
@@ -133,27 +138,44 @@ export function VmbInvitesClient({
         ok?: boolean;
         copies?: SalonInviteLocalCopy[];
         salonId?: string;
+        error?: string;
       };
+      if (!res.ok || !json.ok) {
+        setPublishedLoadError(json.error ?? "Could not load salon-owned invite types.");
+        setPublishedCopies([]);
+        return;
+      }
       let copies = json.ok && json.copies ? json.copies : [];
+      let nextPublishedSalonId = json.salonId ?? null;
       if (json.ok && copies.length === 0) {
         const syncRes = await fetch("/api/vmb/salon-invites/sync", {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           credentials: "include",
+          body: JSON.stringify({ salonToken }),
         });
         const syncJson = (await syncRes.json()) as {
           ok?: boolean;
           copies?: SalonInviteLocalCopy[];
+          salonId?: string;
+          error?: string;
         };
         if (syncRes.ok && syncJson.ok && syncJson.copies) {
           copies = syncJson.copies;
+          if (syncJson.salonId) {
+            nextPublishedSalonId = syncJson.salonId;
+          }
+        } else {
+          setPublishedLoadError(syncJson.error ?? "Could not sync salon-owned invite types.");
         }
       }
       setPublishedCopies(copies);
-      setPublishedSalonId(json.ok && json.salonId ? json.salonId : null);
+      setPublishedSalonId(nextPublishedSalonId);
     } catch {
       setPublishedCopies([]);
+      setPublishedLoadError("Could not load salon-owned invite types.");
     }
-  }, []);
+  }, [salonToken]);
 
   const loadOpportunities = useCallback(async () => {
     try {
@@ -648,6 +670,12 @@ export function VmbInvitesClient({
 
       {draftError && tab !== "suggested" && tab !== "invite-types" ? (
         <p style={{ margin: "0 0 16px", fontSize: 14, color: "#b91c1c" }}>{draftError}</p>
+      ) : null}
+
+      {publishedLoadError ? (
+        <p style={{ margin: "0 0 16px", fontSize: 14, color: "#b91c1c" }}>
+          Invite types did not load: {publishedLoadError}
+        </p>
       ) : null}
 
       {tab === "suggested" && analysis ? (
