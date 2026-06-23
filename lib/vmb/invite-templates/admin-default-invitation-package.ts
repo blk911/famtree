@@ -84,6 +84,8 @@ export function resolveAdminDefaultInvitationPackageWithPricing(
 
     serviceOptionIds: pkg.serviceOptionIds,
 
+    savingsAmount: pkg.savingsAmount,
+
     inviteType: template.inviteType,
 
   });
@@ -166,6 +168,8 @@ export function buildAdminDefaultSnapshotFromTemplate(
 
     serviceOptionIds: template.defaultPackage.serviceOptionIds,
 
+    savingsAmount: template.defaultPackage.savingsAmount,
+
     inviteType: template.inviteType,
 
   });
@@ -231,5 +235,4 @@ export function validateDefaultInvitationPackage(
 /** Re-export for tests — every invite type must have a package. */
 
 export { getDefaultNailInvitationPackage };
-
 

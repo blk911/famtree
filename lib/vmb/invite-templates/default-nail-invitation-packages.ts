@@ -19,7 +19,7 @@ function pkg(
   serviceIds: string[],
   serviceOptionIds: string[],
   expirationLabel: string,
-  extras?: Pick<VmbDefaultInvitationPackage, "priceLabel" | "termsText">,
+  extras?: Pick<VmbDefaultInvitationPackage, "priceLabel" | "savingsAmount" | "termsText">,
 ): VmbDefaultInvitationPackage {
   return {
     serviceIds,
@@ -44,46 +44,50 @@ export const DEFAULT_NAIL_INVITATION_PACKAGES: Record<VmbInviteType, VmbDefaultI
     [NAIL_PKG_GEL_X],
     [NAIL_PKG_ADDON_CHROME],
     "Valid through birthday month",
-    { priceLabel: "Birthday treat included" },
+    { priceLabel: "Birthday treat included", savingsAmount: 15 },
   ),
   referral_invite: pkg(
     [NAIL_PKG_GEL_MANICURE],
     [NAIL_PKG_PERK_REPAIR],
     "Valid for 14 days",
+    { savingsAmount: 10 },
   ),
   open_chair: pkg(
     [NAIL_PKG_FILL_REFRESH],
     [NAIL_PKG_PERK_PRIORITY],
     "Expires in 48 hours",
+    { savingsAmount: 15 },
   ),
   refresh_reminder: pkg(
     [NAIL_PKG_FILL_REFRESH],
     [NAIL_PKG_ADDON_FRENCH],
     "Valid for 14 days",
+    { savingsAmount: 10 },
   ),
   we_miss_you: pkg(
     [NAIL_PKG_GEL_MANICURE],
     [NAIL_PKG_ADDON_CHROME],
     "Valid for 30 days",
-    { priceLabel: "Welcome-back offer" },
+    { priceLabel: "Welcome-back offer", savingsAmount: 15 },
   ),
   vip_thank_you: pkg(
     [NAIL_PKG_STRUCTURED_GEL],
     [NAIL_PKG_ADDON_CRYSTALS, NAIL_PKG_PERK_PRIORITY],
     "Valid for 60 days",
-    { priceLabel: "VIP appreciation included" },
+    { priceLabel: "VIP appreciation included", savingsAmount: 20 },
   ),
   favorite_providers: pkg([NAIL_PKG_BUILDER_GEL], [], "Valid for 30 days"),
   first_visit_thank_you: pkg(
     [NAIL_PKG_GEL_MANICURE],
     [NAIL_PKG_ADDON_FRENCH],
     "Valid for 30 days",
+    { savingsAmount: 10 },
   ),
   new_client_welcome: pkg(
     [NAIL_PKG_GEL_MANICURE],
     [NAIL_PKG_PERK_REMOVAL],
     "Valid for 30 days",
-    { priceLabel: "First-visit welcome" },
+    { priceLabel: "First-visit welcome", savingsAmount: 10 },
   ),
 };
 

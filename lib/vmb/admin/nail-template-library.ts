@@ -78,7 +78,9 @@ export function buildNailTemplateDraft(
     serviceOptionIds: useSavedOffer
       ? [...(savedOffer?.serviceOptionIds ?? [])]
       : [...adminPackage.serviceOptionIds],
-    savingsAmount: useSavedOffer ? Math.max(0, savedSnapshot?.savingsAmount ?? 0) : 0,
+    savingsAmount: useSavedOffer
+      ? Math.max(0, savedSnapshot?.savingsAmount ?? 0)
+      : Math.max(0, adminPackage.savingsAmount ?? 0),
     active: savedOffer?.active ?? template.active,
     saved: Boolean(savedOffer && !savedOffer.isDefault),
     offerCategory: offerCategoryForInviteTemplate(template),

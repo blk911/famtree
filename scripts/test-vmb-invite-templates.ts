@@ -144,6 +144,10 @@ async function run(): Promise<void> {
     (unsavedBirthdayDraft?.serviceOptionIds.length ?? 0) > 0,
     "unsaved draft inherits admin default add-ons",
   );
+  assert(
+    unsavedBirthdayDraft?.savingsAmount === DEFAULT_NAIL_INVITATION_PACKAGES.birthday_celebration.savingsAmount,
+    "unsaved draft inherits admin default savings",
+  );
 
   const adminSnapshot = buildAdminDefaultSnapshotFromTemplate("nails-birthday-celebration", {
     salonName: "Glow Nails",
