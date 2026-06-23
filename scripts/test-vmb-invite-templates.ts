@@ -575,6 +575,7 @@ async function run(): Promise<void> {
     "utf8",
   );
   assert(publishStore.includes("publishLibraryTemplateToSalon"), "publish store persists salon copies");
+  assert(publishStore.includes("syncLibraryTemplatesToSalon"), "publish store backfills missing salon review copies");
   assert(
     !publishStore.includes("SALON_INVITE_COPY_POSTGRES_REQUIRED"),
     "salon invite copy store does not hard-fail with postgres-only error",
@@ -645,6 +646,7 @@ async function run(): Promise<void> {
     "invitations page subhead references salon page destination",
   );
   assert(invitesClientSource.includes("/api/vmb/salon-invites"), "invitations loads published copies");
+  assert(invitesClientSource.includes("/api/vmb/salon-invites/sync"), "empty invite inventory recovers saved library templates");
   assert(invitesClientSource.includes("/api/taikos/opportunities"), "invitations loads opportunity intelligence");
   assert(invitesClientSource.includes("SuggestedInvitationCard"), "invitations suggested tab uses workflow cards");
   assert(
@@ -936,6 +938,7 @@ async function run(): Promise<void> {
   const {
     listSalonInviteLocalCopies,
     publishLibraryTemplateToSalon,
+    syncLibraryTemplatesToSalon,
     updateSalonInviteLocalCopy,
   } = await import("../lib/vmb/invites/salon-invite-local-copy-store");
 
@@ -964,6 +967,20 @@ async function run(): Promise<void> {
   });
   const offerSaved = await upsertOffer(salonId, pcnOffer);
   assert(!("error" in offerSaved), "library offer saved before publish");
+
+  const syncSalonId = `invite-sync-test-${Date.now()}`;
+  const syncOfferSaved = await upsertOffer(syncSalonId, {
+    ...pcnOffer,
+    id: `${syncSalonId}-${templateId}`,
+    salonId: syncSalonId,
+  });
+  assert(!("error" in syncOfferSaved), "library offer saved before inventory recovery");
+  const synced = await syncLibraryTemplatesToSalon(syncSalonId);
+  assert(!("error" in synced), "empty salon inventory sync succeeds");
+  if (!("error" in synced)) {
+    assert(synced.createdCount === 1, "inventory sync creates one missing review copy");
+    assert(synced.copies[0]?.inventoryStatus === "needs_review", "recovered copy requires salon review");
+  }
 
   resetVmbStorageBackendCache();
   const published = await publishLibraryTemplateToSalon(salonId, templateId);

@@ -134,7 +134,21 @@ export function VmbInvitesClient({
         copies?: SalonInviteLocalCopy[];
         salonId?: string;
       };
-      setPublishedCopies(json.ok && json.copies ? json.copies : []);
+      let copies = json.ok && json.copies ? json.copies : [];
+      if (json.ok && copies.length === 0) {
+        const syncRes = await fetch("/api/vmb/salon-invites/sync", {
+          method: "POST",
+          credentials: "include",
+        });
+        const syncJson = (await syncRes.json()) as {
+          ok?: boolean;
+          copies?: SalonInviteLocalCopy[];
+        };
+        if (syncRes.ok && syncJson.ok && syncJson.copies) {
+          copies = syncJson.copies;
+        }
+      }
+      setPublishedCopies(copies);
       setPublishedSalonId(json.ok && json.salonId ? json.salonId : null);
     } catch {
       setPublishedCopies([]);

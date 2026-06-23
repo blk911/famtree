@@ -28,6 +28,11 @@ export type PublishSalonInviteCopyResult = {
   backend: SalonInviteCopyBackend;
 };
 
+export type SyncSalonInviteCopiesResult = {
+  copies: SalonInviteLocalCopy[];
+  createdCount: number;
+};
+
 type StoredSalonInviteCopy = {
   salonId: string;
   copy: SalonInviteLocalCopy;
@@ -185,6 +190,31 @@ export async function publishLibraryTemplateToSalon(
     return jsonSaved;
   }
   return { copy: jsonSaved.copy, backend: "json" };
+}
+
+/** Materialize missing salon-owned review copies from this salon's saved library snapshots. */
+export async function syncLibraryTemplatesToSalon(
+  salonId: string,
+): Promise<SyncSalonInviteCopiesResult | { error: string }> {
+  const offers = await getOffersForSalon(salonId);
+  const templateIds = Array.from(new Set(
+    offers
+      .filter((offer) => !offer.isDefault && offer.templateId && parseInviteTemplateSnapshot(offer.inviteSnapshot))
+      .map((offer) => normalizeSourceTemplateId(offer.templateId) ?? offer.templateId!)
+      .filter(Boolean),
+  ));
+
+  const before = await listSalonInviteLocalCopies(salonId);
+  const beforeKeys = new Set(before.flatMap(templateKeysForPublishedCopy));
+
+  for (const templateId of templateIds) {
+    if (beforeKeys.has(templateId)) continue;
+    const published = await publishLibraryTemplateToSalon(salonId, templateId);
+    if ("error" in published) return published;
+  }
+
+  const copies = await listSalonInviteLocalCopies(salonId);
+  return { copies, createdCount: Math.max(0, copies.length - before.length) };
 }
 
 export async function updateSalonInviteLocalCopy(
