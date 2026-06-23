@@ -4,7 +4,7 @@ import { loadVmbDemoSeedBookText, resolveVmbDemoSeedBookPath } from "@/lib/vmb/d
 import { syncLibraryTemplatesToSalon, updateSalonInviteLocalCopy } from "@/lib/vmb/invites/salon-invite-local-copy-store";
 import { runVmbBookAnalysis } from "@/lib/vmb/run-book-analysis";
 import { listServicePresetCards } from "@/lib/vmb/services/service-preset-store";
-import { upsertSalonServiceConfig } from "@/lib/vmb/services/salon-service-config-store";
+import { getSalonServiceConfig, upsertSalonServiceConfig } from "@/lib/vmb/services/salon-service-config-store";
 import { upsertVmbTrialLead } from "@/lib/vmb/trial-store";
 import { setLatestAnalysis, upsertWorkspaceForTrial } from "@/lib/vmb/workspace-store";
 
@@ -12,6 +12,7 @@ export const VMB_DEMO_SALON_ID = "vmb-demo-test123";
 export const VMB_DEMO_SALON_NAME = "test123 Nails";
 export const VMB_DEMO_OWNER_NAME = "Spencer";
 export const VMB_DEMO_EMAIL = "test@test.com";
+const UNSAVED_SALON_CONFIG_UPDATED_AT = new Date(0).toISOString();
 
 export type EnsureVmbDemoSalonResult =
   | {
@@ -87,6 +88,23 @@ async function ensureDemoServices(): Promise<{ ok: true; serviceCount: number } 
   const presets = await listServicePresetCards("nails");
   let serviceCount = 0;
   for (const preset of presets.filter((row) => row.active)) {
+    const existing = await getSalonServiceConfig(VMB_DEMO_SALON_ID, preset.serviceOfferId);
+    if (existing && existing.updatedAt !== UNSAVED_SALON_CONFIG_UPDATED_AT) {
+      if (existing.status !== "active") {
+        const activated = await upsertSalonServiceConfig(VMB_DEMO_SALON_ID, {
+          catalogServiceId: preset.serviceOfferId,
+          lifecycleAction: "activate",
+          priceCents: existing.priceCents,
+          durationMinutes: existing.durationMinutes,
+          enabledAddonIds: existing.enabledAddonIds,
+          addonPriceCentsById: existing.addonPriceCentsById ?? {},
+        });
+        if ("error" in activated) return { ok: false, error: activated.error };
+      }
+      serviceCount += 1;
+      continue;
+    }
+
     const activeAddons = preset.addonPresets.filter((addon) => addon.active);
     const addonPriceCentsById = Object.fromEntries(
       activeAddons.map((addon) => [addon.addonId, addon.priceCents]),

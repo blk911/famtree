@@ -146,8 +146,9 @@ function run(): void {
   assert(
     commandCenterSource.includes("inviteTemplateIdForSalonReason")
       && commandCenterSource.includes("findPublishedCopyForTemplateId")
-      && commandCenterSource.includes("selectedInviteCopy?.snapshot.offerPrice"),
-    "Today resolves the approved salon invite type and carries its fixed offer",
+      && commandCenterSource.includes("enabledSalonAddonIds")
+      && !commandCenterSource.includes("approvedAddonIds"),
+    "Today resolves the approved salon invite type and uses current salon service add-ons",
   );
   assert(
     commandCenterSource.includes('fetch("/api/vmb/salon-invitation-approvals"')

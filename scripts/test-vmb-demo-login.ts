@@ -16,7 +16,10 @@ import {
 import { ensureVmbDemoSalon, VMB_DEMO_SALON_ID } from "../lib/vmb/vmb-demo-salon";
 import { listSalonInviteLocalCopies } from "../lib/vmb/invites/salon-invite-local-copy-store";
 import { isSalonInviteMatchingActive } from "../lib/vmb/invites/salon-invite-inventory";
-import { getActiveSalonFacingServicesForCategory } from "../lib/vmb/services/salon-service-config-store";
+import {
+  getActiveSalonFacingServicesForCategory,
+  upsertSalonServiceConfig,
+} from "../lib/vmb/services/salon-service-config-store";
 import { upsertWorkspaceForTrial } from "../lib/vmb/workspace-store";
 
 function assert(condition: boolean, message: string): void {
@@ -60,6 +63,26 @@ async function run(): Promise<void> {
   assert(seededDemo.inviteTypeCount > 0, "persistent demo approves invite types");
   const demoServices = await getActiveSalonFacingServicesForCategory(VMB_DEMO_SALON_ID, "nails");
   assert(demoServices.length > 0, "persistent demo services load active");
+  const demoGelX = demoServices.find((service) => service.serviceOfferId === "default-nails-gel-x");
+  assert(Boolean(demoGelX), "persistent demo includes Gel-X service");
+  if (!demoGelX) process.exit(1);
+  const customGelX = await upsertSalonServiceConfig(VMB_DEMO_SALON_ID, {
+    catalogServiceId: "default-nails-gel-x",
+    lifecycleAction: "activate",
+    priceCents: demoGelX.priceCents,
+    durationMinutes: demoGelX.durationMinutes,
+    enabledAddonIds: ["addon-chrome", "addon-crystals"],
+    addonPriceCentsById: Object.fromEntries(demoGelX.addons.map((addon) => [addon.addonId, addon.priceCents])),
+  });
+  assert(!("error" in customGelX), "test can customize persistent demo Gel-X add-ons");
+  const repairedDemo = await ensureVmbDemoSalon();
+  assert(repairedDemo.ok, "persistent demo repair succeeds after customization");
+  const repairedServices = await getActiveSalonFacingServicesForCategory(VMB_DEMO_SALON_ID, "nails");
+  const repairedGelX = repairedServices.find((service) => service.serviceOfferId === "default-nails-gel-x");
+  assert(
+    repairedGelX?.addons.filter((addon) => addon.enabled).map((addon) => addon.addonId).join(",") === "addon-chrome,addon-crystals",
+    "persistent demo repair preserves salon-owned service add-on selections",
+  );
   const demoCopies = await listSalonInviteLocalCopies(VMB_DEMO_SALON_ID);
   assert(demoCopies.some(isSalonInviteMatchingActive), "persistent demo invite types are active");
 

@@ -49,6 +49,17 @@ function todayPreviewCtaLabel(reason: SalonInviteReasonId, fallback?: string): s
   return fallback?.trim() || "Open my invite";
 }
 
+function enabledSalonAddonIds(service: SalonFacingServiceOffer): string[] {
+  return service.addons.filter((addon) => addon.enabled).map((addon) => addon.addonId);
+}
+
+function salonOfferTotalCents(service: SalonFacingServiceOffer, addonIds: string[]): number {
+  const selectedAddonIds = new Set(addonIds);
+  return service.priceCents + service.addons
+    .filter((addon) => addon.enabled && selectedAddonIds.has(addon.addonId))
+    .reduce((sum, addon) => sum + addon.priceCents, 0);
+}
+
 export function TodayCommandCenter({
   snapshot,
   salonName,
@@ -173,9 +184,9 @@ export function TodayCommandCenter({
       skipNextServiceDefaults.current = false;
       return;
     }
-    const enabledAddons = selectedService.addons.filter((addon) => addon.enabled);
-    setSelectedAddonIds(enabledAddons.map((addon) => addon.addonId));
-    const totalCents = selectedService.priceCents + enabledAddons.reduce((sum, addon) => sum + addon.priceCents, 0);
+    const enabledAddons = enabledSalonAddonIds(selectedService);
+    setSelectedAddonIds(enabledAddons);
+    const totalCents = salonOfferTotalCents(selectedService, enabledAddons);
     setOfferPrice((totalCents / 100).toFixed(2));
   }, [selectedService]);
 
@@ -183,15 +194,12 @@ export function TodayCommandCenter({
     const preferredServiceId = selectedInviteCopy?.snapshot.serviceIds[0];
     const salonDefault = services.find((service) => service.serviceOfferId === preferredServiceId) ?? services[0];
     if (!salonDefault) return;
-    const approvedAddonIds = new Set(selectedInviteCopy?.snapshot.rewardIds ?? []);
-    const defaultAddons = salonDefault.addons.filter(
-      (addon) => addon.enabled && approvedAddonIds.has(addon.addonId),
-    );
-    const totalCents = salonDefault.priceCents + defaultAddons.reduce((sum, addon) => sum + addon.priceCents, 0);
+    const defaultAddons = enabledSalonAddonIds(salonDefault);
+    const totalCents = salonOfferTotalCents(salonDefault, defaultAddons);
     skipNextServiceDefaults.current = salonDefault.serviceOfferId !== selectedServiceId;
     setSelectedServiceId(salonDefault.serviceOfferId);
-    setSelectedAddonIds(defaultAddons.map((addon) => addon.addonId));
-    setOfferPrice(String(selectedInviteCopy?.snapshot.offerPrice ?? (totalCents / 100).toFixed(2)));
+    setSelectedAddonIds(defaultAddons);
+    setOfferPrice((totalCents / 100).toFixed(2));
     setRevisingOffer(false);
   }, [selectedInviteCopy, selectedOpportunity?.id, selectedReason, services]);
 
