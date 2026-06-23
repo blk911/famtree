@@ -41,7 +41,14 @@ export async function sendVmbOfferInviteEmail(input: {
   recipientEmail: string;
   recipientName: string;
   salonName: string;
+  providerName?: string;
   headline: string;
+  body: string;
+  ctaLabel?: string;
+  services?: string[];
+  rewards?: string[];
+  expirationLabel?: string;
+  priceLabel?: string;
   recipientUrl: string;
 }): Promise<"sent" | "skipped"> {
   const resend = getResend();
@@ -51,23 +58,52 @@ export async function sendVmbOfferInviteEmail(input: {
   }
   const recipientName = escapeEmailHtml(input.recipientName);
   const salonName = escapeEmailHtml(input.salonName);
+  const providerName = escapeEmailHtml(input.providerName?.trim() || input.salonName);
   const headline = escapeEmailHtml(input.headline);
+  const body = escapeEmailHtml(input.body);
+  const ctaLabel = escapeEmailHtml(input.ctaLabel?.trim() || "Open my gift");
+  const priceLabel = input.priceLabel?.trim() ? escapeEmailHtml(input.priceLabel) : "";
+  const expirationLabel = input.expirationLabel?.trim() ? escapeEmailHtml(input.expirationLabel) : "";
+  const serviceBadges = (input.services ?? [])
+    .filter((label) => label.trim())
+    .map((label) => `<span style="display:inline-block;margin:0 6px 8px 0;padding:8px 11px;border:1px solid #fed7aa;border-radius:999px;background:#fff7ed;color:#9a3412;font-size:13px;font-weight:700">${escapeEmailHtml(label)}</span>`)
+    .join("");
+  const rewardBadges = (input.rewards ?? [])
+    .filter((label) => label.trim())
+    .map((label) => `<span style="display:inline-block;margin:0 6px 8px 0;padding:8px 11px;border:1px solid #fbcfe8;border-radius:999px;background:#fdf2f8;color:#be185d;font-size:13px;font-weight:700">${escapeEmailHtml(label)}</span>`)
+    .join("");
   const recipientUrl = escapeEmailHtml(input.recipientUrl);
   const out = await resend.emails.send({
     from: FROM,
     to: input.recipientEmail,
-    subject: `${input.salonName} sent you an offer`,
+    subject: `${input.recipientName}, a gift from ${input.salonName}`,
     html: `<!doctype html>
-<html><body style="margin:0;padding:32px;background:#faf7f5;font-family:Arial,sans-serif;color:#292524">
-<table role="presentation" width="100%"><tr><td align="center">
-<table role="presentation" width="520" style="max-width:100%;background:#fff;border:1px solid #f1d9e5;border-radius:16px">
-<tr><td style="padding:32px">
-<p style="margin:0 0 8px;color:#9d174d;font-weight:700">${salonName}</p>
-<h1 style="margin:0 0 16px;font-size:24px">${headline}</h1>
-<p style="margin:0 0 24px;line-height:1.6">Hi ${recipientName}, your salon prepared a private offer for you.</p>
-<a href="${recipientUrl}" style="display:inline-block;padding:13px 22px;border-radius:10px;background:#be185d;color:#fff;text-decoration:none;font-weight:700">View my invitation</a>
-<p style="margin:24px 0 0;color:#78716c;font-size:12px">This secure link is intended only for you.</p>
-</td></tr></table></td></tr></table></body></html>`,
+<html><body style="margin:0;padding:0;background:#f6f1ed;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#292524">
+<div style="display:none;max-height:0;overflow:hidden">A personal invite from ${salonName} is waiting for you.</div>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f1ed;padding:34px 14px"><tr><td align="center">
+<table role="presentation" width="580" cellspacing="0" cellpadding="0" style="max-width:100%;background:#fff;border:1px solid #f1d9e5;border-radius:24px;overflow:hidden;box-shadow:0 18px 60px rgba(41,37,36,.12)">
+<tr><td style="padding:28px 30px 20px;border-bottom:1px solid #f7e1ea;background:linear-gradient(135deg,#fff 0%,#fff1f7 100%)">
+<p style="margin:0 0 7px;color:#9d174d;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">A note from ${providerName}</p>
+<h1 style="margin:0;color:#1c1917;font-family:Georgia,'Times New Roman',serif;font-size:34px;line-height:1.08;font-weight:500">${headline}</h1>
+</td></tr>
+<tr><td style="padding:28px 30px">
+<p style="margin:0 0 18px;color:#44403c;font-size:16px;line-height:1.65">Hi ${recipientName},</p>
+<p style="margin:0 0 24px;color:#44403c;font-size:16px;line-height:1.65">${body}</p>
+<div style="border:1px solid #f5c9da;border-radius:18px;background:#fffafb;padding:18px;margin:0 0 24px">
+<p style="margin:0 0 10px;color:#9d174d;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Your gift</p>
+${serviceBadges || rewardBadges ? `<div style="margin:0 0 10px">${serviceBadges}${rewardBadges}</div>` : ""}
+${priceLabel ? `<p style="margin:0 0 8px;color:#9d174d;font-size:20px;font-weight:800">${priceLabel}</p>` : ""}
+${expirationLabel ? `<p style="margin:0;color:#78716c;font-size:13px;font-weight:700">${expirationLabel}</p>` : ""}
+</div>
+<div style="text-align:center;margin:0 0 22px">
+<a href="${recipientUrl}" style="display:inline-block;padding:15px 28px;border-radius:999px;background:#be185d;color:#fff;text-decoration:none;font-size:16px;font-weight:800">🎁 ${ctaLabel}</a>
+</div>
+<p style="margin:0;color:#78716c;font-size:12px;line-height:1.5;text-align:center">This secure gift link is intended only for you.</p>
+</td></tr>
+<tr><td style="padding:18px 30px;border-top:1px solid #f4e7ee;text-align:center">
+<p style="margin:0;color:#a8a29e;font-size:12px">${salonName} &middot; VMB Salons</p>
+</td></tr>
+</table></td></tr></table></body></html>`,
   });
   assertResendOk(out, "vmb-offer-invite");
   return "sent";

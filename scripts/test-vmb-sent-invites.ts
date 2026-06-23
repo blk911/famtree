@@ -52,6 +52,19 @@ async function seed(salonId: string, status: "approved" | "paused" = "approved",
 }
 
 async function run() {
+  const emailSource = fs.readFileSync(path.join(process.cwd(), "lib/email/index.ts"), "utf8");
+  assert(emailSource.includes("A note from"), "VMB offer email reads like a personal salon note");
+  assert(emailSource.includes("Your gift"), "VMB offer email presents the invite as a gift");
+  assert(emailSource.includes("🎁 ${ctaLabel}"), "VMB offer email uses gift CTA language");
+  assert(!emailSource.includes("your salon prepared a private offer for you"), "VMB offer email no longer uses generic offer copy");
+  const sentInviteRouteSource = fs.readFileSync(path.join(process.cwd(), "app/api/vmb/sent-invites/route.ts"), "utf8");
+  assert(
+    sentInviteRouteSource.includes("result.sentInvite.snapshot.body")
+      && sentInviteRouteSource.includes("result.sentInvite.snapshot.services")
+      && sentInviteRouteSource.includes("result.sentInvite.snapshot.rewards"),
+    "sent invite route feeds public snapshot details into recipient email",
+  );
+
   await isolated(async () => {
     const salonId = `salon-${Date.now()}`;
     await upsertSalonServiceConfig(salonId, { catalogServiceId: "default-nails-gel-x", lifecycleAction: "save", priceCents: 8000, durationMinutes: 90, enabledAddonIds: [] });

@@ -154,6 +154,12 @@ function run(): void {
       && commandCenterSource.includes('fetch("/api/vmb/sent-invites"'),
     "new member send uses approval and canonical SentInvite endpoints",
   );
+  assert(
+    commandCenterSource.includes("SalonInviteCard")
+      && commandCenterSource.includes("Open my birthday gift")
+      && !commandCenterSource.includes("vmb-today-preview-modal__card"),
+    "Today preview modal uses the canonical salon invite renderer with gift CTA language",
+  );
   const sentInviteRouteSource = fs.readFileSync(
     path.join(process.cwd(), "app/api/vmb/sent-invites/route.ts"),
     "utf8",

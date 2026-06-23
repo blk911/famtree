@@ -37,8 +37,15 @@ export async function POST(request: NextRequest) {
       deliveryStatus = await sendVmbOfferInviteEmail({
         recipientEmail: approval.clientEmail,
         recipientName: approval.clientName,
-        salonName: approval.snapshot.salonName?.trim() || "Your Salon",
-        headline: approval.snapshot.headline,
+        salonName: result.sentInvite.snapshot.salonDisplayName,
+        providerName: result.sentInvite.snapshot.providerName,
+        headline: result.sentInvite.snapshot.headline,
+        body: result.sentInvite.snapshot.body,
+        ctaLabel: result.sentInvite.snapshot.ctaLabel,
+        services: result.sentInvite.snapshot.services,
+        rewards: result.sentInvite.snapshot.rewards,
+        expirationLabel: result.sentInvite.snapshot.expirationLabel,
+        priceLabel: result.sentInvite.snapshot.priceLabel,
         recipientUrl,
       });
     } catch (error) {

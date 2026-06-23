@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { SalonInviteCard } from "@/components/vmb/invites/SalonInviteCard";
 import type { SalonFacingServiceOffer } from "@/lib/vmb/services/service-preset-types";
 import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
 import { isSalonInviteMatchingActive } from "@/lib/vmb/invites/salon-invite-inventory";
@@ -40,6 +41,12 @@ function personalizeInviteCopy(value: string, clientName: string, salonName: str
   return value
     .replaceAll("{clientName}", clientName || "your client")
     .replaceAll("{salonName}", salonName);
+}
+
+function todayPreviewCtaLabel(reason: SalonInviteReasonId, fallback?: string): string {
+  if (reason === "birthday") return "Open my birthday gift";
+  if (reason === "new-client") return "Open my welcome gift";
+  return fallback?.trim() || "Open my invite";
 }
 
 export function TodayCommandCenter({
@@ -155,6 +162,7 @@ export function TodayCommandCenter({
   const canSend = isNewMemberInvite
     ? Boolean(hasRecipient && email.trim() && title.trim() && message.trim() && selectedService && selectedInviteCopy && !revisingOffer)
     : Boolean(hasRecipient && title.trim() && message.trim() && selectedService && !revisingOffer);
+  const previewCtaLabel = todayPreviewCtaLabel(selectedReason, selectedInviteCopy?.snapshot.ctaLabel);
 
   useEffect(() => {
     if (!selectedService) {
@@ -486,18 +494,27 @@ export function TodayCommandCenter({
               </section>
               <section className="vmb-today-preview-modal__render" aria-label="Rendered invite">
                 <span>Client invite preview</span>
-                <div className="vmb-today-preview-modal__card">
-                  <small>{contactSummary(email, phone)}</small>
-                  <h3>{title}</h3>
-                  <p>{message}</p>
-                  <div className="vmb-today-preview-modal__offer">
-                    <strong>{selectedService?.displayName || "Service"}</strong>
-                    {selectedAddons.length > 0 ? (
-                      <em>{selectedAddons.map((addon) => addon.label).join(" · ")}</em>
-                    ) : null}
-                    {offerPrice ? <b>${Number(offerPrice).toFixed(2)}</b> : null}
-                  </div>
-                </div>
+                <SalonInviteCard
+                  inviteTypeLabel={SALON_INVITE_REASON_LABELS[selectedReason]}
+                  headline={title}
+                  body={message}
+                  ctaLabel={previewCtaLabel}
+                  services={selectedService ? [selectedService.displayName] : []}
+                  rewards={selectedAddons.map((addon) => addon.label)}
+                  expirationLabel={selectedInviteCopy?.snapshot.expirationLabel}
+                  ownerName={selectedInviteCopy?.snapshot.ownerName ?? "Your nail tech"}
+                  ownerPhotoUrl={selectedInviteCopy?.snapshot.ownerPhotoUrl}
+                  salonName={selectedInviteCopy?.snapshot.salonName ?? salonName}
+                  salonLogoUrl={selectedInviteCopy?.snapshot.salonLogoUrl}
+                  serviceImageUrl={selectedInviteCopy?.snapshot.serviceImageUrl}
+                  inviteArtImageUrl={selectedInviteCopy?.snapshot.inviteArtImageUrl}
+                  mode="client"
+                  tokenContext={{
+                    clientName: clientName || "your client",
+                    salonName,
+                    providerName: selectedInviteCopy?.snapshot.ownerName ?? "Your nail tech",
+                  }}
+                />
               </section>
             </div>
             <footer className="vmb-today-preview-modal__footer">
