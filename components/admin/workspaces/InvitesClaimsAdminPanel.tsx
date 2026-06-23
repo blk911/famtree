@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import type { VmbInviteEvent } from "@/lib/vmb/invites/invite-event-types";
+import type { SalonClaimTimelineDto } from "@/lib/vmb/invites/sent-invite-dto";
 import { INVITES_ADMIN_ROUTES } from "@/lib/admin/invites-workspace";
 import { InvitesWorkspaceBreadcrumb } from "@/components/admin/workspaces/InvitesWorkspaceBreadcrumb";
 
 export function InvitesClaimsAdminPanel() {
-  const [events, setEvents] = useState<VmbInviteEvent[]>([]);
+  const [timeline, setTimeline] = useState<SalonClaimTimelineDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,21 +15,17 @@ export function InvitesClaimsAdminPanel() {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ types: "invite_claimed" });
-      const res = await fetch(`/api/vmb/invite-events?${params}`, {
-        cache: "no-store",
-        credentials: "include",
-      });
-      const json = (await res.json()) as { ok: boolean; data?: VmbInviteEvent[]; error?: string };
+      const res = await fetch("/api/vmb/sent-invites", { cache: "no-store", credentials: "include" });
+      const json = (await res.json()) as { ok?: boolean; timeline?: SalonClaimTimelineDto[]; error?: string };
       if (!res.ok || !json.ok) {
-        setEvents([]);
-        setError(json.error ?? "Sign in to a salon trial to view claim events.");
+        setTimeline([]);
+        setError(json.error ?? "Sign in to a salon trial to view canonical claims.");
         return;
       }
-      setEvents(json.data ?? []);
+      setTimeline(json.timeline ?? []);
     } catch {
-      setEvents([]);
-      setError("Could not load claim events.");
+      setTimeline([]);
+      setError("Could not load canonical claims.");
     } finally {
       setLoading(false);
     }
@@ -39,66 +35,53 @@ export function InvitesClaimsAdminPanel() {
     void load();
   }, [load]);
 
+  const claims = timeline.filter((row) => row.claim);
+
   return (
     <div className="space-y-4">
       <InvitesWorkspaceBreadcrumb current="Claims" />
       <header className="space-y-1">
         <h1 className="m-0 text-lg font-extrabold text-stone-900">Claims tracking</h1>
         <p className="m-0 max-w-2xl text-sm text-stone-600">
-          Recipient claim submissions for the active salon trial — contact details are stored as safe
-          summaries only.
+          Canonical recipient claims from SentInvite records. Legacy event logs are analytics only.
         </p>
       </header>
 
-      {loading ? <p className="text-sm text-stone-500">Loading claim events…</p> : null}
+      {loading ? <p className="text-sm text-stone-500">Loading canonical claims…</p> : null}
       {error ? <p className="text-sm text-amber-800">{error}</p> : null}
 
       {!loading && !error ? (
         <div className="rounded-lg border border-stone-200 bg-white px-3 py-2 shadow-sm">
           <p className="m-0 text-[10px] font-bold uppercase tracking-wide text-stone-500">Claims</p>
-          <p className="m-0 text-xl font-extrabold text-stone-900">{events.length}</p>
+          <p className="m-0 text-xl font-extrabold text-stone-900">{claims.length}</p>
         </div>
       ) : null}
 
-      {!loading && !error && events.length > 0 ? (
+      {!loading && !error && claims.length > 0 ? (
         <ul className="m-0 list-none space-y-2 p-0">
-          {events.slice(0, 20).map((event) => (
-            <li key={event.eventId} className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs">
+          {claims.slice(0, 20).map(({ sentInvite, claim }) => (
+            <li key={sentInvite.id} className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="font-bold text-stone-900">
-                  {new Date(event.occurredAt).toLocaleString()}
+                  {claim ? new Date(claim.claimedAt).toLocaleString() : "Claimed"}
                 </span>
-                {event.payload.salonDisplayName ? (
-                  <>
-                    <span className="text-stone-300">·</span>
-                    <span className="text-stone-700">{event.payload.salonDisplayName}</span>
-                  </>
-                ) : null}
+                <span className="text-stone-300">·</span>
+                <span className="text-stone-700">{sentInvite.inviteTypeLabel}</span>
+                <span className="text-stone-300">·</span>
+                <span className="text-stone-500">{sentInvite.status}</span>
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-stone-600">
-                {event.payload.inviteId ? (
-                  <span className="font-mono text-[10px] text-stone-500">{event.payload.inviteId}</span>
-                ) : null}
-                {event.payload.clientName ? (
-                  <>
-                    <span className="text-stone-300">·</span>
-                    <span>{event.payload.clientName}</span>
-                  </>
-                ) : null}
-                {event.payload.recipientContactSummary ? (
-                  <>
-                    <span className="text-stone-300">·</span>
-                    <span>{event.payload.recipientContactSummary}</span>
-                  </>
-                ) : null}
+                <span>{claim?.clientName ?? sentInvite.recipientName}</span>
+                {claim?.recipientContactSummary ? <span className="text-stone-300">·</span> : null}
+                {claim?.recipientContactSummary ? <span>{claim.recipientContactSummary}</span> : null}
               </div>
             </li>
           ))}
         </ul>
       ) : null}
 
-      {!loading && !error && events.length === 0 ? (
-        <p className="text-sm text-stone-500">No claim events recorded yet for this trial.</p>
+      {!loading && !error && claims.length === 0 ? (
+        <p className="text-sm text-stone-500">No canonical invite claims recorded yet for this trial.</p>
       ) : null}
 
       <div className="flex flex-wrap gap-2 pt-2">

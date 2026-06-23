@@ -152,8 +152,11 @@ function run(): void {
   );
   assert(
     commandCenterSource.includes('fetch("/api/vmb/salon-invitation-approvals"')
-      && commandCenterSource.includes('fetch("/api/vmb/sent-invites"'),
-    "new member send uses approval and canonical SentInvite endpoints",
+      && commandCenterSource.includes('fetch("/api/vmb/sent-invites"')
+      && !commandCenterSource.includes('fetch("/api/vmb/invite-events"')
+      && !commandCenterSource.includes("saveInviteStub")
+      && !commandCenterSource.includes("Send invite (stub)"),
+    "Today sends every invite type through approval and canonical SentInvite endpoints",
   );
   assert(
     commandCenterSource.includes("SalonInviteCard")

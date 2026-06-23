@@ -10,6 +10,7 @@ import { createVmbTrialLead } from "../lib/vmb/trial-store";
 import {
   resolveVmbMvpLogin,
   validateVmbMvpLoginCredentials,
+  VMB_MVP_LOGIN_EMAIL_ALIASES,
   VMB_MVP_LOGIN_EMAIL,
   VMB_MVP_LOGIN_PASSWORD,
 } from "../lib/vmb/vmb-mvp-login";
@@ -53,6 +54,15 @@ async function run(): Promise<void> {
     validateVmbMvpLoginCredentials(VMB_MVP_LOGIN_EMAIL, VMB_MVP_LOGIN_PASSWORD),
     "mvp login accepts test@test.com / whisper",
   );
+  assert(
+    validateVmbMvpLoginCredentials("jenny@test.com", VMB_MVP_LOGIN_PASSWORD),
+    "mvp login accepts jenny@test.com / whisper",
+  );
+  assert(
+    validateVmbMvpLoginCredentials("deb@test.com", VMB_MVP_LOGIN_PASSWORD),
+    "mvp login accepts deb@test.com / whisper",
+  );
+  assert(VMB_MVP_LOGIN_EMAIL_ALIASES.length === 3, "mvp login exposes three demo aliases");
   assert(!validateVmbMvpLoginCredentials("wrong@test.com", "nope"), "invalid credentials rejected");
 
   const seededDemo = await ensureVmbDemoSalon();

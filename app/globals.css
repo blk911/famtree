@@ -9764,7 +9764,7 @@
   border-radius: 0 0 18px 18px;
 }
 
-.vmb-send-package-modal__send-stub {
+.vmb-send-package-modal__send {
   padding: 10px 16px;
   border: none;
   border-radius: 999px;
@@ -9772,6 +9772,10 @@
   color: #fff;
   font-size: 13px;
   font-weight: 700;
+  cursor: pointer;
+}
+
+.vmb-send-package-modal__send:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
@@ -11330,44 +11334,65 @@
   color: #44403c;
 }
 
-.vmb-salon-invite-card__service-feature {
-  display: inline-flex;
-  align-items: center;
-  margin: 0 0 8px;
-  padding: 7px 12px;
-  border-radius: 10px;
-  background: #fff7ed;
+.vmb-salon-invite-card__offer {
+  display: grid;
+  gap: 11px;
+  margin: 14px 0 16px;
+  padding: 13px 14px;
+  border-radius: 16px;
   border: 1px solid #fed7aa;
-  color: #7c2d12;
-  font-size: 13px;
-  font-weight: 700;
+  background: linear-gradient(135deg, #fffaf5 0%, #fff7ed 100%);
+}
+
+.vmb-salon-invite-card__offer-row {
+  display: grid;
+  gap: 6px;
+}
+
+.vmb-salon-invite-card__offer-label {
+  display: block;
+  color: #9d174d;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.vmb-salon-invite-card__service-feature {
+  color: #292524;
+  font-size: 15px;
+  font-weight: 800;
   line-height: 1.25;
 }
 
 .vmb-salon-invite-card__rewards {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 10px;
+  gap: 7px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .vmb-salon-invite-card__reward-chip {
   display: inline-block;
-  padding: 4px 10px;
+  padding: 5px 10px;
   border-radius: 999px;
-  background: #fdf2f8;
+  background: #fff;
   border: 1px solid #f9a8d4;
+  box-shadow: 0 1px 2px rgba(157, 23, 77, 0.08);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: #9d174d;
 }
 
 .vmb-salon-invite-card__expiration {
-  margin: -2px 0 16px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(251, 207, 232, 0.9);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: #9d174d;
 }
 

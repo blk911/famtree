@@ -128,6 +128,8 @@ export const INVITES_HUB_SECONDARY_LINKS: InvitesHubLink[] = [
 
   { id: "sent", label: "Sent Invites", href: INVITES_ADMIN_ROUTES.sent },
 
+  { id: "claims", label: "Claims", href: INVITES_ADMIN_ROUTES.claims },
+
 ];
 
 
@@ -135,8 +137,6 @@ export const INVITES_HUB_SECONDARY_LINKS: InvitesHubLink[] = [
 /** Muted analytics links — routes remain, not promoted on the hub */
 
 export const INVITES_HUB_COMING_LATER: InvitesHubLink[] = [
-
-  { id: "claims", label: "Claims", href: INVITES_ADMIN_ROUTES.claims },
 
   { id: "opens", label: "Opens", href: INVITES_ADMIN_ROUTES.opens },
 
@@ -202,7 +202,7 @@ export const INVITES_OPERATING_CARDS: InvitesOperatingCard[] = [
 
     href: link.href,
 
-    status: (link.id === "queue" || link.id === "sent" ? "partial" : "live") as InvitesOperatingCardStatus,
+    status: (link.id === "queue" ? "partial" : "live") as InvitesOperatingCardStatus,
 
   })),
 
@@ -255,4 +255,3 @@ export function invitesOperatingCard(id: string): InvitesOperatingCard | undefin
   return INVITES_OPERATING_CARDS.find((card) => card.id === id);
 
 }
-

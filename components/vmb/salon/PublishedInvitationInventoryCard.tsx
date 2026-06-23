@@ -109,7 +109,7 @@ export function PublishedInvitationInventoryCard({
             <InventoryRow label="Services" value={services.join(", ")} />
           ) : null}
           {rewards.length > 0 ? (
-            <InventoryRow label="Rewards" value={rewards.join(", ")} />
+            <InventoryRow label="Level up with" value={rewards.join(", ")} />
           ) : null}
           {copy.snapshot.expirationLabel ? (
             <InventoryRow label="Expiration" value={copy.snapshot.expirationLabel} />

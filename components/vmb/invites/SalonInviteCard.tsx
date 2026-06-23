@@ -121,24 +121,32 @@ export function SalonInviteCard({
         ) : null}
         <p className="vmb-salon-invite-card__body">{resolvedBody}</p>
 
-        {services.length > 0 ? (
-          <div className="vmb-salon-invite-card__service-feature" aria-label="Selected service">
-            {services.join(" · ")}
-          </div>
-        ) : null}
+        {services.length > 0 || rewards.length > 0 || expirationLabel?.trim() ? (
+          <section className="vmb-salon-invite-card__offer" aria-label="Invitation offer">
+            {services.length > 0 ? (
+              <div className="vmb-salon-invite-card__offer-row">
+                <span className="vmb-salon-invite-card__offer-label">Your service</span>
+                <strong className="vmb-salon-invite-card__service-feature">{services.join(" · ")}</strong>
+              </div>
+            ) : null}
 
-        {rewards.length > 0 ? (
-          <ul className="vmb-salon-invite-card__rewards" aria-label="Rewards included">
-            {rewards.map((label) => (
-              <li key={label}>
-                <span className="vmb-salon-invite-card__reward-chip">{label}</span>
-              </li>
-            ))}
-          </ul>
-        ) : null}
+            {rewards.length > 0 ? (
+              <div className="vmb-salon-invite-card__offer-row">
+                <span className="vmb-salon-invite-card__offer-label">Level up with:</span>
+                <ul className="vmb-salon-invite-card__rewards" aria-label="Level up with">
+                  {rewards.map((label) => (
+                    <li key={label}>
+                      <span className="vmb-salon-invite-card__reward-chip">{label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
 
-        {expirationLabel?.trim() ? (
-          <p className="vmb-salon-invite-card__expiration">{expirationLabel.trim()}</p>
+            {expirationLabel?.trim() ? (
+              <p className="vmb-salon-invite-card__expiration">{expirationLabel.trim()}</p>
+            ) : null}
+          </section>
         ) : null}
 
         <footer className="vmb-salon-invite-card__footer">

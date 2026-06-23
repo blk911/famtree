@@ -170,9 +170,15 @@ export function TodayCommandCenter({
   const hasRecipient = isNewMemberInvite
     ? Boolean(clientName.trim() && hasRecipientContact)
     : Boolean(selectedOpportunity && clientName.trim());
-  const canSend = isNewMemberInvite
-    ? Boolean(hasRecipient && email.trim() && title.trim() && message.trim() && selectedService && selectedInviteCopy && !revisingOffer)
-    : Boolean(hasRecipient && title.trim() && message.trim() && selectedService && !revisingOffer);
+  const canSend = Boolean(
+    hasRecipient
+      && title.trim()
+      && message.trim()
+      && selectedService
+      && selectedInviteCopy
+      && !revisingOffer
+      && (!isNewMemberInvite || email.trim()),
+  );
   const previewCtaLabel = todayPreviewCtaLabel(selectedReason, selectedInviteCopy?.snapshot.ctaLabel);
 
   useEffect(() => {
@@ -210,60 +216,18 @@ export function TodayCommandCenter({
     setOfferPrice(next.offerPrice);
   }
 
-  async function saveInviteStub(): Promise<boolean> {
-    if (!canSend) return false;
-    setSaving(true);
-    setStatus(null);
-    try {
-      const response = await fetch("/api/vmb/invite-events", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventType: "invite_created",
-          payload: {
-            clientName: clientName.trim(),
-            inviteCategory: selectedReason,
-            templateType: SALON_INVITE_REASON_LABELS[selectedReason],
-            analysisId,
-            sourcePage: "vmb-today-command-center",
-            salonDisplayName: salonName,
-            recipientContactSummary: contactSummary(email, phone),
-            recipientEmail: email.trim(),
-            recipientPhone: phone.trim(),
-            inviteTitle: title.trim(),
-            inviteMessage: message.trim(),
-            selectedService: selectedService?.displayName ?? "",
-            selectedReward: selectedAddons.map((addon) => addon.label).join(" · "),
-            selectedPriceCents: Math.max(0, Math.round(Number(offerPrice || 0) * 100)),
-            deliveryStatus: "stubbed_internal",
-          },
-        }),
-      });
-      const json = (await response.json()) as { ok?: boolean; error?: string };
-      const ok = Boolean(response.ok && json.ok);
-      setStatus(ok ? "Invite stub saved internally. Delivery is not live yet." : json.error ?? "Could not save invite stub.");
-      return ok;
-    } catch {
-      setStatus("Could not save invite stub.");
-      return false;
-    } finally {
-      setSaving(false);
-    }
-  }
-
   async function sendInvite(): Promise<boolean> {
-    if (!canSend) return false;
+    if (!canSend || !selectedInviteCopy || !selectedService) return false;
     setSaving(true);
     setStatus(null);
     try {
-      const totalValueCents = selectedService!.priceCents + selectedAddons.reduce((sum, addon) => sum + addon.priceCents, 0);
+      const totalValueCents = selectedService.priceCents + selectedAddons.reduce((sum, addon) => sum + addon.priceCents, 0);
       const offerPriceCents = Math.max(0, Math.round(Number(offerPrice || 0) * 100));
       const snapshot = {
-        ...selectedInviteCopy!.snapshot,
+        ...selectedInviteCopy.snapshot,
         headline: title.trim(),
         body: message.trim(),
-        serviceIds: [selectedService!.serviceOfferId],
+        serviceIds: [selectedService.serviceOfferId],
         rewardIds: selectedAddons.map((addon) => addon.addonId),
         totalValue: totalValueCents / 100,
         savingsAmount: Math.max(0, totalValueCents - offerPriceCents) / 100,
@@ -280,12 +244,12 @@ export function TodayCommandCenter({
           action: "approve",
           clientName: clientName.trim(),
           clientEmail: email.trim(),
-          opportunityId: `new-member-${Date.now()}`,
+          opportunityId: selectedOpportunity?.id ?? `new-member-${Date.now()}`,
           opportunityType: SALON_INVITE_REASON_LABELS[selectedReason],
-          sourceCopyId: selectedInviteCopy!.id,
-          sourceTemplateId: selectedInviteCopy!.sourceTemplateId,
+          sourceCopyId: selectedInviteCopy.id,
+          sourceTemplateId: selectedInviteCopy.sourceTemplateId,
           snapshot,
-          reasonText: `New member offer from ${salonName}`,
+          reasonText: `${SALON_INVITE_REASON_LABELS[selectedReason]} for ${clientName.trim()} from ${salonName}`,
           estimatedValue: offerPriceCents / 100,
         }),
       });
@@ -301,7 +265,9 @@ export function TodayCommandCenter({
       });
       const json = (await response.json()) as { ok?: boolean; error?: string; deliveryStatus?: string };
       if (!response.ok || !json.ok) throw new Error(json.error ?? "Could not send invitation.");
-      setStatus(json.deliveryStatus === "sent" ? "Invitation emailed and added to Invitations." : "Invitation added to Invitations. Email delivery is not configured.");
+      setStatus(json.deliveryStatus === "sent"
+        ? "Invitation emailed and added to Invitations."
+        : "Invitation added to Invitations. Email delivery needs a recipient email or transport configuration.");
       setRevisingOffer(false);
       return true;
     } catch (error) {
@@ -313,7 +279,7 @@ export function TodayCommandCenter({
   }
 
   async function confirmPreviewSend() {
-    const ok = await (isNewMemberInvite ? sendInvite() : saveInviteStub());
+    const ok = await sendInvite();
     if (ok) setPreviewOpen(false);
   }
 
@@ -450,7 +416,7 @@ export function TodayCommandCenter({
               </div>
 
               <div className="vmb-today-command__send-actions">
-                {isNewMemberInvite && !selectedInviteCopy ? (
+                {!selectedInviteCopy ? (
                   <p>Approve this invite type for the salon before sending.</p>
                 ) : null}
                 <button type="button" disabled={!canSend || saving} onClick={() => setPreviewOpen(true)}>
@@ -530,7 +496,7 @@ export function TodayCommandCenter({
                 Back to edit
               </button>
               <button type="button" disabled={!canSend || saving} onClick={() => void confirmPreviewSend()}>
-                {saving ? "Saving..." : isNewMemberInvite ? "Send new member invite" : "Send invite (stub)"}
+                {saving ? "Saving..." : isNewMemberInvite ? "Send new member invite" : "Send invite"}
               </button>
             </footer>
           </div>

@@ -6,6 +6,7 @@ import { appendInviteEvent } from "@/lib/vmb/invites/append-invite-event";
 import { listInviteEventsForSalon } from "@/lib/vmb/invites/invite-event-store";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
 
+// Analytics-only event log. Send/claim/redemption money state must use /api/vmb/sent-invites.
 export async function GET(req: NextRequest) {
   const trialId = getVmbTrialIdFromRequest(req);
   if (!trialId) {

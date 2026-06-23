@@ -24,7 +24,8 @@ export const VMB_BOOK_IMPORT_CHAIN = {
   queueApi: "/api/taikos/queue",
   recipientInvitePattern: "/vmb/invite/[inviteId]",
   claimApi: "/api/vmb/invite-claims",
-  inviteEventsApi: "/api/vmb/invite-events",
+  inviteAnalyticsEventsApi: "/api/vmb/invite-events",
+  sentInvitesApi: "/api/vmb/sent-invites",
 } as const;
 
 /** GGen / back-office handoff stays in intelligence layer — not duplicated on /vmb. */

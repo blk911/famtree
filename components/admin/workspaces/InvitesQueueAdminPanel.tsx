@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import type { TaikosQueueSummary } from "@/lib/taikos/queue/types";
 import { INVITES_ADMIN_ROUTES } from "@/lib/admin/invites-workspace";
 import { InvitesWorkspaceBreadcrumb } from "@/components/admin/workspaces/InvitesWorkspaceBreadcrumb";
-import { RecipientInviteUrlCopy } from "@/components/admin/workspaces/RecipientInviteUrlCopy";
 
 export function InvitesQueueAdminPanel() {
   const [summary, setSummary] = useState<TaikosQueueSummary | null>(null);
@@ -91,7 +90,11 @@ export function InvitesQueueAdminPanel() {
                   <span className="text-stone-500">{item.inviteCard.recipientName}</span>
                 </>
               ) : null}
-              {item.draftId ? <RecipientInviteUrlCopy inviteId={item.draftId} /> : null}
+              {item.draftId ? (
+                <div className="mt-2 text-[10px] text-stone-500">
+                  Draft ID: <code>{item.draftId}</code>. Public claim links are created only after a SentInvite exists.
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>

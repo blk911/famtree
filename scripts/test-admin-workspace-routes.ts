@@ -73,8 +73,8 @@ function run(): void {
 
   assert(ADMIN_WORKSPACE_ROUTES.invites === "/admin/invites/builder", "invites nav routes to template builder");
   assert(INVITES_BUILDER_HUB.href === "/admin/invites/builder", "template builder routes to builder page");
-  assert(INVITES_HUB_SECONDARY_LINKS.length === 5, "five secondary invites hub links");
-  assert(INVITES_HUB_COMING_LATER.length === 3, "three coming-later invites hub links");
+  assert(INVITES_HUB_SECONDARY_LINKS.length === 6, "six secondary invites hub links");
+  assert(INVITES_HUB_COMING_LATER.length === 2, "two coming-later invites hub links");
   for (const card of INVITES_OPERATING_CARDS) {
     assert(routePageExists(card.href), `invites area route exists: ${card.href}`);
   }

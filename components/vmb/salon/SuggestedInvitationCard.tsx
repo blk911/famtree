@@ -172,7 +172,7 @@ export function SuggestedInvitationCard({
 
           {recommendation.rewards.length > 0 ? (
 
-            <DetailRow label="Rewards" value={recommendation.rewards.join(", ")} />
+            <DetailRow label="Level up with" value={recommendation.rewards.join(", ")} />
 
           ) : null}
 
@@ -287,5 +287,4 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 
 }
-
 

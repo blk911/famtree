@@ -91,7 +91,8 @@ export async function sendVmbOfferInviteEmail(input: {
 <p style="margin:0 0 24px;color:#44403c;font-size:16px;line-height:1.65">${body}</p>
 <div style="border:1px solid #f5c9da;border-radius:18px;background:#fffafb;padding:18px;margin:0 0 24px">
 <p style="margin:0 0 10px;color:#9d174d;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Your gift</p>
-${serviceBadges || rewardBadges ? `<div style="margin:0 0 10px">${serviceBadges}${rewardBadges}</div>` : ""}
+${serviceBadges ? `<p style="margin:0 0 6px;color:#9d174d;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Your service</p><div style="margin:0 0 12px">${serviceBadges}</div>` : ""}
+${rewardBadges ? `<p style="margin:0 0 6px;color:#9d174d;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Level up with:</p><div style="margin:0 0 12px">${rewardBadges}</div>` : ""}
 ${priceLabel ? `<p style="margin:0 0 8px;color:#9d174d;font-size:20px;font-weight:800">${priceLabel}</p>` : ""}
 ${expirationLabel ? `<p style="margin:0;color:#78716c;font-size:13px;font-weight:700">${expirationLabel}</p>` : ""}
 </div>

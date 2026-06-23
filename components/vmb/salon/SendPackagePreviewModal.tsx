@@ -102,7 +102,7 @@ export function SendPackagePreviewModal({
                   <SummaryRow label="Service" value={services.join(" · ")} />
                 ) : null}
                 {rewards.length > 0 ? (
-                  <SummaryRow label="Rewards" value={rewards.join(" · ")} />
+                  <SummaryRow label="Level up with" value={rewards.join(" · ")} />
                 ) : null}
                 <SummaryRow label="Value" value={pricing.valueLabel} />
                 {pricing.savingsAmount > 0 ? (
@@ -158,7 +158,7 @@ export function SendPackagePreviewModal({
               <input readOnly value={recipientUrl} onFocus={(event) => event.currentTarget.select()} style={{ width: "min(520px, 70vw)" }} />
             </div>
           ) : (
-            <button type="button" className="vmb-send-package-modal__send-stub" disabled={sending} onClick={() => void sendInvite()}>
+            <button type="button" className="vmb-send-package-modal__send" disabled={sending} onClick={() => void sendInvite()}>
               {sending ? "Sending…" : "Send Invitation"}
             </button>
           )}

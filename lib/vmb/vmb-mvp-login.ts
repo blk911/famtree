@@ -2,12 +2,15 @@ import { ensureVmbDemoSalon } from "@/lib/vmb/vmb-demo-salon";
 
 export const VMB_MVP_LOGIN_EMAIL = "test@test.com";
 export const VMB_MVP_LOGIN_PASSWORD = "whisper";
+export const VMB_MVP_LOGIN_EMAIL_ALIASES = [
+  VMB_MVP_LOGIN_EMAIL,
+  "jenny@test.com",
+  "deb@test.com",
+] as const;
+const VMB_MVP_LOGIN_EMAIL_ALIAS_SET = new Set<string>(VMB_MVP_LOGIN_EMAIL_ALIASES);
 
 export function validateVmbMvpLoginCredentials(email: string, password: string): boolean {
-  return (
-    email.trim().toLowerCase() === VMB_MVP_LOGIN_EMAIL &&
-    password === VMB_MVP_LOGIN_PASSWORD
-  );
+  return VMB_MVP_LOGIN_EMAIL_ALIAS_SET.has(email.trim().toLowerCase()) && password === VMB_MVP_LOGIN_PASSWORD;
 }
 
 export type VmbMvpLoginResult =

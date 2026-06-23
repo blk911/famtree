@@ -564,7 +564,7 @@ async function run(): Promise<void> {
     "suggested cards explain disabled approve state",
   );
   assert(salonInviteCardSource.includes("adminReview"), "salon invite card supports admin review mode");
-  assert(salonInviteCardSource.includes("Rewards included"), "salon invite card renders rewards");
+  assert(salonInviteCardSource.includes("Level up with:"), "salon invite card labels add-ons as level up options");
   assert(salonInviteCardSource.includes("ownerPhotoUrl"), "salon invite card accepts owner photo");
   assert(salonInviteCardSource.includes("serviceImageUrl"), "salon invite card accepts service image");
 

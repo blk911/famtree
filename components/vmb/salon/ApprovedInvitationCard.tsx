@@ -88,7 +88,7 @@ export function ApprovedInvitationCard({
       <div style={{ display: "grid", gap: 8 }}>
         <Row label="Invitation" value={approval.snapshot.templateName} />
         {services.length > 0 ? <Row label="Services" value={services.join(", ")} /> : null}
-        {rewards.length > 0 ? <Row label="Rewards" value={rewards.join(", ")} /> : null}
+        {rewards.length > 0 ? <Row label="Level up with" value={rewards.join(", ")} /> : null}
         {approval.snapshot.expirationLabel ? (
           <Row label="Expiration" value={approval.snapshot.expirationLabel} />
         ) : null}
