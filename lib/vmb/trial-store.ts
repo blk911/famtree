@@ -65,6 +65,47 @@ export async function createVmbTrialLead(
   return { lead };
 }
 
+export async function upsertVmbTrialLead(
+  lead: VmbTrialLead,
+): Promise<{ lead: VmbTrialLead } | { error: string }> {
+  const id = lead.id.trim();
+  const ownerName = lead.ownerName.trim();
+  const email = lead.email.trim().toLowerCase();
+  if (!id) return { error: "id is required" };
+  if (!ownerName) return { error: "ownerName is required" };
+  if (!email) return { error: "email is required" };
+
+  const payload: VmbTrialLead = {
+    ...lead,
+    id,
+    salonName: lead.salonName.trim() || "Your Salon",
+    ownerName,
+    email,
+    phone: lead.phone?.trim() || undefined,
+    createdAt: lead.createdAt || new Date().toISOString(),
+  };
+
+  const writable = await assertVmbWritableBackend();
+  if (!writable.ok) return { error: writable.error };
+
+  if (writable.backend === "postgres") {
+    const err = await saveVmbTrialLeadPostgres(payload);
+    if (err) return { error: err };
+    if (vmbJsonFallbackAllowed()) {
+      const existing = await listVmbTrialLeadsJson();
+      const others = existing.filter((row) => row.id !== payload.id);
+      await writeJsonArray(getVmbTrialsFile(), [payload, ...others]);
+    }
+    return { lead: payload };
+  }
+
+  const existing = await listVmbTrialLeadsJson();
+  const others = existing.filter((row) => row.id !== payload.id);
+  const err = await writeJsonArray(getVmbTrialsFile(), [payload, ...others]);
+  if (err) return { error: err };
+  return { lead: payload };
+}
+
 export async function listVmbTrialLeads(): Promise<VmbTrialLead[]> {
   const backend = await resolveVmbStorageBackend();
   if (backend === "postgres") {

@@ -13,6 +13,10 @@ import {
   VMB_MVP_LOGIN_EMAIL,
   VMB_MVP_LOGIN_PASSWORD,
 } from "../lib/vmb/vmb-mvp-login";
+import { ensureVmbDemoSalon, VMB_DEMO_SALON_ID } from "../lib/vmb/vmb-demo-salon";
+import { listSalonInviteLocalCopies } from "../lib/vmb/invites/salon-invite-local-copy-store";
+import { isSalonInviteMatchingActive } from "../lib/vmb/invites/salon-invite-inventory";
+import { getActiveSalonFacingServicesForCategory } from "../lib/vmb/services/salon-service-config-store";
 import { upsertWorkspaceForTrial } from "../lib/vmb/workspace-store";
 
 function assert(condition: boolean, message: string): void {
@@ -48,14 +52,26 @@ async function run(): Promise<void> {
   );
   assert(!validateVmbMvpLoginCredentials("wrong@test.com", "nope"), "invalid credentials rejected");
 
+  const seededDemo = await ensureVmbDemoSalon();
+  assert(seededDemo.ok, "persistent demo salon seed succeeds");
+  if (!seededDemo.ok) process.exit(1);
+  assert(seededDemo.trialId === VMB_DEMO_SALON_ID, "persistent demo uses stable salon id");
+  assert(seededDemo.serviceCount > 0, "persistent demo activates salon services");
+  assert(seededDemo.inviteTypeCount > 0, "persistent demo approves invite types");
+  const demoServices = await getActiveSalonFacingServicesForCategory(VMB_DEMO_SALON_ID, "nails");
+  assert(demoServices.length > 0, "persistent demo services load active");
+  const demoCopies = await listSalonInviteLocalCopies(VMB_DEMO_SALON_ID);
+  assert(demoCopies.some(isSalonInviteMatchingActive), "persistent demo invite types are active");
+
   const loginNoBook = await resolveVmbMvpLogin({
     email: VMB_MVP_LOGIN_EMAIL,
     password: VMB_MVP_LOGIN_PASSWORD,
   });
   assert(loginNoBook.ok, "login without existing trial succeeds");
   if (!loginNoBook.ok) process.exit(1);
-  assert(loginNoBook.redirectTo === "/vmb/start", "login without active book redirects to start");
-  assert(!loginNoBook.hasActiveBook, "fresh login has no active book");
+  assert(loginNoBook.trialId === VMB_DEMO_SALON_ID, "mvp login uses persistent demo salon");
+  assert(loginNoBook.hasActiveBook, "mvp login repairs active demo book");
+  assert(loginNoBook.redirectTo.startsWith("/vmb/today?analysis="), "mvp login redirects to Today");
 
   const bookTrial = await createVmbTrialLead({
     salonName: "Login Redirect Salon",
@@ -88,10 +104,8 @@ async function run(): Promise<void> {
   assert(loginWithBook.ok, "login with existing trial succeeds");
   if (!loginWithBook.ok) process.exit(1);
   assert(loginWithBook.hasActiveBook, "login detects active book");
-  assert(
-    loginWithBook.redirectTo === buildVmbTodayHref(analyzed.data.analysis.analysisId),
-    "login with active book redirects to Today",
-  );
+  assert(loginWithBook.trialId === VMB_DEMO_SALON_ID, "mvp login keeps stable demo even with an old cookie");
+  assert(loginWithBook.redirectTo.startsWith("/vmb/today?analysis="), "login with active book redirects to demo Today");
 
   console.log("OK: VMB demo + login entry paths");
 }
