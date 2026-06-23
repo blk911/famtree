@@ -68,6 +68,7 @@ export function TodayCommandCenter({
   const skipNextServiceDefaults = useRef(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -193,8 +194,8 @@ export function TodayCommandCenter({
     setOfferPrice(next.offerPrice);
   }
 
-  async function saveInviteStub() {
-    if (!canSend) return;
+  async function saveInviteStub(): Promise<boolean> {
+    if (!canSend) return false;
     setSaving(true);
     setStatus(null);
     try {
@@ -224,16 +225,19 @@ export function TodayCommandCenter({
         }),
       });
       const json = (await response.json()) as { ok?: boolean; error?: string };
-      setStatus(response.ok && json.ok ? "Invite stub saved internally. Delivery is not live yet." : json.error ?? "Could not save invite stub.");
+      const ok = Boolean(response.ok && json.ok);
+      setStatus(ok ? "Invite stub saved internally. Delivery is not live yet." : json.error ?? "Could not save invite stub.");
+      return ok;
     } catch {
       setStatus("Could not save invite stub.");
+      return false;
     } finally {
       setSaving(false);
     }
   }
 
-  async function sendInvite() {
-    if (!canSend) return;
+  async function sendInvite(): Promise<boolean> {
+    if (!canSend) return false;
     setSaving(true);
     setStatus(null);
     try {
@@ -283,11 +287,18 @@ export function TodayCommandCenter({
       if (!response.ok || !json.ok) throw new Error(json.error ?? "Could not send invitation.");
       setStatus(json.deliveryStatus === "sent" ? "Invitation emailed and added to Invitations." : "Invitation added to Invitations. Email delivery is not configured.");
       setRevisingOffer(false);
+      return true;
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not send invitation.");
+      return false;
     } finally {
       setSaving(false);
     }
+  }
+
+  async function confirmPreviewSend() {
+    const ok = await (isNewMemberInvite ? sendInvite() : saveInviteStub());
+    if (ok) setPreviewOpen(false);
   }
 
   return (
@@ -426,8 +437,8 @@ export function TodayCommandCenter({
                 {isNewMemberInvite && !selectedInviteCopy ? (
                   <p>Approve this invite type for the salon before sending.</p>
                 ) : null}
-                <button type="button" disabled={!canSend || saving} onClick={() => void (isNewMemberInvite ? sendInvite() : saveInviteStub())}>
-                  {saving ? "Saving..." : isNewMemberInvite ? "Send new member invite" : "Send invite (stub)"}
+                <button type="button" disabled={!canSend || saving} onClick={() => setPreviewOpen(true)}>
+                  Preview invite
                 </button>
                 {status ? <p>{status}</p> : null}
               </div>
@@ -435,6 +446,71 @@ export function TodayCommandCenter({
           )}
         </section>
       </div>
+      {previewOpen ? (
+        <div className="vmb-today-preview-modal" role="presentation" onClick={() => setPreviewOpen(false)}>
+          <div
+            className="vmb-today-preview-modal__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="vmb-today-preview-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="vmb-today-preview-modal__header">
+              <div>
+                <p>Review before sending</p>
+                <h2 id="vmb-today-preview-title">{title || "Client invite preview"}</h2>
+              </div>
+              <button type="button" onClick={() => setPreviewOpen(false)}>Close</button>
+            </header>
+            <div className="vmb-today-preview-modal__body">
+              <section className="vmb-today-preview-modal__placeholder" aria-label="Send details">
+                <span>Send details</span>
+                <h3>Delivery setup placeholder</h3>
+                <p>
+                  This side will hold contact validation, delivery method, send timing, and any final salon notes.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Client</dt>
+                    <dd>{clientName || "Not selected"}</dd>
+                  </div>
+                  <div>
+                    <dt>Contact</dt>
+                    <dd>{contactSummary(email, phone)}</dd>
+                  </div>
+                  <div>
+                    <dt>Touch point</dt>
+                    <dd>{SALON_INVITE_REASON_LABELS[selectedReason]}</dd>
+                  </div>
+                </dl>
+              </section>
+              <section className="vmb-today-preview-modal__render" aria-label="Rendered invite">
+                <span>Client invite preview</span>
+                <div className="vmb-today-preview-modal__card">
+                  <small>{contactSummary(email, phone)}</small>
+                  <h3>{title}</h3>
+                  <p>{message}</p>
+                  <div className="vmb-today-preview-modal__offer">
+                    <strong>{selectedService?.displayName || "Service"}</strong>
+                    {selectedAddons.length > 0 ? (
+                      <em>{selectedAddons.map((addon) => addon.label).join(" · ")}</em>
+                    ) : null}
+                    {offerPrice ? <b>${Number(offerPrice).toFixed(2)}</b> : null}
+                  </div>
+                </div>
+              </section>
+            </div>
+            <footer className="vmb-today-preview-modal__footer">
+              <button type="button" className="vmb-today-preview-modal__back" onClick={() => setPreviewOpen(false)}>
+                Back to edit
+              </button>
+              <button type="button" disabled={!canSend || saving} onClick={() => void confirmPreviewSend()}>
+                {saving ? "Saving..." : isNewMemberInvite ? "Send new member invite" : "Send invite (stub)"}
+              </button>
+            </footer>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
