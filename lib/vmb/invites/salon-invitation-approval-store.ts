@@ -98,6 +98,91 @@ function createApprovalId(salonId: string): string {
   return `${salonId}-approval-${Date.now()}`;
 }
 
+function buildApprovalFromInput(
+  salonId: string,
+  input: CreateSalonInvitationApprovalInput,
+): SalonInvitationApproval | { error: string } {
+  const snapshot = parseInviteTemplateSnapshot(input.snapshot);
+  if (!snapshot) return { error: "Invalid invitation snapshot." };
+
+  const now = new Date().toISOString();
+  const approval: SalonInvitationApproval = {
+    id: createApprovalId(salonId),
+    salonId,
+    clientName: input.clientName.trim(),
+    clientEmail: input.clientEmail?.trim() || undefined,
+    opportunityId: input.opportunityId?.trim() || undefined,
+    opportunityType: input.opportunityType,
+    sourceCopyId: input.sourceCopyId,
+    sourceTemplateId: input.sourceTemplateId,
+    salonOfferCatalogId: input.salonOfferCatalogId,
+    snapshot: cloneInviteTemplateSnapshot(snapshot),
+    reasonText: input.reasonText,
+    estimatedValue: input.estimatedValue,
+    status: input.status,
+    approvedAt: input.status === "approved" ? now : undefined,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  if (!isSalonInvitationApproval(approval)) {
+    return { error: "Could not create approval record." };
+  }
+
+  return approval;
+}
+
+async function persistNewApproval(
+  salonId: string,
+  input: CreateSalonInvitationApprovalInput,
+  all: StoredSalonInvitationApproval[],
+): Promise<{ approval: SalonInvitationApproval; created: true } | { error: string }> {
+  const approval = buildApprovalFromInput(salonId, input);
+  if ("error" in approval) return approval;
+
+  const err = await persistApproval({ salonId, approval }, all);
+  if (err) return { error: err };
+
+  return { approval, created: true };
+}
+
+async function replaceApprovalFromInput(
+  salonId: string,
+  existing: SalonInvitationApproval,
+  input: Omit<CreateSalonInvitationApprovalInput, "status">,
+  all: StoredSalonInvitationApproval[],
+): Promise<{ approval: SalonInvitationApproval; created: false } | { error: string }> {
+  const snapshot = parseInviteTemplateSnapshot(input.snapshot);
+  if (!snapshot) return { error: "Invalid invitation snapshot." };
+
+  const now = new Date().toISOString();
+  const updated: SalonInvitationApproval = {
+    ...existing,
+    clientName: input.clientName.trim(),
+    clientEmail: input.clientEmail?.trim() || undefined,
+    opportunityId: input.opportunityId?.trim() || undefined,
+    opportunityType: input.opportunityType,
+    sourceCopyId: input.sourceCopyId,
+    sourceTemplateId: input.sourceTemplateId,
+    salonOfferCatalogId: input.salonOfferCatalogId,
+    snapshot: cloneInviteTemplateSnapshot(snapshot),
+    reasonText: input.reasonText,
+    estimatedValue: input.estimatedValue,
+    status: "approved",
+    approvedAt: existing.approvedAt ?? now,
+    updatedAt: now,
+  };
+
+  if (!isSalonInvitationApproval(updated)) {
+    return { error: "Could not update approval record." };
+  }
+
+  const err = await persistApproval({ salonId, approval: updated }, all);
+  if (err) return { error: err };
+
+  return { approval: updated, created: false };
+}
+
 function findByDedupeKey(
   rows: StoredSalonInvitationApproval[],
   salonId: string,
@@ -138,9 +223,6 @@ export async function createSalonInvitationApproval(
   const writable = await assertVmbWritableBackend();
   if (!writable.ok) return { error: writable.error };
 
-  const snapshot = parseInviteTemplateSnapshot(input.snapshot);
-  if (!snapshot) return { error: "Invalid invitation snapshot." };
-
   const dedupeKey = buildApprovalDedupeKey({
     salonId,
     opportunityId: input.opportunityId,
@@ -155,34 +237,7 @@ export async function createSalonInvitationApproval(
     return { approval: existing, created: false };
   }
 
-  const now = new Date().toISOString();
-  const approval: SalonInvitationApproval = {
-    id: createApprovalId(salonId),
-    salonId,
-    clientName: input.clientName.trim(),
-    clientEmail: input.clientEmail?.trim() || undefined,
-    opportunityId: input.opportunityId?.trim() || undefined,
-    opportunityType: input.opportunityType,
-    sourceCopyId: input.sourceCopyId,
-    sourceTemplateId: input.sourceTemplateId,
-    salonOfferCatalogId: input.salonOfferCatalogId,
-    snapshot: cloneInviteTemplateSnapshot(snapshot),
-    reasonText: input.reasonText,
-    estimatedValue: input.estimatedValue,
-    status: input.status,
-    approvedAt: input.status === "approved" ? now : undefined,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  if (!isSalonInvitationApproval(approval)) {
-    return { error: "Could not create approval record." };
-  }
-
-  const err = await persistApproval({ salonId, approval }, all);
-  if (err) return { error: err };
-
-  return { approval, created: true };
+  return persistNewApproval(salonId, input, all);
 }
 
 export async function approveSalonInvitation(
@@ -207,6 +262,33 @@ export async function approveSalonInvitation(
   }
 
   return createSalonInvitationApproval(salonId, { ...input, status: "approved" });
+}
+
+export async function prepareSalonInvitationForSend(
+  salonId: string,
+  input: Omit<CreateSalonInvitationApprovalInput, "status">,
+): Promise<{ approval: SalonInvitationApproval; created: boolean } | { error: string }> {
+  const writable = await assertVmbWritableBackend();
+  if (!writable.ok) return { error: writable.error };
+
+  const dedupeKey = buildApprovalDedupeKey({
+    salonId,
+    opportunityId: input.opportunityId,
+    clientName: input.clientName,
+    opportunityType: input.opportunityType,
+    sourceCopyId: input.sourceCopyId,
+  });
+
+  const all = await listStored();
+  const existing = findByDedupeKey(all, salonId, dedupeKey);
+  if (existing?.status === "sent") {
+    return persistNewApproval(salonId, { ...input, status: "approved" }, all);
+  }
+  if (existing) {
+    return replaceApprovalFromInput(salonId, existing, input, all);
+  }
+
+  return persistNewApproval(salonId, { ...input, status: "approved" }, all);
 }
 
 export async function pauseSalonInvitationApproval(

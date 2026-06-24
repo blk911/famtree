@@ -5,6 +5,7 @@ import {
   approveSalonInvitation,
   listSalonInvitationApprovals,
   pauseSalonInvitationApproval,
+  prepareSalonInvitationForSend,
 } from "@/lib/vmb/invites/salon-invitation-approval-store";
 import type { CreateSalonInvitationApprovalInput } from "@/types/vmb/salon-invitation-approval";
 import { getVmbTrialIdFromRequest } from "@/lib/vmb/trial-cookie";
@@ -27,6 +28,7 @@ export async function POST(req: NextRequest) {
 
   let body: {
     action?: "approve" | "pause";
+    intent?: "send";
     clientName?: string;
     clientEmail?: string;
     opportunityId?: string;
@@ -76,7 +78,9 @@ export async function POST(req: NextRequest) {
   };
 
   const result =
-    action === "approve"
+    action === "approve" && body.intent === "send"
+      ? await prepareSalonInvitationForSend(salonId, input)
+      : action === "approve"
       ? await approveSalonInvitation(salonId, input)
       : await pauseSalonInvitationApproval(salonId, input);
 

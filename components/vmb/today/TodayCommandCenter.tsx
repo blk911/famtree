@@ -242,6 +242,7 @@ export function TodayCommandCenter({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "approve",
+          intent: "send",
           clientName: clientName.trim(),
           clientEmail: email.trim(),
           opportunityId: selectedOpportunity?.id ?? `new-member-${Date.now()}`,

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { approveSalonInvitation, pauseSalonInvitationApproval } from "../lib/vmb/invites/salon-invitation-approval-store";
+import { approveSalonInvitation, pauseSalonInvitationApproval, prepareSalonInvitationForSend } from "../lib/vmb/invites/salon-invitation-approval-store";
 import { sendApprovedInvitation } from "../lib/vmb/invites/create-sent-invite";
 import { resolveRecipientInvite } from "../lib/vmb/invites/resolve-recipient-invite";
 import { claimSentInvite, createSentInvite, listSalonClaimTimeline, markSentInviteOpened, redeemSentInvite, resetSentInviteMemoryStoreForTests } from "../lib/vmb/invites/sent-invite-store";
@@ -76,6 +76,23 @@ async function run() {
     const sent = await sendApprovedInvitation({ salonId, approvalId: approval.id });
     assert(!("error" in sent), `active approved offer sends${"error" in sent ? `: ${sent.error}` : ""}`);
     assert(sent.sentInvite.status === "sent", "new aggregate begins sent");
+    const resendPrep = await prepareSalonInvitationForSend(salonId, {
+      clientName: approval.clientName,
+      clientEmail: approval.clientEmail,
+      opportunityId: approval.opportunityId,
+      opportunityType: approval.opportunityType,
+      sourceCopyId: approval.sourceCopyId,
+      sourceTemplateId: approval.sourceTemplateId,
+      salonOfferCatalogId: approval.salonOfferCatalogId,
+      snapshot: { ...approval.snapshot, headline: "A birthday treat, refreshed" },
+      reasonText: approval.reasonText,
+      estimatedValue: approval.estimatedValue,
+    });
+    assert(!("error" in resendPrep), "send prep can recover from a prior sent approval");
+    assert(resendPrep.created && resendPrep.approval.id !== approval.id, "send prep creates a fresh approval after prior send");
+    assert(resendPrep.approval.status === "approved", "send prep returns an approved record");
+    const resent = await sendApprovedInvitation({ salonId, approvalId: resendPrep.approval.id });
+    assert(!("error" in resent), "fresh send-prep approval can send again");
 
     const opened = await resolveRecipientInvite(sent.recipientToken);
     assert(opened.status === "available", "sent invite opens by token");
@@ -97,7 +114,7 @@ async function run() {
     const otherContact = await claimSentInvite({ ...claimInput, recipientContactHash: "different-contact-hash" });
     assert(!otherContact.ok && otherContact.status === 409 && otherContact.error === "already_claimed_by_other", "different contact receives already_claimed_by_other");
     const timeline = await listSalonClaimTimeline(salonId);
-    assert(timeline.length === 1 && timeline[0]?.claim, "salon dashboard sees claim");
+    assert(timeline.some((item) => item.sentInvite.id === sent.sentInvite.id && item.claim), "salon dashboard sees claim");
 
     const redeemed = await redeemSentInvite(salonId, sent.sentInvite.id);
     assert(!("error" in redeemed) && redeemed.sentInvite.status === "redeemed", "salon can redeem claim");
