@@ -355,7 +355,7 @@ export function TodayCommandCenter({
           <div className="vmb-today-command__section-head">
             <div>
               <span>Step B</span>
-              <h3>{isNewMemberInvite ? "Confirm My Style and send" : "Review and send"}</h3>
+              <h3>{SALON_INVITE_REASON_LABELS[selectedReason]}</h3>
             </div>
           </div>
 
@@ -391,19 +391,6 @@ export function TodayCommandCenter({
                 onEditingChange={setRevisingOffer}
               />
 
-              {isNewMemberInvite ? (
-                <details className="vmb-today-command__copy-details">
-                  <summary>Edit invite copy</summary>
-                  <label className="vmb-today-command__field"><span>Invite title</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-                  <label className="vmb-today-command__field"><span>Message</span><textarea rows={3} value={message} onChange={(event) => setMessage(event.target.value)} /></label>
-                </details>
-              ) : (
-                <>
-                  <label className="vmb-today-command__field"><span>Invite title</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-                  <label className="vmb-today-command__field"><span>Message</span><textarea rows={3} value={message} onChange={(event) => setMessage(event.target.value)} /></label>
-                </>
-              )}
-
               <div className="vmb-today-command__invite-preview">
                 <span>{contactSummary(email, phone)}</span>
                 <strong>{title}</strong>
@@ -414,6 +401,12 @@ export function TodayCommandCenter({
                   {offerPrice ? ` · $${Number(offerPrice).toFixed(2)}` : ""}
                 </small>
               </div>
+
+              <details className="vmb-today-command__copy-details">
+                <summary>Edit invite copy</summary>
+                <label className="vmb-today-command__field"><span>Invite title</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+                <label className="vmb-today-command__field"><span>Message</span><textarea rows={3} value={message} onChange={(event) => setMessage(event.target.value)} /></label>
+              </details>
 
               <div className="vmb-today-command__send-actions">
                 {!selectedInviteCopy ? (

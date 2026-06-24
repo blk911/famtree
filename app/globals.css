@@ -4324,8 +4324,9 @@
 
 .vmb-today-command__section-head h3 {
   margin: 3px 0 0;
-  color: #1c1917;
+  color: #831843;
   font-size: 18px;
+  line-height: 1.2;
 }
 
 .vmb-today-command__section-head > strong {
@@ -4393,9 +4394,10 @@
 .vmb-today-command__library-link {
   display: inline-flex;
   margin-top: 12px;
-  color: #9d174d;
-  font-size: 12px;
-  font-weight: 800;
+  color: #831843;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
   text-decoration: none;
 }
 
@@ -4585,7 +4587,7 @@
 
 .vmb-today-command__copy-details {
   border-top: 1px solid #f1e7ee;
-  padding-top: 9px;
+  padding-top: 0;
 }
 
 .vmb-today-command__style-note {
@@ -4689,10 +4691,11 @@
 }
 
 .vmb-today-command__copy-details summary {
-  color: #9d174d;
+  color: #831843;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .vmb-today-command__copy-details[open] {

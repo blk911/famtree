@@ -122,10 +122,10 @@ function run(): void {
     "command center owns a dedicated new member branch",
   );
   assert(
-    commandCenterSource.includes("Confirm My Style and send")
+    commandCenterSource.includes("<h3>{SALON_INVITE_REASON_LABELS[selectedReason]}</h3>")
       && commandCenterSource.includes("selectedAddonIds")
       && commandCenterSource.includes("InviteOfferRevisionPanel"),
-    "new member branch reviews and revises the salon offer",
+    "new member branch labels Step B by the active touch point and revises the salon offer",
   );
   assert(
     offerRevisionSource.includes("toggleAddon")
