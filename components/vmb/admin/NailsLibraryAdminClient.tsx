@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminSalonInviteReviewModal } from "@/components/vmb/admin/AdminSalonInviteReviewModal";
+import { SnapshotPreviewCard } from "@/components/vmb/admin/SnapshotPreviewCard";
 import { useNailTemplateInventory } from "@/components/vmb/admin/useNailTemplateInventory";
 import {
   builderRouteForTemplate,
@@ -19,6 +20,8 @@ import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to
 import type { SalonInviteCopyBackend } from "@/lib/vmb/invites/salon-invite-local-copy-store";
 import {
   formatSnapshotUpdatedAt,
+  resolveSnapshotRewardLabels,
+  resolveSnapshotServiceLabels,
 } from "@/lib/vmb/invites/invite-template-snapshot";
 
 type Props = {
@@ -99,6 +102,18 @@ export function NailsLibraryAdminClient({
   const selectedPublishedCopy = useMemo(
     () => publishedCopyForTemplate(publishedCopies, selected?.templateId),
     [publishedCopies, selected?.templateId],
+  );
+  const selectedServices = useMemo(
+    () => librarySnapshot
+      ? resolveSnapshotServiceLabels(librarySnapshot, serviceFallbackById)
+      : [],
+    [librarySnapshot, serviceFallbackById],
+  );
+  const selectedRewards = useMemo(
+    () => librarySnapshot
+      ? resolveSnapshotRewardLabels(librarySnapshot, optionFallbackById)
+      : [],
+    [librarySnapshot, optionFallbackById],
   );
 
   useEffect(() => {
@@ -235,50 +250,65 @@ export function NailsLibraryAdminClient({
         <section className="vmb-admin-builder-grid__editor vmb-nails-library__detail">
           {selected && librarySnapshot ? (
             <>
-              <h2 className="vmb-admin-builder__panel-title">{displayTouchPointName(librarySnapshot.templateName)}</h2>
-              <p className="vmb-nails-library__status">Finished asset in master inventory.</p>
+              <div className="vmb-nails-library__review-head">
+                <div>
+                  <p className="vmb-nails-library__eyebrow">Saved admin default</p>
+                  <h2 className="vmb-admin-builder__panel-title">{displayTouchPointName(librarySnapshot.templateName)}</h2>
+                  <p className="vmb-nails-library__status">
+                    This frozen Library snapshot is what publishes into salon-owned invite copies.
+                  </p>
+                </div>
+                <span className={selectedPublishedCopy ? "vmb-nails-library__pill vmb-nails-library__pill--published" : "vmb-nails-library__pill"}>
+                  {selectedPublishedCopy
+                    ? `Published ${formatPublishedDate(selectedPublishedCopy.createdAt)}`
+                    : "In library"}
+                </span>
+              </div>
 
-              <dl className="vmb-nails-library__meta vmb-nails-library__meta--compact">
-                <div>
-                  <dt>Template name</dt>
-                  <dd>{displayTouchPointName(librarySnapshot.templateName)}</dd>
-                </div>
-                <div>
-                  <dt>Status</dt>
-                  <dd>
-                    {selectedPublishedCopy
-                      ? `Published ${formatPublishedDate(selectedPublishedCopy.createdAt)}`
-                      : "Unpublished"}
-                  </dd>
-                </div>
-                <div>
-                  <dt>Version</dt>
-                  <dd>v{librarySnapshot.version}</dd>
-                </div>
-                <div>
-                  <dt>Last updated</dt>
-                  <dd>{formatSnapshotUpdatedAt(librarySnapshot)}</dd>
-                </div>
-              </dl>
-
-              {librarySnapshot?.valueLabel && librarySnapshot?.priceLabel ? (
-                <dl className="vmb-nails-library__meta vmb-nails-library__meta--compact">
-                  <div>
-                    <dt>Value</dt>
-                    <dd>{librarySnapshot.valueLabel}</dd>
-                  </div>
-                  {(librarySnapshot.savingsAmount ?? 0) > 0 ? (
+              <div className="vmb-nails-library__review-grid">
+                <SnapshotPreviewCard
+                  snapshot={librarySnapshot}
+                  tokenContext={tokenContext}
+                  serviceFallbackById={serviceFallbackById}
+                  rewardFallbackById={optionFallbackById}
+                  label="Default invite render"
+                />
+                <aside className="vmb-nails-library__summary-card">
+                  <p className="vmb-nails-library__summary-title">Default package</p>
+                  <dl className="vmb-nails-library__summary-list">
                     <div>
-                      <dt>Savings</dt>
-                      <dd>${librarySnapshot.savingsAmount!.toLocaleString()}</dd>
+                      <dt>Touch point</dt>
+                      <dd>{displayTouchPointName(librarySnapshot.templateName)}</dd>
                     </div>
-                  ) : null}
-                  <div>
-                    <dt>Offer</dt>
-                    <dd>{librarySnapshot.priceLabel}</dd>
-                  </div>
-                </dl>
-              ) : null}
+                    <div>
+                      <dt>Service</dt>
+                      <dd>{selectedServices.join(" · ") || "No service selected"}</dd>
+                    </div>
+                    <div>
+                      <dt>Level up with</dt>
+                      <dd>{selectedRewards.join(" · ") || "No level-up selected"}</dd>
+                    </div>
+                    <div>
+                      <dt>Value</dt>
+                      <dd>{librarySnapshot.valueLabel ?? "—"}</dd>
+                    </div>
+                    {(librarySnapshot.savingsAmount ?? 0) > 0 ? (
+                      <div>
+                        <dt>Savings</dt>
+                        <dd>${librarySnapshot.savingsAmount!.toLocaleString()}</dd>
+                      </div>
+                    ) : null}
+                    <div>
+                      <dt>Offer</dt>
+                      <dd>{librarySnapshot.priceLabel ?? "—"}</dd>
+                    </div>
+                    <div>
+                      <dt>Version</dt>
+                      <dd>v{librarySnapshot.version} · Updated {formatSnapshotUpdatedAt(librarySnapshot)}</dd>
+                    </div>
+                  </dl>
+                </aside>
+              </div>
 
               <div className="vmb-admin-builder-grid__actions">
                 <Link href={builderRouteForTemplate(selected.templateId)} className="taikos-opp-card__cta">

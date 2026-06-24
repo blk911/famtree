@@ -6459,6 +6459,10 @@
     grid-template-columns: 1fr;
   }
 
+  .vmb-nails-library__review-grid {
+    grid-template-columns: 1fr;
+  }
+
   .vmb-admin-builder-grid__preview,
   .vmb-template-admin__preview {
     position: static;
@@ -6764,6 +6768,101 @@
   color: #78716c;
 }
 
+.vmb-nails-library__review-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.vmb-nails-library__eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9d174d;
+}
+
+.vmb-nails-library__pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 7px 10px;
+  border: 1px solid #fbcfe8;
+  background: #fdf2f8;
+  color: #9d174d;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.vmb-nails-library__pill--published {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.vmb-nails-library__review-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) minmax(260px, 1fr);
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+.vmb-nails-library__summary-card {
+  border: 1px solid #f3e8ee;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fff, #fff7fb);
+  padding: 16px;
+}
+
+.vmb-nails-library__summary-title {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9d174d;
+}
+
+.vmb-nails-library__summary-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.vmb-nails-library__summary-list div {
+  border-bottom: 1px solid #f3e8ee;
+  padding-bottom: 9px;
+}
+
+.vmb-nails-library__summary-list div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.vmb-nails-library__summary-list dt {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9d174d;
+}
+
+.vmb-nails-library__summary-list dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #292524;
+  line-height: 1.35;
+}
+
 .vmb-nails-library__publish-verify {
   margin: 0 0 14px;
   padding: 12px 14px;
@@ -6971,6 +7070,10 @@
   }
 
   .vmb-offer-builder-selections {
+    grid-template-columns: 1fr;
+  }
+
+  .vmb-nails-library__review-grid {
     grid-template-columns: 1fr;
   }
 
