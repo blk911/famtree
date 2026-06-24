@@ -57,7 +57,7 @@ export function formatSelectedAddonSummary(
   draft: Pick<SalonServiceEditorDraft, "addonIds" | "addonPrices">,
 ): string {
   const lines = listSelectedUpgradeLines(service, draft);
-  if (lines.length === 0) return "No upgrades selected";
+  if (lines.length === 0) return "No level-ups available";
   return lines.join(" · ");
 }
 

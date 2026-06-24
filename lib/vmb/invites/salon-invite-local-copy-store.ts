@@ -28,7 +28,7 @@ import {
 import { getOffersForSalon } from "@/lib/vmb/offers/offer-store";
 import { getVmbSalonInviteCopiesFile } from "@/lib/vmb/paths";
 import { readJsonArray, writeJsonArray } from "@/lib/vmb/runtime-json-store";
-import { getAllOptionsForSalon, getServicesForSalon } from "@/lib/vmb/services/service-store";
+import { getSalonFacingServicesForCategory } from "@/lib/vmb/services/salon-service-config-store";
 import { assertVmbWritableBackend, vmbJsonFallbackAllowed, vmbProductionRequiresPostgres } from "@/lib/vmb/storage-policy";
 
 export type SalonInviteCopyBackend = "postgres" | "json";
@@ -220,24 +220,27 @@ async function buildDefaultTemplateCopyForSalon(
 ): Promise<SalonInviteLocalCopy | null> {
   if (!template?.active) return null;
 
-  const services = await getServicesForSalon(salonId);
-  const options = await getAllOptionsForSalon(salonId);
+  const services = await getSalonFacingServicesForCategory(salonId, "nails");
+  const activeServices = services.filter((service) => service.status === "active");
+  const servicesForTemplateDefaults = activeServices.length > 0 ? activeServices : services;
   const servicePriceById: Record<string, number> = {};
   const activeServiceIds = new Set<string>();
-  for (const service of services) {
-    const price = (service.basePriceCents ?? 0) / 100;
-    servicePriceById[service.id] = price;
-    servicePriceById[normalizeDefaultCatalogId(service.id)] = price;
-    activeServiceIds.add(service.id);
-    activeServiceIds.add(normalizeDefaultCatalogId(service.id));
+  for (const service of servicesForTemplateDefaults) {
+    const price = (service.priceCents ?? 0) / 100;
+    servicePriceById[service.serviceOfferId] = price;
+    servicePriceById[normalizeDefaultCatalogId(service.serviceOfferId)] = price;
+    activeServiceIds.add(service.serviceOfferId);
+    activeServiceIds.add(normalizeDefaultCatalogId(service.serviceOfferId));
   }
 
   const addonPriceById: Record<string, number> = {};
-  for (const option of options) {
-    const match = option.valueLabel?.match(/\$([0-9]+(?:\.[0-9]{1,2})?)/);
-    const price = match ? Number(match[1]) : 0;
-    addonPriceById[option.id] = price;
-    addonPriceById[normalizeDefaultCatalogId(option.id)] = price;
+  for (const service of servicesForTemplateDefaults) {
+    for (const addon of service.addons) {
+      if (!addon.enabled) continue;
+      const price = (addon.priceCents ?? 0) / 100;
+      addonPriceById[addon.addonId] = price;
+      addonPriceById[normalizeDefaultCatalogId(addon.addonId)] = price;
+    }
   }
 
   const masterSnapshot = parseInviteTemplateSnapshot(template.librarySnapshot);

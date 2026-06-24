@@ -109,9 +109,7 @@ async function ensureDemoServices(): Promise<{ ok: true; serviceCount: number } 
     const addonPriceCentsById = Object.fromEntries(
       activeAddons.map((addon) => [addon.addonId, addon.priceCents]),
     );
-    const enabledAddonIds = activeAddons
-      .filter((addon) => addon.defaultSelected)
-      .map((addon) => addon.addonId);
+    const enabledAddonIds = activeAddons.map((addon) => addon.addonId);
 
     const saved = await upsertSalonServiceConfig(VMB_DEMO_SALON_ID, {
       catalogServiceId: preset.serviceOfferId,

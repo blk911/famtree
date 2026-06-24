@@ -62,11 +62,7 @@ export function mergePresetWithSalonConfig(
 
 
 
-  const defaultAddonIds = new Set(
-
-    activeAddonPresets.filter((addon) => addon.defaultSelected).map((addon) => addon.addonId),
-
-  );
+  const defaultAddonIds = new Set(activeAddonPresets.map((addon) => addon.addonId));
 
   const enabledAddonIds = saved ? new Set(stored!.enabledAddonIds) : defaultAddonIds;
 
@@ -154,11 +150,11 @@ export function buildDefaultSalonConfigFromPreset(
 
 ): SalonServiceConfig {
 
-  const enabledAddonIds = preset.addonPresets
-
-    .filter((addon) => addon.active && addon.defaultSelected)
-
-    .map((addon) => addon.addonId);
+  const activeAddons = preset.addonPresets.filter((addon) => addon.active);
+  const enabledAddonIds = activeAddons.map((addon) => addon.addonId);
+  const addonPriceCentsById = Object.fromEntries(
+    activeAddons.map((addon) => [addon.addonId, addon.priceCents]),
+  );
 
   return {
 
@@ -176,7 +172,7 @@ export function buildDefaultSalonConfigFromPreset(
 
     enabledAddonIds,
 
-    addonPriceCentsById: {},
+    addonPriceCentsById,
 
     updatedAt: EPOCH,
 

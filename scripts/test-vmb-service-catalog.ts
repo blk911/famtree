@@ -112,11 +112,20 @@ async function run(): Promise<void> {
     Boolean(gelXPreset?.addons.some((addon) => addon.label === "Chrome" && addon.priceCents === 1500)),
     "facing service includes priced addon presets",
   );
+  assert(
+    gelXPreset?.addons.every((addon) => addon.enabled) === true,
+    "unsaved salon-facing service enables every active level-up by default",
+  );
   assert(typeof gelXPreset?.adminBasePriceCents === "number", "facing service exposes admin default price");
   assert(gelXPreset?.hasSalonConfig === false, "unsaved facing service is not marked as salon override");
 
   const builderPreset = nailsPresets.find((preset) => preset.serviceOfferId === "default-nails-builder-gel");
   assert((builderPreset?.addonPresets.length ?? 0) > 0, "builder gel preset includes add-ons");
+  const builderMergedDefault = mergePresetWithSalonConfig(builderPreset!, undefined);
+  assert(
+    builderMergedDefault.addons.every((addon) => addon.enabled),
+    "merge helper defaults every active builder gel level-up on",
+  );
 
   const merged = mergePresetsWithSalonConfigs(nailsPresets, []);
   assert(merged.length === 7, "client merge helper returns seven services");
@@ -162,8 +171,8 @@ async function run(): Promise<void> {
     formatSelectedAddonSummary(
       { addons: builderFacingBase.addons },
       { addonIds: [], addonPrices: {} },
-    ) === "No upgrades selected",
-    "empty add-on selection shows no add-ons selected",
+    ) === "No level-ups available",
+    "empty add-on selection shows no level-ups available",
   );
   assert(!priceDiffersFromAdmin(1500, 1500), "admin default note hidden when salon price matches admin");
   assert(priceDiffersFromAdmin(1800, 1500), "admin default note shown when salon price differs from admin");
@@ -384,7 +393,7 @@ async function run(): Promise<void> {
   );
   assert(salonServiceListItem.includes("getServiceImage"), "menu cards resolve service thumbnails");
   assert(salonServiceListItem.includes("ServicePhotoImage"), "menu cards render photo thumbnails");
-  assert(salonServiceListItem.includes("Selected Upgrades:"), "menu cards label selected upgrades");
+  assert(salonServiceListItem.includes("Available Level-Ups:"), "menu cards label available level-ups");
   assert(!salonServiceListItem.includes("Configure"), "menu cards remove configure links");
   assert(salonServiceListItem.includes("vmb-salon-services__menu-card"), "menu cards use merchandising layout");
   assert(salonServiceListItem.includes("salonServiceStatusLabel"), "service list card shows lifecycle status badge");

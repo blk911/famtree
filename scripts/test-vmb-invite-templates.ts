@@ -598,6 +598,10 @@ async function run(): Promise<void> {
   assert(publishStore.includes("listInviteTemplates"), "salon sync reads saved Admin Library templates");
   assert(publishStore.includes("librarySnapshot"), "salon sync can materialize from Admin Library snapshots");
   assert(
+    publishStore.includes("getSalonFacingServicesForCategory") && !publishStore.includes("getServicesForSalon"),
+    "salon sync fallback reads current salon-facing service setup",
+  );
+  assert(
     publishStore.includes('status !== "needs_review"'),
     "admin republish refreshes only copies still waiting for salon review",
   );

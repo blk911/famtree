@@ -52,7 +52,7 @@ export function SalonServiceListItem({ name, service, draft, salonId, selected, 
             </p>
             {upgrades.length > 0 ? (
               <div className="vmb-salon-services__menu-card-upgrades">
-                <p className="vmb-salon-services__menu-card-upgrades-label">Selected Upgrades:</p>
+                <p className="vmb-salon-services__menu-card-upgrades-label">Available Level-Ups:</p>
                 <ul className="vmb-salon-services__menu-card-upgrades-list">
                   {upgrades.map((line) => (
                     <li key={line}>{line}</li>

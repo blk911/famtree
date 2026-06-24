@@ -87,7 +87,7 @@ export function SalonServiceEditor({
             <dd>{formatSalonPrice(revenue.baseCents)}</dd>
           </div>
           <div className="vmb-salon-services__revenue-line">
-            <dt>Selected Upgrades</dt>
+            <dt>Available Level-Ups</dt>
             <dd>{formatSalonPrice(revenue.upgradesCents)}</dd>
           </div>
         </dl>
@@ -150,7 +150,7 @@ export function SalonServiceEditor({
       ) : null}
 
       <section className="vmb-salon-services__addons-block">
-        <p className="vmb-salon-services__section-label">Available Upgrades</p>
+        <p className="vmb-salon-services__section-label">Available Level-Ups</p>
         {service.addons.length === 0 ? (
           <p className="vmb-salon-services__addons-empty">No upgrades for this service yet.</p>
         ) : (
