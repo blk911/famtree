@@ -213,6 +213,101 @@ export async function claimSentInvite(input: {
   });
 }
 
+export async function claimSentInviteById(input: {
+  salonId: string;
+  sentInviteId: string;
+  clientName: string;
+  recipientContactSummary: string;
+  recipientContactHash: string;
+}): Promise<ClaimSentInviteResult> {
+  const now = new Date();
+  const writable = await assertVmbMoneyWritableBackend();
+  if (!writable.ok) return { ok: false, error: writable.error, status: 503 };
+  if (writable.backend === "postgres") {
+    try {
+      return await prisma.$transaction(async (tx) => {
+        const rows = await tx.$queryRaw<PayloadRow[]>`
+          SELECT payload FROM vmb_sent_invite
+          WHERE sent_invite_id = ${input.sentInviteId} AND salon_id = ${input.salonId}
+          FOR UPDATE
+        `;
+        const invite = parseSent(rows[0]);
+        if (!invite) return { ok: false, error: "Invite not found", status: 404 } as const;
+        if (new Date(invite.expiresAt) <= now) return { ok: false, error: "This invite has expired", status: 410 } as const;
+        if (invite.status === "redeemed" || invite.status === "cancelled" || invite.status === "expired") {
+          return { ok: false, error: `This invite is ${invite.status}`, status: 409 } as const;
+        }
+        const existingRows = await tx.$queryRaw<PayloadRow[]>`
+          SELECT payload FROM vmb_invite_claim WHERE sent_invite_id = ${invite.id} LIMIT 1
+        `;
+        const existing = parseClaim(existingRows[0]);
+        if (existing) {
+          return existing.recipientContactHash === input.recipientContactHash
+            ? ({ ok: true, claim: existing, existing: true } as const)
+            : ({ ok: false, error: "already_claimed_by_other", status: 409 } as const);
+        }
+        if (invite.status !== "sent" && invite.status !== "opened") {
+          return { ok: false, error: "This invite cannot be claimed", status: 409 } as const;
+        }
+        const claimedAt = now.toISOString();
+        const claim: InviteClaim = {
+          id: newId("claim"),
+          sentInviteId: invite.id,
+          salonId: invite.salonId,
+          clientName: input.clientName,
+          recipientContactSummary: input.recipientContactSummary,
+          recipientContactHash: input.recipientContactHash,
+          claimedAt,
+        };
+        const next: SentInvite = { ...invite, status: "claimed", claimedAt, updatedAt: claimedAt };
+        await tx.$executeRaw`
+          INSERT INTO vmb_invite_claim (claim_id, sent_invite_id, salon_id, payload, claimed_at)
+          VALUES (${claim.id}, ${claim.sentInviteId}, ${claim.salonId}, ${JSON.stringify(claim)}::jsonb, ${now})
+        `;
+        await tx.$executeRaw`
+          UPDATE vmb_sent_invite SET status = 'claimed', payload = ${JSON.stringify(next)}::jsonb, updated_at = now()
+          WHERE sent_invite_id = ${invite.id}
+        `;
+        return { ok: true, claim, existing: false } as const;
+      });
+    } catch (error) {
+      return { ok: false, error: error instanceof Error ? error.message : "Claim failed", status: 503 };
+    }
+  }
+
+  return serializeJson(async () => {
+    const invites = memoryInvites;
+    const invite = invites.find((row) => row.id === input.sentInviteId && row.salonId === input.salonId);
+    if (!invite) return { ok: false, error: "Invite not found", status: 404 } as const;
+    if (new Date(invite.expiresAt) <= now) return { ok: false, error: "This invite has expired", status: 410 } as const;
+    if (invite.status === "redeemed" || invite.status === "cancelled" || invite.status === "expired") {
+      return { ok: false, error: `This invite is ${invite.status}`, status: 409 } as const;
+    }
+    const claims = memoryClaims;
+    const existing = claims.find((row) => row.sentInviteId === invite.id);
+    if (existing) {
+      return existing.recipientContactHash === input.recipientContactHash
+        ? ({ ok: true, claim: existing, existing: true } as const)
+        : ({ ok: false, error: "already_claimed_by_other", status: 409 } as const);
+    }
+    if (invite.status !== "sent" && invite.status !== "opened") return { ok: false, error: "This invite cannot be claimed", status: 409 } as const;
+    const claimedAt = now.toISOString();
+    const claim: InviteClaim = {
+      id: newId("claim"),
+      sentInviteId: invite.id,
+      salonId: invite.salonId,
+      clientName: input.clientName,
+      recipientContactSummary: input.recipientContactSummary,
+      recipientContactHash: input.recipientContactHash,
+      claimedAt,
+    };
+    const next = { ...invite, status: "claimed" as const, claimedAt, updatedAt: claimedAt };
+    memoryClaims = [...claims, claim];
+    memoryInvites = invites.map((row) => row.id === invite.id ? next : row);
+    return { ok: true, claim, existing: false } as const;
+  });
+}
+
 export async function listSalonClaimTimeline(salonId: string): Promise<SalonClaimTimelineItem[]> {
   let invites: SentInvite[];
   let claims: InviteClaim[];

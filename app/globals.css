@@ -8896,6 +8896,253 @@
   margin-top: 14px;
 }
 
+.vmb-salon-landing__cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.vmb-salon-landing__cta-row .vmb-salon-landing__cta {
+  margin-top: 0;
+}
+
+.vmb-salon-landing__cta--find {
+  cursor: pointer;
+  opacity: 1;
+  background: #fff7ed;
+  color: #831843;
+  border: 1px solid #f9a8d4;
+  box-shadow: 0 6px 18px rgba(131, 24, 67, 0.12);
+}
+
+.vmb-client-lookup-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(41, 37, 36, 0.42);
+  backdrop-filter: blur(5px);
+}
+
+.vmb-client-lookup-modal__dialog {
+  width: min(520px, 100%);
+  border-radius: 24px;
+  border: 1px solid #fbcfe8;
+  background: #fff;
+  box-shadow: 0 24px 80px rgba(41, 37, 36, 0.22);
+  padding: 24px;
+}
+
+.vmb-client-lookup-modal__header,
+.vmb-client-lookup-modal__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vmb-client-lookup-modal__eyebrow {
+  margin: 0 0 6px;
+  color: #be185d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.vmb-client-lookup-modal__header h2 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1;
+  color: #292524;
+}
+
+.vmb-client-lookup-modal__close,
+.vmb-client-lookup-modal__actions button {
+  border-radius: 999px;
+  border: 1px solid #eadfd8;
+  background: #fff;
+  color: #57534e;
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
+.vmb-client-lookup-modal__copy {
+  margin: 18px 0;
+  color: #57534e;
+  line-height: 1.55;
+}
+
+.vmb-client-lookup-modal__form label {
+  display: grid;
+  gap: 8px;
+  color: #9d174d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vmb-client-lookup-modal__form input {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid #eadfd8;
+  padding: 13px 14px;
+  color: #292524;
+  font-size: 16px;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.vmb-client-lookup-modal__error {
+  margin: 12px 0 0;
+  color: #be123c;
+  font-weight: 700;
+}
+
+.vmb-client-lookup-modal__actions {
+  margin-top: 18px;
+}
+
+.vmb-client-lookup-modal__actions button[type="submit"] {
+  border-color: #be185d;
+  background: #be185d;
+  color: #fff;
+}
+
+.vmb-client-invite-page {
+  min-height: 100vh;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(252, 231, 243, 0.82), transparent 36%),
+    linear-gradient(135deg, #fffaf4 0%, #fff 46%, #fff7fb 100%);
+  color: #292524;
+}
+
+.vmb-client-invite-page__nav {
+  width: min(1120px, 100%);
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: #57534e;
+}
+
+.vmb-client-invite-page__nav strong {
+  color: #111827;
+}
+
+.vmb-client-invite-page__panel,
+.vmb-client-invite-page__shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  border: 1px solid #fbcfe8;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 20px 80px rgba(131, 24, 67, 0.08);
+  padding: clamp(24px, 4vw, 44px);
+}
+
+.vmb-client-invite-page__panel--error {
+  color: #be123c;
+  font-weight: 700;
+}
+
+.vmb-client-invite-page__shell {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(320px, 1.2fr);
+  gap: clamp(22px, 4vw, 44px);
+  align-items: start;
+}
+
+.vmb-client-invite-page__eyebrow {
+  margin: 0 0 10px;
+  color: #be185d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.vmb-client-invite-page__intro h1,
+.vmb-client-invite-page__modal-copy h2 {
+  margin: 0;
+  color: #292524;
+  line-height: 1.02;
+}
+
+.vmb-client-invite-page__intro h1 {
+  font-size: clamp(42px, 7vw, 76px);
+  letter-spacing: -0.05em;
+}
+
+.vmb-client-invite-page__intro p,
+.vmb-client-invite-page__modal-copy p {
+  color: #57534e;
+  line-height: 1.6;
+}
+
+.vmb-client-invite-page__notice {
+  border-radius: 16px;
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  padding: 12px 14px;
+  color: #166534 !important;
+  font-weight: 700;
+}
+
+.vmb-client-invite-page__modal {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(280px, 420px);
+  gap: 22px;
+  align-items: start;
+}
+
+.vmb-client-invite-page__modal-copy {
+  border-radius: 22px;
+  border: 1px solid #fce7f3;
+  background: #fff7fb;
+  padding: 22px;
+}
+
+.vmb-client-invite-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.vmb-client-invite-page__actions button {
+  border-radius: 999px;
+  border: 1px solid #f9a8d4;
+  background: #fff;
+  color: #9d174d;
+  padding: 11px 16px;
+  font-weight: 800;
+}
+
+.vmb-client-invite-page__actions button:first-child {
+  border-color: #be185d;
+  background: #be185d;
+  color: #fff;
+}
+
+.vmb-client-invite-page__actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+@media (max-width: 900px) {
+  .vmb-client-invite-page__shell,
+  .vmb-client-invite-page__modal {
+    grid-template-columns: 1fr;
+  }
+}
+
 .vmb-salon-landing__providers {
   padding: 24px;
   border-radius: 18px;

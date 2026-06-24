@@ -2,7 +2,8 @@
 
 
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 import { SalonInvitationThumbnail } from "@/components/vmb/salon/SalonInvitationThumbnail";
 import { ServicePhotoImage } from "@/components/vmb/salon/ServicePhotoImage";
@@ -132,6 +133,7 @@ type Props = {
 
 
 export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
+  const router = useRouter();
 
   const [loading, setLoading] = useState(true);
 
@@ -142,6 +144,10 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
   const [publishedCopies, setPublishedCopies] = useState<SalonInviteLocalCopy[]>([]);
 
   const [resolvedOwnerName, setResolvedOwnerName] = useState(ownerName ?? "");
+  const [findInviteOpen, setFindInviteOpen] = useState(false);
+  const [findInviteEmail, setFindInviteEmail] = useState("");
+  const [findInviteBusy, setFindInviteBusy] = useState(false);
+  const [findInviteError, setFindInviteError] = useState<string | null>(null);
 
 
 
@@ -320,6 +326,31 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
   const networkCta = pcnCtaLabel(resolvedOwnerName);
   const heroImage = getFallbackServiceAsset();
 
+  async function submitFindInvite(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFindInviteBusy(true);
+    setFindInviteError(null);
+    try {
+      const response = await fetch("/api/vmb/client-invites/lookup", {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: findInviteEmail }),
+      });
+      const json = (await response.json()) as { ok?: boolean; invite?: { id: string }; error?: string };
+      if (!response.ok || !json.ok || !json.invite?.id) {
+        throw new Error(json.error ?? "No active invite found.");
+      }
+      router.push(
+        `/vmb/client-invite?inviteId=${encodeURIComponent(json.invite.id)}&contact=${encodeURIComponent(findInviteEmail.trim())}`,
+      );
+    } catch (err) {
+      setFindInviteError(err instanceof Error ? err.message : "No active invite found.");
+    } finally {
+      setFindInviteBusy(false);
+    }
+  }
+
 
 
   return (
@@ -383,11 +414,23 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
 
                 <p className="vmb-salon-landing__intro">{heroIntro()}</p>
 
-                <button type="button" className="vmb-salon-landing__cta vmb-salon-landing__cta--hero" disabled>
+                <div className="vmb-salon-landing__cta-row">
+                  <button type="button" className="vmb-salon-landing__cta vmb-salon-landing__cta--hero" disabled>
 
-                  {networkCta}
+                    {networkCta}
 
-                </button>
+                  </button>
+                  <button
+                    type="button"
+                    className="vmb-salon-landing__cta vmb-salon-landing__cta--find"
+                    onClick={() => {
+                      setFindInviteOpen(true);
+                      setFindInviteError(null);
+                    }}
+                  >
+                    Find My Invite
+                  </button>
+                </div>
 
               </div>
 
@@ -663,6 +706,51 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
           </>
 
         )}
+
+        {findInviteOpen ? (
+          <div className="vmb-client-lookup-modal" role="dialog" aria-modal="true" aria-label="Find my invite">
+            <div className="vmb-client-lookup-modal__dialog">
+              <div className="vmb-client-lookup-modal__header">
+                <div>
+                  <p className="vmb-client-lookup-modal__eyebrow">Private invite lookup</p>
+                  <h2>Find My Invite</h2>
+                </div>
+                <button
+                  type="button"
+                  className="vmb-client-lookup-modal__close"
+                  onClick={() => setFindInviteOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
+              <p className="vmb-client-lookup-modal__copy">
+                Enter the email your salon used for the invite. If an active invite is waiting, we will open your
+                private offer page.
+              </p>
+              <form onSubmit={(event) => void submitFindInvite(event)} className="vmb-client-lookup-modal__form">
+                <label>
+                  Email
+                  <input
+                    type="email"
+                    value={findInviteEmail}
+                    onChange={(event) => setFindInviteEmail(event.target.value)}
+                    placeholder="vanessa@test.com"
+                    required
+                  />
+                </label>
+                {findInviteError ? <p className="vmb-client-lookup-modal__error">{findInviteError}</p> : null}
+                <div className="vmb-client-lookup-modal__actions">
+                  <button type="button" onClick={() => setFindInviteOpen(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={findInviteBusy}>
+                    {findInviteBusy ? "Finding..." : "Open Invite"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : null}
 
       </div>
 

@@ -1,0 +1,172 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { SalonInviteCard } from "@/components/vmb/invites/SalonInviteCard";
+import type { InviteTemplateTokenContext } from "@/lib/vmb/invite-templates/invite-template-types";
+import type { SentInvite, SentInvitePublicSnapshot } from "@/lib/vmb/invites/sent-invite-types";
+
+type ClientInviteDto = {
+  id: string;
+  status: SentInvite["status"];
+  alreadyClaimed: boolean;
+  sentAt: string;
+  expiresAt: string;
+  snapshot: SentInvitePublicSnapshot;
+};
+
+type Props = {
+  inviteId: string;
+  contact: string;
+};
+
+export function VmbClientInvitePortal({ inviteId, contact }: Props) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [invite, setInvite] = useState<ClientInviteDto | null>(null);
+  const [claiming, setClaiming] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const loadInvite = useCallback(async () => {
+    if (!inviteId || !contact) {
+      setError("Invite lookup needs an invite and email.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/vmb/client-invites/${encodeURIComponent(inviteId)}?contact=${encodeURIComponent(contact)}`,
+        { cache: "no-store", credentials: "include" },
+      );
+      const json = (await response.json()) as { ok?: boolean; invite?: ClientInviteDto; error?: string };
+      if (!response.ok || !json.ok || !json.invite) {
+        throw new Error(json.error ?? "Could not load invite.");
+      }
+      setInvite(json.invite);
+      setNotice(json.invite.alreadyClaimed ? "This invite is already claimed and waiting for the salon." : null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not load invite.");
+    } finally {
+      setLoading(false);
+    }
+  }, [contact, inviteId]);
+
+  useEffect(() => {
+    void loadInvite();
+  }, [loadInvite]);
+
+  const tokenContext = useMemo<InviteTemplateTokenContext>(() => {
+    const snapshot = invite?.snapshot;
+    return {
+      salonName: snapshot?.salonDisplayName ?? "Your salon",
+      providerName: snapshot?.providerName ?? "Your nail tech",
+      clientName: snapshot?.recipientName ?? "there",
+      claimLink: "#",
+    };
+  }, [invite]);
+
+  async function claimInvite(action: "book" | "hold" | "revise") {
+    if (!invite) return;
+    if (action === "hold") {
+      setNotice("Held for now. Your salon can still see this invite is waiting.");
+      return;
+    }
+    if (action === "revise") {
+      setNotice("Revision request noted. We will wire the salon callback next.");
+      return;
+    }
+    setClaiming(true);
+    setNotice(null);
+    try {
+      const response = await fetch(`/api/vmb/client-invites/${encodeURIComponent(invite.id)}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ contact, clientName: invite.snapshot.recipientName }),
+      });
+      const json = (await response.json()) as { ok?: boolean; alreadyClaimed?: boolean; error?: string; message?: string };
+      if (!response.ok || !json.ok) throw new Error(json.error ?? "Could not claim invite.");
+      setNotice(json.alreadyClaimed ? "Already claimed. You are all set." : "Claimed. Your salon can now see this invite.");
+      setInvite((current) => current ? { ...current, alreadyClaimed: true, status: "claimed" } : current);
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : "Could not claim invite.");
+    } finally {
+      setClaiming(false);
+    }
+  }
+
+  const snapshot = invite?.snapshot;
+  const services = snapshot?.services ?? [];
+  const rewards = snapshot?.rewards ?? [];
+
+  return (
+    <main className="vmb-client-invite-page">
+      <nav className="vmb-client-invite-page__nav">
+        <strong>VMB</strong>
+        <span>Client invite</span>
+      </nav>
+
+      {loading ? (
+        <section className="vmb-client-invite-page__panel">
+          <p>Finding your invite…</p>
+        </section>
+      ) : error ? (
+        <section className="vmb-client-invite-page__panel vmb-client-invite-page__panel--error">
+          <p>{error}</p>
+        </section>
+      ) : snapshot ? (
+        <section className="vmb-client-invite-page__shell">
+          <div className="vmb-client-invite-page__intro">
+            <p className="vmb-client-invite-page__eyebrow">Private client page</p>
+            <h1>{snapshot.recipientName ? `${snapshot.recipientName}, your invite is ready` : "Your invite is ready"}</h1>
+            <p>
+              This is the temporary client-side bridge for testing the real sent invite rail. The salon sees the claim
+              once you choose Book Now.
+            </p>
+            {notice ? <p className="vmb-client-invite-page__notice">{notice}</p> : null}
+          </div>
+
+          <div className="vmb-client-invite-page__modal" role="dialog" aria-label="Client invite offer">
+            <div className="vmb-client-invite-page__modal-copy">
+              <p className="vmb-client-invite-page__eyebrow">Offer options</p>
+              <h2>{snapshot.headline}</h2>
+              <p>
+                Book Now claims the invite and records it for the salon timeline. Revise and Hold are visible test
+                controls for the next client workflow pass.
+              </p>
+              <div className="vmb-client-invite-page__actions">
+                <button type="button" onClick={() => void claimInvite("book")} disabled={claiming || invite?.alreadyClaimed}>
+                  {invite?.alreadyClaimed ? "Claimed" : claiming ? "Claiming…" : "Book Now"}
+                </button>
+                <button type="button" onClick={() => void claimInvite("revise")}>
+                  Revise
+                </button>
+                <button type="button" onClick={() => void claimInvite("hold")}>
+                  Hold
+                </button>
+              </div>
+            </div>
+
+            <SalonInviteCard
+              inviteTypeLabel={snapshot.inviteTypeLabel}
+              headline={snapshot.headline}
+              body={snapshot.body}
+              ctaLabel={snapshot.ctaLabel}
+              services={services}
+              rewards={rewards}
+              expirationLabel={snapshot.expirationLabel}
+              ownerName={snapshot.providerName ?? "Your nail tech"}
+              salonName={snapshot.salonDisplayName}
+              serviceImageUrl={snapshot.serviceImageUrl}
+              inviteArtImageUrl={snapshot.inviteArtImageUrl}
+              mode="client"
+              previewOnly
+              tokenContext={tokenContext}
+            />
+          </div>
+        </section>
+      ) : null}
+    </main>
+  );
+}

@@ -16,6 +16,8 @@ import { VMB_TRIAL_COOKIE } from "../lib/vmb/paths";
 import { NextRequest } from "next/server";
 import { GET as getSentInvites, POST as postSentInvite } from "../app/api/vmb/sent-invites/route";
 import { POST as postRedeem } from "../app/api/vmb/sent-invites/[sentInviteId]/redeem/route";
+import { POST as lookupClientInvite } from "../app/api/vmb/client-invites/lookup/route";
+import { GET as getClientInvite, POST as postClientInviteClaim } from "../app/api/vmb/client-invites/[sentInviteId]/route";
 
 delete process.env.DATABASE_URL;
 delete process.env.VERCEL;
@@ -40,12 +42,12 @@ function snapshot(salonName: string, serviceIds: string[] = []): InviteTemplateS
   return { id: "snapshot-1", sourceTemplateId: "template-1", templateName: "Birthday Offer", categoryId: "nails", headline: "A birthday treat", body: "Your private birthday offer is ready.", ctaLabel: "Claim offer", serviceIds, rewardIds: [], priceLabel: "$75", termsText: "One per client", ownerName: "Avery", salonName, status: "published", version: 1, createdAt: now, updatedAt: now };
 }
 
-async function seed(salonId: string, status: "approved" | "paused" = "approved", options: { serviceIds?: string[]; salonOfferCatalogId?: string } = {}) {
+async function seed(salonId: string, status: "approved" | "paused" = "approved", options: { serviceIds?: string[]; salonOfferCatalogId?: string; clientEmail?: string } = {}) {
   const snap = snapshot("Canonical Salon", options.serviceIds);
   const copyId = `${salonId}-copy-1`;
   const now = new Date().toISOString();
   fs.writeFileSync(getVmbSalonInviteCopiesFile(), JSON.stringify([{ salonId, copy: { id: copyId, salonId, sourceTemplateId: snap.sourceTemplateId, publishedVersion: 1, inventoryStatus: "published", snapshot: snap, createdAt: now, updatedAt: now } }]), "utf8");
-  const input = { clientName: "Jordan", opportunityType: "birthday", sourceCopyId: copyId, sourceTemplateId: snap.sourceTemplateId, snapshot: snap, reasonText: "Birthday this month", status, salonOfferCatalogId: options.salonOfferCatalogId } as const;
+  const input = { clientName: "Jordan", clientEmail: options.clientEmail, opportunityType: "birthday", sourceCopyId: copyId, sourceTemplateId: snap.sourceTemplateId, snapshot: snap, reasonText: "Birthday this month", status, salonOfferCatalogId: options.salonOfferCatalogId } as const;
   const result = status === "approved" ? await approveSalonInvitation(salonId, input) : await pauseSalonInvitationApproval(salonId, input);
   assert(!("error" in result), "approval fixture created");
   return { approval: result.approval, copyId };
@@ -71,7 +73,7 @@ async function run() {
     await upsertSalonServiceConfig(salonId, { catalogServiceId: "default-nails-gel-x", lifecycleAction: "activate" });
     const offer = await createSalonOfferCatalogEntry(salonId, { name: "Birthday Gel-X", description: "Private birthday set", serviceId: "default-nails-gel-x", addonIds: [], active: true });
     assert(!("error" in offer), "active linked offer fixture created");
-    const { approval, copyId } = await seed(salonId, "approved", { serviceIds: ["default-nails-gel-x"], salonOfferCatalogId: offer.entry.id });
+    const { approval, copyId } = await seed(salonId, "approved", { serviceIds: ["default-nails-gel-x"], salonOfferCatalogId: offer.entry.id, clientEmail: "vanessa@test.com" });
     assert((await listSalonInviteLocalCopies(salonId)).length === 1, "active touchpoint fixture loads");
     const sent = await sendApprovedInvitation({ salonId, approvalId: approval.id });
     assert(!("error" in sent), `active approved offer sends${"error" in sent ? `: ${sent.error}` : ""}`);
@@ -93,6 +95,34 @@ async function run() {
     assert(resendPrep.approval.status === "approved", "send prep returns an approved record");
     const resent = await sendApprovedInvitation({ salonId, approvalId: resendPrep.approval.id });
     assert(!("error" in resent), "fresh send-prep approval can send again");
+
+    const salonCookie = `${VMB_TRIAL_COOKIE}=${createVmbSalonSession(salonId)}`;
+    const wrongLookup = await lookupClientInvite(new NextRequest("http://localhost/api/vmb/client-invites/lookup", {
+      method: "POST",
+      headers: { cookie: salonCookie, "content-type": "application/json" },
+      body: JSON.stringify({ email: "not-vanessa@test.com" }),
+    }));
+    assert(wrongLookup.status === 404, "client invite lookup rejects unmatched email");
+    const lookupResponse = await lookupClientInvite(new NextRequest("http://localhost/api/vmb/client-invites/lookup", {
+      method: "POST",
+      headers: { cookie: salonCookie, "content-type": "application/json" },
+      body: JSON.stringify({ email: "vanessa@test.com" }),
+    }));
+    assert(lookupResponse.status === 200, "client invite lookup finds sent invite by email");
+    const lookupText = await lookupResponse.text();
+    for (const forbidden of ["tokenHash", "sourceApprovalId", "sourceCopyId", "salonId"]) assert(!lookupText.includes(forbidden), `client lookup omits ${forbidden}`);
+    const lookupJson = JSON.parse(lookupText) as { invite: { id: string } };
+    assert(lookupJson.invite.id === resent.sentInvite.id, "client lookup returns the latest matching sent invite");
+    const clientGet = await getClientInvite(new NextRequest(`http://localhost/api/vmb/client-invites/${lookupJson.invite.id}?contact=${encodeURIComponent("vanessa@test.com")}`, { headers: { cookie: salonCookie } }), { params: Promise.resolve({ sentInviteId: lookupJson.invite.id }) });
+    assert(clientGet.status === 200, "client invite bridge opens by verified email");
+    const wrongClientGet = await getClientInvite(new NextRequest(`http://localhost/api/vmb/client-invites/${lookupJson.invite.id}?contact=${encodeURIComponent("wrong@test.com")}`, { headers: { cookie: salonCookie } }), { params: Promise.resolve({ sentInviteId: lookupJson.invite.id }) });
+    assert(wrongClientGet.status === 404, "client invite bridge rejects wrong email");
+    const clientClaim = await postClientInviteClaim(new NextRequest(`http://localhost/api/vmb/client-invites/${lookupJson.invite.id}`, {
+      method: "POST",
+      headers: { cookie: salonCookie, "content-type": "application/json" },
+      body: JSON.stringify({ contact: "vanessa@test.com", clientName: "Vanessa" }),
+    }), { params: Promise.resolve({ sentInviteId: lookupJson.invite.id }) });
+    assert(clientClaim.status === 200, "client invite bridge can claim verified sent invite");
 
     const opened = await resolveRecipientInvite(sent.recipientToken);
     assert(opened.status === "available", "sent invite opens by token");
