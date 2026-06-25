@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { SalonInviteCard } from "@/components/vmb/invites/SalonInviteCard";
-import type { InviteTemplateTokenContext } from "@/lib/vmb/invite-templates/invite-template-types";
+import { useCallback, useEffect, useState } from "react";
+import { InvitationEnvelope } from "@/components/vmb/invites/InvitationEnvelope";
+import { getFallbackServiceAsset } from "@/lib/vmb/assets/service-photo-library";
 import type { SentInvite, SentInvitePublicSnapshot } from "@/lib/vmb/invites/sent-invite-types";
 
 type ClientInviteDto = {
@@ -18,6 +18,20 @@ type Props = {
   inviteId: string;
   contact: string;
 };
+
+function firstName(name?: string): string {
+  return name?.trim().split(/\s+/)[0] || "there";
+}
+
+function salonInitials(name?: string): string {
+  const words = name?.trim().split(/\s+/).filter(Boolean) ?? [];
+  const initials = words.slice(0, 2).map((word) => word[0]?.toUpperCase()).join("");
+  return initials || "V";
+}
+
+function stripValidPrefix(label?: string): string {
+  return label?.replace(/^Valid\s+/i, "").trim() || "your private invite window";
+}
 
 export function VmbClientInvitePortal({ inviteId, contact }: Props) {
   const [loading, setLoading] = useState(true);
@@ -56,16 +70,6 @@ export function VmbClientInvitePortal({ inviteId, contact }: Props) {
     void loadInvite();
   }, [loadInvite]);
 
-  const tokenContext = useMemo<InviteTemplateTokenContext>(() => {
-    const snapshot = invite?.snapshot;
-    return {
-      salonName: snapshot?.salonDisplayName ?? "Your salon",
-      providerName: snapshot?.providerName ?? "Your nail tech",
-      clientName: snapshot?.recipientName ?? "there",
-      claimLink: "#",
-    };
-  }, [invite]);
-
   async function claimInvite(action: "book" | "hold" | "revise") {
     if (!invite) return;
     if (action === "hold") {
@@ -99,99 +103,117 @@ export function VmbClientInvitePortal({ inviteId, contact }: Props) {
   const snapshot = invite?.snapshot;
   const services = snapshot?.services ?? [];
   const rewards = snapshot?.rewards ?? [];
+  const clientFirstName = firstName(snapshot?.recipientName);
+  const salonName = snapshot?.salonDisplayName ?? "Your salon";
+  const providerName = snapshot?.providerName ?? "Your nail tech";
+  const heroImageUrl = snapshot?.inviteArtImageUrl?.trim() || snapshot?.serviceImageUrl?.trim() || getFallbackServiceAsset().imageUrl;
+  const ownerInitial = salonInitials(providerName || salonName);
 
   return (
-    <main className="vmb-client-invite-page">
-      <nav className="vmb-client-invite-page__nav">
-        <strong>VMB</strong>
-        <span>Client invite</span>
+    <main className="vmb-public-invite">
+      <nav className="vmb-public-invite__topbar" aria-label="Invitation">
+        <div className="vmb-public-invite__brand">
+          <strong>VMB</strong>
+          <span>Client Invite</span>
+        </div>
+        {snapshot ? (
+          <div className="vmb-public-invite__identity-pill">
+            <span className="vmb-public-invite__identity-avatar" aria-hidden="true">{ownerInitial}</span>
+            <span>
+              <strong>{providerName} · {salonName}</strong>
+              <small>{snapshot.inviteTypeLabel}</small>
+            </span>
+          </div>
+        ) : null}
       </nav>
 
       {loading ? (
-        <section className="vmb-client-invite-page__panel">
+        <section className="vmb-public-invite__unavailable">
           <p>Finding your invite…</p>
         </section>
       ) : error ? (
-        <section className="vmb-client-invite-page__panel vmb-client-invite-page__panel--error">
+        <section className="vmb-public-invite__unavailable">
+          <p className="vmb-public-invite__eyebrow">Invitation unavailable</p>
           <p>{error}</p>
         </section>
       ) : snapshot ? (
-        <section className="vmb-client-invite-page__shell">
-          <div className="vmb-client-invite-page__stack">
-            <div className="vmb-client-invite-page__intro">
-              <div className="vmb-client-invite-page__intro-copy">
-                <p className="vmb-client-invite-page__eyebrow">Private client page</p>
-                <h1 className="vmb-client-invite-page__greeting">
-                  <span>Hi</span>
-                  <strong>{snapshot.recipientName || "there"}</strong>
-                </h1>
-                <p>
-                  {snapshot.providerName ?? "Your salon"} sent you a private invitation. Review the offer, then choose how
-                  you want to handle it.
+        <InvitationEnvelope clientFirstName={clientFirstName} salonName={salonName} inviteTitle={snapshot.headline}>
+          <article className="vmb-public-invite__card" aria-label="Private salon invitation">
+            <div className="vmb-public-invite__card-top">
+              <div className="vmb-public-invite__hero">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={heroImageUrl} alt="" className="vmb-public-invite__hero-img" />
+              </div>
+
+              <div className="vmb-public-invite__body">
+                <div className="vmb-public-invite__crest" aria-hidden>{ownerInitial}</div>
+                <p className="vmb-public-invite__eyebrow">Private Invitation</p>
+                <p className="vmb-public-invite__hello">Hi {clientFirstName}</p>
+                <h1>{snapshot.headline}</h1>
+                <p className="vmb-public-invite__note">
+                  {salonName} has something beautiful waiting for you.
                 </p>
+                <p className="vmb-public-invite__letter">{snapshot.body}</p>
               </div>
-              <dl className="vmb-client-invite-page__details">
-                <div>
-                  <dt>Invite</dt>
-                  <dd>{snapshot.inviteTypeLabel}</dd>
-                </div>
-                <div>
-                  <dt>Salon</dt>
-                  <dd>{snapshot.salonDisplayName}</dd>
-                </div>
-                {snapshot.expirationLabel ? (
-                  <div>
-                    <dt>Good through</dt>
-                    <dd>{snapshot.expirationLabel.replace(/^Valid\s+/i, "")}</dd>
-                  </div>
+            </div>
+
+            <div className="vmb-public-invite__card-bottom">
+              <section className="vmb-public-invite__gift" aria-label="Your gift details">
+                <p className="vmb-public-invite__gift-label">Your Gift</p>
+                {services.length > 0 ? (
+                  <strong className="vmb-public-invite__gift-service">{services.join(" · ")}</strong>
+                ) : (
+                  <strong className="vmb-public-invite__gift-service">Your private salon gift</strong>
+                )}
+                {rewards.length > 0 ? (
+                  <ul className="vmb-public-invite__gift-chips" aria-label="Included level ups">
+                    {rewards.map((reward) => (
+                      <li key={reward}>{reward}</li>
+                    ))}
+                  </ul>
                 ) : null}
-              </dl>
-              {notice ? <p className="vmb-client-invite-page__notice">{notice}</p> : null}
+                <div className="vmb-public-invite__valid">
+                  <span>Good Through</span>
+                  <strong>{stripValidPrefix(snapshot.expirationLabel)}</strong>
+                </div>
+              </section>
+
+              <section className="vmb-public-invite__action-panel" aria-label="Choose how to enjoy your invite">
+                <p className="vmb-public-invite__gift-label">Claim Your Gift</p>
+                <p className="vmb-public-invite__action-copy">
+                  Claim your invite, ask for a small adjustment, or hold it while you decide.
+                </p>
+                {notice ? <p className="vmb-public-invite__notice">{notice}</p> : null}
+                <div className="vmb-public-invite__actions">
+                  <button
+                    type="button"
+                    className="vmb-public-invite__button vmb-public-invite__button--primary"
+                    onClick={() => void claimInvite("book")}
+                    disabled={claiming || invite?.alreadyClaimed}
+                  >
+                    {invite?.alreadyClaimed ? "Claimed" : claiming ? "Claiming..." : "Claim My Gift"}
+                  </button>
+                  <button
+                    type="button"
+                    className="vmb-public-invite__button vmb-public-invite__button--secondary"
+                    onClick={() => void claimInvite("revise")}
+                  >
+                    Ask for an Adjustment
+                  </button>
+                  <button
+                    type="button"
+                    className="vmb-public-invite__button vmb-public-invite__button--quiet"
+                    onClick={() => void claimInvite("hold")}
+                  >
+                    Hold Until Later
+                  </button>
+                </div>
+              </section>
             </div>
 
-            <div className="vmb-client-invite-page__modal-copy">
-              <p className="vmb-client-invite-page__eyebrow">Action item</p>
-              <h2>{snapshot.headline}</h2>
-              <p>
-                Claim the invite, ask the salon to adjust it, or hold it while you decide.
-              </p>
-              <div className="vmb-client-invite-page__mini-offer">
-                {services.length > 0 ? <strong>{services.join(" · ")}</strong> : null}
-                {rewards.length > 0 ? <span>{rewards.join(" · ")}</span> : null}
-              </div>
-              <div className="vmb-client-invite-page__actions">
-                <button type="button" onClick={() => void claimInvite("book")} disabled={claiming || invite?.alreadyClaimed}>
-                  {invite?.alreadyClaimed ? "Claimed" : claiming ? "Claiming…" : "Book Now"}
-                </button>
-                <button type="button" onClick={() => void claimInvite("revise")}>
-                  Revise
-                </button>
-                <button type="button" onClick={() => void claimInvite("hold")}>
-                  Hold
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="vmb-client-invite-page__preview" role="dialog" aria-label="Client invite preview">
-            <SalonInviteCard
-              inviteTypeLabel={snapshot.inviteTypeLabel}
-              headline={snapshot.headline}
-              body={snapshot.body}
-              ctaLabel={snapshot.ctaLabel}
-              services={services}
-              rewards={rewards}
-              expirationLabel={snapshot.expirationLabel}
-              ownerName={snapshot.providerName ?? "Your nail tech"}
-              salonName={snapshot.salonDisplayName}
-              serviceImageUrl={snapshot.serviceImageUrl}
-              inviteArtImageUrl={snapshot.inviteArtImageUrl}
-              mode="client"
-              previewOnly
-              tokenContext={tokenContext}
-            />
-          </div>
-        </section>
+            <p className="vmb-public-invite__closing">With love, {salonName}</p>
+          </article>
+        </InvitationEnvelope>
       ) : null}
     </main>
   );
