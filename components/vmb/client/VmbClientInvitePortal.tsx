@@ -117,36 +117,38 @@ export function VmbClientInvitePortal({ inviteId, contact }: Props) {
         </section>
       ) : snapshot ? (
         <section className="vmb-client-invite-page__shell">
-          <div className="vmb-client-invite-page__intro">
-            <p className="vmb-client-invite-page__eyebrow">Private client page</p>
-            <h1 className="vmb-client-invite-page__greeting">
-              <span>Hi</span>
-              <strong>{snapshot.recipientName || "there"}</strong>
-            </h1>
-            <p>
-              {snapshot.providerName ?? "Your salon"} sent you a private invitation. Review the offer, then choose how
-              you want to handle it.
-            </p>
-            <dl className="vmb-client-invite-page__details">
-              <div>
-                <dt>Invite</dt>
-                <dd>{snapshot.inviteTypeLabel}</dd>
+          <div className="vmb-client-invite-page__stack">
+            <div className="vmb-client-invite-page__intro">
+              <div className="vmb-client-invite-page__intro-copy">
+                <p className="vmb-client-invite-page__eyebrow">Private client page</p>
+                <h1 className="vmb-client-invite-page__greeting">
+                  <span>Hi</span>
+                  <strong>{snapshot.recipientName || "there"}</strong>
+                </h1>
+                <p>
+                  {snapshot.providerName ?? "Your salon"} sent you a private invitation. Review the offer, then choose how
+                  you want to handle it.
+                </p>
               </div>
-              <div>
-                <dt>Salon</dt>
-                <dd>{snapshot.salonDisplayName}</dd>
-              </div>
-              {snapshot.expirationLabel ? (
+              <dl className="vmb-client-invite-page__details">
                 <div>
-                  <dt>Good through</dt>
-                  <dd>{snapshot.expirationLabel.replace(/^Valid\s+/i, "")}</dd>
+                  <dt>Invite</dt>
+                  <dd>{snapshot.inviteTypeLabel}</dd>
                 </div>
-              ) : null}
-            </dl>
-            {notice ? <p className="vmb-client-invite-page__notice">{notice}</p> : null}
-          </div>
+                <div>
+                  <dt>Salon</dt>
+                  <dd>{snapshot.salonDisplayName}</dd>
+                </div>
+                {snapshot.expirationLabel ? (
+                  <div>
+                    <dt>Good through</dt>
+                    <dd>{snapshot.expirationLabel.replace(/^Valid\s+/i, "")}</dd>
+                  </div>
+                ) : null}
+              </dl>
+              {notice ? <p className="vmb-client-invite-page__notice">{notice}</p> : null}
+            </div>
 
-          <div className="vmb-client-invite-page__modal" role="dialog" aria-label="Client invite offer">
             <div className="vmb-client-invite-page__modal-copy">
               <p className="vmb-client-invite-page__eyebrow">Action item</p>
               <h2>{snapshot.headline}</h2>
@@ -169,7 +171,9 @@ export function VmbClientInvitePortal({ inviteId, contact }: Props) {
                 </button>
               </div>
             </div>
+          </div>
 
+          <div className="vmb-client-invite-page__preview" role="dialog" aria-label="Client invite preview">
             <SalonInviteCard
               inviteTypeLabel={snapshot.inviteTypeLabel}
               headline={snapshot.headline}

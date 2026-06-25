@@ -9054,8 +9054,8 @@
 
 .vmb-client-invite-page__shell {
   display: grid;
-  grid-template-columns: minmax(210px, 0.65fr) minmax(520px, 1.45fr);
-  gap: clamp(18px, 3vw, 32px);
+  grid-template-columns: minmax(440px, 1fr) minmax(300px, 360px);
+  gap: clamp(20px, 3vw, 34px);
   align-items: start;
 }
 
@@ -9069,10 +9069,19 @@
 }
 
 .vmb-client-invite-page__intro {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(190px, 0.72fr);
+  gap: 20px;
+  align-items: start;
   border-radius: 22px;
   border: 1px solid #fce7f3;
   background: linear-gradient(180deg, #fff 0%, #fff7fb 100%);
   padding: 22px;
+}
+
+.vmb-client-invite-page__stack {
+  display: grid;
+  gap: 16px;
 }
 
 .vmb-client-invite-page__intro h1,
@@ -9083,7 +9092,7 @@
 }
 
 .vmb-client-invite-page__intro h1 {
-  font-size: clamp(34px, 4vw, 48px);
+  font-size: clamp(38px, 4.4vw, 58px);
   letter-spacing: -0.04em;
 }
 
@@ -9112,7 +9121,7 @@
 }
 
 .vmb-client-invite-page__details {
-  margin: 18px 0 0;
+  margin: 0;
   display: grid;
   gap: 0;
   border-top: 1px solid #fce7f3;
@@ -9139,7 +9148,8 @@
 }
 
 .vmb-client-invite-page__notice {
-  margin: 18px 0 0;
+  grid-column: 1 / -1;
+  margin: 0;
   border-radius: 16px;
   border: 1px solid #bbf7d0;
   background: #f0fdf4;
@@ -9148,14 +9158,11 @@
   font-weight: 700;
 }
 
-.vmb-client-invite-page__modal {
-  display: grid;
-  grid-template-columns: minmax(240px, 0.85fr) minmax(300px, 420px);
-  gap: 22px;
-  align-items: start;
-}
-
 .vmb-client-invite-page__modal-copy {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(190px, 0.7fr);
+  gap: 18px 22px;
+  align-items: center;
   border-radius: 22px;
   border: 1px solid #fce7f3;
   background: linear-gradient(180deg, #fff7fb 0%, #fff 100%);
@@ -9168,8 +9175,16 @@
   letter-spacing: -0.04em;
 }
 
+.vmb-client-invite-page__modal-copy .vmb-client-invite-page__eyebrow,
+.vmb-client-invite-page__modal-copy h2,
+.vmb-client-invite-page__modal-copy > p {
+  grid-column: 1;
+}
+
 .vmb-client-invite-page__mini-offer {
-  margin-top: 18px;
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  margin-top: 0;
   padding: 14px;
   border-radius: 16px;
   border: 1px solid #fbcfe8;
@@ -9188,10 +9203,11 @@
 }
 
 .vmb-client-invite-page__actions {
+  grid-column: 2;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: 0;
 }
 
 .vmb-client-invite-page__actions button {
@@ -9216,8 +9232,15 @@
 
 @media (max-width: 900px) {
   .vmb-client-invite-page__shell,
-  .vmb-client-invite-page__modal {
+  .vmb-client-invite-page__intro,
+  .vmb-client-invite-page__modal-copy {
     grid-template-columns: 1fr;
+  }
+
+  .vmb-client-invite-page__mini-offer,
+  .vmb-client-invite-page__actions {
+    grid-column: auto;
+    grid-row: auto;
   }
 }
 
