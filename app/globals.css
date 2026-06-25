@@ -9232,12 +9232,12 @@
 
 .vmb-public-invite {
   min-height: 100vh;
-  padding: clamp(18px, 3vw, 36px);
+  padding: clamp(18px, 4vw, 44px);
   color: #3f2f2a;
   background:
-    radial-gradient(circle at 8% 8%, rgba(251, 207, 232, 0.46), transparent 30%),
-    radial-gradient(circle at 88% 0%, rgba(251, 191, 36, 0.12), transparent 28%),
-    linear-gradient(135deg, #fff7f3 0%, #fffaf3 48%, #fff1f7 100%);
+    radial-gradient(circle at 10% 8%, rgba(251, 207, 232, 0.48), transparent 32%),
+    radial-gradient(circle at 88% 4%, rgba(245, 158, 11, 0.12), transparent 30%),
+    linear-gradient(135deg, #fff7f3 0%, #fffaf3 50%, #fff1f7 100%);
 }
 
 .vmb-public-invite--centered {
@@ -9271,11 +9271,11 @@
 }
 
 .vmb-public-invite__topbar {
-  width: min(1280px, 100%);
+  width: min(860px, 100%);
   margin: 0 auto 18px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 16px;
 }
 
@@ -9291,36 +9291,6 @@
   letter-spacing: 0.03em;
 }
 
-.vmb-public-invite__identity-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  max-width: min(480px, 100%);
-  padding: 8px 14px 8px 8px;
-  border: 1px solid rgba(244, 114, 182, 0.26);
-  border-radius: 999px;
-  background: rgba(255, 252, 247, 0.84);
-  box-shadow: 0 10px 30px rgba(136, 19, 55, 0.08);
-}
-
-.vmb-public-invite__identity-pill strong,
-.vmb-public-invite__identity-pill small {
-  display: block;
-}
-
-.vmb-public-invite__identity-pill strong {
-  color: #4a342e;
-  font-size: 13px;
-  line-height: 1.2;
-}
-
-.vmb-public-invite__identity-pill small {
-  margin-top: 2px;
-  color: #9f6b7d;
-  font-size: 12px;
-}
-
-.vmb-public-invite__identity-avatar,
 .vmb-public-invite__crest {
   display: grid;
   place-items: center;
@@ -9331,23 +9301,17 @@
   font-weight: 800;
 }
 
-.vmb-public-invite__identity-avatar {
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgba(212, 175, 55, 0.34);
-}
-
-.vmb-public-invite__identity-avatar img,
 .vmb-public-invite__crest img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.vmb-public-invite__panel {
-  width: min(1280px, 100%);
+.vmb-public-invite__card {
+  position: relative;
+  overflow: hidden;
+  width: min(860px, 100%);
   margin: 0 auto;
-  padding: clamp(20px, 3.5vw, 44px);
   border: 1px solid rgba(244, 114, 182, 0.26);
   border-radius: 38px;
   background:
@@ -9356,32 +9320,33 @@
   box-shadow: 0 34px 110px rgba(136, 19, 55, 0.12);
 }
 
-.vmb-public-invite__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 58fr) minmax(320px, 42fr);
-  gap: clamp(22px, 3vw, 38px);
-  align-items: start;
+.vmb-public-invite__hero {
+  overflow: hidden;
+  min-height: 300px;
+  border-radius: 38px 38px 0 0;
 }
 
-.vmb-public-invite__left {
-  display: grid;
-  gap: 18px;
+.vmb-public-invite__hero .vmb-card-preview__hero,
+.vmb-public-invite__hero .vmb-card-preview__service-image,
+.vmb-public-invite__hero .vmb-card-preview__service-placeholder {
+  min-height: 300px;
+  border-radius: 0;
 }
 
-.vmb-public-invite__private-card,
-.vmb-public-invite__gift-card,
-.vmb-public-invite__preview-card {
-  border: 1px solid rgba(244, 114, 182, 0.28);
-  border-radius: 30px;
-  background: rgba(255, 252, 247, 0.9);
-  box-shadow: 0 22px 70px rgba(136, 19, 55, 0.08);
+.vmb-public-invite__crest {
+  position: absolute;
+  top: 264px;
+  left: 50%;
+  width: 72px;
+  height: 72px;
+  transform: translateX(-50%);
+  border: 5px solid #fffaf4;
+  box-shadow: 0 14px 30px rgba(136, 19, 55, 0.16);
 }
 
-.vmb-public-invite__private-card {
-  display: grid;
-  grid-template-columns: minmax(240px, 1fr) minmax(220px, 0.78fr);
-  gap: 24px;
-  padding: clamp(22px, 3vw, 34px);
+.vmb-public-invite__body {
+  padding: clamp(52px, 7vw, 76px) clamp(22px, 6vw, 76px) clamp(32px, 5vw, 58px);
+  text-align: center;
 }
 
 .vmb-public-invite__eyebrow {
@@ -9393,121 +9358,69 @@
   text-transform: uppercase;
 }
 
-.vmb-public-invite__script {
-  margin: 0;
+.vmb-public-invite__hello {
+  margin: 0 0 2px;
   color: #c28b2c;
   font-family: "Brush Script MT", "Segoe Script", cursive;
-  font-size: clamp(42px, 7vw, 72px);
-  line-height: 0.9;
+  font-size: clamp(36px, 8vw, 72px);
+  line-height: 0.95;
 }
 
-.vmb-public-invite__private-copy h1 {
-  margin: 0;
+.vmb-public-invite__body h1 {
+  margin: 0 auto;
+  max-width: 660px;
   color: #2f2623;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(58px, 9vw, 116px);
-  line-height: 0.86;
-  letter-spacing: -0.075em;
-}
-
-.vmb-public-invite__private-copy p:last-child,
-.vmb-public-invite__gift-card > div:first-child p:last-child,
-.vmb-public-invite__preview-body > p {
-  color: #6f5a53;
-  line-height: 1.72;
-}
-
-.vmb-public-invite__private-copy p:last-child {
-  max-width: 520px;
-  margin: 20px 0 0;
-  font-size: 16px;
-}
-
-.vmb-public-invite__detail-list {
-  margin: 0;
-  display: grid;
-  gap: 12px;
-}
-
-.vmb-public-invite__detail-list div {
-  padding: 14px;
-  border: 1px solid rgba(244, 114, 182, 0.18);
-  border-radius: 18px;
-  background: rgba(255, 247, 251, 0.72);
-}
-
-.vmb-public-invite__detail-list dt {
-  margin: 0 0 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #a21caf;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-
-.vmb-public-invite__detail-list dt span {
-  display: inline-grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  background: #fff8ed;
-  color: #c28b2c;
-  font-size: 13px;
-}
-
-.vmb-public-invite__detail-list dd {
-  margin: 0;
-  color: #352723;
-  font-weight: 800;
-}
-
-.vmb-public-invite__gift-card {
-  display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(220px, 0.82fr);
-  gap: 22px;
-  align-items: center;
-  padding: clamp(22px, 3vw, 32px);
-}
-
-.vmb-public-invite__gift-card h2,
-.vmb-public-invite__preview-body h2 {
-  margin: 0;
-  color: #2f2623;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(40px, 5vw, 70px);
-  line-height: 0.94;
+  font-size: clamp(42px, 7vw, 78px);
+  line-height: 0.95;
   letter-spacing: -0.065em;
 }
 
-.vmb-public-invite__service-mini {
-  padding: 18px;
-  border: 1px solid rgba(244, 114, 182, 0.34);
-  border-radius: 22px;
-  background: linear-gradient(180deg, #fff 0%, #fff7fb 100%);
+.vmb-public-invite__note {
+  max-width: 560px;
+  margin: 18px auto 0;
+  color: #6f5a53;
+  font-size: 16px;
+  line-height: 1.72;
 }
 
-.vmb-public-invite__service-mini strong {
+.vmb-public-invite__gift {
+  max-width: 620px;
+  margin: 28px auto 0;
+  padding: clamp(18px, 4vw, 28px);
+  border: 1px solid rgba(212, 175, 55, 0.34);
+  border-radius: 28px;
+  background: linear-gradient(180deg, #fffaf4 0%, #fff7fb 100%);
+  text-align: left;
+}
+
+.vmb-public-invite__gift-label {
+  margin: 0 0 10px;
+  color: #9d174d;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.vmb-public-invite__gift-service {
   display: block;
-  color: #2f2623;
-  font-size: 18px;
+  color: #352723;
+  font-size: clamp(22px, 4vw, 32px);
+  line-height: 1.05;
 }
 
-.vmb-public-invite__service-mini ul,
-.vmb-public-invite__exclusive-box ul,
-.vmb-public-invite__trust-strip ul {
+.vmb-public-invite__gift-chips {
   list-style: none;
-  margin: 10px 0 0;
+  margin: 14px 0 0;
   padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.vmb-public-invite__service-mini li,
-.vmb-public-invite__exclusive-box li {
+.vmb-public-invite__gift-chips li {
   display: inline-flex;
-  margin: 6px 6px 0 0;
   padding: 7px 11px;
   border: 1px solid #f9a8d4;
   border-radius: 999px;
@@ -9517,121 +9430,20 @@
   font-weight: 800;
 }
 
-.vmb-public-invite__service-mini span {
-  display: block;
-  margin-top: 8px;
-  color: #9f6b7d;
-  font-weight: 700;
-}
-
-.vmb-public-invite__cta-row {
-  grid-column: 1 / -1;
+.vmb-public-invite__valid {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #fbcfe8;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.vmb-public-invite__cta,
-.vmb-public-invite__preview-cta {
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 46px;
-  padding: 12px 20px;
-  border-radius: 999px;
-  border: 1px solid #f9a8d4;
-  font-weight: 900;
-  text-decoration: none;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #8a5c50;
+  font-size: 13px;
 }
 
-.vmb-public-invite__cta--primary,
-.vmb-public-invite__preview-cta {
-  border-color: #be185d;
-  background: linear-gradient(135deg, #be185d, #db2777);
-  color: #fff;
-  box-shadow: 0 16px 34px rgba(190, 24, 93, 0.22);
-}
-
-.vmb-public-invite__cta--secondary {
-  background: #fff;
-  color: #be185d;
-}
-
-.vmb-public-invite__cta--tertiary {
-  flex: 1 1 190px;
-  background: #fff8ed;
-  color: #7c2d12;
-  border-color: rgba(212, 175, 55, 0.4);
-}
-
-.vmb-public-invite__preview-card {
-  position: relative;
-  overflow: hidden;
-  background: #fffaf4;
-}
-
-.vmb-public-invite__preview-hero {
-  overflow: hidden;
-  border-radius: 30px 30px 0 0;
-  min-height: 220px;
-}
-
-.vmb-public-invite__preview-hero .vmb-card-preview__hero {
-  border-radius: 0;
-  min-height: 250px;
-}
-
-.vmb-public-invite__preview-hero .vmb-card-preview__service-image,
-.vmb-public-invite__preview-hero .vmb-card-preview__service-placeholder {
-  min-height: 250px;
-}
-
-.vmb-public-invite__crest {
-  position: absolute;
-  top: 218px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 62px;
-  height: 62px;
-  border: 4px solid #fffaf4;
-  box-shadow: 0 10px 26px rgba(136, 19, 55, 0.16);
-}
-
-.vmb-public-invite__preview-body {
-  padding: 44px clamp(20px, 3vw, 34px) 28px;
-  text-align: center;
-}
-
-.vmb-public-invite__preview-body h2 {
-  font-size: clamp(32px, 4vw, 54px);
-}
-
-.vmb-public-invite__preview-body h2 span,
-.vmb-public-invite__preview-body h2 em {
-  display: block;
-}
-
-.vmb-public-invite__preview-body h2 em {
-  margin-top: 2px;
-  color: #c28b2c;
-  font-family: "Brush Script MT", "Segoe Script", cursive;
-  font-size: 0.82em;
-  font-style: normal;
-  font-weight: 500;
-  letter-spacing: 0;
-}
-
-.vmb-public-invite__exclusive-box {
-  margin-top: 20px;
-  padding: 18px;
-  border: 1px solid rgba(212, 175, 55, 0.34);
-  border-radius: 22px;
-  background: linear-gradient(180deg, #fffaf4, #fff7fb);
-  text-align: left;
-}
-
-.vmb-public-invite__exclusive-box p {
-  margin: 0 0 8px;
+.vmb-public-invite__valid span {
   color: #9d174d;
   font-size: 10px;
   font-weight: 900;
@@ -9639,56 +9451,51 @@
   text-transform: uppercase;
 }
 
-.vmb-public-invite__exclusive-box strong {
-  color: #2f2623;
-  font-size: 18px;
+.vmb-public-invite__valid strong {
+  color: #7c2d12;
 }
 
-.vmb-public-invite__exclusive-box span {
-  display: block;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid #fbcfe8;
-  color: #9d174d;
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.vmb-public-invite__preview-cta {
-  width: 100%;
-  margin-top: 22px;
-}
-
-.vmb-public-invite__trust-strip {
-  margin-top: 24px;
-  padding: 18px 20px;
-  border: 1px solid rgba(244, 114, 182, 0.18);
-  border-radius: 24px;
-  background: rgba(255, 252, 247, 0.74);
-}
-
-.vmb-public-invite__trust-strip ul {
-  margin: 0;
+.vmb-public-invite__actions {
+  max-width: 620px;
+  margin: 26px auto 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, auto);
+  gap: 10px;
 }
 
-.vmb-public-invite__trust-strip li {
-  display: flex;
+.vmb-public-invite__button {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #6f5a53;
-  font-size: 13px;
-  font-weight: 800;
+  justify-content: center;
+  min-height: 50px;
+  padding: 13px 22px;
+  border-radius: 999px;
+  border: 1px solid #f9a8d4;
+  font-weight: 900;
+  text-decoration: none;
 }
 
-.vmb-public-invite__trust-strip li span {
-  color: #c28b2c;
+.vmb-public-invite__button--primary {
+  grid-column: 1 / -1;
+  border-color: #be185d;
+  background: linear-gradient(135deg, #be185d, #db2777);
+  color: #fff;
+  box-shadow: 0 16px 34px rgba(190, 24, 93, 0.22);
 }
 
-.vmb-public-invite__trust-strip p {
-  margin: 16px 0 0;
+.vmb-public-invite__button--secondary {
+  background: #fff;
+  color: #be185d;
+}
+
+.vmb-public-invite__button--quiet {
+  background: #fff8ed;
+  color: #7c2d12;
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+.vmb-public-invite__closing {
+  margin: 28px 0 0;
   color: #b7791f;
   font-family: "Brush Script MT", "Segoe Script", cursive;
   font-size: clamp(24px, 3vw, 38px);
@@ -9708,20 +9515,8 @@
     grid-row: auto;
   }
 
-  .vmb-public-invite__topbar,
-  .vmb-public-invite__grid,
-  .vmb-public-invite__private-card,
-  .vmb-public-invite__gift-card {
-    grid-template-columns: 1fr;
-  }
-
   .vmb-public-invite__topbar {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .vmb-public-invite__trust-strip ul {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(860px, 100%);
   }
 }
 
@@ -9730,17 +9525,37 @@
     padding: 12px;
   }
 
-  .vmb-public-invite__panel {
+  .vmb-public-invite__card {
     border-radius: 26px;
-    padding: 16px;
   }
 
-  .vmb-public-invite__private-copy h1 {
-    font-size: clamp(54px, 18vw, 84px);
+  .vmb-public-invite__hero,
+  .vmb-public-invite__hero .vmb-card-preview__hero,
+  .vmb-public-invite__hero .vmb-card-preview__service-image,
+  .vmb-public-invite__hero .vmb-card-preview__service-placeholder {
+    min-height: 230px;
   }
 
-  .vmb-public-invite__trust-strip ul {
+  .vmb-public-invite__crest {
+    top: 198px;
+    width: 64px;
+    height: 64px;
+  }
+
+  .vmb-public-invite__body {
+    padding: 50px 18px 28px;
+  }
+
+  .vmb-public-invite__body h1 {
+    font-size: clamp(38px, 13vw, 58px);
+  }
+
+  .vmb-public-invite__actions {
     grid-template-columns: 1fr;
+  }
+
+  .vmb-public-invite__button--primary {
+    grid-column: auto;
   }
 }
 
