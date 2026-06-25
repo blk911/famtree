@@ -119,7 +119,10 @@ export function VmbClientInvitePortal({ inviteId, contact }: Props) {
         <section className="vmb-client-invite-page__shell">
           <div className="vmb-client-invite-page__intro">
             <p className="vmb-client-invite-page__eyebrow">Private client page</p>
-            <h1>{snapshot.recipientName ? `Hi ${snapshot.recipientName}` : "Your invite is ready"}</h1>
+            <h1 className="vmb-client-invite-page__greeting">
+              <span>Hi</span>
+              <strong>{snapshot.recipientName || "there"}</strong>
+            </h1>
             <p>
               {snapshot.providerName ?? "Your salon"} sent you a private invitation. Review the offer, then choose how
               you want to handle it.

@@ -9087,6 +9087,24 @@
   letter-spacing: -0.04em;
 }
 
+.vmb-client-invite-page__greeting {
+  display: grid;
+  gap: 2px;
+}
+
+.vmb-client-invite-page__greeting span {
+  color: #be185d;
+  font-size: clamp(22px, 2.2vw, 30px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.vmb-client-invite-page__greeting strong {
+  color: #292524;
+  font: inherit;
+  font-weight: 700;
+}
+
 .vmb-client-invite-page__intro p,
 .vmb-client-invite-page__modal-copy p {
   color: #57534e;
