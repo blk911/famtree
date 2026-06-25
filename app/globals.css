@@ -9054,8 +9054,8 @@
 
 .vmb-client-invite-page__shell {
   display: grid;
-  grid-template-columns: minmax(240px, 0.8fr) minmax(320px, 1.2fr);
-  gap: clamp(22px, 4vw, 44px);
+  grid-template-columns: minmax(210px, 0.65fr) minmax(520px, 1.45fr);
+  gap: clamp(18px, 3vw, 32px);
   align-items: start;
 }
 
@@ -9068,16 +9068,23 @@
   text-transform: uppercase;
 }
 
+.vmb-client-invite-page__intro {
+  border-radius: 22px;
+  border: 1px solid #fce7f3;
+  background: linear-gradient(180deg, #fff 0%, #fff7fb 100%);
+  padding: 22px;
+}
+
 .vmb-client-invite-page__intro h1,
 .vmb-client-invite-page__modal-copy h2 {
   margin: 0;
   color: #292524;
-  line-height: 1.02;
+  line-height: 1.06;
 }
 
 .vmb-client-invite-page__intro h1 {
-  font-size: clamp(42px, 7vw, 76px);
-  letter-spacing: -0.05em;
+  font-size: clamp(34px, 4vw, 48px);
+  letter-spacing: -0.04em;
 }
 
 .vmb-client-invite-page__intro p,
@@ -9086,7 +9093,35 @@
   line-height: 1.6;
 }
 
+.vmb-client-invite-page__details {
+  margin: 18px 0 0;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid #fce7f3;
+}
+
+.vmb-client-invite-page__details div {
+  padding: 12px 0;
+  border-bottom: 1px solid #fce7f3;
+}
+
+.vmb-client-invite-page__details dt {
+  margin: 0 0 4px;
+  color: #be185d;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.vmb-client-invite-page__details dd {
+  margin: 0;
+  color: #292524;
+  font-weight: 800;
+}
+
 .vmb-client-invite-page__notice {
+  margin: 18px 0 0;
   border-radius: 16px;
   border: 1px solid #bbf7d0;
   background: #f0fdf4;
@@ -9097,7 +9132,7 @@
 
 .vmb-client-invite-page__modal {
   display: grid;
-  grid-template-columns: minmax(220px, 0.9fr) minmax(280px, 420px);
+  grid-template-columns: minmax(240px, 0.85fr) minmax(300px, 420px);
   gap: 22px;
   align-items: start;
 }
@@ -9105,8 +9140,33 @@
 .vmb-client-invite-page__modal-copy {
   border-radius: 22px;
   border: 1px solid #fce7f3;
-  background: #fff7fb;
-  padding: 22px;
+  background: linear-gradient(180deg, #fff7fb 0%, #fff 100%);
+  padding: 24px;
+  box-shadow: inset 4px 0 0 #db2777;
+}
+
+.vmb-client-invite-page__modal-copy h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  letter-spacing: -0.04em;
+}
+
+.vmb-client-invite-page__mini-offer {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid #fbcfe8;
+  background: #fff;
+  display: grid;
+  gap: 6px;
+}
+
+.vmb-client-invite-page__mini-offer strong {
+  color: #292524;
+}
+
+.vmb-client-invite-page__mini-offer span {
+  color: #be185d;
+  font-weight: 700;
 }
 
 .vmb-client-invite-page__actions {

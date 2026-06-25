@@ -119,22 +119,41 @@ export function VmbClientInvitePortal({ inviteId, contact }: Props) {
         <section className="vmb-client-invite-page__shell">
           <div className="vmb-client-invite-page__intro">
             <p className="vmb-client-invite-page__eyebrow">Private client page</p>
-            <h1>{snapshot.recipientName ? `${snapshot.recipientName}, your invite is ready` : "Your invite is ready"}</h1>
+            <h1>{snapshot.recipientName ? `Hi ${snapshot.recipientName}` : "Your invite is ready"}</h1>
             <p>
-              This is the temporary client-side bridge for testing the real sent invite rail. The salon sees the claim
-              once you choose Book Now.
+              {snapshot.providerName ?? "Your salon"} sent you a private invitation. Review the offer, then choose how
+              you want to handle it.
             </p>
+            <dl className="vmb-client-invite-page__details">
+              <div>
+                <dt>Invite</dt>
+                <dd>{snapshot.inviteTypeLabel}</dd>
+              </div>
+              <div>
+                <dt>Salon</dt>
+                <dd>{snapshot.salonDisplayName}</dd>
+              </div>
+              {snapshot.expirationLabel ? (
+                <div>
+                  <dt>Good through</dt>
+                  <dd>{snapshot.expirationLabel.replace(/^Valid\s+/i, "")}</dd>
+                </div>
+              ) : null}
+            </dl>
             {notice ? <p className="vmb-client-invite-page__notice">{notice}</p> : null}
           </div>
 
           <div className="vmb-client-invite-page__modal" role="dialog" aria-label="Client invite offer">
             <div className="vmb-client-invite-page__modal-copy">
-              <p className="vmb-client-invite-page__eyebrow">Offer options</p>
+              <p className="vmb-client-invite-page__eyebrow">Action item</p>
               <h2>{snapshot.headline}</h2>
               <p>
-                Book Now claims the invite and records it for the salon timeline. Revise and Hold are visible test
-                controls for the next client workflow pass.
+                Claim the invite, ask the salon to adjust it, or hold it while you decide.
               </p>
+              <div className="vmb-client-invite-page__mini-offer">
+                {services.length > 0 ? <strong>{services.join(" · ")}</strong> : null}
+                {rewards.length > 0 ? <span>{rewards.join(" · ")}</span> : null}
+              </div>
               <div className="vmb-client-invite-page__actions">
                 <button type="button" onClick={() => void claimInvite("book")} disabled={claiming || invite?.alreadyClaimed}>
                   {invite?.alreadyClaimed ? "Claimed" : claiming ? "Claiming…" : "Book Now"}
