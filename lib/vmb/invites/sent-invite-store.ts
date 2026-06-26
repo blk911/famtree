@@ -1,13 +1,21 @@
 import crypto from "crypto";
 import { prisma, resolveVmbStorageBackend } from "@/lib/vmb/db";
 import { assertVmbMoneyWritableBackend } from "@/lib/vmb/storage-policy";
-import type { InviteClaim, SalonClaimTimelineItem, SentInvite, SentInvitePublicSnapshot } from "./sent-invite-types";
+import type {
+  ClientInviteIntent,
+  ClientInviteIntentKind,
+  InviteClaim,
+  SalonClaimTimelineItem,
+  SentInvite,
+  SentInvitePublicSnapshot,
+} from "./sent-invite-types";
 import { generateRecipientToken, hashRecipientToken } from "./sent-invite-token";
 
 type PayloadRow = { payload: unknown };
 let jsonMutation = Promise.resolve();
 let memoryInvites: SentInvite[] = [];
 let memoryClaims: InviteClaim[] = [];
+let memoryClientIntents: ClientInviteIntent[] = [];
 
 function isSentInvite(value: unknown): value is SentInvite {
   if (!value || typeof value !== "object") return false;
@@ -31,6 +39,7 @@ export function resetSentInviteMemoryStoreForTests(): void {
   if (process.env.VMB_MONEY_TEST_MEMORY !== "1") throw new Error("Test memory backend is not enabled");
   memoryInvites = [];
   memoryClaims = [];
+  memoryClientIntents = [];
   jsonMutation = Promise.resolve();
 }
 
@@ -305,6 +314,59 @@ export async function claimSentInviteById(input: {
     memoryClaims = [...claims, claim];
     memoryInvites = invites.map((row) => row.id === invite.id ? next : row);
     return { ok: true, claim, existing: false } as const;
+  });
+}
+
+export async function recordClientInviteIntent(input: {
+  salonId: string;
+  sentInviteId: string;
+  kind: ClientInviteIntentKind;
+  clientName: string;
+  recipientContactSummary: string;
+  recipientContactHash: string;
+  note?: string;
+  requestedSlot?: string;
+}): Promise<{ intent: ClientInviteIntent } | { error: string; status: 404 | 409 | 503 }> {
+  const writable = await assertVmbMoneyWritableBackend();
+  if (!writable.ok) return { error: writable.error, status: 503 };
+  const now = new Date().toISOString();
+  const intent: ClientInviteIntent = {
+    id: newId("intent"),
+    sentInviteId: input.sentInviteId,
+    salonId: input.salonId,
+    kind: input.kind,
+    clientName: input.clientName,
+    recipientContactSummary: input.recipientContactSummary,
+    recipientContactHash: input.recipientContactHash,
+    note: input.note?.trim() || undefined,
+    requestedSlot: input.requestedSlot?.trim() || undefined,
+    createdAt: now,
+  };
+
+  if (writable.backend === "postgres") {
+    const inviteRows = await prisma.$queryRaw<PayloadRow[]>`
+      SELECT payload FROM vmb_sent_invite WHERE sent_invite_id = ${input.sentInviteId} AND salon_id = ${input.salonId} LIMIT 1
+    `;
+    const invite = parseSent(inviteRows[0]);
+    if (!invite) return { error: "Invite not found", status: 404 };
+    if (invite.status === "redeemed" || invite.status === "cancelled" || invite.status === "expired") {
+      return { error: `This invite is ${invite.status}`, status: 409 };
+    }
+    await prisma.$executeRaw`
+      INSERT INTO vmb_invite_event (event_id, event_type, salon_id, occurred_at, payload)
+      VALUES (${intent.id}, ${`sent_invite_${intent.kind}`}, ${intent.salonId}, ${new Date(intent.createdAt)}, ${JSON.stringify(intent)}::jsonb)
+    `;
+    return { intent };
+  }
+
+  return serializeJson(async () => {
+    const invite = memoryInvites.find((row) => row.id === input.sentInviteId && row.salonId === input.salonId);
+    if (!invite) return { error: "Invite not found", status: 404 } as const;
+    if (invite.status === "redeemed" || invite.status === "cancelled" || invite.status === "expired") {
+      return { error: `This invite is ${invite.status}`, status: 409 } as const;
+    }
+    memoryClientIntents = [...memoryClientIntents, intent];
+    return { intent } as const;
   });
 }
 

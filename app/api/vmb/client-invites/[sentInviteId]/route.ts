@@ -8,8 +8,12 @@ import {
   maskRecipientContactSummary,
   normalizeRecipientContact,
 } from "@/lib/vmb/invites/recipient-contact";
-import { claimSentInviteById, listSalonClaimTimeline } from "@/lib/vmb/invites/sent-invite-store";
-import type { SentInvite, SentInvitePublicSnapshot } from "@/lib/vmb/invites/sent-invite-types";
+import {
+  claimSentInviteById,
+  listSalonClaimTimeline,
+  recordClientInviteIntent,
+} from "@/lib/vmb/invites/sent-invite-store";
+import type { ClientInviteIntentKind, SentInvite, SentInvitePublicSnapshot } from "@/lib/vmb/invites/sent-invite-types";
 
 type ClientInviteDto = {
   id: string;
@@ -87,7 +91,7 @@ export async function POST(
   if (!salonId) return NextResponse.json({ ok: false, error: "Salon page session required" }, { status: 401 });
 
   const { sentInviteId } = await context.params;
-  let body: { contact?: string; clientName?: string };
+  let body: { contact?: string; clientName?: string; action?: string; note?: string; requestedSlot?: string };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -99,21 +103,51 @@ export async function POST(
     return NextResponse.json({ ok: false, error: resolved.error }, { status: resolved.status });
   }
 
+  const clientName = body.clientName?.trim() || resolved.item.sentInvite.snapshot.recipientName || resolved.approval.clientName;
+  const recipientContactSummary = maskRecipientContactSummary(resolved.contact);
+  const recipientContactHash = hashInviteClaimContact(resolved.item.sentInvite.id, resolved.contact);
   const result = await claimSentInviteById({
     salonId,
     sentInviteId,
-    clientName: body.clientName?.trim() || resolved.item.sentInvite.snapshot.recipientName || resolved.approval.clientName,
-    recipientContactSummary: maskRecipientContactSummary(resolved.contact),
-    recipientContactHash: hashInviteClaimContact(resolved.item.sentInvite.id, resolved.contact),
+    clientName,
+    recipientContactSummary,
+    recipientContactHash,
   });
 
   if (!result.ok) {
     return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
   }
 
+  const action = body.action?.trim() || "claim";
+  const intentByAction: Record<string, ClientInviteIntentKind | undefined> = {
+    claim: "gift_saved",
+    book: "booking_requested",
+    personalize: "personalization_requested",
+    hold: "hold_requested",
+  };
+  const intentKind = intentByAction[action];
+  if (!intentKind) {
+    return NextResponse.json({ ok: false, error: "Unknown invite action" }, { status: 400 });
+  }
+  const intent = await recordClientInviteIntent({
+    salonId,
+    sentInviteId,
+    kind: intentKind,
+    clientName,
+    recipientContactSummary,
+    recipientContactHash,
+    note: body.note,
+    requestedSlot: body.requestedSlot,
+  });
+  if ("error" in intent) {
+    return NextResponse.json({ ok: false, error: intent.error }, { status: intent.status });
+  }
+
   return NextResponse.json({
     ok: true,
     alreadyClaimed: result.existing,
-    message: result.existing ? "Invite already claimed." : "Invite claimed.",
+    action,
+    intent: intent.intent.kind,
+    message: result.existing ? "Invite already saved." : "Invite saved.",
   });
 }

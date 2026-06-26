@@ -123,6 +123,27 @@ async function run() {
       body: JSON.stringify({ contact: "vanessa@test.com", clientName: "Vanessa" }),
     }), { params: Promise.resolve({ sentInviteId: lookupJson.invite.id }) });
     assert(clientClaim.status === 200, "client invite bridge can claim verified sent invite");
+    const clientPersonalize = await postClientInviteClaim(new NextRequest(`http://localhost/api/vmb/client-invites/${lookupJson.invite.id}`, {
+      method: "POST",
+      headers: { cookie: salonCookie, "content-type": "application/json" },
+      body: JSON.stringify({ contact: "vanessa@test.com", clientName: "Vanessa", action: "personalize", note: "Wants French tips" }),
+    }), { params: Promise.resolve({ sentInviteId: lookupJson.invite.id }) });
+    const clientPersonalizeJson = await clientPersonalize.json() as { intent?: string };
+    assert(clientPersonalize.status === 200 && clientPersonalizeJson.intent === "personalization_requested", "client can personalize saved invite");
+    const clientHold = await postClientInviteClaim(new NextRequest(`http://localhost/api/vmb/client-invites/${lookupJson.invite.id}`, {
+      method: "POST",
+      headers: { cookie: salonCookie, "content-type": "application/json" },
+      body: JSON.stringify({ contact: "vanessa@test.com", clientName: "Vanessa", action: "hold" }),
+    }), { params: Promise.resolve({ sentInviteId: lookupJson.invite.id }) });
+    const clientHoldJson = await clientHold.json() as { intent?: string };
+    assert(clientHold.status === 200 && clientHoldJson.intent === "hold_requested", "client can save invite for later");
+    const clientBook = await postClientInviteClaim(new NextRequest(`http://localhost/api/vmb/client-invites/${lookupJson.invite.id}`, {
+      method: "POST",
+      headers: { cookie: salonCookie, "content-type": "application/json" },
+      body: JSON.stringify({ contact: "vanessa@test.com", clientName: "Vanessa", action: "book", requestedSlot: "Tomorrow · 10:00 AM" }),
+    }), { params: Promise.resolve({ sentInviteId: lookupJson.invite.id }) });
+    const clientBookJson = await clientBook.json() as { intent?: string };
+    assert(clientBook.status === 200 && clientBookJson.intent === "booking_requested", "client can request booking from invite");
 
     const opened = await resolveRecipientInvite(sent.recipientToken);
     assert(opened.status === "available", "sent invite opens by token");

@@ -9842,6 +9842,46 @@
   font-weight: 800;
 }
 
+.vmb-public-invite__calendar {
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid rgba(244, 114, 182, 0.28);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.vmb-public-invite__calendar-title {
+  margin: 0 0 12px;
+  color: #7c2d12;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.vmb-public-invite__slot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.vmb-public-invite__slot-grid button {
+  min-height: 44px;
+  border: 1px solid #fbcfe8;
+  border-radius: 999px;
+  background: #fff;
+  color: #7c2d12;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.vmb-public-invite__slot-grid button.is-selected {
+  border-color: #be185d;
+  background: #fff1f7;
+  color: #be185d;
+  box-shadow: inset 0 0 0 1px #be185d;
+}
+
 .vmb-public-invite__actions {
   max-width: none;
   margin: 0;

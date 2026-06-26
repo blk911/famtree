@@ -53,6 +53,25 @@ export type InviteClaim = {
   claimedAt: string;
 };
 
+export type ClientInviteIntentKind =
+  | "gift_saved"
+  | "personalization_requested"
+  | "hold_requested"
+  | "booking_requested";
+
+export type ClientInviteIntent = {
+  id: string;
+  sentInviteId: string;
+  salonId: string;
+  kind: ClientInviteIntentKind;
+  clientName: string;
+  recipientContactSummary: string;
+  recipientContactHash: string;
+  note?: string;
+  requestedSlot?: string;
+  createdAt: string;
+};
+
 export type SalonClaimTimelineItem = {
   sentInvite: SentInvite;
   claim?: InviteClaim;

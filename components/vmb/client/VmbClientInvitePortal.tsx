@@ -39,6 +39,8 @@ export function VmbClientInvitePortal({ inviteId, contact }: Props) {
   const [invite, setInvite] = useState<ClientInviteDto | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState("Tomorrow · 10:00 AM");
 
   const loadInvite = useCallback(async () => {
     if (!inviteId || !contact) {
@@ -70,16 +72,8 @@ export function VmbClientInvitePortal({ inviteId, contact }: Props) {
     void loadInvite();
   }, [loadInvite]);
 
-  async function claimInvite(action: "book" | "hold" | "revise") {
+  async function recordClientIntent(action: "book" | "hold" | "personalize") {
     if (!invite) return;
-    if (action === "hold") {
-      setNotice("Held for now. Your salon can still see this invite is waiting.");
-      return;
-    }
-    if (action === "revise") {
-      setNotice("Revision request noted. We will wire the salon callback next.");
-      return;
-    }
     setClaiming(true);
     setNotice(null);
     try {
@@ -87,14 +81,26 @@ export function VmbClientInvitePortal({ inviteId, contact }: Props) {
         method: "POST",
         credentials: "include",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ contact, clientName: invite.snapshot.recipientName }),
+        body: JSON.stringify({
+          contact,
+          clientName: invite.snapshot.recipientName,
+          action,
+          requestedSlot: action === "book" ? selectedSlot : undefined,
+          note: action === "personalize" ? "Client wants to personalize this gift before booking." : undefined,
+        }),
       });
-      const json = (await response.json()) as { ok?: boolean; alreadyClaimed?: boolean; error?: string; message?: string };
+      const json = (await response.json()) as { ok?: boolean; alreadyClaimed?: boolean; action?: string; error?: string; message?: string };
       if (!response.ok || !json.ok) throw new Error(json.error ?? "Could not claim invite.");
-      setNotice(json.alreadyClaimed ? "Already claimed. You are all set." : "Claimed. Your salon can now see this invite.");
+      if (action === "book") {
+        setNotice(`Booking request saved for ${selectedSlot}. Your salon can now confirm the time.`);
+      } else if (action === "personalize") {
+        setNotice("Personalization request saved. Your salon can see what you want to refine.");
+      } else {
+        setNotice("Saved for later. This gift will stay in your client space while it is available.");
+      }
       setInvite((current) => current ? { ...current, alreadyClaimed: true, status: "claimed" } : current);
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Could not claim invite.");
+      setNotice(err instanceof Error ? err.message : "Could not update invite.");
     } finally {
       setClaiming(false);
     }
@@ -108,6 +114,7 @@ export function VmbClientInvitePortal({ inviteId, contact }: Props) {
   const providerName = snapshot?.providerName ?? "Your nail tech";
   const heroImageUrl = snapshot?.inviteArtImageUrl?.trim() || snapshot?.serviceImageUrl?.trim() || getFallbackServiceAsset().imageUrl;
   const ownerInitial = salonInitials(providerName || salonName);
+  const requestSlots = ["Tomorrow · 10:00 AM", "Tomorrow · 2:30 PM", "Friday · 11:00 AM", "Saturday · 1:00 PM"];
 
   return (
     <main className="vmb-public-invite">
@@ -181,31 +188,58 @@ export function VmbClientInvitePortal({ inviteId, contact }: Props) {
               <section className="vmb-public-invite__action-panel" aria-label="Choose how to enjoy your invite">
                 <p className="vmb-public-invite__gift-label">Claim Your Gift</p>
                 <p className="vmb-public-invite__action-copy">
-                  Claim your invite, ask for a small adjustment, or hold it while you decide.
+                  Choose a time, personalize the style, or save this gift while you decide.
                 </p>
                 {notice ? <p className="vmb-public-invite__notice">{notice}</p> : null}
+                {calendarOpen ? (
+                  <div className="vmb-public-invite__calendar" aria-label="Choose a preferred time">
+                    <p className="vmb-public-invite__calendar-title">Choose a preferred time</p>
+                    <div className="vmb-public-invite__slot-grid">
+                      {requestSlots.map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          className={slot === selectedSlot ? "is-selected" : ""}
+                          onClick={() => setSelectedSlot(slot)}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="vmb-public-invite__button vmb-public-invite__button--primary"
+                      onClick={() => void recordClientIntent("book")}
+                      disabled={claiming}
+                    >
+                      {claiming ? "Saving..." : "Request This Time"}
+                    </button>
+                  </div>
+                ) : null}
                 <div className="vmb-public-invite__actions">
                   <button
                     type="button"
                     className="vmb-public-invite__button vmb-public-invite__button--primary"
-                    onClick={() => void claimInvite("book")}
-                    disabled={claiming || invite?.alreadyClaimed}
+                    onClick={() => setCalendarOpen((open) => !open)}
+                    disabled={claiming}
                   >
-                    {invite?.alreadyClaimed ? "Claimed" : claiming ? "Claiming..." : "Claim My Gift"}
+                    Book Now
                   </button>
                   <button
                     type="button"
                     className="vmb-public-invite__button vmb-public-invite__button--secondary"
-                    onClick={() => void claimInvite("revise")}
+                    onClick={() => void recordClientIntent("personalize")}
+                    disabled={claiming}
                   >
-                    Ask for an Adjustment
+                    Personalize My Gift
                   </button>
                   <button
                     type="button"
                     className="vmb-public-invite__button vmb-public-invite__button--quiet"
-                    onClick={() => void claimInvite("hold")}
+                    onClick={() => void recordClientIntent("hold")}
+                    disabled={claiming}
                   >
-                    Hold Until Later
+                    Save for Later
                   </button>
                 </div>
               </section>
