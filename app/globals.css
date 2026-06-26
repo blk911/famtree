@@ -10374,6 +10374,172 @@
   line-height: 1.6;
 }
 
+.vmb-calendar-week {
+  display: grid;
+  gap: 18px;
+}
+
+.vmb-calendar-week__header,
+.vmb-calendar-week__summary,
+.vmb-calendar-week__day {
+  border: 1px solid #f1ded6;
+  border-radius: 24px;
+  background: rgba(255, 252, 247, 0.92);
+  box-shadow: 0 16px 50px rgba(75, 55, 45, 0.06);
+}
+
+.vmb-calendar-week__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: clamp(20px, 3vw, 30px);
+}
+
+.vmb-calendar-week__eyebrow {
+  margin: 0 0 8px;
+  color: #be185d;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.vmb-calendar-week__header h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.vmb-calendar-week__header p:not(.vmb-calendar-week__eyebrow) {
+  max-width: 740px;
+  margin: 10px 0 0;
+  color: #6f5a53;
+  line-height: 1.6;
+}
+
+.vmb-calendar-week__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.vmb-calendar-week__actions button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #f9a8d4;
+  border-radius: 999px;
+  background: #fff;
+  color: #be185d;
+  font-weight: 900;
+}
+
+.vmb-calendar-week__actions button.is-primary {
+  border-color: #be185d;
+  background: #be185d;
+  color: #fff;
+}
+
+.vmb-calendar-week__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  color: #6f5a53;
+}
+
+.vmb-calendar-week__summary strong {
+  color: #2f2623;
+}
+
+.vmb-calendar-week__summary em {
+  color: #166534;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.vmb-calendar-week__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(150px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.vmb-calendar-week__day {
+  min-width: 150px;
+  padding: 14px;
+}
+
+.vmb-calendar-week__day.is-open {
+  border-color: #f9a8d4;
+  background: linear-gradient(180deg, #fff 0%, #fff7fb 100%);
+}
+
+.vmb-calendar-week__day header {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.vmb-calendar-week__day label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2f2623;
+  font-weight: 900;
+}
+
+.vmb-calendar-week__day header strong {
+  color: #6f5a53;
+  font-size: 12px;
+}
+
+.vmb-calendar-week__time-controls {
+  display: grid;
+  gap: 8px;
+}
+
+.vmb-calendar-week__time-controls label {
+  display: grid;
+  align-items: start;
+  gap: 5px;
+  color: #be185d;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.vmb-calendar-week__time-controls select {
+  min-height: 36px;
+  border: 1px solid #f1ded6;
+  border-radius: 12px;
+  background: #fff;
+  color: #2f2623;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.vmb-calendar-week__lanes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 14px;
+}
+
+.vmb-calendar-week__lanes span {
+  height: 8px;
+  border-radius: 999px;
+  background: #f3e8e3;
+}
+
+.vmb-calendar-week__lanes span.is-active {
+  background: linear-gradient(90deg, #f9a8d4, #be185d);
+}
+
 @media (max-width: 820px) {
   .vmb-client-home__top,
   .vmb-client-home__profile,
@@ -10389,6 +10555,11 @@
   .vmb-client-home__grid,
   .vmb-client-home__actions {
     grid-template-columns: 1fr;
+  }
+
+  .vmb-calendar-week__header {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

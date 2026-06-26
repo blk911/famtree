@@ -13,6 +13,12 @@ type ClientInviteDto = {
   snapshot: SentInvitePublicSnapshot;
 };
 
+type BookingSlot = {
+  label: string;
+  day: number;
+  startsAtMinutes: number;
+};
+
 type Props = {
   inviteId: string;
   contact: string;
@@ -42,6 +48,8 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState("Tomorrow · 10:00 AM");
   const [clientContact, setClientContact] = useState(contact);
+  const [slots, setSlots] = useState<BookingSlot[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
   const loadInvite = useCallback(async () => {
     const trimmedToken = token.trim();
@@ -125,6 +133,26 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
     }
   }
 
+  async function openCalendar() {
+    setCalendarOpen((open) => !open);
+    if (!token.trim() || slots.length > 0) return;
+    setSlotsLoading(true);
+    try {
+      const response = await fetch(`/api/vmb/client-invites/booking-slots?token=${encodeURIComponent(token)}`, {
+        cache: "no-store",
+      });
+      const json = (await response.json()) as { ok?: boolean; slots?: BookingSlot[]; error?: string };
+      if (!response.ok || !json.ok) throw new Error(json.error ?? "Could not load booking times.");
+      const nextSlots = json.slots ?? [];
+      setSlots(nextSlots);
+      if (nextSlots[0]) setSelectedSlot(nextSlots[0].label);
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : "Could not load booking times.");
+    } finally {
+      setSlotsLoading(false);
+    }
+  }
+
   const snapshot = invite?.snapshot;
   const services = snapshot?.services ?? [];
   const rewards = snapshot?.rewards ?? [];
@@ -133,7 +161,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const providerName = snapshot?.providerName ?? "Your nail tech";
   const heroImageUrl = snapshot?.inviteArtImageUrl?.trim() || snapshot?.serviceImageUrl?.trim() || getFallbackServiceAsset().imageUrl;
   const ownerInitial = salonInitials(providerName || salonName);
-  const requestSlots = ["Tomorrow · 10:00 AM", "Tomorrow · 2:30 PM", "Friday · 11:00 AM", "Saturday · 1:00 PM"];
+  const requestSlots = slots.length > 0 ? slots.map((slot) => slot.label) : ["Tomorrow · 10:00 AM", "Tomorrow · 2:30 PM", "Friday · 11:00 AM", "Saturday · 1:00 PM"];
   const serviceLine = services.length > 0 ? services.join(" · ") : "Your private salon gift";
   const levelUpLine = rewards.length > 0 ? rewards.join(" · ") : "Salon-selected finishing touch";
   const expiration = stripValidPrefix(snapshot?.expirationLabel);
@@ -221,7 +249,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
 
               {calendarOpen ? (
                 <div className="vmb-client-home__calendar" aria-label="Choose a preferred time">
-                  <p>Choose a preferred time</p>
+                  <p>{slotsLoading ? "Loading salon calendar..." : "Choose a preferred time"}</p>
                   <div className="vmb-client-home__slot-grid">
                     {requestSlots.map((slot) => (
                       <button
@@ -246,7 +274,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
               ) : null}
 
               <div className="vmb-client-home__actions">
-                <button type="button" className="vmb-client-home__button vmb-client-home__button--primary" onClick={() => setCalendarOpen((open) => !open)} disabled={claiming}>
+                <button type="button" className="vmb-client-home__button vmb-client-home__button--primary" onClick={() => void openCalendar()} disabled={claiming}>
                   Book Now
                 </button>
                 <button type="button" className="vmb-client-home__button vmb-client-home__button--secondary" onClick={() => void recordClientIntent("personalize")} disabled={claiming}>

@@ -213,6 +213,13 @@ const DDL_STATEMENTS: string[] = [
   )`,
   `CREATE INDEX IF NOT EXISTS vmb_salon_invitation_approval_salon
     ON vmb_salon_invitation_approval (salon_id, updated_at DESC)`,
+  `CREATE TABLE IF NOT EXISTS vmb_salon_calendar (
+    salon_id text PRIMARY KEY,
+    payload jsonb NOT NULL,
+    updated_at timestamptz DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS vmb_salon_calendar_updated
+    ON vmb_salon_calendar (updated_at DESC)`,
 ];
 
 const MIGRATION_STATEMENTS: string[] = [
