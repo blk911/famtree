@@ -18,6 +18,7 @@ import { GET as getSentInvites, POST as postSentInvite } from "../app/api/vmb/se
 import { POST as postRedeem } from "../app/api/vmb/sent-invites/[sentInviteId]/redeem/route";
 import { POST as lookupClientInvite } from "../app/api/vmb/client-invites/lookup/route";
 import { GET as getClientInvite, POST as postClientInviteClaim } from "../app/api/vmb/client-invites/[sentInviteId]/route";
+import { GET as getClientInviteWorkbench } from "../app/api/vmb/client-invites/workbench/route";
 
 delete process.env.DATABASE_URL;
 delete process.env.VERCEL;
@@ -144,6 +145,21 @@ async function run() {
     }), { params: Promise.resolve({ sentInviteId: lookupJson.invite.id }) });
     const clientBookJson = await clientBook.json() as { intent?: string };
     assert(clientBook.status === 200 && clientBookJson.intent === "booking_requested", "client can request booking from invite");
+
+    const workbenchResponse = await getClientInviteWorkbench(new NextRequest("http://localhost/api/vmb/client-invites/workbench"));
+    assert([307, 308].includes(workbenchResponse.status), "Deb workbench redirects to client invite bridge");
+    const workbenchLocation = workbenchResponse.headers.get("location") ?? "";
+    assert(workbenchLocation.includes("/vmb/client-invite?"), "Deb workbench opens client invite page");
+    const workbenchCookieHeader = workbenchResponse.headers.get("set-cookie") ?? "";
+    assert(workbenchCookieHeader.includes(`${VMB_TRIAL_COOKIE}=`), "Deb workbench sets signed salon bridge cookie");
+    const workbenchUrl = new URL(workbenchLocation);
+    const workbenchInviteId = workbenchUrl.searchParams.get("inviteId");
+    const workbenchContact = workbenchUrl.searchParams.get("contact");
+    assert(workbenchInviteId && workbenchContact === "deb@test.com", "Deb workbench carries invite id and feeder contact");
+    const workbenchCookieMatch = workbenchCookieHeader.match(new RegExp(`${VMB_TRIAL_COOKIE}=([^;]+)`));
+    assert(workbenchCookieMatch, "Deb workbench cookie can be reused");
+    const workbenchOpen = await getClientInvite(new NextRequest(`http://localhost/api/vmb/client-invites/${workbenchInviteId}?contact=${encodeURIComponent(workbenchContact)}`, { headers: { cookie: `${VMB_TRIAL_COOKIE}=${workbenchCookieMatch[1]}` } }), { params: Promise.resolve({ sentInviteId: workbenchInviteId }) });
+    assert(workbenchOpen.status === 200, "Deb workbench uses the real client invite endpoint");
 
     const opened = await resolveRecipientInvite(sent.recipientToken);
     assert(opened.status === "available", "sent invite opens by token");
