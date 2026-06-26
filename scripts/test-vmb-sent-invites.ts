@@ -19,6 +19,7 @@ import { POST as postRedeem } from "../app/api/vmb/sent-invites/[sentInviteId]/r
 import { POST as lookupClientInvite } from "../app/api/vmb/client-invites/lookup/route";
 import { GET as getClientInvite, POST as postClientInviteClaim } from "../app/api/vmb/client-invites/[sentInviteId]/route";
 import { GET as getClientInviteWorkbench } from "../app/api/vmb/client-invites/workbench/route";
+import { GET as getClientInviteByToken } from "../app/api/vmb/client-invites/token/route";
 
 delete process.env.DATABASE_URL;
 delete process.env.VERCEL;
@@ -163,7 +164,12 @@ async function run() {
 
     const opened = await resolveRecipientInvite(sent.recipientToken);
     assert(opened.status === "available", "sent invite opens by token");
-    if (opened.status === "available") assertNoAdminFieldsInRecipientPayload(opened.view);
+    if (opened.status === "available") {
+      assertNoAdminFieldsInRecipientPayload(opened.view);
+      assert(opened.view.claimHref.includes("/vmb/client-invite?token="), "public invite opens the client gift page");
+    }
+    const tokenClientInvite = await getClientInviteByToken(new NextRequest(`http://localhost/api/vmb/client-invites/token?token=${encodeURIComponent(sent.recipientToken)}`));
+    assert(tokenClientInvite.status === 200, "client gift page can load by secure token");
     assert((await resolveRecipientInvite(approval.id)).status === "not_found", "draft or approval id cannot open public invite");
 
     await updateSalonInviteLocalCopy(salonId, copyId, { headline: "MUTATED AFTER SEND" });

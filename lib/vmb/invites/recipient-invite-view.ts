@@ -60,7 +60,7 @@ export function toRecipientInvitePageState(input: {
     techName: input.techName,
     previewModel: input.previewModel,
     primaryCta: input.primaryCta,
-    claimHref: `/vmb/invite/${encodeURIComponent(input.inviteId)}/claim`,
+    claimHref: `/vmb/client-invite?token=${encodeURIComponent(input.inviteId)}`,
   };
   assertNoAdminFieldsInRecipientPayload(view);
   return { status: "available", view };

@@ -16,6 +16,7 @@ export default async function VmbClientInvitePage({ searchParams }: Props) {
     <VmbClientInvitePortal
       inviteId={first(params.inviteId)}
       contact={first(params.contact)}
+      token={first(params.token)}
     />
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { CardHero } from "@/components/vmb/cards/CardHero";
 import { InvitationEnvelope } from "@/components/vmb/invites/InvitationEnvelope";
 import type { CardPreviewModel } from "@/lib/vmb/cards/card-preview-model";
@@ -42,6 +41,11 @@ function offerDetails(model: CardPreviewModel) {
   );
   const expiration = model.offer?.terms || model.relationshipBenefit || "Valid for your private invite window";
   return { service, upgrades, expiration };
+}
+
+function offerLine(service: string, upgrades: string[], expiration: string): string {
+  const upgradeText = upgrades.length > 0 ? ` with ${upgrades.join(" and ")}` : "";
+  return `Your ${service}${upgradeText} special is available now or held ${stripValidPrefix(expiration)}.`;
 }
 
 function birthdayNote(clientFirstName: string, salonName: string, inviteTitle: string, inviteType?: string): string {
@@ -148,8 +152,11 @@ export function VmbRecipientInviteLanding({ state }: Props) {
 
           <div className="vmb-public-invite__card-bottom">
             <section className="vmb-public-invite__gift" aria-label="Your gift details">
-              <p className="vmb-public-invite__gift-label">Your Gift</p>
+              <p className="vmb-public-invite__gift-label">A note about your gift</p>
               <strong className="vmb-public-invite__gift-service">{offer.service}</strong>
+              <p className="vmb-public-invite__gift-note">
+                {offerLine(offer.service, offer.upgrades, offer.expiration)}
+              </p>
               {offer.upgrades.length > 0 ? (
                 <ul className="vmb-public-invite__gift-chips" aria-label="Included level ups">
                   {offer.upgrades.map((upgrade) => (
@@ -163,23 +170,9 @@ export function VmbRecipientInviteLanding({ state }: Props) {
               </div>
             </section>
 
-            <section className="vmb-public-invite__action-panel" aria-label="Choose how to enjoy your invite">
-              <p className="vmb-public-invite__gift-label">Claim Your Gift</p>
-              <p className="vmb-public-invite__action-copy">
-                Claim your invite, ask for a small adjustment, or hold it while you decide.
-              </p>
-              <div className="vmb-public-invite__actions">
-                <Link href={view.claimHref} className="vmb-public-invite__button vmb-public-invite__button--primary">
-                  Claim My Gift
-                </Link>
-                <button type="button" className="vmb-public-invite__button vmb-public-invite__button--secondary">
-                  Ask for an Adjustment
-                </button>
-                <button type="button" className="vmb-public-invite__button vmb-public-invite__button--quiet">
-                  Hold Until Later
-                </button>
-              </div>
-            </section>
+            <a href={view.claimHref} className="vmb-public-invite__open-gift-link">
+              Open My Birthday Gift
+            </a>
           </div>
 
           <p className="vmb-public-invite__closing">With love, {salonName}</p>
