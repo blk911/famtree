@@ -10496,9 +10496,29 @@
   margin-bottom: 14px;
 }
 
-.vmb-calendar-week__day header div:first-child {
+.vmb-calendar-week__day-check,
+.vmb-calendar-week__day-status {
   display: grid;
   gap: 3px;
+}
+
+.vmb-calendar-week__day-check {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.vmb-calendar-week__day-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: #be185d;
+}
+
+.vmb-calendar-week__day-status {
+  padding: 8px 10px;
+  border: 1px solid #f4e7df;
+  border-radius: 14px;
+  background: #fff;
 }
 
 .vmb-calendar-week__day header span {
@@ -10509,32 +10529,6 @@
 .vmb-calendar-week__day header strong {
   color: #6f5a53;
   font-size: 12px;
-}
-
-.vmb-calendar-week__day-toggle {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  border: 1px solid #f1ded6;
-  border-radius: 999px;
-  background: #fff;
-}
-
-.vmb-calendar-week__day-toggle button {
-  min-height: 30px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: #7a625a;
-  font-size: 11px;
-  font-weight: 900;
-}
-
-.vmb-calendar-week__day-toggle button.is-selected {
-  background: #be185d;
-  color: #fff;
-  box-shadow: 0 7px 18px rgba(190, 24, 93, 0.18);
 }
 
 .vmb-calendar-week__time-controls {

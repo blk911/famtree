@@ -96,12 +96,12 @@ export function VmbCalendarClient() {
       ...calendar,
       days: calendar.days.map((day) => ({
         ...day,
-        enabled: day.day !== 0,
+        enabled: true,
         startMinutes: 8 * 60,
         endMinutes: 18 * 60,
       })),
     });
-    setMessage("Default week staged: Monday-Saturday, 8:00 AM-6:00 PM.");
+    setMessage("Default week staged: Sunday-Saturday, 8:00 AM-6:00 PM.");
   }
 
   async function saveWeek() {
@@ -164,25 +164,17 @@ export function VmbCalendarClient() {
             {calendar.days.map((day) => (
               <article key={day.day} className={`vmb-calendar-week__day${day.enabled ? " is-open" : ""}`}>
                 <header>
-                  <div>
+                  <label className="vmb-calendar-week__day-check">
+                    <input
+                      type="checkbox"
+                      checked={day.enabled}
+                      onChange={(event) => updateDay(day.day, { enabled: event.target.checked })}
+                    />
                     <span>{day.label}</span>
+                  </label>
+                  <div className="vmb-calendar-week__day-status">
+                    <span>{day.enabled ? "Open" : "Closed"}</span>
                     <strong>{daySummary(day)}</strong>
-                  </div>
-                  <div className="vmb-calendar-week__day-toggle" aria-label={`${day.label} open state`}>
-                    <button
-                      type="button"
-                      className={day.enabled ? "is-selected" : ""}
-                      onClick={() => updateDay(day.day, { enabled: true })}
-                    >
-                      Open
-                    </button>
-                    <button
-                      type="button"
-                      className={!day.enabled ? "is-selected" : ""}
-                      onClick={() => updateDay(day.day, { enabled: false })}
-                    >
-                      Closed
-                    </button>
                   </div>
                 </header>
                 <div className="vmb-calendar-week__time-controls">
