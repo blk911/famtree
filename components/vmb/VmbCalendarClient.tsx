@@ -10,14 +10,43 @@ type CalendarResponse = {
   error?: string;
 };
 
-const TIME_OPTIONS = Array.from({ length: ((21 * 60 + 45) - 6 * 60) / 15 + 1 }, (_, index) => {
-  const minutes = 6 * 60 + index * 15;
+const SELECT_START_MINUTES = 6 * 60;
+const SELECT_END_MINUTES = 21 * 60;
+const SELECT_STEP_MINUTES = 30;
+
+const TIME_OPTIONS = Array.from({ length: (SELECT_END_MINUTES - SELECT_START_MINUTES) / SELECT_STEP_MINUTES + 1 }, (_, index) => {
+  const minutes = SELECT_START_MINUTES + index * SELECT_STEP_MINUTES;
   const hour24 = Math.floor(minutes / 60);
   const minute = minutes % 60;
   const suffix = hour24 >= 12 ? "PM" : "AM";
   const hour12 = hour24 % 12 || 12;
   return { minutes, label: `${hour12}:${String(minute).padStart(2, "0")} ${suffix}` };
 });
+
+const START_TIME_OPTIONS = TIME_OPTIONS.filter((option) => option.minutes < SELECT_END_MINUTES);
+const HOUR_ROWS = Array.from({ length: SELECT_END_MINUTES / 60 - SELECT_START_MINUTES / 60 + 1 }, (_, index) => {
+  return SELECT_START_MINUTES + index * 60;
+});
+
+function snapToSelectOption(minutes: number): number {
+  const snapped = Math.round(minutes / SELECT_STEP_MINUTES) * SELECT_STEP_MINUTES;
+  return Math.min(SELECT_END_MINUTES, Math.max(SELECT_START_MINUTES, snapped));
+}
+
+function snapCalendarToSelectOptions(calendar: SalonCalendar): SalonCalendar {
+  return {
+    ...calendar,
+    days: calendar.days.map((day) => {
+      const startMinutes = Math.min(SELECT_END_MINUTES - SELECT_STEP_MINUTES, snapToSelectOption(day.startMinutes));
+      const endMinutes = Math.max(startMinutes + SELECT_STEP_MINUTES, snapToSelectOption(day.endMinutes));
+      return {
+        ...day,
+        startMinutes,
+        endMinutes: Math.min(SELECT_END_MINUTES, endMinutes),
+      };
+    }),
+  };
+}
 
 function timeLabel(minutes: number): string {
   return TIME_OPTIONS.find((option) => option.minutes === minutes)?.label ?? `${minutes} min`;
@@ -40,7 +69,7 @@ export function VmbCalendarClient() {
       const response = await fetch("/api/vmb/calendar", { cache: "no-store", credentials: "include" });
       const json = (await response.json()) as CalendarResponse;
       if (!response.ok || !json.ok || !json.calendar) throw new Error(json.error ?? "Could not load calendar.");
-      setCalendar(json.calendar);
+      setCalendar(snapCalendarToSelectOptions(json.calendar));
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not load calendar.");
     } finally {
@@ -88,7 +117,7 @@ export function VmbCalendarClient() {
       });
       const json = (await response.json()) as CalendarResponse;
       if (!response.ok || !json.ok || !json.calendar) throw new Error(json.error ?? "Could not save calendar.");
-      setCalendar(json.calendar);
+      setCalendar(snapCalendarToSelectOptions(json.calendar));
       setMessage("Week saved. Client booking options will use this salon calendar.");
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not save calendar.");
@@ -114,13 +143,13 @@ export function VmbCalendarClient() {
               <p className="vmb-calendar-week__eyebrow">Set My Week</p>
               <h2>Salon booking availability</h2>
               <p>
-                Showing 6:00 AM through 9:45 PM. The grid displays 30-minute lanes and supports 15-minute scheduling.
+                Choose the days you are open, then set the open and close time. Client invite booking will use this week.
               </p>
             </div>
             <div className="vmb-calendar-week__actions">
-              <button type="button" onClick={setDefaultWeek} disabled={saving}>Use 8-6 Default</button>
+              <button type="button" onClick={setDefaultWeek} disabled={saving}>Use 8-6 Week</button>
               <button type="button" className="is-primary" onClick={() => void saveWeek()} disabled={saving}>
-                {saving ? "Saving..." : "Save My Week"}
+                {saving ? "Saving..." : "Save Calendar"}
               </button>
             </div>
           </header>
@@ -135,46 +164,70 @@ export function VmbCalendarClient() {
             {calendar.days.map((day) => (
               <article key={day.day} className={`vmb-calendar-week__day${day.enabled ? " is-open" : ""}`}>
                 <header>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={day.enabled}
-                      onChange={(event) => updateDay(day.day, { enabled: event.target.checked })}
-                    />
+                  <div>
                     <span>{day.label}</span>
-                  </label>
-                  <strong>{daySummary(day)}</strong>
+                    <strong>{daySummary(day)}</strong>
+                  </div>
+                  <div className="vmb-calendar-week__day-toggle" aria-label={`${day.label} open state`}>
+                    <button
+                      type="button"
+                      className={day.enabled ? "is-selected" : ""}
+                      onClick={() => updateDay(day.day, { enabled: true })}
+                    >
+                      Open
+                    </button>
+                    <button
+                      type="button"
+                      className={!day.enabled ? "is-selected" : ""}
+                      onClick={() => updateDay(day.day, { enabled: false })}
+                    >
+                      Closed
+                    </button>
+                  </div>
                 </header>
                 <div className="vmb-calendar-week__time-controls">
                   <label>
-                    Start
+                    Opens
                     <select
                       value={day.startMinutes}
                       disabled={!day.enabled}
-                      onChange={(event) => updateDay(day.day, { startMinutes: Number(event.target.value) })}
+                      onChange={(event) => {
+                        const startMinutes = Number(event.target.value);
+                        updateDay(day.day, {
+                          startMinutes,
+                          endMinutes: Math.max(day.endMinutes, startMinutes + SELECT_STEP_MINUTES),
+                        });
+                      }}
                     >
-                      {TIME_OPTIONS.map((option) => (
+                      {START_TIME_OPTIONS.map((option) => (
                         <option key={option.minutes} value={option.minutes}>{option.label}</option>
                       ))}
                     </select>
                   </label>
                   <label>
-                    End
+                    Closes
                     <select
                       value={day.endMinutes}
                       disabled={!day.enabled}
-                      onChange={(event) => updateDay(day.day, { endMinutes: Number(event.target.value) })}
+                      onChange={(event) => {
+                        const endMinutes = Number(event.target.value);
+                        updateDay(day.day, { endMinutes: Math.max(endMinutes, day.startMinutes + SELECT_STEP_MINUTES) });
+                      }}
                     >
-                      {TIME_OPTIONS.map((option) => (
+                      {TIME_OPTIONS.filter((option) => option.minutes > day.startMinutes).map((option) => (
                         <option key={option.minutes} value={option.minutes}>{option.label}</option>
                       ))}
                     </select>
                   </label>
                 </div>
-                <div className="vmb-calendar-week__lanes" aria-hidden="true">
-                  {TIME_OPTIONS.filter((_, index) => index % 2 === 0).map((option) => {
-                    const active = day.enabled && option.minutes >= day.startMinutes && option.minutes < day.endMinutes;
-                    return <span key={option.minutes} className={active ? "is-active" : ""} title={option.label} />;
+                <div className="vmb-calendar-week__hours" aria-hidden="true">
+                  {HOUR_ROWS.map((minutes) => {
+                    const active = day.enabled && minutes >= day.startMinutes && minutes < day.endMinutes;
+                    return (
+                      <span key={minutes} className={active ? "is-active" : ""}>
+                        {timeLabel(minutes)}
+                      </span>
+                    );
                   })}
                 </div>
               </article>
