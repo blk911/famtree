@@ -10114,10 +10114,15 @@
 
 .vmb-client-home__top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
   margin-bottom: 22px;
+}
+
+.vmb-client-home__identity {
+  display: grid;
+  gap: 14px;
 }
 
 .vmb-client-home__profile,
@@ -10140,6 +10145,24 @@
   color: #be185d;
   font-weight: 900;
   box-shadow: 0 14px 36px rgba(136, 19, 55, 0.1);
+}
+
+.vmb-client-home__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-left: 82px;
+}
+
+.vmb-client-home__nav a {
+  padding: 8px 13px;
+  border: 1px solid rgba(244, 114, 182, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #831843;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
 }
 
 .vmb-client-home__profile h1 {
@@ -10196,6 +10219,12 @@
   box-shadow: 0 24px 80px rgba(136, 19, 55, 0.1);
 }
 
+.vmb-client-home__hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .vmb-client-home__hero-copy h2,
 .vmb-client-home__module h3 {
   margin: 0;
@@ -10210,6 +10239,26 @@
   max-width: 680px;
   color: #6f5a53;
   line-height: 1.72;
+}
+
+.vmb-client-home__gift-line {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid #f4e7df;
+  color: #7c2d12;
+  font-weight: 800;
+}
+
+.vmb-client-home__hero-cta {
+  min-height: 50px;
+  margin-top: 18px;
+  padding: 0 24px;
+  border: 1px solid #be185d;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #be185d, #db2777);
+  color: #fff;
+  font-weight: 900;
+  box-shadow: 0 16px 38px rgba(190, 24, 93, 0.18);
 }
 
 .vmb-client-home__hero-image {
@@ -10241,6 +10290,26 @@
 .vmb-client-home__module--primary {
   display: grid;
   gap: 20px;
+}
+
+.vmb-client-home__module--pending {
+  display: grid;
+  align-content: center;
+  gap: 16px;
+  min-height: 260px;
+}
+
+.vmb-client-home__module--pending p:not(.vmb-client-home__eyebrow) {
+  max-width: 680px;
+  margin: 0;
+  color: #6f5a53;
+  line-height: 1.7;
+}
+
+.vmb-client-home__module--salon {
+  background:
+    radial-gradient(circle at 85% 12%, rgba(252, 231, 243, 0.72), transparent 34%),
+    rgba(255, 252, 247, 0.9);
 }
 
 .vmb-client-home__gift-box {
@@ -10370,8 +10439,28 @@
 .vmb-client-home__activity {
   display: grid;
   gap: 12px;
-  padding-left: 18px;
+  padding-left: 0;
+  list-style: none;
   line-height: 1.6;
+}
+
+.vmb-client-home__activity li {
+  display: grid;
+  gap: 2px;
+  padding: 12px 0;
+  border-top: 1px solid #f4e7df;
+}
+
+.vmb-client-home__activity li:first-child {
+  border-top: 0;
+}
+
+.vmb-client-home__activity strong {
+  color: #2f2623;
+}
+
+.vmb-client-home__activity span {
+  color: #7c6a61;
 }
 
 .vmb-calendar-week {

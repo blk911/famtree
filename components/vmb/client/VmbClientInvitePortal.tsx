@@ -50,6 +50,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const [clientContact, setClientContact] = useState(contact);
   const [slots, setSlots] = useState<BookingSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [offerOpen, setOfferOpen] = useState(false);
 
   const loadInvite = useCallback(async () => {
     const trimmedToken = token.trim();
@@ -180,13 +181,21 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
       ) : snapshot ? (
         <section className="vmb-client-home__shell">
           <header className="vmb-client-home__top">
-            <div className="vmb-client-home__profile">
-              <span className="vmb-client-home__avatar" aria-hidden="true">{clientFirstName.slice(0, 1).toUpperCase()}</span>
-              <div>
-                <p className="vmb-client-home__eyebrow">VMB Client</p>
-                <h1>{clientFirstName}</h1>
-                <p>Denver, CO · Private salon gifts and appointments</p>
+            <div className="vmb-client-home__identity">
+              <div className="vmb-client-home__profile">
+                <span className="vmb-client-home__avatar" aria-hidden="true">{clientFirstName.slice(0, 1).toUpperCase()}</span>
+                <div>
+                  <p className="vmb-client-home__eyebrow">VMB Client</p>
+                  <h1>{clientFirstName}</h1>
+                  <p>Denver, CO · Private salon gifts and appointments</p>
+                </div>
               </div>
+              <nav className="vmb-client-home__nav" aria-label="Client sections">
+                <a href="#gift">Gifts</a>
+                <a href="#salons">My Salons</a>
+                <a href="#style">My Style</a>
+                <a href="#profile">Profile</a>
+              </nav>
             </div>
             <aside className="vmb-client-home__sponsor" aria-label="Sponsor salon">
               <span className="vmb-client-home__sponsor-avatar" aria-hidden="true">{ownerInitial}</span>
@@ -200,9 +209,19 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
 
           <section className="vmb-client-home__hero">
             <div className="vmb-client-home__hero-copy">
-              <p className="vmb-client-home__eyebrow">Current gift</p>
+              <p className="vmb-client-home__eyebrow">A note from {salonName}</p>
               <h2>{snapshot.headline}</h2>
               <p>{snapshot.body}</p>
+              <p className="vmb-client-home__gift-line">
+                Your {serviceLine} with {levelUpLine} is available now or held {expiration}.
+              </p>
+              <button
+                type="button"
+                className="vmb-client-home__hero-cta"
+                onClick={() => setOfferOpen(true)}
+              >
+                Open My Birthday Gift
+              </button>
             </div>
             <div className="vmb-client-home__hero-image">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -210,13 +229,14 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
             </div>
           </section>
 
-          <section className="vmb-client-home__grid">
+          <section className={`vmb-client-home__grid${offerOpen ? " is-open" : ""}`} id="gift">
+            {offerOpen ? (
             <article className="vmb-client-home__module vmb-client-home__module--primary">
               <div>
-                <p className="vmb-client-home__eyebrow">Active birthday offer</p>
+                <p className="vmb-client-home__eyebrow">Birthday gift details</p>
                 <h3>{serviceLine}</h3>
                 <p className="vmb-client-home__offer-note">
-                  Your {serviceLine} special is available now or held {expiration}.
+                  Choose your time, personalize the style, or save this birthday gift for later.
                 </p>
               </div>
 
@@ -285,14 +305,31 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
                 </button>
               </div>
             </article>
+            ) : (
+              <article className="vmb-client-home__module vmb-client-home__module--pending">
+                <p className="vmb-client-home__eyebrow">Birthday gift waiting</p>
+                <h3>Open your gift when you are ready.</h3>
+                <p>
+                  Your salon tucked the offer details away so this page can stay personal first. Open it when you want to choose a time, personalize the style, or hold it for later.
+                </p>
+                <button
+                  type="button"
+                  className="vmb-client-home__button vmb-client-home__button--primary"
+                  onClick={() => setOfferOpen(true)}
+                >
+                  View Birthday Offer
+                </button>
+              </article>
+            )}
 
-            <aside className="vmb-client-home__module">
-              <p className="vmb-client-home__eyebrow">Coming next</p>
-              <h3>Your salon activity</h3>
+            <aside className="vmb-client-home__module vmb-client-home__module--salon" id="salons">
+              <p className="vmb-client-home__eyebrow">Your space</p>
+              <h3>Salon dashboard</h3>
               <ul className="vmb-client-home__activity">
-                <li>Saved gifts and private offers</li>
-                <li>Appointment follow-ups</li>
-                <li>Favorite salon services</li>
+                <li><strong>Gifts</strong><span>Saved gifts and private offers</span></li>
+                <li><strong>Appointments</strong><span>Booking requests and follow-ups</span></li>
+                <li><strong>My Style</strong><span>Favorite services and notes</span></li>
+                <li><strong>Profile</strong><span>Contact and preferences</span></li>
               </ul>
             </aside>
           </section>
