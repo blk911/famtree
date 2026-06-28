@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getFallbackServiceAsset } from "@/lib/vmb/assets/service-photo-library";
 import type { SentInvite, SentInvitePublicSnapshot } from "@/lib/vmb/invites/sent-invite-types";
 
@@ -25,6 +25,25 @@ type Props = {
   token?: string;
 };
 
+type GiftLevelUp = {
+  id: string;
+  label: string;
+  price: number;
+};
+
+const GEL_X_LEVEL_UPS: GiftLevelUp[] = [
+  { id: "medium-length", label: "Medium Length", price: 10 },
+  { id: "long-length", label: "Long Length", price: 20 },
+  { id: "xl-length", label: "XL Length", price: 35 },
+  { id: "french", label: "French", price: 12 },
+  { id: "chrome", label: "Chrome", price: 15 },
+  { id: "crystals", label: "Crystals", price: 15 },
+  { id: "freestyle-art", label: "Freestyle Art", price: 25 },
+];
+
+const TAX_RATE = 0.0825;
+const VMB_COMARKET_RATE = 0.05;
+
 function firstName(name?: string): string {
   return name?.trim().split(/\s+/)[0] || "there";
 }
@@ -39,18 +58,43 @@ function stripValidPrefix(label?: string): string {
   return label?.replace(/^Valid\s+/i, "").trim() || "your private invite window";
 }
 
+function parsePrice(label?: string): number {
+  const match = label?.match(/[\d.]+/);
+  return match ? Number(match[0]) : 0;
+}
+
+function formatMoney(amount: number): string {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+}
+
+function rewardMatchesLevelUp(reward: string, levelUp: GiftLevelUp): boolean {
+  const normalizedReward = reward.toLowerCase();
+  const normalizedLabel = levelUp.label.toLowerCase();
+  const compactReward = normalizedReward.replace(/\s+upgrade|\s+accent|\s+tip/g, "");
+  const compactLabel = normalizedLabel.replace(/s$/g, "");
+  return normalizedReward.includes(normalizedLabel)
+    || normalizedReward.includes(compactLabel)
+    || normalizedLabel.includes(compactReward);
+}
+
+function initialSelectedLevelUps(rewards: string[]): string[] {
+  return GEL_X_LEVEL_UPS
+    .filter((levelUp) => rewards.some((reward) => rewardMatchesLevelUp(reward, levelUp)))
+    .map((levelUp) => levelUp.id);
+}
+
 export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [invite, setInvite] = useState<ClientInviteDto | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState("Tomorrow · 10:00 AM");
   const [clientContact, setClientContact] = useState(contact);
   const [slots, setSlots] = useState<BookingSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [offerOpen, setOfferOpen] = useState(false);
+  const [selectedLevelUpIds, setSelectedLevelUpIds] = useState<string[]>([]);
 
   const loadInvite = useCallback(async () => {
     const trimmedToken = token.trim();
@@ -73,6 +117,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
         throw new Error(json.error ?? "Could not load invite.");
       }
       setInvite(json.invite);
+      setSelectedLevelUpIds(initialSelectedLevelUps(json.invite.snapshot.rewards ?? []));
       setNotice(json.invite.alreadyClaimed ? "This invite is already claimed and waiting for the salon." : null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load invite.");
@@ -114,7 +159,11 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
               clientName: invite.snapshot.recipientName,
               action,
               requestedSlot: action === "book" ? selectedSlot : undefined,
-              note: action === "personalize" ? "Client wants to personalize this gift before booking." : undefined,
+              note: action === "book"
+                ? `Client selected ${selectedSlot} with ${selectedLevelUps.map((levelUp) => levelUp.label).join(", ") || "no added level-ups"}.`
+                : action === "personalize"
+                  ? "Client wants to personalize this gift before booking."
+                  : undefined,
             }),
           });
       const json = (await response.json()) as { ok?: boolean; alreadyClaimed?: boolean; action?: string; error?: string; message?: string };
@@ -135,7 +184,6 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   }
 
   async function openCalendar() {
-    setCalendarOpen((open) => !open);
     if (!token.trim() || slots.length > 0) return;
     setSlotsLoading(true);
     try {
@@ -166,6 +214,22 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const serviceLine = services.length > 0 ? services.join(" · ") : "Your private salon gift";
   const levelUpLine = rewards.length > 0 ? rewards.join(" · ") : "Salon-selected finishing touch";
   const expiration = stripValidPrefix(snapshot?.expirationLabel);
+  const baseServicePrice = parsePrice(snapshot?.priceLabel) || 90;
+  const selectedLevelUps = useMemo(
+    () => GEL_X_LEVEL_UPS.filter((levelUp) => selectedLevelUpIds.includes(levelUp.id)),
+    [selectedLevelUpIds],
+  );
+  const levelUpTotal = selectedLevelUps.reduce((total, levelUp) => total + levelUp.price, 0);
+  const subtotal = baseServicePrice + levelUpTotal;
+  const tax = subtotal * TAX_RATE;
+  const vmbComarket = subtotal * VMB_COMARKET_RATE;
+  const total = subtotal + tax + vmbComarket;
+
+  function toggleLevelUp(id: string) {
+    setSelectedLevelUpIds((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    );
+  }
 
   return (
     <main className="vmb-client-home">
@@ -231,46 +295,78 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
 
           <section className={`vmb-client-home__grid${offerOpen ? " is-open" : ""}`} id="gift">
             {offerOpen ? (
-            <article className="vmb-client-home__module vmb-client-home__module--primary">
-              <div>
-                <p className="vmb-client-home__eyebrow">Birthday gift details</p>
-                <h3>{serviceLine}</h3>
-                <p className="vmb-client-home__offer-note">
-                  Choose your time, personalize the style, or save this birthday gift for later.
-                </p>
-              </div>
+              <div className="vmb-client-home__offer-workspace">
+                <article className="vmb-client-home__module vmb-client-home__module--primary">
+                  <div>
+                    <p className="vmb-client-home__eyebrow">Customize your gift</p>
+                    <h3>{serviceLine}</h3>
+                    <p className="vmb-client-home__offer-note">
+                      Soft gel extensions with shape, length, and polish. Choose the level-ups you want included before booking.
+                    </p>
+                  </div>
 
-              <div className="vmb-client-home__gift-box">
-                <span>Level up with</span>
-                {rewards.length > 0 ? (
-                  <ul className="vmb-client-home__chips" aria-label="Included level ups">
-                    {rewards.map((reward) => (
-                      <li key={reward}>{reward}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <strong>{levelUpLine}</strong>
-                )}
-                <p>Good through {expiration}</p>
-              </div>
+                  <section className="vmb-client-home__service-summary" aria-label="Service summary">
+                    <div>
+                      <span>Base service</span>
+                      <strong>{formatMoney(baseServicePrice)}</strong>
+                    </div>
+                    <div>
+                      <span>Estimated time</span>
+                      <strong>90 min</strong>
+                    </div>
+                  </section>
 
-              {!clientContact.trim() ? (
-                <label className="vmb-client-home__contact">
-                  <span>Email or mobile for salon follow-up</span>
-                  <input
-                    value={clientContact}
-                    onChange={(event) => setClientContact(event.target.value)}
-                    placeholder="deb@test.com"
-                  />
-                </label>
-              ) : null}
+                  <section className="vmb-client-home__included">
+                    <span>Included service elements</span>
+                    <p>Nail prep · short extensions · standard shape · gel color · finish</p>
+                  </section>
 
-              {notice ? <p className="vmb-client-home__notice">{notice}</p> : null}
+                  <section className="vmb-client-home__level-ups" aria-label="Available level-ups">
+                    <span>Available level-ups</span>
+                    <ul>
+                      {GEL_X_LEVEL_UPS.map((levelUp) => (
+                        <li key={levelUp.id}>
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={selectedLevelUpIds.includes(levelUp.id)}
+                              onChange={() => toggleLevelUp(levelUp.id)}
+                            />
+                            <strong>{levelUp.label}</strong>
+                          </label>
+                          <em>{formatMoney(levelUp.price)}</em>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
 
-              {calendarOpen ? (
-                <div className="vmb-client-home__calendar" aria-label="Choose a preferred time">
-                  <p>{slotsLoading ? "Loading salon calendar..." : "Choose a preferred time"}</p>
-                  <div className="vmb-client-home__slot-grid">
+                  {!clientContact.trim() ? (
+                    <label className="vmb-client-home__contact">
+                      <span>Email or mobile for salon follow-up</span>
+                      <input
+                        value={clientContact}
+                        onChange={(event) => setClientContact(event.target.value)}
+                        placeholder="deb@test.com"
+                      />
+                    </label>
+                  ) : null}
+                </article>
+
+                <aside className="vmb-client-home__module vmb-client-home__receipt" aria-label="Appointment receipt">
+                  <p className="vmb-client-home__eyebrow">Your appointment</p>
+                  <h3>{snapshot.inviteTypeLabel}</h3>
+
+                  <section className="vmb-client-home__receipt-step">
+                    <div>
+                      <span>Step 1</span>
+                      <strong>Choose date and time</strong>
+                    </div>
+                    <button type="button" onClick={() => void openCalendar()} disabled={slotsLoading}>
+                      {slotsLoading ? "Loading times..." : "Refresh calendar"}
+                    </button>
+                  </section>
+
+                  <div className="vmb-client-home__slot-grid vmb-client-home__slot-grid--receipt">
                     {requestSlots.map((slot) => (
                       <button
                         key={slot}
@@ -282,29 +378,52 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
                       </button>
                     ))}
                   </div>
-                  <button
-                    type="button"
-                    className="vmb-client-home__button vmb-client-home__button--primary"
-                    onClick={() => void recordClientIntent("book")}
-                    disabled={claiming}
-                  >
-                    {claiming ? "Saving..." : "Request This Time"}
-                  </button>
-                </div>
-              ) : null}
 
-              <div className="vmb-client-home__actions">
-                <button type="button" className="vmb-client-home__button vmb-client-home__button--primary" onClick={() => void openCalendar()} disabled={claiming}>
-                  Book Now
-                </button>
-                <button type="button" className="vmb-client-home__button vmb-client-home__button--secondary" onClick={() => void recordClientIntent("personalize")} disabled={claiming}>
-                  Customize My Gift
-                </button>
-                <button type="button" className="vmb-client-home__button vmb-client-home__button--quiet" onClick={() => void recordClientIntent("hold")} disabled={claiming}>
-                  Hold for Later
-                </button>
+                  <dl className="vmb-client-home__receipt-lines">
+                    <div>
+                      <dt>{serviceLine}</dt>
+                      <dd>{formatMoney(baseServicePrice)}</dd>
+                    </div>
+                    {selectedLevelUps.map((levelUp) => (
+                      <div key={levelUp.id}>
+                        <dt>{levelUp.label}</dt>
+                        <dd>{formatMoney(levelUp.price)}</dd>
+                      </div>
+                    ))}
+                    <div>
+                      <dt>Appointment time</dt>
+                      <dd>{selectedSlot}</dd>
+                    </div>
+                    <div>
+                      <dt>Subtotal</dt>
+                      <dd>{formatMoney(subtotal)}</dd>
+                    </div>
+                    <div>
+                      <dt>Tax estimate</dt>
+                      <dd>{formatMoney(tax)}</dd>
+                    </div>
+                    <div>
+                      <dt>VMB co-marketing (5%)</dt>
+                      <dd>{formatMoney(vmbComarket)}</dd>
+                    </div>
+                    <div className="vmb-client-home__receipt-total">
+                      <dt>Total</dt>
+                      <dd>{formatMoney(total)}</dd>
+                    </div>
+                  </dl>
+
+                  {notice ? <p className="vmb-client-home__notice">{notice}</p> : null}
+
+                  <div className="vmb-client-home__receipt-actions">
+                    <button type="button" className="vmb-client-home__button vmb-client-home__button--primary" onClick={() => void recordClientIntent("book")} disabled={claiming}>
+                      {claiming ? "Saving..." : "Book My Appointment"}
+                    </button>
+                    <button type="button" className="vmb-client-home__button vmb-client-home__button--quiet" onClick={() => void recordClientIntent("hold")} disabled={claiming}>
+                      Save for Later
+                    </button>
+                  </div>
+                </aside>
               </div>
-            </article>
             ) : (
               <article className="vmb-client-home__module vmb-client-home__module--pending">
                 <p className="vmb-client-home__eyebrow">Birthday gift waiting</p>

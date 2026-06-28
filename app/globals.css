@@ -10280,6 +10280,20 @@
   gap: 22px;
 }
 
+.vmb-client-home__grid.is-open {
+  grid-template-columns: 1fr;
+}
+
+.vmb-client-home__grid.is-open .vmb-client-home__module--salon {
+  display: none;
+}
+
+.vmb-client-home__offer-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.78fr);
+  gap: 22px;
+}
+
 .vmb-client-home__module {
   padding: clamp(22px, 4vw, 34px);
   border: 1px solid rgba(212, 175, 55, 0.3);
@@ -10310,6 +10324,84 @@
   background:
     radial-gradient(circle at 85% 12%, rgba(252, 231, 243, 0.72), transparent 34%),
     rgba(255, 252, 247, 0.9);
+}
+
+.vmb-client-home__service-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.vmb-client-home__service-summary div,
+.vmb-client-home__included,
+.vmb-client-home__level-ups,
+.vmb-client-home__receipt-step {
+  padding: 16px;
+  border: 1px solid #f4e7df;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.vmb-client-home__service-summary span,
+.vmb-client-home__included span,
+.vmb-client-home__level-ups > span,
+.vmb-client-home__receipt-step span {
+  display: block;
+  margin-bottom: 8px;
+  color: #be185d;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.vmb-client-home__service-summary strong {
+  color: #2f2623;
+  font-size: 22px;
+}
+
+.vmb-client-home__included p {
+  margin: 0;
+  color: #6f5a53;
+  line-height: 1.65;
+}
+
+.vmb-client-home__level-ups ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vmb-client-home__level-ups li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #fce7f3;
+  border-radius: 16px;
+  background: #fffafb;
+}
+
+.vmb-client-home__level-ups label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #2f2623;
+}
+
+.vmb-client-home__level-ups input {
+  width: 16px;
+  height: 16px;
+  accent-color: #be185d;
+}
+
+.vmb-client-home__level-ups em {
+  color: #7c2d12;
+  font-style: normal;
+  font-weight: 900;
 }
 
 .vmb-client-home__gift-box {
@@ -10410,6 +10502,10 @@
   color: #be185d;
 }
 
+.vmb-client-home__slot-grid--receipt {
+  margin: 12px 0 18px;
+}
+
 .vmb-client-home__actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -10434,6 +10530,84 @@
 .vmb-client-home__button:disabled {
   cursor: default;
   opacity: 0.78;
+}
+
+.vmb-client-home__receipt {
+  position: sticky;
+  top: 18px;
+  align-self: start;
+}
+
+.vmb-client-home__receipt-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.vmb-client-home__receipt-step div {
+  display: grid;
+}
+
+.vmb-client-home__receipt-step button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #fbcfe8;
+  border-radius: 999px;
+  background: #fff;
+  color: #be185d;
+  font-weight: 900;
+}
+
+.vmb-client-home__receipt-lines {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #f4e7df;
+  border-radius: 20px;
+  background: #fffdfa;
+}
+
+.vmb-client-home__receipt-lines div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-top: 1px solid #f4e7df;
+}
+
+.vmb-client-home__receipt-lines div:first-child {
+  border-top: 0;
+}
+
+.vmb-client-home__receipt-lines dt {
+  color: #6f5a53;
+}
+
+.vmb-client-home__receipt-lines dd {
+  margin: 0;
+  color: #2f2623;
+  font-weight: 900;
+  text-align: right;
+}
+
+.vmb-client-home__receipt-lines .vmb-client-home__receipt-total {
+  background: #fff7fb;
+}
+
+.vmb-client-home__receipt-lines .vmb-client-home__receipt-total dt,
+.vmb-client-home__receipt-lines .vmb-client-home__receipt-total dd {
+  color: #be185d;
+  font-size: 18px;
+}
+
+.vmb-client-home__receipt-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .vmb-client-home__activity {
@@ -10692,6 +10866,7 @@
 
   .vmb-client-home__hero,
   .vmb-client-home__grid,
+  .vmb-client-home__offer-workspace,
   .vmb-client-home__actions {
     grid-template-columns: 1fr;
   }
