@@ -104,6 +104,9 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const [calendarModalOpen, setCalendarModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [offerOpen, setOfferOpen] = useState(false);
+  const [orderConfirmed, setOrderConfirmed] = useState(false);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [successCountdown, setSuccessCountdown] = useState(10);
   const [selectedLevelUpIds, setSelectedLevelUpIds] = useState<string[]>([]);
 
   const loadInvite = useCallback(async () => {
@@ -184,6 +187,8 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
       if (!response.ok || !json.ok) throw new Error(json.error ?? "Could not claim invite.");
       if (action === "book") {
         setNotice(hasToken ? `Gift saved. Calendar booking for ${selectedSlot} is next in this flow.` : `Booking request saved for ${selectedSlot}. Your salon can now confirm the time.`);
+        setSuccessCountdown(10);
+        setSuccessModalOpen(true);
       } else if (action === "personalize") {
         setNotice(hasToken ? "Gift saved. Customization choices are next in this flow." : "Personalization request saved. Your salon can see what you want to refine.");
       } else {
@@ -251,6 +256,10 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const appointmentReady = Boolean(selectedSlot);
 
   useEffect(() => {
+    if (!selectedSlot) setOrderConfirmed(false);
+  }, [selectedSlot]);
+
+  useEffect(() => {
     if (!calendarModalOpen) return;
     const selectedSlotDay = requestSlots.find((slot) => slot.label === selectedSlot)?.day;
     const nextDay = selectedSlotDay ?? salonWorkDays.find((day) => day.slots.length > 0)?.day ?? null;
@@ -259,10 +268,29 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
     }
   }, [calendarModalOpen, requestSlots, salonWorkDays, selectedDay, selectedSlot]);
 
+  useEffect(() => {
+    if (!successModalOpen) return;
+    if (successCountdown <= 0) {
+      setSuccessModalOpen(false);
+      setOfferOpen(false);
+      setSuccessCountdown(10);
+      return;
+    }
+    const timer = window.setTimeout(() => setSuccessCountdown((current) => current - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [successCountdown, successModalOpen]);
+
   function toggleLevelUp(id: string) {
+    setOrderConfirmed(false);
     setSelectedLevelUpIds((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
     );
+  }
+
+  function closeSuccessModal() {
+    setSuccessModalOpen(false);
+    setOfferOpen(false);
+    setSuccessCountdown(10);
   }
 
   return (
@@ -454,16 +482,22 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
                     <section className="vmb-client-home__receipt-step vmb-client-home__receipt-step--actions">
                       <div>
                         <span>Step 3</span>
-                        <strong>Book or save for later</strong>
+                        <strong>{orderConfirmed ? "Book or save for later" : "Confirm before booking"}</strong>
                       </div>
-                      <div className="vmb-client-home__receipt-actions">
-                        <button type="button" className="vmb-client-home__button vmb-client-home__button--primary" onClick={() => void recordClientIntent("book")} disabled={claiming}>
-                          {claiming ? "Saving..." : "Book My Appointment"}
+                      {orderConfirmed ? (
+                        <div className="vmb-client-home__receipt-actions">
+                          <button type="button" className="vmb-client-home__button vmb-client-home__button--primary" onClick={() => void recordClientIntent("book")} disabled={claiming}>
+                            {claiming ? "Saving..." : "Book My Appointment"}
+                          </button>
+                          <button type="button" className="vmb-client-home__button vmb-client-home__button--quiet" onClick={() => void recordClientIntent("hold")} disabled={claiming}>
+                            Save for Later
+                          </button>
+                        </div>
+                      ) : (
+                        <button type="button" className="vmb-client-home__button vmb-client-home__button--primary" onClick={() => setOrderConfirmed(true)}>
+                          Confirm Order
                         </button>
-                        <button type="button" className="vmb-client-home__button vmb-client-home__button--quiet" onClick={() => void recordClientIntent("hold")} disabled={claiming}>
-                          Save for Later
-                        </button>
-                      </div>
+                      )}
                     </section>
                   ) : null}
                 </aside>
@@ -532,6 +566,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
                         className={slot.label === selectedSlot ? "is-selected" : ""}
                         onClick={() => {
                           setSelectedSlot(slot.label);
+                          setOrderConfirmed(false);
                           setSelectedDay(slot.day);
                           setCalendarModalOpen(false);
                         }}
@@ -541,6 +576,27 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
                     ))}
                   </div>
                 </div>
+              </div>
+            </div>
+          ) : null}
+
+          {successModalOpen ? (
+            <div className="vmb-client-home__success-modal" role="dialog" aria-modal="true" aria-label="Booking request confirmed">
+              <div className="vmb-client-home__success-card">
+                <div className="vmb-client-home__sparkler" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+                <p className="vmb-client-home__eyebrow">Confirmed</p>
+                <h3>Your birthday gift is on its way.</h3>
+                <p>
+                  We saved {selectedSlot} with your selected style. {salonName} can see the request and will confirm the final appointment.
+                </p>
+                <button type="button" className="vmb-client-home__button vmb-client-home__button--primary" onClick={closeSuccessModal}>
+                  Close
+                </button>
+                <p className="vmb-client-home__success-count">Returning to your client page in {successCountdown}s</p>
               </div>
             </div>
           ) : null}

@@ -10741,6 +10741,102 @@
   margin-bottom: 0;
 }
 
+.vmb-client-home__success-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 26%, rgba(252, 231, 243, 0.72), transparent 30%),
+    rgba(47, 38, 35, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.vmb-client-home__success-card {
+  position: relative;
+  width: min(520px, 100%);
+  overflow: hidden;
+  padding: clamp(28px, 5vw, 44px);
+  border: 1px solid rgba(212, 175, 55, 0.54);
+  border-radius: 34px;
+  background: linear-gradient(150deg, #fffdfa, #fff7fb 58%, #fff2f6);
+  box-shadow: 0 34px 110px rgba(47, 38, 35, 0.24);
+  text-align: center;
+}
+
+.vmb-client-home__success-card h3 {
+  margin: 0;
+  color: #2f2623;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.vmb-client-home__success-card p:not(.vmb-client-home__eyebrow):not(.vmb-client-home__success-count) {
+  margin: 18px auto 22px;
+  max-width: 390px;
+  color: #6f5a53;
+  line-height: 1.65;
+}
+
+.vmb-client-home__success-count {
+  margin: 16px 0 0;
+  color: #9f6b1f;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.vmb-client-home__sparkler {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.vmb-client-home__sparkler span {
+  position: absolute;
+  width: 115px;
+  height: 2px;
+  transform-origin: left center;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0), rgba(212, 175, 55, 0.95), rgba(251, 207, 232, 0));
+  animation: vmb-sparkler-sweep 2.8s ease-in-out infinite;
+}
+
+.vmb-client-home__sparkler span:nth-child(1) {
+  top: 28px;
+  left: -20px;
+  transform: rotate(17deg);
+}
+
+.vmb-client-home__sparkler span:nth-child(2) {
+  top: 72px;
+  right: -28px;
+  transform: rotate(154deg);
+  animation-delay: 0.42s;
+}
+
+.vmb-client-home__sparkler span:nth-child(3) {
+  bottom: 38px;
+  left: 34px;
+  transform: rotate(-12deg);
+  animation-delay: 0.82s;
+}
+
+@keyframes vmb-sparkler-sweep {
+  0%,
+  100% {
+    opacity: 0.25;
+    filter: blur(0);
+  }
+  45% {
+    opacity: 1;
+    filter: blur(0.6px);
+  }
+}
+
 .vmb-client-home__activity {
   display: grid;
   gap: 12px;
