@@ -16,6 +16,7 @@ type ClientInviteDto = {
 type BookingSlot = {
   label: string;
   day: number;
+  dayLabel?: string;
   startsAtMinutes: number;
 };
 
@@ -43,6 +44,13 @@ const GEL_X_LEVEL_UPS: GiftLevelUp[] = [
 
 const TAX_RATE = 0.0825;
 const VMB_COMARKET_RATE = 0.05;
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+const FALLBACK_BOOKING_SLOTS: BookingSlot[] = [
+  { label: "Mon · 10:00 AM", day: 1, dayLabel: "Mon", startsAtMinutes: 10 * 60 },
+  { label: "Mon · 2:30 PM", day: 1, dayLabel: "Mon", startsAtMinutes: 14 * 60 + 30 },
+  { label: "Fri · 11:00 AM", day: 5, dayLabel: "Fri", startsAtMinutes: 11 * 60 },
+  { label: "Sat · 1:00 PM", day: 6, dayLabel: "Sat", startsAtMinutes: 13 * 60 },
+];
 
 function firstName(name?: string): string {
   return name?.trim().split(/\s+/)[0] || "there";
@@ -94,6 +102,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const [slots, setSlots] = useState<BookingSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [calendarModalOpen, setCalendarModalOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [offerOpen, setOfferOpen] = useState(false);
   const [selectedLevelUpIds, setSelectedLevelUpIds] = useState<string[]>([]);
 
@@ -215,7 +224,17 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const providerName = snapshot?.providerName ?? "Your nail tech";
   const heroImageUrl = snapshot?.inviteArtImageUrl?.trim() || snapshot?.serviceImageUrl?.trim() || getFallbackServiceAsset().imageUrl;
   const ownerInitial = salonInitials(providerName || salonName);
-  const requestSlots = slots.length > 0 ? slots.map((slot) => slot.label) : ["Tomorrow · 10:00 AM", "Tomorrow · 2:30 PM", "Friday · 11:00 AM", "Saturday · 1:00 PM"];
+  const requestSlots = slots.length > 0 ? slots : FALLBACK_BOOKING_SLOTS;
+  const salonWorkDays = useMemo(
+    () => DAY_LABELS.map((label, day) => ({
+      day,
+      label,
+      slots: requestSlots.filter((slot) => slot.day === day),
+    })),
+    [requestSlots],
+  );
+  const activeDay = selectedDay ?? salonWorkDays.find((day) => day.slots.length > 0)?.day ?? null;
+  const activeDaySlots = activeDay === null ? [] : requestSlots.filter((slot) => slot.day === activeDay);
   const serviceLine = services.length > 0 ? services.join(" · ") : "Your private salon gift";
   const levelUpLine = rewards.length > 0 ? rewards.join(" · ") : "Salon-selected finishing touch";
   const expiration = stripValidPrefix(snapshot?.expirationLabel);
@@ -230,6 +249,15 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const vmbComarket = subtotal * VMB_COMARKET_RATE;
   const total = subtotal + tax + vmbComarket;
   const appointmentReady = Boolean(selectedSlot);
+
+  useEffect(() => {
+    if (!calendarModalOpen) return;
+    const selectedSlotDay = requestSlots.find((slot) => slot.label === selectedSlot)?.day;
+    const nextDay = selectedSlotDay ?? salonWorkDays.find((day) => day.slots.length > 0)?.day ?? null;
+    if (nextDay !== null && selectedDay !== nextDay && !salonWorkDays.some((day) => day.day === selectedDay && day.slots.length > 0)) {
+      setSelectedDay(nextDay);
+    }
+  }, [calendarModalOpen, requestSlots, salonWorkDays, selectedDay, selectedSlot]);
 
   function toggleLevelUp(id: string) {
     setSelectedLevelUpIds((current) =>
@@ -477,21 +505,41 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
                 </button>
                 <p className="vmb-client-home__eyebrow">Salon calendar</p>
                 <h3>Choose your appointment time</h3>
-                <p>{slotsLoading ? "Loading salon openings..." : "Select one opening below. You can adjust it with the salon later if needed."}</p>
-                <div className="vmb-client-home__slot-grid vmb-client-home__slot-grid--modal">
-                  {requestSlots.map((slot) => (
-                    <button
-                      key={slot}
-                      type="button"
-                      className={slot === selectedSlot ? "is-selected" : ""}
-                      onClick={() => {
-                        setSelectedSlot(slot);
-                        setCalendarModalOpen(false);
-                      }}
-                    >
-                      {slot}
-                    </button>
-                  ))}
+                <p>{slotsLoading ? "Loading salon openings..." : "Choose an open salon day, then pick a time that works for you."}</p>
+                <div className="vmb-client-home__calendar-picker">
+                  <div className="vmb-client-home__day-strip" aria-label="Salon work days">
+                    {salonWorkDays.map((day) => {
+                      const isOpen = day.slots.length > 0;
+                      return (
+                        <button
+                          key={day.day}
+                          type="button"
+                          className={activeDay === day.day ? "is-selected" : ""}
+                          disabled={!isOpen}
+                          onClick={() => setSelectedDay(day.day)}
+                        >
+                          <span>{day.label}</span>
+                          <em>{isOpen ? `${day.slots.length} openings` : "Closed"}</em>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="vmb-client-home__slot-grid vmb-client-home__slot-grid--modal">
+                    {activeDaySlots.map((slot) => (
+                      <button
+                        key={`${slot.day}-${slot.startsAtMinutes}-${slot.label}`}
+                        type="button"
+                        className={slot.label === selectedSlot ? "is-selected" : ""}
+                        onClick={() => {
+                          setSelectedSlot(slot.label);
+                          setSelectedDay(slot.day);
+                          setCalendarModalOpen(false);
+                        }}
+                      >
+                        {slot.label.replace(/^[^·]+·\s*/, "")}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
