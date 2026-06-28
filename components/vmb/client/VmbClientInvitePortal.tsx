@@ -89,10 +89,11 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const [invite, setInvite] = useState<ClientInviteDto | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState("Tomorrow · 10:00 AM");
+  const [selectedSlot, setSelectedSlot] = useState("");
   const [clientContact, setClientContact] = useState(contact);
   const [slots, setSlots] = useState<BookingSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [calendarModalOpen, setCalendarModalOpen] = useState(false);
   const [offerOpen, setOfferOpen] = useState(false);
   const [selectedLevelUpIds, setSelectedLevelUpIds] = useState<string[]>([]);
 
@@ -132,6 +133,10 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
 
   async function recordClientIntent(action: "book" | "hold" | "personalize") {
     if (!invite) return;
+    if (action === "book" && !selectedSlot) {
+      setNotice("Choose a date and time before booking this gift.");
+      return;
+    }
     if (!clientContact.trim()) {
       setNotice("Add the email or mobile number your salon used for this gift, then choose your next step.");
       return;
@@ -184,6 +189,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   }
 
   async function openCalendar() {
+    setCalendarModalOpen(true);
     if (!token.trim() || slots.length > 0) return;
     setSlotsLoading(true);
     try {
@@ -194,7 +200,6 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
       if (!response.ok || !json.ok) throw new Error(json.error ?? "Could not load booking times.");
       const nextSlots = json.slots ?? [];
       setSlots(nextSlots);
-      if (nextSlots[0]) setSelectedSlot(nextSlots[0].label);
     } catch (err) {
       setNotice(err instanceof Error ? err.message : "Could not load booking times.");
     } finally {
@@ -224,6 +229,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const tax = subtotal * TAX_RATE;
   const vmbComarket = subtotal * VMB_COMARKET_RATE;
   const total = subtotal + tax + vmbComarket;
+  const appointmentReady = Boolean(selectedSlot);
 
   function toggleLevelUp(id: string) {
     setSelectedLevelUpIds((current) =>
@@ -359,69 +365,79 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
                   <section className="vmb-client-home__receipt-step">
                     <div>
                       <span>Step 1</span>
-                      <strong>Choose date and time</strong>
+                      <strong>{selectedSlot || "Pick your date and time"}</strong>
                     </div>
                     <button type="button" onClick={() => void openCalendar()} disabled={slotsLoading}>
-                      {slotsLoading ? "Loading times..." : "Refresh calendar"}
+                      {slotsLoading ? "Loading..." : selectedSlot ? "Change" : "Choose"}
                     </button>
                   </section>
 
-                  <div className="vmb-client-home__slot-grid vmb-client-home__slot-grid--receipt">
-                    {requestSlots.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        className={slot === selectedSlot ? "is-selected" : ""}
-                        onClick={() => setSelectedSlot(slot)}
-                      >
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
+                  {appointmentReady ? (
+                    <>
+                      <section className="vmb-client-home__receipt-step vmb-client-home__receipt-step--confirm">
+                        <div>
+                          <span>Step 2</span>
+                          <strong>Confirm your selections</strong>
+                        </div>
+                      </section>
 
-                  <dl className="vmb-client-home__receipt-lines">
-                    <div>
-                      <dt>{serviceLine}</dt>
-                      <dd>{formatMoney(baseServicePrice)}</dd>
+                      <dl className="vmb-client-home__receipt-lines">
+                        <div>
+                          <dt>{serviceLine}</dt>
+                          <dd>{formatMoney(baseServicePrice)}</dd>
+                        </div>
+                        {selectedLevelUps.map((levelUp) => (
+                          <div key={levelUp.id}>
+                            <dt>{levelUp.label}</dt>
+                            <dd>{formatMoney(levelUp.price)}</dd>
+                          </div>
+                        ))}
+                        <div>
+                          <dt>Appointment time</dt>
+                          <dd>{selectedSlot}</dd>
+                        </div>
+                        <div>
+                          <dt>Subtotal</dt>
+                          <dd>{formatMoney(subtotal)}</dd>
+                        </div>
+                        <div>
+                          <dt>Tax estimate</dt>
+                          <dd>{formatMoney(tax)}</dd>
+                        </div>
+                        <div>
+                          <dt>VMB co-marketing (5%)</dt>
+                          <dd>{formatMoney(vmbComarket)}</dd>
+                        </div>
+                        <div className="vmb-client-home__receipt-total">
+                          <dt>Total</dt>
+                          <dd>{formatMoney(total)}</dd>
+                        </div>
+                      </dl>
+                    </>
+                  ) : (
+                    <div className="vmb-client-home__receipt-mask">
+                      Choose an appointment time to unlock your final receipt and booking options.
                     </div>
-                    {selectedLevelUps.map((levelUp) => (
-                      <div key={levelUp.id}>
-                        <dt>{levelUp.label}</dt>
-                        <dd>{formatMoney(levelUp.price)}</dd>
-                      </div>
-                    ))}
-                    <div>
-                      <dt>Appointment time</dt>
-                      <dd>{selectedSlot}</dd>
-                    </div>
-                    <div>
-                      <dt>Subtotal</dt>
-                      <dd>{formatMoney(subtotal)}</dd>
-                    </div>
-                    <div>
-                      <dt>Tax estimate</dt>
-                      <dd>{formatMoney(tax)}</dd>
-                    </div>
-                    <div>
-                      <dt>VMB co-marketing (5%)</dt>
-                      <dd>{formatMoney(vmbComarket)}</dd>
-                    </div>
-                    <div className="vmb-client-home__receipt-total">
-                      <dt>Total</dt>
-                      <dd>{formatMoney(total)}</dd>
-                    </div>
-                  </dl>
+                  )}
 
                   {notice ? <p className="vmb-client-home__notice">{notice}</p> : null}
 
-                  <div className="vmb-client-home__receipt-actions">
-                    <button type="button" className="vmb-client-home__button vmb-client-home__button--primary" onClick={() => void recordClientIntent("book")} disabled={claiming}>
-                      {claiming ? "Saving..." : "Book My Appointment"}
-                    </button>
-                    <button type="button" className="vmb-client-home__button vmb-client-home__button--quiet" onClick={() => void recordClientIntent("hold")} disabled={claiming}>
-                      Save for Later
-                    </button>
-                  </div>
+                  {appointmentReady ? (
+                    <section className="vmb-client-home__receipt-step vmb-client-home__receipt-step--actions">
+                      <div>
+                        <span>Step 3</span>
+                        <strong>Book or save for later</strong>
+                      </div>
+                      <div className="vmb-client-home__receipt-actions">
+                        <button type="button" className="vmb-client-home__button vmb-client-home__button--primary" onClick={() => void recordClientIntent("book")} disabled={claiming}>
+                          {claiming ? "Saving..." : "Book My Appointment"}
+                        </button>
+                        <button type="button" className="vmb-client-home__button vmb-client-home__button--quiet" onClick={() => void recordClientIntent("hold")} disabled={claiming}>
+                          Save for Later
+                        </button>
+                      </div>
+                    </section>
+                  ) : null}
                 </aside>
               </div>
             ) : (
@@ -452,6 +468,34 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
               </ul>
             </aside>
           </section>
+
+          {calendarModalOpen ? (
+            <div className="vmb-client-home__calendar-modal" role="dialog" aria-modal="true" aria-label="Choose appointment time">
+              <div className="vmb-client-home__calendar-card">
+                <button type="button" className="vmb-client-home__calendar-close" onClick={() => setCalendarModalOpen(false)}>
+                  Close
+                </button>
+                <p className="vmb-client-home__eyebrow">Salon calendar</p>
+                <h3>Choose your appointment time</h3>
+                <p>{slotsLoading ? "Loading salon openings..." : "Select one opening below. You can adjust it with the salon later if needed."}</p>
+                <div className="vmb-client-home__slot-grid vmb-client-home__slot-grid--modal">
+                  {requestSlots.map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      className={slot === selectedSlot ? "is-selected" : ""}
+                      onClick={() => {
+                        setSelectedSlot(slot);
+                        setCalendarModalOpen(false);
+                      }}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null}
         </section>
       ) : null}
     </main>

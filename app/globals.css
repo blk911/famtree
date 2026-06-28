@@ -10290,7 +10290,7 @@
 
 .vmb-client-home__offer-workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.78fr);
+  grid-template-columns: minmax(0, 1fr) minmax(345px, 0.86fr);
   gap: 22px;
 }
 
@@ -10551,13 +10551,36 @@
 }
 
 .vmb-client-home__receipt-step button {
-  min-height: 38px;
-  padding: 0 14px;
-  border: 1px solid #fbcfe8;
-  border-radius: 999px;
-  background: #fff;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #be185d;
   font-weight: 900;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.vmb-client-home__receipt-step--confirm,
+.vmb-client-home__receipt-step--actions {
+  margin-top: 14px;
+}
+
+.vmb-client-home__receipt-step--actions {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.vmb-client-home__receipt-mask {
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px dashed #f9a8d4;
+  border-radius: 20px;
+  background: #fff7fb;
+  color: #831843;
+  font-weight: 800;
+  line-height: 1.55;
 }
 
 .vmb-client-home__receipt-lines {
@@ -10608,6 +10631,59 @@
   display: grid;
   gap: 10px;
   margin-top: 16px;
+}
+
+.vmb-client-home__calendar-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(47, 38, 35, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.vmb-client-home__calendar-card {
+  position: relative;
+  width: min(560px, 100%);
+  padding: clamp(22px, 4vw, 34px);
+  border: 1px solid #fbcfe8;
+  border-radius: 30px;
+  background: linear-gradient(180deg, #fffdfa, #fff7fb);
+  box-shadow: 0 30px 90px rgba(47, 38, 35, 0.22);
+}
+
+.vmb-client-home__calendar-card h3 {
+  margin: 0;
+  color: #2f2623;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(30px, 4vw, 46px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.vmb-client-home__calendar-card p:not(.vmb-client-home__eyebrow) {
+  color: #6f5a53;
+  line-height: 1.6;
+}
+
+.vmb-client-home__calendar-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #f1ded6;
+  border-radius: 999px;
+  background: #fff;
+  color: #6f5a53;
+  font-weight: 900;
+}
+
+.vmb-client-home__slot-grid--modal {
+  margin-top: 18px;
+  margin-bottom: 0;
 }
 
 .vmb-client-home__activity {
