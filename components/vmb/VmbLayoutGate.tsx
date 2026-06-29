@@ -24,6 +24,7 @@ function VmbLayoutGateInner({ children }: { children: React.ReactNode }) {
     if (
       pathname === "/vmb/demo" ||
       pathname === "/vmb/login" ||
+      pathname === "/vmb/client" ||
       pathname === "/vmb/start" ||
       pathname.startsWith("/vmb/start/") ||
       pathname.startsWith("/vmb/invite/")

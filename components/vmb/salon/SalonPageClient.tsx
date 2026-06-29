@@ -342,7 +342,7 @@ export function SalonPageClient({ salonId, salonName, ownerName }: Props) {
         throw new Error(json.error ?? "No active invite found.");
       }
       router.push(
-        `/vmb/client-invite?inviteId=${encodeURIComponent(json.invite.id)}&contact=${encodeURIComponent(findInviteEmail.trim())}`,
+        `/vmb/client?inviteId=${encodeURIComponent(json.invite.id)}&contact=${encodeURIComponent(findInviteEmail.trim())}`,
       );
     } catch (err) {
       setFindInviteError(err instanceof Error ? err.message : "No active invite found.");

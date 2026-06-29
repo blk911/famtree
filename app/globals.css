@@ -10668,6 +10668,16 @@
   line-height: 1.6;
 }
 
+@media (max-width: 860px) {
+  .vmb-client-entry-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .vmb-client-entry-steps {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .vmb-client-home__calendar-close {
   position: absolute;
   top: 16px;

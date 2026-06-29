@@ -11,7 +11,7 @@ export default function VmbClientInviteWorkbenchPage() {
         <h1>Deb&apos;s gift flow</h1>
         <p>
           Temporary access for building the client-side booking, personalization, hold, calendar, and payment path.
-          This uses a real sent invite record and then opens the same client invite page Deb will use later.
+          This uses a real sent invite record and then opens the same client page Deb will use later.
         </p>
 
         <dl className="vmb-dev-client-invite__facts">

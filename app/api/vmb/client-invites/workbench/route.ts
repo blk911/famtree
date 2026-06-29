@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
   }
 
-  const url = new URL("/vmb/client-invite", request.url);
+  const url = new URL("/vmb/client", request.url);
   url.searchParams.set("inviteId", result.invite.id);
   url.searchParams.set("contact", result.contact);
   url.searchParams.set("workbench", "deb");

@@ -61,6 +61,37 @@ const TRIAL_BULLETS = [
   "Designed for salon owners, independent techs, and studio operators",
 ] as const;
 
+const ENTRY_CARDS = [
+  {
+    eyebrow: "Salon Owner",
+    title: "Run my salon",
+    body: "Return to Today, services, calendar, invitations, sent gifts, and booking requests.",
+    href: "/vmb/login",
+    cta: "Salon sign in",
+  },
+  {
+    eyebrow: "Invited Client",
+    title: "Open my gift",
+    body: "Use a secure invite token or the temporary test lookup while the client login lane is being finished.",
+    href: "/vmb/client",
+    cta: "Client entry",
+  },
+  {
+    eyebrow: "New Salon",
+    title: "Start my setup",
+    body: "Begin onboarding, load the book, approve defaults, set the week, and activate the workspace.",
+    href: "/vmb/start",
+    cta: "Start setup",
+  },
+  {
+    eyebrow: "Explore",
+    title: "See the public salon page",
+    body: "Preview the client-facing salon page, private invite lookup bridge, and featured services.",
+    href: "/vmb/salon-page",
+    cta: "Explore VMB",
+  },
+] as const;
+
 const HERO_VIDEO = {
   videoSrc: "/uploads/studios-hero-intro-v2.mp4",
   thumbSrc: "/uploads/STUDIO Intro Vid Thumb.png",
@@ -213,6 +244,65 @@ export function VmbLanding() {
               cinemaAriaLabel="VMB salon growth video"
               fitParentWidth
             />
+          </div>
+        </div>
+      </section>
+
+      <section style={{ background: "#fff", borderTop: `1px solid ${STUDIOS_LINE}` }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "38px 24px 52px" }}>
+          <p
+            style={{
+              margin: "0 0 10px",
+              fontSize: 11,
+              fontWeight: 900,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: ACCENT,
+            }}
+          >
+            Choose Your VMB Door
+          </p>
+          <h2
+            style={{
+              margin: "0 0 24px",
+              fontSize: "clamp(28px, 4vw, 42px)",
+              fontWeight: 900,
+              letterSpacing: "-0.04em",
+            }}
+          >
+            One front door. Four clean paths.
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
+              gap: 16,
+            }}
+          >
+            {ENTRY_CARDS.map((card) => (
+              <Link
+                key={card.title}
+                href={card.href}
+                style={{
+                  display: "grid",
+                  gap: 10,
+                  padding: 22,
+                  borderRadius: 20,
+                  border: `1px solid ${STUDIOS_LINE}`,
+                  background: card.href === "/vmb/client" ? ACCENT_SOFT : WARM_BG,
+                  color: STUDIOS_INK,
+                  textDecoration: "none",
+                  boxShadow: card.href === "/vmb/client" ? STUDIOS_CARD_SHADOW : "none",
+                }}
+              >
+                <span style={{ color: ACCENT, fontSize: 10, fontWeight: 900, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+                  {card.eyebrow}
+                </span>
+                <strong style={{ fontSize: 22, lineHeight: 1.08 }}>{card.title}</strong>
+                <span style={{ color: STUDIOS_MUTED, fontSize: 14, lineHeight: 1.5 }}>{card.body}</span>
+                <span style={{ color: ACCENT, fontSize: 13, fontWeight: 900 }}>{card.cta} -&gt;</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

@@ -155,7 +155,7 @@ async function run() {
     const workbenchResponse = await getClientInviteWorkbench(new NextRequest("http://localhost/api/vmb/client-invites/workbench"));
     assert([307, 308].includes(workbenchResponse.status), "Deb workbench redirects to client invite bridge");
     const workbenchLocation = workbenchResponse.headers.get("location") ?? "";
-    assert(workbenchLocation.includes("/vmb/client-invite?"), "Deb workbench opens client invite page");
+    assert(workbenchLocation.includes("/vmb/client?"), "Deb workbench opens client page");
     const workbenchCookieHeader = workbenchResponse.headers.get("set-cookie") ?? "";
     assert(workbenchCookieHeader.includes(`${VMB_TRIAL_COOKIE}=`), "Deb workbench sets signed salon bridge cookie");
     const workbenchUrl = new URL(workbenchLocation);
@@ -171,7 +171,7 @@ async function run() {
     assert(opened.status === "available", "sent invite opens by token");
     if (opened.status === "available") {
       assertNoAdminFieldsInRecipientPayload(opened.view);
-      assert(opened.view.claimHref.includes("/vmb/client-invite?token="), "public invite opens the client gift page");
+      assert(opened.view.claimHref.includes("/vmb/client?token="), "public invite opens the client gift page");
     }
     const tokenClientInvite = await getClientInviteByToken(new NextRequest(`http://localhost/api/vmb/client-invites/token?token=${encodeURIComponent(sent.recipientToken)}`));
     assert(tokenClientInvite.status === 200, "client gift page can load by secure token");
