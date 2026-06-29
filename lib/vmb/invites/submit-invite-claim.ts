@@ -8,7 +8,8 @@ import {
 import type { RecipientInviteClientView } from "./recipient-invite-view";
 import { assertNoAdminFieldsInRecipientPayload } from "./recipient-invite-view";
 import { resolveRecipientInvite } from "./resolve-recipient-invite";
-import { claimSentInvite } from "./sent-invite-store";
+import { claimSentInvite, recordClientInviteIntent } from "./sent-invite-store";
+import type { ClientInviteBookingRequest, ClientInviteIntentKind } from "./sent-invite-types";
 
 export type RecipientInviteClaimView = {
   inviteId: string;
@@ -23,10 +24,14 @@ export type SubmitInviteClaimInput = {
   inviteId: string;
   name?: string;
   contact: string;
+  action?: string;
+  note?: string;
+  requestedSlot?: string;
+  booking?: ClientInviteBookingRequest;
 };
 
 export type SubmitInviteClaimResult =
-  | { ok: true; alreadyClaimed: boolean }
+  | { ok: true; alreadyClaimed: boolean; intent?: ClientInviteIntentKind }
   | { ok: false; error: string; status: 400 | 404 | 409 | 410 | 500 | 503 };
 
 export function toRecipientInviteClaimView(view: RecipientInviteClientView): RecipientInviteClaimView {
@@ -101,5 +106,30 @@ export async function submitInviteClaim(
       channel: "recipient_claim",
     },
   });
-  return { ok: true, alreadyClaimed: result.existing };
+  const action = input.action?.trim() || "claim";
+  const intentByAction: Record<string, ClientInviteIntentKind | undefined> = {
+    claim: "gift_saved",
+    book: "booking_requested",
+    personalize: "personalization_requested",
+    hold: "hold_requested",
+  };
+  const intentKind = intentByAction[action];
+  if (!intentKind) {
+    return { ok: false, error: "Unknown invite action", status: 400 };
+  }
+  if (action !== "claim") {
+    const intent = await recordClientInviteIntent({
+      salonId: resolved.sentInvite.salonId,
+      sentInviteId: resolved.sentInvite.id,
+      kind: intentKind,
+      clientName,
+      recipientContactSummary: maskRecipientContactSummary(contact),
+      recipientContactHash: contactHash,
+      note: input.note,
+      requestedSlot: input.requestedSlot,
+      booking: input.booking,
+    });
+    if ("error" in intent) return { ok: false, error: intent.error, status: intent.status };
+  }
+  return { ok: true, alreadyClaimed: result.existing, intent: intentKind };
 }

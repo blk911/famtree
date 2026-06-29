@@ -155,6 +155,16 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
     }
     setClaiming(true);
     setNotice(null);
+    const booking = action === "book" ? {
+      serviceLine,
+      selectedLevelUps: selectedLevelUps.map((levelUp) => ({ label: levelUp.label, price: levelUp.price })),
+      requestedSlot: selectedSlot,
+      subtotal,
+      tax,
+      vmbComarket,
+      total,
+      paymentStatus: "stripe_stub" as const,
+    } : undefined;
     try {
       const hasToken = token.trim().length > 0;
       const response = hasToken
@@ -165,6 +175,14 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
               inviteId: token,
               name: invite.snapshot.recipientName,
               contact: clientContact,
+              action,
+              requestedSlot: action === "book" ? selectedSlot : undefined,
+              note: action === "book"
+                ? `Client selected ${selectedSlot} with ${selectedLevelUps.map((levelUp) => levelUp.label).join(", ") || "no added level-ups"}.`
+                : action === "personalize"
+                  ? "Client wants to personalize this gift before booking."
+                  : undefined,
+              booking,
             }),
           })
         : await fetch(`/api/vmb/client-invites/${encodeURIComponent(invite.id)}`, {
@@ -181,6 +199,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
                 : action === "personalize"
                   ? "Client wants to personalize this gift before booking."
                   : undefined,
+              booking,
             }),
           });
       const json = (await response.json()) as { ok?: boolean; alreadyClaimed?: boolean; action?: string; error?: string; message?: string };

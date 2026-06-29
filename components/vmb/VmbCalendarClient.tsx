@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { VmbPageFrame } from "@/components/vmb/VmbPageFrame";
 import type { SalonCalendar, SalonCalendarDay } from "@/lib/vmb/calendar/salon-calendar-store";
+import type { SalonClaimTimelineDto } from "@/lib/vmb/invites/sent-invite-dto";
 
 type CalendarResponse = {
   ok: boolean;
@@ -61,15 +62,23 @@ export function VmbCalendarClient() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [bookingRequests, setBookingRequests] = useState<SalonClaimTimelineDto[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
     setMessage(null);
     try {
-      const response = await fetch("/api/vmb/calendar", { cache: "no-store", credentials: "include" });
+      const [response, timelineResponse] = await Promise.all([
+        fetch("/api/vmb/calendar", { cache: "no-store", credentials: "include" }),
+        fetch("/api/vmb/sent-invites", { cache: "no-store", credentials: "include" }),
+      ]);
       const json = (await response.json()) as CalendarResponse;
       if (!response.ok || !json.ok || !json.calendar) throw new Error(json.error ?? "Could not load calendar.");
       setCalendar(snapCalendarToSelectOptions(json.calendar));
+      if (timelineResponse.ok) {
+        const timelineJson = (await timelineResponse.json()) as { ok?: boolean; timeline?: SalonClaimTimelineDto[] };
+        setBookingRequests((timelineJson.timeline ?? []).filter((row) => row.bookingRequest));
+      }
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not load calendar.");
     } finally {
@@ -159,6 +168,30 @@ export function VmbCalendarClient() {
             <span>Version {calendar.version}</span>
             {message ? <em>{message}</em> : null}
           </div>
+
+          <section className="vmb-calendar-week__requests" aria-label="Client booking requests">
+            <div>
+              <p className="vmb-calendar-week__eyebrow">Client Requests</p>
+              <h3>Pending invite bookings</h3>
+            </div>
+            {bookingRequests.length === 0 ? (
+              <p>No client booking requests yet.</p>
+            ) : (
+              <div className="vmb-calendar-week__request-list">
+                {bookingRequests.map(({ sentInvite, claim, bookingRequest }) => (
+                  <article key={`${sentInvite.id}-${bookingRequest?.createdAt ?? sentInvite.sentAt}`}>
+                    <div>
+                      <strong>{sentInvite.recipientName}</strong>
+                      <span>{sentInvite.inviteTypeLabel}</span>
+                    </div>
+                    <p>{bookingRequest?.requestedSlot ?? "Time requested"}</p>
+                    <p>{bookingRequest?.serviceLine ?? "Private salon gift"}</p>
+                    {claim ? <em>{claim.recipientContactSummary}</em> : null}
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
 
           <div className="vmb-calendar-week__grid" role="table" aria-label="Salon weekly availability">
             {calendar.days.map((day) => (

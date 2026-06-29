@@ -1,4 +1,4 @@
-import type { InviteClaim, SalonClaimTimelineItem, SentInvite } from "./sent-invite-types";
+import type { ClientInviteBookingRequest, ClientInviteIntent, InviteClaim, SalonClaimTimelineItem, SentInvite } from "./sent-invite-types";
 
 export type SentInviteSummaryDto = {
   id: string;
@@ -18,9 +18,23 @@ export type InviteClaimSummaryDto = {
   claimedAt: string;
 };
 
+export type ClientBookingRequestDto = {
+  requestedSlot?: string;
+  note?: string;
+  createdAt: string;
+  serviceLine?: string;
+  selectedLevelUps?: ClientInviteBookingRequest["selectedLevelUps"];
+  subtotal?: number;
+  tax?: number;
+  vmbComarket?: number;
+  total?: number;
+  paymentStatus?: ClientInviteBookingRequest["paymentStatus"];
+};
+
 export type SalonClaimTimelineDto = {
   sentInvite: SentInviteSummaryDto;
   claim?: InviteClaimSummaryDto;
+  bookingRequest?: ClientBookingRequestDto;
 };
 
 export function toSentInviteSummaryDto(invite: SentInvite): SentInviteSummaryDto {
@@ -45,9 +59,25 @@ function toClaimSummaryDto(claim: InviteClaim): InviteClaimSummaryDto {
   };
 }
 
+function toBookingRequestDto(intent: ClientInviteIntent): ClientBookingRequestDto {
+  return {
+    requestedSlot: intent.requestedSlot,
+    note: intent.note,
+    createdAt: intent.createdAt,
+    serviceLine: intent.booking?.serviceLine,
+    selectedLevelUps: intent.booking?.selectedLevelUps,
+    subtotal: intent.booking?.subtotal,
+    tax: intent.booking?.tax,
+    vmbComarket: intent.booking?.vmbComarket,
+    total: intent.booking?.total,
+    paymentStatus: intent.booking?.paymentStatus,
+  };
+}
+
 export function toSalonClaimTimelineDto(row: SalonClaimTimelineItem): SalonClaimTimelineDto {
   return {
     sentInvite: toSentInviteSummaryDto(row.sentInvite),
     claim: row.claim ? toClaimSummaryDto(row.claim) : undefined,
+    bookingRequest: row.bookingRequest ? toBookingRequestDto(row.bookingRequest) : undefined,
   };
 }

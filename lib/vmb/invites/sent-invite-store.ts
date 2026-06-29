@@ -29,6 +29,16 @@ function isInviteClaim(value: unknown): value is InviteClaim {
   return typeof row.id === "string" && typeof row.sentInviteId === "string" && typeof row.salonId === "string";
 }
 
+function isClientInviteIntent(value: unknown): value is ClientInviteIntent {
+  if (!value || typeof value !== "object") return false;
+  const row = value as ClientInviteIntent;
+  return typeof row.id === "string"
+    && typeof row.sentInviteId === "string"
+    && typeof row.salonId === "string"
+    && typeof row.kind === "string"
+    && typeof row.createdAt === "string";
+}
+
 function serializeJson<T>(operation: () => Promise<T>): Promise<T> {
   const run = jsonMutation.then(operation, operation);
   jsonMutation = run.then(() => undefined, () => undefined);
@@ -49,6 +59,10 @@ function parseSent(row: PayloadRow | undefined): SentInvite | undefined {
 
 function parseClaim(row: PayloadRow | undefined): InviteClaim | undefined {
   return row && isInviteClaim(row.payload) ? row.payload : undefined;
+}
+
+function parseClientIntent(row: PayloadRow | undefined): ClientInviteIntent | undefined {
+  return row && isClientInviteIntent(row.payload) ? row.payload : undefined;
 }
 
 function newId(prefix: string): string {
@@ -326,6 +340,7 @@ export async function recordClientInviteIntent(input: {
   recipientContactHash: string;
   note?: string;
   requestedSlot?: string;
+  booking?: ClientInviteIntent["booking"];
 }): Promise<{ intent: ClientInviteIntent } | { error: string; status: 404 | 409 | 503 }> {
   const writable = await assertVmbMoneyWritableBackend();
   if (!writable.ok) return { error: writable.error, status: 503 };
@@ -340,6 +355,7 @@ export async function recordClientInviteIntent(input: {
     recipientContactHash: input.recipientContactHash,
     note: input.note?.trim() || undefined,
     requestedSlot: input.requestedSlot?.trim() || undefined,
+    booking: input.booking,
     createdAt: now,
   };
 
@@ -373,20 +389,36 @@ export async function recordClientInviteIntent(input: {
 export async function listSalonClaimTimeline(salonId: string): Promise<SalonClaimTimelineItem[]> {
   let invites: SentInvite[];
   let claims: InviteClaim[];
+  let intents: ClientInviteIntent[];
   if ((await resolveVmbStorageBackend()) === "postgres") {
-    const [inviteRows, claimRows] = await Promise.all([
+    const [inviteRows, claimRows, intentRows] = await Promise.all([
       prisma.$queryRaw<PayloadRow[]>`SELECT payload FROM vmb_sent_invite WHERE salon_id = ${salonId} ORDER BY updated_at DESC`,
       prisma.$queryRaw<PayloadRow[]>`SELECT payload FROM vmb_invite_claim WHERE salon_id = ${salonId} ORDER BY claimed_at DESC`,
+      prisma.$queryRaw<PayloadRow[]>`
+        SELECT payload FROM vmb_invite_event
+        WHERE salon_id = ${salonId} AND event_type = 'sent_invite_booking_requested'
+        ORDER BY occurred_at DESC
+      `,
     ]);
     invites = inviteRows.map((row) => parseSent(row)).filter((row): row is SentInvite => !!row);
     claims = claimRows.map((row) => parseClaim(row)).filter((row): row is InviteClaim => !!row);
+    intents = intentRows.map((row) => parseClientIntent(row)).filter((row): row is ClientInviteIntent => !!row);
   } else {
     if (process.env.VMB_MONEY_TEST_MEMORY !== "1") return [];
     invites = memoryInvites.filter((row) => row.salonId === salonId).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     claims = memoryClaims.filter((row) => row.salonId === salonId);
+    intents = memoryClientIntents.filter((row) => row.salonId === salonId && row.kind === "booking_requested").sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
   const byInvite = new Map(claims.map((claim) => [claim.sentInviteId, claim]));
-  return invites.map((sentInvite) => ({ sentInvite, claim: byInvite.get(sentInvite.id) }));
+  const bookingByInvite = new Map<string, ClientInviteIntent>();
+  for (const intent of intents) {
+    if (!bookingByInvite.has(intent.sentInviteId)) bookingByInvite.set(intent.sentInviteId, intent);
+  }
+  return invites.map((sentInvite) => ({
+    sentInvite,
+    claim: byInvite.get(sentInvite.id),
+    bookingRequest: bookingByInvite.get(sentInvite.id),
+  }));
 }
 
 export async function redeemSentInvite(salonId: string, sentInviteId: string): Promise<{ sentInvite: SentInvite } | { error: string; status: number }> {

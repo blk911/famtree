@@ -31,7 +31,7 @@ export function SalonClaimsTimeline() {
     <section>
       <h2 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 800 }}>Sent invite timeline</h2>
       <div style={{ display: "grid", gap: 10 }}>
-        {rows.map(({ sentInvite, claim }) => (
+        {rows.map(({ sentInvite, claim, bookingRequest }) => (
           <article key={sentInvite.id} className="rounded-xl border border-stone-200 bg-white p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <strong>{sentInvite.recipientName}</strong>
@@ -39,6 +39,19 @@ export function SalonClaimsTimeline() {
             </div>
             <p className="m-0 mt-1 text-sm text-stone-600">{sentInvite.inviteTypeLabel}</p>
             {claim ? <p className="m-0 mt-2 text-xs text-stone-500">Claimed {new Date(claim.claimedAt).toLocaleString()} · {claim.recipientContactSummary}</p> : null}
+            {bookingRequest ? (
+              <div className="mt-3 rounded-lg border border-pink-100 bg-pink-50 p-3 text-xs text-stone-700">
+                <strong className="block text-sm text-stone-900">Booking requested</strong>
+                <p className="m-0 mt-1">{bookingRequest.requestedSlot ?? "Time requested"}</p>
+                {bookingRequest.serviceLine ? <p className="m-0 mt-1">{bookingRequest.serviceLine}</p> : null}
+                {bookingRequest.selectedLevelUps?.length ? (
+                  <p className="m-0 mt-1">
+                    Level-ups: {bookingRequest.selectedLevelUps.map((item) => item.label).join(", ")}
+                  </p>
+                ) : null}
+                {typeof bookingRequest.total === "number" ? <p className="m-0 mt-1 font-semibold">Payment next: Stripe stub · ${bookingRequest.total.toFixed(2)}</p> : null}
+              </div>
+            ) : null}
             {sentInvite.status === "claimed" ? <button type="button" className="mt-3 rounded-md border border-stone-300 px-3 py-2 text-xs font-semibold" onClick={() => void redeem(sentInvite.id)}>Mark redeemed</button> : null}
           </article>
         ))}

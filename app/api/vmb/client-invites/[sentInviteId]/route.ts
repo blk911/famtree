@@ -13,7 +13,7 @@ import {
   listSalonClaimTimeline,
   recordClientInviteIntent,
 } from "@/lib/vmb/invites/sent-invite-store";
-import type { ClientInviteIntentKind, SentInvite, SentInvitePublicSnapshot } from "@/lib/vmb/invites/sent-invite-types";
+import type { ClientInviteBookingRequest, ClientInviteIntentKind, SentInvite, SentInvitePublicSnapshot } from "@/lib/vmb/invites/sent-invite-types";
 
 type ClientInviteDto = {
   id: string;
@@ -91,7 +91,7 @@ export async function POST(
   if (!salonId) return NextResponse.json({ ok: false, error: "Salon page session required" }, { status: 401 });
 
   const { sentInviteId } = await context.params;
-  let body: { contact?: string; clientName?: string; action?: string; note?: string; requestedSlot?: string };
+  let body: { contact?: string; clientName?: string; action?: string; note?: string; requestedSlot?: string; booking?: ClientInviteBookingRequest };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -138,6 +138,7 @@ export async function POST(
     recipientContactHash,
     note: body.note,
     requestedSlot: body.requestedSlot,
+    booking: body.booking,
   });
   if ("error" in intent) {
     return NextResponse.json({ ok: false, error: intent.error }, { status: intent.status });

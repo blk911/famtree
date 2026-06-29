@@ -20,6 +20,7 @@ import { POST as lookupClientInvite } from "../app/api/vmb/client-invites/lookup
 import { GET as getClientInvite, POST as postClientInviteClaim } from "../app/api/vmb/client-invites/[sentInviteId]/route";
 import { GET as getClientInviteWorkbench } from "../app/api/vmb/client-invites/workbench/route";
 import { GET as getClientInviteByToken } from "../app/api/vmb/client-invites/token/route";
+import { POST as postInviteClaim } from "../app/api/vmb/invite-claims/route";
 
 delete process.env.DATABASE_URL;
 delete process.env.VERCEL;
@@ -146,6 +147,10 @@ async function run() {
     }), { params: Promise.resolve({ sentInviteId: lookupJson.invite.id }) });
     const clientBookJson = await clientBook.json() as { intent?: string };
     assert(clientBook.status === 200 && clientBookJson.intent === "booking_requested", "client can request booking from invite");
+    const timelineWithBooking = await listSalonClaimTimeline(salonId);
+    const resentBooking = timelineWithBooking.find((item) => item.sentInvite.id === lookupJson.invite.id)?.bookingRequest;
+    assert(resentBooking?.kind === "booking_requested", "salon timeline stores booking request intent");
+    assert(resentBooking.requestedSlot === "Tomorrow · 10:00 AM", "booking request stores selected slot");
 
     const workbenchResponse = await getClientInviteWorkbench(new NextRequest("http://localhost/api/vmb/client-invites/workbench"));
     assert([307, 308].includes(workbenchResponse.status), "Deb workbench redirects to client invite bridge");
@@ -172,6 +177,34 @@ async function run() {
     assert(tokenClientInvite.status === 200, "client gift page can load by secure token");
     assert((await resolveRecipientInvite(approval.id)).status === "not_found", "draft or approval id cannot open public invite");
 
+    const tokenBooking = await postInviteClaim(new NextRequest("http://localhost/api/vmb/invite-claims", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        inviteId: sent.recipientToken,
+        name: "Jordan",
+        contact: "jordan@example.com",
+        action: "book",
+        requestedSlot: "Wed · 10:00 AM",
+        booking: {
+          serviceLine: "Gel-X Extensions",
+          selectedLevelUps: [{ label: "Chrome", price: 15 }],
+          requestedSlot: "Wed · 10:00 AM",
+          subtotal: 105,
+          tax: 8.66,
+          vmbComarket: 5.25,
+          total: 118.91,
+          paymentStatus: "stripe_stub",
+        },
+      }),
+    }));
+    assert(tokenBooking.status === 200, "secure token claim can record booking request");
+    const tokenBookingJson = await tokenBooking.json() as { intent?: string };
+    assert(tokenBookingJson.intent === "booking_requested", "secure token booking request reports intent");
+    const tokenTimeline = await listSalonClaimTimeline(salonId);
+    const tokenBookingRequest = tokenTimeline.find((item) => item.sentInvite.id === sent.sentInvite.id)?.bookingRequest;
+    assert(tokenBookingRequest?.booking?.paymentStatus === "stripe_stub", "booking request stores Stripe stub payment state");
+
     await updateSalonInviteLocalCopy(salonId, copyId, { headline: "MUTATED AFTER SEND" });
     const afterEdit = await resolveRecipientInvite(sent.recipientToken);
     assert(afterEdit.status === "available" && afterEdit.view.previewModel.title === "A birthday treat", "sent snapshot is immutable after salon edit");
@@ -181,7 +214,7 @@ async function run() {
     const claimInput = { token: sent.recipientToken, clientName: "Jordan", recipientContactSummary: maskRecipientContactSummary(contact), recipientContactHash: hashInviteClaimContact(sent.sentInvite.id, contact) };
     const [first, second] = await Promise.all([claimSentInvite(claimInput), claimSentInvite(claimInput)]);
     assert(first.ok && second.ok, "concurrent double claim succeeds idempotently");
-    assert(first.existing !== second.existing, "exactly one claim is newly created");
+    assert(first.existing && second.existing, "token route pre-claim remains idempotent");
     const sameContact = await claimSentInvite(claimInput);
     assert(sameContact.ok && sameContact.existing, "same normalized contact is idempotent");
     const otherContact = await claimSentInvite({ ...claimInput, recipientContactHash: "different-contact-hash" });

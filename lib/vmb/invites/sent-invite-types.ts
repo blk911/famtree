@@ -59,6 +59,17 @@ export type ClientInviteIntentKind =
   | "hold_requested"
   | "booking_requested";
 
+export type ClientInviteBookingRequest = {
+  serviceLine: string;
+  selectedLevelUps: Array<{ label: string; price: number }>;
+  requestedSlot: string;
+  subtotal: number;
+  tax: number;
+  vmbComarket: number;
+  total: number;
+  paymentStatus: "stripe_stub";
+};
+
 export type ClientInviteIntent = {
   id: string;
   sentInviteId: string;
@@ -69,10 +80,12 @@ export type ClientInviteIntent = {
   recipientContactHash: string;
   note?: string;
   requestedSlot?: string;
+  booking?: ClientInviteBookingRequest;
   createdAt: string;
 };
 
 export type SalonClaimTimelineItem = {
   sentInvite: SentInvite;
   claim?: InviteClaim;
+  bookingRequest?: ClientInviteIntent;
 };
