@@ -206,6 +206,18 @@ export function NailsLibraryAdminClient({
           <p className="vmb-nails-library__count">
             {savedDrafts.length} asset{savedDrafts.length === 1 ? "" : "s"} in library
           </p>
+          {savedDrafts.length > 0 ? (
+            <p className="vmb-nails-library__legend" aria-label="Library state legend">
+              <span>
+                <i className="vmb-admin-builder-grid__override-dot" aria-hidden="true" />
+                Saved default
+              </span>
+              <span>
+                <i className="vmb-admin-builder-grid__override-dot vmb-admin-builder-grid__override-dot--published" aria-hidden="true" />
+                Published
+              </span>
+            </p>
+          ) : null}
           {savedDrafts.length === 0 ? (
             <p className="vmb-nails-library__empty">
               No assets saved yet.{" "}
@@ -235,10 +247,20 @@ export function NailsLibraryAdminClient({
                         Value {assetPricing.valueLabel} · Offer {assetPricing.priceLabel}
                       </span>
                     ) : null}
-                    <span
-                      className={`vmb-admin-builder-grid__override-dot${isPublished ? " vmb-admin-builder-grid__override-dot--published" : ""}`}
-                      aria-label={isPublished ? "Published" : "In library"}
-                    />
+                    <span className="vmb-nails-library__asset-states">
+                      <span
+                        className="vmb-admin-builder-grid__override-dot"
+                        aria-label="Saved admin default"
+                        title="Saved admin default"
+                      />
+                      {isPublished ? (
+                        <span
+                          className="vmb-admin-builder-grid__override-dot vmb-admin-builder-grid__override-dot--published"
+                          aria-label="Published to salon"
+                          title="Published to salon"
+                        />
+                      ) : null}
+                    </span>
                   </button>
                 </li>
               );

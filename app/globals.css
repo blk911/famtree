@@ -6442,6 +6442,30 @@
   min-width: 0;
 }
 
+.vmb-nails-library__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 6px 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #78716c;
+}
+
+.vmb-nails-library__legend span,
+.vmb-nails-library__asset-states {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vmb-nails-library__asset-states {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .vmb-card-preview-modal__template-indicator,
 .vmb-card-preview-modal__template-status {
   margin: 0 0 10px;

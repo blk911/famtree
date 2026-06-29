@@ -539,13 +539,13 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
             )}
 
             <aside className="vmb-client-home__module vmb-client-home__module--salon" id="salons">
-              <p className="vmb-client-home__eyebrow">Your space</p>
-              <h3>Salon dashboard</h3>
+              <p className="vmb-client-home__eyebrow">Your salon space</p>
+              <h3>Gifts, bookings, and notes</h3>
               <ul className="vmb-client-home__activity">
-                <li><strong>Gifts</strong><span>Saved gifts and private offers</span></li>
-                <li><strong>Appointments</strong><span>Booking requests and follow-ups</span></li>
-                <li><strong>My Style</strong><span>Favorite services and notes</span></li>
-                <li><strong>Profile</strong><span>Contact and preferences</span></li>
+                <li><strong>Gift shelf</strong><span>Private offers waiting for you</span></li>
+                <li><strong>Appointments</strong><span>Requests, confirmations, and follow-ups</span></li>
+                <li><strong>My Style</strong><span>Favorite services, colors, and salon notes</span></li>
+                <li><strong>Profile</strong><span>How your salon can reach you</span></li>
               </ul>
             </aside>
           </section>
