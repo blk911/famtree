@@ -25,6 +25,7 @@ import { POST as postInviteClaim } from "../app/api/vmb/invite-claims/route";
 delete process.env.DATABASE_URL;
 delete process.env.VERCEL;
 process.env.VMB_MONEY_TEST_MEMORY = "1";
+process.env.VMB_INVITE_EMAIL_TRANSPORT = "stub";
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(`FAIL: ${message}`);
@@ -61,12 +62,15 @@ async function run() {
   assert(emailSource.includes("A note from"), "VMB offer email reads like a personal salon note");
   assert(emailSource.includes("Your gift"), "VMB offer email presents the invite as a gift");
   assert(emailSource.includes("🎁 ${ctaLabel}"), "VMB offer email uses gift CTA language");
+  assert(emailSource.includes("VMB_INVITE_EMAIL_TRANSPORT"), "VMB offer email has an explicit send/stub/off switch");
+  assert(emailSource.includes("secure invite url"), "VMB offer email stub logs the secure invite URL");
   assert(!emailSource.includes("your salon prepared a private offer for you"), "VMB offer email no longer uses generic offer copy");
   const sentInviteRouteSource = fs.readFileSync(path.join(process.cwd(), "app/api/vmb/sent-invites/route.ts"), "utf8");
   assert(
     sentInviteRouteSource.includes("result.sentInvite.snapshot.body")
       && sentInviteRouteSource.includes("result.sentInvite.snapshot.services")
-      && sentInviteRouteSource.includes("result.sentInvite.snapshot.rewards"),
+      && sentInviteRouteSource.includes("result.sentInvite.snapshot.rewards")
+      && sentInviteRouteSource.includes("deliveryTransport"),
     "sent invite route feeds public snapshot details into recipient email",
   );
 
@@ -291,13 +295,15 @@ async function run() {
     await upsertSalonServiceConfig(routeSalon, { catalogServiceId: "default-nails-gel-x", lifecycleAction: "activate" });
     const routeOffer = await createSalonOfferCatalogEntry(routeSalon, { name: "Route Offer", description: "Route contract", serviceId: "default-nails-gel-x", addonIds: [] });
     assert(!("error" in routeOffer), "route offer fixture created");
-    const routeApproval = await seed(routeSalon, "approved", { serviceIds: ["default-nails-gel-x"], salonOfferCatalogId: routeOffer.entry.id });
+    const routeApproval = await seed(routeSalon, "approved", { serviceIds: ["default-nails-gel-x"], salonOfferCatalogId: routeOffer.entry.id, clientEmail: "route@example.com" });
     const routeCookie = `${VMB_TRIAL_COOKIE}=${createVmbSalonSession(routeSalon)}`;
     const sendResponse = await postSentInvite(new NextRequest("http://localhost/api/vmb/sent-invites", { method: "POST", headers: { cookie: routeCookie, "content-type": "application/json" }, body: JSON.stringify({ approvalId: routeApproval.approval.id }) }));
     assert(sendResponse.status === 200, "signed salon can send owned eligible invite");
     const sendText = await sendResponse.text();
     for (const forbidden of ["tokenHash", "sourceApprovalId", "sourceCopyId", "salonId", "snapshot"]) assert(!sendText.includes(forbidden), `send response omits ${forbidden}`);
-    const sendJson = JSON.parse(sendText) as { recipientUrl: string; sentInvite: { id: string } };
+    const sendJson = JSON.parse(sendText) as { recipientUrl: string; sentInvite: { id: string }; deliveryStatus?: string; deliveryTransport?: string };
+    assert(sendJson.deliveryStatus === "stubbed", "route send stubs recipient email when transport is stubbed");
+    assert(sendJson.deliveryTransport === "stub", "route send reports stub transport");
     const routeToken = decodeURIComponent(new URL(sendJson.recipientUrl).pathname.split("/").pop()!);
     const routeContact = normalizeRecipientContact("route@example.com");
     assert(routeContact, "route claim contact normalizes");

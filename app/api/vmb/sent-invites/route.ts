@@ -31,10 +31,11 @@ export async function POST(request: NextRequest) {
   const origin = process.env.NEXT_PUBLIC_APP_URL?.trim() || request.nextUrl.origin;
   const recipientUrl = buildRecipientInviteUrl(result.recipientToken, origin);
   const approval = await getSalonInvitationApproval(salonId, body.approvalId.trim());
-  let deliveryStatus: "sent" | "skipped" | "failed" | "not_requested" = "not_requested";
+  let deliveryStatus: "sent" | "stubbed" | "disabled" | "failed" | "not_requested" = "not_requested";
+  let deliveryTransport: "resend" | "stub" | "off" | undefined;
   if (approval?.clientEmail) {
     try {
-      deliveryStatus = await sendVmbOfferInviteEmail({
+      const delivery = await sendVmbOfferInviteEmail({
         recipientEmail: approval.clientEmail,
         recipientName: approval.clientName,
         salonName: result.sentInvite.snapshot.salonDisplayName,
@@ -48,6 +49,8 @@ export async function POST(request: NextRequest) {
         priceLabel: result.sentInvite.snapshot.priceLabel,
         recipientUrl,
       });
+      deliveryStatus = delivery.status;
+      deliveryTransport = delivery.transport;
     } catch (error) {
       console.error("[vmb-sent-invite-email]", error);
       deliveryStatus = "failed";
@@ -58,5 +61,6 @@ export async function POST(request: NextRequest) {
     sentInvite: toSentInviteSummaryDto(result.sentInvite),
     recipientUrl,
     deliveryStatus,
+    deliveryTransport,
   });
 }

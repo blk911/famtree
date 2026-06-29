@@ -11,6 +11,24 @@ function getResend() {
   return new Resend(key);
 }
 
+export type VmbOfferInviteEmailStatus = "sent" | "stubbed" | "disabled";
+
+export type VmbOfferInviteEmailResult = {
+  status: VmbOfferInviteEmailStatus;
+  transport: "resend" | "stub" | "off";
+};
+
+function resolveVmbInviteEmailTransport(resendAvailable: boolean): "resend" | "stub" | "off" {
+  const mode = (process.env.VMB_INVITE_EMAIL_TRANSPORT ?? "auto").trim().toLowerCase();
+  if (mode === "off" || mode === "disabled") return "off";
+  if (mode === "stub" || mode === "log" || mode === "test") return "stub";
+  if (mode === "send" || mode === "resend") {
+    if (!resendAvailable) throw new Error("VMB invite email transport is set to send, but RESEND_API_KEY is not configured.");
+    return "resend";
+  }
+  return resendAvailable ? "resend" : "stub";
+}
+
 const FROM = process.env.EMAIL_FROM ?? "AMIHUMAN.NET <noreply@AMIHUMAN.NET.app>";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -50,12 +68,19 @@ export async function sendVmbOfferInviteEmail(input: {
   expirationLabel?: string;
   priceLabel?: string;
   recipientUrl: string;
-}): Promise<"sent" | "skipped"> {
+}): Promise<VmbOfferInviteEmailResult> {
   const resend = getResend();
-  if (!resend) {
-    console.log(`[email:skip] vmb-offer-invite → ${input.recipientEmail}`);
-    return "skipped";
+  const transport = resolveVmbInviteEmailTransport(Boolean(resend));
+  if (transport === "off") {
+    console.log(`[email:off] vmb-offer-invite -> ${input.recipientEmail}`);
+    return { status: "disabled", transport };
   }
+  if (transport === "stub") {
+    console.log(`[email:stub] vmb-offer-invite -> ${input.recipientEmail}`);
+    console.log(`[email:stub] secure invite url -> ${input.recipientUrl}`);
+    return { status: "stubbed", transport };
+  }
+  if (!resend) throw new Error("VMB invite email transport unavailable.");
   const recipientName = escapeEmailHtml(input.recipientName);
   const salonName = escapeEmailHtml(input.salonName);
   const providerName = escapeEmailHtml(input.providerName?.trim() || input.salonName);
@@ -107,7 +132,7 @@ ${expirationLabel ? `<p style="margin:0;color:#78716c;font-size:13px;font-weight
 </table></td></tr></table></body></html>`,
   });
   assertResendOk(out, "vmb-offer-invite");
-  return "sent";
+  return { status: "sent", transport };
 }
 
 // ─── Invite email ────────────────────────────────────────────
