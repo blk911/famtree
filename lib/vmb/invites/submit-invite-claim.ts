@@ -9,7 +9,7 @@ import type { RecipientInviteClientView } from "./recipient-invite-view";
 import { assertNoAdminFieldsInRecipientPayload } from "./recipient-invite-view";
 import { resolveRecipientInvite } from "./resolve-recipient-invite";
 import { claimSentInvite, recordClientInviteIntent } from "./sent-invite-store";
-import type { ClientInviteBookingRequest, ClientInviteIntentKind } from "./sent-invite-types";
+import type { ClientInviteBookingRequest, ClientInviteIntentKind, SentInvite } from "./sent-invite-types";
 
 export type RecipientInviteClaimView = {
   inviteId: string;
@@ -33,6 +33,27 @@ export type SubmitInviteClaimInput = {
 export type SubmitInviteClaimResult =
   | { ok: true; alreadyClaimed: boolean; intent?: ClientInviteIntentKind }
   | { ok: false; error: string; status: 400 | 404 | 409 | 410 | 500 | 503 };
+
+function bookingRequestFromInput(
+  booking: ClientInviteBookingRequest | undefined,
+  sentInvite: SentInvite,
+  requestedSlot: string | undefined,
+): ClientInviteBookingRequest {
+  if (booking) return { ...booking, bookingStatus: booking.bookingStatus ?? "booking_requested" };
+  const serviceLine = sentInvite.snapshot.services[0] ?? sentInvite.snapshot.inviteTypeLabel ?? "Private salon gift";
+  const baseTotal = Number((sentInvite.snapshot.priceLabel ?? "").match(/[\d.]+/)?.[0] ?? 0);
+  return {
+    bookingStatus: "booking_requested",
+    serviceLine,
+    selectedLevelUps: [],
+    requestedSlot: requestedSlot?.trim() || "Time requested",
+    subtotal: baseTotal,
+    tax: 0,
+    vmbComarket: 0,
+    total: baseTotal,
+    paymentStatus: "stripe_stub",
+  };
+}
 
 export function toRecipientInviteClaimView(view: RecipientInviteClientView): RecipientInviteClaimView {
   const knownRecipientName = view.previewModel.metadata.recipientName?.trim() || undefined;
@@ -127,7 +148,9 @@ export async function submitInviteClaim(
       recipientContactHash: contactHash,
       note: input.note,
       requestedSlot: input.requestedSlot,
-      booking: input.booking,
+      booking: intentKind === "booking_requested"
+        ? bookingRequestFromInput(input.booking, resolved.sentInvite, input.requestedSlot)
+        : input.booking,
     });
     if ("error" in intent) return { ok: false, error: intent.error, status: intent.status };
   }

@@ -19,6 +19,9 @@ export type InviteClaimSummaryDto = {
 };
 
 export type ClientBookingRequestDto = {
+  id: string;
+  kind: ClientInviteIntent["kind"];
+  bookingStatus?: ClientInviteBookingRequest["bookingStatus"];
   requestedSlot?: string;
   note?: string;
   createdAt: string;
@@ -61,6 +64,9 @@ function toClaimSummaryDto(claim: InviteClaim): InviteClaimSummaryDto {
 
 function toBookingRequestDto(intent: ClientInviteIntent): ClientBookingRequestDto {
   return {
+    id: intent.id,
+    kind: intent.kind,
+    bookingStatus: intent.booking?.bookingStatus ?? "booking_requested",
     requestedSlot: intent.requestedSlot,
     note: intent.note,
     createdAt: intent.createdAt,

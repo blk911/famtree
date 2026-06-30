@@ -57,6 +57,18 @@ function daySummary(day: SalonCalendarDay): string {
   return day.enabled ? `${timeLabel(day.startMinutes)}-${timeLabel(day.endMinutes)}` : "Closed";
 }
 
+function formatMoney(amount?: number): string {
+  if (typeof amount !== "number" || Number.isNaN(amount)) return "Total pending";
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+}
+
+function bookingLevelUpLine(bookingRequest?: SalonClaimTimelineDto["bookingRequest"]): string {
+  const selected = bookingRequest?.selectedLevelUps ?? [];
+  return selected.length > 0
+    ? selected.map((item) => item.label).join(" + ")
+    : "No level-ups selected";
+}
+
 export function VmbCalendarClient() {
   const [calendar, setCalendar] = useState<SalonCalendar | null>(null);
   const [loading, setLoading] = useState(true);
@@ -182,11 +194,20 @@ export function VmbCalendarClient() {
                   <article key={`${sentInvite.id}-${bookingRequest?.createdAt ?? sentInvite.sentAt}`}>
                     <div>
                       <strong>{sentInvite.recipientName}</strong>
+                      <span>{claim?.recipientContactSummary ?? "Client contact saved"}</span>
+                    </div>
+                    <div>
+                      <strong>{bookingRequest?.requestedSlot ?? "Time requested"}</strong>
                       <span>{sentInvite.inviteTypeLabel}</span>
                     </div>
-                    <p>{bookingRequest?.requestedSlot ?? "Time requested"}</p>
-                    <p>{bookingRequest?.serviceLine ?? "Private salon gift"}</p>
-                    {claim ? <em>{claim.recipientContactSummary}</em> : null}
+                    <div>
+                      <strong>{bookingRequest?.serviceLine ?? "Private salon gift"}</strong>
+                      <span>{bookingLevelUpLine(bookingRequest)}</span>
+                    </div>
+                    <div>
+                      <strong>{formatMoney(bookingRequest?.total)}</strong>
+                      <span>{bookingRequest?.bookingStatus === "booking_requested" ? "Pending confirmation" : "Booking request"}</span>
+                    </div>
                   </article>
                 ))}
               </div>

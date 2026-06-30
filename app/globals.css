@@ -11031,16 +11031,14 @@
   color: #2f2623;
 }
 
-.vmb-calendar-week__request-list span,
-.vmb-calendar-week__request-list p,
-.vmb-calendar-week__request-list em {
+.vmb-calendar-week__request-list span {
   margin: 0;
   color: #6f5a53;
   font-size: 13px;
   font-style: normal;
 }
 
-.vmb-calendar-week__request-list p:first-of-type {
+.vmb-calendar-week__request-list article > div:nth-child(2) strong {
   color: #be185d;
   font-weight: 900;
 }
@@ -11063,6 +11061,15 @@
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.vmb-booking-activity h2 {
+  margin: -4px 0 4px;
+  color: #2f2623;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1;
+  letter-spacing: -0.04em;
 }
 
 .vmb-booking-activity__list {
@@ -11090,16 +11097,14 @@
   color: #2f2623;
 }
 
-.vmb-booking-activity__list span,
-.vmb-booking-activity__list p,
-.vmb-booking-activity__list em {
+.vmb-booking-activity__list span {
   margin: 0;
   color: #6f5a53;
   font-size: 13px;
   font-style: normal;
 }
 
-.vmb-booking-activity__list p:first-of-type {
+.vmb-booking-activity__list article > div:nth-child(2) strong {
   color: #be185d;
   font-weight: 900;
 }

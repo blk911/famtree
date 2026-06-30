@@ -35,6 +35,27 @@ function toClientInviteDto(invite: SentInvite, alreadyClaimed: boolean): ClientI
   };
 }
 
+function bookingRequestFromBody(
+  booking: ClientInviteBookingRequest | undefined,
+  invite: SentInvite,
+  requestedSlot: string | undefined,
+): ClientInviteBookingRequest {
+  if (booking) return { ...booking, bookingStatus: booking.bookingStatus ?? "booking_requested" };
+  const serviceLine = invite.snapshot.services[0] ?? invite.snapshot.inviteTypeLabel ?? "Private salon gift";
+  const baseTotal = Number((invite.snapshot.priceLabel ?? "").match(/[\d.]+/)?.[0] ?? 0);
+  return {
+    bookingStatus: "booking_requested",
+    serviceLine,
+    selectedLevelUps: [],
+    requestedSlot: requestedSlot?.trim() || "Time requested",
+    subtotal: baseTotal,
+    tax: 0,
+    vmbComarket: 0,
+    total: baseTotal,
+    paymentStatus: "stripe_stub",
+  };
+}
+
 async function resolveVerifiedClientInvite(salonId: string, sentInviteId: string, rawContact: string) {
   const contact = normalizeRecipientContact(rawContact);
   if (!contact || contact.kind !== "email") {
@@ -138,7 +159,9 @@ export async function POST(
     recipientContactHash,
     note: body.note,
     requestedSlot: body.requestedSlot,
-    booking: body.booking,
+    booking: intentKind === "booking_requested"
+      ? bookingRequestFromBody(body.booking, resolved.item.sentInvite, body.requestedSlot)
+      : body.booking,
   });
   if ("error" in intent) {
     return NextResponse.json({ ok: false, error: intent.error }, { status: intent.status });

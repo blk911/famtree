@@ -155,6 +155,7 @@ async function run() {
     const resentBooking = timelineWithBooking.find((item) => item.sentInvite.id === lookupJson.invite.id)?.bookingRequest;
     assert(resentBooking?.kind === "booking_requested", "salon timeline stores booking request intent");
     assert(resentBooking.requestedSlot === "Tomorrow · 10:00 AM", "booking request stores selected slot");
+    assert(resentBooking.booking?.bookingStatus === "booking_requested", "booking request stores pending booking status");
 
     const workbenchResponse = await getClientInviteWorkbench(new NextRequest("http://localhost/api/vmb/client-invites/workbench"));
     assert([307, 308].includes(workbenchResponse.status), "Deb workbench redirects to client invite bridge");
@@ -208,6 +209,7 @@ async function run() {
     const tokenTimeline = await listSalonClaimTimeline(salonId);
     const tokenBookingRequest = tokenTimeline.find((item) => item.sentInvite.id === sent.sentInvite.id)?.bookingRequest;
     assert(tokenBookingRequest?.booking?.paymentStatus === "stripe_stub", "booking request stores Stripe stub payment state");
+    assert(tokenBookingRequest.booking.bookingStatus === "booking_requested", "secure token booking stores pending booking status");
 
     await updateSalonInviteLocalCopy(salonId, copyId, { headline: "MUTATED AFTER SEND" });
     const afterEdit = await resolveRecipientInvite(sent.recipientToken);

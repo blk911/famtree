@@ -60,6 +60,7 @@ export type ClientInviteIntentKind =
   | "booking_requested";
 
 export type ClientInviteBookingRequest = {
+  bookingStatus?: "booking_requested" | "booked" | "cancelled";
   serviceLine: string;
   selectedLevelUps: Array<{ label: string; price: number }>;
   requestedSlot: string;

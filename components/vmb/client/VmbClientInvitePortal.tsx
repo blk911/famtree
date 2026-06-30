@@ -156,6 +156,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
     setClaiming(true);
     setNotice(null);
     const booking = action === "book" ? {
+      bookingStatus: "booking_requested" as const,
       serviceLine,
       selectedLevelUps: selectedLevelUps.map((levelUp) => ({ label: levelUp.label, price: levelUp.price })),
       requestedSlot: selectedSlot,
