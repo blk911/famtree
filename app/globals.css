@@ -11043,6 +11043,25 @@
   font-weight: 900;
 }
 
+.vmb-calendar-week__confirm {
+  border: 1px solid #be185d;
+  border-radius: 999px;
+  background: #be185d;
+  color: #fff;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.vmb-calendar-week__confirm:disabled {
+  border-color: #bbf7d0;
+  background: #ecfdf5;
+  color: #166534;
+  cursor: default;
+}
+
 .vmb-booking-activity {
   display: grid;
   gap: 12px;

@@ -135,6 +135,73 @@ ${expirationLabel ? `<p style="margin:0;color:#78716c;font-size:13px;font-weight
   return { status: "sent", transport };
 }
 
+export async function sendVmbBookingConfirmationEmail(input: {
+  recipientEmail: string;
+  recipientName: string;
+  salonName: string;
+  providerName?: string;
+  inviteTypeLabel: string;
+  serviceLine: string;
+  requestedSlot: string;
+  selectedLevelUps?: Array<{ label: string; price: number }>;
+  total?: number;
+}): Promise<VmbOfferInviteEmailResult> {
+  const resend = getResend();
+  const transport = resolveVmbInviteEmailTransport(Boolean(resend));
+  if (transport === "off") {
+    console.log(`[email:off] vmb-booking-confirmation -> ${input.recipientEmail}`);
+    return { status: "disabled", transport };
+  }
+  if (transport === "stub") {
+    console.log(`[email:stub] vmb-booking-confirmation -> ${input.recipientEmail}`);
+    console.log(`[email:stub] ${input.requestedSlot} · ${input.serviceLine}`);
+    return { status: "stubbed", transport };
+  }
+  if (!resend) throw new Error("VMB invite email transport unavailable.");
+  const recipientName = escapeEmailHtml(input.recipientName);
+  const salonName = escapeEmailHtml(input.salonName);
+  const providerName = escapeEmailHtml(input.providerName?.trim() || input.salonName);
+  const inviteTypeLabel = escapeEmailHtml(input.inviteTypeLabel);
+  const serviceLine = escapeEmailHtml(input.serviceLine);
+  const requestedSlot = escapeEmailHtml(input.requestedSlot);
+  const total = typeof input.total === "number"
+    ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(input.total)
+    : "";
+  const levelUps = (input.selectedLevelUps ?? [])
+    .map((item) => `<span style="display:inline-block;margin:0 6px 8px 0;padding:8px 11px;border:1px solid #fbcfe8;border-radius:999px;background:#fdf2f8;color:#be185d;font-size:13px;font-weight:700">${escapeEmailHtml(item.label)}</span>`)
+    .join("");
+  const out = await resend.emails.send({
+    from: FROM,
+    to: input.recipientEmail,
+    subject: `${input.recipientName}, your ${input.salonName} appointment is confirmed`,
+    html: `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f6f1ed;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#292524">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f1ed;padding:34px 14px"><tr><td align="center">
+<table role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width:100%;background:#fff;border:1px solid #f1d9e5;border-radius:24px;overflow:hidden;box-shadow:0 18px 60px rgba(41,37,36,.12)">
+<tr><td style="padding:28px 30px;background:linear-gradient(135deg,#fff 0%,#fff1f7 100%);border-bottom:1px solid #f7e1ea">
+<p style="margin:0 0 7px;color:#9d174d;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Confirmed by ${providerName}</p>
+<h1 style="margin:0;color:#1c1917;font-family:Georgia,'Times New Roman',serif;font-size:34px;line-height:1.08;font-weight:500">Your appointment is booked</h1>
+</td></tr>
+<tr><td style="padding:28px 30px">
+<p style="margin:0 0 18px;color:#44403c;font-size:16px;line-height:1.65">Hi ${recipientName}, ${salonName} confirmed your ${inviteTypeLabel} appointment.</p>
+<div style="border:1px solid #f5c9da;border-radius:18px;background:#fffafb;padding:18px;margin:0 0 22px">
+<p style="margin:0 0 8px;color:#9d174d;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Appointment</p>
+<p style="margin:0 0 8px;color:#1c1917;font-size:22px;font-weight:800">${requestedSlot}</p>
+<p style="margin:0 0 12px;color:#44403c;font-size:16px;line-height:1.5">${serviceLine}</p>
+${levelUps ? `<div style="margin:0 0 12px">${levelUps}</div>` : ""}
+${total ? `<p style="margin:0;color:#9d174d;font-size:18px;font-weight:800">Estimated total ${escapeEmailHtml(total)}</p>` : ""}
+</div>
+<p style="margin:0;color:#78716c;font-size:13px;line-height:1.5;text-align:center">Your salon can still follow up if anything changes.</p>
+</td></tr>
+<tr><td style="padding:18px 30px;border-top:1px solid #f4e7ee;text-align:center">
+<p style="margin:0;color:#a8a29e;font-size:12px">${salonName} &middot; VMB Salons</p>
+</td></tr>
+</table></td></tr></table></body></html>`,
+  });
+  assertResendOk(out, "vmb-booking-confirmation");
+  return { status: "sent", transport };
+}
+
 // ─── Invite email ────────────────────────────────────────────
 export async function sendInviteEmail(
   invite: Invite,

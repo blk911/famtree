@@ -75,6 +75,7 @@ export function VmbCalendarClient() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [bookingRequests, setBookingRequests] = useState<SalonClaimTimelineDto[]>([]);
+  const [confirmingRequestId, setConfirmingRequestId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -147,6 +148,25 @@ export function VmbCalendarClient() {
     }
   }
 
+  async function confirmBookingRequest(bookingRequestId: string) {
+    setConfirmingRequestId(bookingRequestId);
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/vmb/booking-requests/${encodeURIComponent(bookingRequestId)}/confirm`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const json = (await response.json()) as { ok?: boolean; error?: string; confirmationEmailStatus?: string };
+      if (!response.ok || !json.ok) throw new Error(json.error ?? "Could not confirm appointment.");
+      setMessage(`Appointment confirmed${json.confirmationEmailStatus ? ` · email ${json.confirmationEmailStatus}` : ""}.`);
+      await load();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Could not confirm appointment.");
+    } finally {
+      setConfirmingRequestId(null);
+    }
+  }
+
   return (
     <VmbPageFrame
       title="Calendar"
@@ -190,7 +210,9 @@ export function VmbCalendarClient() {
               <p>No client booking requests yet.</p>
             ) : (
               <div className="vmb-calendar-week__request-list">
-                {bookingRequests.map(({ sentInvite, claim, bookingRequest }) => (
+                {bookingRequests.map(({ sentInvite, claim, bookingRequest }) => {
+                  const isBooked = bookingRequest?.bookingStatus === "booked";
+                  return (
                   <article key={`${sentInvite.id}-${bookingRequest?.createdAt ?? sentInvite.sentAt}`}>
                     <div>
                       <strong>{sentInvite.recipientName}</strong>
@@ -206,10 +228,21 @@ export function VmbCalendarClient() {
                     </div>
                     <div>
                       <strong>{formatMoney(bookingRequest?.total)}</strong>
-                      <span>{bookingRequest?.bookingStatus === "booking_requested" ? "Pending confirmation" : "Booking request"}</span>
+                      <span>{isBooked ? "Booked" : "Pending confirmation"}</span>
                     </div>
+                    {bookingRequest?.id ? (
+                      <button
+                        type="button"
+                        className="vmb-calendar-week__confirm"
+                        onClick={() => void confirmBookingRequest(bookingRequest.id)}
+                        disabled={isBooked || confirmingRequestId === bookingRequest.id}
+                      >
+                        {isBooked ? "Confirmed" : confirmingRequestId === bookingRequest.id ? "Confirming..." : "Confirm Appt"}
+                      </button>
+                    ) : null}
                   </article>
-                ))}
+                );
+                })}
               </div>
             )}
           </section>

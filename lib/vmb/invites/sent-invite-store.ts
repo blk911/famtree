@@ -386,6 +386,69 @@ export async function recordClientInviteIntent(input: {
   });
 }
 
+export async function confirmClientBookingRequest(input: {
+  salonId: string;
+  bookingRequestId: string;
+  confirmationEmailStatus?: NonNullable<ClientInviteIntent["booking"]>["confirmationEmailStatus"];
+  confirmationEmailTransport?: NonNullable<ClientInviteIntent["booking"]>["confirmationEmailTransport"];
+}): Promise<{ intent: ClientInviteIntent; alreadyBooked: boolean } | { error: string; status: 404 | 409 | 503 }> {
+  const writable = await assertVmbMoneyWritableBackend();
+  if (!writable.ok) return { error: writable.error, status: 503 };
+  const now = new Date().toISOString();
+  function nextIntent(current: ClientInviteIntent): { intent: ClientInviteIntent; alreadyBooked: boolean } | { error: string; status: 409 } {
+    if (current.kind !== "booking_requested") return { error: "Not a booking request", status: 409 };
+    if (current.booking?.bookingStatus === "cancelled") return { error: "Booking request is cancelled", status: 409 };
+    const alreadyBooked = current.booking?.bookingStatus === "booked";
+    return {
+      alreadyBooked,
+      intent: {
+        ...current,
+        booking: {
+          serviceLine: current.booking?.serviceLine ?? "Private salon gift",
+          selectedLevelUps: current.booking?.selectedLevelUps ?? [],
+          requestedSlot: current.booking?.requestedSlot ?? current.requestedSlot ?? "Time requested",
+          subtotal: current.booking?.subtotal ?? 0,
+          tax: current.booking?.tax ?? 0,
+          vmbComarket: current.booking?.vmbComarket ?? 0,
+          total: current.booking?.total ?? 0,
+          paymentStatus: current.booking?.paymentStatus ?? "stripe_stub",
+          ...current.booking,
+          bookingStatus: "booked",
+          confirmedAt: current.booking?.confirmedAt ?? now,
+          confirmationEmailStatus: input.confirmationEmailStatus ?? current.booking?.confirmationEmailStatus ?? "not_requested",
+          confirmationEmailTransport: input.confirmationEmailTransport ?? current.booking?.confirmationEmailTransport,
+        },
+      },
+    };
+  }
+
+  if (writable.backend === "postgres") {
+    const rows = await prisma.$queryRaw<PayloadRow[]>`
+      SELECT payload FROM vmb_invite_event
+      WHERE event_id = ${input.bookingRequestId} AND salon_id = ${input.salonId} LIMIT 1
+    `;
+    const current = parseClientIntent(rows[0]);
+    if (!current) return { error: "Booking request not found", status: 404 };
+    const next = nextIntent(current);
+    if ("error" in next) return next;
+    await prisma.$executeRaw`
+      UPDATE vmb_invite_event
+      SET payload = ${JSON.stringify(next.intent)}::jsonb
+      WHERE event_id = ${input.bookingRequestId} AND salon_id = ${input.salonId}
+    `;
+    return next;
+  }
+
+  return serializeJson(async () => {
+    const current = memoryClientIntents.find((row) => row.id === input.bookingRequestId && row.salonId === input.salonId);
+    if (!current) return { error: "Booking request not found", status: 404 } as const;
+    const next = nextIntent(current);
+    if ("error" in next) return next;
+    memoryClientIntents = memoryClientIntents.map((row) => row.id === input.bookingRequestId ? next.intent : row);
+    return next;
+  });
+}
+
 export async function listSalonClaimTimeline(salonId: string): Promise<SalonClaimTimelineItem[]> {
   let invites: SentInvite[];
   let claims: InviteClaim[];

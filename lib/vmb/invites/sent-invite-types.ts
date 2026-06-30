@@ -61,6 +61,9 @@ export type ClientInviteIntentKind =
 
 export type ClientInviteBookingRequest = {
   bookingStatus?: "booking_requested" | "booked" | "cancelled";
+  confirmedAt?: string;
+  confirmationEmailStatus?: "sent" | "stubbed" | "disabled" | "failed" | "not_requested";
+  confirmationEmailTransport?: "resend" | "stub" | "off";
   serviceLine: string;
   selectedLevelUps: Array<{ label: string; price: number }>;
   requestedSlot: string;

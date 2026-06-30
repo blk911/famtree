@@ -22,6 +22,9 @@ export type ClientBookingRequestDto = {
   id: string;
   kind: ClientInviteIntent["kind"];
   bookingStatus?: ClientInviteBookingRequest["bookingStatus"];
+  confirmedAt?: string;
+  confirmationEmailStatus?: ClientInviteBookingRequest["confirmationEmailStatus"];
+  confirmationEmailTransport?: ClientInviteBookingRequest["confirmationEmailTransport"];
   requestedSlot?: string;
   note?: string;
   createdAt: string;
@@ -67,6 +70,9 @@ function toBookingRequestDto(intent: ClientInviteIntent): ClientBookingRequestDt
     id: intent.id,
     kind: intent.kind,
     bookingStatus: intent.booking?.bookingStatus ?? "booking_requested",
+    confirmedAt: intent.booking?.confirmedAt,
+    confirmationEmailStatus: intent.booking?.confirmationEmailStatus,
+    confirmationEmailTransport: intent.booking?.confirmationEmailTransport,
     requestedSlot: intent.requestedSlot,
     note: intent.note,
     createdAt: intent.createdAt,

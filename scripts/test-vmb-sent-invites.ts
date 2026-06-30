@@ -21,6 +21,7 @@ import { GET as getClientInvite, POST as postClientInviteClaim } from "../app/ap
 import { GET as getClientInviteWorkbench } from "../app/api/vmb/client-invites/workbench/route";
 import { GET as getClientInviteByToken } from "../app/api/vmb/client-invites/token/route";
 import { POST as postInviteClaim } from "../app/api/vmb/invite-claims/route";
+import { POST as postConfirmBooking } from "../app/api/vmb/booking-requests/[bookingRequestId]/confirm/route";
 
 delete process.env.DATABASE_URL;
 delete process.env.VERCEL;
@@ -156,6 +157,17 @@ async function run() {
     assert(resentBooking?.kind === "booking_requested", "salon timeline stores booking request intent");
     assert(resentBooking.requestedSlot === "Tomorrow · 10:00 AM", "booking request stores selected slot");
     assert(resentBooking.booking?.bookingStatus === "booking_requested", "booking request stores pending booking status");
+    const confirmBooking = await postConfirmBooking(new NextRequest("http://localhost/api/vmb/booking-requests/confirm", {
+      method: "POST",
+      headers: { cookie: salonCookie },
+    }), { params: Promise.resolve({ bookingRequestId: resentBooking.id }) });
+    const confirmBookingJson = await confirmBooking.json() as { ok?: boolean; confirmationEmailStatus?: string };
+    assert(confirmBooking.status === 200 && confirmBookingJson.ok, "salon can confirm booking request");
+    assert(confirmBookingJson.confirmationEmailStatus === "stubbed", "booking confirmation email uses stub transport in tests");
+    const timelineWithConfirmedBooking = await listSalonClaimTimeline(salonId);
+    const confirmedBooking = timelineWithConfirmedBooking.find((item) => item.sentInvite.id === lookupJson.invite.id)?.bookingRequest;
+    assert(confirmedBooking?.booking?.bookingStatus === "booked", "confirmed booking request is booked on salon timeline");
+    assert(Boolean(confirmedBooking.booking.confirmedAt), "confirmed booking request stores confirmation time");
 
     const workbenchResponse = await getClientInviteWorkbench(new NextRequest("http://localhost/api/vmb/client-invites/workbench"));
     assert([307, 308].includes(workbenchResponse.status), "Deb workbench redirects to client invite bridge");

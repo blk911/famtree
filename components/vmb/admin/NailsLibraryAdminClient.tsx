@@ -210,7 +210,7 @@ export function NailsLibraryAdminClient({
             <p className="vmb-nails-library__legend" aria-label="Library state legend">
               <span>
                 <i className="vmb-admin-builder-grid__override-dot" aria-hidden="true" />
-                Saved default
+                Library
               </span>
               <span>
                 <i className="vmb-admin-builder-grid__override-dot vmb-admin-builder-grid__override-dot--published" aria-hidden="true" />
@@ -247,20 +247,11 @@ export function NailsLibraryAdminClient({
                         Value {assetPricing.valueLabel} · Offer {assetPricing.priceLabel}
                       </span>
                     ) : null}
-                    <span className="vmb-nails-library__asset-states">
-                      <span
-                        className="vmb-admin-builder-grid__override-dot"
-                        aria-label="Saved admin default"
-                        title="Saved admin default"
-                      />
-                      {isPublished ? (
-                        <span
-                          className="vmb-admin-builder-grid__override-dot vmb-admin-builder-grid__override-dot--published"
-                          aria-label="Published to salon"
-                          title="Published to salon"
-                        />
-                      ) : null}
-                    </span>
+                    <span
+                      className={`vmb-admin-builder-grid__override-dot${isPublished ? " vmb-admin-builder-grid__override-dot--published" : ""}`}
+                      aria-label={isPublished ? "Published to salon" : "Saved in library"}
+                      title={isPublished ? "Published to salon" : "Saved in library"}
+                    />
                   </button>
                 </li>
               );
