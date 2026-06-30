@@ -62,6 +62,7 @@ export async function sendApprovedInvitation(input: {
     ctaLabel: card.ctaLabel,
     services: resolveSnapshotServiceLabels(approval.snapshot),
     rewards: resolveSnapshotRewardLabels(approval.snapshot),
+    levelUps: approval.snapshot.levelUps,
     expirationLabel: approval.snapshot.expirationLabel,
     termsText: approval.snapshot.termsText,
     priceLabel: approval.snapshot.priceLabel,

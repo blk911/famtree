@@ -44,7 +44,7 @@ async function isolated(run: () => Promise<void>) {
 
 function snapshot(salonName: string, serviceIds: string[] = []): InviteTemplateSnapshot {
   const now = new Date().toISOString();
-  return { id: "snapshot-1", sourceTemplateId: "template-1", templateName: "Birthday Offer", categoryId: "nails", headline: "A birthday treat", body: "Your private birthday offer is ready.", ctaLabel: "Claim offer", serviceIds, rewardIds: [], priceLabel: "$75", valueLabel: "$90", totalValue: 90, savingsAmount: 15, offerPrice: 75, termsText: "One per client", ownerName: "Avery", salonName, status: "published", version: 1, createdAt: now, updatedAt: now };
+  return { id: "snapshot-1", sourceTemplateId: "template-1", templateName: "Birthday Offer", categoryId: "nails", headline: "A birthday treat", body: "Your private birthday offer is ready.", ctaLabel: "Claim offer", serviceIds, rewardIds: [], levelUps: [{ label: "Medium Length", price: 10, selected: true }, { label: "Chrome", price: 15, selected: false }], priceLabel: "$75", valueLabel: "$90", totalValue: 90, savingsAmount: 15, offerPrice: 75, termsText: "One per client", ownerName: "Avery", salonName, status: "published", version: 1, createdAt: now, updatedAt: now };
 }
 
 async function seed(salonId: string, status: "approved" | "paused" = "approved", options: { serviceIds?: string[]; salonOfferCatalogId?: string; clientEmail?: string } = {}) {
@@ -66,6 +66,13 @@ async function run() {
   assert(emailSource.includes("VMB_INVITE_EMAIL_TRANSPORT"), "VMB offer email has an explicit send/stub/off switch");
   assert(emailSource.includes("secure invite url"), "VMB offer email stub logs the secure invite URL");
   assert(!emailSource.includes("your salon prepared a private offer for you"), "VMB offer email no longer uses generic offer copy");
+  const clientPortalSource = fs.readFileSync(path.join(process.cwd(), "components/vmb/client/VmbClientInvitePortal.tsx"), "utf8");
+  assert(
+    clientPortalSource.includes("snapshot.levelUps")
+      && clientPortalSource.includes("snapshotLevelUps")
+      && clientPortalSource.includes("initialSelectedLevelUps(json.invite.snapshot)"),
+    "client gift review uses the frozen SentInvite level-up menu",
+  );
   const sentInviteRouteSource = fs.readFileSync(path.join(process.cwd(), "app/api/vmb/sent-invites/route.ts"), "utf8");
   assert(
     sentInviteRouteSource.includes("result.sentInvite.snapshot.body")
@@ -90,6 +97,8 @@ async function run() {
     assert(sent.sentInvite.snapshot.totalValue === 90, "sent invite snapshot preserves frozen package value");
     assert(sent.sentInvite.snapshot.savingsAmount === 15, "sent invite snapshot preserves frozen savings");
     assert(sent.sentInvite.snapshot.valueLabel === "$90", "sent invite snapshot preserves frozen value label");
+    assert(sent.sentInvite.snapshot.levelUps?.some((levelUp) => levelUp.label === "Medium Length" && levelUp.price === 10 && levelUp.selected), "sent invite snapshot preserves client-owned selected level-up menu");
+    assert(sent.sentInvite.snapshot.levelUps?.some((levelUp) => levelUp.label === "Chrome" && levelUp.price === 15 && !levelUp.selected), "sent invite snapshot preserves unselected editable level-up choices");
     const resendPrep = await prepareSalonInvitationForSend(salonId, {
       clientName: approval.clientName,
       clientEmail: approval.clientEmail,

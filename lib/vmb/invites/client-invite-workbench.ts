@@ -75,6 +75,10 @@ function publicSnapshot(snapshot: InviteTemplateSnapshot): SentInvitePublicSnaps
     ctaLabel: snapshot.ctaLabel,
     services: ["Gel-X Extensions"],
     rewards: ["Chrome Upgrade", "Crystal Accent"],
+    levelUps: [
+      { label: "Chrome Upgrade", price: 15, selected: true },
+      { label: "Crystal Accent", price: 15, selected: true },
+    ],
     expirationLabel: snapshot.expirationLabel,
     termsText: snapshot.termsText,
     priceLabel: snapshot.priceLabel,

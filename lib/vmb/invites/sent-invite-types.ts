@@ -16,6 +16,11 @@ export type SentInvitePublicSnapshot = {
   ctaLabel: string;
   services: string[];
   rewards: string[];
+  levelUps?: Array<{
+    label: string;
+    price: number;
+    selected: boolean;
+  }>;
   expirationLabel?: string;
   termsText?: string;
   priceLabel?: string;

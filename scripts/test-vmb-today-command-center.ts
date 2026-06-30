@@ -153,10 +153,11 @@ function run(): void {
   assert(
     commandCenterSource.includes('fetch("/api/vmb/salon-invitation-approvals"')
       && commandCenterSource.includes('fetch("/api/vmb/sent-invites"')
+      && commandCenterSource.includes("levelUps: selectedService.addons")
       && !commandCenterSource.includes('fetch("/api/vmb/invite-events"')
       && !commandCenterSource.includes("saveInviteStub")
       && !commandCenterSource.includes("Send invite (stub)"),
-    "Today sends every invite type through approval and canonical SentInvite endpoints",
+    "Today sends every invite type through approval and canonical SentInvite endpoints with a frozen client gift menu",
   );
   assert(
     commandCenterSource.includes("SalonInviteCard")

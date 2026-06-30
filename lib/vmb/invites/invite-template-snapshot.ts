@@ -21,6 +21,11 @@ export type InviteTemplateSnapshot = {
   ctaLabel: string;
   serviceIds: string[];
   rewardIds: string[];
+  levelUps?: Array<{
+    label: string;
+    price: number;
+    selected: boolean;
+  }>;
   ownerPhotoUrl?: string;
   salonLogoUrl?: string;
   serviceImageUrl?: string;
@@ -128,6 +133,12 @@ export function parseInviteTemplateSnapshot(raw: unknown): InviteTemplateSnapsho
     ...row,
     serviceIds: Array.isArray(row.serviceIds) ? [...row.serviceIds] : [],
     rewardIds: Array.isArray(row.rewardIds) ? [...row.rewardIds] : [],
+    levelUps: Array.isArray(row.levelUps) ? row.levelUps.filter((levelUp) =>
+      levelUp
+      && typeof levelUp.label === "string"
+      && typeof levelUp.price === "number"
+      && typeof levelUp.selected === "boolean",
+    ) : undefined,
   };
 }
 

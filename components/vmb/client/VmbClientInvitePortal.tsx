@@ -85,10 +85,38 @@ function rewardMatchesLevelUp(reward: string, levelUp: GiftLevelUp): boolean {
     || normalizedLabel.includes(compactReward);
 }
 
-function initialSelectedLevelUps(rewards: string[]): string[] {
+function levelUpId(label: string): string {
+  return label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "level-up";
+}
+
+function snapshotLevelUps(snapshot: SentInvitePublicSnapshot): GiftLevelUp[] {
+  if (snapshot.levelUps?.length) {
+    return snapshot.levelUps.map((levelUp) => ({
+      id: levelUpId(levelUp.label),
+      label: levelUp.label,
+      price: levelUp.price,
+    }));
+  }
+  return GEL_X_LEVEL_UPS;
+}
+
+function initialSelectedLevelUps(snapshot: SentInvitePublicSnapshot): string[] {
+  if (snapshot.levelUps?.length) {
+    return snapshot.levelUps
+      .filter((levelUp) => levelUp.selected)
+      .map((levelUp) => levelUpId(levelUp.label));
+  }
+  const rewards = snapshot.rewards ?? [];
   return GEL_X_LEVEL_UPS
     .filter((levelUp) => rewards.some((reward) => rewardMatchesLevelUp(reward, levelUp)))
     .map((levelUp) => levelUp.id);
+}
+
+function sentLevelUpLabels(snapshot: SentInvitePublicSnapshot): string[] {
+  if (snapshot.levelUps?.length) {
+    return snapshot.levelUps.filter((levelUp) => levelUp.selected).map((levelUp) => levelUp.label);
+  }
+  return snapshot.rewards ?? [];
 }
 
 export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) {
@@ -130,7 +158,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
         throw new Error(json.error ?? "Could not load invite.");
       }
       setInvite(json.invite);
-      setSelectedLevelUpIds(initialSelectedLevelUps(json.invite.snapshot.rewards ?? []));
+      setSelectedLevelUpIds(initialSelectedLevelUps(json.invite.snapshot));
       setNotice(json.invite.alreadyClaimed ? "This invite is already claimed and waiting for the salon." : null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load invite.");
@@ -243,7 +271,6 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
 
   const snapshot = invite?.snapshot;
   const services = snapshot?.services ?? [];
-  const rewards = snapshot?.rewards ?? [];
   const clientFirstName = firstName(snapshot?.recipientName);
   const salonName = snapshot?.salonDisplayName ?? "Your salon";
   const providerName = snapshot?.providerName ?? "Your nail tech";
@@ -261,17 +288,25 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const activeDay = selectedDay ?? salonWorkDays.find((day) => day.slots.length > 0)?.day ?? null;
   const activeDaySlots = activeDay === null ? [] : requestSlots.filter((slot) => slot.day === activeDay);
   const serviceLine = services.length > 0 ? services.join(" · ") : "Your private salon gift";
-  const levelUpLine = rewards.length > 0 ? rewards.join(" · ") : "Salon-selected finishing touch";
   const expiration = stripValidPrefix(snapshot?.expirationLabel);
   const sentOfferPrice = (snapshot?.offerPrice ?? parsePrice(snapshot?.priceLabel)) || 90;
+  const availableLevelUps = useMemo(
+    () => snapshot ? snapshotLevelUps(snapshot) : GEL_X_LEVEL_UPS,
+    [snapshot],
+  );
+  const levelUpLine = snapshot && sentLevelUpLabels(snapshot).length > 0
+    ? sentLevelUpLabels(snapshot).join(" · ")
+    : "Salon-selected finishing touch";
   const sentIncludedLevelUps = useMemo(
-    () => GEL_X_LEVEL_UPS.filter((levelUp) => rewards.some((reward) => rewardMatchesLevelUp(reward, levelUp))),
-    [rewards],
+    () => snapshot
+      ? availableLevelUps.filter((levelUp) => initialSelectedLevelUps(snapshot).includes(levelUp.id))
+      : [],
+    [availableLevelUps, snapshot],
   );
   const sentIncludedLevelUpTotal = sentIncludedLevelUps.reduce((total, levelUp) => total + levelUp.price, 0);
   const selectedLevelUps = useMemo(
-    () => GEL_X_LEVEL_UPS.filter((levelUp) => selectedLevelUpIds.includes(levelUp.id)),
-    [selectedLevelUpIds],
+    () => availableLevelUps.filter((levelUp) => selectedLevelUpIds.includes(levelUp.id)),
+    [availableLevelUps, selectedLevelUpIds],
   );
   const levelUpTotal = selectedLevelUps.reduce((total, levelUp) => total + levelUp.price, 0);
   const baseServicePrice = Math.max(0, sentOfferPrice - sentIncludedLevelUpTotal);
@@ -412,7 +447,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
                   <section className="vmb-client-home__level-ups" aria-label="Available level-ups">
                     <span>Available level-ups</span>
                     <ul>
-                      {GEL_X_LEVEL_UPS.map((levelUp) => (
+                      {availableLevelUps.map((levelUp) => (
                         <li key={levelUp.id}>
                           <label>
                             <input

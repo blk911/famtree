@@ -229,6 +229,13 @@ export function TodayCommandCenter({
         body: message.trim(),
         serviceIds: [selectedService.serviceOfferId],
         rewardIds: selectedAddons.map((addon) => addon.addonId),
+        levelUps: selectedService.addons
+          .filter((addon) => addon.enabled)
+          .map((addon) => ({
+            label: addon.label,
+            price: addon.priceCents / 100,
+            selected: selectedAddonIds.includes(addon.addonId),
+          })),
         totalValue: totalValueCents / 100,
         savingsAmount: Math.max(0, totalValueCents - offerPriceCents) / 100,
         offerPrice: offerPriceCents / 100,

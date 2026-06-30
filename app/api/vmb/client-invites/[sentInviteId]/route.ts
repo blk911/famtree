@@ -42,7 +42,7 @@ function bookingRequestFromBody(
 ): ClientInviteBookingRequest {
   if (booking) return { ...booking, bookingStatus: booking.bookingStatus ?? "booking_requested" };
   const serviceLine = invite.snapshot.services[0] ?? invite.snapshot.inviteTypeLabel ?? "Private salon gift";
-  const baseTotal = Number((invite.snapshot.priceLabel ?? "").match(/[\d.]+/)?.[0] ?? 0);
+  const baseTotal = invite.snapshot.offerPrice ?? Number((invite.snapshot.priceLabel ?? "").match(/[\d.]+/)?.[0] ?? 0);
   return {
     bookingStatus: "booking_requested",
     serviceLine,
