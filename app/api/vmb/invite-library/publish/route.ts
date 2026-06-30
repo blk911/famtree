@@ -92,6 +92,15 @@ export async function POST(req: NextRequest) {
     if ("error" in saved) {
       return NextResponse.json({ ok: false, error: saved.error }, { status: 503 });
     }
+
+    return NextResponse.json({
+      ok: true,
+      mode: "library",
+      salonId,
+      offerId: saved.offer.id,
+      sourceTemplateId: baseline.id,
+      libraryVersion: snapshot.version,
+    });
   }
 
   const result = await publishLibraryTemplateToSalon(salonId, templateId);

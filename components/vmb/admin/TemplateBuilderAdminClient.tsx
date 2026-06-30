@@ -306,7 +306,7 @@ export function TemplateBuilderAdminClient({
               {saveSuccess ? (
                 <div className="vmb-admin-builder-grid__save-success">
                   <p className="vmb-admin-builder-grid__status vmb-admin-builder-grid__status--success">
-                    ✓ Saved to Library and sent to Salon Review
+                    ✓ Saved to Library. Publish from Library when ready for salon review.
                   </p>
                   <Link
                     href={libraryRouteForTemplate(draft.templateId)}

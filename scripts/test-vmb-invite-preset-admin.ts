@@ -216,6 +216,19 @@ async function run(): Promise<void> {
   const buildAnalysis = read("lib/vmb/invites/build-invite-drafts-for-analysis.ts");
   assert(buildAnalysis.includes("buildOutreachDraftCopyForSalon"), "analysis draft builder uses store");
 
+  const inviteLibraryPublishRoute = read("app/api/vmb/invite-library/publish/route.ts");
+  assert(
+    inviteLibraryPublishRoute.includes('mode: "library"')
+      && inviteLibraryPublishRoute.indexOf('mode: "library"') < inviteLibraryPublishRoute.lastIndexOf("publishLibraryTemplateToSalon"),
+    "builder save returns after saving library snapshot before salon publish",
+  );
+
+  const templateBuilderAdmin = read("components/vmb/admin/TemplateBuilderAdminClient.tsx");
+  assert(
+    templateBuilderAdmin.includes("Publish from Library when ready for salon review"),
+    "builder save success copy points admins to the explicit Library publish step",
+  );
+
   assert(DEFAULT_CARD_TEMPLATES.length > 0, "card template defaults importable");
   assert(getAllDefaultOffers().length > 0, "offer defaults importable");
   assert(getAllDefaultServices().length > 0, "service defaults importable");
