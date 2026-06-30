@@ -263,12 +263,18 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const serviceLine = services.length > 0 ? services.join(" · ") : "Your private salon gift";
   const levelUpLine = rewards.length > 0 ? rewards.join(" · ") : "Salon-selected finishing touch";
   const expiration = stripValidPrefix(snapshot?.expirationLabel);
-  const baseServicePrice = parsePrice(snapshot?.priceLabel) || 90;
+  const sentOfferPrice = (snapshot?.offerPrice ?? parsePrice(snapshot?.priceLabel)) || 90;
+  const sentIncludedLevelUps = useMemo(
+    () => GEL_X_LEVEL_UPS.filter((levelUp) => rewards.some((reward) => rewardMatchesLevelUp(reward, levelUp))),
+    [rewards],
+  );
+  const sentIncludedLevelUpTotal = sentIncludedLevelUps.reduce((total, levelUp) => total + levelUp.price, 0);
   const selectedLevelUps = useMemo(
     () => GEL_X_LEVEL_UPS.filter((levelUp) => selectedLevelUpIds.includes(levelUp.id)),
     [selectedLevelUpIds],
   );
   const levelUpTotal = selectedLevelUps.reduce((total, levelUp) => total + levelUp.price, 0);
+  const baseServicePrice = Math.max(0, sentOfferPrice - sentIncludedLevelUpTotal);
   const subtotal = baseServicePrice + levelUpTotal;
   const tax = subtotal * TAX_RATE;
   const vmbComarket = subtotal * VMB_COMARKET_RATE;

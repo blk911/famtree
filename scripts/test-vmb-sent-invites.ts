@@ -44,7 +44,7 @@ async function isolated(run: () => Promise<void>) {
 
 function snapshot(salonName: string, serviceIds: string[] = []): InviteTemplateSnapshot {
   const now = new Date().toISOString();
-  return { id: "snapshot-1", sourceTemplateId: "template-1", templateName: "Birthday Offer", categoryId: "nails", headline: "A birthday treat", body: "Your private birthday offer is ready.", ctaLabel: "Claim offer", serviceIds, rewardIds: [], priceLabel: "$75", termsText: "One per client", ownerName: "Avery", salonName, status: "published", version: 1, createdAt: now, updatedAt: now };
+  return { id: "snapshot-1", sourceTemplateId: "template-1", templateName: "Birthday Offer", categoryId: "nails", headline: "A birthday treat", body: "Your private birthday offer is ready.", ctaLabel: "Claim offer", serviceIds, rewardIds: [], priceLabel: "$75", valueLabel: "$90", totalValue: 90, savingsAmount: 15, offerPrice: 75, termsText: "One per client", ownerName: "Avery", salonName, status: "published", version: 1, createdAt: now, updatedAt: now };
 }
 
 async function seed(salonId: string, status: "approved" | "paused" = "approved", options: { serviceIds?: string[]; salonOfferCatalogId?: string; clientEmail?: string } = {}) {
@@ -86,6 +86,10 @@ async function run() {
     const sent = await sendApprovedInvitation({ salonId, approvalId: approval.id });
     assert(!("error" in sent), `active approved offer sends${"error" in sent ? `: ${sent.error}` : ""}`);
     assert(sent.sentInvite.status === "sent", "new aggregate begins sent");
+    assert(sent.sentInvite.snapshot.offerPrice === 75, "sent invite snapshot preserves frozen offer price");
+    assert(sent.sentInvite.snapshot.totalValue === 90, "sent invite snapshot preserves frozen package value");
+    assert(sent.sentInvite.snapshot.savingsAmount === 15, "sent invite snapshot preserves frozen savings");
+    assert(sent.sentInvite.snapshot.valueLabel === "$90", "sent invite snapshot preserves frozen value label");
     const resendPrep = await prepareSalonInvitationForSend(salonId, {
       clientName: approval.clientName,
       clientEmail: approval.clientEmail,

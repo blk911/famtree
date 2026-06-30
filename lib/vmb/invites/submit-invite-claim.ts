@@ -41,7 +41,7 @@ function bookingRequestFromInput(
 ): ClientInviteBookingRequest {
   if (booking) return { ...booking, bookingStatus: booking.bookingStatus ?? "booking_requested" };
   const serviceLine = sentInvite.snapshot.services[0] ?? sentInvite.snapshot.inviteTypeLabel ?? "Private salon gift";
-  const baseTotal = Number((sentInvite.snapshot.priceLabel ?? "").match(/[\d.]+/)?.[0] ?? 0);
+  const baseTotal = sentInvite.snapshot.offerPrice ?? Number((sentInvite.snapshot.priceLabel ?? "").match(/[\d.]+/)?.[0] ?? 0);
   return {
     bookingStatus: "booking_requested",
     serviceLine,

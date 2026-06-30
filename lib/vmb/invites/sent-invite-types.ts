@@ -19,6 +19,10 @@ export type SentInvitePublicSnapshot = {
   expirationLabel?: string;
   termsText?: string;
   priceLabel?: string;
+  valueLabel?: string;
+  totalValue?: number;
+  savingsAmount?: number;
+  offerPrice?: number;
   ownerPhotoUrl?: string;
   salonLogoUrl?: string;
   serviceImageUrl?: string;
