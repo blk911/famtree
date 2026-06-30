@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
 import { AdminSalonInviteReviewModal } from "@/components/vmb/admin/AdminSalonInviteReviewModal";
@@ -120,27 +120,26 @@ export function NailsLibraryAdminClient({
     setPublishStatus(null);
   }, [selectedTemplateId]);
 
-  useEffect(() => {
-    if (!salonId) return;
-    let cancelled = false;
-    async function loadPublishedCopies() {
-      const query = targetSalonToken
-        ? `?salonToken=${encodeURIComponent(targetSalonToken)}`
-        : "";
-      const res = await fetch(`/api/vmb/salon-invites${query}`, {
-        cache: "no-store",
-        credentials: "include",
-      });
-      const data = (await res.json()) as { ok?: boolean; copies?: SalonInviteLocalCopy[] };
-      if (!cancelled && data.ok && Array.isArray(data.copies)) {
-        setPublishedCopies(data.copies);
-      }
+  const loadPublishedCopies = useCallback(async (): Promise<SalonInviteLocalCopy[]> => {
+    if (!salonId) return [];
+    const query = targetSalonToken
+      ? `?salonToken=${encodeURIComponent(targetSalonToken)}`
+      : "";
+    const res = await fetch(`/api/vmb/salon-invites${query}`, {
+      cache: "no-store",
+      credentials: "include",
+    });
+    const data = (await res.json()) as { ok?: boolean; copies?: SalonInviteLocalCopy[] };
+    if (data.ok && Array.isArray(data.copies)) {
+      setPublishedCopies(data.copies);
+      return data.copies;
     }
-    void loadPublishedCopies();
-    return () => {
-      cancelled = true;
-    };
+    return [];
   }, [salonId, targetSalonToken]);
+
+  useEffect(() => {
+    void loadPublishedCopies();
+  }, [loadPublishedCopies]);
 
   const tokenContext = useMemo(
     () => ({
@@ -164,6 +163,7 @@ export function NailsLibraryAdminClient({
       ok?: boolean;
       error?: string;
       copy?: SalonInviteLocalCopy;
+      copies?: SalonInviteLocalCopy[];
       backend?: SalonInviteCopyBackend;
       salonId?: string;
       copyId?: string;
@@ -171,9 +171,14 @@ export function NailsLibraryAdminClient({
       publishedVersion?: number;
     };
     setPublishBusy(false);
-    if (data.ok && data.copy && data.backend && data.salonId) {
-      setPublishedCopies((copies) => mergePublishedCopy(copies, data.copy!));
-      setPublishStatus(null);
+    if (data.ok) {
+      if (Array.isArray(data.copies)) {
+        setPublishedCopies(data.copies);
+      } else if (data.copy) {
+        setPublishedCopies((copies) => mergePublishedCopy(copies, data.copy!));
+      }
+      await loadPublishedCopies();
+      setPublishStatus("Published to salon inventory.");
     } else {
       setPublishStatus(data.error ?? "Publish failed.");
     }

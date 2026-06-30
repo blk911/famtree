@@ -222,11 +222,22 @@ async function run(): Promise<void> {
       && inviteLibraryPublishRoute.indexOf('mode: "library"') < inviteLibraryPublishRoute.lastIndexOf("publishLibraryTemplateToSalon"),
     "builder save returns after saving library snapshot before salon publish",
   );
+  assert(
+    inviteLibraryPublishRoute.includes("listSalonInviteLocalCopies")
+      && inviteLibraryPublishRoute.includes("copies,"),
+    "library publish returns authoritative salon invite copies for indicator refresh",
+  );
 
   const templateBuilderAdmin = read("components/vmb/admin/TemplateBuilderAdminClient.tsx");
   assert(
     templateBuilderAdmin.includes("Publish from Library when ready for salon review"),
     "builder save success copy points admins to the explicit Library publish step",
+  );
+  const nailsLibraryAdmin = read("components/vmb/admin/NailsLibraryAdminClient.tsx");
+  assert(
+    nailsLibraryAdmin.includes("await loadPublishedCopies()")
+      && nailsLibraryAdmin.includes("Published to salon inventory."),
+    "library publish button reloads published-copy state after save",
   );
 
   assert(DEFAULT_CARD_TEMPLATES.length > 0, "card template defaults importable");

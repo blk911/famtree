@@ -5,7 +5,10 @@ import { templateStorageId } from "@/lib/vmb/admin/nail-template-library";
 import { getDefaultNailInviteTemplate } from "@/lib/vmb/invite-templates/default-nail-invite-templates";
 import { upsertInviteTemplate } from "@/lib/vmb/invite-templates/invite-template-store";
 import { parseInviteTemplateSnapshot } from "@/lib/vmb/invites/invite-template-snapshot";
-import { publishLibraryTemplateToSalon } from "@/lib/vmb/invites/salon-invite-local-copy-store";
+import {
+  listSalonInviteLocalCopies,
+  publishLibraryTemplateToSalon,
+} from "@/lib/vmb/invites/salon-invite-local-copy-store";
 import type { VmbOffer } from "@/lib/vmb/offers/offer-types";
 import { upsertOffer } from "@/lib/vmb/offers/offer-store";
 import { verifyVmbSalonSession } from "@/lib/vmb/salon-authority";
@@ -107,10 +110,12 @@ export async function POST(req: NextRequest) {
   if ("error" in result) {
     return NextResponse.json({ ok: false, error: result.error }, { status: 503 });
   }
+  const copies = await listSalonInviteLocalCopies(salonId);
 
   return NextResponse.json({
     ok: true,
     copy: result.copy,
+    copies,
     backend: result.backend,
     salonId,
     copyId: result.copy.id,
