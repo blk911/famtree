@@ -233,6 +233,12 @@ async function run(): Promise<void> {
     templateBuilderAdmin.includes("Publish from Library when ready for salon review"),
     "builder save success copy points admins to the explicit Library publish step",
   );
+  assert(
+    templateBuilderAdmin.includes("/api/vmb/salon-invites")
+      && templateBuilderAdmin.includes("Published to salon")
+      && templateBuilderAdmin.includes("Saved in library"),
+    "builder list indicator is wired to published salon invite copies",
+  );
   const nailsLibraryAdmin = read("components/vmb/admin/NailsLibraryAdminClient.tsx");
   assert(
     nailsLibraryAdmin.includes("await loadPublishedCopies()")

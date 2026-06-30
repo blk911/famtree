@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { OfferPricingSummary } from "@/components/vmb/admin/AdminDefaultPackageSummary";
 import { AdminBuilderShell } from "@/components/vmb/admin/AdminBuilderShell";
@@ -20,6 +20,11 @@ import { DEFAULT_NAIL_INVITE_TEMPLATES } from "@/lib/vmb/invite-templates/defaul
 import { INVITE_TEMPLATE_PREVIEW_CONTEXT } from "@/lib/vmb/invite-templates/invite-template-tokens";
 import { calculateInvitationPackagePricing } from "@/lib/vmb/invites/invitation-package-pricing";
 import {
+  normalizeSourceTemplateId,
+  templateKeysForPublishedCopy,
+} from "@/lib/vmb/invites/published-copy-matching";
+import type { SalonInviteLocalCopy } from "@/lib/vmb/invites/publish-template-to-salons";
+import {
   EMPTY_SALON_INVITE_IMAGE_INSERTS,
   type SalonInviteImageInserts,
 } from "@/lib/vmb/invites/salon-invite-image-inserts";
@@ -31,6 +36,17 @@ type Props = {
   ownerName?: string;
   initialTemplateId?: string;
 };
+
+function publishedCopyForTemplate(
+  copies: SalonInviteLocalCopy[],
+  templateId: string | undefined,
+): SalonInviteLocalCopy | null {
+  const normalizedTemplateId = normalizeSourceTemplateId(templateId) ?? templateId;
+  if (!normalizedTemplateId) return null;
+  return (
+    copies.find((copy) => templateKeysForPublishedCopy(copy).includes(normalizedTemplateId)) ?? null
+  );
+}
 
 export function TemplateBuilderAdminClient({
   salonId,
@@ -55,10 +71,30 @@ export function TemplateBuilderAdminClient({
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [publishedCopies, setPublishedCopies] = useState<SalonInviteLocalCopy[]>([]);
   const [imageInserts, setImageInserts] = useState<SalonInviteImageInserts>(
     EMPTY_SALON_INVITE_IMAGE_INSERTS,
   );
   const loadedTemplateIdRef = useRef<string | null>(null);
+
+  const loadPublishedCopies = useCallback(async (): Promise<void> => {
+    if (!salonId) return;
+    const query = targetSalonToken
+      ? `?salonToken=${encodeURIComponent(targetSalonToken)}`
+      : "";
+    const res = await fetch(`/api/vmb/salon-invites${query}`, {
+      cache: "no-store",
+      credentials: "include",
+    });
+    const data = (await res.json()) as { ok?: boolean; copies?: SalonInviteLocalCopy[] };
+    if (data.ok && Array.isArray(data.copies)) {
+      setPublishedCopies(data.copies);
+    }
+  }, [salonId, targetSalonToken]);
+
+  useEffect(() => {
+    void loadPublishedCopies();
+  }, [loadPublishedCopies]);
 
   useEffect(() => {
     if (!initialTemplateId) return;
@@ -172,6 +208,7 @@ export function TemplateBuilderAdminClient({
         current ? { ...current, saved: true, librarySnapshot: snapshot } : current,
       );
       void reload();
+      void loadPublishedCopies();
     } else {
       setSaveSuccess(false);
       setStatus(data.error ?? "Save failed.");
@@ -222,23 +259,30 @@ export function TemplateBuilderAdminClient({
         <aside className="vmb-admin-builder-grid__list">
           <p className="vmb-admin-builder-grid__list-label">Invite types</p>
           <ul>
-            {drafts.map((row) => (
-              <li key={row.templateId}>
-                <button
-                  type="button"
-                  className={`vmb-admin-builder-grid__type${selectedTemplateId === row.templateId ? " vmb-admin-builder-grid__type--active" : ""}`}
-                  onClick={() => {
-                    loadedTemplateIdRef.current = null;
-                    setSelectedTemplateId(row.templateId);
-                  }}
-                >
-                  {row.displayName}
-                  {row.saved ? (
-                    <span className="vmb-admin-builder-grid__override-dot" aria-label="In library" />
-                  ) : null}
-                </button>
-              </li>
-            ))}
+            {drafts.map((row) => {
+              const rowPublishedCopy = publishedCopyForTemplate(publishedCopies, row.templateId);
+              return (
+                <li key={row.templateId}>
+                  <button
+                    type="button"
+                    className={`vmb-admin-builder-grid__type${selectedTemplateId === row.templateId ? " vmb-admin-builder-grid__type--active" : ""}`}
+                    onClick={() => {
+                      loadedTemplateIdRef.current = null;
+                      setSelectedTemplateId(row.templateId);
+                    }}
+                  >
+                    {row.displayName}
+                    {row.saved ? (
+                      <span
+                        className={`vmb-admin-builder-grid__override-dot${rowPublishedCopy ? " vmb-admin-builder-grid__override-dot--published" : ""}`}
+                        aria-label={rowPublishedCopy ? "Published to salon" : "Saved in library"}
+                        title={rowPublishedCopy ? "Published to salon" : "Saved in library"}
+                      />
+                    ) : null}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </aside>
 
