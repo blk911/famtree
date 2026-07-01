@@ -315,6 +315,12 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
   const vmbComarket = subtotal * VMB_COMARKET_RATE;
   const total = subtotal + tax + vmbComarket;
   const appointmentReady = Boolean(selectedSlot);
+  const inviteClaimed = Boolean(invite?.alreadyClaimed || invite?.status === "claimed" || invite?.status === "redeemed");
+  const inviteStatusLabel = invite?.status === "redeemed"
+    ? "Gift redeemed"
+    : inviteClaimed
+      ? "Gift held"
+      : "Gift waiting";
 
   useEffect(() => {
     if (!selectedSlot) setOrderConfirmed(false);
@@ -381,6 +387,7 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
                 <a href="#gift">Gifts</a>
                 <a href="#salons">My Salons</a>
                 <a href="#style">My Style</a>
+                <a href="#network">Network</a>
                 <a href="#profile">Profile</a>
               </nav>
             </div>
@@ -394,29 +401,54 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
             </aside>
           </header>
 
-          <section className="vmb-client-home__hero">
-            <div className="vmb-client-home__hero-copy">
-              <p className="vmb-client-home__eyebrow">A note from {salonName}</p>
-              <h2>{snapshot.headline}</h2>
-              <p>{snapshot.body}</p>
-              <p className="vmb-client-home__gift-line">
-                Your {serviceLine} with {levelUpLine} is available now or held {expiration}.
-              </p>
-              <button
-                type="button"
-                className="vmb-client-home__hero-cta"
-                onClick={() => setOfferOpen(true)}
-              >
-                Open My Birthday Gift
-              </button>
-            </div>
-            <div className="vmb-client-home__hero-image">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={heroImageUrl} alt="" />
-            </div>
+          <section className={`vmb-client-home__hero${inviteClaimed ? " vmb-client-home__hero--claimed" : ""}`}>
+            {inviteClaimed ? (
+              <>
+                <div className="vmb-client-home__status-card">
+                  <p className="vmb-client-home__eyebrow">{inviteStatusLabel} from {salonName}</p>
+                  <h2>{snapshot.inviteTypeLabel}</h2>
+                  <p>
+                    Your {serviceLine} is saved in your VMB client space. Review the gift details when you want to
+                    book, personalize, or share the salon with someone in your circle.
+                  </p>
+                </div>
+                <div className="vmb-client-home__status-actions">
+                  <button
+                    type="button"
+                    className="vmb-client-home__hero-cta"
+                    onClick={() => setOfferOpen(true)}
+                  >
+                    Review Gift
+                  </button>
+                  <a href="#salons">My salon</a>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="vmb-client-home__hero-copy">
+                  <p className="vmb-client-home__eyebrow">A note from {salonName}</p>
+                  <h2>{snapshot.headline}</h2>
+                  <p>{snapshot.body}</p>
+                  <p className="vmb-client-home__gift-line">
+                    Your {serviceLine} with {levelUpLine} is available now or held {expiration}.
+                  </p>
+                  <button
+                    type="button"
+                    className="vmb-client-home__hero-cta"
+                    onClick={() => setOfferOpen(true)}
+                  >
+                    Open My Birthday Gift
+                  </button>
+                </div>
+                <div className="vmb-client-home__hero-image">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={heroImageUrl} alt="" />
+                </div>
+              </>
+            )}
           </section>
 
-          <section className={`vmb-client-home__grid${offerOpen ? " is-open" : ""}`} id="gift">
+          <section className={`vmb-client-home__grid${offerOpen ? " is-open" : ""}${inviteClaimed && !offerOpen ? " is-member" : ""}`} id="gift">
             {offerOpen ? (
               <div className="vmb-client-home__offer-workspace">
                 <article className="vmb-client-home__module vmb-client-home__module--primary">
@@ -562,6 +594,47 @@ export function VmbClientInvitePortal({ inviteId, contact, token = "" }: Props) 
                     </section>
                   ) : null}
                 </aside>
+              </div>
+            ) : inviteClaimed ? (
+              <div className="vmb-client-home__member-grid">
+                <article className="vmb-client-home__member-card vmb-client-home__member-card--gift">
+                  <p className="vmb-client-home__eyebrow">Gift shelf</p>
+                  <h3>{snapshot.inviteTypeLabel}</h3>
+                  <p>{serviceLine} with {levelUpLine}. Held {expiration}.</p>
+                  <button
+                    type="button"
+                    className="vmb-client-home__button vmb-client-home__button--primary"
+                    onClick={() => setOfferOpen(true)}
+                  >
+                    Review Gift
+                  </button>
+                </article>
+
+                <article className="vmb-client-home__member-card" id="salons">
+                  <p className="vmb-client-home__eyebrow">My salon</p>
+                  <h3>{salonName}</h3>
+                  <p>{providerName} can see this held gift, booking requests, and style notes from your visit.</p>
+                  <span className="vmb-client-home__member-pill">Favorite tech</span>
+                </article>
+
+                <article className="vmb-client-home__member-card" id="style">
+                  <p className="vmb-client-home__eyebrow">My style</p>
+                  <h3>Saved preferences</h3>
+                  <ul className="vmb-client-home__member-list">
+                    <li>{serviceLine}</li>
+                    <li>{levelUpLine}</li>
+                    <li>{selectedSlot || "Choose a preferred time when ready"}</li>
+                  </ul>
+                </article>
+
+                <article className="vmb-client-home__member-card" id="network">
+                  <p className="vmb-client-home__eyebrow">Personal network</p>
+                  <h3>Spread the word</h3>
+                  <p>Gift sending and referral sharing will live here so clients can introduce friends to their favorite salons.</p>
+                  <button type="button" className="vmb-client-home__button vmb-client-home__button--quiet">
+                    Coming soon
+                  </button>
+                </article>
               </div>
             ) : (
               <article className="vmb-client-home__module vmb-client-home__module--pending">

@@ -10243,6 +10243,55 @@
   box-shadow: 0 24px 80px rgba(136, 19, 55, 0.1);
 }
 
+.vmb-client-home__hero--claimed {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: clamp(18px, 3vw, 26px);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(252, 231, 243, 0.7), transparent 34%),
+    rgba(255, 252, 247, 0.92);
+}
+
+.vmb-client-home__status-card {
+  display: grid;
+  gap: 6px;
+}
+
+.vmb-client-home__status-card h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.vmb-client-home__status-card p:not(.vmb-client-home__eyebrow) {
+  max-width: 760px;
+  margin: 0;
+  color: #6f5a53;
+  line-height: 1.6;
+}
+
+.vmb-client-home__status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.vmb-client-home__status-actions .vmb-client-home__hero-cta {
+  margin-top: 0;
+}
+
+.vmb-client-home__status-actions a {
+  color: #be185d;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
 .vmb-client-home__hero-copy {
   display: flex;
   flex-direction: column;
@@ -10310,6 +10359,82 @@
 
 .vmb-client-home__grid.is-open .vmb-client-home__module--salon {
   display: none;
+}
+
+.vmb-client-home__grid.is-member {
+  grid-template-columns: 1fr;
+}
+
+.vmb-client-home__grid.is-member .vmb-client-home__module--salon {
+  display: none;
+}
+
+.vmb-client-home__member-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 18px;
+}
+
+.vmb-client-home__member-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 220px;
+  padding: clamp(20px, 3vw, 30px);
+  border: 1px solid rgba(244, 114, 182, 0.22);
+  border-radius: 28px;
+  background: rgba(255, 252, 247, 0.9);
+  box-shadow: 0 18px 54px rgba(136, 19, 55, 0.075);
+}
+
+.vmb-client-home__member-card--gift {
+  border-color: rgba(212, 175, 55, 0.34);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(252, 231, 243, 0.78), transparent 36%),
+    rgba(255, 252, 247, 0.94);
+}
+
+.vmb-client-home__member-card h3 {
+  margin: 0;
+  color: #2f2623;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.vmb-client-home__member-card p {
+  margin: 0;
+  color: #6f5a53;
+  line-height: 1.62;
+}
+
+.vmb-client-home__member-pill {
+  justify-self: start;
+  padding: 8px 12px;
+  border: 1px solid #f9a8d4;
+  border-radius: 999px;
+  background: #fff7fb;
+  color: #be185d;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.vmb-client-home__member-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vmb-client-home__member-list li {
+  padding: 10px 12px;
+  border: 1px solid #fce7f3;
+  border-radius: 16px;
+  background: #fffafb;
+  color: #6f5a53;
+  font-weight: 700;
 }
 
 .vmb-client-home__offer-workspace {
@@ -11271,8 +11396,13 @@
   .vmb-client-home__hero,
   .vmb-client-home__grid,
   .vmb-client-home__offer-workspace,
+  .vmb-client-home__member-grid,
   .vmb-client-home__actions {
     grid-template-columns: 1fr;
+  }
+
+  .vmb-client-home__status-actions {
+    justify-content: flex-start;
   }
 
   .vmb-calendar-week__header {
